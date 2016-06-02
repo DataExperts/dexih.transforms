@@ -1,7 +1,7 @@
 # Data Experts Transformation Library.
 ### [Data Experts Group](http://dataexpertsgroup.com)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)]
+(https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)
 
 This library provides unlimited capabilities for you to transform, analyze and process data.  
 
