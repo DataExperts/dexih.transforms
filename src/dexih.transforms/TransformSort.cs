@@ -15,10 +15,10 @@ namespace dexih.transforms
 
         public TransformSort() { }
 
-        public TransformSort(Transform inReader, List<Sort> sortFields)
+        public TransformSort(Transform inTransform, List<Sort> sortFields)
         {
             SortFields = sortFields;
-            SetInTransform(inReader);
+            SetInTransform(inTransform);
         }
 
         public override bool Initialize()

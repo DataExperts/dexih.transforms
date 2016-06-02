@@ -112,7 +112,7 @@ namespace dexih_unit_tests
             while (TransformMapping.Read() == true)
             {
                 count = count + 1;
-                Assert.Equal("value" + count.ToString() + "123", TransformMapping["CustomFunction"]);
+                Assert.Equal("value" + count.ToString().PadLeft(2, '0') + "123", TransformMapping["CustomFunction"]);
                 Assert.Equal("alu", TransformMapping["Substring"]);
                 Assert.Equal((DateTime)Convert.ToDateTime("2015-01-" + count.ToString()), (DateTime)TransformMapping["DateColumn"]);
             }
