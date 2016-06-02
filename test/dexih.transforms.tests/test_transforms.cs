@@ -1,5 +1,4 @@
-﻿using dexih.core;
-using dexih.transforms;
+﻿using dexih.transforms;
 using dexih.functions;
 using System;
 using System.Collections.Generic;
@@ -84,8 +83,6 @@ namespace dexih_unit_tests
         {
             DataTableAdapter Source = CreateTestData();
             TransformMapping TransformMapping = new TransformMapping();
-            StandardFunctionReferences StandardFunctions = new StandardFunctionReferences();
-            StandardFunctions.Load(Helpers.RepositoryConnection()).Wait();
 
             List<Function> Mappings = new List<Function>();
 
@@ -95,7 +92,7 @@ namespace dexih_unit_tests
                     new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123)
                 }, null));
 
-            Function Function = StandardFunctions.GetFromName("Substring").GetFunction();
+            Function Function = StandardFunctions.GetFunctionReference("Substring");
             Function.TargetColumn = "Substring";
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("name", ETypeCode.String, true, null, "StringColumn" ),
@@ -134,12 +131,10 @@ namespace dexih_unit_tests
             DataTableAdapter Table = CreateTestData();
             TransformFilter TransformFilter = new TransformFilter();
             TransformMapping TransformMapping = new TransformMapping();
-            StandardFunctionReferences StandardFunctions = new StandardFunctionReferences();
-            StandardFunctions.Load(Helpers.RepositoryConnection()).Wait();
 
             //set a filter that filters all
             List<Function> Conditions = new List<Function>();
-            Function Function = StandardFunctions.GetFromName("Equals").GetFunction();
+            Function Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
                     new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk") };
@@ -160,7 +155,7 @@ namespace dexih_unit_tests
 
             //set a filter than filters to 1 row.
             Conditions = new List<Function>();
-            Function = StandardFunctions.GetFromName("Equals").GetFunction();
+            Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
                     new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value3") };
@@ -180,7 +175,7 @@ namespace dexih_unit_tests
 
             // use the "IN" function to filter 3 rows.
             Conditions = new List<Function>();
-            Function = StandardFunctions.GetFromName("IsIn").GetFunction();
+            Function = StandardFunctions.GetFunctionReference("IsIn");
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("Value", ETypeCode.String, true, null, "StringColumn" ),
                     new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value3", isArray: true) ,
@@ -201,7 +196,7 @@ namespace dexih_unit_tests
 
             // create a mapping, and use the filter after the calculation.
             List<Function> Mappings = new List<Function>();
-            Function = StandardFunctions.GetFromName("Substring").GetFunction();
+            Function = StandardFunctions.GetFunctionReference("Substring");
             Function.TargetColumn = "Substring";
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("name", ETypeCode.String, true, null, "StringColumn" ),
@@ -213,7 +208,7 @@ namespace dexih_unit_tests
             TransformMapping.SetInTransform(Table);
 
             Conditions = new List<Function>();
-            Function = StandardFunctions.GetFromName("Less Than").GetFunction();
+            Function = StandardFunctions.GetFunctionReference("LessThan");
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("Substring", ETypeCode.Int32, true, null, "Substring" ),
                     new dexih.functions.Parameter("Compare", ETypeCode.Int32, false, 5) };
@@ -238,31 +233,28 @@ namespace dexih_unit_tests
 
             List<Function> Aggregates = new List<Function>();
 
-            StandardFunctionReferences StandardFunctions = new StandardFunctionReferences();
-            StandardFunctions.Load(Helpers.RepositoryConnection()).Wait();
-
             dexih.functions.Parameter[] IntParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("IntColumn", ETypeCode.Double, true, null, "IntColumn") };
             dexih.functions.Parameter[] StringParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn") };
             dexih.functions.Parameter[] ConcatParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("Seperator", ETypeCode.String, false, ","), new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn") };
 
-            Function sum = StandardFunctions.GetFromName("Sum").GetFunction();
+            Function sum = StandardFunctions.GetFunctionReference("Sum");
             sum.Inputs = IntParam;
             sum.TargetColumn = "Sum";
-            Function average = StandardFunctions.GetFromName("Average").GetFunction();
+            Function average = StandardFunctions.GetFunctionReference("Average");
             average.Inputs = IntParam;
             average.TargetColumn = "Average";
-            Function min = StandardFunctions.GetFromName("Minimum").GetFunction();
+            Function min = StandardFunctions.GetFunctionReference("Minimum");
             min.Inputs = IntParam;
             min.TargetColumn = "Minimum";
-            Function max = StandardFunctions.GetFromName("Maximum").GetFunction();
+            Function max = StandardFunctions.GetFunctionReference("Maximum");
             max.Inputs = IntParam;
             max.TargetColumn = "Maximum";
-            Function count = StandardFunctions.GetFromName("Count").GetFunction();
+            Function count = StandardFunctions.GetFunctionReference("Count");
             count.TargetColumn = "Count";
-            Function countdistinct = StandardFunctions.GetFromName("Count Distinct").GetFunction();
+            Function countdistinct = StandardFunctions.GetFunctionReference("CountDistinct");
             countdistinct.Inputs = StringParam;
             countdistinct.TargetColumn = "CountDistinct";
-            Function concat = StandardFunctions.GetFromName("Concatenate Aggregate").GetFunction();
+            Function concat = StandardFunctions.GetFunctionReference("ConcatAgg");
             concat.Inputs = ConcatParam;
             concat.TargetColumn = "Concat";
 
@@ -349,10 +341,7 @@ namespace dexih_unit_tests
 
             List<Function> Aggregates = new List<Function>();
 
-            StandardFunctionReferences StandardFunctions = new StandardFunctionReferences();
-            StandardFunctions.Load(Helpers.RepositoryConnection()).Wait();
-
-            Function mavg = StandardFunctions.GetFromName("Moving Average").GetFunction();
+            Function mavg = StandardFunctions.GetFunctionReference("MovingAverage");
             mavg.Inputs = new dexih.functions.Parameter[] {
                 new dexih.functions.Parameter("Series", ETypeCode.DateTime, true, null, "DateColumn"),
                 new dexih.functions.Parameter("Value", ETypeCode.Double, true, null, "IntColumn"),
@@ -362,7 +351,7 @@ namespace dexih_unit_tests
             mavg.TargetColumn = "MAvg";
             Aggregates.Add(mavg);
 
-            Function highest = StandardFunctions.GetFromName("Highest Value since ").GetFunction();
+            Function highest = StandardFunctions.GetFunctionReference("HighestSince");
             highest.Inputs = new dexih.functions.Parameter[] {
                 new dexih.functions.Parameter("Series", ETypeCode.DateTime, true, null, "DateColumn"),
                 new dexih.functions.Parameter("Value", ETypeCode.Double, true, null, "IntColumn")

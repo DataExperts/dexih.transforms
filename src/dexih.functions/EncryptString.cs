@@ -25,42 +25,49 @@ namespace dexih.functions
         /// <param name="plainText">String to encrypt</param>
         /// <param name="passPhrase">Encryption Key</param>
         /// <returns></returns>
-        public static string Encrypt(string plainText, string passPhrase)
+        public static ReturnValue<string> Encrypt(string plainText, string passPhrase)
         {
-            if (string.IsNullOrEmpty(plainText)) return "";
-
-            // Salt and IV is randomly generated each time, but is prepended to encrypted cipher text
-            // so that the same Salt and IV values can be used when decrypting.  
-            var saltStringBytes = Generate256BitsOfRandomEntropy();
-            var ivStringBytes = Generate256BitsOfRandomEntropy();
-            var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
-            using (var password = new Rfc2898DeriveBytes(passPhrase, saltStringBytes, DerivationIterations))
+            try
             {
-                var keyBytes = password.GetBytes(Keysize / 8);
-                using (var symmetricKey = Aes.Create()) // not supported in .net core =new RijndaelManaged())
+                if (string.IsNullOrEmpty(plainText)) return new ReturnValue<string>(true, "");
+
+                // Salt and IV is randomly generated each time, but is prepended to encrypted cipher text
+                // so that the same Salt and IV values can be used when decrypting.  
+                var saltStringBytes = Generate256BitsOfRandomEntropy();
+                var ivStringBytes = Generate256BitsOfRandomEntropy();
+                var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+                using (var password = new Rfc2898DeriveBytes(passPhrase, saltStringBytes, DerivationIterations))
                 {
-                    symmetricKey.BlockSize = Keysize;
-                    symmetricKey.Mode = CipherMode.CBC;
-                    symmetricKey.Padding = PaddingMode.PKCS7;
-                    using (var encryptor = symmetricKey.CreateEncryptor(keyBytes, ivStringBytes))
+                    var keyBytes = password.GetBytes(Keysize / 8);
+                    using (var symmetricKey = Aes.Create()) // not supported in .net core =new RijndaelManaged())
                     {
-                        using (var memoryStream = new MemoryStream())
+                        symmetricKey.BlockSize = Keysize;
+                        symmetricKey.Mode = CipherMode.CBC;
+                        symmetricKey.Padding = PaddingMode.PKCS7;
+                        using (var encryptor = symmetricKey.CreateEncryptor(keyBytes, ivStringBytes))
                         {
-                            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                            using (var memoryStream = new MemoryStream())
                             {
-                                cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
-                                cryptoStream.FlushFinalBlock();
-                                // Create the final bytes as a concatenation of the random salt bytes, the random iv bytes and the cipher bytes.
-                                var cipherTextBytes = saltStringBytes;
-                                cipherTextBytes = cipherTextBytes.Concat(ivStringBytes).ToArray();
-                                cipherTextBytes = cipherTextBytes.Concat(memoryStream.ToArray()).ToArray();
-                                memoryStream.Dispose();
-                                cryptoStream.Dispose();
-                                return Convert.ToBase64String(cipherTextBytes);
+                                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                                {
+                                    cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
+                                    cryptoStream.FlushFinalBlock();
+                                    // Create the final bytes as a concatenation of the random salt bytes, the random iv bytes and the cipher bytes.
+                                    var cipherTextBytes = saltStringBytes;
+                                    cipherTextBytes = cipherTextBytes.Concat(ivStringBytes).ToArray();
+                                    cipherTextBytes = cipherTextBytes.Concat(memoryStream.ToArray()).ToArray();
+                                    memoryStream.Dispose();
+                                    cryptoStream.Dispose();
+                                    return new ReturnValue<string>(true, Convert.ToBase64String(cipherTextBytes));
+                                }
                             }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<string>(false, "Encryption failed due to: " + ex.Message, ex);
             }
         }
 
@@ -71,11 +78,11 @@ namespace dexih.functions
         /// <param name="cipherText">The encrypted value to decrypt.</param>
         /// <param name="passPhrase">The encryption key used to initially encrypt the string.</param>
         /// <returns></returns>
-        public static string Decrypt(string cipherText, string passPhrase)
+        public static ReturnValue<string> Decrypt(string cipherText, string passPhrase)
         {
             try
             {
-                if (string.IsNullOrEmpty(cipherText)) return "";
+                if (string.IsNullOrEmpty(cipherText)) return new ReturnValue<string>(true, "");
 
 
                 // Get the complete stream of bytes that represent:
@@ -106,7 +113,7 @@ namespace dexih.functions
                                     var decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
                                     memoryStream.Dispose();
                                     cryptoStream.Dispose();
-                                    return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount);
+                                    return new ReturnValue<string>(true, Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount));
                                 }
                             }
                         }
@@ -115,7 +122,7 @@ namespace dexih.functions
             }
             catch(Exception ex)
             {
-                return "";
+                return new ReturnValue<string>(false, "Encryption failed due to: " + ex.Message, ex);
             }
         }
 

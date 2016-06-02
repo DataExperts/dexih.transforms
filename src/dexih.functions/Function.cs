@@ -155,8 +155,8 @@ namespace dexih.functions
         public Function(Type targetType, string MethodName, string ResultMethodName, string ResetMethodName, string[] inputMappings, string targetColumn, string[] outputMappings) :
             this(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings)
         {
-            _resultMethod = targetType.GetMethod("ResultMethodName");
-            _resetMethod = targetType.GetMethod("ResetMethodName");
+            _resultMethod = targetType.GetMethod(ResultMethodName);
+            _resetMethod = targetType.GetMethod(ResetMethodName);
         }
 
         public Function(object Target, MethodInfo FunctionMethod, string[] inputMappings, string targetColumn, string[] outputMappings)
@@ -165,9 +165,12 @@ namespace dexih.functions
             _objectReference = Target;
 
             ReturnType = GetTypeCode(_functionMethod.ReturnType);
-            Inputs = new Parameter[inputMappings.Length];
-
             ParameterInfo[] inputParameters = _functionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
+
+            if (inputMappings == null)
+                inputMappings = new string[inputParameters.Length];
+
+            Inputs = new Parameter[inputMappings.Length];
 
             int parameterCount = 0;
             for (int i = 0; i < inputMappings.Length; i++)
@@ -182,8 +185,11 @@ namespace dexih.functions
                 Inputs[i].Name = inputParameters[parameterCount].Name;
 
                 Type parameterType = inputParameters[parameterCount].ParameterType;
-                Inputs[i].DataType = GetTypeCode(parameterType);
                 Inputs[i].IsArray = parameterType.IsArray;
+                if(parameterType.IsArray)
+                    Inputs[i].DataType = GetTypeCode(parameterType.GetElementType());
+                else
+                    Inputs[i].DataType = GetTypeCode(parameterType);
 
                 if (Inputs[i].DataType == ETypeCode.Unknown)
                 {
@@ -201,6 +207,9 @@ namespace dexih.functions
             {
                 Outputs = new Parameter[outputParameters.Length];
 
+                if (outputMappings == null)
+                    outputMappings = new string[outputParameters.Length];
+
                 for (int i = 0; i < outputMappings.Length; i++)
                 {
                     if (parameterCount > inputParameters.Length)
@@ -212,9 +221,13 @@ namespace dexih.functions
                     Outputs[i].ColumnName = outputMappings[i];
                     Outputs[i].Name = outputParameters[parameterCount].Name;
 
-                    Type parameterType = inputParameters[parameterCount].ParameterType;
-                    Inputs[i].DataType = GetTypeCode(parameterType);
-                    Inputs[i].IsArray = parameterType.IsArray;
+                    Type parameterType = outputParameters[parameterCount].ParameterType.GetElementType();
+                    Outputs[i].IsArray = parameterType.IsArray;
+                    if (parameterType.IsArray)
+                        Outputs[i].DataType = GetTypeCode(parameterType.GetElementType());
+                    else
+                        Outputs[i].DataType = GetTypeCode(parameterType);
+
                     if (Outputs[i].DataType == ETypeCode.Unknown)
                     {
                         throw new Exception("The datatype: " + outputParameters[i].GetType().ToString() + " for parameter " + outputParameters[i].Name + " is not a supported datatype.");

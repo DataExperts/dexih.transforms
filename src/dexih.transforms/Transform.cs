@@ -45,10 +45,16 @@ namespace dexih.transforms
         public string JoinValue { get; set; }
     }
 
+
+    /// <summary>
+    /// Transform is the abstract class which all other transforms and connection should implement
+    /// </summary>
     public abstract class Transform : DbDataReader
     {
         protected Transform()
         {
+            //intialize standard objects.
+
             ColumnPairs = new List<ColumnPair>();
             JoinPairs = new List<JoinPair>();
             Functions = new List<Function>();
@@ -58,6 +64,7 @@ namespace dexih.transforms
         }
 
         #region Properties
+
         public Transform Reader;
         protected object[] CurrentRow;
         protected Transform JoinReader { get; set; }
@@ -95,7 +102,7 @@ namespace dexih.transforms
         {
 
             //if the transform requires a sort and input data it not sorted, then add a sort transform in between.
-            if(RequiresSort)
+            if (RequiresSort)
             {
                 bool sortMatch = false;
                 if (inTransform.InputIsSorted)
@@ -103,15 +110,15 @@ namespace dexih.transforms
                     string requiredSortFields = String.Join(",", RequiredSortFields().Select(c => c.Column).ToArray());
                     string inputSortFields = string.Join(",", inTransform.SortFields.Select(c => c.Column).ToArray());
 
-                    if(requiredSortFields == inputSortFields.Substring(0, requiredSortFields.Length))
+                    if (requiredSortFields == inputSortFields.Substring(0, requiredSortFields.Length))
                     {
                         sortMatch = true;
                     }
                 }
 
-                if(!sortMatch)
+                if (!sortMatch)
                 {
-                    TransformSort sortTransform = new TransformSort(inTransform, RequiredJoinSortFields());
+                    TransformSort sortTransform = new TransformSort(inTransform, RequiredSortFields());
                     Reader = sortTransform;
                 }
                 else
@@ -144,6 +151,8 @@ namespace dexih.transforms
                     }
                 }
             }
+            else
+                Reader = inTransform;
 
             Initialize();
             ResetValues();
@@ -151,22 +160,22 @@ namespace dexih.transforms
         }
 
         /// <summary>
-        /// Indicates if the source connection can sort data.
+        /// Indicates if the source connection can run queries (such as sql)
         /// </summary>
         public abstract bool CanRunQueries { get; }
-
         public abstract bool ResetValues();
         public abstract bool Initialize();
         public abstract string Details();
+        protected abstract bool ReadRecord();
 
         #endregion
 
-        #region IDataRecord Implementation
+        #region DbDataRecord Implementation
 
-        protected abstract bool ReadRecord();
 
         public override bool Read()
         {
+            //starts  a timer that can be used to measure downstream transform and database performance.
             TransformTimer.Start();
             bool returnValue = ReadRecord();
             if (returnValue) RecordCount++;

@@ -145,7 +145,16 @@ namespace dexih.transforms
         }
 
         public override bool PrefersSort => true;
-        public override bool RequiresSort => true;
+        public override bool RequiresSort
+        {
+            get
+            {
+                if (GroupFields == null || GroupFields.Count == 0)
+                    return false;
+                else
+                    return true;
+            }
+        }
 
 
         public override string GetName(int i)

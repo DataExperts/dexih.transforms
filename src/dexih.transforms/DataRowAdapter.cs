@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Data;
 using System.Data.Common;
-using System.Globalization;
 
 namespace dexih.transforms
 {
@@ -128,11 +126,6 @@ namespace dexih.transforms
         public override bool IsDBNull(int i)
         {
             return _row[i] is DBNull;
-        }
-
-        public void Close()
-        {
-            return;
         }
 
         public override bool NextResult()

@@ -47,7 +47,14 @@ namespace dexih.functions
         {
             return new Function(typeof(StandardFunctions), FunctionName, FunctionName + "Result", "Reset", inputMappings, targetColumn, outputMappings);
         }
-    
+
+        public static Function GetFunctionReference(string FunctionName)
+        {
+            if (typeof(StandardFunctions) == null)
+                throw new Exception("The method " + FunctionName + " was not found in the standard functions");
+            return new Function(typeof(StandardFunctions), FunctionName, FunctionName + "Result", "Reset", null, null, null);
+        }
+
 
         #region Regular Functions
         public String Concat(String[] values) { return String.Concat(values); }
@@ -203,8 +210,8 @@ namespace dexih.functions
         public String DateToString(DateTime dateValue, String format) { return dateValue.ToString(format); }
         public DateTime DateNow() { return DateTime.Now; }
         public DateTime DateNowUtc() { return DateTime.UtcNow; }
-        public String Encrypt(String value, String key) { return EncryptString.Encrypt(value, key); }
-        public String Decrypt(String value, String key) { return EncryptString.Decrypt(value, key); }
+        public String Encrypt(String value, String key) { return EncryptString.Encrypt(value, key).Value; }
+        public String Decrypt(String value, String key) { return EncryptString.Decrypt(value, key).Value; }
         public String CreateSaltedHash(String value) { return PasswordHash.CreateHash(value); }
         public Boolean ValidateSaltedHash(String value, String hash) { return PasswordHash.ValidatePassword(value, hash); }
         public Double Abs(Double value) { return Math.Abs(value); }

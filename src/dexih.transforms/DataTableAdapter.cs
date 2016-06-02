@@ -11,7 +11,7 @@ using dexih.functions;
 namespace dexih.transforms
 {
     /// <summary>
-    /// Turns a datatable into a IDataReader.
+    /// Turns a datatable into a Transform Input.
     /// </summary>
     public class DataTableAdapter : Transform
     {

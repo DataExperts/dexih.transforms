@@ -7,7 +7,8 @@
     "dexih.functions": "0.1.0-*",
     "dexih.transforms": "0.1.0-*",
     "xunit": "2.2.0-beta1-build3239",
-    "dotnet-test-xunit": "1.0.0-rc2-build10025"
+    "dotnet-test-xunit": "1.0.0-rc2-build10025",
+    "System.Data.SqlClient": "4.1.0-rc2-24027"
   },
 
   "testRunner": "xunit",
