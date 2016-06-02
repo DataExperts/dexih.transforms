@@ -147,13 +147,15 @@ namespace dexih.transforms
                     }
                     else
                     {
-                        Reader = inTransform;
+                        JoinReader = joinTransform;
                     }
                 }
             }
             else
+            {
                 Reader = inTransform;
-
+                JoinReader = joinTransform;
+            }
             Initialize();
             ResetValues();
             return true;

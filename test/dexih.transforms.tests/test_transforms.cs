@@ -21,15 +21,15 @@ namespace dexih_unit_tests
                 "SortColumn"
                 });
 
-            Table.Data.Add(new object[] { "value1", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 });
-            Table.Data.Add(new object[] { "value2", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 });
-            Table.Data.Add(new object[] { "value3", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8 });
-            Table.Data.Add(new object[] { "value4", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7 });
-            Table.Data.Add(new object[] { "value5", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6 });
-            Table.Data.Add(new object[] { "value6", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5 });
-            Table.Data.Add(new object[] { "value7", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4 });
-            Table.Data.Add(new object[] { "value8", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3 });
-            Table.Data.Add(new object[] { "value9", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2 });
+            Table.Data.Add(new object[] { "value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 });
+            Table.Data.Add(new object[] { "value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 });
+            Table.Data.Add(new object[] { "value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8 });
+            Table.Data.Add(new object[] { "value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7 });
+            Table.Data.Add(new object[] { "value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6 });
+            Table.Data.Add(new object[] { "value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5 });
+            Table.Data.Add(new object[] { "value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4 });
+            Table.Data.Add(new object[] { "value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3 });
+            Table.Data.Add(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2 });
             Table.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1 });
 
             DataTableAdapter Adapter = new DataTableAdapter(Table);
@@ -45,15 +45,15 @@ namespace dexih_unit_tests
                 "LookupValue"
                 });
 
-            Table.Data.Add(new object[] { "value1", 1, "lookup1" });
-            Table.Data.Add(new object[] { "value2", 2, "lookup2" });
-            Table.Data.Add(new object[] { "value3", 3, "lookup3" });
-            Table.Data.Add(new object[] { "value4", 4, "lookup4" });
-            Table.Data.Add(new object[] { "value5", 5, "lookup5" });
-            Table.Data.Add(new object[] { "value6", 6, "lookup6" });
-            Table.Data.Add(new object[] { "value7", 7, "lookup7" });
-            Table.Data.Add(new object[] { "value8", 8, "lookup8" });
-            Table.Data.Add(new object[] { "value9", 9, "lookup9" });
+            Table.Data.Add(new object[] { "value01", 1, "lookup1" });
+            Table.Data.Add(new object[] { "value02", 2, "lookup2" });
+            Table.Data.Add(new object[] { "value03", 3, "lookup3" });
+            Table.Data.Add(new object[] { "value04", 4, "lookup4" });
+            Table.Data.Add(new object[] { "value05", 5, "lookup5" });
+            Table.Data.Add(new object[] { "value06", 6, "lookup6" });
+            Table.Data.Add(new object[] { "value07", 7, "lookup7" });
+            Table.Data.Add(new object[] { "value08", 8, "lookup8" });
+            Table.Data.Add(new object[] { "value09", 9, "lookup9" });
 
             DataTableAdapter Adapter = new DataTableAdapter(Table);
             Adapter.ResetValues();
@@ -158,7 +158,7 @@ namespace dexih_unit_tests
             Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
-                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value3") };
+                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value03") };
             Conditions.Add(Function);
             TransformFilter.SetConditions(Conditions);
             Table.ResetValues();
@@ -178,9 +178,9 @@ namespace dexih_unit_tests
             Function = StandardFunctions.GetFunctionReference("IsIn");
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("Value", ETypeCode.String, true, null, "StringColumn" ),
-                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value3", isArray: true) ,
-                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value5", isArray: true) ,
-                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value7", isArray: true) };
+                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value03", isArray: true) ,
+                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value05", isArray: true) ,
+                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value07", isArray: true) };
 
             Conditions.Add(Function);
             TransformFilter.SetConditions(Conditions);
@@ -243,10 +243,10 @@ namespace dexih_unit_tests
             Function average = StandardFunctions.GetFunctionReference("Average");
             average.Inputs = IntParam;
             average.TargetColumn = "Average";
-            Function min = StandardFunctions.GetFunctionReference("Minimum");
+            Function min = StandardFunctions.GetFunctionReference("Min");
             min.Inputs = IntParam;
             min.TargetColumn = "Minimum";
-            Function max = StandardFunctions.GetFunctionReference("Maximum");
+            Function max = StandardFunctions.GetFunctionReference("Max");
             max.Inputs = IntParam;
             max.TargetColumn = "Maximum";
             Function count = StandardFunctions.GetFunctionReference("Count");
@@ -292,13 +292,14 @@ namespace dexih_unit_tests
             TransformGroup.SetMappings(GroupColumns, Aggregates);
             Source.ResetValues();
             TransformGroup.SetInTransform(Source);
+
             counter = 0;
             while (TransformGroup.Read() == true)
             {
                 counter = counter + 1;
                 if (counter < 10)
                 {
-                    Assert.Equal("value" + counter.ToString(), TransformGroup["StringColumn"]);
+                    Assert.Equal("value0" + counter.ToString(), TransformGroup["StringColumn"]);
                     Assert.Equal((Double)counter, TransformGroup["Sum"]);
                     Assert.Equal((Double)counter, TransformGroup["Average"]);
                     Assert.Equal((Double)counter, TransformGroup["Minimum"]);

@@ -442,7 +442,7 @@ public class Program
                             MetadataReference.CreateFromFile(typeof(Hashtable).GetTypeInfo().Assembly.Location)
                         }; 
 
-                         var compilation = CSharpCompilation.Create("Function.dll",
+                         var compilation = CSharpCompilation.Create("Function" + Guid.NewGuid().ToString() + ".dll",
                             syntaxTrees: new[] { syntaxTree },
                             references: references,
                             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -503,7 +503,9 @@ public class Program
             try
             {
                 int inputsCount = Inputs?.Length ?? 0;
-                int outputsCount = Outputs?.Length ?? 0;
+                int outputsCount = 0;
+                if (_resultMethod == null)
+                    outputsCount = Outputs?.Length ?? 0;
 
                 object[] parameters = new object[inputsCount + outputsCount];
 

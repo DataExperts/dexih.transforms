@@ -102,7 +102,7 @@ namespace dexih.transforms
             {
                 for(int i = 0; i < x.Length; i++)
                 {
-                    if (object.Equals(x, y)) continue;
+                    if (object.Equals(x[i], y[i])) continue;
 
                     bool greater = false;
 

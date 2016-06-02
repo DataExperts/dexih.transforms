@@ -398,10 +398,13 @@ namespace dexih.transforms
                         CurrentRow[i] = result.Value;
                         i++;
 
-                        foreach (Parameter output in mapping.Outputs)
+                        if (mapping.Outputs != null)
                         {
-                            CurrentRow[i] = output.Value;
-                            i++;
+                            foreach (Parameter output in mapping.Outputs)
+                            {
+                                CurrentRow[i] = output.Value;
+                                i++;
+                            }
                         }
                         mapping.Reset();
                     }
