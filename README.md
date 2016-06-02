@@ -1,6 +1,8 @@
 # Data Experts Transformation Library.
 ### [Data Experts Group](http://dataexpertsgroup.com)
 
+[![Build status](https://ci.appveyor.com/api/github/webhook?id=q5n1npq7r5a4udle/branch/master?svg=true)](https://ci.appveyor.com/project/dataexperts/dexih.transforms/branch/master)
+
 This library provides unlimited capabilities for you to transform, analyze and process data.  
 
 The key features are:
