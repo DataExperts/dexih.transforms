@@ -226,16 +226,17 @@ namespace dexih.transforms
             return null;
         }
 
-        //mapping will maintain sort order for columns that are directly mapped
+        //mapping will maintain sort order.
         public override List<Sort> OutputSortFields()
         {
-            if (InputSortFields == null)
+            if (Reader.OutputSortFields() == null)
                 return null;
 
+            //pass through the previous sort order, however limit to fields which have been mapped.
             List<Sort> fields = new List<Sort>();
-            foreach (Sort t in InputSortFields)
+            foreach (Sort t in Reader.OutputSortFields())
             {
-                ColumnPair mapping = ColumnPairs.FirstOrDefault(c => c.SourceColumn == t.Column);
+                ColumnPair mapping = ColumnPairs?.FirstOrDefault(c => c.SourceColumn == t.Column);
                 if (mapping == null)
                 {
                     //if passthrough column is on, and non of the function mappings override the target field then it is included.
@@ -247,15 +248,10 @@ namespace dexih.transforms
                         break;
                 }
                 else
-                    fields.Add(new Sort { Column = mapping.TargetColumn, Direction = Sort.EDirection.Ascending });
+                    fields.Add(t);
             }
 
             return fields;
-        }
-
-        public override Task<ReturnValue> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
         }
 
 

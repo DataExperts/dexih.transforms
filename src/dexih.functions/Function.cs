@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.IO;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.Extensions.PlatformAbstractions;
 using static dexih.functions.DataType;
 using System.Collections;
 #if NET451

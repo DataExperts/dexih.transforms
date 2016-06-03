@@ -122,6 +122,38 @@ namespace dexih.transforms
 
     public class Filter
     {
+        public Filter() { }
+
+        /// <summary>
+        /// Sets a simple filter comparing a column against a static value.
+        /// </summary>
+        /// <param name="column1">Column name from incoming data</param>
+        /// <param name="operator1">Comparison Operator</param>
+        /// <param name="value2">Static value to compare to</param>
+        public Filter(string column1, ECompare operator1, object value2)
+        {
+            Column1 = column1;
+            Operator = operator1;
+            Value2 = value2;
+
+            CompareDataType = DataType.GetTypeCode(Value2.GetType());
+        }
+
+        /// <summary>
+        /// Sets a simple filter comparing two columns against each other.
+        /// </summary>
+        /// <param name="column1">Column name from incoming data</param>
+        /// <param name="operator1">Comparison Operator</param>
+        /// <param name="column2">Static value to compare to</param>
+        /// <param name="dataType">Data type of the column</param>
+        public Filter(string column1, ECompare operator1, string column2, ETypeCode dataType)
+        {
+            Column1 = column1;
+            Operator = operator1;
+            Column2 = column2;
+            CompareDataType = dataType;
+        }
+
         public enum ECompare
         {
             EqualTo,
@@ -155,6 +187,14 @@ namespace dexih.transforms
         {
             Ascending,
             Descending
+        }
+
+        public Sort() { }
+
+        public Sort(string column, EDirection Direction = EDirection.Ascending)
+        {
+            Column = column;
+            Direction = Direction;
         }
 
         public string Column { get; set; }

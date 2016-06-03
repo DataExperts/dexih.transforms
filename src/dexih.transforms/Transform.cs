@@ -7,69 +7,61 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Linq;
+using System.Globalization;
 
 namespace dexih.transforms
 {
-
-    public class ColumnPair
-    {
-        /// <summary>
-        /// Sets the source and target mappings to the same column name
-        /// </summary>
-        /// <param name="sourceTargetColumn">Column Name</param>
-        public ColumnPair(string sourceTargetColumn)
-        {
-            SourceColumn = sourceTargetColumn;
-            TargetColumn = sourceTargetColumn;
-        }
-
-        /// <summary>
-        /// Sets the source and column mapping.
-        /// </summary>
-        /// <param name="sourceColumn">Source Column Name</param>
-        /// <param name="targetColumn">Target Column Name</param>
-        public ColumnPair(string sourceColumn, string targetColumn)
-        {
-            SourceColumn = sourceColumn;
-            TargetColumn = targetColumn;
-        }
-
-        public string SourceColumn { get; set; }
-        public string TargetColumn { get; set; }
-    }
-
-    public class JoinPair
-    {
-        public string SourceColumn { get; set; }
-        public string JoinColumn { get; set; }
-        public string JoinValue { get; set; }
-    }
-
 
     /// <summary>
     /// Transform is the abstract class which all other transforms and connection should implement
     /// </summary>
     public abstract class Transform : DbDataReader
     {
+        #region Enums
+        public enum ECacheMethod
+        {
+            NoCache = 0,
+            OnDemandCache = 1,
+            PreLoadCache  =2
+        }
+        #endregion
+
         protected Transform()
         {
             //intialize standard objects.
-
             ColumnPairs = new List<ColumnPair>();
             JoinPairs = new List<JoinPair>();
             Functions = new List<Function>();
             SortFields = new List<Sort>();
-            TransformErrors = new List<string>();
             TransformTimer = new Stopwatch();
         }
 
         #region Properties
 
+        /// <summary>
+        /// The main inbound source of data.
+        /// </summary>
         public Transform Reader;
-        protected object[] CurrentRow;
-        protected Transform JoinReader { get; set; }
 
-        public List<string> TransformErrors { get; set; }
+        /// <summary>
+        /// The secondary souce of data, if supported by the transform.
+        /// </summary>
+        public Transform JoinReader { get; set; }
+
+        protected object[] CurrentRow;
+        protected int CurrentRowNumber;
+
+
+        /// <summary>
+        /// The method to cache data within the transform.  If NoCache is set, the data can only be read in a forward only method (Lookup and other functions are not available).
+        /// </summary>
+        public virtual ECacheMethod CacheMethod { get; set; } //indicates the data will be stored in memory.  This allows lookup and other operations to work
+
+        /// <summary>
+        /// The maximum rows to cache.  When the maximum rows is exceeded, previous rows will be dropped on a first-in first-out basis.
+        /// </summary>
+        public virtual Int64 MaxCacheRows { get; set; }
+        protected Table CachedData { get; set; }
 
         //Generic transform contains properties for a list of Functions, Fields and simple Mappings 
         public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
@@ -84,13 +76,18 @@ namespace dexih.transforms
 
         public abstract bool PrefersSort { get; } //indicates the transform will run better with sorted input
         public abstract bool RequiresSort { get; } //indicates the transform must have sorted input
+        protected bool SortedInputs { get; set; } //this is set if the transforms sort requirements have been met.
 
-        public bool InputIsSorted { get; set; } //indicates if the transform can confirm sorted input.
+        //public bool InputIsSorted { get; set; } //indicates if the transform can confirm sorted input.
+        //public List<Sort> InputSortFields { get; set; }
 
-        public List<Sort> InputSortFields { get; set; }
+        /// <summary>
+        /// Indicates if the transforms output is sorted.
+        /// </summary>
+        /// <returns></returns>
         public abstract List<Sort> OutputSortFields();
 
-        public List<Sort> SortFields { get; set; } //indicates field for the sort transform.
+        public List<Sort> SortFields { get; set; } //indicates fields for the sort transform.
 
         //diagnostics to record the processing time for the transformation.
         public Stopwatch TransformTimer { get; set; }
@@ -101,20 +98,10 @@ namespace dexih.transforms
         public virtual bool SetInTransform(Transform inTransform, Transform joinTransform = null)
         {
 
-            //if the transform requires a sort and input data it not sorted, then add a sort transform in between.
+            //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
             {
-                bool sortMatch = false;
-                if (inTransform.InputIsSorted)
-                {
-                    string requiredSortFields = String.Join(",", RequiredSortFields().Select(c => c.Column).ToArray());
-                    string inputSortFields = string.Join(",", inTransform.SortFields.Select(c => c.Column).ToArray());
-
-                    if (requiredSortFields == inputSortFields.Substring(0, requiredSortFields.Length))
-                    {
-                        sortMatch = true;
-                    }
-                }
+                bool sortMatch = SortFieldsMatch(RequiredSortFields(), inTransform.OutputSortFields());
 
                 if (!sortMatch)
                 {
@@ -128,17 +115,7 @@ namespace dexih.transforms
 
                 if (joinTransform != null)
                 {
-                    sortMatch = false;
-                    if (joinTransform.InputIsSorted)
-                    {
-                        string requiredSortFields = String.Join(",", RequiredSortFields().Select(c => c.Column).ToArray());
-                        string joinSortFields = string.Join(",", joinTransform.SortFields.Select(c => c.Column).ToArray());
-
-                        if (requiredSortFields == joinSortFields.Substring(0, requiredSortFields.Length))
-                        {
-                            sortMatch = true;
-                        }
-                    }
+                    sortMatch = SortFieldsMatch(RequiredSortFields(), joinTransform.OutputSortFields());
 
                     if (!sortMatch)
                     {
@@ -150,9 +127,20 @@ namespace dexih.transforms
                         JoinReader = joinTransform;
                     }
                 }
+
+                SortedInputs = true;
             }
             else
             {
+                bool sortMatch = SortFieldsMatch(RequiredSortFields(), inTransform.OutputSortFields());
+
+                if (JoinReader != null)
+                {
+                    sortMatch &= SortFieldsMatch(RequiredSortFields(), joinTransform.OutputSortFields());
+                }
+
+                SortedInputs = sortMatch;
+
                 Reader = inTransform;
                 JoinReader = joinTransform;
             }
@@ -170,6 +158,51 @@ namespace dexih.transforms
         public abstract string Details();
         protected abstract bool ReadRecord();
 
+        public virtual async Task<ReturnValue<object[]>> LookupRow(List<Filter> filters)
+        {
+            if(CacheMethod == ECacheMethod.PreLoadCache)
+            {
+                return CachedData.LookupRow(filters);
+            }
+            else if(CacheMethod == ECacheMethod.OnDemandCache)
+            {
+                //read records until a match is found.
+                while(Read())
+                {
+                    var lookupResult = CachedData.LookupRow(filters, RecordCount);
+                    if(lookupResult.Success == true)
+                        return lookupResult;
+                }
+
+                return new ReturnValue<object[]>(false, "Lookup not found.", null);
+            }
+
+            return new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null);
+        }
+
+        /// <summary>
+        /// This function will confirm that the ActualSort is equivalent to the RequiredSort.
+        /// </summary>
+        /// <param name="PrimarySort"></param>
+        /// <param name="CompareSort"></param>
+        /// <returns></returns>
+        public bool SortFieldsMatch(List<Sort> RequiredSort, List<Sort> ActualSort)
+        {
+            if (RequiredSort == null && ActualSort == null)
+                return true;
+
+            if (RequiredSort == null || ActualSort == null)
+                return false;
+
+            string requiredSortFields = String.Join(",", RequiredSort.Select(c => c.Column).ToArray());
+            string actualSortFields = string.Join(",", ActualSort.Select(c => c.Column).ToArray());
+
+            //compare the fields.  if actualsortfields are more, that is ok, as the primary sort condition is still met.
+            if (actualSortFields.Length >= requiredSortFields.Length && requiredSortFields == actualSortFields.Substring(0, requiredSortFields.Length))
+                return true;
+            else
+                return false;
+        }
         #endregion
 
         #region DbDataRecord Implementation
@@ -179,7 +212,7 @@ namespace dexih.transforms
         {
             //starts  a timer that can be used to measure downstream transform and database performance.
             TransformTimer.Start();
-            bool returnValue = ReadRecord();
+            bool returnValue = ReadRecord(); 
             if (returnValue) RecordCount++;
             TransformTimer.Stop();
             return returnValue;
@@ -198,7 +231,6 @@ namespace dexih.transforms
             Reader.JoinReader?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
         }
 
-        public abstract Task<ReturnValue> LookupRow(List<Filter> filters);
 
         public abstract override int FieldCount { get; }
         //public abstract override DataTable GetSchemaTable();
@@ -297,7 +329,6 @@ namespace dexih.transforms
         }
         public override object GetValue(int i)
         {
-
             return CurrentRow[i];
         }
         public override int GetValues(object[] values)
@@ -332,6 +363,80 @@ namespace dexih.transforms
 
         public override bool HasRows => Reader.HasRows;
 
+#if NET451
+        public override DataTable GetSchemaTable()
+        {
+            DataTable schema = new DataTable("SchemaTable")
+            {
+                Locale = CultureInfo.InvariantCulture,
+                MinimumCapacity = FieldCount
+            };
+
+            schema.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.BaseColumnName, typeof(string)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(string)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.BaseTableName, typeof(string)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.ColumnName, typeof(string)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.ColumnOrdinal, typeof(int)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.ColumnSize, typeof(int)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.DataType, typeof(object)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.IsAliased, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.IsExpression, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.IsKey, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.IsLong, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.IsUnique, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.NumericPrecision, typeof(short)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.NumericScale, typeof(short)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableColumn.ProviderType, typeof(int)).ReadOnly = true;
+
+            schema.Columns.Add(SchemaTableOptionalColumn.BaseCatalogName, typeof(string)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableOptionalColumn.BaseServerName, typeof(string)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableOptionalColumn.IsAutoIncrement, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableOptionalColumn.IsHidden, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(bool)).ReadOnly = true;
+            schema.Columns.Add(SchemaTableOptionalColumn.IsRowVersion, typeof(bool)).ReadOnly = true;
+
+            // null marks columns that will change for each row
+            object[] schemaRow = {
+                    true,					// 00- AllowDBNull
+					null,					// 01- BaseColumnName
+					string.Empty,			// 02- BaseSchemaName
+					string.Empty,			// 03- BaseTableName
+					null,					// 04- ColumnName
+					null,					// 05- ColumnOrdinal
+					int.MaxValue,			// 06- ColumnSize
+					typeof(string),			// 07- DataType
+					false,					// 08- IsAliased
+					false,					// 09- IsExpression
+					false,					// 10- IsKey
+					false,					// 11- IsLong
+					false,					// 12- IsUnique
+					DBNull.Value,			// 13- NumericPrecision
+					DBNull.Value,			// 14- NumericScale
+					(int) DbType.String,	// 15- ProviderType
+
+					string.Empty,			// 16- BaseCatalogName
+					string.Empty,			// 17- BaseServerName
+					false,					// 18- IsAutoIncrement
+					false,					// 19- IsHidden
+					true,					// 20- IsReadOnly
+					false					// 21- IsRowVersion
+			  };
+
+            int pos = 0;
+            for (int i = 0; i < FieldCount; i++)
+            {
+                schemaRow[1] = GetName(i); // Base column name
+                schemaRow[4] = GetName(i); // Column name
+                schemaRow[5] = pos; // Column ordinal
+                schemaRow[7] = CurrentRow == null ? typeof(string) : GetValue(i).GetType();
+                schema.Rows.Add(schemaRow);
+                pos++;
+            }
+
+            return schema;
+        }
+#endif
         #endregion
 
     }

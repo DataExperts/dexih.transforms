@@ -8,7 +8,7 @@ using dexih.functions;
 
 namespace dexih.transforms
 {
-    public class TransformRowCreator : Transform
+    public class SourceRowCreator : Transform
     {
         private int _currentRow;
 
@@ -83,14 +83,11 @@ namespace dexih.transforms
             return null;
         }
 
+        //Always sorted by the RowNumber field.
         public override List<Sort> OutputSortFields()
         {
-            throw new NotImplementedException();
+            return new List<Sort>() { new Sort("RowNumber") };
         }
 
-        public override Task<ReturnValue> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

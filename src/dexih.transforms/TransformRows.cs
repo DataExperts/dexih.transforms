@@ -153,117 +153,6 @@ namespace dexih.transforms
             return -1;
         }
 
-     //   public override DataTable GetSchemaTable()
-     //   {
-     //       DataTable schema = new DataTable("SchemaTable")
-     //       {
-     //           Locale = CultureInfo.InvariantCulture,
-     //           MinimumCapacity = _fieldCount
-     //       };
-
-     //       schema.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseColumnName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseTableName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnOrdinal, typeof(int)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnSize, typeof(int)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.DataType, typeof(object)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsAliased, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsExpression, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsKey, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsLong, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsUnique, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.NumericPrecision, typeof(short)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.NumericScale, typeof(short)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ProviderType, typeof(int)).ReadOnly = true;
-
-     //       schema.Columns.Add(SchemaTableOptionalColumn.BaseCatalogName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.BaseServerName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsAutoIncrement, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsHidden, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsRowVersion, typeof(bool)).ReadOnly = true;
-
-     //       // null marks columns that will change for each row
-     //       object[] schemaRow = {
-     //               true,					// 00- AllowDBNull
-					//null,					// 01- BaseColumnName
-					//string.Empty,			// 02- BaseSchemaName
-					//string.Empty,			// 03- BaseTableName
-					//null,					// 04- ColumnName
-					//null,					// 05- ColumnOrdinal
-					//int.MaxValue,			// 06- ColumnSize
-					//typeof(string),			// 07- DataType
-					//false,					// 08- IsAliased
-					//false,					// 09- IsExpression
-					//false,					// 10- IsKey
-					//false,					// 11- IsLong
-					//false,					// 12- IsUnique
-					//DBNull.Value,			// 13- NumericPrecision
-					//DBNull.Value,			// 14- NumericScale
-					//(int) DbType.String,	// 15- ProviderType
-
-					//string.Empty,			// 16- BaseCatalogName
-					//string.Empty,			// 17- BaseServerName
-					//false,					// 18- IsAutoIncrement
-					//false,					// 19- IsHidden
-					//true,					// 20- IsReadOnly
-					//false					// 21- IsRowVersion
-			  //};
-
-     //       DataTable schemaTable = Reader.GetSchemaTable();
-     //       if(schemaTable == null)
-     //           return null;
-
-     //       int i = 0;
-
-     //       foreach (ColumnPair groupField in GroupFields)
-     //       {
-     //           DataRow row = schemaTable.Select("ColumnName='" + groupField.SourceColumn + "'")[0];
-     //           schemaRow[1] = groupField.TargetColumn; // Base column name
-     //           schemaRow[4] = groupField.TargetColumn; // Column name
-     //           schemaRow[5] = i; // Column ordinal
-     //           schemaRow[7] = row["DataType"];
-     //           schema.Rows.Add(schemaRow);
-     //           i++;
-     //       }
-     //       foreach (Function rowFunction in RowFunctions)
-     //       {
-     //           foreach (Parameter param in rowFunction.Outputs)
-     //           {
-     //               schemaRow[1] = param.ColumnName; // Base column name
-     //               schemaRow[4] = param.ColumnName; // Column name
-     //               schemaRow[5] = i; // Column ordinal
-     //               schemaRow[7] = Type.GetType("System." + param.DataType);
-
-     //               schema.Rows.Add(schemaRow);
-     //               i++;
-     //           }
-     //       }
-
-     //       if (PassThroughColumns)
-     //       {
-     //           for (int j = 0; j < Reader.FieldCount; j++)
-     //           {
-     //               string columnName = Reader.GetName(j);
-     //               if (_fieldOrdinals.ContainsKey(columnName) == false)
-     //               {
-     //                   DataRow row = schemaTable.Select("ColumnName='" + columnName + "'")[0];
-     //                   schemaRow[1] = columnName; // Base column name
-     //                   schemaRow[4] = columnName; // Column name
-     //                   schemaRow[5] = i; // Column ordinal
-     //                   schemaRow[7] = row["DataType"];
-     //                   schema.Rows.Add(schemaRow);
-     //                   i++;
-     //               }
-     //           }
-     //       }
-
-
-     //       return schema;
-     //   }
-
         public override bool ResetValues()
         {
             foreach (Function rowFunction in RowFunctions)
@@ -389,15 +278,11 @@ namespace dexih.transforms
             return null;
         }
 
-        //group will return sorted by the group fields.
+        //will return sorted by the grouped fields.
         public override List<Sort> OutputSortFields()
         {
             return GroupFields.Select(c => new Sort { Column = c.TargetColumn, Direction = Sort.EDirection.Ascending }).ToList();
         }
 
-        public override Task<ReturnValue> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

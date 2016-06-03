@@ -458,7 +458,10 @@ namespace dexih.transforms
 
         public override List<Sort> RequiredSortFields()
         {
-            return GroupFields.Select(c=> new Sort { Column = c.SourceColumn, Direction = Sort.EDirection.Ascending }).ToList();
+            if (GroupFields == null)
+                return null;
+            else
+                return GroupFields.Select(c=> new Sort { Column = c.SourceColumn, Direction = Sort.EDirection.Ascending }).ToList();
         }
 
         public override List<Sort> RequiredJoinSortFields()
@@ -466,15 +469,11 @@ namespace dexih.transforms
             return null;
         }
 
-        //group will return sorted by the group fields.
+        //group will return a dataset sorted by the group fields.
         public override List<Sort> OutputSortFields()
         {
             return GroupFields.Select(c=> new Sort { Column = c.TargetColumn, Direction = Sort.EDirection.Ascending }).ToList();
         }
 
-        public override Task<ReturnValue> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

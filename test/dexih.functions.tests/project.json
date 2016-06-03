@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0",
   "description": "dexih_unit_tests Class Library",
   "authors": [ "Gary" ],
 
@@ -7,7 +7,7 @@
     "dexih.functions": "0.1.0-*",
     "dexih.transforms": "0.1.0-*",
     "xunit": "2.1.0",
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "1.0.0-rc2-*",
     "System.Data.SqlClient": "4.1.0-rc2-24027"
   },
 

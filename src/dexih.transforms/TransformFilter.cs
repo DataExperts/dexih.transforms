@@ -67,11 +67,6 @@ namespace dexih.transforms
             return Reader.GetOrdinal(columnName);
         }
 
-        //public override DataTable GetSchemaTable()
-        //{
-        //    return Reader.GetSchemaTable();
-        //}
-
         protected override bool ReadRecord()
         {
             if (Reader.Read() == false)
@@ -141,14 +136,8 @@ namespace dexih.transforms
         //join will preserve the sort of the input table.
         public override List<Sort> OutputSortFields()
         {
-            return InputSortFields;
+            return Reader.OutputSortFields();
         }
-
-        public override Task<ReturnValue> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
-        }
-
 
     }
 }

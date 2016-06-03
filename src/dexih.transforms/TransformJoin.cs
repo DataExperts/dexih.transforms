@@ -92,111 +92,6 @@ namespace dexih.transforms
             return -1;
         }
 
-
-     //   public override DataTable GetSchemaTable()
-     //   {
-     //       DataTable schema = new DataTable("SchemaTable")
-     //       {
-     //           Locale = CultureInfo.InvariantCulture,
-     //           MinimumCapacity = _fieldCount
-     //       };
-
-     //       schema.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseColumnName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseTableName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnOrdinal, typeof(int)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnSize, typeof(int)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.DataType, typeof(object)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsAliased, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsExpression, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsKey, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsLong, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsUnique, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.NumericPrecision, typeof(short)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.NumericScale, typeof(short)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ProviderType, typeof(int)).ReadOnly = true;
-
-     //       schema.Columns.Add(SchemaTableOptionalColumn.BaseCatalogName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.BaseServerName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsAutoIncrement, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsHidden, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsRowVersion, typeof(bool)).ReadOnly = true;
-
-     //       // null marks columns that will change for each row
-     //       object[] schemaRow = {
-     //               true,					// 00- AllowDBNull
-					//null,					// 01- BaseColumnName
-					//string.Empty,			// 02- BaseSchemaName
-					//string.Empty,			// 03- BaseTableName
-					//null,					// 04- ColumnName
-					//null,					// 05- ColumnOrdinal
-					//int.MaxValue,			// 06- ColumnSize
-					//typeof(string),			// 07- DataType
-					//false,					// 08- IsAliased
-					//false,					// 09- IsExpression
-					//false,					// 10- IsKey
-					//false,					// 11- IsLong
-					//false,					// 12- IsUnique
-					//DBNull.Value,			// 13- NumericPrecision
-					//DBNull.Value,			// 14- NumericScale
-					//(int) DbType.String,	// 15- ProviderType
-
-					//string.Empty,			// 16- BaseCatalogName
-					//string.Empty,			// 17- BaseServerName
-					//false,					// 18- IsAutoIncrement
-					//false,					// 19- IsHidden
-					//true,					// 20- IsReadOnly
-					//false					// 21- IsRowVersion
-			  //};
-
-     //       DataTable schemaTable = Reader.GetSchemaTable();
-     //       if (schemaTable == null)
-     //           return null;
-
-     //       Dictionary<string, int> newFieldOrdinals = new Dictionary<string, int>();
-
-     //       int pos = 0;
-     //       for (int i = 0; i < Reader.FieldCount; i++)
-     //       {
-     //           DataRow row = schemaTable.Select("ColumnName='" + Reader.GetName(i) + "'")[0];
-     //           schemaRow[1] = Reader.GetName(i); // Base column name
-     //           schemaRow[4] = Reader.GetName(i); // Column name
-     //           schemaRow[5] = pos; // Column ordinal
-     //           schemaRow[7] = row["DataType"];
-     //           schema.Rows.Add(schemaRow);
-     //           newFieldOrdinals.Add(Reader.GetName(i), pos);
-     //           pos++;
-     //       }
-
-     //       DataTable joinSchemaTable = JoinReader.GetSchemaTable();
-
-     //       for (int i = 0; i < JoinReader.FieldCount; i++)
-     //       {
-     //           string columnName = JoinReader.GetName(i);
-     //           DataRow row = joinSchemaTable.Select("ColumnName='" + columnName + "'")[0];
-
-     //           if (newFieldOrdinals.ContainsKey(columnName))
-     //           {
-     //               int append = 1;
-     //               while (newFieldOrdinals.ContainsKey(columnName + append)) //where columns are same in source/target add a "1" to the target.
-     //                   append++;
-     //               columnName = columnName + append;
-     //           }
-     //           schemaRow[1] = columnName; // Base column name
-     //           schemaRow[4] = columnName; // Column name
-     //           schemaRow[5] = pos; // Column ordinal
-     //           schemaRow[7] = row["DataType"];
-     //           schema.Rows.Add(schemaRow);
-     //           newFieldOrdinals.Add(columnName, pos);
-     //           pos++;
-     //       }
-
-     //       return schema;
-     //   }
-
         protected override bool ReadRecord()
         {
             if (Reader.Read() == false)
@@ -205,7 +100,7 @@ namespace dexih.transforms
                 return false;
             }
             //if input is sorted, then run a sortedjoin
-            if (InputIsSorted)
+            if (Reader.OutputSortFields() != null && JoinReader.OutputSortFields() != null)
             {
                 //first read get a row from the join table.
                 if (_firstRead)
@@ -394,12 +289,11 @@ namespace dexih.transforms
         //join will preserve the sort of the input table.
         public override List<Sort> OutputSortFields()
         {
-            return InputSortFields;
+            return Reader.OutputSortFields();
         }
 
-        public override Task<ReturnValue> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
-        }
+
     }
+
+
 }

@@ -8,18 +8,18 @@ using System.Data.Common;
 namespace dexih.transforms
 {
     /// <summary>
-    /// TransformSource is a starting point in a chain of transforms.  This requires a DbDataReader to be inintialized and passed to it.
+    /// TransformSource is a starting point in a chain of transforms and accepts any standard DbDataReader as an input.
     /// </summary>
-    public class TransformSource : Transform
+    public class SourceDbReader : Transform
     {
-        public TransformSource() { }
+        public SourceDbReader() { }
 
         /// <summary>
         /// Initialises a transform source.  
         /// </summary>
         /// <param name="inReader">An initialized DbDataReader.</param>
-        /// <param name="sortFields">A list of already sorted fields in the inReader.</param>
-        public TransformSource(DbDataReader inReader, List<Sort> sortFields = null)
+        /// <param name="sortFields">A list of already sorted fields in the inReader.  If the fields are not sorted in the source data and sortfields are set, transforms such as group, row, join will fail or return incorrect results.</param>
+        public SourceDbReader(DbDataReader inReader, List<Sort> sortFields = null)
         {
             InReader = InReader;
             SortFields = sortFields;
@@ -68,14 +68,13 @@ namespace dexih.transforms
             return true;
         }
 
-        public override Task<ReturnValue> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <summary>
+        /// The TransformSource transform returns an indicator that fields are sorted if they are set in the sortfields property.
+        /// </summary>
+        /// <returns></returns>
         public override List<Sort> OutputSortFields()
         {
-            throw new NotImplementedException();
+            return SortFields;
         }
 
         public override List<Sort> RequiredJoinSortFields()

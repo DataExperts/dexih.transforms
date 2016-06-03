@@ -1,38 +1,43 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
-using dexih.functions;
 
 namespace dexih.transforms
 {
     /// <summary>
-    /// Turns a datatable into a Transform Input.
+    /// A source transform that uses a prepopulated Table as an input.
     /// </summary>
-    public class DataTableAdapter : Transform
+    public class SourceTable : Transform
     {
-        public DataTableSimple DataTable {get;set;}
-        
         int position;
         object[] currentRecord;
         int recordCount;
-       
+
+        public override ECacheMethod CacheMethod
+        {
+            get
+            {
+                return ECacheMethod.PreLoadCache;
+            }
+            set
+            {
+                throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
+            }
+        } 
 
         #region Constructors
-        public DataTableAdapter(DataTableSimple dataTable)
+        public SourceTable(Table dataTable,  List<Sort> sortFields = null)
         {
-            DataTable  = dataTable;
-            Fields = DataTable.Columns.Select(c => c.ColumnName).ToArray();
+            CachedData = dataTable;
+            Fields = CachedData.Columns.Select(c => c.ColumnName).ToArray();
+            SortFields = sortFields;
             ResetValues();
         }
 
         public void Add(object[] values)
         {
-            DataTable.Data.Add(values);
+            CachedData.Data.Add(values);
         }
 
         #endregion
@@ -42,7 +47,7 @@ namespace dexih.transforms
 
         public override object this[int i] => currentRecord[i];
 
-        public override int FieldCount => DataTable.Columns.Count;
+        public override int FieldCount => CachedData.Columns.Count;
 
         public override int Depth
         {
@@ -156,11 +161,11 @@ namespace dexih.transforms
         }
         public override string GetName(int i)
         {
-            return DataTable.Columns[i].ColumnName;
+            return CachedData.Columns[i].ColumnName;
         }
         public override int GetOrdinal(string columnName)
         {
-            return DataTable.Columns.GetOrdinal(columnName);
+            return CachedData.GetOrdinal(columnName);
         }
         public override string GetString(int i)
         {
@@ -173,95 +178,19 @@ namespace dexih.transforms
         public override int GetValues(object[] values)
         {
             currentRecord.CopyTo(values, 0);
-            return DataTable.Columns.Count();
+            return CachedData.Columns.Count();
         }
         public override bool IsDBNull(int i)
         {
             return currentRecord[i] is DBNull;
         }
 
-        //public override void Close()
-        //{
-        //}
-
-     //   public override DataTable GetSchemaTable()
-     //   {
-     //       DataTable schema = new DataTable("SchemaTable")
-     //       {
-     //           Locale = CultureInfo.InvariantCulture,
-     //           MinimumCapacity = Table.Columns.Count
-     //       };
-
-     //       schema.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseColumnName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.BaseTableName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnOrdinal, typeof(int)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ColumnSize, typeof(int)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.DataType, typeof(object)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsAliased, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsExpression, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsKey, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsLong, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.IsUnique, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.NumericPrecision, typeof(short)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.NumericScale, typeof(short)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableColumn.ProviderType, typeof(int)).ReadOnly = true;
-
-     //       schema.Columns.Add(SchemaTableOptionalColumn.BaseCatalogName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.BaseServerName, typeof(string)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsAutoIncrement, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsHidden, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(bool)).ReadOnly = true;
-     //       schema.Columns.Add(SchemaTableOptionalColumn.IsRowVersion, typeof(bool)).ReadOnly = true;
-
-     //       // null marks columns that will change for each row
-     //       object[] schemaRow = {
-     //               true,					// 00- AllowDBNull
-					//null,					// 01- BaseColumnName
-					//string.Empty,			// 02- BaseSchemaName
-					//string.Empty,			// 03- BaseTableName
-					//null,					// 04- ColumnName
-					//null,					// 05- ColumnOrdinal
-					//int.MaxValue,			// 06- ColumnSize
-					//typeof(string),			// 07- DataType
-					//false,					// 08- IsAliased
-					//false,					// 09- IsExpression
-					//false,					// 10- IsKey
-					//false,					// 11- IsLong
-					//false,					// 12- IsUnique
-					//DBNull.Value,			// 13- NumericPrecision
-					//DBNull.Value,			// 14- NumericScale
-					//(int) DbType.String,	// 15- ProviderType
-
-					//string.Empty,			// 16- BaseCatalogName
-					//string.Empty,			// 17- BaseServerName
-					//false,					// 18- IsAutoIncrement
-					//false,					// 19- IsHidden
-					//true,					// 20- IsReadOnly
-					//false					// 21- IsRowVersion
-			  //};
-
-     //       for (int i = 0; i < Table.Columns.Count; i++)
-     //       {
-     //           schemaRow[1] = Table.Columns[i].ColumnName; // Base column name
-     //           schemaRow[4] = Table.Columns[i].ColumnName; // Column name
-     //           schemaRow[5] = i; // Column ordinal
-     //           schemaRow[7] = Table.Columns[i].DataType;
-
-     //           schema.Rows.Add(schemaRow);
-     //       }
-
-     //       return schema;
-     //   }
-
         public override bool NextResult()
         {
             position++;
             if (position < recordCount)
             {
-                currentRecord = DataTable.Data[position];
+                currentRecord = CachedData.Data[position];
                 return true;
             }
             else
@@ -271,7 +200,7 @@ namespace dexih.transforms
         public override bool ResetValues()
         {
             //_iterator = DataTable.Data.GetEnumerator();
-            recordCount = DataTable.Data.Count();
+            recordCount = CachedData.Data.Count();
             position = -1;
             return true;
         }
@@ -298,7 +227,7 @@ namespace dexih.transforms
 
         public override List<Sort> OutputSortFields()
         {
-            throw new NotImplementedException();
+            return SortFields;
         }
 
 
@@ -318,10 +247,6 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
-        }
 
         #endregion
     }
