@@ -1,7 +1,13 @@
 # Data Experts Transformation Library.
 ### [Data Experts Group](http://dataexpertsgroup.com)
 
+## Status
+
 ![Build Status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)
+
+**Note: This library is still under active development and is regularly breaking.  We will be finalizing and publishing a schedule shortly**
+
+## What is this?
 
 This library provides unlimited capabilities for you to transform, analyze and process data.  
 
@@ -19,7 +25,7 @@ This powerful library can be used as a foundation for applications such as:
 * Batch processing, Data Integration or Extract Transform Load (ETL) processing.
 * Real-time analysis and alerting.
 
-## How does it work
+## How does it work?
 
 The transformation process works by chaining `transform` objects together and then reading the end of the chain as a `DbDataReader` object.  
 
