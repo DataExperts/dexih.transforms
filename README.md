@@ -3,7 +3,7 @@
 
 ## Status
 
-![Build Status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)
+[![Build Status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)](https://ci.appveyor.com/project/dataexperts/dexih-transforms)
 
 **Note: This library is still under active development and is regularly breaking.  We will be finalizing and publishing a schedule shortly**
 
