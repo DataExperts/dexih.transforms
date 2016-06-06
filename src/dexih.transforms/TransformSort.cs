@@ -87,9 +87,11 @@ namespace dexih.transforms
             return success;
         }
 
-        public override bool ResetValues()
+        public override ReturnValue ResetTransform()
         {
-            return true;
+            if (_sortedDictionary != null)
+                _sortedDictionary = null;
+            return new ReturnValue(true);
         }
 
         public override string Details()

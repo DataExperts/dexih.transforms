@@ -75,7 +75,8 @@ namespace dexih.transforms.tests
 
             List<ColumnPair> GroupColumns = new List<ColumnPair>() { new ColumnPair("StringColumn", "StringColumn") };
             TransformGroup.SetMappings(GroupColumns, Aggregates);
-            Source.ResetValues();
+            TransformGroup.Reset();
+            Source.Reset();
             TransformGroup.SetInTransform(Source);
 
             counter = 0;
@@ -113,7 +114,7 @@ namespace dexih.transforms.tests
 
             //add a row to test highest since.
             Source.Add(new object[] { "value11", 5, 10.1, "2015/01/11", 1 });
-            Source.ResetValues();
+            Source.Reset();
 
             List<Function> Aggregates = new List<Function>();
 

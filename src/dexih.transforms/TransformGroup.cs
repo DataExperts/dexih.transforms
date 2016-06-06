@@ -143,13 +143,13 @@ namespace dexih.transforms
         }
 
 
-        public override bool ResetValues()
+        public override ReturnValue ResetTransform()
         {
             foreach (Function aggregate in Aggregates)
                 aggregate.Reset();
             _firstRecord = true;
             _lastRecord = true;
-            return true;
+            return new ReturnValue(true);
         }
 
         protected override bool ReadRecord()

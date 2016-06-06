@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dexih.functions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace dexih.transforms
         {
             CachedTable = dataTable;
             CachedTable.OutputSortFields = sortFields;
-            ResetValues();
+            Reset();
         }
 
         public void Add(object[] values)
@@ -54,12 +55,12 @@ namespace dexih.transforms
             return "Source Table " + CachedTable.TableName;
         }
 
-        public override bool ResetValues()
+        public override ReturnValue ResetTransform()
         {
             //_iterator = DataTable.Data.GetEnumerator();
             recordCount = CachedTable.Data.Count();
             position = -1;
-            return true;
+            return new ReturnValue(true);
         }
 
         public override bool Read()

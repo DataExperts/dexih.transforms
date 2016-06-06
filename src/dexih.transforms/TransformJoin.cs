@@ -242,9 +242,9 @@ namespace dexih.transforms
             }
         }
 
-        public override bool ResetValues()
+        public override ReturnValue ResetTransform()
         {
-            return true; 
+            return new ReturnValue(true); 
         }
 
         public override string Details()

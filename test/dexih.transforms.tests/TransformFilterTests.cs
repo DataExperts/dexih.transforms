@@ -44,9 +44,9 @@ namespace dexih.transforms.tests
                     new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
                     new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value03") };
             Conditions.Add(Function);
+
             TransformFilter.SetConditions(Conditions);
-            Table.ResetValues();
-            TransformFilter.SetInTransform(Table);
+            TransformFilter.Reset();
 
             count = 0;
             while (TransformFilter.Read() == true)
@@ -68,7 +68,7 @@ namespace dexih.transforms.tests
 
             Conditions.Add(Function);
             TransformFilter.SetConditions(Conditions);
-            Table.ResetValues();
+            Table.Reset();
             TransformFilter.SetInTransform(Table);
 
             count = 0;
@@ -88,7 +88,7 @@ namespace dexih.transforms.tests
                     new dexih.functions.Parameter("end", ETypeCode.Int32, false, 50) };
             Mappings.Add(Function);
             TransformMapping.SetMappings(null, Mappings);
-            Table.ResetValues();
+            Table.Reset();
             TransformMapping.SetInTransform(Table);
 
             Conditions = new List<Function>();

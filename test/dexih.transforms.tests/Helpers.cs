@@ -28,7 +28,7 @@ namespace dexih.transforms.tests
             table.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1 });
 
             SourceTable Adapter = new SourceTable(table, new List<Sort>() { new Sort("StringColumn") } );
-            Adapter.ResetValues();
+            Adapter.Reset();
             return Adapter;
         }
 
@@ -55,7 +55,7 @@ namespace dexih.transforms.tests
             table.Data.Add(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, "Odd" });
 
             SourceTable Adapter = new SourceTable(table, null);
-            Adapter.ResetValues();
+            Adapter.Reset();
             return Adapter;
         }
 
@@ -78,7 +78,7 @@ namespace dexih.transforms.tests
             table.Data.Add(new object[] { "value09", 9, "lookup9" });
 
             SourceTable Adapter = new SourceTable(table, new List<Sort>() { new Sort("StringColumn") });
-            Adapter.ResetValues();
+            Adapter.Reset();
             return Adapter;
         }
 
@@ -101,7 +101,7 @@ namespace dexih.transforms.tests
             table.Data.Add(new object[] { "value08", 8, "lookup8" });
 
             SourceTable Adapter = new SourceTable(table);
-            Adapter.ResetValues();
+            Adapter.Reset();
             return Adapter;
         }
 

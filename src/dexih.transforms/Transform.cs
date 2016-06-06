@@ -151,7 +151,7 @@ namespace dexih.transforms
                 JoinReader = joinTransform;
             }
             Initialize();
-            ResetValues();
+            Reset();
             return true;
         }
 
@@ -159,11 +159,49 @@ namespace dexih.transforms
         /// Indicates if the source connection can run queries (such as sql)
         /// </summary>
         public abstract bool CanRunQueries { get; }
-        public abstract bool ResetValues();
         public abstract bool Initialize();
         public abstract string Details();
         protected abstract bool ReadRecord();
+        public abstract ReturnValue ResetTransform();
 
+
+        /// <summary>
+        /// Resets the transform and any source transforms.
+        /// </summary>
+        /// <returns></returns>
+        public ReturnValue Reset()
+        {
+            ReturnValue returnValue;
+
+            returnValue = ResetTransform();
+
+            if (!returnValue.Success)
+                return returnValue;
+
+            if (Reader != null)
+            {
+                returnValue = Reader.Reset();
+                if (!returnValue.Success)
+                    return returnValue;
+            }
+
+            if (JoinReader != null)
+            {
+                returnValue = JoinReader.Reset();
+                if (!returnValue.Success)
+                    return returnValue;
+            }
+
+            IsReaderFinished = false;
+            return new ReturnValue(true);
+        }
+
+        /// <summary>
+        /// Performs a row lookup based on the filters.  For mutliple rows, only the first will be returned.
+        /// The lookup will first attempt to retrieve a value from the cache (if cachemethod is set to cachine), and then a direct lookup if the transform supports it.
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         public virtual async Task<ReturnValue<object[]>> LookupRow(List<Filter> filters)
         {
             return await Task.Run(() =>
@@ -190,6 +228,16 @@ namespace dexih.transforms
                 }
                 return new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null);
             });
+        }
+
+        /// <summary>
+        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
+        public virtual async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        {
+            return await Task.Run( () => new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null));
         }
 
         /// <summary>

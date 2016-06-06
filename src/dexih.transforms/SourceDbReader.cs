@@ -92,9 +92,9 @@ namespace dexih.transforms
             return true;
         }
 
-        public override bool ResetValues()
+        public override ReturnValue ResetTransform()
         {
-            return true;
+            return new ReturnValue(false, "The source reader cannot be reset as the DbReader is a forward only reader", null);
         }
 
         protected override bool ReadRecord()

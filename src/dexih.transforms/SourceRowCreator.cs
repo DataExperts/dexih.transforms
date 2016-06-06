@@ -50,10 +50,10 @@ namespace dexih.transforms
             return true;
         }
 
-        public override bool ResetValues()
+        public override ReturnValue ResetTransform()
         {
             _currentRow = StartAt-1;
-            return true; // not applicable for filter.
+            return new ReturnValue(true);
         }
 
         public override string Details()

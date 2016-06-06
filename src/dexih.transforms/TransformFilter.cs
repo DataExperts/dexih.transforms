@@ -103,9 +103,9 @@ namespace dexih.transforms
             return showRecord;
         }
 
-        public override bool ResetValues()
+        public override ReturnValue ResetTransform()
         {
-            return true; // not applicable for filter.
+            return new ReturnValue(true); // nothing to reset.
         }
 
         public override string Details()

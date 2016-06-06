@@ -133,12 +133,12 @@ namespace dexih.transforms
         }
 
 
-        public override bool ResetValues()
+        public override ReturnValue ResetTransform()
         {
             foreach (Function rowFunction in RowFunctions)
                 rowFunction.Reset();
             _firstRecord = true;
-            return true;
+            return new ReturnValue(true);
         }
 
         protected override bool ReadRecord()
