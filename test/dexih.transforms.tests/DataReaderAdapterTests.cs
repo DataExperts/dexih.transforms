@@ -25,6 +25,5 @@ namespace dexih.transforms.tests
 
             Assert.Equal(10, count);
         }
-
     }
 }

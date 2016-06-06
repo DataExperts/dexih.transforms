@@ -27,31 +27,19 @@ namespace dexih.transforms
 
         public override bool Initialize()
         {
+            CachedTable = new Table("RowCreator");
+            CachedTable.Columns.Add(new TableColumn("RowNumber", DataType.ETypeCode.Int32));
+
+            CachedTable.OutputSortFields = new List<Sort>() { new Sort("RowNumber") };
             _currentRow = StartAt-1;
             return true;
         }
-
-        public override int FieldCount => 1;
 
         public override bool CanRunQueries => false;
 
         public override bool PrefersSort => false;
         public override bool RequiresSort => false;
 
-
-        public override string GetName(int i)
-        {
-            if (i == 0)
-                return "RowNumber";
-            throw new Exception("There is only one column available in the rowcreator transform");
-        }
-
-        public override int GetOrdinal(string columnName)
-        {
-            if (columnName == "RowNumber")
-                return 0;
-            throw new Exception("There is only one column with the name RowNumber in rowcreator transform");
-        }
 
         protected override bool ReadRecord()
         {
@@ -81,12 +69,6 @@ namespace dexih.transforms
         public override List<Sort> RequiredJoinSortFields()
         {
             return null;
-        }
-
-        //Always sorted by the RowNumber field.
-        public override List<Sort> OutputSortFields()
-        {
-            return new List<Sort>() { new Sort("RowNumber") };
         }
 
     }

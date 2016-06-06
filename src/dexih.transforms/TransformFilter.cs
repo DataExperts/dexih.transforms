@@ -36,12 +36,12 @@ namespace dexih.transforms
 
         public override bool Initialize()
         {
-            Fields = Reader.Fields;
+            CachedTable = Reader.CachedTable.Copy();
+            CachedTable.TableName = "Filter";
+            CachedTable.OutputSortFields = Reader.CachedTable.OutputSortFields;
 
             return true;
         }
-
-        public override int FieldCount => Reader.FieldCount;
 
         /// <summary>
         /// checks if filter can execute against the database query.
@@ -56,16 +56,6 @@ namespace dexih.transforms
 
         public override bool PrefersSort => false;
         public override bool RequiresSort => false;
-
-        public override string GetName(int i)
-        {
-            return Reader.GetName(i);
-        }
-
-        public override int GetOrdinal(string columnName)
-        {
-            return Reader.GetOrdinal(columnName);
-        }
 
         protected override bool ReadRecord()
         {
@@ -131,12 +121,6 @@ namespace dexih.transforms
         public override List<Sort> RequiredJoinSortFields()
         {
             return null;
-        }
-
-        //join will preserve the sort of the input table.
-        public override List<Sort> OutputSortFields()
-        {
-            return Reader.OutputSortFields();
         }
 
     }

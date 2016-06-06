@@ -191,10 +191,10 @@ namespace dexih.transforms
 
         public Sort() { }
 
-        public Sort(string column, EDirection Direction = EDirection.Ascending)
+        public Sort(string column, EDirection direction = EDirection.Ascending)
         {
             Column = column;
-            Direction = Direction;
+            Direction = direction;
         }
 
         public string Column { get; set; }

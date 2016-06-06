@@ -29,7 +29,6 @@ namespace dexih.transforms.tests
             TransformFilter.SetInTransform(Table);
 
             Assert.Equal(5, TransformFilter.FieldCount);
-            Assert.Equal(5, TransformFilter.Fields.Count());
 
             int count = 0;
             while (TransformFilter.Read() == true)

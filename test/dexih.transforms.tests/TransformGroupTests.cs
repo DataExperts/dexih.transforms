@@ -56,7 +56,6 @@ namespace dexih.transforms.tests
             TransformGroup.SetInTransform(Source);
 
             Assert.Equal(7, TransformGroup.FieldCount);
-            Assert.Equal(7, TransformGroup.Fields.Count());
 
             int counter = 0;
             while (TransformGroup.Read() == true)
@@ -72,7 +71,7 @@ namespace dexih.transforms.tests
             Assert.Equal(1, counter);
 
             //add a row to use for grouping.
-            Source.Add(new object[] { "value10", 10, 10.1, "2015/01/10" });
+            Source.Add(new object[] { "value10", 10, 10.1, "2015/01/10", 10, "Even" });
 
             List<ColumnPair> GroupColumns = new List<ColumnPair>() { new ColumnPair("StringColumn", "StringColumn") };
             TransformGroup.SetMappings(GroupColumns, Aggregates);
@@ -146,7 +145,6 @@ namespace dexih.transforms.tests
             TransformGroup.SetInTransform(Source);
 
             Assert.Equal(8, TransformGroup.FieldCount);
-            Assert.Equal(8, TransformGroup.Fields.Count());
 
             int counter = 0;
             Double[] MAvgExpectedValues = { 2.5, 3, 3.5, 4, 5, 6, 7, 7.14, 7.5, 7.8, 8 };

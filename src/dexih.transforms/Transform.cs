@@ -49,7 +49,7 @@ namespace dexih.transforms
         public Transform JoinReader { get; set; }
 
         protected object[] CurrentRow;
-        protected int CurrentRowNumber;
+        protected int CurrentRowNumber = -1;
 
 
         /// <summary>
@@ -58,34 +58,40 @@ namespace dexih.transforms
         public virtual ECacheMethod CacheMethod { get; set; } //indicates the data will be stored in memory.  This allows lookup and other operations to work
 
         /// <summary>
-        /// The maximum rows to cache.  When the maximum rows is exceeded, previous rows will be dropped on a first-in first-out basis.
+        /// The maximum number of rows to allow in the cache.  Use "0" for unlimited cache size.
         /// </summary>
-        public virtual Int64 MaxCacheRows { get; set; }
-        protected Table CachedData { get; set; }
+        protected int CachedMaxRows { get; set; } = 0;
+
+        /// <summary>
+        /// Table containing the cached reader data.
+        /// </summary>
+        public virtual Table CachedTable { get; set; }
+
+        /// <summary>
+        /// Indicates if the cache is complete or at maximum capacity
+        /// </summary>
+        public bool IsCacheFull { get; protected set; } 
+        /// <summary>
+        /// Inidicates if the source reader has completed.
+        /// </summary>
+        public bool IsReaderFinished { get; protected set; }
 
         //Generic transform contains properties for a list of Functions, Fields and simple Mappings 
         public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
-        public string[] Fields { get; set; } //list of fields.  use for group, sort lists.
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
         public string JoinTable { get; set; } //used to store a reference to a join table.  
         public bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
 
-        public abstract List<Sort> RequiredSortFields();
-        public abstract List<Sort> RequiredJoinSortFields();
+        public virtual List<Sort> RequiredSortFields() { return null; }
+        public virtual List<Sort> RequiredJoinSortFields() { return null; }
 
-        public abstract bool PrefersSort { get; } //indicates the transform will run better with sorted input
-        public abstract bool RequiresSort { get; } //indicates the transform must have sorted input
+        public virtual bool PrefersSort { get; } = false; //indicates the transform will run better with sorted input
+        public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input
         protected bool SortedInputs { get; set; } //this is set if the transforms sort requirements have been met.
 
         //public bool InputIsSorted { get; set; } //indicates if the transform can confirm sorted input.
         //public List<Sort> InputSortFields { get; set; }
-
-        /// <summary>
-        /// Indicates if the transforms output is sorted.
-        /// </summary>
-        /// <returns></returns>
-        public abstract List<Sort> OutputSortFields();
 
         public List<Sort> SortFields { get; set; } //indicates fields for the sort transform.
 
@@ -101,7 +107,7 @@ namespace dexih.transforms
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
             {
-                bool sortMatch = SortFieldsMatch(RequiredSortFields(), inTransform.OutputSortFields());
+                bool sortMatch = SortFieldsMatch(RequiredSortFields(), inTransform.CachedTable.OutputSortFields);
 
                 if (!sortMatch)
                 {
@@ -115,7 +121,7 @@ namespace dexih.transforms
 
                 if (joinTransform != null)
                 {
-                    sortMatch = SortFieldsMatch(RequiredSortFields(), joinTransform.OutputSortFields());
+                    sortMatch = SortFieldsMatch(RequiredSortFields(), joinTransform.CachedTable.OutputSortFields);
 
                     if (!sortMatch)
                     {
@@ -132,11 +138,11 @@ namespace dexih.transforms
             }
             else
             {
-                bool sortMatch = SortFieldsMatch(RequiredSortFields(), inTransform.OutputSortFields());
+                bool sortMatch = SortFieldsMatch(RequiredSortFields(), inTransform.CachedTable.OutputSortFields);
 
                 if (JoinReader != null)
                 {
-                    sortMatch &= SortFieldsMatch(RequiredSortFields(), joinTransform.OutputSortFields());
+                    sortMatch &= SortFieldsMatch(RequiredSortFields(), joinTransform.CachedTable.OutputSortFields);
                 }
 
                 SortedInputs = sortMatch;
@@ -160,24 +166,30 @@ namespace dexih.transforms
 
         public virtual async Task<ReturnValue<object[]>> LookupRow(List<Filter> filters)
         {
-            if(CacheMethod == ECacheMethod.PreLoadCache)
+            return await Task.Run(() =>
             {
-                return CachedData.LookupRow(filters);
-            }
-            else if(CacheMethod == ECacheMethod.OnDemandCache)
-            {
-                //read records until a match is found.
-                while(Read())
+                if (CacheMethod == ECacheMethod.PreLoadCache)
                 {
-                    var lookupResult = CachedData.LookupRow(filters, RecordCount);
-                    if(lookupResult.Success == true)
-                        return lookupResult;
+                    //preload all records.
+                    while (Read());
+
+                    return CachedTable.LookupRow(filters);
                 }
+                else if (CacheMethod == ECacheMethod.OnDemandCache)
+                {
+                    //read records until a match is found.
+                    while (Read())
+                    {
+                        //does a lookup, using the record count to only check the latest record.
+                        var lookupResult = CachedTable.LookupRow(filters, RecordCount);
+                        if (lookupResult.Success == true)
+                            return lookupResult;
+                    }
 
-                return new ReturnValue<object[]>(false, "Lookup not found.", null);
-            }
-
-            return new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null);
+                    return new ReturnValue<object[]>(false, "Lookup not found.", null);
+                }
+                return new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null);
+            });
         }
 
         /// <summary>
@@ -210,12 +222,76 @@ namespace dexih.transforms
 
         public override bool Read()
         {
+            CurrentRowNumber++;
+
+            //check cache for a row first.
+            if(CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache)
+            {
+                if(CurrentRowNumber < CachedTable.Data.Count)
+                {
+                    CurrentRow = CachedTable.Data[CurrentRowNumber];
+                    return true;
+                }
+            }
+
+            if (IsReaderFinished == true)
+            {
+                CurrentRow = null;
+                return false;
+            }
+
             //starts  a timer that can be used to measure downstream transform and database performance.
             TransformTimer.Start();
             bool returnValue = ReadRecord(); 
+            
             if (returnValue) RecordCount++;
             TransformTimer.Stop();
+
+            if (returnValue == false)
+                IsReaderFinished = true;
+
+            //add the row to the cache
+            if (returnValue == true && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
+                CachedTable.Data.Add(CurrentRow);
+
             return returnValue;
+        }
+
+        //Set the reader to a specific row.  If the rows has exceeded MaxRows this will only start from the beginning of the cache.   A read() is required folowing this to get data.
+        public void SetRowNumber(int rowNumber = 0)
+        {
+            if (rowNumber <= CachedTable.Data.Count)
+                CurrentRowNumber = rowNumber -1;
+            else
+                throw new Exception("SetRowNumber failed, as the row exceeded the number of rows in the cache");
+        }
+
+        /// <summary>
+        /// Allows a specific row in the cache to be accessed. 
+        /// </summary>
+        /// <param name="rowNumber">The row number from the cache</param>
+        /// <param name="values">An array length(FieldCount) that will contain the values from the row.</param>
+        public void RowPeek(int rowNumber, object[] values)
+        {
+            if (rowNumber >= CachedTable.Data.Count)
+                throw new Exception("RowPeek failed, as the row exceeded the number of rows in the cache");
+
+            CachedTable.Data[rowNumber].CopyTo(values, 0);
+        }
+
+        public Table GetTable()
+        {
+            Table table = new Table();
+
+            for (int i = 0; i < FieldCount; i++)
+            {
+                var typeCode = CurrentRow == null ? DataType.ETypeCode.String : DataType.GetTypeCode(GetValue(i).GetType());
+
+                table.Columns.Add(new TableColumn(GetName(0), typeCode));
+            }
+
+            return table;
+
         }
 
         /// <summary>
@@ -231,16 +307,10 @@ namespace dexih.transforms
             Reader.JoinReader?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
         }
 
-
-        public abstract override int FieldCount { get; }
-        //public abstract override DataTable GetSchemaTable();
-
-        public abstract override int GetOrdinal(string columnName);
-        public abstract override string GetName(int i);
-
-
+        public override int FieldCount => CachedTable.Columns.Count; 
+        public override int GetOrdinal(string columnName) => CachedTable.GetOrdinal(columnName);
+        public override string GetName(int i) => CachedTable.Columns[i].ColumnName;
         public override object this[string name] => GetValue(GetOrdinal(name));
-
         public override object this[int i] => GetValue(i);
 
         public override int Depth
@@ -436,6 +506,9 @@ namespace dexih.transforms
 
             return schema;
         }
+#else
+
+
 #endif
         #endregion
 

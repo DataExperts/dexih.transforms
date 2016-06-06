@@ -31,7 +31,6 @@ namespace dexih.transforms.tests
             int SortCount = 1;
 
             Assert.Equal(6, TransformSort.FieldCount);
-            Assert.Equal(6, TransformSort.Fields.Count());
 
             while (TransformSort.Read() == true)
             {
@@ -50,7 +49,6 @@ namespace dexih.transforms.tests
             TransformSort.SetInTransform(Source);
 
             Assert.Equal(6, TransformSort.FieldCount);
-            Assert.Equal(6, TransformSort.Fields.Count());
 
             Assert.True(TransformSort.Read());
             Assert.True((int)TransformSort["IntColumn"] == 2);

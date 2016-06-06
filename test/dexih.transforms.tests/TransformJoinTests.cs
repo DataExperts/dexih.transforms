@@ -20,7 +20,6 @@ namespace dexih.transforms.tests
             transformJoin.SetInTransform(Source, Helpers.CreateSortedJoinData());
 
             Assert.Equal(8, transformJoin.FieldCount);
-            Assert.Equal(8, transformJoin.Fields.Count());
 
             int pos = 0;
             while (transformJoin.Read() == true)
@@ -44,7 +43,6 @@ namespace dexih.transforms.tests
             transformJoin.SetInTransform(Source, Helpers.CreateUnSortedJoinData());
 
             Assert.Equal(8, transformJoin.FieldCount);
-            Assert.Equal(8, transformJoin.Fields.Count());
 
             int pos = 0;
             while (transformJoin.Read() == true)

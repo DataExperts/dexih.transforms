@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Data.Common;
+using System.Data;
 
 namespace dexih.transforms
 {
@@ -21,13 +22,57 @@ namespace dexih.transforms
         /// <param name="sortFields">A list of already sorted fields in the inReader.  If the fields are not sorted in the source data and sortfields are set, transforms such as group, row, join will fail or return incorrect results.</param>
         public SourceDbReader(DbDataReader inReader, List<Sort> sortFields = null)
         {
-            InReader = InReader;
+            InReader = inReader;
+
+            CachedTable = new Table("InReader");
+
+#if NET451
+            DataTable schema = inReader.GetSchemaTable();
+            CachedTable.TableName = schema.Rows[0][SchemaTableColumn.BaseTableName].ToString();
+
+            foreach(DataRow row in schema.Rows)
+            {
+                var column = new TableColumn();
+                column.ColumnName = row[SchemaTableColumn.ColumnName].ToString();
+                column.DataType = DataType.GetTypeCode((Type)row[SchemaTableColumn.DataType]);
+                column.MaxLength = Convert.ToInt32(row[SchemaTableColumn.ColumnSize]);
+                column.Scale = Convert.ToInt32(row[SchemaTableColumn.NumericScale]);
+                column.Precision = Convert.ToInt32(row[SchemaTableColumn.NumericPrecision]);
+            }
+            for (int i = 0; i< inReader.FieldCount; i++)
+            {
+                CachedTable.Columns.Add(new TableColumn(inReader.GetName(i)));
+            }
+#else
+            //if we can't get a column schema we will have to settle for column names only
+            if (!inReader.CanGetColumnSchema())
+            {
+                for (int i = 0; i < inReader.FieldCount; i++)
+                {
+                    CachedTable.Columns.Add(new TableColumn(inReader.GetName(i)));
+                }
+            }
+            else
+            {
+                var columnSchema = inReader.GetColumnSchema();
+                CachedTable.TableName = columnSchema[0].BaseTableName;
+
+                foreach(var columnDetail in columnSchema)
+                {
+                    var column = new TableColumn();
+                    column.ColumnName = columnDetail.ColumnName;
+                    column.DataType = DataType.GetTypeCode(columnDetail.DataType);
+                    column.MaxLength = columnDetail.ColumnSize;
+                    column.Scale = columnDetail.NumericScale;
+                    column.Precision = columnDetail.NumericPrecision;
+                }
+            }
+#endif
+
             SortFields = sortFields;
         }
 
         public DbDataReader InReader { get; set; }
-
-        protected Dictionary<string, object[]> LookupCache;
 
         public override bool CanRunQueries
         {
@@ -37,54 +82,14 @@ namespace dexih.transforms
             }
         }
 
-        public override int FieldCount
-        {
-            get
-            {
-                return InReader.FieldCount;
-            }
-        }
-
-        public override bool PrefersSort { get; } = false;
-        public override bool RequiresSort { get; } = false;
-
         public override string Details()
         {
             return "DataSource";
         }
 
-        public override string GetName(int i)
-        {
-            return InReader.GetName(i);
-        }
-
-        public override int GetOrdinal(string columnName)
-        {
-            return InReader.GetOrdinal(columnName);
-        }
-
         public override bool Initialize()
         {
             return true;
-        }
-
-        /// <summary>
-        /// The TransformSource transform returns an indicator that fields are sorted if they are set in the sortfields property.
-        /// </summary>
-        /// <returns></returns>
-        public override List<Sort> OutputSortFields()
-        {
-            return SortFields;
-        }
-
-        public override List<Sort> RequiredJoinSortFields()
-        {
-            return new List<Sort>();
-        }
-
-        public override List<Sort> RequiredSortFields()
-        {
-            return new List<Sort>();
         }
 
         public override bool ResetValues()
@@ -94,7 +99,16 @@ namespace dexih.transforms
 
         protected override bool ReadRecord()
         {
-            return InReader.Read();
+            bool success = InReader.Read();
+            if (success)
+            {
+                CurrentRow = new object[FieldCount];
+                InReader.GetValues(CurrentRow);
+            }
+            else
+                CurrentRow = null;
+
+            return success;
         }
     }
 }

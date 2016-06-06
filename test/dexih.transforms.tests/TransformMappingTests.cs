@@ -38,7 +38,6 @@ namespace dexih.transforms.tests
             transformMapping.SetInTransform(Source);
 
             Assert.Equal(3, transformMapping.FieldCount);
-            Assert.Equal(3, transformMapping.Fields.Count());
 
             int count = 0;
             while (transformMapping.Read() == true)

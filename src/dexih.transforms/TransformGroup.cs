@@ -22,10 +22,6 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
 
-        readonly Dictionary<int, string> _fieldNames = new Dictionary<int, string>();
-        readonly Dictionary<string, int> _fieldOrdinals = new Dictionary<string, int>();
-        int _fieldCount;
-
         bool _firstRecord;
         bool _lastRecord;
 
@@ -36,8 +32,6 @@ namespace dexih.transforms
         private int _passThroughIndex;
         private int _passThroughCount;
         private object[] _nextPassThroughRow;
-
-        private List<string> _passThroughFields;
 
         public List<ColumnPair> GroupFields
         {
@@ -65,8 +59,7 @@ namespace dexih.transforms
 
         public override bool Initialize()
         {
-            _fieldNames.Clear();
-            _fieldOrdinals.Clear();
+            CachedTable = new Table("Group");
 
             int i = 0;
             if (GroupFields != null)
@@ -76,24 +69,25 @@ namespace dexih.transforms
 
                 foreach (ColumnPair groupField in GroupFields)
                 {
-                    _fieldNames.Add(i, groupField.TargetColumn);
-                    _fieldOrdinals.Add(groupField.TargetColumn, i);
+                    var column = Reader.CachedTable.Columns.Single(c=>c.ColumnName == groupField.SourceColumn);
+                    column.ColumnName = groupField.TargetColumn;
+                    CachedTable.Columns.Add(column);
                     i++;
                 }
             }
 
             foreach (Function aggregate in Aggregates)
             {
-                _fieldNames.Add(i, aggregate.TargetColumn);
-                _fieldOrdinals.Add(aggregate.TargetColumn, i);
+                var column = new TableColumn(aggregate.TargetColumn, aggregate.ReturnType);
+                CachedTable.Columns.Add(column);
                 i++;
 
                 if (aggregate.Outputs != null)
                 {
                     foreach (Parameter param in aggregate.Outputs)
                     {
-                        _fieldNames.Add(i, param.ColumnName);
-                        _fieldOrdinals.Add(param.ColumnName, i);
+                        column = new TableColumn(param.ColumnName, param.DataType);
+                        CachedTable.Columns.Add(column);
                         i++;
                     }
                 }
@@ -102,24 +96,18 @@ namespace dexih.transforms
             //if passthrough is set-on load any unused columns to the output.
             if (PassThroughColumns)
             {
-                _passThroughFields = new List<string>();
                 _passThroughStartIndex = i;
 
-                for (int j = 0; j < Reader.FieldCount; j++)
+                foreach (var column in Reader.CachedTable.Columns)
                 {
-                    string columnName = Reader.GetName(j);
-                    if (_fieldOrdinals.ContainsKey(columnName) == false)
-                    {
-                        _fieldNames.Add(i, columnName);
-                        _fieldOrdinals.Add(columnName, i);
-                        i++;
-                        _passThroughFields.Add(columnName);
-                    }
+                    if (CachedTable.Columns.SingleOrDefault(c=>c.ColumnName == column.ColumnName) == null)
+                        CachedTable.Columns.Add(column.Copy());
                 }
             }
 
-            Fields = _fieldNames.Select(c => c.Value).ToArray();
-            _fieldCount = _fieldOrdinals.Count;
+            if(GroupFields != null)
+                CachedTable.OutputSortFields = GroupFields.Select(c => new Sort { Column = c.TargetColumn, Direction = Sort.EDirection.Ascending }).ToList();
+
             return true;
         }
 
@@ -130,8 +118,6 @@ namespace dexih.transforms
 
             return Initialize();
         }
-
-        public override int FieldCount => _fieldCount;
 
         /// <summary>
         /// checks if filter can execute against the database query.
@@ -156,18 +142,6 @@ namespace dexih.transforms
             }
         }
 
-
-        public override string GetName(int i)
-        {
-            return _fieldNames[i];
-        }
-
-        public override int GetOrdinal(string columnName)
-        {
-            if (_fieldOrdinals.ContainsKey(columnName))
-                return _fieldOrdinals[columnName];
-            return -1;
-        }
 
         public override bool ResetValues()
         {
@@ -201,7 +175,7 @@ namespace dexih.transforms
                 }
             }
 
-            CurrentRow = new object[_fieldCount];
+            CurrentRow = new object[FieldCount];
 
             int i;
             bool groupChanged = false;
@@ -314,7 +288,7 @@ namespace dexih.transforms
                             }
 
                             //the first row of the next group has been read, so this is to store it until ready to write out.
-                            _nextPassThroughRow = new object[_fieldCount];
+                            _nextPassThroughRow = new object[FieldCount];
                             for (int j = 0; j< newGroupValues.Length; j++)
                                 _nextPassThroughRow[j] = newGroupValues[j];
 
@@ -467,12 +441,6 @@ namespace dexih.transforms
         public override List<Sort> RequiredJoinSortFields()
         {
             return null;
-        }
-
-        //group will return a dataset sorted by the group fields.
-        public override List<Sort> OutputSortFields()
-        {
-            return GroupFields.Select(c=> new Sort { Column = c.TargetColumn, Direction = Sort.EDirection.Ascending }).ToList();
         }
 
     }

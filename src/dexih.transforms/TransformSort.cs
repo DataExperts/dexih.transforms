@@ -23,7 +23,8 @@ namespace dexih.transforms
 
         public override bool Initialize()
         {
-            Fields = Reader.Fields;
+            CachedTable = Reader.CachedTable.Copy();
+            CachedTable.OutputSortFields = SortFields;
 
             _firstRead = true;
             return true;
@@ -35,8 +36,6 @@ namespace dexih.transforms
             return true;
         }
 
-        public override int FieldCount => Fields.Count();
-
         /// <summary>
         /// checks if sort can execute against the database query.
         /// </summary>
@@ -44,21 +43,6 @@ namespace dexih.transforms
 
         public override bool PrefersSort => true;
         public override bool RequiresSort => false;
-
-        public override string GetName(int i)
-        {
-            return Reader.GetName(i);
-        }
-
-        public override int GetOrdinal(string columnName)
-        {
-            return Reader.GetOrdinal(columnName);
-        }
-
-        //public override DataTable GetSchemaTable()
-        //{
-        //    return _sorted.GetSchemaTable();
-        //}
 
         protected override bool ReadRecord()
         {
@@ -89,26 +73,23 @@ namespace dexih.transforms
 
                 _iterator = _sortedDictionary.Keys.GetEnumerator();
                 _iterator.MoveNext();
+                CurrentRow = _sortedDictionary[_iterator.Current];
 
                 return true;
             }
 
-            return _iterator.MoveNext();
+            var success = _iterator.MoveNext();
+            if (success)
+                CurrentRow = _sortedDictionary[_iterator.Current];
+            else
+                CurrentRow = null;
+
+            return success;
         }
 
         public override bool ResetValues()
         {
             return true;
-        }
-
-        public override object GetValue(int i)
-        {
-            return _sortedDictionary[_iterator.Current][i];
-        }
-        public override int GetValues(object[] values)
-        {
-            _sortedDictionary[_iterator.Current].CopyTo(values, 0);
-            return FieldCount;
         }
 
         public override string Details()
@@ -124,12 +105,6 @@ namespace dexih.transforms
         public override List<Sort> RequiredJoinSortFields()
         {
             return null;
-        }
-
-        //sort will return rows sorted by the sortfields.
-        public override List<Sort> OutputSortFields()
-        {
-            return SortFields;
         }
 
     }

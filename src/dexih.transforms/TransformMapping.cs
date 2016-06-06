@@ -11,10 +11,6 @@ namespace dexih.transforms
 {
     public class TransformMapping : Transform 
     {
-        readonly Dictionary<int, string> _fieldNames = new Dictionary<int, string>();
-        readonly Dictionary<string, int> _fieldOrdinals = new Dictionary<string, int>();
-        int _fieldCount;
-
         List<string> _passThroughFields;
 
         public List<Function> Mappings
@@ -42,16 +38,16 @@ namespace dexih.transforms
         }
         public override bool Initialize()
         {
-            _fieldNames.Clear();
-            _fieldOrdinals.Clear();
-
             int i = 0;
+            CachedTable = new Table("Mapping");
+
             if (MapFields != null)
             {
                 foreach (ColumnPair mapField in MapFields)
                 {
-                    _fieldNames.Add(i, mapField.TargetColumn);
-                    _fieldOrdinals.Add(mapField.TargetColumn, i);
+                    var column = Reader.CachedTable.Columns.Single(c => c.ColumnName == mapField.SourceColumn);
+                    column.ColumnName = mapField.TargetColumn;
+                    CachedTable.Columns.Add(column);
                     i++;
                 }
             }
@@ -62,8 +58,9 @@ namespace dexih.transforms
                 {
                     if (mapping.TargetColumn != "")
                     {
-                        _fieldNames.Add(i, mapping.TargetColumn);
-                        _fieldOrdinals.Add(mapping.TargetColumn, i);
+                        var column = new TableColumn(mapping.TargetColumn, mapping.ReturnType);
+                        CachedTable.Columns.Add(column);
+
                         i++;
                     }
 
@@ -73,8 +70,8 @@ namespace dexih.transforms
                         {
                             if (param.ColumnName != "")
                             {
-                                _fieldNames.Add(i, param.ColumnName);
-                                _fieldOrdinals.Add(param.ColumnName, i);
+                                var column = new TableColumn(param.ColumnName, param.DataType);
+                                CachedTable.Columns.Add(column);
                                 i++;
                             }
                         }
@@ -87,21 +84,40 @@ namespace dexih.transforms
             {
                 _passThroughFields = new List<string>();
 
-                for(int j = 0; j< Reader.FieldCount; j++)
+                foreach (var column in Reader.CachedTable.Columns)
                 {
-                    string columnName = Reader.GetName(j);
-                    if (_fieldOrdinals.ContainsKey(columnName) == false)
+                    if (CachedTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName) == null)
                     {
-                        _fieldNames.Add(i, columnName);
-                        _fieldOrdinals.Add(columnName, i);
-                        i++;
-                        _passThroughFields.Add(columnName);
+                        CachedTable.Columns.Add(column.Copy());
+                        _passThroughFields.Add(column.ColumnName);
                     }
                 }
             }
-            _fieldCount = _fieldOrdinals.Count;
 
-            Fields = _fieldNames.Select(c => c.Value).ToArray();
+
+            if (Reader.CachedTable.OutputSortFields != null)
+            {
+                //pass through the previous sort order, however limit to fields which have been mapped.
+                List<Sort> fields = new List<Sort>();
+                foreach (Sort t in Reader.CachedTable.OutputSortFields)
+                {
+                    ColumnPair mapping = ColumnPairs?.FirstOrDefault(c => c.SourceColumn == t.Column);
+                    if (mapping == null)
+                    {
+                        //if passthrough column is on, and non of the function mappings override the target field then it is included.
+                        if (PassThroughColumns && !Functions.Any(c => c.TargetColumn == t.Column || c.Inputs.Any(d => d.ColumnName == t.Column)))
+                        {
+                            fields.Add(t);
+                        }
+                        else
+                            break;
+                    }
+                    else
+                        fields.Add(t);
+                }
+
+                CachedTable.OutputSortFields = fields;
+            }
 
             return true;
         }
@@ -121,8 +137,6 @@ namespace dexih.transforms
         }
 
         #region Transform Implementations
-        public override int FieldCount => _fieldCount;
-
         /// <summary>
         /// checks if filter can execute against the database query.
         /// </summary>
@@ -138,18 +152,6 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
 
 
-        public override string GetName(int i)
-        {
-            return _fieldNames[i];
-        }
-
-        public override int GetOrdinal(string columnName)
-        {
-            if (_fieldOrdinals.ContainsKey(columnName))
-                return _fieldOrdinals[columnName];
-            return -1;
-        }
-
         public override bool ResetValues()
         {
             return true;
@@ -158,7 +160,7 @@ namespace dexih.transforms
         protected override bool ReadRecord()
         {
             int i = 0;
-            CurrentRow = new object[_fieldCount];
+            CurrentRow = new object[FieldCount];
 
             if (Reader.Read() == false)
                 return false;
@@ -224,34 +226,6 @@ namespace dexih.transforms
         public override List<Sort> RequiredJoinSortFields()
         {
             return null;
-        }
-
-        //mapping will maintain sort order.
-        public override List<Sort> OutputSortFields()
-        {
-            if (Reader.OutputSortFields() == null)
-                return null;
-
-            //pass through the previous sort order, however limit to fields which have been mapped.
-            List<Sort> fields = new List<Sort>();
-            foreach (Sort t in Reader.OutputSortFields())
-            {
-                ColumnPair mapping = ColumnPairs?.FirstOrDefault(c => c.SourceColumn == t.Column);
-                if (mapping == null)
-                {
-                    //if passthrough column is on, and non of the function mappings override the target field then it is included.
-                    if (PassThroughColumns && !Functions.Any(c => c.TargetColumn == t.Column || c.Inputs.Any(d => d.ColumnName == t.Column)))
-                    {
-                        fields.Add(t);
-                    }
-                    else
-                        break;
-                }
-                else
-                    fields.Add(t);
-            }
-
-            return fields;
         }
 
 
