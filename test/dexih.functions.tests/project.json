@@ -34,7 +34,7 @@
       "dotnet restore"
     ],
     "postbuild": [
-      "dotnet tests"
+      "dotnet test"
     ]
   }
 }
