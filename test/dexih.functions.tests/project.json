@@ -32,6 +32,9 @@
   "scripts": {
     "prebuild": [
       "dotnet restore"
+    ],
+    "postbuild": [
+      "dotnet tests"
     ]
   }
 }
