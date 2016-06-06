@@ -28,5 +28,10 @@
       ]
     },
     "net451": { }
+  },
+  "scripts": {
+    "prebuild": [
+      "dotnet restore"
+    ]
   }
 }

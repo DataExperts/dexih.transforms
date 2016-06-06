@@ -49,6 +49,9 @@
     }
   },
   "scripts": {
+    "prebuild": [
+      "dotnet restore"
+    ],
     "postcompile": [
       "dotnet pack --no-build --configuration Debug -o ../../../packages"
     ]
