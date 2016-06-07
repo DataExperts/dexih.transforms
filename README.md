@@ -5,7 +5,6 @@
 
 [![Build Status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)](https://ci.appveyor.com/project/dataexperts/dexih-transforms)
 
-**Note: This library is still under active development and is regularly breaking.  We will be finalizing and publishing a schedule shortly**
 
 ## What is this?
 
@@ -17,13 +16,23 @@ The key features are:
 * An extensive library of built in analytical functions.
 * Perform any type of analytical calculations across your datasets.
 * Runs fast!  Can easily process 100,000's of rows per second.
-* Uses standard database classes and can be integrate with all popular databases.
+* Uses standard database classes and can be integrated with all popular databases.
 * Fully portable to any platform that supports the .NetStandard library (currently includes Windows, Mac and Linux variants).
 
 This powerful library can be used as a foundation for applications such as:
 * Business Intelligence and reporting.
 * Batch processing, Data Integration or Extract Transform Load (ETL) processing.
 * Real-time analysis and alerting.
+
+## Comming soon
+
+In the next few weeks we will be integrating the following capabilities into the transform processing:
+
+* Data profiling.
+* Manage change data capture
+* Preserve change history (i.e. slowly changing dimensions)
+* Column level valiation and rejection rules.
+ 
 
 ## How does it work?
 
@@ -145,5 +154,35 @@ Function function2 =
 		null
 	);
 ```
+### State functions
 
+Functions containing a state are used for aggregations, analytics, and row pivoting where multiple rows of data are required to run the function.  To implement a state function, three discrete functions must be defined:
+
+1. The primary function - Called for each row in the grouping.  This should be `void` function with the input parameters specifying the column values to be processed.
+2. The result function - Called to retrieve a result  when the grouping has completed.  This should return thee result, and specify `out` parammeters for any additional values to be returned.
+3. The reset function - this is called to reset variables and start receiving data for thee next group.
+
+Here is a simple example that implements the sum function:
+
+```csharp
+class CalculateSum
+{
+	int total = 0;
+	
+	public void Sum(int value)
+	{
+		total = total + value;
+	}
+	
+	public int SumResult()
+	{
+		return total;
+	}
+	
+	public void SumReset()
+	{
+		total =  0;
+	}
+}
+```
 
