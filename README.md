@@ -24,7 +24,7 @@ This powerful library can be used as a foundation for applications such as:
 * Batch processing, Data Integration or Extract Transform Load (ETL) processing.
 * Real-time analysis and alerting.
 
-## Comming soon
+## Coming soon
 
 In the next few weeks we will be integrating the following capabilities into the transform processing:
 
@@ -32,6 +32,7 @@ In the next few weeks we will be integrating the following capabilities into the
 * Manage change data capture
 * Preserve change history (i.e. slowly changing dimensions)
 * Column level valiation and rejection rules.
+* Logging and resiliance.
  
 
 ## How does it work?
@@ -94,9 +95,34 @@ The transformations in this library generally work best when used in conjuction 
 * Reduce workloads on databases can avoid database locking and performance problems when sourcing data from operational databases.
 * Building reusable functions and logic that can be reapplied across multiple databases and database types.
 
-## Using Transforms
+## The Transform Class
 
-The following transforms are provided in this library.
+The *transfrom* class is a feature rich implementation of the DbReader class that leverages all the benefits of the DbReader, whilst extending the functionality to allow for more sophisticated data integration.
+
+### Caching
+
+The *transform* class inherits one of the key benefits of using a DbReader, which is fast, forward only record streaming.  
+
+The *transform* class enhances this by providing a built in caching mechanism.  The caching can be switched off or set to  full caching or partial caching.  When caching is enabled, this allows:
+  
+* Navigate backwards through previous records.
+* Reset the reader to the start, without re-accessing the source database again.
+* Peek at previous records (without resetting the current row).
+* Search / lookup against previous loaded records.
+* On demand lookup, where the cache is first referenced, and then referred to the data source if not found.
+
+
+### Encryption & Hashing
+
+Sensitive fields can easily be encrypted, decrypted or hashed through the transform control.  
+
+
+
+## Built in Transforms
+
+The built in transforms are implementations of the base transform class.  These can be chained together to allow virtually any type of data transformation.  
+
+The following is a short description of the built-in transforms:
 
 | Transform  | Description |
 | ------------- | ------------- |
@@ -106,9 +132,12 @@ The following transforms are provided in this library.
 | Lookup  | This allows a row lookup to be performed against another data source or external function.  |
 | Mapping  | Maps source fields to target fields using simple source-target mappings or advanced calculations using mapping functions.  |
 | Row  | Using a row function, translates values into rows.  This can be used to pivot values, or to parse JSON/XML fields into data rows.  |
-| Sort  | Sorts the dataset. |
+| Sort  | Sorts the dataset by one or more columns and an ascending or descending order. |
+| Profile | Generates statistics a dataset, without impacting the dataset (meaning it can be inserted anywhere statistics are required).  The built in profile functions allow for detection of string patterns, data types, uniqueness et.
+| Validation | The validation transform automatically checks the fitness of incoming data, against configurable validation rules, and the datatype of the data.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
+| Delta | Compares the incoming dataset, against another dataset, produces a delta, and generates a set of audit data.  The delta has a number of update strategies that can be configured, including update/delete detection and history preservation.  In a data warehouse this can be used to generate [type 2 slowly changing dimensions](https://en.wikipedia.org/wiki/Slowly_changing_dimension).
 
-To run a complete transformation, these transforms should be chained together.  
+To run a complete transformation, these transforms can be chained together in any logical sequence.  
 
 Some tips:
 * Filter early, to reduce the number of rows other transforms need to process.
