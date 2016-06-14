@@ -79,7 +79,7 @@ namespace dexih.transforms
             if (WriteOpen == true)
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
-            var returnValue = InTransform.Open();
+            var returnValue = await InTransform.Open();
 
             OperationColumnIndex = InTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
 
@@ -114,7 +114,7 @@ namespace dexih.transforms
             //if the table doesn't exist, create it.  
             returnValue = await TargetConnection.CreateManagedTable(TargetTable, false);
 
-            InTransform.Open();
+            //await InTransform.Open();
 
             WriteOpen = true;
 

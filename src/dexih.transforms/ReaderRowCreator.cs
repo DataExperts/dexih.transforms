@@ -8,7 +8,7 @@ using dexih.functions;
 
 namespace dexih.transforms
 {
-    public class SourceRowCreator : Transform
+    public class ReaderRowCreator : Transform
     {
         private int _currentRow;
 

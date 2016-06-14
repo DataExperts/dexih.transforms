@@ -170,10 +170,10 @@ namespace dexih.transforms
         /// <param name="filters">Requested filters for underlying transform to execute.</param>
         /// <param name="sorts">Requested sort for underlying transform to execute.</param>
         /// <returns></returns>
-        public virtual ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public virtual async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
         {
             if(PrimaryTransform != null)
-                return PrimaryTransform.Open(filters, sorts);
+                return await PrimaryTransform.Open(filters, sorts);
             return new ReturnValue(true);
         }
 

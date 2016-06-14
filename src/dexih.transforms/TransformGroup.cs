@@ -122,9 +122,9 @@ namespace dexih.transforms
             }
         }
 
-        public override ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public override async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
         {
-            var returnValue = PrimaryTransform.Open(null, RequiredSortFields());
+            var returnValue = await PrimaryTransform.Open(null, RequiredSortFields());
             return returnValue;
         }
 

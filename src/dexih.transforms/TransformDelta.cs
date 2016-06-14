@@ -121,16 +121,16 @@ namespace dexih.transforms
             return true;
         }
 
-        public override ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public override async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
         {
             if (DeltaType == EDeltaType.Append || DeltaType == EDeltaType.Reload)
             {
-                var returnValue = PrimaryTransform.Open(filters, sorts);
+                var returnValue = await PrimaryTransform.Open(filters, sorts);
                 return returnValue;
                 }
             else
             {
-                var returnValue = PrimaryTransform.Open(filters, RequiredSortFields());
+                var returnValue = await PrimaryTransform.Open(filters, RequiredSortFields());
                 return returnValue;
             }
 

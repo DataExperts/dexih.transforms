@@ -40,7 +40,7 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        public override ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public override async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
         {
             if (filters == null)
                 filters = new List<Filter>();
@@ -55,7 +55,7 @@ namespace dexih.transforms
                     filters.Add(filter.Value);
                 }
             }
-            var returnValue = PrimaryTransform.Open(filters, sorts);
+            var returnValue = await PrimaryTransform.Open(filters, sorts);
             return returnValue;
         }
 
