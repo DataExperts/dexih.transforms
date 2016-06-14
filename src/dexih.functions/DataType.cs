@@ -112,17 +112,54 @@ namespace dexih.functions
             return ETypeCode.Unknown;
         }
 
+        public static Type GetType(ETypeCode typeCode)
+        {
+            switch(typeCode)
+            {
+                case ETypeCode.Byte:
+                    return typeof(Byte);
+                case ETypeCode.SByte:
+                    return typeof(SByte);
+                case ETypeCode.UInt16:
+                    return typeof(UInt16);
+                case ETypeCode.UInt32:
+                    return typeof(UInt32);
+                case ETypeCode.UInt64:
+                    return typeof(UInt64);
+                case ETypeCode.Int16:
+                    return typeof(Int16);
+                case ETypeCode.Int32:
+                    return typeof(Int32);
+                case ETypeCode.Int64:
+                    return typeof(Int64);
+                case ETypeCode.Decimal:
+                    return typeof(Decimal);
+                case ETypeCode.Double:
+                    return typeof(Double);
+                case ETypeCode.Single: 
+                    return typeof(Single);
+                case ETypeCode.String: 
+                    return typeof(String);
+                case ETypeCode.Boolean: 
+                    return typeof(Boolean);
+                case ETypeCode.DateTime: 
+                    return typeof(DateTime);
+                case ETypeCode.Time: 
+                    return typeof(TimeSpan);
+                default:
+                    return typeof(object);
+            }
+        }
+
 
         /// <summary>
         /// Result of a data comparison
         /// </summary>
         public enum ECompareResult
         {
-            Null,
             Greater,
             Less,
-            Equal,
-            NotEqual
+            Equal
         }
 
        /// <summary>
@@ -131,56 +168,69 @@ namespace dexih.functions
        /// <param name="dataType">data type to compare</param>
        /// <param name="inputValue">primary value</param>
        /// <param name="compareValue">value to compare against</param>
-       /// <returns></returns>
+       /// <returns>Success = false for compare error</returns>
         public static ReturnValue<ECompareResult> Compare(ETypeCode dataType, object inputValue, object compareValue)
         {
             try
             {
-                if (inputValue == null || compareValue == null || inputValue.ToString() == "" || compareValue.ToString() == "")
-                    return new ReturnValue<ECompareResult>(true, ECompareResult.Null);
+                if (inputValue == null && compareValue == null)
+                    return new ReturnValue<ECompareResult>(true, ECompareResult.Equal);
 
-                var try1 = TryParse(dataType, inputValue);
-                if (try1.Success == false)
-                    return new ReturnValue<ECompareResult>(false, "Could not parse the value " + inputValue + " as a type " + dataType + ". Reason: " + try1.Message, null);
-                var result1 = try1.Value;
+                if (inputValue == null || compareValue == null)
+                    return new ReturnValue<ECompareResult>(true, inputValue == null ? ECompareResult.Less : ECompareResult.Greater);
 
-                var try2 = TryParse(dataType, compareValue);
-                if (try2.Success == false)
-                    return new ReturnValue<ECompareResult>(false, "Could not parse the value " + compareValue + " as a type " + dataType + ". Reason: " + try2.Message, null);
-                var result2 = try2.Value;
+                Type type = GetType(dataType);
+
+                if (inputValue.GetType() != type)
+                {
+                    var try1 = TryParse(dataType, inputValue);
+                    if (try1.Success == false)
+                        return new ReturnValue<ECompareResult>(false, "Could not parse the value " + inputValue + " as a type " + dataType + ". Reason: " + try1.Message, null);
+                    inputValue = try1.Value;
+                }
+
+                if (compareValue.GetType() != type)
+                {
+
+                    var try2 = TryParse(dataType, compareValue);
+                    if (try2.Success == false)
+                        return new ReturnValue<ECompareResult>(false, "Could not parse the value " + compareValue + " as a type " + dataType + ". Reason: " + try2.Message, null);
+                    compareValue = try2.Value;
+                }
 
                 switch (dataType)
                 {
                     case ETypeCode.Byte:
-                        return new ReturnValue<ECompareResult>(true, (Byte)result1 == (Byte)result2 ? ECompareResult.Equal : (Byte)result1 > (Byte)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (Byte)inputValue == (Byte)compareValue ? ECompareResult.Equal : (Byte)inputValue > (Byte)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.SByte:
-                        return new ReturnValue<ECompareResult>(true, (SByte)result1 == (SByte)result2 ? ECompareResult.Equal : (SByte)result1 > (SByte)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (SByte)inputValue == (SByte)compareValue ? ECompareResult.Equal : (SByte)inputValue > (SByte)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.UInt16:
-                        return new ReturnValue<ECompareResult>(true, (UInt16)result1 == (UInt16)result2 ? ECompareResult.Equal : (UInt16)result1 > (UInt16)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (UInt16)inputValue == (UInt16)compareValue ? ECompareResult.Equal : (UInt16)inputValue > (UInt16)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.UInt32:
-                        return new ReturnValue<ECompareResult>(true, (UInt32)result1 == (UInt32)result2 ? ECompareResult.Equal : (UInt32)result1 > (UInt32)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (UInt32)inputValue == (UInt32)compareValue ? ECompareResult.Equal : (UInt32)inputValue > (UInt32)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.UInt64:
-                        return new ReturnValue<ECompareResult>(true, (UInt64)result1 == (UInt64)result2 ? ECompareResult.Equal : (UInt64)result1 > (UInt64)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (UInt64)inputValue == (UInt64)compareValue ? ECompareResult.Equal : (UInt64)inputValue > (UInt64)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Int16:
-                        return new ReturnValue<ECompareResult>(true, (Int16)result1 == (Int16)result2 ? ECompareResult.Equal : (Int16)result1 > (Int16)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (Int16)inputValue == (Int16)compareValue ? ECompareResult.Equal : (Int16)inputValue > (Int16)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Int32:
-                        return new ReturnValue<ECompareResult>(true, (Int32)result1 == (Int32)result2 ? ECompareResult.Equal : (Int32)result1 > (Int32)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (Int32)inputValue == (Int32)compareValue ? ECompareResult.Equal : (Int32)inputValue > (Int32)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Int64:
-                        return new ReturnValue<ECompareResult>(true, (Int64)result1 == (Int64)result2 ? ECompareResult.Equal : (Int64)result1 > (Int64)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (Int64)inputValue == (Int64)compareValue ? ECompareResult.Equal : (Int64)inputValue > (Int64)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Decimal:
-                        return new ReturnValue<ECompareResult>(true, (Decimal)result1 == (Decimal)result2 ? ECompareResult.Equal : (Decimal)result1 > (Decimal)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (Decimal)inputValue == (Decimal)compareValue ? ECompareResult.Equal : (Decimal)inputValue > (Decimal)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Double:
-                        return new ReturnValue<ECompareResult>(true, Math.Abs((Double)result1 - (Double)result2) < 0.0001 ? ECompareResult.Equal : (Double)result1 > (Double)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, Math.Abs((Double)inputValue - (Double)compareValue) < 0.0001 ? ECompareResult.Equal : (Double)inputValue > (Double)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Single:
-                        return new ReturnValue<ECompareResult>(true, Math.Abs((Single)result1 - (Single)result2) < 0.0001 ? ECompareResult.Equal : (Single)result1 > (Single)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, Math.Abs((Single)inputValue - (Single)compareValue) < 0.0001 ? ECompareResult.Equal : (Single)inputValue > (Single)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.String:
-                        return new ReturnValue<ECompareResult>(true, (string)result1 == (String)result2 ? ECompareResult.Equal : ECompareResult.NotEqual);
+                        int compareResult = String.Compare((String)inputValue, (String)compareValue);
+                        return new ReturnValue<ECompareResult>(true, compareResult == 0 ? ECompareResult.Equal : compareResult < 0 ? ECompareResult.Less : ECompareResult.Greater);
                     case ETypeCode.Boolean:
-                        return new ReturnValue<ECompareResult>(true, (Boolean)result1 == (Boolean)result2 ? ECompareResult.Equal : ECompareResult.NotEqual);
+                        return new ReturnValue<ECompareResult>(true, (Boolean)inputValue == (Boolean)compareValue ? ECompareResult.Equal : (Boolean)inputValue == true ? ECompareResult.Greater : ECompareResult.Less );
                     case ETypeCode.DateTime:
-                        return new ReturnValue<ECompareResult>(true, (DateTime)result1 == (DateTime)result2 ? ECompareResult.Equal : (DateTime)result1 > (DateTime)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (DateTime)inputValue == (DateTime)compareValue ? ECompareResult.Equal : (DateTime)inputValue > (DateTime)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Time:
-                        return new ReturnValue<ECompareResult>(true, (TimeSpan)result1 == (TimeSpan)result2 ? ECompareResult.Equal : (DateTime)result1 > (DateTime)result2 ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (TimeSpan)inputValue == (TimeSpan)compareValue ? ECompareResult.Equal : (DateTime)inputValue > (DateTime)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     default:
                         return new ReturnValue<ECompareResult>(false, "Unsupported datatype: " + dataType, null);
                 }
@@ -196,8 +246,9 @@ namespace dexih.functions
         /// </summary>
         /// <param name="tryDataType">DataType to convert to</param>
         /// <param name="inputValue">Input Value to convert</param>
+        /// <param name="maxLength">Optional: maximum length for a string value.</param>
         /// <returns>True and the converted value for success, false and a message for conversion fail.</returns>
-        public static ReturnValue<object> TryParse(ETypeCode tryDataType, object inputValue)
+        public static ReturnValue<object> TryParse(ETypeCode tryDataType, object inputValue, int? maxLength = null)
         {
             Object result = null;
             try
@@ -210,7 +261,10 @@ namespace dexih.functions
                 if (tryDataType == ETypeCode.String || tryDataType == ETypeCode.Unknown)
                 {
                     result = inputValue is DBNull ? null : inputValue.ToString();
-                    return new ReturnValue<object>(true, result);
+                    if(maxLength != null && result != null && ((string)result).Length > maxLength)
+                        return new ReturnValue<object>(false, "The string " + inputValue + " exceeds the maximum length of " + maxLength.ToString());
+                    else
+                        return new ReturnValue<object>(true, result);
                 }
 
                 if (inputValue is DBNull)

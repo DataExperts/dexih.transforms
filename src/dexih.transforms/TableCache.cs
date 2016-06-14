@@ -107,17 +107,26 @@ namespace dexih.transforms
 
         public void Insert(int index, object[] item)
         {
-            throw new NotImplementedException("Insert is not supported with this collection.");
+            if (MaxRows == 0)
+                Data.Insert(index, item);
+            else
+                throw new NotImplementedException("Insert is not supported with this collection.");
         }
 
         public bool Remove(object[] item)
         {
-            throw new NotImplementedException("Remove is not supported with this collection.");
+            if (MaxRows == 0)
+                return Data.Remove(item);
+            else
+                throw new NotImplementedException("Remove is not supported with this collection.");
         }
 
         public void RemoveAt(int index)
         {
-            throw new NotImplementedException("RemoveAt is not supported with this collection.");
+            if (MaxRows == 0)
+                Data.RemoveAt(index);
+            else
+                throw new NotImplementedException("RemoveAt is not supported with this collection.");
         }
 
         IEnumerator IEnumerable.GetEnumerator()

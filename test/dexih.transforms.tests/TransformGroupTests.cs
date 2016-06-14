@@ -14,8 +14,7 @@ namespace dexih.transforms.tests
         [Fact]
         public void Group_Aggregates()
         {
-            SourceTable Source = Helpers.CreateUnSortedTestData();
-            TransformGroup TransformGroup = new TransformGroup();
+            ReaderMemory Source = Helpers.CreateUnSortedTestData();
 
             List<Function> Aggregates = new List<Function>();
 
@@ -52,21 +51,20 @@ namespace dexih.transforms.tests
             Aggregates.Add(countdistinct);
             Aggregates.Add(concat);
 
-            TransformGroup.SetMappings(null, Aggregates);
-            TransformGroup.SetInTransform(Source);
+            TransformGroup transformGroup = new TransformGroup(Source, null, Aggregates, false);
 
-            Assert.Equal(7, TransformGroup.FieldCount);
+            Assert.Equal(7, transformGroup.FieldCount);
 
             int counter = 0;
-            while (TransformGroup.Read() == true)
+            while (transformGroup.Read() == true)
             {
                 counter = counter + 1;
-                Assert.Equal((Double)55, TransformGroup["Sum"]);
-                Assert.Equal((Double)5.5, TransformGroup["Average"]);
-                Assert.Equal((Double)1, TransformGroup["Minimum"]);
-                Assert.Equal((Double)10, TransformGroup["Maximum"]);
-                Assert.Equal(10, TransformGroup["Count"]);
-                Assert.Equal(10, TransformGroup["CountDistinct"]);
+                Assert.Equal((Double)55, transformGroup["Sum"]);
+                Assert.Equal((Double)5.5, transformGroup["Average"]);
+                Assert.Equal((Double)1, transformGroup["Minimum"]);
+                Assert.Equal((Double)10, transformGroup["Maximum"]);
+                Assert.Equal(10, transformGroup["Count"]);
+                Assert.Equal(10, transformGroup["CountDistinct"]);
             }
             Assert.Equal(1, counter);
 
@@ -74,33 +72,31 @@ namespace dexih.transforms.tests
             Source.Add(new object[] { "value10", 10, 10.1, "2015/01/10", 10, "Even" });
 
             List<ColumnPair> GroupColumns = new List<ColumnPair>() { new ColumnPair("StringColumn", "StringColumn") };
-            TransformGroup.SetMappings(GroupColumns, Aggregates);
-            TransformGroup.Reset();
-            Source.Reset();
-            TransformGroup.SetInTransform(Source);
+
+            transformGroup = new TransformGroup(Source, GroupColumns, Aggregates, false);
 
             counter = 0;
-            while (TransformGroup.Read() == true)
+            while (transformGroup.Read() == true)
             {
                 counter = counter + 1;
                 if (counter < 10)
                 {
-                    Assert.Equal("value0" + counter.ToString(), TransformGroup["StringColumn"]);
-                    Assert.Equal((Double)counter, TransformGroup["Sum"]);
-                    Assert.Equal((Double)counter, TransformGroup["Average"]);
-                    Assert.Equal((Double)counter, TransformGroup["Minimum"]);
-                    Assert.Equal((Double)counter, TransformGroup["Maximum"]);
-                    Assert.Equal(1, TransformGroup["Count"]);
-                    Assert.Equal(1, TransformGroup["CountDistinct"]);
+                    Assert.Equal("value0" + counter.ToString(), transformGroup["StringColumn"]);
+                    Assert.Equal((Double)counter, transformGroup["Sum"]);
+                    Assert.Equal((Double)counter, transformGroup["Average"]);
+                    Assert.Equal((Double)counter, transformGroup["Minimum"]);
+                    Assert.Equal((Double)counter, transformGroup["Maximum"]);
+                    Assert.Equal(1, transformGroup["Count"]);
+                    Assert.Equal(1, transformGroup["CountDistinct"]);
                 }
                 else
                 {
-                    Assert.Equal((Double)20, TransformGroup["Sum"]);
-                    Assert.Equal((Double)10, TransformGroup["Average"]);
-                    Assert.Equal((Double)10, TransformGroup["Minimum"]);
-                    Assert.Equal((Double)10, TransformGroup["Maximum"]);
-                    Assert.Equal(2, TransformGroup["Count"]);
-                    Assert.Equal(1, TransformGroup["CountDistinct"]);
+                    Assert.Equal((Double)20, transformGroup["Sum"]);
+                    Assert.Equal((Double)10, transformGroup["Average"]);
+                    Assert.Equal((Double)10, transformGroup["Minimum"]);
+                    Assert.Equal((Double)10, transformGroup["Maximum"]);
+                    Assert.Equal(2, transformGroup["Count"]);
+                    Assert.Equal(1, transformGroup["CountDistinct"]);
                 }
             }
             Assert.Equal(10, counter);
@@ -109,8 +105,7 @@ namespace dexih.transforms.tests
         [Fact]
         public void Group_SeriesTests()
         {
-            dexih.transforms.SourceTable Source = Helpers.CreateSortedTestData();
-            TransformGroup TransformGroup = new TransformGroup();
+            dexih.transforms.ReaderMemory Source = Helpers.CreateSortedTestData();
 
             //add a row to test highest since.
             Source.Add(new object[] { "value11", 5, 10.1, "2015/01/11", 1 });
@@ -141,19 +136,17 @@ namespace dexih.transforms.tests
 
             List<ColumnPair> GroupColumns = new List<ColumnPair>() { new ColumnPair("DateColumn", "DateColumn") };
 
-            TransformGroup.SetMappings(null, Aggregates);
-            TransformGroup.PassThroughColumns = true;
-            TransformGroup.SetInTransform(Source);
+            TransformGroup transformGroup = new TransformGroup(Source, null, Aggregates, true);
 
-            Assert.Equal(8, TransformGroup.FieldCount);
+            Assert.Equal(8, transformGroup.FieldCount);
 
             int counter = 0;
             Double[] MAvgExpectedValues = { 2.5, 3, 3.5, 4, 5, 6, 7, 7.14, 7.5, 7.8, 8 };
             String[] HighestExpectedValues = { "2015/01/01", "2015/01/02", "2015/01/03", "2015/01/04", "2015/01/05", "2015/01/06", "2015/01/07", "2015/01/08", "2015/01/09", "2015/01/10", "2015/01/10" };
-            while (TransformGroup.Read() == true)
+            while (transformGroup.Read() == true)
             {
-                Assert.Equal((Double)MAvgExpectedValues[counter], Math.Round((Double)TransformGroup["MAvg"], 2));
-                Assert.Equal(HighestExpectedValues[counter], ((DateTime)TransformGroup["Highest"]).ToString("yyyy/MM/dd"));
+                Assert.Equal((Double)MAvgExpectedValues[counter], Math.Round((Double)transformGroup["MAvg"], 2));
+                Assert.Equal(HighestExpectedValues[counter], ((DateTime)transformGroup["Highest"]).ToString("yyyy/MM/dd"));
                 counter = counter + 1;
             }
             Assert.Equal(11, counter);

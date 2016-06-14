@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Linq;
 using System.Globalization;
+using static dexih.transforms.TableColumn;
 
 namespace dexih.transforms
 {
@@ -22,8 +23,16 @@ namespace dexih.transforms
         {
             NoCache = 0,
             OnDemandCache = 1,
-            PreLoadCache  =2
+            PreLoadCache = 2
         }
+
+        public enum EEncryptionMethod
+        {
+            NoEncryption = 0,
+            EncryptSecureFields = 1,
+            DecryptSecureFields = 2
+        }
+
         #endregion
 
         protected Transform()
@@ -36,208 +45,99 @@ namespace dexih.transforms
             TransformTimer = new Stopwatch();
         }
 
-        #region Properties
+        #region Generic Properties
 
         /// <summary>
-        /// The main inbound source of data.
+        /// The main source of data.
         /// </summary>
-        public Transform Reader;
+        public Transform PrimaryTransform;
 
         /// <summary>
-        /// The secondary souce of data, if supported by the transform.
+        /// The reference transform (such as join, or compare table).
         /// </summary>
-        public Transform JoinReader { get; set; }
-
-        protected object[] CurrentRow;
-        protected int CurrentRowNumber = -1;
-
-
-        /// <summary>
-        /// The method to cache data within the transform.  If NoCache is set, the data can only be read in a forward only method (Lookup and other functions are not available).
-        /// </summary>
-        public virtual ECacheMethod CacheMethod { get; set; } //indicates the data will be stored in memory.  This allows lookup and other operations to work
-
-        /// <summary>
-        /// The maximum number of rows to allow in the cache.  Use "0" for unlimited cache size.
-        /// </summary>
-        protected int CachedMaxRows { get; set; } = 0;
-
-        /// <summary>
-        /// Table containing the cached reader data.
-        /// </summary>
-        public virtual Table CachedTable { get; set; }
-
-        /// <summary>
-        /// Indicates if the cache is complete or at maximum capacity
-        /// </summary>
-        public bool IsCacheFull { get; protected set; } 
-        /// <summary>
-        /// Inidicates if the source reader has completed.
-        /// </summary>
-        public bool IsReaderFinished { get; protected set; }
+        public Transform ReferenceTransform { get; set; }
 
         //Generic transform contains properties for a list of Functions, Fields and simple Mappings 
         public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
-        public string JoinTable { get; set; } //used to store a reference to a join table.  
         public bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
-
-        public virtual List<Sort> RequiredSortFields() { return null; }
-        public virtual List<Sort> RequiredJoinSortFields() { return null; }
-
-        public virtual bool PrefersSort { get; } = false; //indicates the transform will run better with sorted input
-        public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input
-        protected bool SortedInputs { get; set; } //this is set if the transforms sort requirements have been met.
-
-        //public bool InputIsSorted { get; set; } //indicates if the transform can confirm sorted input.
-        //public List<Sort> InputSortFields { get; set; }
-
         public List<Sort> SortFields { get; set; } //indicates fields for the sort transform.
 
-        //diagnostics to record the processing time for the transformation.
-        public Stopwatch TransformTimer { get; set; }
-        public Stopwatch ProcessingDataTimer;
+        #endregion
 
-        public int RecordCount { get; set; }
+        #region Virtual Properties
+        public virtual List<Sort> RequiredSortFields() { return null; }
+        public virtual List<Sort> RequiredReferenceSortFields() { return null; }
 
-        public virtual bool SetInTransform(Transform inTransform, Transform joinTransform = null)
+        public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input 
+        #endregion
+
+        #region Abstract Properties
+
+        public abstract bool InitializeOutputFields();
+        public abstract string Details();
+        protected abstract ReturnValue<object[]> ReadRecord();
+        public abstract ReturnValue ResetTransform();
+
+        #endregion
+
+        #region Initialization 
+
+        /// <summary>
+        /// Sets the data readers for the transform.  Ensure the transform properties have been set prior to running this.
+        /// </summary>
+        /// <param name="primaryTransform">The primary input transform</param>
+        /// <param name="referenceTransform">The secondary input, such as join table, target table, lookup table etc.</param>
+        /// <returns></returns>
+        public virtual bool SetInTransform(Transform primaryTransform, Transform referenceTransform = null)
         {
 
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
             {
-                bool sortMatch = SortFieldsMatch(RequiredSortFields(), inTransform.CachedTable.OutputSortFields);
+                bool sortMatch = SortFieldsMatch(RequiredSortFields(), primaryTransform.CacheTable.OutputSortFields);
 
                 if (!sortMatch)
                 {
-                    TransformSort sortTransform = new TransformSort(inTransform, RequiredSortFields());
-                    Reader = sortTransform;
+                    TransformSort sortTransform = new TransformSort(primaryTransform, RequiredSortFields());
+                    PrimaryTransform = sortTransform;
                 }
                 else
                 {
-                    Reader = inTransform;
+                    PrimaryTransform = primaryTransform;
                 }
 
-                if (joinTransform != null)
+                if (referenceTransform != null)
                 {
-                    sortMatch = SortFieldsMatch(RequiredSortFields(), joinTransform.CachedTable.OutputSortFields);
+                    sortMatch = SortFieldsMatch(RequiredSortFields(), referenceTransform.CacheTable.OutputSortFields);
 
                     if (!sortMatch)
                     {
-                        TransformSort sortTransform = new TransformSort(joinTransform, RequiredJoinSortFields());
-                        JoinReader = sortTransform;
+                        TransformSort sortTransform = new TransformSort(referenceTransform, RequiredReferenceSortFields());
+                        ReferenceTransform = sortTransform;
                     }
                     else
                     {
-                        JoinReader = joinTransform;
+                        ReferenceTransform = referenceTransform;
                     }
                 }
-
-                SortedInputs = true;
             }
             else
             {
-                bool sortMatch = SortFieldsMatch(RequiredSortFields(), inTransform.CachedTable.OutputSortFields);
+                bool sortMatch = SortFieldsMatch(RequiredSortFields(), primaryTransform.CacheTable.OutputSortFields);
 
-                if (JoinReader != null)
+                if (ReferenceTransform != null)
                 {
-                    sortMatch &= SortFieldsMatch(RequiredSortFields(), joinTransform.CachedTable.OutputSortFields);
+                    sortMatch &= SortFieldsMatch(RequiredSortFields(), referenceTransform.CacheTable.OutputSortFields);
                 }
 
-                SortedInputs = sortMatch;
-
-                Reader = inTransform;
-                JoinReader = joinTransform;
+                PrimaryTransform = primaryTransform;
+                ReferenceTransform = referenceTransform;
             }
-            Initialize();
+            InitializeOutputFields();
             Reset();
             return true;
-        }
-
-        /// <summary>
-        /// Indicates if the source connection can run queries (such as sql)
-        /// </summary>
-        public abstract bool CanRunQueries { get; }
-        public abstract bool Initialize();
-        public abstract string Details();
-        protected abstract bool ReadRecord();
-        public abstract ReturnValue ResetTransform();
-
-
-        /// <summary>
-        /// Resets the transform and any source transforms.
-        /// </summary>
-        /// <returns></returns>
-        public ReturnValue Reset()
-        {
-            ReturnValue returnValue;
-
-            returnValue = ResetTransform();
-
-            if (!returnValue.Success)
-                return returnValue;
-
-            if (Reader != null)
-            {
-                returnValue = Reader.Reset();
-                if (!returnValue.Success)
-                    return returnValue;
-            }
-
-            if (JoinReader != null)
-            {
-                returnValue = JoinReader.Reset();
-                if (!returnValue.Success)
-                    return returnValue;
-            }
-
-            IsReaderFinished = false;
-            return new ReturnValue(true);
-        }
-
-        /// <summary>
-        /// Performs a row lookup based on the filters.  For mutliple rows, only the first will be returned.
-        /// The lookup will first attempt to retrieve a value from the cache (if cachemethod is set to cachine), and then a direct lookup if the transform supports it.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <returns></returns>
-        public virtual async Task<ReturnValue<object[]>> LookupRow(List<Filter> filters)
-        {
-            return await Task.Run(() =>
-            {
-                if (CacheMethod == ECacheMethod.PreLoadCache)
-                {
-                    //preload all records.
-                    while (Read());
-
-                    return CachedTable.LookupRow(filters);
-                }
-                else if (CacheMethod == ECacheMethod.OnDemandCache)
-                {
-                    //read records until a match is found.
-                    while (Read())
-                    {
-                        //does a lookup, using the record count to only check the latest record.
-                        var lookupResult = CachedTable.LookupRow(filters, RecordCount);
-                        if (lookupResult.Success == true)
-                            return lookupResult;
-                    }
-
-                    return new ReturnValue<object[]>(false, "Lookup not found.", null);
-                }
-                return new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null);
-            });
-        }
-
-        /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <returns></returns>
-        public virtual async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
-        {
-            return await Task.Run( () => new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null));
         }
 
         /// <summary>
@@ -263,53 +163,217 @@ namespace dexih.transforms
             else
                 return false;
         }
+
+        /// <summary>
+        /// Opens underlying connections passing sort and filter requests through.
+        /// </summary>
+        /// <param name="filters">Requested filters for underlying transform to execute.</param>
+        /// <param name="sorts">Requested sort for underlying transform to execute.</param>
+        /// <returns></returns>
+        public virtual ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
+        {
+            if(PrimaryTransform != null)
+                return PrimaryTransform.Open(filters, sorts);
+            return new ReturnValue(true);
+        }
+
         #endregion
 
-        #region DbDataRecord Implementation
+        #region Caching
+        /// <summary>
+        /// The method to cache data within the transform.  If NoCache is set, the data can only be read in a forward only method (Lookup and other functions are not available).
+        /// </summary>
+        public virtual ECacheMethod CacheMethod { get; protected set; } //indicates the data will be stored in memory.  This allows lookup and other operations to work
 
+        /// <summary>
+        /// The maximum number of rows to allow in the cache.  Use "0" for unlimited cache size.
+        /// </summary>
+        public int CacheMaxRows { get; protected set; } = 0;
 
-        public override bool Read()
+        /// <summary>
+        /// Sets the caching method and maximum number of rows.
+        /// </summary>
+        /// <param name="method">The method to cache data within the transform.  If NoCache is set, the data can only be read in a forward only method (Lookup and other functions are not available).</param>
+        /// <param name="maxRows">The maximum number of rows to allow in the cache.  Use "0" for unlimited cache size.</param>
+        public virtual void SetCacheMethod(ECacheMethod method, int maxRows = 0)
         {
-            CurrentRowNumber++;
+            CacheMethod = method;
+            CacheMaxRows = maxRows;
+        }
 
-            //check cache for a row first.
-            if(CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache)
+        /// <summary>
+        /// Table containing the cached reader data.
+        /// </summary>
+        public virtual Table CacheTable { get; protected set; }
+
+        /// <summary>
+        /// Indicates if the cache is complete or at maximum capacity
+        /// </summary>
+        public bool IsCacheFull { get; protected set; } 
+        #endregion
+        
+        #region Encryption 
+        /// <summary>
+        /// Indictes the encryption method.  
+        /// </summary>
+        public EEncryptionMethod EncryptionMethod { get; protected set; }
+        private string EncryptionKey { get; set; }
+
+        /// <summary>
+        /// Sets the method for the transform to encrypt data.  If encryption method is set to encrypt, then all columns with the SecurityFlag set will be encrypted or hashed as specified.  If encryption method is set to decrypt when columns with the security flag set to encrypt will be decrypted (note: hashed columns are one-way and cannot be decrypted.).
+        /// </summary>
+        /// <param name="encryptionMethod"></param>
+        /// <param name="key"></param>
+        public void SetEncryptionMethod(EEncryptionMethod encryptionMethod, string key)
+        {
+            EncryptionMethod = encryptionMethod;
+            EncryptionKey = key;
+        }
+
+        public void SetColumnSecurityFlag(string columnName, ESecurityFlag securityFlag)
+        {
+            if (CacheTable == null)
+                throw new Exception("Security flag can not be set as no CacheTable has been defined.");
+
+            var column = CacheTable[columnName];
+
+            if(column == null)
+                throw new Exception("Security flag can not be set as the column " + columnName + " was not found in the table.");
+
+            column.SecurityFlag = securityFlag;
+        }
+
+        private void EncryptRow(object[] row)
+        {
+            switch (EncryptionMethod)
             {
-                if(CurrentRowNumber < CachedTable.Data.Count)
+                case EEncryptionMethod.EncryptSecureFields:
+                    for (int i = 0; i < CacheTable.Columns.Count; i++)
+                    {
+                        switch (CacheTable.Columns[i].SecurityFlag)
+                        {
+                            case TableColumn.ESecurityFlag.Encrypt:
+                                row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey);
+                                break;
+                            case TableColumn.ESecurityFlag.OneWayHash:
+                                row[i] = PasswordHash.CreateHash(row[i].ToString());
+                                break;
+                        }
+                    }
+                    break;
+                case EEncryptionMethod.DecryptSecureFields:
+                    for (int i = 0; i < CacheTable.Columns.Count; i++)
+                    {
+                        switch (CacheTable.Columns[i].SecurityFlag)
+                        {
+                            case TableColumn.ESecurityFlag.Encrypt:
+                                row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey);
+                                break;
+                        }
+                    }
+                    break;
+            }
+
+        }
+
+
+        #endregion
+
+
+
+        #region Performance Diagnostics 
+        //diagnostics to record the processing time for the transformation.
+        public Stopwatch TransformTimer { get; set; }
+
+        /// <summary>
+        /// This is a recursive function that goes through each of the transforms and returns timer values when it gets to a connection.
+        /// </summary>
+        /// <param name="recordsRead"></param>
+        /// <param name="elapsedMilliseconds"></param>
+        /// <returns></returns>
+        public virtual void ReadThroughput(ref int recordsRead, ref long elapsedMilliseconds)
+        {
+            PrimaryTransform?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
+
+            PrimaryTransform.ReferenceTransform?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
+        }
+
+        /// <summary>
+        /// The number of timer ticks during the read function for this transform (underlying transform performance is substracted from this one.).
+        /// </summary>
+        /// <returns></returns>
+        public long TransformTimerTicks()
+        {
+            long ticks = TransformTimer.ElapsedTicks;
+
+            if (PrimaryTransform != null)
+                ticks = ticks - PrimaryTransform.TransformTimerTicks();
+            if (ReferenceTransform != null)
+                ticks = ticks - ReferenceTransform.TransformTimerTicks();
+
+            return ticks;
+        }
+
+        #endregion
+
+
+        #region Record Navigation
+
+        /// <summary>
+        /// Inidicates if the source reader has completed, without moving to the next record.
+        /// </summary>
+        public bool IsReaderFinished { get; protected set; }
+
+        private bool isResetting = false; //flag to indicate reset is underway.
+        private object[] CurrentRow; //stores data for the current row.
+        protected int CurrentRowNumber = -1; //current row number
+
+
+        /// <summary>
+        /// Resets the transform and any source transforms.
+        /// </summary>
+        /// <returns></returns>
+        public ReturnValue Reset()
+        {
+            if (!isResetting) //stops recursive looops where intertwinned transforms are resetting each other
+            {
+                isResetting = true;
+
+                ReturnValue returnValue;
+
+                returnValue = ResetTransform();
+
+                if (!returnValue.Success)
+                    return returnValue;
+
+                if (PrimaryTransform != null)
                 {
-                    CurrentRow = CachedTable.Data[CurrentRowNumber];
-                    return true;
+                    returnValue = PrimaryTransform.Reset();
+                    if (!returnValue.Success)
+                        return returnValue;
                 }
+
+                if (ReferenceTransform != null)
+                {
+                    returnValue = ReferenceTransform.Reset();
+                    if (!returnValue.Success)
+                        return returnValue;
+                }
+
+                IsReaderFinished = false;
+
+                isResetting = false;
+                return new ReturnValue(true);
             }
 
-            if (IsReaderFinished == true)
-            {
-                CurrentRow = null;
-                return false;
-            }
-
-            //starts  a timer that can be used to measure downstream transform and database performance.
-            TransformTimer.Start();
-            bool returnValue = ReadRecord(); 
-            
-            if (returnValue) RecordCount++;
-            TransformTimer.Stop();
-
-            if (returnValue == false)
-                IsReaderFinished = true;
-
-            //add the row to the cache
-            if (returnValue == true && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
-                CachedTable.Data.Add(CurrentRow);
-
-            return returnValue;
+            return new ReturnValue(false);
         }
 
         //Set the reader to a specific row.  If the rows has exceeded MaxRows this will only start from the beginning of the cache.   A read() is required folowing this to get data.
         public void SetRowNumber(int rowNumber = 0)
         {
-            if (rowNumber <= CachedTable.Data.Count)
-                CurrentRowNumber = rowNumber -1;
+            if (rowNumber <= CacheTable.Data.Count)
+                CurrentRowNumber = rowNumber - 1;
             else
                 throw new Exception("SetRowNumber failed, as the row exceeded the number of rows in the cache");
         }
@@ -321,44 +385,155 @@ namespace dexih.transforms
         /// <param name="values">An array length(FieldCount) that will contain the values from the row.</param>
         public void RowPeek(int rowNumber, object[] values)
         {
-            if (rowNumber >= CachedTable.Data.Count)
+            if (rowNumber >= CacheTable.Data.Count)
                 throw new Exception("RowPeek failed, as the row exceeded the number of rows in the cache");
 
-            CachedTable.Data[rowNumber].CopyTo(values, 0);
-        }
+            CacheTable.Data[rowNumber].CopyTo(values, 0);
+        } 
+        #endregion
 
-        public Table GetTable()
+        #region Lookup
+        /// <summary>
+        /// Performs a row lookup based on the filters.  For mutliple rows, only the first will be returned.
+        /// The lookup will first attempt to retrieve a value from the cache (if cachemethod is set to PreLoad cache or OnDemandCache), and then a direct lookup if the transform supports it.
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
+        public virtual async Task<ReturnValue<object[]>> LookupRow(List<Filter> filters)
         {
-            Table table = new Table();
-
-            for (int i = 0; i < FieldCount; i++)
+            if (CacheMethod == ECacheMethod.PreLoadCache)
             {
-                var typeCode = CurrentRow == null ? DataType.ETypeCode.String : DataType.GetTypeCode(GetValue(i).GetType());
+                //preload all records.
+                await Task.Run(() =>
+                {
+                    while (Read()) ;
+                });
 
-                table.Columns.Add(new TableColumn(GetName(0), typeCode));
+                return CacheTable.LookupSingleRow(filters);
+            }
+            else if (CacheMethod == ECacheMethod.OnDemandCache)
+            {
+                //lookup in the cache.
+                var lookupResult = CacheTable.LookupSingleRow(filters);
+                if (lookupResult.Success)
+                    return lookupResult;
+
+                if (CanLookupRowDirect)
+                {
+                    //not found in the cache, attempt a direct lookup.
+                    lookupResult = await LookupRowDirect(filters);
+
+                    if (lookupResult.Success)
+                    {
+                        if (EncryptionMethod != EEncryptionMethod.NoEncryption)
+                            EncryptRow(lookupResult.Value);
+
+                        CacheTable.Data.Add(lookupResult.Value);
+                    }
+                }
+                else
+                {
+                    //not found in the cache, keep reading until it's found.
+                    return await Task.Run(() =>
+                    {
+                        while (Read())
+                        {
+                            //does a lookup, using the record count to only check the latest record.
+                            if (lookupResult.Success == true)
+                                return lookupResult;
+                        }
+
+                        return new ReturnValue<object[]>(false, "Lookup not found.", null);
+                    });
+                }
             }
 
-            return table;
+            //if no caching is specified, run a direct lookup.
+            var lookupReturn = await LookupRowDirect(filters);
+            if (lookupReturn.Success)
+            {
+                if (EncryptionMethod != EEncryptionMethod.NoEncryption)
+                    EncryptRow(lookupReturn.Value);
+            }
 
+            return lookupReturn;
         }
+
+        public virtual bool CanLookupRowDirect { get; } = false;
 
         /// <summary>
-        /// This is a recursive function that goes through each of the transforms and returns timer values when it gets to a connection.
+        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
         /// </summary>
-        /// <param name="recordsRead"></param>
-        /// <param name="elapsedMilliseconds"></param>
+        /// <param name="filters"></param>
         /// <returns></returns>
-        public virtual void ReadThroughput(ref int recordsRead, ref long elapsedMilliseconds)
+        public virtual async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
         {
-            Reader?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
+            return await Task.Run(() => new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null));
+        } 
+        #endregion
 
-            Reader.JoinReader?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
+        #region DbDataReader Implementation
+
+        public override bool Read()
+        {
+            //starts  a timer that can be used to measure downstream transform and database performance.
+            TransformTimer.Start();
+
+            CurrentRowNumber++;
+
+            //check cache for a row first.
+            if(CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache)
+            {
+                if(CurrentRowNumber < CacheTable.Data.Count)
+                {
+                    CurrentRow = CacheTable.Data[CurrentRowNumber];
+                    TransformTimer.Stop();
+                    return true;
+                }
+            }
+
+            if (IsReaderFinished == true)
+            {
+                CurrentRow = null;
+                TransformTimer.Stop();
+                return false;
+            }
+
+            var returnValue = ReadRecord();
+
+            if (returnValue.Success)
+            {
+                if (EncryptionMethod != EEncryptionMethod.NoEncryption)
+                    EncryptRow(returnValue.Value);
+
+                CurrentRow = returnValue.Value;
+            }
+
+            if (returnValue.Success == false)
+                IsReaderFinished = true;
+
+            //add the row to the cache
+            if (returnValue.Success == true && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
+                CacheTable.Data.Add(CurrentRow);
+
+            TransformTimer.Stop();
+            return returnValue.Success;
         }
 
-        public override int FieldCount => CachedTable.Columns.Count; 
-        public override int GetOrdinal(string columnName) => CachedTable.GetOrdinal(columnName);
-        public override string GetName(int i) => CachedTable.Columns[i].ColumnName;
-        public override object this[string name] => GetValue(GetOrdinal(name));
+        public override int FieldCount => CacheTable.Columns.Count; 
+        public override int GetOrdinal(string columnName) => CacheTable.GetOrdinal(columnName);
+        public override string GetName(int i) => CacheTable.Columns[i].ColumnName;
+        public override object this[string name]
+        {
+            get
+            {
+                int ordinal = GetOrdinal(name);
+                if (ordinal < 0)
+                    throw new Exception("The column " + name + " could not be found in the table.");
+
+                return GetValue(GetOrdinal(name));
+            }
+        }
         public override object this[int i] => GetValue(i);
 
         public override int Depth
@@ -369,7 +544,7 @@ namespace dexih.transforms
             }
         }
 
-        public override bool IsClosed => Reader.IsClosed;
+        public override bool IsClosed => PrimaryTransform.IsClosed;
 
         public override int RecordsAffected
         {
@@ -451,6 +626,9 @@ namespace dexih.transforms
         }
         public override int GetValues(object[] values)
         {
+            if (values.Length > CurrentRow.Length)
+                throw new Exception("Could not GetValues as the input array was length " + values.Length.ToString() + " which is greater than the current number of fields " + CurrentRow.Length.ToString() + ".");
+
             for (int i = 0; i < values.GetLength(0); i++)
                 values[i] = CurrentRow[i];
             return values.GetLength(0);
@@ -464,22 +642,24 @@ namespace dexih.transforms
         {
             if (disposing)
             {
-                Reader.Dispose(disposing);
+                PrimaryTransform.Dispose(disposing);
+                if (ReferenceTransform != null)
+                    ReferenceTransform.Dispose(disposing);
             }
             base.Dispose(disposing);
         }
 
         public override bool NextResult()
         {
-            return Reader.NextResult();
+            return Read();
         }
 
         public override IEnumerator GetEnumerator()
         {
-            return Reader?.GetEnumerator();
+            throw new NotImplementedException("This feature is not currently implemnted.");
         }
 
-        public override bool HasRows => Reader.HasRows;
+        public override bool HasRows => PrimaryTransform.HasRows;
 
 #if NET451
         public override DataTable GetSchemaTable()
@@ -541,22 +721,26 @@ namespace dexih.transforms
 					false					// 21- IsRowVersion
 			  };
 
-            int pos = 0;
-            for (int i = 0; i < FieldCount; i++)
+            for (int i = 0; i < CacheTable.Columns.Count; i++)
             {
-                schemaRow[1] = GetName(i); // Base column name
-                schemaRow[4] = GetName(i); // Column name
-                schemaRow[5] = pos; // Column ordinal
-                schemaRow[7] = CurrentRow == null ? typeof(string) : GetValue(i).GetType();
+                var col = CacheTable.Columns[i];
+                schemaRow[0] = col.AllowDbNull; // Base column name
+                schemaRow[1] = col.ColumnName; // Base column name
+                schemaRow[4] = col.ColumnName; // Column name
+                schemaRow[5] = i; // Column ordinal
+                schemaRow[6] = col.MaxLength > 0 ? col.MaxLength : int.MaxValue;
+                schemaRow[7] = DataType.GetType(col.DataType);
+                schemaRow[10] = col.DeltaType == EDeltaType.SurrogateKey ? true : false;
+                schemaRow[12] = col.DeltaType == EDeltaType.SurrogateKey ? true : false;
+                schemaRow[13] = col.Precision == null ? DBNull.Value : (object)col.Precision;
+                schemaRow[14] = col.Scale == null ? DBNull.Value : (object)col.Scale;
                 schema.Rows.Add(schemaRow);
-                pos++;
             }
 
             return schema;
         }
 #else
-
-
+        
 #endif
         #endregion
 

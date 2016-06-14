@@ -22,32 +22,28 @@ namespace dexih.transforms
             EndAt = endAt;
             Increment = increment;
 
-            Initialize();
+            InitializeOutputFields();
         }
 
-        public override bool Initialize()
+        public override bool InitializeOutputFields()
         {
-            CachedTable = new Table("RowCreator");
-            CachedTable.Columns.Add(new TableColumn("RowNumber", DataType.ETypeCode.Int32));
+            CacheTable = new Table("RowCreator");
+            CacheTable.Columns.Add(new TableColumn("RowNumber", DataType.ETypeCode.Int32));
 
-            CachedTable.OutputSortFields = new List<Sort>() { new Sort("RowNumber") };
+            CacheTable.OutputSortFields = new List<Sort>() { new Sort("RowNumber") };
             _currentRow = StartAt-1;
             return true;
         }
 
-        public override bool CanRunQueries => false;
-
-        public override bool PrefersSort => false;
         public override bool RequiresSort => false;
 
-
-        protected override bool ReadRecord()
+        protected override ReturnValue<object[]> ReadRecord()
         {
             _currentRow = _currentRow + Increment;
             if (_currentRow > EndAt)
-                return false;
-            CurrentRow = new object[] { _currentRow };
-            return true;
+                return new ReturnValue<object[]>(false, null);
+            var newRow = new object[] { _currentRow };
+            return new ReturnValue<object[]>(true, newRow);
         }
 
         public override ReturnValue ResetTransform()
@@ -66,7 +62,7 @@ namespace dexih.transforms
             return null;
         }
 
-        public override List<Sort> RequiredJoinSortFields()
+        public override List<Sort> RequiredReferenceSortFields()
         {
             return null;
         }

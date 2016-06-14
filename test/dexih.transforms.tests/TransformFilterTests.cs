@@ -13,9 +13,7 @@ namespace dexih.transforms.tests
         [Fact]
         public void Filters()
         {
-            SourceTable Table = Helpers.CreateSortedTestData();
-            TransformFilter TransformFilter = new TransformFilter();
-            TransformMapping TransformMapping = new TransformMapping();
+            ReaderMemory Table = Helpers.CreateSortedTestData();
 
             //set a filter that filters all
             List<Function> Conditions = new List<Function>();
@@ -25,8 +23,7 @@ namespace dexih.transforms.tests
                     new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk") };
             Conditions.Add(Function);
 
-            TransformFilter.SetConditions(Conditions);
-            TransformFilter.SetInTransform(Table);
+            TransformFilter TransformFilter = new TransformFilter(Table, Conditions);
 
             Assert.Equal(5, TransformFilter.FieldCount);
 
@@ -45,7 +42,7 @@ namespace dexih.transforms.tests
                     new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value03") };
             Conditions.Add(Function);
 
-            TransformFilter.SetConditions(Conditions);
+            TransformFilter.Conditions = Conditions;
             TransformFilter.Reset();
 
             count = 0;
@@ -67,7 +64,7 @@ namespace dexih.transforms.tests
                     new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value07", isArray: true) };
 
             Conditions.Add(Function);
-            TransformFilter.SetConditions(Conditions);
+            TransformFilter.Conditions = Conditions;
             Table.Reset();
             TransformFilter.SetInTransform(Table);
 
@@ -87,9 +84,9 @@ namespace dexih.transforms.tests
                     new dexih.functions.Parameter("start", ETypeCode.Int32, false, 5),
                     new dexih.functions.Parameter("end", ETypeCode.Int32, false, 50) };
             Mappings.Add(Function);
-            TransformMapping.SetMappings(null, Mappings);
+
             Table.Reset();
-            TransformMapping.SetInTransform(Table);
+            TransformMapping TransformMapping = new TransformMapping(Table, null, Mappings);
 
             Conditions = new List<Function>();
             Function = StandardFunctions.GetFunctionReference("LessThan");
@@ -97,7 +94,7 @@ namespace dexih.transforms.tests
                     new dexih.functions.Parameter("Substring", ETypeCode.Int32, true, null, "Substring" ),
                     new dexih.functions.Parameter("Compare", ETypeCode.Int32, false, 5) };
             Conditions.Add(Function);
-            TransformFilter.SetConditions(Conditions);
+            TransformFilter.Conditions = Conditions;
             TransformFilter.SetInTransform(TransformMapping);
 
             count = 0;

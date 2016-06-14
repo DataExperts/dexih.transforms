@@ -16,19 +16,12 @@ using System.Runtime.Loader;
 
 namespace dexih.functions
 {
-    public enum ErrorAction
+    public enum EErrorAction
     {
         Abend,
         Null,
         Reject,
         Execute
-    }
-
-    public enum ERowAction
-    {
-        Pass = 1,
-        PassReject = 2,
-        Reject = 3 //Note order is important as when multiple validation rules are applied, the highest wins.
     }
 
     /// <summary>
@@ -44,14 +37,22 @@ namespace dexih.functions
         object _objectReference;
 
         /// <summary>
+        /// Invalid action when a validation function fails.  Order of these is important as determines priority(i.e. abend overrides a clean).
+        /// </summary>
+        public enum EInvalidAction
+        {
+            Pass = 1, //record passes with no action.
+            Clean = 2, //record pass with cleanup parameters applied.
+            RejectClean = 3, //2 records, one pass with cleanup, and one reject.
+            Reject = 4, //record reject.
+            Discard = 5, //record completely discarded.
+            Abend = 6 //job abended.
+        }
+
+        /// <summary>
         /// A name the describes the function.
         /// </summary>
         public string FunctionName { get; set; }
-
-        /// <summary>
-        /// The function is part of the library of methods contained in the "StandardFunctions" class.
-        /// </summary>
-        public bool IsStandardFunction { get; set; }
 
         /// <summary>
         /// C# custom code executed for everyrow.
@@ -83,34 +84,26 @@ namespace dexih.functions
         /// <summary>
         /// Action to take if there is an error in the function.
         /// </summary>
-        public ErrorAction OnError { get; set; }
+        public EErrorAction OnError { get; set; }
 
         /// <summary>
         /// Action to take if there is a null value received by the function.
         /// </summary>
-        public ErrorAction OnNull { get; set; }
+        public EErrorAction OnNull { get; set; }
 
         /// <summary>
         /// If this is a boolean function, return the "NOT" result.
         /// </summary>
         public Boolean NotCondition { get; set; }
 
-        /// <summary>
-        /// Flag to indicate that the function can be translated to the database.
-        /// </summary>
-        public bool CanRunSql { get; set; }
-
-        /// <summary>
-        /// Database function to execute if the function can be translated to the database.
-        /// </summary>
-        public string FunctionSql { get; set; }
+        public EInvalidAction InvalidAction { get; set; } = EInvalidAction.Reject;
+        
 
         public Function(string targetColumn, bool isStandardFunction, string functionName, string functionCode, string functionResultCode, ETypeCode returnType, Parameter[] inputs, Parameter[] outputs)
         {
             TargetColumn = targetColumn;
             FunctionName = functionName;
             FunctionCode = functionCode;
-            IsStandardFunction = isStandardFunction;
             FunctionResultCode = functionResultCode;
 
             Inputs = inputs;
@@ -138,9 +131,10 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Type targetType, string MethodName, string[] inputMappings, string targetColumn, string[] outputMappings) :
-            this(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings)
+        public Function(Type targetType, string MethodName, string[] inputMappings, string targetColumn, string[] outputMappings)
         {
+            FunctionName = MethodName;
+            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
         }
 
         /// <summary>
@@ -151,14 +145,39 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Type targetType, string MethodName, string ResultMethodName, string ResetMethodName, string[] inputMappings, string targetColumn, string[] outputMappings) :
-            this(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings)
+        public Function(Type targetType, string MethodName, string ResultMethodName, string ResetMethodName, string[] inputMappings, string targetColumn, string[] outputMappings)
         {
+            FunctionName = MethodName;
             _resultMethod = targetType.GetMethod(ResultMethodName);
             _resetMethod = targetType.GetMethod(ResetMethodName);
+
+            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
+        }
+
+        /// <summary>
+        /// Creates a new function from a class/method reference.
+        /// </summary>
+        /// <param name="Target">An instantiated instance of the class containing the method.  Ensure a new instance of Target is created for each function to avoid issues with cached data.</param>
+        /// <param name="MethodName">The name of the method to call.</param>
+        /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
+        /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
+        /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
+        public Function(object Target, string MethodName, string ResultMethodName, string ResetMethodName, string[] inputMappings, string targetColumn, string[] outputMappings)
+            
+        {
+            FunctionName = MethodName;
+            _resultMethod = Target.GetType().GetMethod(ResultMethodName);
+            _resetMethod = Target.GetType().GetMethod(ResetMethodName);
+
+            Initialize(Target, Target.GetType().GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
         }
 
         public Function(object Target, MethodInfo FunctionMethod, string[] inputMappings, string targetColumn, string[] outputMappings)
+        {
+            Initialize(Target, FunctionMethod, inputMappings, targetColumn, outputMappings);
+        }
+
+        private void Initialize(object Target, MethodInfo FunctionMethod, string[] inputMappings, string targetColumn, string[] outputMappings)
         {
             _functionMethod = FunctionMethod;
             _objectReference = Target;
@@ -182,6 +201,7 @@ namespace dexih.functions
                 Inputs[i] = new Parameter();
                 Inputs[i].ColumnName = inputMappings[i];
                 Inputs[i].Name = inputParameters[parameterCount].Name;
+                Inputs[i].IsColumn = true;
 
                 Type parameterType = inputParameters[parameterCount].ParameterType;
                 Inputs[i].IsArray = parameterType.IsArray;
@@ -199,7 +219,12 @@ namespace dexih.functions
                 if (!parameterType.IsArray) parameterCount++;
             }
 
-            ParameterInfo[] outputParameters = _functionMethod.GetParameters().Where(c => c.IsOut).ToArray();
+            ParameterInfo[] outputParameters;
+
+            if (_resultMethod == null)
+                outputParameters = _functionMethod.GetParameters().Where(c => c.IsOut).ToArray();
+            else
+                outputParameters = _resultMethod.GetParameters().Where(c => c.IsOut).ToArray();
 
             parameterCount = 0;
             if (outputParameters.Length > 0)
@@ -227,10 +252,10 @@ namespace dexih.functions
                     else
                         Outputs[i].DataType = GetTypeCode(parameterType);
 
-                    if (Outputs[i].DataType == ETypeCode.Unknown)
-                    {
-                        throw new Exception("The datatype: " + outputParameters[i].GetType().ToString() + " for parameter " + outputParameters[i].Name + " is not a supported datatype.");
-                    }
+                    //if (Outputs[i].DataType == ETypeCode.Unknown)
+                    //{
+                    //    throw new Exception("The datatype: " + outputParameters[i].GetType().ToString() + " for parameter " + outputParameters[i].Name + " is not a supported datatype.");
+                    //}
 
                     //when an array is found in a method, all parameters are mapped to this.  
                     if (!parameterType.IsArray) parameterCount++;
@@ -420,67 +445,54 @@ public class Program
             {
                 try
                 {
-                    if (IsStandardFunction)
+                    string code = CreateFunctionCode();
+                    var syntaxTree = CSharpSyntaxTree.ParseText(code);
+
+                    MetadataReference[] references = new MetadataReference[]
                     {
-                        _objectReference = new StandardFunctions();
-                        Type mappingFunction = _objectReference.GetType();
-                        _functionMethod = mappingFunction.GetMethod(FunctionCode);
-                        if (FunctionResultCode != null)
-                            _resultMethod = mappingFunction.GetMethod(FunctionResultCode);
+                        MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(Hashtable).GetTypeInfo().Assembly.Location)
+                    }; 
 
-                        _resetMethod = mappingFunction.GetMethod("Reset");
-                    }
-                    else
+                        var compilation = CSharpCompilation.Create("Function" + Guid.NewGuid().ToString() + ".dll",
+                        syntaxTrees: new[] { syntaxTree },
+                        references: references,
+                        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+                    StringBuilder message = new StringBuilder();
+
+                    using (var ms = new MemoryStream())
                     {
-                        string code = CreateFunctionCode();
-                        var syntaxTree = CSharpSyntaxTree.ParseText(code);
+                        EmitResult result = compilation.Emit(ms);
 
-                        MetadataReference[] references = new MetadataReference[]
+                        if (!result.Success)
                         {
-                            MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-                            MetadataReference.CreateFromFile(typeof(Hashtable).GetTypeInfo().Assembly.Location)
-                        }; 
+                            IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
+                                diagnostic.IsWarningAsError ||
+                                diagnostic.Severity == DiagnosticSeverity.Error);
 
-                         var compilation = CSharpCompilation.Create("Function" + Guid.NewGuid().ToString() + ".dll",
-                            syntaxTrees: new[] { syntaxTree },
-                            references: references,
-                            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-                        StringBuilder message = new StringBuilder();
-
-                        using (var ms = new MemoryStream())
-                        {
-                            EmitResult result = compilation.Emit(ms);
-
-                            if (!result.Success)
+                            foreach (Diagnostic diagnostic in failures)
                             {
-                                IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
-                                    diagnostic.IsWarningAsError ||
-                                    diagnostic.Severity == DiagnosticSeverity.Error);
-
-                                foreach (Diagnostic diagnostic in failures)
-                                {
-                                    message.AppendFormat("{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
-                                }
-
-                                return new ReturnValue<MethodInfo>(false, "The following compile errors were encountered: " + message.ToString(), null);
+                                message.AppendFormat("{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
                             }
-                            else
-                            {
+
+                            return new ReturnValue<MethodInfo>(false, "The following compile errors were encountered: " + message.ToString(), null);
+                        }
+                        else
+                        {
                                 
-                                ms.Seek(0, SeekOrigin.Begin);
+                            ms.Seek(0, SeekOrigin.Begin);
 
 #if NET451
-                                Assembly assembly = Assembly.Load(ms.ToArray());
+                            Assembly assembly = Assembly.Load(ms.ToArray());
 #else
-                                AssemblyLoadContext context = AssemblyLoadContext.Default;
-                                Assembly assembly = context.LoadFromStream(ms);
+                            AssemblyLoadContext context = AssemblyLoadContext.Default;
+                            Assembly assembly = context.LoadFromStream(ms);
 #endif
 
-                                Type mappingFunction = assembly.GetType("Program");
-                                _functionMethod = mappingFunction.GetMethod("CustomFunction");
-                                _resetMethod = mappingFunction.GetMethod("Reset");
-                            }
+                            Type mappingFunction = assembly.GetType("Program");
+                            _functionMethod = mappingFunction.GetMethod("CustomFunction");
+                            _resetMethod = mappingFunction.GetMethod("Reset");
                         }
                     }
                 }
@@ -617,6 +629,11 @@ public class Program
             }
         }
 
+        /// <summary>
+        /// Get the return value from an aggregate function.  
+        /// </summary>
+        /// <param name="index">Index represents result row, and is used for series functions that return multiple results from one aggregation.</param>
+        /// <returns></returns>
         public ReturnValue<object> ReturnValue(int? index = 0)
         {
             if (_resultMethod != null)
@@ -624,8 +641,21 @@ public class Program
                 try
                 {
                     int outputsCount = Outputs?.Length ?? 0;
-                    object[] parameters = new object[outputsCount + 1];
-                    parameters[0] = index;
+                    int indexAdjust;
+                    object[] parameters;
+
+                    //if the result method has an "index" as the first parameter, then add the index
+                    if (_resultMethod.GetParameters().Count() > 0 && _resultMethod.GetParameters()[0].Name == "index")
+                    {
+                        parameters = new object[outputsCount + 1];
+                        parameters[0] = index;
+                        indexAdjust = 1;
+                    }
+                    else
+                    {
+                        parameters = new object[outputsCount];
+                        indexAdjust = 0;
+                    }
 
                     List<object> arrayValues = null;
                     for (int i = 0; i < outputsCount; i++)
@@ -638,13 +668,13 @@ public class Program
                         }
                         else
                         {
-                            parameters[i + 1] = null; 
+                            parameters[i + indexAdjust] = null; 
                         }
                     }
 
                     if (arrayValues != null)
                     {
-                        parameters[outputsCount + 1] = arrayValues.Select(c => Convert.ChangeType(c, Type.GetType("System." + Outputs.Last().DataType)));
+                        parameters[outputsCount + indexAdjust] = arrayValues.Select(c => Convert.ChangeType(c, Type.GetType("System." + Outputs.Last().DataType)));
                     }
 
                     _returnValue = _resultMethod.Invoke(_objectReference, parameters);
@@ -656,13 +686,13 @@ public class Program
 
                         if (Outputs != null && Outputs[i].IsArray)
                         {
-                            object[] Array = (object[])parameters[i + 1];
+                            object[] Array = (object[])parameters[i + indexAdjust];
                             result = Outputs[i].SetValue(arrayNumber >= Array.Length ? DBNull.Value : Array[arrayNumber]);
                             arrayNumber++;
                         }
                         else
                         {
-                            result = Outputs[i].SetValue(parameters[i + 1]);
+                            result = Outputs[i].SetValue(parameters[i + indexAdjust]);
                         }
 
                         if (result.Success == false)

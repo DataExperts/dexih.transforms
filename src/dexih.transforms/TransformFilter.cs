@@ -16,6 +16,7 @@ namespace dexih.transforms
             Conditions = conditions;
             SetInTransform(inReader);
         }
+
         public List<Function> Conditions
         {
             get
@@ -28,39 +29,40 @@ namespace dexih.transforms
             }
         }
 
-        public bool SetConditions(List<Function> conditions)
+        public override bool InitializeOutputFields()
         {
-            Conditions = conditions;
-            return true;
-        }
-
-        public override bool Initialize()
-        {
-            CachedTable = Reader.CachedTable.Copy();
-            CachedTable.TableName = "Filter";
-            CachedTable.OutputSortFields = Reader.CachedTable.OutputSortFields;
+            CacheTable = PrimaryTransform.CacheTable.Copy();
+            CacheTable.TableName = "Filter";
+            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             return true;
         }
 
-        /// <summary>
-        /// checks if filter can execute against the database query.
-        /// </summary>
-        public override bool CanRunQueries
-        {
-            get
-            {
-                return Conditions.Exists(c => c.CanRunSql == false) && Reader.CanRunQueries;
-            }
-        }
-
-        public override bool PrefersSort => false;
         public override bool RequiresSort => false;
 
-        protected override bool ReadRecord()
+        public override ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
         {
-            if (Reader.Read() == false)
-                return false;
+            if (filters == null)
+                filters = new List<Filter>();
+
+            //add any of the conditions that can be translated to filters
+            foreach (var condition in Conditions)
+            {
+                var filter = Filter.GetFilterFromFunction(condition);
+                if(filter.Success)
+                {
+                    filter.Value.AndOr = Filter.EAndOr.And;
+                    filters.Add(filter.Value);
+                }
+            }
+            var returnValue = PrimaryTransform.Open(filters, sorts);
+            return returnValue;
+        }
+
+        protected override ReturnValue<object[]> ReadRecord()
+        {
+            if (PrimaryTransform.Read() == false)
+                return new ReturnValue<object[]>(false, null);
             bool showRecord;
             do //loop through the records util the filter is true
             {
@@ -71,7 +73,7 @@ namespace dexih.transforms
                     {
                         foreach (Parameter input in condition.Inputs.Where(c => c.IsColumn))
                         {
-                            var result = input.SetValue(Reader[input.ColumnName]);
+                            var result = input.SetValue(PrimaryTransform[input.ColumnName]);
                             if (result.Success == false)
                                 throw new Exception("Error setting condition values: " + result.Message);
                         }
@@ -89,18 +91,20 @@ namespace dexih.transforms
                 }
 
                 if (showRecord) break;
-            } while (Reader.Read());
+            } while (PrimaryTransform.Read());
+
+            object[] newRow;
 
             if (showRecord)
             {
-                CurrentRow = new object[FieldCount];
+                newRow = new object[FieldCount];
                 for (int i = 0; i < FieldCount; i++)
-                    CurrentRow[i] = Reader[i];
+                    newRow[i] = PrimaryTransform[i];
             }
             else
-                CurrentRow = null;
+                newRow = null;
 
-            return showRecord;
+            return new ReturnValue<object[]>(showRecord, newRow);
         }
 
         public override ReturnValue ResetTransform()
@@ -118,7 +122,7 @@ namespace dexih.transforms
             return null;
         }
 
-        public override List<Sort> RequiredJoinSortFields()
+        public override List<Sort> RequiredReferenceSortFields()
         {
             return null;
         }

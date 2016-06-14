@@ -23,11 +23,8 @@ namespace dexih.transforms.tests
 
         public void RunSingleColumnSort(string column, Sort.EDirection direction, string checkColumn)
         {
-            dexih.transforms.SourceTable Source = Helpers.CreateUnSortedTestData();
-            TransformSort TransformSort = new TransformSort();
-
-            TransformSort.SetSortFields(new List<Sort> { new Sort() { Column = column, Direction = direction } });
-            TransformSort.SetInTransform(Source);
+            dexih.transforms.ReaderMemory Source = Helpers.CreateUnSortedTestData();
+            TransformSort TransformSort = new TransformSort(Source, new List<Sort> { new Sort(column, direction ) });
             int SortCount = 1;
 
             Assert.Equal(6, TransformSort.FieldCount);
@@ -42,11 +39,8 @@ namespace dexih.transforms.tests
         [Fact]
         public void RunDoubleColumnSort()
         {
-            dexih.transforms.SourceTable Source = Helpers.CreateUnSortedTestData();
-            TransformSort TransformSort = new TransformSort();
-
-            TransformSort.SetSortFields(new List<Sort> { new Sort("GroupColumn"), new Sort("IntColumn") } );
-            TransformSort.SetInTransform(Source);
+            dexih.transforms.ReaderMemory Source = Helpers.CreateUnSortedTestData();
+            TransformSort TransformSort = new TransformSort(Source, new List <Sort> { new Sort("GroupColumn"), new Sort("IntColumn") });
 
             Assert.Equal(6, TransformSort.FieldCount);
 
@@ -76,10 +70,8 @@ namespace dexih.transforms.tests
         [Fact]
         public void SortLargeTable()
         {
-            dexih.transforms.SourceTable Source = Helpers.CreateLargeTable(100000);
-            TransformSort TransformSort = new TransformSort();
-
-            TransformSort.SetSortFields(new List<Sort> { new Sort() { Column = "random", Direction = Sort.EDirection.Ascending} });
+            dexih.transforms.ReaderMemory Source = Helpers.CreateLargeTable(100000);
+            TransformSort TransformSort = new TransformSort(Source, new List <Sort> { new Sort("random", Sort.EDirection.Ascending) });
             TransformSort.SetInTransform(Source);
 
             string previousValue = "";

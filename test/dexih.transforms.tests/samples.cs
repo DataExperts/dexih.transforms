@@ -15,7 +15,7 @@ public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetC
     DbDataReader sourceReader = cmd.ExecuteReader();
 
     // Load the reader into transform source, which will start the transform chain.
-    SourceDbReader transformSource = new SourceDbReader(sourceReader);
+    ReaderDbDataReader transformSource = new ReaderDbDataReader(sourceReader);
 
     // Create a custom filter that removes records where PurchaseOrderNumber is null
     TransformFilter transformFilter = new TransformFilter(

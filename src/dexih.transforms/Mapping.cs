@@ -34,6 +34,13 @@ namespace dexih.transforms
 
     public class JoinPair
     {
+        public JoinPair() { }
+        public JoinPair(string sourceColumn, string joinColumn)
+        {
+            SourceColumn = sourceColumn;
+            JoinColumn = joinColumn;
+        }
+
         public string SourceColumn { get; set; }
         public string JoinColumn { get; set; }
         public string JoinValue { get; set; }

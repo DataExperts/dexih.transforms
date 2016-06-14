@@ -15,81 +15,79 @@ namespace dexih.transforms
     /// </summary>
     public class TransformJoin : Transform
     {
+        public TransformJoin() { }
+
+        public TransformJoin(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs)
+        {
+            JoinPairs = joinPairs;
+            SetInTransform(primaryTransform, joinTransform);
+        }
+
         bool _firstRead;
 
         SortedDictionary<object[], object[]> _joinData;
 
         bool _joinReaderOpen;
 
-        public override bool Initialize()
+        public override bool InitializeOutputFields()
         {
-            if (JoinReader == null || JoinPairs == null || JoinPairs.Count == 0)
+            if (ReferenceTransform == null || JoinPairs == null || JoinPairs.Count == 0)
                 throw new Exception("There must be a join reader and at least one join pair specified");
 
-            CachedTable = new Table("Join");
+            CacheTable = new Table("Join");
 
             int pos = 0;
-            foreach(var column in Reader.CachedTable.Columns)
+            foreach(var column in PrimaryTransform.CacheTable.Columns)
             {
-                CachedTable.Columns.Add(column.Copy());
+                CacheTable.Columns.Add(column.Copy());
                 pos++;
             }
-            foreach (var column in JoinReader.CachedTable.Columns)
+            foreach (var column in ReferenceTransform.CacheTable.Columns)
             {
                 var newColumn = column.Copy();
 
                 //if a column of the same name exists, append a 1 to the name
-                if (CachedTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName) != null)
+                if (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName) != null)
                 {
                     int append = 1;
-                    while (CachedTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName + append.ToString()) != null) //where columns are same in source/target add a "1" to the target.
+                    while (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName + append.ToString()) != null) //where columns are same in source/target add a "1" to the target.
                         append++;
                     newColumn.ColumnName = column.ColumnName + append.ToString();
                 }
-                CachedTable.Columns.Add(newColumn);
+                CacheTable.Columns.Add(newColumn);
                 pos++;
             }
 
             _firstRead = true;
 
-            CachedTable.OutputSortFields = Reader.CachedTable.OutputSortFields;
+            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             return true;
         }
 
-
-
-        public bool SetJoins(string joinTable, List<JoinPair> joinPairs)
-        {
-            JoinTable = joinTable;
-            JoinPairs = joinPairs;
-            return true;
-            //return Initialize();
-        }
-
-        /// <summary>
-        /// checks if filter can execute against the database query.
-        /// </summary>
-        public override bool CanRunQueries => false;
-
-        public override bool PrefersSort => true;
         public override bool RequiresSort => false;
 
-
-        protected override bool ReadRecord()
+        public override ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
         {
-            if (Reader.Read() == false)
+            var returnValue = PrimaryTransform.Open(filters, RequiredSortFields());
+            return returnValue;
+        }
+
+        protected override ReturnValue<object[]> ReadRecord()
+        {
+            object[] newRow = null;
+
+            if (PrimaryTransform.Read() == false)
             {
-                CurrentRow = null;
-                return false;
+                return new ReturnValue<object[]>(false, null);
             }
             //if input is sorted, then run a sortedjoin
-            if (Reader.CachedTable.OutputSortFields != null && JoinReader.CachedTable.OutputSortFields != null)
+            if (PrimaryTransform.CacheTable.OutputSortFields != null && ReferenceTransform.CacheTable.OutputSortFields != null)
             {
                 //first read get a row from the join table.
                 if (_firstRead)
                 {
-                    _joinReaderOpen = JoinReader.Read();
+                    _joinReaderOpen = ReferenceTransform.Read();
                     _firstRead = false;
                 }
 
@@ -99,8 +97,8 @@ namespace dexih.transforms
                     bool recordMatch = true;
                     foreach (JoinPair join in JoinPairs)
                     {
-                        var joinValue = join.SourceColumn == null ? join.JoinValue : Reader[join.SourceColumn].ToString();
-                        if (joinValue != JoinReader[join.JoinColumn].ToString())
+                        var joinValue = join.SourceColumn == null ? join.JoinValue : PrimaryTransform[join.SourceColumn].ToString();
+                        if (joinValue != ReferenceTransform[join.JoinColumn].ToString())
                         {
                             recordMatch = false;
                             break;
@@ -109,34 +107,34 @@ namespace dexih.transforms
 
                     if (recordMatch == false)
                     {
-                        _joinReaderOpen = JoinReader.Read();
+                        _joinReaderOpen = ReferenceTransform.Read();
                     }
                     else
                     {
                         break;
                     }
                 }
-                CurrentRow = new object[FieldCount];
+                newRow = new object[FieldCount];
                 int pos = 0;
-                for (int i = 0; i < Reader.FieldCount; i++)
+                for (int i = 0; i < PrimaryTransform.FieldCount; i++)
                 {
-                    CurrentRow[pos] = Reader[i];
+                    newRow[pos] = PrimaryTransform[i];
                     pos++;
                 }
-                for (int i = 0; i < JoinReader.FieldCount; i++)
+                for (int i = 0; i < ReferenceTransform.FieldCount; i++)
                 {
                     if (_joinReaderOpen)
                     {
-                        CurrentRow[pos] = JoinReader[i];
+                        newRow[pos] = ReferenceTransform[i];
                         pos++;
                     }
                     else
                     {
-                        CurrentRow[pos] = DBNull.Value;
+                        newRow[pos] = DBNull.Value;
                         pos++;
                     }
                 }
-                return true;
+                return new ReturnValue<object[]>(true, newRow);
             }
             else //if input is not sorted, then run a hash join.
             {
@@ -146,17 +144,17 @@ namespace dexih.transforms
                     _joinData = new SortedDictionary<object[], object[]>(new JoinKeyComparer());
 
                     //load the join data into an in memory list
-                    while (JoinReader.Read())
+                    while (ReferenceTransform.Read())
                     {
-                        object[] values = new object[JoinReader.FieldCount];
+                        object[] values = new object[ReferenceTransform.FieldCount];
                         object[] joinFields = new object[JoinPairs.Count];
 
-                        JoinReader.GetValues(values);
+                        ReferenceTransform.GetValues(values);
                         for (int i = 0; i < JoinPairs.Count; i++)
                         {
                             if (JoinPairs[i].JoinColumn == null) continue;
 
-                            joinFields[i] = JoinReader[JoinPairs[i].JoinColumn];
+                            joinFields[i] = ReferenceTransform[JoinPairs[i].JoinColumn];
                         }
                         _joinData.Add(joinFields, values);
                     }
@@ -165,11 +163,11 @@ namespace dexih.transforms
                 }
 
                 //load in the primary table values
-                CurrentRow = new object[FieldCount];
+                newRow = new object[FieldCount];
                 int pos = 0;
-                for (int i = 0; i < Reader.FieldCount; i++)
+                for (int i = 0; i < PrimaryTransform.FieldCount; i++)
                 {
-                    CurrentRow[pos] = Reader[i];
+                    newRow[pos] = PrimaryTransform[i];
                     pos++;
                 }
 
@@ -178,7 +176,7 @@ namespace dexih.transforms
                 for (int i = 0; i < JoinPairs.Count; i++)
                 {
                     if (JoinPairs[i].SourceColumn != "")
-                        sourceKeys[i] = Reader[JoinPairs[i].SourceColumn];
+                        sourceKeys[i] = PrimaryTransform[JoinPairs[i].SourceColumn];
                     else
                         sourceKeys[i] = JoinPairs[i].JoinValue;
                 }
@@ -188,11 +186,11 @@ namespace dexih.transforms
                     object[] joinRow = _joinData[sourceKeys];
                     for (int i = 0; i < joinRow.Length; i++)
                     {
-                        CurrentRow[pos] = joinRow[i];
+                        newRow[pos] = joinRow[i];
                         pos++;
                     }
                 }
-                return true;
+                return new ReturnValue<object[]>(true, newRow);
             }
         }
 
@@ -249,7 +247,7 @@ namespace dexih.transforms
 
         public override string Details()
         {
-            return "Join Table:" + JoinTable;
+            return "Join";
         }
 
         public override List<Sort> RequiredSortFields()
@@ -261,7 +259,7 @@ namespace dexih.transforms
             return fields;
         }
 
-        public override List<Sort> RequiredJoinSortFields()
+        public override List<Sort> RequiredReferenceSortFields()
         {
             List<Sort> fields = new List<Sort>();
             foreach (JoinPair joinPair in JoinPairs.Where(c=>c.SourceColumn != null))

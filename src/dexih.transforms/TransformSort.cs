@@ -9,6 +9,7 @@ namespace dexih.transforms
 {
     public class TransformSort : Transform
     {
+        bool _alreadySorted;
         bool _firstRead;
         SortedDictionary<object[], object[]> _sortedDictionary;
         SortedDictionary<object[], object[]>.KeyCollection.Enumerator _iterator;
@@ -21,46 +22,56 @@ namespace dexih.transforms
             SetInTransform(inTransform);
         }
 
-        public override bool Initialize()
+        public override bool InitializeOutputFields()
         {
-            CachedTable = Reader.CachedTable.Copy();
-            CachedTable.OutputSortFields = SortFields;
+            CacheTable = PrimaryTransform.CacheTable.Copy();
+            CacheTable.OutputSortFields = SortFields;
+
+            _alreadySorted = SortFieldsMatch(SortFields, PrimaryTransform.SortFields);
 
             _firstRead = true;
             return true;
         }
 
-        public bool SetSortFields(List<Sort> sortFields)
-        {
-            SortFields = sortFields;
-            return true;
-        }
-
-        /// <summary>
-        /// checks if sort can execute against the database query.
-        /// </summary>
-        public override bool CanRunQueries => Reader.CanRunQueries;
-
-        public override bool PrefersSort => true;
         public override bool RequiresSort => false;
 
-        protected override bool ReadRecord()
+        public override ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
         {
+            var returnValue = PrimaryTransform.Open(filters, RequiredSortFields());
+            return returnValue;
+        }
+
+
+        protected override ReturnValue<object[]> ReadRecord()
+        {
+            if(_alreadySorted)
+            {
+                if (PrimaryTransform.Read())
+                {
+                    object[] values = new object[PrimaryTransform.FieldCount];
+                    PrimaryTransform.GetValues(values);
+                    return new ReturnValue<object[]>(true, values);
+                }
+                else
+                {
+                    return new ReturnValue<object[]>(false, null);
+                }
+            }
             if (_firstRead) //load the entire record into a sorted list.
             {
                 _sortedDictionary = new SortedDictionary<object[], object[]>(new SortKeyComparer(SortFields));
 
                 int rowcount = 0;
-                while (Reader.Read())
+                while (PrimaryTransform.Read())
                 {
-                    object[] values = new object[Reader.FieldCount];
+                    object[] values = new object[PrimaryTransform.FieldCount];
                     object[] sortFields = new object[SortFields.Count + 1];
 
-                    Reader.GetValues(values);
+                    PrimaryTransform.GetValues(values);
 
                     for(int i = 0; i < sortFields.Length-1; i++)
                     {
-                        sortFields[i] = Reader[SortFields[i].Column];
+                        sortFields[i] = PrimaryTransform[SortFields[i].Column];
                     }
                     sortFields[sortFields.Length-1] = rowcount; //add row count as last key field to ensure match rows remain in original order.
 
@@ -69,34 +80,35 @@ namespace dexih.transforms
                 }
                 _firstRead = false;
                 if (rowcount == 0)
-                    return false;
+                    return new ReturnValue<object[]>(false, null);
 
                 _iterator = _sortedDictionary.Keys.GetEnumerator();
                 _iterator.MoveNext();
-                CurrentRow = _sortedDictionary[_iterator.Current];
-
-                return true;
+                return new ReturnValue<object[]>(true, _sortedDictionary[_iterator.Current]);
             }
 
             var success = _iterator.MoveNext();
             if (success)
-                CurrentRow = _sortedDictionary[_iterator.Current];
+                return new ReturnValue<object[]>(true, _sortedDictionary[_iterator.Current]);
             else
-                CurrentRow = null;
-
-            return success;
+            {
+                _sortedDictionary = null; //free up memory after all rows are read.
+                return new ReturnValue<object[]>(false, null);
+            }
         }
 
         public override ReturnValue ResetTransform()
         {
             if (_sortedDictionary != null)
                 _sortedDictionary = null;
+            _firstRead = true;
+
             return new ReturnValue(true);
         }
 
         public override string Details()
         {
-            return "Sort";
+            return "Sort: "+ String.Join(",", SortFields?.Select(c=> c.Column + " " + c.Direction.ToString()).ToArray());
         }
 
         public override List<Sort> RequiredSortFields()
@@ -104,7 +116,7 @@ namespace dexih.transforms
             return SortFields;
         }
 
-        public override List<Sort> RequiredJoinSortFields()
+        public override List<Sort> RequiredReferenceSortFields()
         {
             return null;
         }
@@ -117,6 +129,7 @@ namespace dexih.transforms
     /// </summary>
     public class SortKeyComparer : IComparer<object[]>
     {
+        
         protected List<Sort.EDirection> SortDirections;
 
         public SortKeyComparer(List<Sort> sortFields)
@@ -157,7 +170,7 @@ namespace dexih.transforms
                 if (x[i] is String)
                     greater = String.Compare((String)x[i], (String)y[i]) > 0;
                 if (x[i] is Boolean)
-                    greater = (Boolean)x[i] == false && (Boolean)y[i] == true;
+                    greater = (Boolean)x[i] == true && (Boolean)y[i] == true;
                 if (x[i] is DateTime)
                     greater = (DateTime)x[i] > (DateTime)y[i];
 

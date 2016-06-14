@@ -12,12 +12,10 @@ namespace dexih.transforms.tests
     {
 
         [Fact]
-        public void DSortedJoin()
+        public void SortedJoin()
         {
-            SourceTable Source = Helpers.CreateSortedTestData();
-            TransformJoin transformJoin = new TransformJoin();
-            transformJoin.SetJoins("JoinTable", new List<JoinPair>() { new JoinPair { SourceColumn = "StringColumn", JoinColumn = "StringColumn" } });
-            transformJoin.SetInTransform(Source, Helpers.CreateSortedJoinData());
+            ReaderMemory Source = Helpers.CreateSortedTestData();
+            TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateSortedJoinData(), new List<JoinPair>() { new JoinPair("StringColumn", "StringColumn") });
 
             Assert.Equal(8, transformJoin.FieldCount);
 
@@ -37,10 +35,8 @@ namespace dexih.transforms.tests
         [Fact]
         public void Join()
         {
-            SourceTable Source = Helpers.CreateSortedTestData();
-            TransformJoin transformJoin = new TransformJoin();
-            transformJoin.SetJoins("JoinTable", new List<JoinPair>() { new JoinPair { SourceColumn = "StringColumn", JoinColumn = "StringColumn" } });
-            transformJoin.SetInTransform(Source, Helpers.CreateUnSortedJoinData());
+            ReaderMemory Source = Helpers.CreateSortedTestData();
+            TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateUnSortedJoinData(), new List<JoinPair>() { new JoinPair("StringColumn", "StringColumn") });
 
             Assert.Equal(8, transformJoin.FieldCount);
 

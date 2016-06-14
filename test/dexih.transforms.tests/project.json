@@ -21,6 +21,7 @@
           "version": "1.0.0-rc2-3002702",
           "type": "platform"
         },
+        "System.Diagnostics.TraceSource": "4.0.0-rc2-24027",
         "System.Reflection.TypeExtensions": "4.1.0-rc2-24027"
       },
       "imports": [

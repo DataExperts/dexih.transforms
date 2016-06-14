@@ -3,6 +3,7 @@ using System.Linq;
 using dexih.transforms;
 using System;
 using dexih.functions;
+using System.Text;
 
 namespace dexih.transforms
 {
@@ -14,11 +15,11 @@ namespace dexih.transforms
         public Table()
         {
             Data = new TableCache(0);
-            Columns = new List<TableColumn>();
+            Columns = new TableColumns();
             ExtendedProperties = new Dictionary<string, object>();
         }
 
-        public Table(string tableName, List<TableColumn> columns, TableCache data) 
+        public Table(string tableName, TableColumns columns, TableCache data) 
         {
             TableName = tableName;
             Columns = columns;
@@ -26,7 +27,18 @@ namespace dexih.transforms
             ExtendedProperties = new Dictionary<string, object>();
         }
 
-        public Table(string tableName, List<TableColumn> columns, int maxRows = 0) 
+        public Table(string tableName, int maxRows, params TableColumn[] columns) 
+        {
+            TableName = tableName;
+            Columns = new TableColumns();
+            foreach (TableColumn column in columns)
+                Columns.Add(column);
+
+            Data = new TableCache(maxRows);
+            ExtendedProperties = new Dictionary<string, object>();
+        }
+
+        public Table(string tableName, int maxRows, TableColumns columns)
         {
             TableName = tableName;
             Columns = columns;
@@ -37,13 +49,12 @@ namespace dexih.transforms
         public Table(string tableName, int maxRows = 0) 
         {
             TableName = tableName;
-            Columns = new List<TableColumn>();
+            Columns = new TableColumns();
             Data = new TableCache(maxRows);
             ExtendedProperties = new Dictionary<string, object>();
         }
 
         #endregion
-
 
         #region Properties
         /// <summary>
@@ -66,9 +77,14 @@ namespace dexih.transforms
         /// <returns></returns>
         public List<Sort> OutputSortFields { get; set; }
 
+        /// <summary>
+        /// Indicates the key that should be used when running update/delete operations against the target.
+        /// </summary>
+        public List<string> KeyFields { get; set; }
+
         public TableCache Data { get; set; }
 
-        public List<TableColumn> Columns { get; set; }
+        public TableColumns Columns { get; set; }
 
         public Dictionary<string, object> ExtendedProperties { get; set; }
 
@@ -76,52 +92,18 @@ namespace dexih.transforms
         {
             get
             {
-                return Columns.SingleOrDefault(c => c.ColumnName == columnName);
+                return Columns[columnName];
             }
          }
         #endregion
 
-        /// <summary>
-        /// Creates a copy of the table, excluding cached data, and sort columns
-        /// </summary>
-        /// <returns></returns>
-        public Table Copy()
-        {
-            Table table = new Table(TableName);
-            table.Description = Description;
-
-            foreach(var key in ExtendedProperties.Keys)
-                table.ExtendedProperties.Add(key, ExtendedProperties[key]);
-
-            table.LogicalName = LogicalName;
-
-            foreach (var column in Columns)
-                table.Columns.Add(column.Copy());
-
-            return table;
-        }
-
-        public string GetSqlCompare(Filter.ECompare compare)
-        {
-            switch (compare)
-            {
-                case Filter.ECompare.EqualTo: return "=";
-                case Filter.ECompare.GreaterThan: return ">";
-                case Filter.ECompare.GreaterThanEqual: return ">=";
-                case Filter.ECompare.LessThan: return "<";
-                case Filter.ECompare.LessThanEqual: return "<=";
-                case Filter.ECompare.NotEqual: return "!=";
-                default:
-                    return "";
-            }
-        }
-
+        #region Lookup
         /// <summary>
         /// Performs a row scan lookup on the data contained in the table.
         /// </summary>
         /// <param name="filters">Filter for the lookup.  For an index to be used, the filters must be in the same column order as the index.</param>
         /// <returns></returns>
-        public ReturnValue<object[]> LookupRow(List<Filter> filters, int startRow = 0)
+        public ReturnValue<object[]> LookupSingleRow(List<Filter> filters, int startRow = 0)
         {
             try
             {
@@ -140,6 +122,30 @@ namespace dexih.transforms
                 return new ReturnValue<object[]>(false, "Error in lookup: " + ex.Message, ex);
             }
         }
+
+        public ReturnValue<List<object[]>> LookupMultipleRows(List<Filter> filters, int startRow = 0)
+        {
+            try
+            {
+                var rows = new List<object[]>();
+
+                //scan the data for a matching row.  
+                //TODO add indexing to lookup process.
+                for (int i = startRow; i < Data.Count(); i++)
+                {
+                    if (RowMatch(filters, Data[i]))
+                        rows.Add(Data[i]);
+                }
+
+                return new ReturnValue<List<object[]>>(true, rows);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<List<object[]>>(false, "Error in lookup: " + ex.Message, ex);
+            }
+        }
+
+
 
         public bool RowMatch(List<Filter> filters, object[] row)
         {
@@ -164,59 +170,27 @@ namespace dexih.transforms
                     value2 = row[GetOrdinal(filter.Column2)];
                 }
 
-                bool isEqual = object.Equals(value1, value2);
+                var compareResult = DataType.Compare(filter.CompareDataType, value1, value2);
 
                 switch (filter.Operator)
                 {
-                    case Filter.ECompare.EqualTo:
-                        isMatch = isEqual;
+                    case Filter.ECompare.IsEqual:
+                        isMatch = compareResult.Value == DataType.ECompareResult.Equal;
                         break;
                     case Filter.ECompare.NotEqual:
-                        isMatch = !isEqual;
+                        isMatch = compareResult.Value != DataType.ECompareResult.Equal;
                         break;
-                    default:
-                        if ((filter.Operator == Filter.ECompare.GreaterThanEqual || filter.Operator == Filter.ECompare.LessThanEqual) && isMatch == true)
-                            break;
-
-                        bool greater = false;
-
-                        if (value1 is byte)
-                            greater = (byte)value1 > (byte)value2;
-                        if (value1 is SByte)
-                            greater = (SByte)value1 > (SByte)value2;
-                        if (value1 is UInt16)
-                            greater = (UInt16)value1 > (UInt16)value2;
-                        if (value1 is UInt32)
-                            greater = (UInt32)value1 > (UInt32)value2;
-                        if (value1 is UInt64)
-                            greater = (UInt64)value1 > (UInt64)value2;
-                        if (value1 is Int16)
-                            greater = (Int16)value1 > (Int16)value2;
-                        if (value1 is Int32)
-                            greater = (Int32)value1 > (Int32)value2;
-                        if (value1 is Int64)
-                            greater = (Int64)value1 > (Int64)value2;
-                        if (value1 is Decimal)
-                            greater = (Decimal)value1 > (Decimal)value2;
-                        if (value1 is Double)
-                            greater = (Double)value1 > (Double)value2;
-                        if (value1 is String)
-                            greater = String.Compare((String)value1, (String)value2) > 0;
-                        if (value1 is Boolean)
-                            greater = (Boolean)value1 == false && (Boolean)value2 == true;
-                        if (value1 is DateTime)
-                            greater = (DateTime)value1 > (DateTime)value2;
-
-                        if ((filter.Operator == Filter.ECompare.GreaterThan || filter.Operator == Filter.ECompare.GreaterThanEqual) && greater)
-                            break;
-
-                        if (filter.Operator == Filter.ECompare.LessThan && !isEqual && !greater)
-                            break;
-
-                        if (filter.Operator == Filter.ECompare.LessThanEqual && !greater)
-                            break;
-
-                        isMatch = false;
+                    case Filter.ECompare.LessThan:
+                        isMatch = compareResult.Value == DataType.ECompareResult.Less;
+                        break;
+                    case Filter.ECompare.LessThanEqual:
+                        isMatch = compareResult.Value == DataType.ECompareResult.Less || compareResult.Value == DataType.ECompareResult.Equal;
+                        break;
+                    case Filter.ECompare.GreaterThan:
+                        isMatch = compareResult.Value == DataType.ECompareResult.Greater;
+                        break;
+                    case Filter.ECompare.GreaterThanEqual:
+                        isMatch = compareResult.Value == DataType.ECompareResult.Greater || compareResult.Value == DataType.ECompareResult.Greater;
                         break;
                 }
 
@@ -226,29 +200,124 @@ namespace dexih.transforms
 
             return isMatch;
         }
+        #endregion
 
-        public int GetOrdinal(string ColumnName)
+
+        /// <summary>
+        /// Adds the standard set of audit columns to the table.  
+        /// </summary>
+        public void AddAuditColumns()
         {
-            for (int i = 0; i < Columns.Count; i++)
-            {
-                if (Columns[i].ColumnName == ColumnName)
-                    return i;
-            }
 
-            return -1;
+            //add the audit columns if they don't exist
+            //get some of the key fields to save looking up for each row.
+            var colValidFrom = this.GetDeltaColumn(TableColumn.EDeltaType.ValidFromDate);
+            var colValidTo = this.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
+            var colCreateDate = this.GetDeltaColumn(TableColumn.EDeltaType.CreateDate);
+            var colUpdateDate = this.GetDeltaColumn(TableColumn.EDeltaType.UpdateDate);
+            var colSurrogateKey = this.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+            var colIsCurrentField = this.GetDeltaColumn(TableColumn.EDeltaType.IsCurrentField);
+            var colSourceSurrogateKey = this.GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
+            var colCreateAuditKey = this.GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
+            var colUpdateAuditKey = this.GetDeltaColumn(TableColumn.EDeltaType.UpdateAuditKey);
+            var colRejectedReason = this.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason);
+
+            if (colValidFrom == null)
+            {
+                colValidFrom = new TableColumn("ValidFromDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidFromDate };
+                this.Columns.Add(colValidFrom);
+            }
+            if (colValidTo == null)
+            {
+                colValidTo = new TableColumn("ValidToDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidToDate };
+                this.Columns.Add(colValidTo);
+            }
+            if (colCreateDate == null)
+            {
+                colCreateDate = new TableColumn("CreateDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.CreateDate };
+                this.Columns.Add(colCreateDate);
+            }
+            if (colUpdateDate == null)
+            {
+                colUpdateDate = new TableColumn("UpdateDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.UpdateDate };
+                this.Columns.Add(colUpdateDate);
+            }
+            if (colSurrogateKey == null)
+            {
+                colSurrogateKey = new TableColumn("SurrogateKey", DataType.ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.SurrogateKey };
+                this.Columns.Add(colSurrogateKey);
+            }
+            if (colIsCurrentField == null)
+            {
+                colIsCurrentField = new TableColumn("IsCurrent", DataType.ETypeCode.Boolean) { DeltaType = TableColumn.EDeltaType.IsCurrentField };
+                this.Columns.Add(colIsCurrentField);
+            }
+        }
+
+        /// <summary>
+        /// Creates a copy of the table, excluding cached data, and sort columns
+        /// </summary>
+        /// <returns></returns>
+        public Table Copy()
+        {
+            Table table = new Table(TableName);
+            table.Description = Description;
+
+            foreach(var key in ExtendedProperties.Keys)
+                table.ExtendedProperties.Add(key, ExtendedProperties[key]);
+
+            table.LogicalName = LogicalName;
+
+            foreach (var column in Columns)
+                table.Columns.Add(column.Copy());
+
+            return table;
         }
 
         public void AddColumn(string columnName, DataType.ETypeCode dataType = DataType.ETypeCode.String)
         {
             if (Columns == null)
-                Columns = new List<TableColumn>();
+                Columns = new TableColumns();
 
             Columns.Add(new TableColumn(columnName, dataType));
+        }
+
+        public void AddColumn(string columnName, DataType.ETypeCode dataType = DataType.ETypeCode.String, TableColumn.EDeltaType deltaType = TableColumn.EDeltaType.TrackingField)
+        {
+            if (Columns == null)
+                Columns = new TableColumns();
+
+            Columns.Add(new TableColumn(columnName, dataType, deltaType));
+        }
+
+        public void AddRow(params object[] values)
+        {
+            if (values.Length != Columns.Count())
+                throw new Exception("The number of parameters must match the number of columns (" + Columns.Count.ToString() + ") precicely.");
+
+            object[] row = new object[Columns.Count];
+            values.CopyTo(row, 0);
+
+            Data.Add(values);
+        }
+
+        public int GetOrdinal(string columnName)
+        {
+            return Columns.GetOrdinal(columnName);
         }
 
         public TableColumn GetDeltaColumn(TableColumn.EDeltaType deltaType)
         {
             return Columns.SingleOrDefault(c => c.DeltaType == deltaType);
+        }
+
+        public int GetDeltaColumnOrdinal(TableColumn.EDeltaType deltaType)
+        {
+            for (int i = 0; i < Columns.Count; i++)
+                if (Columns[i].DeltaType == deltaType)
+                    return i;
+
+            return -1;
         }
 
         public string[] GetColumnsByDeltaType(TableColumn.EDeltaType deltaType)
@@ -260,6 +329,41 @@ namespace dexih.transforms
         public TableColumn GetIncrementalUpdateColumn()
         {
             return Columns.SingleOrDefault(c => c.IsIncrementalUpdate);
+        }
+
+        public string GetCsv()
+        {
+            StringBuilder CsvData = new StringBuilder();
+
+            string[] columns = Columns.Select(c => c.ColumnName).ToArray();
+            //add column headers
+            string[] s = new string[Columns.Count];
+            for (Int32 j = 0; j < Columns.Count; j++)
+            {
+                s[j] = columns[j];
+                if (s[j].Contains("\"")) //replace " with ""
+                    s[j].Replace("\"", "\"\"");
+                if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
+                    s[j] = "\"" + s[j] + "\"";
+            }
+            CsvData.AppendLine(string.Join(",", s));
+
+            //add rows
+            foreach (var row in Data)
+            {
+                for (int j = 0; j < Columns.Count; j++)
+                {
+                    s[j] = row[j] == null ? "" : row[j].ToString();
+                    if (s[j].Contains("\"")) //replace " with ""
+                        s[j].Replace("\"", "\"\"");
+                    if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
+                        s[j] = "\"" + s[j] + "\"";
+                }
+                CsvData.AppendLine(string.Join(",", s));
+            }
+
+            return CsvData.ToString();
+
         }
     }
 }

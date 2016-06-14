@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.XPath;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 namespace dexih.functions
 {
@@ -50,11 +51,10 @@ namespace dexih.functions
 
         public static Function GetFunctionReference(string FunctionName)
         {
-            if (typeof(StandardFunctions) == null)
+            if (typeof(StandardFunctions).GetMethod(FunctionName) == null)
                 throw new Exception("The method " + FunctionName + " was not found in the standard functions");
             return new Function(typeof(StandardFunctions), FunctionName, FunctionName + "Result", "Reset", null, null, null);
         }
-
 
         #region Regular Functions
         public String Concat(String[] values) { return String.Concat(values); }

@@ -4,10 +4,11 @@ using System.Text;
 using dexih.functions;
 using static dexih.functions.DataType;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace dexih.transforms
 {
-    
+   
     public class TableColumn
     {
         public TableColumn()
@@ -19,12 +20,21 @@ namespace dexih.transforms
         {
             ColumnName = columName;
             DataType = ETypeCode.String;
+            DeltaType = EDeltaType.TrackingField;
         }
 
         public TableColumn(string columName, ETypeCode dataType) : base()
         {
             ColumnName = columName;
-            DataType = DataType;
+            DataType = dataType;
+            DeltaType = EDeltaType.TrackingField;
+        }
+
+        public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType) : base()
+        {
+            ColumnName = columName;
+            DataType = dataType;
+            DeltaType = deltaType;
         }
 
         public enum EDeltaType
@@ -45,9 +55,9 @@ namespace dexih.transforms
             ValidationStatus,
             RejectedReason,
             FileName,
-            AutoGenerate,
             AzureRowKey, //special column type for Azure Storage Tables.  
             AzurePartitionKey,//special column type for Azure Storage Tables.  
+            DatabaseOperation // C/U/D/T/R (Create/Update/Delete/Truncate/Reject)
         }
 
         public enum ESecurityFlag
@@ -115,7 +125,6 @@ namespace dexih.transforms
                 case EDeltaType.CreateDate:
                 case EDeltaType.UpdateDate:
                 case EDeltaType.SurrogateKey:
-                case EDeltaType.AutoGenerate:
                 case EDeltaType.ValidationStatus:
                     return true;
             }
@@ -157,7 +166,7 @@ namespace dexih.transforms
                 AllowDbNull = AllowDbNull,
                 DeltaType = DeltaType,
                 IsUnique = IsUnique,
-                SecurityFlag = SecurityFlag,
+                SecurityFlag = ESecurityFlag.None, //don't copy securityFlag as only the first table requires encryption.
                 IsInput = IsInput,
                 IsMandatory = IsMandatory,
                 IsIncrementalUpdate = IsIncrementalUpdate

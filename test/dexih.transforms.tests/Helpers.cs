@@ -6,114 +6,141 @@ namespace dexih.transforms.tests
 {
     public class Helpers
     {
-        public static SourceTable CreateSortedTestData()
+        public static ReaderMemory CreateSortedTestData()
         {
-            Table table = new Table("test", new List<TableColumn>() {
-                new TableColumn("StringColumn", DataType.ETypeCode.String),
-                new TableColumn("IntColumn", DataType.ETypeCode.Int32),
-                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal),
-                new TableColumn("DateColumn", DataType.ETypeCode.DateTime),
-                new TableColumn("SortColumn", DataType.ETypeCode.Int32)
-                });
+            Table table = new Table("test", 0,
+                new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField)
+            );
 
-            table.Data.Add(new object[] { "value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 });
-            table.Data.Add(new object[] { "value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 });
-            table.Data.Add(new object[] { "value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8 });
-            table.Data.Add(new object[] { "value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7 });
-            table.Data.Add(new object[] { "value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6 });
-            table.Data.Add(new object[] { "value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5 });
-            table.Data.Add(new object[] { "value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4 });
-            table.Data.Add(new object[] { "value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3 });
-            table.Data.Add(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2 });
-            table.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1 });
+            table.AddRow( "value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 );
+            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
+            table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8 );
+            table.AddRow("value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7 );
+            table.AddRow("value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6 );
+            table.AddRow("value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5 );
+            table.AddRow("value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4 );
+            table.AddRow("value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3 );
+            table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2 );
+            table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1);
 
-            SourceTable Adapter = new SourceTable(table, new List<Sort>() { new Sort("StringColumn") } );
+            ReaderMemory Adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") } );
             Adapter.Reset();
             return Adapter;
         }
 
-        public static SourceTable CreateUnSortedTestData()
+        public static ReaderMemory CreateUnSortedTestData()
         {
-            Table table = new Table("test", new List<TableColumn>() {
-                new TableColumn("StringColumn", DataType.ETypeCode.String),
-                new TableColumn("IntColumn", DataType.ETypeCode.Int32),
-                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal),
-                new TableColumn("DateColumn", DataType.ETypeCode.DateTime),
+            Table table = new Table("test", 0, 
+                new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("SortColumn", DataType.ETypeCode.Int32),
                 new TableColumn("GroupColumn", DataType.ETypeCode.String)
-                });
+            );
 
-            table.Data.Add(new object[] { "value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, "Odd" });
-            table.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1, "Even" });
-            table.Data.Add(new object[] { "value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8, "Odd" });
-            table.Data.Add(new object[] { "value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9, "Even" });
-            table.Data.Add(new object[] { "value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3, "Even" });
-            table.Data.Add(new object[] { "value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7, "Even" });
-            table.Data.Add(new object[] { "value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4, "Odd" });
-            table.Data.Add(new object[] { "value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6, "Odd" });
-            table.Data.Add(new object[] { "value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5, "Even" });
-            table.Data.Add(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, "Odd" });
+            table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, "Odd" );
+            table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1, "Even" );
+            table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8, "Odd" );
+            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9, "Even" );
+            table.AddRow("value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3, "Even" );
+            table.AddRow("value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7, "Even" );
+            table.AddRow("value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4, "Odd" );
+            table.AddRow("value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6, "Odd" );
+            table.AddRow("value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5, "Even" );
+            table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, "Odd" );
 
-            SourceTable Adapter = new SourceTable(table, null);
+            ReaderMemory Adapter = new ReaderMemory(table, null);
             Adapter.Reset();
             return Adapter;
         }
 
-        public static SourceTable CreateSortedJoinData()
+        public static ReaderMemory CreateSortedJoinData()
         {
-            Table table = new Table("test", new List<TableColumn>() {
+            Table table = new Table("test", 0, 
                 new TableColumn("StringColumn", DataType.ETypeCode.String),
                 new TableColumn("IntColumn", DataType.ETypeCode.Int32),
                 new TableColumn("LookupValue", DataType.ETypeCode.String)
-                });
+            );
 
-            table.Data.Add(new object[] { "value01", 1, "lookup1" });
-            table.Data.Add(new object[] { "value02", 2, "lookup2" });
-            table.Data.Add(new object[] { "value03", 3, "lookup3" });
-            table.Data.Add(new object[] { "value04", 4, "lookup4" });
-            table.Data.Add(new object[] { "value05", 5, "lookup5" });
-            table.Data.Add(new object[] { "value06", 6, "lookup6" });
-            table.Data.Add(new object[] { "value07", 7, "lookup7" });
-            table.Data.Add(new object[] { "value08", 8, "lookup8" });
-            table.Data.Add(new object[] { "value09", 9, "lookup9" });
+            table.AddRow("value01", 1, "lookup1" );
+            table.AddRow("value02", 2, "lookup2" );
+            table.AddRow("value03", 3, "lookup3" );
+            table.AddRow("value04", 4, "lookup4" );
+            table.AddRow("value05", 5, "lookup5" );
+            table.AddRow("value06", 6, "lookup6" );
+            table.AddRow("value07", 7, "lookup7" );
+            table.AddRow("value08", 8, "lookup8" );
+            table.AddRow("value09", 9, "lookup9" );
 
-            SourceTable Adapter = new SourceTable(table, new List<Sort>() { new Sort("StringColumn") });
+            ReaderMemory Adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") });
             Adapter.Reset();
             return Adapter;
         }
 
-        public static SourceTable CreateUnSortedJoinData()
+        public static ReaderMemory CreateUnSortedJoinData()
         {
-            Table table = new Table("test", new List<TableColumn>() {
+            Table table = new Table("test", 0, 
                 new TableColumn("StringColumn", DataType.ETypeCode.String),
                 new TableColumn("IntColumn", DataType.ETypeCode.Int32),
                 new TableColumn("LookupValue", DataType.ETypeCode.String)
-                });
+                );
 
-            table.Data.Add(new object[] { "value09", 9, "lookup9" });
-            table.Data.Add(new object[] { "value06", 6, "lookup6" });
-            table.Data.Add(new object[] { "value01", 1, "lookup1" });
-            table.Data.Add(new object[] { "value05", 5, "lookup5" });
-            table.Data.Add(new object[] { "value02", 2, "lookup2" });
-            table.Data.Add(new object[] { "value04", 4, "lookup4" });
-            table.Data.Add(new object[] { "value03", 3, "lookup3" });
-            table.Data.Add(new object[] { "value07", 7, "lookup7" });
-            table.Data.Add(new object[] { "value08", 8, "lookup8" });
+            table.AddRow("value09", 9, "lookup9" );
+            table.AddRow("value06", 6, "lookup6" );
+            table.AddRow("value01", 1, "lookup1" );
+            table.AddRow("value05", 5, "lookup5" );
+            table.AddRow("value02", 2, "lookup2" );
+            table.AddRow("value04", 4, "lookup4" );
+            table.AddRow("value03", 3, "lookup3" );
+            table.AddRow("value07", 7, "lookup7" );
+            table.AddRow("value08", 8, "lookup8" );
 
-            SourceTable Adapter = new SourceTable(table);
+            ReaderMemory Adapter = new ReaderMemory(table);
             Adapter.Reset();
             return Adapter;
         }
 
-        public static SourceTable CreateLargeTable(int rows)
+        public static ReaderMemory CreateValidationTestData()
+        {
+            Table table = new Table("test", 0,
+                new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
+                new TableColumn("RejectReason", DataType.ETypeCode.Int32, TableColumn.EDeltaType.RejectedReason)
+            );
+
+            table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, "");
+            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9, "");
+            table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8, "");
+            table.AddRow("value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7, "");
+            table.AddRow("value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6, "");
+            table.AddRow("value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5, "");
+            table.AddRow("value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4, "");
+            table.AddRow("value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3, "");
+            table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, "");
+            table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1, "");
+
+            ReaderMemory Adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") });
+            Adapter.Reset();
+            return Adapter;
+        }
+
+        public static ReaderMemory CreateLargeTable(int rows)
         {
             object[] row;
             Table table = new Table("test");
 
             for (int i = 0; i < 10; i++)
-                table.AddColumn("column" + i.ToString(), DataType.ETypeCode.Int32);
+                table.Columns.Add(new TableColumn("column" + i.ToString(), DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey));
 
-            table.AddColumn("random", DataType.ETypeCode.String);
+            table.Columns.Add(new TableColumn("random", DataType.ETypeCode.String, TableColumn.EDeltaType.TrackingField) );
 
             for (int i = 0; i < rows; i++)
             {
@@ -129,7 +156,7 @@ namespace dexih.transforms.tests
                 table.Data.Add(row);
             }
 
-            return new SourceTable(table);
+            return new ReaderMemory(table);
         }
     }
 }

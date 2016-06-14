@@ -11,24 +11,24 @@ namespace dexih.transforms
     /// <summary>
     /// TransformSource is a starting point in a chain of transforms and accepts any standard DbDataReader as an input.
     /// </summary>
-    public class SourceDbReader : Transform
+    public class ReaderDbDataReader : Transform
     {
-        public SourceDbReader() { }
+        public ReaderDbDataReader() { }
 
         /// <summary>
         /// Initialises a transform source.  
         /// </summary>
         /// <param name="inReader">An initialized DbDataReader.</param>
         /// <param name="sortFields">A list of already sorted fields in the inReader.  If the fields are not sorted in the source data and sortfields are set, transforms such as group, row, join will fail or return incorrect results.</param>
-        public SourceDbReader(DbDataReader inReader, List<Sort> sortFields = null)
+        public ReaderDbDataReader(DbDataReader inReader, List<Sort> sortFields = null)
         {
             InReader = inReader;
 
-            CachedTable = new Table("InReader");
+            CacheTable = new Table("InReader");
 
 #if NET451
             DataTable schema = inReader.GetSchemaTable();
-            CachedTable.TableName = schema.Rows[0][SchemaTableColumn.BaseTableName].ToString();
+            CacheTable.TableName = schema.Rows[0][SchemaTableColumn.BaseTableName].ToString();
 
             foreach(DataRow row in schema.Rows)
             {
@@ -41,7 +41,7 @@ namespace dexih.transforms
             }
             for (int i = 0; i< inReader.FieldCount; i++)
             {
-                CachedTable.Columns.Add(new TableColumn(inReader.GetName(i)));
+                CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
             }
 #else
             //if we can't get a column schema we will have to settle for column names only
@@ -49,13 +49,13 @@ namespace dexih.transforms
             {
                 for (int i = 0; i < inReader.FieldCount; i++)
                 {
-                    CachedTable.Columns.Add(new TableColumn(inReader.GetName(i)));
+                    CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
                 }
             }
             else
             {
                 var columnSchema = inReader.GetColumnSchema();
-                CachedTable.TableName = columnSchema[0].BaseTableName;
+                CacheTable.TableName = columnSchema[0].BaseTableName;
 
                 foreach(var columnDetail in columnSchema)
                 {
@@ -72,22 +72,29 @@ namespace dexih.transforms
             SortFields = sortFields;
         }
 
+        /// <summary>
+        /// Initializes a transform source reader using the table to describe the fields.
+        /// </summary>
+        /// <param name="inReader"></param>
+        /// <param name="table"></param>
+        /// <param name="sortFields"></param>
+        public ReaderDbDataReader(DbDataReader inReader, Table table, List<Sort> sortFields = null)
+        {
+            InReader = inReader;
+
+            CacheTable = table;
+            SortFields = sortFields;
+        }
+
         public DbDataReader InReader { get; set; }
 
-        public override bool CanRunQueries
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
 
         public override string Details()
         {
             return "DataSource";
         }
 
-        public override bool Initialize()
+        public override bool InitializeOutputFields()
         {
             return true;
         }
@@ -97,18 +104,19 @@ namespace dexih.transforms
             return new ReturnValue(false, "The source reader cannot be reset as the DbReader is a forward only reader", null);
         }
 
-        protected override bool ReadRecord()
+        protected override ReturnValue<object[]> ReadRecord()
         {
             bool success = InReader.Read();
+            object[] newRow;
             if (success)
             {
-                CurrentRow = new object[FieldCount];
-                InReader.GetValues(CurrentRow);
+                newRow = new object[FieldCount];
+                InReader.GetValues(newRow);
             }
             else
-                CurrentRow = null;
+                newRow = null;
 
-            return success;
+            return new ReturnValue<object[]>(success, newRow);
         }
     }
 }

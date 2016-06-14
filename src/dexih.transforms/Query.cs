@@ -6,6 +6,13 @@ using static dexih.functions.DataType;
 
 namespace dexih.transforms
 {
+    public class UpdateQueries
+    {
+        public UpdateQuery BaseUpdateQuery { get; set; }
+        public List<object[]> Data { get; set; }
+
+    }
+
     public class SelectQuery
     {
         public SelectQuery()
@@ -24,37 +31,7 @@ namespace dexih.transforms
         public List<string> Groups { get; set; }
         public int Rows { get; set; }
 
-        //public CreateTransform(Transform inReader)
-        //{
-        //    Transform transform = inReader;
-
-        //    if (Filters.Count > 0)
-        //    {
-        //        TransformFilter filterTransform = new TransformFilter();
-        //        List<Function> functionFilters = new List<Function>();
-
-        //        foreach(var filter in Filters)
-        //        {
-        //            var functionFilter = new Function("", true, )
-        //        }
-
-        //        filterTransform.SetConditions();
-        //        sortTransform.SetInReader(transform);
-        //        transform = sortTransform;
-        //    }
-
-        //    if (Sorts.Count > 0)
-        //    {
-        //        TransformSort sortTransform = new TransformSort();
-        //        sortTransform.SetSortFields(Sorts);
-        //        sortTransform.SetInReader(transform);
-        //        transform = sortTransform;
-        //        }
-        //    }
-
-        //}
-    }
-
+     }
 
     public class SelectColumn
     {
@@ -85,6 +62,13 @@ namespace dexih.transforms
 
     public class UpdateQuery
     {
+        public UpdateQuery(string table, List<QueryColumn> updateColumns, List<Filter> filters)
+        {
+            Table = table;
+            UpdateColumns = updateColumns;
+            Filters = filters;
+        }
+
         public UpdateQuery()
         {
             UpdateColumns = new List<QueryColumn>();
@@ -98,6 +82,11 @@ namespace dexih.transforms
 
     public class DeleteQuery
     {
+        public DeleteQuery(string table, List<Filter> filters)
+        {
+            Table = table;
+            Filters = filters;
+        }
         public DeleteQuery()
         {
             Filters = new List<Filter>();
@@ -109,12 +98,25 @@ namespace dexih.transforms
 
     public class InsertQuery
     {
+        public InsertQuery(string table, List<QueryColumn> insertColumns)
+        {
+            Table = table;
+            InsertColumns = insertColumns;
+        }
+
         public string Table { get; set; }
         public List<QueryColumn> InsertColumns { get; set; }
     }
 
     public class QueryColumn
     {
+        public QueryColumn(string column, ETypeCode columnType, object value)
+        {
+            Column = column;
+            ColumnType = columnType;
+            Value = value;
+        }
+
         public string Column { get; set; }
         public object Value { get; set; }
         public ETypeCode ColumnType { get; set; }
@@ -123,6 +125,51 @@ namespace dexih.transforms
     public class Filter
     {
         public Filter() { }
+
+        /// <summary>
+        /// Converts the function to a filter object.
+        /// </summary>
+        /// <param name="function"></param>
+        public static ReturnValue<Filter> GetFilterFromFunction(Function function)
+        {
+            if (function.ReturnType != ETypeCode.Boolean)
+                return new ReturnValue<Filter>(false, "The function did not have a return type of boolean.", null);
+
+            ECompare compare;
+
+            switch(function.FunctionName)
+            {
+                case "IsEqual":
+                    compare = ECompare.IsEqual;
+                    break;
+                case "LessThan":
+                    compare = ECompare.LessThan;
+                    break;
+                case "LessThanEqual":
+                    compare = ECompare.LessThanEqual;
+                    break;
+                case "GreaterThan":
+                    compare = ECompare.GreaterThan;
+                    break;
+                case "GreaterThanEqual":
+                    compare = ECompare.GreaterThanEqual;
+                    break;
+                default:
+                    return new ReturnValue<Filter>(false, "The function " + function.FunctionName + " was not converted.", null);
+            }
+
+            Filter filter = new Filter();
+
+            filter.Column1 = function.Inputs[0].IsColumn == true ? function.Inputs[0].ColumnName : null;
+            filter.Value1 = function.Inputs[0].IsColumn == false ? function.Inputs[0].Value : null;
+            filter.Column2 = function.Inputs[1].IsColumn == true ? function.Inputs[1].ColumnName : null;
+            filter.Value2 = function.Inputs[1].IsColumn == false ? function.Inputs[1].Value : null;
+
+            filter.CompareDataType = function.Inputs[0].IsColumn ? function.Inputs[0].DataType : function.Inputs[1].DataType;
+            filter.Operator = compare;
+
+            return new ReturnValue<Filter>(true, filter);
+        }
 
         /// <summary>
         /// Sets a simple filter comparing a column against a static value.
@@ -156,7 +203,7 @@ namespace dexih.transforms
 
         public enum ECompare
         {
-            EqualTo,
+            IsEqual,
             GreaterThan,
             GreaterThanEqual,
             LessThan,

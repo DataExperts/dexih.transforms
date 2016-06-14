@@ -13,7 +13,7 @@ namespace dexih.transforms.tests
         [Fact]
         public void Mappings()
         {
-            SourceTable Source = Helpers.CreateSortedTestData();
+            ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformMapping transformMapping = new TransformMapping();
 
             List<Function> Mappings = new List<Function>();
@@ -34,8 +34,8 @@ namespace dexih.transforms.tests
 
             List<ColumnPair> MappingColumn = new List<ColumnPair>();
             MappingColumn.Add(new ColumnPair("DateColumn", "DateColumn"));
-            transformMapping.SetMappings(MappingColumn, Mappings);
-            transformMapping.SetInTransform(Source);
+
+            transformMapping = new TransformMapping(Source, MappingColumn, Mappings);
 
             Assert.Equal(3, transformMapping.FieldCount);
 

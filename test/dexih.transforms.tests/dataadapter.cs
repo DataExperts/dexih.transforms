@@ -16,7 +16,7 @@ namespace dexih.transforms.tests
         [Fact]
         public void TestDataAdapter()
         {
-            SourceTable tableAdapter = Helpers.CreateLargeTable(1000000);
+            ReaderMemory tableAdapter = Helpers.CreateLargeTable(1000000);
 
             int count = 0;
             while(tableAdapter.Read())

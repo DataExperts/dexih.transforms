@@ -11,7 +11,7 @@ namespace dexih.transforms.tests
         [Fact]
         public void DataReaderAdapterAdapter_Tests()
         {
-            SourceTable Table = Helpers.CreateSortedTestData();
+            ReaderMemory Table = Helpers.CreateSortedTestData();
 
             Assert.Equal(Table.FieldCount, 5);
 
