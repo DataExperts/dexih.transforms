@@ -5,7 +5,6 @@
 
 [![Build Status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)](https://ci.appveyor.com/project/dataexperts/dexih-transforms)
 
-**Note: This library is still under active development and is regularly breaking.  We will be finalizing and publishing a schedule shortly**
 
 ## What is this?
 
@@ -17,13 +16,24 @@ The key features are:
 * An extensive library of built in analytical functions.
 * Perform any type of analytical calculations across your datasets.
 * Runs fast!  Can easily process 100,000's of rows per second.
-* Uses standard database classes and can be integrate with all popular databases.
+* Uses standard database classes and can be integrated with all popular databases.
 * Fully portable to any platform that supports the .NetStandard library (currently includes Windows, Mac and Linux variants).
 
 This powerful library can be used as a foundation for applications such as:
 * Business Intelligence and reporting.
 * Batch processing, Data Integration or Extract Transform Load (ETL) processing.
 * Real-time analysis and alerting.
+
+## Coming soon
+
+In the next few weeks we will be integrating the following capabilities into the transform processing:
+
+* Data profiling.
+* Manage change data capture
+* Preserve change history (i.e. slowly changing dimensions)
+* Column level valiation and rejection rules.
+* Logging and resiliance.
+ 
 
 ## How does it work?
 
@@ -85,9 +95,34 @@ The transformations in this library generally work best when used in conjuction 
 * Reduce workloads on databases can avoid database locking and performance problems when sourcing data from operational databases.
 * Building reusable functions and logic that can be reapplied across multiple databases and database types.
 
-## Using Transforms
+## The Transform Class
 
-The following transforms are provided in this library.
+The *transfrom* class is a feature rich implementation of the DbReader class that leverages all the benefits of the DbReader, whilst extending the functionality to allow for more sophisticated data integration.
+
+### Caching
+
+The *transform* class inherits one of the key benefits of using a DbReader, which is fast, forward only record streaming.  
+
+The *transform* class enhances this by providing a built in caching mechanism.  The caching can be switched off or set to  full caching or partial caching.  When caching is enabled, this allows:
+  
+* Navigate backwards through previous records.
+* Reset the reader to the start, without re-accessing the source database again.
+* Peek at previous records (without resetting the current row).
+* Search / lookup against previous loaded records.
+* On demand lookup, where the cache is first referenced, and then referred to the data source if not found.
+
+
+### Encryption & Hashing
+
+Sensitive fields can easily be encrypted, decrypted or hashed through the transform control.  
+
+
+
+## Built in Transforms
+
+The built in transforms are implementations of the base transform class.  These can be chained together to allow virtually any type of data transformation.  
+
+The following is a short description of the built-in transforms:
 
 | Transform  | Description |
 | ------------- | ------------- |
@@ -97,9 +132,12 @@ The following transforms are provided in this library.
 | Lookup  | This allows a row lookup to be performed against another data source or external function.  |
 | Mapping  | Maps source fields to target fields using simple source-target mappings or advanced calculations using mapping functions.  |
 | Row  | Using a row function, translates values into rows.  This can be used to pivot values, or to parse JSON/XML fields into data rows.  |
-| Sort  | Sorts the dataset. |
+| Sort  | Sorts the dataset by one or more columns and an ascending or descending order. |
+| Profile | Generates statistics a dataset, without impacting the dataset (meaning it can be inserted anywhere statistics are required).  The built in profile functions allow for detection of string patterns, data types, uniqueness et.
+| Validation | The validation transform automatically checks the fitness of incoming data, against configurable validation rules, and the datatype of the data.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
+| Delta | Compares the incoming dataset, against another dataset, produces a delta, and generates a set of audit data.  The delta has a number of update strategies that can be configured, including update/delete detection and history preservation.  In a data warehouse this can be used to generate [type 2 slowly changing dimensions](https://en.wikipedia.org/wiki/Slowly_changing_dimension).
 
-To run a complete transformation, these transforms should be chained together.  
+To run a complete transformation, these transforms can be chained together in any logical sequence.  
 
 Some tips:
 * Filter early, to reduce the number of rows other transforms need to process.
@@ -145,5 +183,35 @@ Function function2 =
 		null
 	);
 ```
+### State functions
 
+Functions containing a state are used for aggregations, analytics, and row pivoting where multiple rows of data are required to run the function.  To implement a state function, three discrete functions must be defined:
+
+1. The primary function - Called for each row in the grouping.  This should be `void` function with the input parameters specifying the column values to be processed.
+2. The result function - Called to retrieve a result  when the grouping has completed.  This should return thee result, and specify `out` parammeters for any additional values to be returned.
+3. The reset function - this is called to reset variables and start receiving data for thee next group.
+
+Here is a simple example that implements the sum function:
+
+```csharp
+class CalculateSum
+{
+	int total = 0;
+	
+	public void Sum(int value)
+	{
+		total = total + value;
+	}
+	
+	public int SumResult()
+	{
+		return total;
+	}
+	
+	public void SumReset()
+	{
+		total =  0;
+	}
+}
+```
 
