@@ -1,0 +1,45 @@
+{
+  "userSecretsId": "dexih.connections.test.44fc05ee-e883-4070-8840-c1d8b479a4fe",
+
+  "version": "1.0.0",
+  "description": "dexih_unit_tests Class Library",
+  "authors": [ "Gary" ],
+
+  "dependencies": {
+    "dexih.connections": "0.1.0-*",
+    "xunit": "2.1.0",
+    "dotnet-test-xunit": "1.0.0-rc2-*",
+    "System.Data.SqlClient": "4.1.0-rc2-24027",
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Configuration": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-rc2-final"
+  },
+
+  "testRunner": "xunit",
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-rc2-3002702",
+          "type": "platform"
+        },
+        "System.Reflection.TypeExtensions": "4.1.0-rc2-24027"
+      },
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
+    },
+    "net451": { }
+  },
+  "tools": {
+    "Microsoft.Extensions.SecretManager.Tools": {
+      "version": "1.0.0-preview1-final",
+      "imports": "portable-net45+win8+dnxcore50"
+    }
+  }
+}

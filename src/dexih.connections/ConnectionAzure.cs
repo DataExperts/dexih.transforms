@@ -1,0 +1,789 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Data;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
+using dexih.functions;
+using System.IO;
+using System.Net;
+using System.Data.Common;
+using dexih.transforms;
+using static dexih.functions.DataType;
+using System.Text.RegularExpressions;
+
+namespace dexih.connections
+{
+    public class ConnectionAzure : Connection
+    {
+
+        public override string ServerHelp => "Server Name";
+        public override string DefaultDatabaseHelp => "Database";
+        public override bool AllowNtAuth => false;
+        public override bool AllowUserPass => true;
+        public override bool AllowDataPoint => true;
+        public override bool AllowManaged => true;
+        public override bool AllowPublish => false;
+        public override string DatabaseTypeName => "Azure Storage Tables";
+        public override ECategory DatabaseCategory => ECategory.NoSqlDatabase;
+
+        private TableQuerySegment<DynamicTableEntity> _tableResult;
+        private TableQuery<DynamicTableEntity> _tableQuery;
+
+        private TableContinuationToken _token;
+
+        CloudTable _tableReference;
+        private int _currentReadRow;
+        string[]  _outputFields;
+
+        public override bool CanBulkLoad => true;
+
+
+        protected override async Task<ReturnValue> WriteDataBulkInner(DbDataReader sourceData, Table table)
+        {
+            try
+            {
+                string targetTableName = table.TableName;
+
+                List<Task> tasks = new List<Task>();
+
+                //create buffers of data and write in parallel.
+                int bufferSize = 0;
+                List<object[]> buffer = new List<object[]>();
+
+                while (sourceData.Read())
+                {
+                    if (bufferSize > 99)
+                    {
+                        tasks.Add(WriteDataBuffer(buffer, targetTableName));
+                        bufferSize = 0;
+                        buffer = new List<object[]>();
+                    }
+
+                    object[] row = new object[_outputFields.Length];
+                    sourceData.GetValues(row);
+                    buffer.Add(row);
+                    bufferSize++;
+                }
+                tasks.Add(WriteDataBuffer(buffer, targetTableName));
+                bufferSize = 0;
+                buffer = new List<object[]>();
+
+                await Task.WhenAll(tasks);
+
+                return new ReturnValue(true);
+            }
+            catch(StorageException ex)
+            {
+                string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
+                return new ReturnValue(false, message, ex);
+            }
+            catch (Exception ex)
+            {
+                string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message;
+                return new ReturnValue(false, message, ex);
+            }
+        }
+
+        public async Task WriteDataBuffer(List<object[]> buffer, string targetTableName)
+        {
+            CloudTableClient connection = NewConnection();
+            CloudTable table = connection.GetTableReference(targetTableName);
+
+            // Create the batch operation.
+            TableBatchOperation batchOperation = new TableBatchOperation();
+
+            foreach(object[] row in buffer)
+            {
+                Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
+                for (int i = 0; i < _outputFields.Length; i++)
+                    if (_outputFields[i] != "rowKey" && _outputFields[i] != "partitionKey" && _outputFields[i] != "Timestamp")
+                    {
+                        object value = row[i];
+                        if (value == DBNull.Value) value = null;
+                        properties.Add(_outputFields[i], NewEntityProperty(CachedTable.Columns[i].DataType, value));
+                    }
+
+                DynamicTableEntity entity = new DynamicTableEntity(row[Array.IndexOf(_outputFields, "partitionKey")].ToString(), row[Array.IndexOf(_outputFields, "rowKey")].ToString(), "*", properties);
+
+                batchOperation.Insert(entity);
+            }
+            await table.ExecuteBatchAsync(batchOperation);
+        }
+
+        private EntityProperty NewEntityProperty(ETypeCode type, object value)
+        {
+            switch (type)
+            {
+                case ETypeCode.Byte:
+                case ETypeCode.SByte:
+                case ETypeCode.UInt16:
+                case ETypeCode.UInt32:
+                case ETypeCode.Int16:
+                case ETypeCode.Int32:
+                    return new EntityProperty(Convert.ToInt32(value));
+                case ETypeCode.UInt64:
+                case ETypeCode.Int64:
+                    return new EntityProperty((long)value);
+                case ETypeCode.Decimal:
+                case ETypeCode.Double:
+                case ETypeCode.Single:
+                    return new EntityProperty(Convert.ToDouble(value));
+                case ETypeCode.Unknown:
+                case ETypeCode.String: 
+                    return new EntityProperty((string)value);
+                case ETypeCode.Boolean: 
+                    return new EntityProperty((bool)value);
+                case ETypeCode.DateTime: 
+                    return new EntityProperty((DateTime)value);
+                case ETypeCode.Time:
+                    return new EntityProperty((DateTimeOffset)value);
+                default:
+                    return new EntityProperty((string)value);
+            }
+        }
+
+
+        /// <summary>
+        /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="dropTable"></param>
+        /// <returns></returns>
+        public override async Task<ReturnValue> CreateManagedTable(Table table, bool dropTable = false)
+        {
+            try
+            {
+                CloudTableClient connection = NewConnection();
+                CloudTable cTable = connection.GetTableReference(table.TableName);
+                if (dropTable)
+                    await cTable.DeleteIfExistsAsync();
+
+                bool result = Retry.Do(() => cTable.CreateIfNotExistsAsync().Result, TimeSpan.FromSeconds(10), 6);
+
+                return new ReturnValue(true);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue(false, "The following error occurred when creating an azure table.  This could be due to the previous Azure table still being deleted due to delayed garbage collection.  The message is: " + ex.Message, ex);
+            }
+        }
+
+        public override bool CanRunQueries => false;
+
+
+        private CloudTableClient NewConnection()
+        {
+            CloudStorageAccount storageAccount;
+            // Retrieve the storage account from the connection string.
+            if (string.IsNullOrEmpty(UserName)) //no username, then use the development settings.
+                storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true");
+            else
+                storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + UserName + ";AccountKey=" + Password + ";TableEndpoint=" + ServerName );
+
+            //ServicePoint tableServicePoint = ServicePointManager.FindServicePoint(storageAccount.TableEndpoint);
+            //tableServicePoint.UseNagleAlgorithm = false;
+            //tableServicePoint.ConnectionLimit = 10000;
+
+            // Create the table client.
+            return storageAccount.CreateCloudTableClient();
+        }
+
+        public override async Task<ReturnValue> CreateDatabase(string DatabaseName)
+        {
+            return await Task.Run(() => new ReturnValue(true));
+        }
+
+        public override async Task<ReturnValue<List<string>>> GetDatabaseList()
+        {
+            List<string> list = await Task.Run(() => new List<string> {"Default"} );
+            return new ReturnValue<List<string>>(true, list);
+        }
+
+        public override async Task<ReturnValue<List<string>>> GetTableList()
+        {
+            try
+            {
+                CloudTableClient connection = NewConnection();
+                TableContinuationToken continuationToken = null;
+                List<string> list = new List<string>();
+                do
+                {
+                    var table = await connection.ListTablesSegmentedAsync(continuationToken);
+                    continuationToken = table.ContinuationToken;
+                    list.AddRange(table.Results.Select(c=>c.Name));
+
+                } while (continuationToken != null);
+
+                return new ReturnValue<List<string>>(true, list);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<List<string>>(false, "The following error was encountered when getting a list of Azure tables: " + ex.Message, ex);
+            }
+        }
+
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties = null)
+        {
+            try
+            {
+                CloudTableClient connection = NewConnection();
+
+
+                //The new datatable that will contain the table schema
+                Table table = new Table(tableName);
+                table.LogicalName = tableName;
+                table.Description = "";
+
+                CloudTable cloudTable = connection.GetTableReference(tableName);
+                var query = new TableQuery().Take(1);
+
+                TableContinuationToken continuationToken = null;
+                List<DynamicTableEntity> list = new List<DynamicTableEntity>();
+                do
+                {
+                    var result = await cloudTable.ExecuteQuerySegmentedAsync(query, continuationToken);
+                    continuationToken = result.ContinuationToken;
+                    list.AddRange(result.Results);
+
+                } while (continuationToken != null);
+
+                if (list.Count > 0)
+                {
+                    var dynamicTableEntity = list[0];
+                    foreach (var property in dynamicTableEntity.Properties)
+                    {
+                        //add the basic properties                            
+                        TableColumn col = new TableColumn()
+                        {
+                            ColumnName = property.Key,
+                            LogicalName = property.Key,
+                            IsInput = false,
+                            ColumnGetType = property.Value.GetType(),
+                            Description = "",
+                            AllowDbNull = true,
+                            IsUnique = false
+                        };
+
+                        table.Columns.Add(col);
+                    }
+                }
+                return new ReturnValue<Table>(true, table);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<Table>(false, "The following error was encountered when getting azure table information: " + ex.Message, ex, null);
+            }
+        }
+
+        protected override ReturnValue<object[]> ReadRecord()
+        {
+            try
+            {
+                if (_currentReadRow >= _tableResult.Count())
+                {
+                    if (_token == null)
+                        return new ReturnValue<object[]>(false, null);
+                    var test = _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token).Result;
+
+                    _tableResult = _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token).Result;
+                    _token = _tableResult.ContinuationToken;
+                    _currentReadRow = 0;
+                }
+
+                DynamicTableEntity currentEntity = _tableResult.ElementAt(_currentReadRow);
+
+                object[] row = new object[_outputFields.Length];
+
+                row[Array.IndexOf(_outputFields, "partitionKey")] = currentEntity.PartitionKey;
+                row[Array.IndexOf(_outputFields, "rowKey")] = currentEntity.RowKey;
+                row[Array.IndexOf(_outputFields, "Timestamp")] = currentEntity.Timestamp.ToString();
+
+                foreach (var value in _tableResult.ElementAt(_currentReadRow).Properties)
+                {
+                    if (value.Key != "rowKey" && value.Key != "partitionKey" && value.Key != "Timestamp")
+                    {
+                        object returnValue = value.Value.PropertyAsObject;
+                        if (returnValue == null)
+                            row[Array.IndexOf(_outputFields, value.Key)] = DBNull.Value;
+                        else
+                            row[Array.IndexOf(_outputFields, value.Key)] = returnValue;
+                    }
+                }
+
+                _currentReadRow++;
+
+                return new ReturnValue<object[]>(true, row);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("The azure storage table reader failed due to the following error: " + ex.Message, ex);
+            }
+        }
+
+        public string ConvertOperator(Filter.ECompare Operator)
+        {
+            switch( Operator)
+            {
+                case Filter.ECompare.EqualTo: 
+                    return "eq";
+                case Filter.ECompare.GreaterThan:
+                    return "gt";
+                case Filter.ECompare.GreaterThanEqual:
+                    return "ge";
+                case Filter.ECompare.LessThan:
+                    return "lt";
+                case Filter.ECompare.LessThanEqual:
+                    return "le";
+                case Filter.ECompare.NotEqual:
+                    return "ne";
+                default:
+                    throw new Exception("ConvertOperator failed");
+            }
+        }
+
+        private string BuildFilterString(List<Filter> filters)
+        {
+            if (filters == null || filters.Count == 0)
+                return "";
+            else
+            {
+                string combinedFilterString = "";
+                foreach (var filter in filters)
+                {
+                    string filterString;
+                    switch (filter.CompareDataType)
+                    {
+                        case ETypeCode.String:
+                            filterString = TableQuery.GenerateFilterCondition(filter.Column1, ConvertOperator(filter.Operator), (string)filter.Value2);
+                            break;
+                        case ETypeCode.Boolean:
+                            filterString = TableQuery.GenerateFilterConditionForBool(filter.Column1, ConvertOperator(filter.Operator), (bool) filter.Value2);
+                            break;
+                        case ETypeCode.Int16:
+                        case ETypeCode.Int32:
+                        case ETypeCode.UInt16:
+                        case ETypeCode.UInt32:
+                            filterString = TableQuery.GenerateFilterConditionForInt(filter.Column1, ConvertOperator(filter.Operator), (int)filter.Value2);
+                            break;
+                        case ETypeCode.UInt64:
+                        case ETypeCode.Int64:
+                            filterString = TableQuery.GenerateFilterConditionForLong(filter.Column1, ConvertOperator(filter.Operator), (long) filter.Value2);
+                            break;
+                        case ETypeCode.DateTime:
+                            filterString = TableQuery.GenerateFilterConditionForDate(filter.Column1, ConvertOperator(filter.Operator), (DateTime)filter.Value2);
+                            break;
+                        case ETypeCode.Time:
+                            filterString = TableQuery.GenerateFilterCondition(filter.Column1, ConvertOperator(filter.Operator), filter.Value2.ToString());
+                            break;
+                        case ETypeCode.Double:
+                        case ETypeCode.Decimal:
+                            filterString = TableQuery.GenerateFilterConditionForDouble(filter.Column1, ConvertOperator(filter.Operator), (double)filter.Value2);
+                            break;
+                        default:
+                            filterString = "";
+                            break;
+                    }
+                    if (combinedFilterString == "")
+                        combinedFilterString = filterString;
+                    else if(filterString != "")
+                        combinedFilterString = TableQuery.CombineFilters(combinedFilterString, filter.AndOr.ToString().ToLower(), filterString);
+                }
+                return combinedFilterString;
+            }
+        }
+
+        protected override async Task<ReturnValue> DataReaderStartQueryInner(Table table, SelectQuery query)
+        {
+            if (OpenReader)
+            {
+                return new ReturnValue(false, "The current connection is already open.", null);
+            }
+
+            CachedTable = table;
+
+            CloudTableClient connection = NewConnection();
+            _tableReference = connection.GetTableReference(table.TableName);
+
+            _tableQuery = new TableQuery<DynamicTableEntity>().Take(10);
+            _tableQuery.SelectColumns = query.Columns.Select(c=>c.Column).ToArray();
+            _tableQuery.FilterString = BuildFilterString(query.Filters);
+            _tableQuery.TakeCount = 1000;
+
+            try
+            {
+                _tableResult = await _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token);
+            }
+            catch(StorageException ex)
+            {
+                string message = "Error reading Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
+                return new ReturnValue(false, message, ex);
+            }
+
+            _token = _tableResult.ContinuationToken;
+
+            if (_tableResult != null && _tableResult.Any())
+            {
+                _outputFields = CachedTable.Columns.Select(c => c.ColumnName).ToArray();
+                return new ReturnValue(true);
+            }
+            else
+                return new ReturnValue(false);
+        }
+
+        public override async Task<ReturnValue> TruncateTable(Table table)
+        {
+            try
+            {
+                CloudTableClient connection = NewConnection();
+                bool result;
+
+                CloudTable cTable = connection.GetTableReference(table.TableName);
+                await cTable.DeleteIfExistsAsync();
+                result = Retry.Do(() => cTable.CreateIfNotExistsAsync().Result, TimeSpan.FromSeconds(10), 6);
+
+                return new ReturnValue(result);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue(false, "The truncate table failed.  This may be due to Azure garbage collection processes being too slow.  The error was: " + ex.Message, ex);
+            }
+        }
+
+
+        public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
+        {
+            await Task.Run(() =>
+            {
+                //partion key uses the AuditKey which allows bulk load, and can be used as an incremental checker.
+                table.Columns.Add(new TableColumn()
+                {
+                    ColumnName = "partitionKey",
+                    DataType = ETypeCode.String,
+                    MaxLength = 0,
+                    Precision = 0,
+                    AllowDbNull = false,
+                    LogicalName = table.TableName + " parition key.",
+                    Description = "The Azure partition key and UpdateAuditKey for this table.",
+                    IsUnique = true,
+                    DeltaType = TableColumn.EDeltaType.AzurePartitionKey,
+                    IsIncrementalUpdate = true,
+                    IsMandatory = true
+                });
+
+                //add the special columns for managed tables.
+                table.Columns.Add(new TableColumn()
+                {
+                    ColumnName = "rowKey",
+                    DataType = ETypeCode.String,
+                    MaxLength = 0,
+                    Precision = 0,
+                    AllowDbNull = false,
+                    LogicalName = table.TableName + " surrogate key",
+                    Description = "The azure rowKey and the natural key for this table.",
+                    IsUnique = true,
+                    DeltaType = TableColumn.EDeltaType.AzureRowKey,
+                    IsMandatory = true
+                });
+
+                //add the special columns for managed tables.
+                table.Columns.Add(new TableColumn()
+                {
+                    ColumnName = "Timestamp",
+                    DataType = ETypeCode.DateTime,
+                    MaxLength = 0,
+                    Precision = 0,
+                    AllowDbNull = false,
+                    LogicalName = table.TableName + " timestamp.",
+                    Description = "The Azure Timestamp for the managed table.",
+                    IsUnique = true,
+                    DeltaType = TableColumn.EDeltaType.AutoGenerate,
+                    IsMandatory = true
+                });
+            });
+
+            return new ReturnValue(true, "", null);
+        }
+
+        public override bool NextResult()
+        {
+            return Read();
+        }
+
+        public override string GetCurrentFile()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ReturnValue ResetTransform()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string Details()
+        {
+            return "Azure Storage Table: " + CachedTable.TableName;
+        }
+
+        public override List<Sort> RequiredSortFields()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<Sort> RequiredJoinSortFields()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task<ReturnValue<int>> ExecuteInsertQuery(Table table, List<InsertQuery> queries)
+        {
+            try
+            {
+                CloudTableClient connection = NewConnection();
+                CloudTable cTable = connection.GetTableReference(table.TableName);
+
+                int rowsInserted = 0;
+                int rowcount = 0;
+
+                List<Task> batchTasks = new List<Task>();
+
+                //start a batch operation to update the rows.
+                TableBatchOperation batchOperation = new TableBatchOperation();
+
+                //loop through all the queries to retrieve the rows to be updated.
+                foreach (var query in queries)
+                {
+                    Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
+                    foreach (var field in query.InsertColumns)
+                        if (field.Column != "rowKey" && field.Column != "partitionKey" && field.Column != "Timestamp")
+                            properties.Add(field.Column, new EntityProperty(field.Value.ToString()));
+
+                    string partitionKey = query.InsertColumns.SingleOrDefault(c => c.Column == "patitionKey")?.Value.ToString();
+                    if (string.IsNullOrEmpty(partitionKey)) partitionKey = "Undefined";
+
+                    string rowKey = query.InsertColumns.SingleOrDefault(c => c.Column == "rowKey")?.Value.ToString();
+                    if (string.IsNullOrEmpty(rowKey))
+                    {
+                        var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey)?.ColumnName;
+
+                        if(sk == null)
+                            return new ReturnValue<int>(false, "The Azure insert query for " + table.TableName + " could not be run due to the mandatory rowKey column not being defined.", null);
+
+                        rowKey = query.InsertColumns.Single(c => c.Column == sk).Value.ToString();
+                    }
+
+
+                    DynamicTableEntity entity = new DynamicTableEntity(partitionKey, rowKey, "*", properties);
+
+                    batchOperation.Insert(entity);
+
+                    rowcount++;
+                    rowsInserted++;
+
+                    if (rowcount > 99)
+                    {
+                        rowcount = 0;
+                        batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation));
+                        batchOperation = new TableBatchOperation();
+                    }
+                }
+
+                if (batchOperation.Count > 0)
+                {
+                    batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation));
+                }
+
+                await Task.WhenAll(batchTasks.ToArray());
+
+                return new ReturnValue<int>(true, "", null, 1);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<int>(false, "The Azure insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+            }
+        }
+
+        public override async Task<ReturnValue<int>> ExecuteUpdateQuery(Table table, List<UpdateQuery> queries)
+        {
+            try
+            {
+                CloudTableClient connection = NewConnection();
+                CloudTable cTable = connection.GetTableReference(table.TableName);
+
+                int rowsUpdated = 0;
+                int rowcount = 0;
+
+                List<Task> batchTasks = new List<Task>();
+
+                //start a batch operation to update the rows.
+                TableBatchOperation batchOperation = new TableBatchOperation();
+
+                //loop through all the queries to retrieve the rows to be updated.
+                foreach (var query in queries)
+                {
+                    //Read the key fields from the table
+                    TableQuery tableQuery = new TableQuery();
+                    tableQuery.SelectColumns = new[] { "partitionKey", "rowKey" };
+                    tableQuery.FilterString = BuildFilterString(query.Filters);
+
+
+                    //run the update 
+                    TableContinuationToken continuationToken = null;
+                    do
+                    {
+                        var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
+                        continuationToken = result.ContinuationToken;
+
+                        foreach(var entity in result.Results)
+                        {
+                            foreach (var column in query.UpdateColumns)
+                            {
+                                entity.Properties[column.Column].StringValue = column.Value.ToString();
+                            }
+
+                            batchOperation.Replace(entity);
+
+                            rowcount++;
+                            rowsUpdated++;
+
+                            if(rowcount > 99)
+                            {
+                                rowcount = 0;
+                                batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation));
+                                batchOperation = new TableBatchOperation();
+                            }
+                        }
+
+                    } while (continuationToken != null);
+                }
+
+                if (batchOperation.Count > 0)
+                {
+                    batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation));
+                }
+
+                await Task.WhenAll(batchTasks.ToArray());
+
+                return new ReturnValue<int>(true, "", null, rowsUpdated);
+            }
+            catch(Exception ex)
+            {
+                return new ReturnValue<int>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+            }
+        }
+
+        public override async Task<ReturnValue<int>> ExecuteDeleteQuery(Table table, List<DeleteQuery> queries)
+        {
+            try
+            {
+                CloudTableClient connection = NewConnection();
+                CloudTable cTable = connection.GetTableReference(table.TableName);
+
+                int rowsDeleted = 0;
+                int rowcount = 0;
+
+                List<Task> batchTasks = new List<Task>();
+
+                //start a batch operation to update the rows.
+                TableBatchOperation batchOperation = new TableBatchOperation();
+
+                //loop through all the queries to retrieve the rows to be updated.
+                foreach (var query in queries)
+                {
+                    //Read the key fields from the table
+                    TableQuery tableQuery = new TableQuery();
+                    tableQuery.SelectColumns = new[] { "partitionKey", "rowKey" };
+                    tableQuery.FilterString = BuildFilterString(query.Filters);
+                    //TableResult = TableReference.ExecuteQuery(TableQuery);
+
+                    TableContinuationToken continuationToken = null;
+                    do
+                    {
+                        var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
+                        continuationToken = result.ContinuationToken;
+
+                        foreach (var entity in result.Results)
+                        {
+                            batchOperation.Delete(entity);
+                            rowcount++;
+                            rowsDeleted++;
+
+                            if (rowcount > 99)
+                            {
+                                await cTable.ExecuteBatchAsync(batchOperation);
+                                batchOperation = new TableBatchOperation();
+                                rowcount = 0;
+                            }
+                        }
+
+                    } while (continuationToken != null);
+
+                }
+
+                if (batchOperation.Count > 0)
+                {
+                    await cTable.ExecuteBatchAsync(batchOperation);
+                }
+
+                return new ReturnValue<int>(true, "", null, rowsDeleted); 
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<int>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+            }
+        }
+
+        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query)
+        {
+            try
+            {
+                CloudTableClient connection = NewConnection();
+                CloudTable cTable = connection.GetTableReference(table.TableName);
+
+                //Read the key fields from the table
+                TableQuery tableQuery = new TableQuery();
+                tableQuery.SelectColumns = query.Columns.Select(c=>c.Column).ToArray();
+                tableQuery.FilterString = BuildFilterString(query.Filters);
+                tableQuery.Take(1);
+
+                TableContinuationToken continuationToken = null;
+                var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
+                continuationToken = result.ContinuationToken;
+
+                object value = result.Results[0].Properties[query.Columns[0].Column];
+
+                return new ReturnValue<object>(true, value);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<object>(false, "The Azure select query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+            }
+        }
+
+        public override async Task<ReturnValue> DataWriterStart(Table table)
+        {
+            return await Task.Run(() => new ReturnValue(true));
+        }
+
+        public override async Task<ReturnValue> DataWriterFinish(Table table)
+        {
+            return await Task.Run(() => new ReturnValue(true));
+        }
+
+        public override bool CanLookupRowDirect { get; } = true;
+
+        public override Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        { 
+            //TODO Implement lookup for Azure table service.
+            throw new NotImplementedException();
+        }
+
+
+    }
+}

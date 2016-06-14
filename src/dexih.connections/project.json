@@ -1,0 +1,45 @@
+{
+  "version": "0.1.0",
+  "title": "Data Experts Group - Connections Library",
+  "description": "This is a support library which enables the transform library to access different types of connections.",
+  "authors": [ "Gary Holland" ],
+
+  "packOptions": {
+    "releaseNotes": "Note: This project is still under devlopement with regular breaking changes.",
+    "copyright": "Data Experts Group Ltd.",
+    "tags": [ "Business Intelligence", "BI", "ETL", "Data Integration", "Data Management", "DbDataReader", "Data Processing", "" ],
+    "projectUrl": "https://github.com/dataexperts/dexih.transforms"
+  },
+
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Net.Http": "4.0.0.0",
+        "System.Web.Services": "4.0.0.0"
+      },
+      "dependencies": {
+        "Oracle.ManagedDataAccess": "12.1.24160419"
+      }
+    },
+    "netstandard1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.5.0-rc2-24027"
+      },
+      "imports": [
+        "portable-net45+wp80+win8+wpa81+dnxcore50",
+        "portable-net451+win8"
+      ]
+    }
+  },
+  "dependencies": {
+    "dexih.transforms": "0.1.*",
+    "Microsoft.Data.Sqlite": "1.0.0-rc2-final",
+    "System.Data.SqlClient": "4.1.0-rc2-24027",
+    "WindowsAzure.Storage": "7.0.2-preview"
+  },
+  "scripts": {
+    "postcompile": [
+      "dotnet pack --no-build --configuration Debug -o ../../../packages"
+    ]
+  }
+}
