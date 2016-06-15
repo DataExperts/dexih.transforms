@@ -19,7 +19,6 @@ namespace dexih.transforms
             SetInTransform(inTransform);
         }
 
-        bool _firstRecord = true;
         bool _lastRecord = false;
 
         private List<Function> _profiles;
@@ -45,7 +44,6 @@ namespace dexih.transforms
 
         public override ReturnValue ResetTransform()
         {
-            _firstRecord = true;
             _lastRecord = false;
             return new ReturnValue(true);
         }

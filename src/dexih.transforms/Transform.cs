@@ -64,6 +64,8 @@ namespace dexih.transforms
         public bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
         public List<Sort> SortFields { get; set; } //indicates fields for the sort transform.
 
+        public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
+
         #endregion
 
         #region Virtual Properties
@@ -83,6 +85,19 @@ namespace dexih.transforms
         #endregion
 
         #region Initialization 
+
+        /// <summary>
+        /// For readers that are a start point.  This passes the connection and reference transform.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool SetConnection(Connection connection, Table table, Transform referenceTransform = null)
+        {
+            ReferenceConnection = connection;
+            ReferenceTransform = referenceTransform;
+            CacheTable = table;
+
+            return true;
+        }
 
         /// <summary>
         /// Sets the data readers for the transform.  Ensure the transform properties have been set prior to running this.
@@ -170,10 +185,10 @@ namespace dexih.transforms
         /// <param name="filters">Requested filters for underlying transform to execute.</param>
         /// <param name="sorts">Requested sort for underlying transform to execute.</param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public virtual async Task<ReturnValue> Open(SelectQuery query)
         {
             if(PrimaryTransform != null)
-                return await PrimaryTransform.Open(filters, sorts);
+                return await PrimaryTransform.Open(query);
             return new ReturnValue(true);
         }
 

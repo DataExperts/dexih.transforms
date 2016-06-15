@@ -12,6 +12,7 @@ using System.Data.Common;
 using dexih.transforms;
 using static dexih.functions.DataType;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace dexih.connections
 {
@@ -22,25 +23,29 @@ namespace dexih.connections
         public override string DefaultDatabaseHelp => "Database";
         public override bool AllowNtAuth => false;
         public override bool AllowUserPass => true;
-        public override bool AllowDataPoint => true;
-        public override bool AllowManaged => true;
-        public override bool AllowPublish => false;
         public override string DatabaseTypeName => "Azure Storage Tables";
         public override ECategory DatabaseCategory => ECategory.NoSqlDatabase;
 
-        private TableQuerySegment<DynamicTableEntity> _tableResult;
-        private TableQuery<DynamicTableEntity> _tableQuery;
-
-        private TableContinuationToken _token;
-
-        CloudTable _tableReference;
-        private int _currentReadRow;
-        string[]  _outputFields;
 
         public override bool CanBulkLoad => true;
 
+        public override bool IsValidDatabaseName(string name)
+        {
+            return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,62}$");
+        }
 
-        protected override async Task<ReturnValue> WriteDataBulkInner(DbDataReader sourceData, Table table)
+        public override bool IsValidTableName(string name)
+        {
+            return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,62}$");
+        }
+
+        public override bool IsValidColumnName(string name)
+        {
+            return Regex.IsMatch(name, "^(?:((?!\\d)\\w+(?:\\.(?!\\d)\\w+)*)\\.)?((?!\\d)\\w+)$");
+        }
+
+
+        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader)
         {
             try
             {
@@ -52,44 +57,44 @@ namespace dexih.connections
                 int bufferSize = 0;
                 List<object[]> buffer = new List<object[]>();
 
-                while (sourceData.Read())
+                while (reader.Read())
                 {
                     if (bufferSize > 99)
                     {
-                        tasks.Add(WriteDataBuffer(buffer, targetTableName));
+                        tasks.Add(WriteDataBuffer(table, buffer, targetTableName));
                         bufferSize = 0;
                         buffer = new List<object[]>();
                     }
 
-                    object[] row = new object[_outputFields.Length];
-                    sourceData.GetValues(row);
+                    object[] row = new object[table.Columns.Count];
+                    reader.GetValues(row);
                     buffer.Add(row);
                     bufferSize++;
                 }
-                tasks.Add(WriteDataBuffer(buffer, targetTableName));
+                tasks.Add(WriteDataBuffer(table, buffer, targetTableName));
                 bufferSize = 0;
                 buffer = new List<object[]>();
 
                 await Task.WhenAll(tasks);
 
-                return new ReturnValue(true);
+                return new ReturnValue<int>(true, 0);
             }
             catch(StorageException ex)
             {
                 string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
-                return new ReturnValue(false, message, ex);
+                return new ReturnValue<int>(false, message, ex);
             }
             catch (Exception ex)
             {
                 string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message;
-                return new ReturnValue(false, message, ex);
+                return new ReturnValue<int>(false, message, ex);
             }
         }
 
-        public async Task WriteDataBuffer(List<object[]> buffer, string targetTableName)
+        public async Task WriteDataBuffer(Table table, List<object[]> buffer, string targetTableName)
         {
-            CloudTableClient connection = NewConnection();
-            CloudTable table = connection.GetTableReference(targetTableName);
+            CloudTableClient connection = GetCloudTableClient();
+            CloudTable cloudTable = connection.GetTableReference(targetTableName);
 
             // Create the batch operation.
             TableBatchOperation batchOperation = new TableBatchOperation();
@@ -97,19 +102,19 @@ namespace dexih.connections
             foreach(object[] row in buffer)
             {
                 Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
-                for (int i = 0; i < _outputFields.Length; i++)
-                    if (_outputFields[i] != "rowKey" && _outputFields[i] != "partitionKey" && _outputFields[i] != "Timestamp")
+                for (int i = 0; i < table.Columns.Count; i++)
+                    if (table.Columns[i].DeltaType != TableColumn.EDeltaType.AzureRowKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.AzurePartitionKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.AutoGenerate)
                     {
                         object value = row[i];
                         if (value == DBNull.Value) value = null;
-                        properties.Add(_outputFields[i], NewEntityProperty(CachedTable.Columns[i].DataType, value));
+                        properties.Add(table.Columns[i].ColumnName, NewEntityProperty(table.Columns[i].DataType, value));
                     }
 
-                DynamicTableEntity entity = new DynamicTableEntity(row[Array.IndexOf(_outputFields, "partitionKey")].ToString(), row[Array.IndexOf(_outputFields, "rowKey")].ToString(), "*", properties);
+                DynamicTableEntity entity = new DynamicTableEntity(row[table.GetOrdinal("partitionKey")].ToString(), row[table.GetOrdinal("rowKey")].ToString(), "*", properties);
 
                 batchOperation.Insert(entity);
             }
-            await table.ExecuteBatchAsync(batchOperation);
+            await cloudTable.ExecuteBatchAsync(batchOperation);
         }
 
         private EntityProperty NewEntityProperty(ETypeCode type, object value)
@@ -151,18 +156,45 @@ namespace dexih.connections
         /// <param name="table"></param>
         /// <param name="dropTable"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue> CreateManagedTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
             try
             {
-                CloudTableClient connection = NewConnection();
+                if (!IsValidTableName(table.TableName))
+                    return new ReturnValue(false, "The table " + table.TableName + " could not be created as it does not meet Azuere table naming standards.", null);
+
+                foreach(var col in table.Columns)
+                {
+                    if (!IsValidColumnName(col.ColumnName))
+                        return new ReturnValue(false, "The table " + table.TableName + " could not be created as the column + " + col.ColumnName + " does not meet Azuere table naming standards.", null);
+                }
+
+                CloudTableClient connection = GetCloudTableClient();
                 CloudTable cTable = connection.GetTableReference(table.TableName);
                 if (dropTable)
                     await cTable.DeleteIfExistsAsync();
 
-                bool result = Retry.Do(() => cTable.CreateIfNotExistsAsync().Result, TimeSpan.FromSeconds(10), 6);
+                //bool result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(), TimeSpan.FromSeconds(10), 6);
 
-                return new ReturnValue(true);
+                bool isCreated = false;
+                for (int i = 0; i< 10; i++)
+                {
+                    try
+                    {
+                        isCreated = await GetCloudTableClient().GetTableReference(table.TableName).CreateIfNotExistsAsync();
+                        if (isCreated)
+                            break;
+                        await Task.Delay(5000);
+                    }
+                    catch
+                    {
+                        await Task.Delay(5000);
+                        continue;
+                    }
+                }
+
+
+                return new ReturnValue(isCreated);
             }
             catch (Exception ex)
             {
@@ -170,12 +202,12 @@ namespace dexih.connections
             }
         }
 
-        public override bool CanRunQueries => false;
-
-
-        private CloudTableClient NewConnection()
+        public CloudTableClient GetCloudTableClient()
         {
             CloudStorageAccount storageAccount;
+
+            if(UseConnectionString)
+                storageAccount = CloudStorageAccount.Parse(ConnectionString);
             // Retrieve the storage account from the connection string.
             if (string.IsNullOrEmpty(UserName)) //no username, then use the development settings.
                 storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true");
@@ -205,7 +237,7 @@ namespace dexih.connections
         {
             try
             {
-                CloudTableClient connection = NewConnection();
+                CloudTableClient connection = GetCloudTableClient();
                 TableContinuationToken continuationToken = null;
                 List<string> list = new List<string>();
                 do
@@ -228,7 +260,7 @@ namespace dexih.connections
         {
             try
             {
-                CloudTableClient connection = NewConnection();
+                CloudTableClient connection = GetCloudTableClient();
 
 
                 //The new datatable that will contain the table schema
@@ -277,56 +309,12 @@ namespace dexih.connections
             }
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
-        {
-            try
-            {
-                if (_currentReadRow >= _tableResult.Count())
-                {
-                    if (_token == null)
-                        return new ReturnValue<object[]>(false, null);
-                    var test = _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token).Result;
-
-                    _tableResult = _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token).Result;
-                    _token = _tableResult.ContinuationToken;
-                    _currentReadRow = 0;
-                }
-
-                DynamicTableEntity currentEntity = _tableResult.ElementAt(_currentReadRow);
-
-                object[] row = new object[_outputFields.Length];
-
-                row[Array.IndexOf(_outputFields, "partitionKey")] = currentEntity.PartitionKey;
-                row[Array.IndexOf(_outputFields, "rowKey")] = currentEntity.RowKey;
-                row[Array.IndexOf(_outputFields, "Timestamp")] = currentEntity.Timestamp.ToString();
-
-                foreach (var value in _tableResult.ElementAt(_currentReadRow).Properties)
-                {
-                    if (value.Key != "rowKey" && value.Key != "partitionKey" && value.Key != "Timestamp")
-                    {
-                        object returnValue = value.Value.PropertyAsObject;
-                        if (returnValue == null)
-                            row[Array.IndexOf(_outputFields, value.Key)] = DBNull.Value;
-                        else
-                            row[Array.IndexOf(_outputFields, value.Key)] = returnValue;
-                    }
-                }
-
-                _currentReadRow++;
-
-                return new ReturnValue<object[]>(true, row);
-            }
-            catch(Exception ex)
-            {
-                throw new Exception("The azure storage table reader failed due to the following error: " + ex.Message, ex);
-            }
-        }
-
+ 
         public string ConvertOperator(Filter.ECompare Operator)
         {
             switch( Operator)
             {
-                case Filter.ECompare.EqualTo: 
+                case Filter.ECompare.IsEqual: 
                     return "eq";
                 case Filter.ECompare.GreaterThan:
                     return "gt";
@@ -343,7 +331,7 @@ namespace dexih.connections
             }
         }
 
-        private string BuildFilterString(List<Filter> filters)
+        public string BuildFilterString(List<Filter> filters)
         {
             if (filters == null || filters.Count == 0)
                 return "";
@@ -382,7 +370,7 @@ namespace dexih.connections
                             filterString = TableQuery.GenerateFilterConditionForDouble(filter.Column1, ConvertOperator(filter.Operator), (double)filter.Value2);
                             break;
                         default:
-                            filterString = "";
+                            throw new Exception("The data type: " + filter.CompareDataType.ToString() + " is not supported by Azure table storage.");
                             break;
                     }
                     if (combinedFilterString == "")
@@ -394,49 +382,11 @@ namespace dexih.connections
             }
         }
 
-        protected override async Task<ReturnValue> DataReaderStartQueryInner(Table table, SelectQuery query)
-        {
-            if (OpenReader)
-            {
-                return new ReturnValue(false, "The current connection is already open.", null);
-            }
-
-            CachedTable = table;
-
-            CloudTableClient connection = NewConnection();
-            _tableReference = connection.GetTableReference(table.TableName);
-
-            _tableQuery = new TableQuery<DynamicTableEntity>().Take(10);
-            _tableQuery.SelectColumns = query.Columns.Select(c=>c.Column).ToArray();
-            _tableQuery.FilterString = BuildFilterString(query.Filters);
-            _tableQuery.TakeCount = 1000;
-
-            try
-            {
-                _tableResult = await _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token);
-            }
-            catch(StorageException ex)
-            {
-                string message = "Error reading Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
-                return new ReturnValue(false, message, ex);
-            }
-
-            _token = _tableResult.ContinuationToken;
-
-            if (_tableResult != null && _tableResult.Any())
-            {
-                _outputFields = CachedTable.Columns.Select(c => c.ColumnName).ToArray();
-                return new ReturnValue(true);
-            }
-            else
-                return new ReturnValue(false);
-        }
-
         public override async Task<ReturnValue> TruncateTable(Table table)
         {
             try
             {
-                CloudTableClient connection = NewConnection();
+                CloudTableClient connection = GetCloudTableClient();
                 bool result;
 
                 CloudTable cTable = connection.GetTableReference(table.TableName);
@@ -506,46 +456,12 @@ namespace dexih.connections
             return new ReturnValue(true, "", null);
         }
 
-        public override bool NextResult()
-        {
-            return Read();
-        }
-
-        public override string GetCurrentFile()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override ReturnValue ResetTransform()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool Initialize()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string Details()
-        {
-            return "Azure Storage Table: " + CachedTable.TableName;
-        }
-
-        public override List<Sort> RequiredSortFields()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override List<Sort> RequiredJoinSortFields()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override async Task<ReturnValue<int>> ExecuteInsertQuery(Table table, List<InsertQuery> queries)
+ 
+        public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries)
         {
             try
             {
-                CloudTableClient connection = NewConnection();
+                CloudTableClient connection = GetCloudTableClient();
                 CloudTable cTable = connection.GetTableReference(table.TableName);
 
                 int rowsInserted = 0;
@@ -609,11 +525,11 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue<int>> ExecuteUpdateQuery(Table table, List<UpdateQuery> queries)
+        public override async Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries)
         {
             try
             {
-                CloudTableClient connection = NewConnection();
+                CloudTableClient connection = GetCloudTableClient();
                 CloudTable cTable = connection.GetTableReference(table.TableName);
 
                 int rowsUpdated = 0;
@@ -670,7 +586,7 @@ namespace dexih.connections
 
                 await Task.WhenAll(batchTasks.ToArray());
 
-                return new ReturnValue<int>(true, "", null, rowsUpdated);
+                return new ReturnValue<int>(true, rowsUpdated);
             }
             catch(Exception ex)
             {
@@ -678,11 +594,11 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue<int>> ExecuteDeleteQuery(Table table, List<DeleteQuery> queries)
+        public override async Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries)
         {
             try
             {
-                CloudTableClient connection = NewConnection();
+                CloudTableClient connection = GetCloudTableClient();
                 CloudTable cTable = connection.GetTableReference(table.TableName);
 
                 int rowsDeleted = 0;
@@ -743,7 +659,7 @@ namespace dexih.connections
         {
             try
             {
-                CloudTableClient connection = NewConnection();
+                CloudTableClient connection = GetCloudTableClient();
                 CloudTable cTable = connection.GetTableReference(table.TableName);
 
                 //Read the key fields from the table
@@ -756,7 +672,7 @@ namespace dexih.connections
                 var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                 continuationToken = result.ContinuationToken;
 
-                object value = result.Results[0].Properties[query.Columns[0].Column];
+                object value = result.Results[0].Properties[query.Columns[0].Column].PropertyAsObject;
 
                 return new ReturnValue<object>(true, value);
             }
@@ -766,24 +682,17 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue> DataWriterStart(Table table)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            throw new NotImplementedException("The execute reader is not available for Azure table connections.");
         }
 
-        public override async Task<ReturnValue> DataWriterFinish(Table table)
+        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            var reader = new ReaderAzure(this, table);
+            await reader.Open(query);
+            return new ReturnValue<Transform>(true, reader);
+
         }
-
-        public override bool CanLookupRowDirect { get; } = true;
-
-        public override Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
-        { 
-            //TODO Implement lookup for Azure table service.
-            throw new NotImplementedException();
-        }
-
-
     }
 }

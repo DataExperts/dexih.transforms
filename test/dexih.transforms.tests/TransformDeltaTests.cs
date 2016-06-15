@@ -86,7 +86,7 @@ namespace dexih.transforms.tests
             ConnectionMemory memoryConnection = new ConnectionMemory();
             TransformWriter writer = new TransformWriter();
             writer.WriteAllRecords(transformDelta, Target.CacheTable, memoryConnection, null, null).Wait();
-            Target = memoryConnection.ExecuteReader(Target.CacheTable, null).Result.Value;
+            Target = new ReaderMemory(Target.CacheTable, null);
 
             //Set the target pointer back to the start and rerun.  Now 10 rows should be ignored.
             Source.SetRowNumber(0);
@@ -194,7 +194,7 @@ namespace dexih.transforms.tests
             ConnectionMemory memoryConnection = new ConnectionMemory();
             TransformWriter writer = new TransformWriter();
             writer.WriteAllRecords(transformDelta, Target.CacheTable, memoryConnection, null, null).Wait();
-            Target = memoryConnection.ExecuteReader(Target.CacheTable, null).Result.Value;
+            Target = new ReaderMemory(Target.CacheTable, null);
 
             //run an append.  (only difference from reload is no truncate record at start.
             transformDelta = new TransformDelta(Source, Target, TransformDelta.EDeltaType.AppendUpdatePreserve, SurrrogateKey, 20);
@@ -231,8 +231,7 @@ namespace dexih.transforms.tests
             //run the delta again.  this should ignore all 10 records.
             transformDelta.SetRowNumber(0);
             writer.WriteAllRecords(transformDelta, Target.CacheTable, memoryConnection, null, null).Wait();
-            Target = memoryConnection.ExecuteReader(Target.CacheTable, null).Result.Value;
-
+            Target = new ReaderMemory(Target.CacheTable, null);
             transformDelta = new TransformDelta(Source, Target, TransformDelta.EDeltaType.AppendUpdatePreserve, SurrrogateKey, 40);
 
             count = 0;

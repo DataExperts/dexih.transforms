@@ -79,7 +79,7 @@ namespace dexih.transforms
             if (WriteOpen == true)
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
-            var returnValue = await InTransform.Open();
+            var returnValue = await InTransform.Open(null);
 
             OperationColumnIndex = InTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
 
@@ -112,7 +112,9 @@ namespace dexih.transforms
                 RejectInsertQuery = new InsertQuery(RejectTable.TableName, RejectTable.Columns.Select(c => new QueryColumn(c.ColumnName, c.DataType, "@param" + RejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
 
             //if the table doesn't exist, create it.  
-            returnValue = await TargetConnection.CreateManagedTable(TargetTable, false);
+            returnValue = await TargetConnection.CreateTable(TargetTable, false);
+
+            returnValue = await TargetConnection.DataWriterStart(TargetTable);
 
             //await InTransform.Open();
 
@@ -222,6 +224,8 @@ namespace dexih.transforms
 
             if (RejectRecordsTask != null && !RejectRecordsTask.Result.Success)
                 return RejectRecordsTask.Result;
+
+            var returnValue2 = await TargetConnection.DataWriterFinish(TargetTable);
 
             return new ReturnValue(true);
         }
@@ -336,7 +340,7 @@ namespace dexih.transforms
             Table createTable = new Table(RejectTable.TableName, WriteColumns, RejectRows);
 
             var createReader = new ReaderMemory(createTable);
-            CreateRecordsTask = TargetConnection.ExecuteInsertBulk(createTable, createReader);  //this has no await to ensure processing continues.
+            RejectRecordsTask = TargetConnection.ExecuteInsertBulk(createTable, createReader);  //this has no await to ensure processing continues.
 
             return new ReturnValue(true);
         }

@@ -25,7 +25,6 @@ namespace dexih.transforms
 
         object[] savedRejectRow; //used as a temporary store for the pass row when a pass and reject occur.
 
-        bool _firstRecord = true;
         bool _lastRecord = false;
 
         private string rejectReasonColumnName;
@@ -74,7 +73,6 @@ namespace dexih.transforms
 
         public override ReturnValue ResetTransform()
         {
-            _firstRecord = true;
             _lastRecord = false;
             return new ReturnValue(true);
         }

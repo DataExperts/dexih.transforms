@@ -40,10 +40,13 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        public override async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public override async Task<ReturnValue> Open(SelectQuery query)
         {
-            if (filters == null)
-                filters = new List<Filter>();
+            if (query == null)
+                query = new SelectQuery();
+
+            if (query.Filters == null)
+                query.Filters = new List<Filter>();
 
             //add any of the conditions that can be translated to filters
             foreach (var condition in Conditions)
@@ -52,10 +55,10 @@ namespace dexih.transforms
                 if(filter.Success)
                 {
                     filter.Value.AndOr = Filter.EAndOr.And;
-                    filters.Add(filter.Value);
+                    query.Filters.Add(filter.Value);
                 }
             }
-            var returnValue = await PrimaryTransform.Open(filters, sorts);
+            var returnValue = await PrimaryTransform.Open(query);
             return returnValue;
         }
 

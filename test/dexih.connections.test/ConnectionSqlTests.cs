@@ -11,7 +11,7 @@ namespace dexih.connections.test
     {
         public ConnectionSql GetConnection()
         {
-            return new ConnectionSql()
+            return new ConnectionSqlServer()
             {
                 Name = "Test Connection",
                 NtAuthentication = Convert.ToBoolean(Helpers.AppSettings["SqlServer:NTAuthentication"]),

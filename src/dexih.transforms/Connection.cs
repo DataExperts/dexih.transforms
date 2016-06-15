@@ -71,15 +71,23 @@ namespace dexih.transforms
         public abstract bool CanBulkLoad { get; }
 
         //Functions required for managed connection
-        public abstract Task<ReturnValue> CreateManagedTable(Table table, bool dropTable = false);
+        public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable = false);
         //public abstract Task<ReturnValue> TestConnection();
         public abstract Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries);
         public abstract Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries);
         public abstract Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries);
-        public abstract Task<ReturnValue<Transform>> ExecuteReader(Table table, SelectQuery query = null);
         public abstract Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData);
         public abstract Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query);
+        public abstract Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null);
         public abstract Task<ReturnValue> TruncateTable(Table table);
+
+        /// <summary>
+        /// If database connection supports direct DbDataReader.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public abstract Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null);
 
         //Functions required for datapoint.
         public abstract Task<ReturnValue> CreateDatabase(string DatabaseName);
@@ -107,12 +115,49 @@ namespace dexih.transforms
 
         #endregion
 
+        public virtual bool IsValidDatabaseName(string name)
+        {
+            return true;
+        }
+
+        public virtual bool IsValidTableName(string name)
+        {
+            return true;
+        }
+
+        public virtual bool IsValidColumnName(string name)
+        {
+            return true;
+        }
+
+
+
+        /// <summary>
+        /// Function runs when a data write comments.  This is used to put headers on csv files.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        public virtual async Task<ReturnValue> DataWriterStart(Table table)
+        {
+            return await Task.Run(() => new ReturnValue(true));
+        }
+
+        /// <summary>
+        /// Function runs when a data write finishes.  This is used to close file streams.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        public virtual async Task<ReturnValue> DataWriterFinish(Table table)
+        {
+            return await Task.Run(() => new ReturnValue(true));
+        }
+
         public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, int maxMilliseconds, CancellationToken cancellationToken)
         {
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
-            ReturnValue<Transform> returnValue = await ExecuteReader(table, query);
+            ReturnValue<Transform> returnValue = await GetTransformReader(table, query);
             if (returnValue.Success == false)
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 

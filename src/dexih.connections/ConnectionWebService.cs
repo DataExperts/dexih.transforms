@@ -26,37 +26,12 @@ namespace dexih.connections
         public override string DefaultDatabaseHelp => "Service Name";
         public override bool AllowNtAuth => true;
         public override bool AllowUserPass => true;
-        public override bool AllowDataPoint => true;
-        public override bool AllowManaged => false;
-        public override bool AllowPublish => false;
         public override bool CanBulkLoad => false;
         public override string DatabaseTypeName => "SOAP/Xml Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;
 
-        public override bool CanRunQueries => false;
-
-        public override bool PrefersSort
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override bool RequiresSort
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
 
 #if NET451
-        private Type _webServiceType;
-        private string[] _outputFields;
-        private object  _webServiceObject;
-
 
         private async Task<ReturnValue<ServiceDescription>> GetServiceDescription()
         {
@@ -75,7 +50,7 @@ namespace dexih.connections
             }
         }
 
-        private async Task<ReturnValue<object>> GetWebService()
+        public async Task<ReturnValue<object>> GetWebService()
         {
             var serviceDescription = await GetServiceDescription();
             if(serviceDescription.Success == false)
@@ -147,50 +122,21 @@ namespace dexih.connections
             });
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
-        {
-            if (JoinTransform.Read() == false)
-                return new ReturnValue<object[]>(false, null);
-            else
-            {
-                List<Filter> filters = new List<Filter>();
-
-                foreach (JoinPair join in JoinPairs)
-                {
-                    var joinValue = join.JoinColumn == null ? join.JoinValue : JoinTransform[join.JoinColumn].ToString();
-
-                    filters.Add(new Filter()
-                    {
-                        Column1 = join.SourceColumn,
-                        CompareDataType = ETypeCode.String,
-                        Operator = Filter.ECompare.EqualTo,
-                        Value2 = joinValue
-                    });
-
-                }
-
-                var result = LookupRow(filters).Result;
-                return result;
-            }
-        }
-
-        public override bool CanLookupRowDirect { get; } = true;
-
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        public async Task<ReturnValue<object[]>> LookupRow(Table table, List<Filter> filters, Type webServiceType, object webServiceObject)
         {
             try
             {
-                object[] row = new object[_outputFields.Length];
+                object[] row = new object[table.Columns.Count];
 
                 object[] args = new object[filters.Count()];
 
                 for (int i = 0; i < filters.Count; i++)
                 {
-                    row[Array.IndexOf(_outputFields, filters[i].Column1)] = filters[i].Value2;
+                    row[table.GetOrdinal(filters[i].Column1)] = filters[i].Value2;
                     args[i] = filters[i].Value2;
                 }
 
-                object result = await Task.Run(() => _webServiceType.InvokeMember(CachedTable.TableName, BindingFlags.InvokeMethod, null, _webServiceObject, args));
+                object result = await Task.Run(() => webServiceType.InvokeMember(table.TableName, BindingFlags.InvokeMethod, null, webServiceObject, args));
                 if (result == null)
                 {
                     return new ReturnValue<object[]>(false, "Error: The web service call did not return a result.", null);
@@ -200,17 +146,17 @@ namespace dexih.connections
                     Type resultType = result.GetType();
                     if (resultType.Name == "String")
                     {
-                        row[Array.IndexOf(_outputFields, "Result")] = result.ToString();
+                        row[table.GetOrdinal("Result")] = result.ToString();
                     }
                     else
                     {
                         foreach (FieldInfo field in resultType.GetFields())
                         {
-                            row[Array.IndexOf(_outputFields, field.Name)] = field.GetValue(result);
+                            row[table.GetOrdinal(field.Name)] = field.GetValue(result);
                         }
                         foreach (PropertyInfo property in resultType.GetProperties())
                         {
-                            row[Array.IndexOf(_outputFields, property.Name)] = property.GetValue(result);
+                            row[table.GetOrdinal(property.Name)] = property.GetValue(result);
                         }
                     }
 
@@ -221,43 +167,6 @@ namespace dexih.connections
             {
                 return new ReturnValue<object[]>(false, "The following error occurred when calling the web service: " + ex.Message, ex);
             }
-        }
-
-        protected override async Task<ReturnValue> DataReaderStartQueryInner(Table table, SelectQuery query)
-        {
-            try
-            {
-                if (OpenReader)
-                {
-                    return new ReturnValue(false, "The web service connection is already open.", null);
-                }
-
-                var wsResult = await GetWebService();
-                if (wsResult.Success == false)
-                    return wsResult;
-
-                _webServiceObject = wsResult.Value;
-                _webServiceType = _webServiceObject.GetType();
-
-                _outputFields = table.Columns.Select(c => c.ColumnName).ToArray();
-
-                //if no driving table is set, then use the row creator to simulate a single row.
-                if (JoinTransform == null)
-                {
-                    SourceRowCreator rowCreator = new SourceRowCreator();
-                    rowCreator.InitializeRowCreator(1, 1, 1);
-                    JoinTransform = rowCreator;
-                }
-
-                CachedTable = table;
-
-                return new ReturnValue(true);
-            }
-            catch (Exception ex)
-            {
-                return new ReturnValue(false, "The following error occurred when starting the web service: " + ex.Message, ex);
-            }
-
         }
 
         public override async Task<ReturnValue<List<string>>> GetDatabaseList()
@@ -431,6 +340,11 @@ namespace dexih.connections
             }
         }
 #else
+        public Task<ReturnValue<object>> GetWebService()
+        {
+            throw new NotImplementedException();
+        }
+
         public override Task<ReturnValue<List<string>>> GetDatabaseList()
         {
             throw new NotImplementedException();
@@ -446,81 +360,39 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        protected override Task<ReturnValue> DataReaderStartQueryInner(Table table, SelectQuery query)
+        public Task<ReturnValue<object[]>> LookupRow(Table table, List<Filter> filters, Type webServiceType, object webServiceObject)
         {
             throw new NotImplementedException();
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task<ReturnValue<object[]>> LookupRow(List<Filter> filters)
-        {
-            throw new NotImplementedException();
-        }
 #endif
 
-        public override Task<ReturnValue> CreateManagedTable(Table table, bool dropTable = false)
+        public override Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
             throw new NotImplementedException();
         }
-
-
-        public override bool IsClosed => false;
-
-        public override int FieldCount => CachedTable.Columns.Count;
-
-        public override bool NextResult()
-        {
-            return Read();
-        }
-
 
         public override Task<ReturnValue> TruncateTable(Table table)
         {
             throw new NotImplementedException();
         }
 
-        public override string GetCurrentFile()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override ReturnValue ResetTransform()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool Initialize()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string Details()
-        {
-            return "Web Service: " + CachedTable.TableName;
-        }
-
-
-
         public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
         {
             return await Task.Run(() => new ReturnValue(true));
         }
 
-        public override Task<ReturnValue<int>> ExecuteUpdateQuery(Table table, List<UpdateQuery> query)
+        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteDeleteQuery(Table table, List<DeleteQuery> query)
+        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsertQuery(Table table, List<InsertQuery> query)
+        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query)
         {
             throw new NotImplementedException();
         }
@@ -530,22 +402,28 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue> DataWriterStart(Table table)
-        {
-            return await Task.Run(() => new ReturnValue(true));
-
-        }
-
-        public override async Task<ReturnValue> DataWriterFinish(Table table)
-        {
-            return await Task.Run(() => new ReturnValue(true));
-        }
-
- 
 
         public override Task<ReturnValue> CreateDatabase(string databaseName)
         {
             throw new NotImplementedException();
         }
+
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
+        {
+            var reader = new ReaderWebService(this, table, referenceTransform);
+            await reader.Open(query);
+            return new ReturnValue<Transform>(true, reader);
+        }
+
     }
 }

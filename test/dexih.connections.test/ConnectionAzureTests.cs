@@ -13,11 +13,15 @@ namespace dexih.connections.test
         {
             return new ConnectionAzure()
             {
-                Name = "Test Connection",
-                ServerName = Convert.ToString(Helpers.AppSettings["Azure:ServerName"]),
-                UserName = Convert.ToString(Helpers.AppSettings["Azure:UserName"]),
-                Password = Convert.ToString(Helpers.AppSettings["Azure:Password"]),
+                //Name = "Test Connection",
+                //ServerName = Convert.ToString(Helpers.AppSettings["Azure:ServerName"]),
+                //UserName = Convert.ToString(Helpers.AppSettings["Azure:UserName"]),
+                //Password = Convert.ToString(Helpers.AppSettings["Azure:Password"]),
+                UseConnectionString = true,
+                ConnectionString = "UseDevelopmentStorage=true"
             };
+
+
         }
 
         [Fact]
@@ -25,7 +29,7 @@ namespace dexih.connections.test
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            CommonTests.UnitTests(GetConnection(), database);
+            CommonTests.UnitTests(GetConnection(), database, false);
         }
 
         [Fact]

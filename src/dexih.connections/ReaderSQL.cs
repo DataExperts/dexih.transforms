@@ -4,61 +4,49 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Data.Common;
 
 namespace dexih.connections
 {
     public class ReaderSQL : Transform
     {
-        bool isOpen = false;
+        private bool _isOpen = false;
+        private DbDataReader _sqlReader;
 
-        public override ReturnValue Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public ReaderSQL(Connection connection, Table table)
         {
-            if (isOpen)
+            ReferenceConnection = connection;
+            CacheTable = table;
+        }
+
+        public override async Task<ReturnValue> Open(SelectQuery query)
+        {
+            if (_isOpen)
             {
                 return new ReturnValue(false, "The reader is already open.", null);
             }
 
-            CachedTable = table;
+            var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, query);
 
-            ReturnValue<SqlConnection> connection = await NewConnection();
-            if (connection.Success == false)
+            if (!readerResult.Success)
             {
-                return connection;
+                return new ReturnValue(false, "The connection reader for the table " + CacheTable.TableName + " could failed due to the following error: " + readerResult.Message, readerResult.Exception);
             }
 
-            _connection = connection.Value;
+            _sqlReader = readerResult.Value;
 
-            string sql = BuildSelectQuery(table, query);
-            SqlCommand cmd = new SqlCommand(sql, _connection);
-
-            try
-            {
-                _sqlReader = await cmd.ExecuteReaderAsync();
-            }
-            catch (Exception ex)
-            {
-                return new ReturnValue(false, "The connection reader for the sqlserver table " + table.TableName + " could failed due to the following error: " + ex.Message, ex);
-            }
-
-            if (_sqlReader == null)
-            {
-                return new ReturnValue(false, "The connection reader for the sqlserver table " + table.TableName + " return null for an unknown reason.  The sql command was " + sql, null);
-            }
-            else
-            {
-                isOpen = true;
-                return new ReturnValue(true, "", null);
-            }
+            _isOpen = true;
+            return new ReturnValue(true, "", null);
         }
 
         public override string Details()
         {
-            throw new NotImplementedException();
+            return "SqlConnection";
         }
 
         public override bool InitializeOutputFields()
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public override ReturnValue ResetTransform()
@@ -68,7 +56,46 @@ namespace dexih.connections
 
         protected override ReturnValue<object[]> ReadRecord()
         {
-            throw new NotImplementedException();
+            if (!_sqlReader.Read())
+                return new ReturnValue<object[]>(false, null);
+
+            object[] row = new object[CacheTable.Columns.Count];
+            _sqlReader.GetValues(row);
+            return new ReturnValue<object[]>(true, row);
+        }
+
+        public override bool CanLookupRowDirect { get; } = true;
+
+        /// <summary>
+        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
+        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        {
+            SelectQuery query = new SelectQuery()
+            {
+                Columns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => new SelectColumn(c.ColumnName)).ToList(),
+                Filters = filters,
+            };
+
+            var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, query);
+
+            if (!readerResult.Success)
+            {
+                return new ReturnValue<object[]>(false, "The connection reader for the table " + CacheTable.TableName + " could failed due to the following error: " + readerResult.Message, readerResult.Exception);
+            }
+
+            var reader = readerResult.Value;
+
+            if (reader.Read())
+            {
+                object[] values = new object[CacheTable.Columns.Count];
+                reader.GetValues(values);
+                return new ReturnValue<object[]>(true, values);
+            }
+            else
+                return new ReturnValue<object[]>(false, "The lookup query for " + CacheTable.TableName + " return no rows.", null);
         }
     }
 }

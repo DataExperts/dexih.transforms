@@ -29,7 +29,7 @@ namespace dexih.transforms
 
         public override Task<ReturnValue> CreateDatabase(string DatabaseName) => Task.Run(() => new ReturnValue(true));
 
-        public override async Task<ReturnValue> CreateManagedTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
             return await Task.Run(() =>
             {
@@ -91,21 +91,21 @@ namespace dexih.transforms
         }
 
 
-        public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries)
+        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<Transform>> ExecuteReader(Table table, SelectQuery query = null)
+        public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
         {
            return await Task.Run(() =>
           {
               var reader = new ReaderMemory(Tables[table.TableName], null);
-              return new ReturnValue<Transform>(true, reader);
+              return new ReturnValue<DbDataReader>(true, reader);
           });
         }
 
-        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query)
+        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query)
         {
             throw new NotImplementedException();
         }
@@ -163,6 +163,13 @@ namespace dexih.transforms
                return new ReturnValue(true);
            });
 
+        }
+
+        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
+        {
+            var reader = new ReaderMemory(table);
+            await reader.Open(query);
+            return new ReturnValue<Transform>(true, reader);
         }
     }
 }

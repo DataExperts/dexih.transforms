@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using Microsoft.WindowsAzure.Storage.Table;
 using dexih.transforms;
+using System.Data.Common;
 
 namespace dexih.connections
 {
@@ -276,6 +277,11 @@ namespace dexih.connections
             {
                 return new ReturnValue(false, "The following error occurred opening the Azure file connection: " + ex.Message, ex);
             }
+        }
+
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

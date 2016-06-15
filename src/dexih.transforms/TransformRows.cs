@@ -112,9 +112,14 @@ namespace dexih.transforms
         }
 
 
-        public override async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public override async Task<ReturnValue> Open(SelectQuery query)
         {
-            var returnValue = await PrimaryTransform.Open(null, RequiredSortFields());
+            if (query == null)
+                query = new SelectQuery();
+
+            query.Sorts = RequiredSortFields();
+
+            var returnValue = await PrimaryTransform.Open(query);
             return returnValue;
         }
 

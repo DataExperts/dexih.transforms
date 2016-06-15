@@ -121,16 +121,21 @@ namespace dexih.transforms
             return true;
         }
 
-        public override async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public override async Task<ReturnValue> Open(SelectQuery query)
         {
             if (DeltaType == EDeltaType.Append || DeltaType == EDeltaType.Reload)
             {
-                var returnValue = await PrimaryTransform.Open(filters, sorts);
+                var returnValue = await PrimaryTransform.Open(query);
                 return returnValue;
                 }
             else
             {
-                var returnValue = await PrimaryTransform.Open(filters, RequiredSortFields());
+                if (query == null)
+                    query = new SelectQuery();
+
+                query.Sorts = RequiredSortFields();
+
+                var returnValue = await PrimaryTransform.Open(query);
                 return returnValue;
             }
 
@@ -200,7 +205,8 @@ namespace dexih.transforms
                     }
                 }
 
-                ReferenceTransform.Open(filters);
+                SelectQuery query = new SelectQuery() { Filters = filters };
+                ReferenceTransform.Open(query).Wait();
 
                 _targetOpen = ReferenceRead();
 

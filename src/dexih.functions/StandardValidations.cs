@@ -13,34 +13,10 @@ namespace dexih.functions
 {
     public class StandardValidations
     {
-        //The cache parameters are used by the functions to maintain a state during a transform process.
-        int? _cacheInt;
-        double? _cacheDouble;
-        DateTime? _cacheDate;
-        string _cacheString;
-        Dictionary<string, string> _cacheStringDictionary;
-        Dictionary<string, Int32> _cacheIntDictionary;
-        List<object> _cacheList;
-        string[] _cacheArray;
-        List<KeyValuePair<DateTime, double>> _cacheSeriesList;
-        StringBuilder _cacheStringBuilder;
-        XPathNodeIterator _cacheXmlNodeList;
-        JToken[] _cacheJsonTokens;
-
         const string NullPlaceHolder = "A096F007-26EE-479E-A9E1-4E12427A5AF0"; //used a a unique string that can be substituted for null
 
         public bool Reset()
         {
-            _cacheInt = null;
-            _cacheDouble = null;
-            _cacheString = null;
-            _cacheStringDictionary = null;
-            _cacheList = null;
-            _cacheStringDictionary = null;
-            _cacheArray = null;
-            _cacheSeriesList = null;
-            _cacheStringBuilder = null;
-            _cacheXmlNodeList = null;
             return true;
         }
 

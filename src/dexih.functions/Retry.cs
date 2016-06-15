@@ -37,7 +37,8 @@ namespace dexih.functions
                 {
                     if (retry > 0)
                         Thread.Sleep(retryInterval);
-                    return action();
+                    T returnValue = action();
+                    return returnValue;
                 }
                 catch (Exception ex)
                 {

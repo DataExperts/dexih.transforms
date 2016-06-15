@@ -11,10 +11,6 @@ namespace dexih.transforms
     /// </summary>
     public class ReaderMemory : Transform
     {
-        int recordCount;
-        object[] currentRecord;
-        int position;
-
         public override ECacheMethod CacheMethod
         {
             get

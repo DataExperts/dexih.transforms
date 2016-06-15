@@ -33,9 +33,6 @@ namespace dexih.connections
 //help text for what the default database means for this description
         public override bool AllowNtAuth => false;
         public override bool AllowUserPass => true;
-        public override bool AllowDataPoint => false;
-        public override bool AllowManaged => false;
-        public override bool AllowPublish => true;
         public override bool CanBulkLoad => true;
         public override string DatabaseTypeName => "Flat Files";
         public override ECategory DatabaseCategory => ECategory.File;
@@ -43,11 +40,10 @@ namespace dexih.connections
         DexihFiles _files;
         Stream _fileStream;
         StreamWriter _fileWriter;
-
         CsvReader _csvReader;
 
 
-        public override async Task<ReturnValue> CreateManagedTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
             //create the subdirectories
             return await CreateDirectory((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileIncomingPath"]);
@@ -159,7 +155,7 @@ namespace dexih.connections
             return returnValue;
         }
 
-        protected override async Task<ReturnValue> WriteDataBulkInner(DbDataReader reader, Table table)
+        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader)
         {
             try
             {
@@ -177,125 +173,14 @@ namespace dexih.connections
                     }
                     await _fileWriter.WriteLineAsync(string.Join(",", s));
                 }
-                return new ReturnValue(true, "", null);
+                return new ReturnValue<int>(true, "", null);
             }
             catch (Exception ex)
             {
-                return new ReturnValue(true, "The file could not be written to due to the following error: " + ex.Message, ex);
+                return new ReturnValue<int>(false, "The file could not be written to due to the following error: " + ex.Message, ex);
             }
         }
 
-        // Override the read function to allow reader to loop through files.
-        protected override ReturnValue<object[]> ReadRecord()
-        {
-            bool notfinished;
-            try
-            {
-                notfinished = _csvReader.Read();
-            }
-            catch(Exception ex)
-            {
-                throw new Exception("The flatfile reader failed with the following message: " + ex.Message, ex);
-            }
-
-            if (notfinished == false)
-            {
-                var moveFileResult = MoveFile(CachedTable, _files.Current.FileName, (string)CachedTable.ExtendedProperties["FileIncomingPath"], (string)CachedTable.ExtendedProperties["FileProcessedPath"]).Result; //backup the completed file
-                if(moveFileResult.Success == false)
-                {
-                    throw new Exception("The flatfile reader failed with the following message: " + moveFileResult.Message);
-                }
-
-                if (_files.MoveNext() == false)
-                    OpenReader = false;
-                else
-                {
-                    var fileStream = GetReadFileStream(CachedTable, (string)CachedTable.ExtendedProperties["FileIncomingPath"], _files.Current.FileName).Result;
-                    if (fileStream.Success == false)
-                        throw new Exception("The flatfile reader failed with the following message: " + fileStream.Message);
-
-                    _csvReader = new CsvReader(new StreamReader(fileStream.Value), ((FileFormat)CachedTable.ExtendedProperties["FileFormat"]).Headers);
-                    try
-                    {
-                        notfinished = _csvReader.Read();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception("The flatfile reader failed with the following message: " + ex.Message, ex);
-                    }
-                    if (notfinished == false)
-                        return ReadRecord(); // this creates a recurive loop to cater for empty files.
-                }
-            }
-
-            if (notfinished)
-            {
-                object[] row = new object[CachedTable.Columns.Count];
-                _csvReader.GetValues(row);
-                return new ReturnValue<object[]>(true, row);
-            }
-            else
-                return new ReturnValue<object[]>(false, null);
-
-        }
-
-
-
-        #region IRecord Interface //Overrides to add FileName field
-        public override int FieldCount => _csvReader.FieldCount + 1;
-
-        public override bool CanRunQueries => false;
-
-        public override string GetName(int i)
-        {
-            if (i == _csvReader.FieldCount)
-                return "FileName";
-            return _csvReader.GetName(i);
-        }
-        public override int GetOrdinal(string name)
-        {
-            if (name == "FileName")
-                return _csvReader.FieldCount;
-            return _csvReader.GetOrdinal(name);
-        }
-
-        public override object GetValue(int i)
-        {
-            if (i == _csvReader.FieldCount)
-                return _files.Current.FileName;
-            return _csvReader[i];
-        }
-        #endregion
-
-
-        protected override async Task<ReturnValue> DataReaderStartQueryInner(Table table, SelectQuery query)
-        {
-            if (OpenReader)
-            {
-                return new ReturnValue(false, "The file reader connection is already open.", null);
-            }
-
-            CachedTable = table;
-
-            var fileEnumerator = await GetFileEnumerator((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileIncomingPath"]);
-            if (fileEnumerator.Success == false)
-                return fileEnumerator;
-
-            _files = fileEnumerator.Value;
-
-            if (_files.MoveNext() == false)
-            {
-                return new ReturnValue(false, "There were no files in the incomming directory.", null);
-            }
-
-            var fileStream = await GetReadFileStream(table, (string)table.ExtendedProperties["FileIncomingPath"], _files.Current.FileName);
-            if (fileStream.Success == false)
-                return fileStream;
-
-            _csvReader = new CsvReader(new StreamReader(fileStream.Value), ((FileFormat)table.ExtendedProperties["FileFormat"]).Headers);
-
-            return new ReturnValue(true);
-        }
 
         public override async Task<ReturnValue<List<string>>> GetDatabaseList()
         {
@@ -384,29 +269,6 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        public override string GetCurrentFile()
-        {
-            return _files.Current.FileName;
-        }
-
-        public override ReturnValue ResetTransform()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool Initialize()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string Details()
-        {
-            return "Flat File: " + CachedTable.TableName;
-
-        }
-
-
-
         public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
         {
             await Task.Run(() =>
@@ -419,17 +281,17 @@ namespace dexih.connections
             return new ReturnValue(true);
         }
 
-        public override Task<ReturnValue<int>> ExecuteUpdateQuery(Table table, List<UpdateQuery> query)
+        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteDeleteQuery(Table table, List<DeleteQuery> query)
+        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsertQuery(Table table, List<InsertQuery> query)
+        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query)
         {
             throw new NotImplementedException();
         }
@@ -439,6 +301,17 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
+        {
+            var reader = new ReaderFlatFile(this, table);
+            await reader.Open(query);
+            return new ReturnValue<Transform>(true, reader);
+        }
 
     }
 }

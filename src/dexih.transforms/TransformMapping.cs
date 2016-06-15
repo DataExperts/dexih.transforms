@@ -47,16 +47,16 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<ReturnValue> Open(List<Filter> filters = null, List<Sort> sorts = null)
+        public override async Task<ReturnValue> Open(SelectQuery query)
         {
             List<Filter> newFilters = null;
             List<Sort> newSorts = null;
 
             //we need to translate filters and sorts to source column names before passing them through.
-            if(filters != null)
+            if(query != null && query.Filters != null)
             {
                 newFilters = new List<Filter>();
-                foreach(var filter in filters)
+                foreach(var filter in query.Filters)
                 {
                     string column1 = null;
                     string column2 = null;
@@ -87,10 +87,10 @@ namespace dexih.transforms
             }
 
             //we need to translate filters and sorts to source column names before passing them through.
-            if (sorts != null)
+            if (query != null && query.Sorts != null)
             {
                 newSorts = new List<Sort>();
-                foreach (var sort in sorts)
+                foreach (var sort in query.Sorts)
                 {
                     string column = null;
                     if (!String.IsNullOrEmpty(sort.Column))
@@ -108,7 +108,7 @@ namespace dexih.transforms
                 }
             }
 
-            var returnValue = await PrimaryTransform.Open(filters, RequiredSortFields());
+            var returnValue = await PrimaryTransform.Open(query);
             return returnValue;
         }
 
