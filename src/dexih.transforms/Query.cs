@@ -35,6 +35,8 @@ namespace dexih.transforms
 
     public class SelectColumn
     {
+        public SelectColumn() { }
+
         public SelectColumn(string column)
         {
             Column = column;
@@ -110,6 +112,8 @@ namespace dexih.transforms
 
     public class QueryColumn
     {
+        public QueryColumn() { }
+
         public QueryColumn(string column, ETypeCode columnType, object value)
         {
             Column = column;

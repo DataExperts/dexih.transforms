@@ -207,7 +207,7 @@ namespace dexih.connections
         {
             try
             {
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.ExtendedProperties["FileRootPath"]);
+                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
                 Stream reader2 = await cloudSubDirectory.GetFileReference(fileName).OpenReadAsync();
                 return new ReturnValue<Stream>(true, "", null, reader2);
@@ -223,7 +223,7 @@ namespace dexih.connections
         {
             try
             {
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.ExtendedProperties["FileRootPath"]);
+                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
                 Stream reader2 = await cloudSubDirectory.GetFileReference(fileName).OpenWriteAsync(1000);
                 return new ReturnValue<Stream>(true, "", null, reader2);
@@ -243,8 +243,8 @@ namespace dexih.connections
                 int version = 0;
                 string newFileName;
 
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.ExtendedProperties["FileRootPath"]);
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference((string)table.ExtendedProperties["FileIncomingPath"]);
+                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
+                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference((string)table.GetExtendedProperty("FileIncomingPath"));
                 CloudFile cloudFile = cloudSubDirectory.GetFileReference(fileName);
 
                 while (await cloudFile.ExistsAsync())

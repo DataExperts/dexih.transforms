@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -49,7 +50,7 @@ namespace dexih.transforms
             });
         }
 
-        public override async Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> deleteQueries)
+        public override async Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
@@ -58,6 +59,9 @@ namespace dexih.transforms
                 int count = 0;
                 foreach (DeleteQuery query in deleteQueries)
                 {
+                    if (cancelToken.IsCancellationRequested)
+                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+
                     var lookupResult = deleteTable.LookupMultipleRows(query.Filters);
                     if (lookupResult.Success == false)
                         return new ReturnValue<int>(lookupResult);
@@ -72,7 +76,7 @@ namespace dexih.transforms
             });
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData)
+        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
@@ -81,6 +85,9 @@ namespace dexih.transforms
                 int count = 0;
                 while(sourceData.Read())
                 {
+                    if (cancelToken.IsCancellationRequested)
+                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+
                     object[] row = new object[sourceData.FieldCount];
                     sourceData.GetValues(row);
                     insertTable.Data.Add(row);
@@ -91,7 +98,7 @@ namespace dexih.transforms
         }
 
 
-        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries)
+        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -105,12 +112,12 @@ namespace dexih.transforms
           });
         }
 
-        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query)
+        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> updateQueries)
+        public override async Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
@@ -119,6 +126,9 @@ namespace dexih.transforms
                 int count = 0;
                 foreach (UpdateQuery query in updateQueries)
                 {
+                    if (cancelToken.IsCancellationRequested)
+                        return new ReturnValue<int>(false, "Update cancelled", null);
+
                     var lookupResult = updateTable.LookupMultipleRows(query.Filters);
                     if (lookupResult.Success == false)
                         return new ReturnValue<int>(lookupResult);
@@ -155,7 +165,7 @@ namespace dexih.transforms
             });
         }
 
-        public override async Task<ReturnValue> TruncateTable(Table table)
+        public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
            return await Task.Run(() =>
            {
@@ -165,11 +175,10 @@ namespace dexih.transforms
 
         }
 
-        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null)
         {
             var reader = new ReaderMemory(table);
-            await reader.Open(query);
-            return new ReturnValue<Transform>(true, reader);
+            return reader;
         }
     }
 }

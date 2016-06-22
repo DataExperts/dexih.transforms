@@ -11,6 +11,7 @@ using System.IO;
 using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
+using System.Threading;
 
 namespace dexih.connections
 {
@@ -27,7 +28,20 @@ namespace dexih.connections
         public virtual string SqlValueClose { get; } = "'";
         public virtual string SqlSelectNoLock { get; } = "";
 
-        public string AddDelimiter(string name) => SqlDelimiterOpen + AddEscape(name) + SqlDelimiterClose;
+        public string AddDelimiter(string name)
+        {
+            string newName = AddEscape(name);
+
+            if (newName.Substring(0, SqlDelimiterOpen.Length) != SqlDelimiterOpen)
+                newName = SqlDelimiterOpen + newName;
+
+            if(newName.Substring(newName.Length - SqlDelimiterClose.Length, SqlDelimiterClose.Length) != SqlDelimiterClose)
+                newName = newName + SqlDelimiterClose;
+
+            return newName;
+
+        }
+
         public string AddEscape(string value) => value.Replace("'", "''");
 
 
@@ -58,7 +72,7 @@ namespace dexih.connections
             return param;
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader)
+        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
@@ -103,7 +117,9 @@ namespace dexih.connections
                             {
                                 cmd.Parameters[i].Value = reader[i];
                             }
-                            cmd.ExecuteNonQuery();
+                            await cmd.ExecuteNonQueryAsync(cancelToken);
+                            if (cancelToken.IsCancellationRequested)
+                                return new ReturnValue<int>(false, "Insert rows cancelled.", null);
                         }
                     }
                     transaction.Commit();
@@ -339,7 +355,7 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries)
+        public override async Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connection = await NewConnection();
             if (connection.Success == false)
@@ -359,19 +375,35 @@ namespace dexih.connections
 
                     sql.Append("update " + AddDelimiter(table.TableName) + " set ");
 
+                    int count = 0;
                     foreach (QueryColumn column in query.UpdateColumns)
-                        sql.Append("[" + AddEscape(column.Column) + "] = " + GetSqlFieldValueQuote(column.ColumnType, column.Value) + ",");
+                    {
+                        sql.Append(AddDelimiter(column.Column) + " = " + GetSqlFieldValueQuote(column.ColumnType, column.Value) + ",");
+                        count++;
+                    }
                     sql.Remove(sql.Length - 1, 1); //remove last comma
                     sql.Append(" " + BuildFiltersString(query.Filters) + ";");
 
                     //  Retrieving schema for columns from a single table
                     DbCommand cmd = connection.Value.CreateCommand();
+
+                    //for (int i = 0; i < query.UpdateColumns.Count; i++)
+                    //{
+                    //    DbParameter param = cmd.CreateParameter();
+                    //    param.ParameterName = "@col" + i.ToString();
+                    //    param.Value = query.UpdateColumns[i].Value;
+                    //    cmd.Parameters.Add(param);
+                    //}
+
                     cmd.Transaction = transaction;
                     cmd.CommandText = sql.ToString();
 
                     try
                     {
-                        rows += await cmd.ExecuteNonQueryAsync();
+                        rows += await cmd.ExecuteNonQueryAsync(cancelToken);
+
+                        if (cancelToken.IsCancellationRequested)
+                            return new ReturnValue<int>(false, "Update rows cancelled.", null);
                     }
                     catch (Exception ex)
                     {
@@ -385,7 +417,7 @@ namespace dexih.connections
             return new ReturnValue<int>(true, "", null, rows == -1 ? 0 : rows); //sometimes reader returns -1, when we want this to be error condition.
         }
 
-        public override async Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries)
+        public override async Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connection = await NewConnection();
             if (connection.Success == false)
@@ -411,7 +443,10 @@ namespace dexih.connections
 
                     try
                     {
-                        rows += await cmd.ExecuteNonQueryAsync();
+                        rows += await cmd.ExecuteNonQueryAsync(cancelToken);
+
+                        if (cancelToken.IsCancellationRequested)
+                            return new ReturnValue<int>(false, "Delete rows cancelled.", null);
                     }
                     catch (Exception ex)
                     {
@@ -425,7 +460,7 @@ namespace dexih.connections
             return new ReturnValue<int>(true, "", null, rows == -1 ? 0 : rows); //sometimes reader returns -1, when we want this to be error condition.
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries)
+        public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connection = await NewConnection();
             if (connection.Success == false)
@@ -469,7 +504,10 @@ namespace dexih.connections
                                 param.Value = query.InsertColumns[i].Value;
                                 cmd.Parameters.Add(param);
                             }
-                            rows += cmd.ExecuteNonQuery();
+                            rows += await cmd.ExecuteNonQueryAsync(cancelToken);
+
+                            if (cancelToken.IsCancellationRequested)
+                                return new ReturnValue<int>(false, "Insert rows cancelled.", null);
                         }
                     }
                     catch (Exception ex)
@@ -484,7 +522,7 @@ namespace dexih.connections
             return new ReturnValue<int>(true, "", null, rows == -1 ? 0 : rows); //sometimes reader returns -1, when we want this to be error condition.
         }
 
-        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query)
+        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connection = await NewConnection();
             if (connection.Success == false)
@@ -501,7 +539,10 @@ namespace dexih.connections
             object value;
             try
             {
-                value = await cmd.ExecuteScalarAsync();
+                value = await cmd.ExecuteScalarAsync(cancelToken);
+
+                if (cancelToken.IsCancellationRequested)
+                    return new ReturnValue<object>(false, "Execute scalar cancelled.", null);
             }
             catch (Exception ex)
             {
@@ -512,7 +553,7 @@ namespace dexih.connections
             return new ReturnValue<object>(true, value);
         }
 
-        public override async Task<ReturnValue> TruncateTable(Table table)
+        public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connection = await NewConnection();
             if (connection.Success == false)
@@ -525,7 +566,10 @@ namespace dexih.connections
 
             try
             {
-                await cmd.ExecuteNonQueryAsync();
+                await cmd.ExecuteNonQueryAsync(cancelToken);
+
+                if (cancelToken.IsCancellationRequested)
+                    return new ReturnValue<int>(false, "Truncate cancelled.", null);
             }
             catch (Exception ex)
             {
@@ -561,7 +605,7 @@ namespace dexih.connections
             }
             catch (Exception ex)
             {
-                return new ReturnValue<DbDataReader>(false, "The connection reader for the sqlserver table " + table.TableName + " could failed due to the following error: " + ex.Message, ex);
+                return new ReturnValue<DbDataReader>(false, "The connection reader for the sqlserver table " + table.TableName + " could failed due to the following error: " + ex.Message + ".  The sql command was: " + cmd.CommandText, ex);
             }
 
             if (reader == null)
@@ -574,11 +618,10 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null)
         {
             var reader = new ReaderSQL(this,table);
-            await reader.Open(query);
-            return new ReturnValue<Transform>(true, reader);
+            return reader;
         }
 
 

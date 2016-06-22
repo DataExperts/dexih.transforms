@@ -62,7 +62,7 @@ namespace dexih.connections
 
         public override ReturnValue ResetTransform()
         {
-            throw new NotImplementedException();
+            return new ReturnValue(true);
         }
 
         protected override ReturnValue<object[]> ReadRecord()

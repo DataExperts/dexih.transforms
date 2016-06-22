@@ -64,7 +64,7 @@ namespace dexih.connections
                 //The new datatable that will contain the table schema
                 table.Columns.Clear();
                 table.Description = "";
-                table.ExtendedProperties.Add("RestfulUri", restfulUri);
+                table.SetExtendedProperty("RestfulUri", restfulUri);
 
                 table.LogicalName = table.TableName;
 
@@ -221,7 +221,7 @@ namespace dexih.connections
             {
                 object[] row = new object[table.Columns.Count];
 
-                string uri = (string)table.ExtendedProperties["RestfulUri"];
+                string uri = (string)table.GetExtendedProperty("RestfulUri");
 
                 foreach (var filter in filters)
                 {
@@ -260,7 +260,7 @@ namespace dexih.connections
             }
         }
 
-        public override Task<ReturnValue> TruncateTable(Table table)
+        public override Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -270,22 +270,22 @@ namespace dexih.connections
             return await Task.Run(() => new ReturnValue(true));
         }
 
-        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query)
+        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query)
+        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query)
+        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query)
+        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
             var lookupResult = await LookupRow(table, query.Filters);
             if (!lookupResult.Success)
@@ -306,16 +306,16 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData)
+        public override Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null)
         {
             var reader = new ReaderRestful(this, table, referenceTransform);
-            await reader.Open(query);
-            return new ReturnValue<Transform>(true, reader);
+            return reader;
         }
+
     }
 }

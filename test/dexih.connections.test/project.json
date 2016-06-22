@@ -6,7 +6,7 @@
   "authors": [ "Gary" ],
 
   "dependencies": {
-    "dexih.connections": "0.1.0-*",
+    "dexih.connections": "0.1.*",
     "xunit": "2.1.0",
     "dotnet-test-xunit": "1.0.0-rc2-*",
     "System.Data.SqlClient": "4.1.0-rc2-24027",

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using dexih.transforms;
 using System;
 using dexih.functions;
 using System.Text;
@@ -16,7 +15,6 @@ namespace dexih.transforms
         {
             Data = new TableCache(0);
             Columns = new TableColumns();
-            ExtendedProperties = new Dictionary<string, object>();
         }
 
         public Table(string tableName, TableColumns columns, TableCache data) 
@@ -24,7 +22,6 @@ namespace dexih.transforms
             TableName = tableName;
             Columns = columns;
             Data = data;
-            ExtendedProperties = new Dictionary<string, object>();
         }
 
         public Table(string tableName, int maxRows, params TableColumn[] columns) 
@@ -35,7 +32,6 @@ namespace dexih.transforms
                 Columns.Add(column);
 
             Data = new TableCache(maxRows);
-            ExtendedProperties = new Dictionary<string, object>();
         }
 
         public Table(string tableName, int maxRows, TableColumns columns)
@@ -43,7 +39,6 @@ namespace dexih.transforms
             TableName = tableName;
             Columns = columns;
             Data = new TableCache(maxRows);
-            ExtendedProperties = new Dictionary<string, object>();
         }
 
         public Table(string tableName, int maxRows = 0) 
@@ -51,12 +46,12 @@ namespace dexih.transforms
             TableName = tableName;
             Columns = new TableColumns();
             Data = new TableCache(maxRows);
-            ExtendedProperties = new Dictionary<string, object>();
         }
 
         #endregion
 
         #region Properties
+
         /// <summary>
         /// Reference to the phsycal table name.
         /// </summary>
@@ -64,6 +59,7 @@ namespace dexih.transforms
         /// <summary>
         /// A logical name for the table.
         /// </summary>
+
         public string LogicalName { get; set; }
 
         /// <summary>
@@ -75,7 +71,7 @@ namespace dexih.transforms
         /// Indicates the output sort fields for the table.
         /// </summary>
         /// <returns></returns>
-        public List<Sort> OutputSortFields { get; set; }
+        public virtual List<Sort> OutputSortFields { get; set; }
 
         /// <summary>
         /// Indicates the key that should be used when running update/delete operations against the target.
@@ -84,9 +80,9 @@ namespace dexih.transforms
 
         public TableCache Data { get; set; }
 
-        public TableColumns Columns { get; set; }
+        public virtual TableColumns Columns { get; set; }
 
-        public Dictionary<string, object> ExtendedProperties { get; set; }
+        private Dictionary<string, string> ExtendedProperties { get; set; }
 
         public TableColumn this[string columnName]
         {
@@ -95,6 +91,29 @@ namespace dexih.transforms
                 return Columns[columnName];
             }
          }
+
+        public string GetExtendedProperty(string name)
+        {
+            if (ExtendedProperties == null)
+                return null;
+            else if (ExtendedProperties.ContainsKey(name))
+                return ExtendedProperties[name];
+            else
+                return null;
+        }
+
+        public void SetExtendedProperty(string name, string value)
+        {
+            if (ExtendedProperties == null)
+                ExtendedProperties = new Dictionary<string, string>();
+
+            if (ExtendedProperties.ContainsKey(name))
+                ExtendedProperties[name] = value;
+            else
+                ExtendedProperties.Add(name, value);
+        }
+
+
         #endregion
 
         #region Lookup
@@ -263,8 +282,11 @@ namespace dexih.transforms
             Table table = new Table(TableName);
             table.Description = Description;
 
-            foreach(var key in ExtendedProperties.Keys)
-                table.ExtendedProperties.Add(key, ExtendedProperties[key]);
+            if (ExtendedProperties != null)
+            {
+                foreach (var key in ExtendedProperties.Keys)
+                    table.SetExtendedProperty(key, ExtendedProperties[key]);
+            }
 
             table.LogicalName = LogicalName;
 
@@ -329,6 +351,17 @@ namespace dexih.transforms
         public TableColumn GetIncrementalUpdateColumn()
         {
             return Columns.SingleOrDefault(c => c.IsIncrementalUpdate);
+        }
+
+        //creates a simple select query with all fields and no sorts, filters
+        public SelectQuery DefaultSelectQuery(int rows = -1)
+        {
+            return new SelectQuery()
+            {
+                Columns = Columns.Select(c => new SelectColumn(c.ColumnName, SelectColumn.EAggregate.None)).ToList(),
+                Table = TableName,
+                Rows = rows
+            };
         }
 
         public string GetCsv()

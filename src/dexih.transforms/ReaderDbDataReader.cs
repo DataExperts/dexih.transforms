@@ -45,28 +45,28 @@ namespace dexih.transforms
             }
 #else
             //if we can't get a column schema we will have to settle for column names only
-            if (!inReader.CanGetColumnSchema())
-            {
+            //if (!inReader.CanGetColumnSchema())
+            //{
                 for (int i = 0; i < inReader.FieldCount; i++)
                 {
                     CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
                 }
-            }
-            else
-            {
-                var columnSchema = inReader.GetColumnSchema();
-                CacheTable.TableName = columnSchema[0].BaseTableName;
+            //}
+            //else
+            //{
+            //    var columnSchema = inReader.GetColumnSchema();
+            //    CacheTable.TableName = columnSchema[0].BaseTableName;
 
-                foreach(var columnDetail in columnSchema)
-                {
-                    var column = new TableColumn();
-                    column.ColumnName = columnDetail.ColumnName;
-                    column.DataType = DataType.GetTypeCode(columnDetail.DataType);
-                    column.MaxLength = columnDetail.ColumnSize;
-                    column.Scale = columnDetail.NumericScale;
-                    column.Precision = columnDetail.NumericPrecision;
-                }
-            }
+            //    foreach(var columnDetail in columnSchema)
+            //    {
+            //        var column = new TableColumn();
+            //        column.ColumnName = columnDetail.ColumnName;
+            //        column.DataType = DataType.GetTypeCode(columnDetail.DataType);
+            //        column.MaxLength = columnDetail.ColumnSize;
+            //        column.Scale = columnDetail.NumericScale;
+            //        column.Precision = columnDetail.NumericPrecision;
+            //    }
+            //}
 #endif
 
             SortFields = sortFields;

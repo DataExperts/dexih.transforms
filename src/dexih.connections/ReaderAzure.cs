@@ -81,7 +81,13 @@ namespace dexih.connections
 
         public override ReturnValue ResetTransform()
         {
-            throw new NotImplementedException();
+            if (_isOpen)
+            {
+                return new ReturnValue(true);
+            }
+            else
+                return new ReturnValue(false, "The sql reader can not be reset", null);
+
         }
 
         protected override ReturnValue<object[]> ReadRecord()

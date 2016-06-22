@@ -153,15 +153,18 @@ namespace dexih.connections
             switch (dataType)
             {
                 case ETypeCode.Int32:
+                case ETypeCode.UInt16:
                     sqlType = "int";
                     break;
                 case ETypeCode.Byte:
                     sqlType = "tinyint";
                     break;
                 case ETypeCode.Int16:
+                case ETypeCode.SByte:
                     sqlType = "smallint";
                     break;
                 case ETypeCode.Int64:
+                case ETypeCode.UInt32:
                     sqlType = "bigint";
                     break;
                 case ETypeCode.String:
@@ -169,6 +172,12 @@ namespace dexih.connections
                         sqlType = "text";
                     else
                         sqlType = "nvarchar(" + length.ToString() + ")";
+                    break;
+                case ETypeCode.Single:
+                    sqlType = "float";
+                    break;
+                case ETypeCode.UInt64:
+                    sqlType = "DECIMAL(20,0)";
                     break;
                 case ETypeCode.Double:
                     sqlType = "float";
@@ -181,6 +190,9 @@ namespace dexih.connections
                     break;
                 case ETypeCode.Time:
                     sqlType = "text"; //sqlite doesn't have a time type.
+                    break;
+                case ETypeCode.Guid:
+                    sqlType = "text";
                     break;
                 case ETypeCode.Unknown:
                     sqlType = "text";
@@ -213,6 +225,7 @@ namespace dexih.connections
             switch (type)
             {
                 case ETypeCode.Byte:
+                case ETypeCode.Single:
                 case ETypeCode.Int16:
                 case ETypeCode.Int32:
                 case ETypeCode.Int64:
@@ -228,6 +241,7 @@ namespace dexih.connections
                     returnValue = (bool)value == true ? "1" : "0";
                     break;
                 case ETypeCode.String:
+                case ETypeCode.Guid:
                 case ETypeCode.Unknown:
                     returnValue = "'" + AddEscape(value.ToString()) + "'";
                     break;
@@ -236,6 +250,8 @@ namespace dexih.connections
                     //sqlite does not have date fields, so convert to format that will work for greater/less compares
                     if (value is DateTime)
                         returnValue = "'" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "'";
+                    else if (value is TimeSpan)
+                        returnValue = "'" + AddEscape(((TimeSpan)value).ToString()) + "'";
                     else
                         returnValue = "'" + AddEscape((string)value) + "'";
                     break;
@@ -400,7 +416,8 @@ namespace dexih.connections
                     return new ReturnValue<Table>(false, "The source sqlite table + " + table.TableName + " could have a select query run against it with the following error: " + ex.Message, ex);
                 }
 
-                table.LogicalName = table.TableName;
+                //for the logical, just trim out any "
+                table.LogicalName = table.TableName.Replace("\"", "");
 
                 while (await reader.ReadAsync())
                 {

@@ -8,6 +8,8 @@ using dexih.functions;
 using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
+using System.Threading;
+using Newtonsoft.Json;
 
 namespace dexih.connections
 {
@@ -46,7 +48,7 @@ namespace dexih.connections
         public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
             //create the subdirectories
-            return await CreateDirectory((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileIncomingPath"]);
+            return await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileIncomingPath"));
         }
 
         public override async Task<ReturnValue> CreateDatabase(string DatabaseName)
@@ -61,11 +63,11 @@ namespace dexih.connections
         {
             ReturnValue returnValue;
             //create the subdirectories
-            returnValue = await CreateDirectory((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileIncomingPath"]);
+            returnValue = await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileIncomingPath"));
             if (returnValue.Success == false) return returnValue;
-            returnValue = await CreateDirectory((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileProcessedPath"]);
+            returnValue = await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileProcessedPath"));
             if (returnValue.Success == false) return returnValue;
-            returnValue = await CreateDirectory((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileRejectedPath"]);
+            returnValue = await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileRejectedPath"));
             return returnValue;
         }
 
@@ -79,7 +81,7 @@ namespace dexih.connections
         /// <returns></returns>
         public async Task<ReturnValue> MoveFile(Table table, string fileName, string fromDirectory, string toDirectory)
         {
-            return await MoveFile((string)table.ExtendedProperties["FileRootPath"], fromDirectory, toDirectory, fileName);
+            return await MoveFile((string)table.GetExtendedProperty("FileRootPath"), fromDirectory, toDirectory, fileName);
         }
 
         public async Task<ReturnValue> SaveIncomingFile(Table table, string fileName, Stream fileStream)
@@ -89,27 +91,27 @@ namespace dexih.connections
 
         public async Task<ReturnValue<List<DexihFileProperties>>> GetIncomingFiles(Table table)
         {
-            return await GetFileList((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileIncomingPath"]);
+            return await GetFileList((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileIncomingPath"));
         }
 
         public async Task<ReturnValue<List<DexihFileProperties>>> GetRejectedFiles(Table table)
         {
-            return await GetFileList((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileRejectedPath"]);
+            return await GetFileList((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileRejectedPath"));
         }
 
         public async Task<ReturnValue<List<DexihFileProperties>>> GetProcessedFiles(Table table)
         {
-            return await GetFileList((string)table.ExtendedProperties["FileRootPath"], (string)table.ExtendedProperties["FileProcessedPath"]);
+            return await GetFileList((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileProcessedPath"));
         }
 
         public async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(Table table, string subDirectory)
         {
-            return await GetFileList((string)table.ExtendedProperties["FileRootPath"], subDirectory);
+            return await GetFileList((string)table.GetExtendedProperty("FileRootPath"), subDirectory);
         }
 
         public async Task<ReturnValue> DeleteFile(Table table, string subDirectory, string fileName)
         {
-            return await DeleteFile((string)table.ExtendedProperties["FileRootPath"], subDirectory, fileName);
+            return await DeleteFile((string)table.GetExtendedProperty("FileRootPath"), subDirectory, fileName);
         }
 
         public async Task<ReturnValue<Stream>> DownloadFile(Table table, string subDirectory, string fileName)
@@ -155,13 +157,15 @@ namespace dexih.connections
             return returnValue;
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader)
+        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
                 while(reader.Read())
-//                for (int i = 0; i < sourceData.Rows.Count; i++)
                 {
+                    if (cancelToken.IsCancellationRequested)
+                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+
                     string[] s = new string[reader.FieldCount];
                     for (int j = 0; j < reader.FieldCount; j++)
                     {
@@ -191,20 +195,26 @@ namespace dexih.connections
         {
             try
             {
-                if (Properties == null || Properties["FileFormat"] == null || !(Properties["FileFormat"] is FileFormat) || Properties["FileStream"] == null || !(Properties["FileStream"] is Stream) )
+                if (Properties == null || Properties["FileFormat"] == null || !(Properties["FileFormat"] is FileFormat) || Properties["FileSample"] == null )
                 {
                     return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileStream.", null);
                 }
 
                 FileFormat fileFormat = (FileFormat) Properties["FileFormat"];
-                Stream fileStream = (Stream) Properties["FileStream"];
+                string fileSample = (string) Properties["FileSample"];
+
+                MemoryStream stream = new MemoryStream();
+                StreamWriter writer = new StreamWriter(stream);
+                writer.Write(fileSample);
+                writer.Flush();
+                stream.Position = 0;
 
                 string[] headers;
                 try
                 {
-                    CsvReader csv = await Task.Run(() => new CsvReader(new StreamReader(fileStream), fileFormat.Headers));
+                    CsvReader csv = await Task.Run(() => new CsvReader(new StreamReader(stream), fileFormat.Headers));
                     headers = await Task.Run(() => csv.GetFieldHeaders());
-                    fileStream.Dispose();
+                    stream.Dispose();
                 }
                 catch(Exception ex)
                 {
@@ -216,7 +226,7 @@ namespace dexih.connections
                 table.Columns.Clear();
                 table.LogicalName = table.TableName;
                 table.Description = "";
-                table.ExtendedProperties["FileFormat"] = fileFormat;
+                table.SetExtendedProperty("FileFormat", JsonConvert.SerializeObject(fileFormat));
 
                 TableColumn col;
 
@@ -264,7 +274,7 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue> TruncateTable(Table table)
+        public override Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -275,28 +285,28 @@ namespace dexih.connections
             {
                 //create path for the file management.
                 string rootPath = table.TableName + Guid.NewGuid().ToString();
-                table.ExtendedProperties["FileIncomingPath"] = "Archives";
-                table.ExtendedProperties["FileRootPath"] = rootPath;
+                table.SetExtendedProperty("FileIncomingPath", "Archives");
+                table.SetExtendedProperty("FileRootPath", rootPath);
             });
             return new ReturnValue(true);
         }
 
-        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query)
+        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query)
+        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query)
+        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query)
+        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -306,12 +316,12 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null)
         {
             var reader = new ReaderFlatFile(this, table);
-            await reader.Open(query);
-            return new ReturnValue<Transform>(true, reader);
+            return reader;
         }
+
 
     }
 }

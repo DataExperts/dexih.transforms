@@ -152,7 +152,7 @@ namespace dexih.connections
             {
                 return await Task.Run(() =>
                 {
-                    Stream reader = File.OpenRead(FilePath() + "\\" + (string)table.ExtendedProperties["FileRootPath"] + "\\" + subDirectory + "\\" + "\\" + fileName);
+                    Stream reader = File.OpenRead(FilePath() + "\\" + (string)table.GetExtendedProperty("FileRootPath") + "\\" + subDirectory + "\\" + "\\" + fileName);
                     return new ReturnValue<Stream>(true, "", null, reader);
                 });
             }
@@ -168,7 +168,7 @@ namespace dexih.connections
             {
                 return await Task.Run(() =>
                 {
-                    Stream reader = File.OpenWrite(FilePath() + "\\" + (string)table.ExtendedProperties["FileRootPath"] + "\\" + subDirectory + "\\" + "\\" + fileName);
+                    Stream reader = File.OpenWrite(FilePath() + "\\" + (string)table.GetExtendedProperty("FileRootPath") + "\\" + subDirectory + "\\" + "\\" + fileName);
                     return new ReturnValue<Stream>(true, "", null, reader);
                 });
             }
@@ -187,12 +187,12 @@ namespace dexih.connections
                 int version = 0;
 
                 string newFileName = fileName;
-                while (File.Exists(FilePath() + "\\" + (string)table.ExtendedProperties["FileRootPath"] + "\\" + (string)table.ExtendedProperties["FileIncomingPath"] + "\\" + newFileName))
+                while (File.Exists(FilePath() + "\\" + (string)table.GetExtendedProperty("FileRootPath") + "\\" + (string)table.GetExtendedProperty("FileIncomingPath") + "\\" + newFileName))
                 {
                     version++;
                     newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
                 }
-                FileStream newFile = File.Create(FilePath() + "\\" + (string)table.ExtendedProperties["FileRootPath"] + "\\" + (string)table.ExtendedProperties["FileIncomingPath"] + "\\" + newFileName);
+                FileStream newFile = File.Create(FilePath() + "\\" + (string)table.GetExtendedProperty("FileRootPath") + "\\" + (string)table.GetExtendedProperty("FileIncomingPath") + "\\" + newFileName);
                 fileStream.Seek(0, SeekOrigin.Begin);
                 await fileStream.CopyToAsync(newFile);
                 fileStream.Dispose();

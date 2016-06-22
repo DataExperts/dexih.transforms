@@ -34,5 +34,16 @@ namespace dexih.connections.test
 
             CommonTests.PerformanceTests(GetConnection(), database);
         }
+
+        [Fact]
+        public void TestSqlServer_Specific_Unit()
+        {
+            ConnectionSqlServer connection = new ConnectionSqlServer();
+
+            //test delimiter
+            Assert.Equal("\"table\"", connection.AddDelimiter("table"));
+            Assert.Equal("\"table\"", connection.AddDelimiter("\"table\""));
+            Assert.Equal("\"table\".\"schema\"", connection.AddDelimiter("\"table\".\"schema\""));
+        }
     }
 }

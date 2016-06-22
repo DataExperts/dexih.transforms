@@ -34,21 +34,108 @@ namespace dexih.functions
             Int64,
             Decimal,
             Double,
-            Single, 
-            String, 
-            Boolean, 
+            Single,
+            String,
+            Boolean,
             DateTime,
             Time,
+            Guid,
             Unknown
         }
 
+        public static object GetDataTypeMaxValue(ETypeCode typeCode, int Length = 0)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Byte:
+                    return Byte.MaxValue;
+                case ETypeCode.SByte:
+                    return sbyte.MaxValue;
+                case ETypeCode.UInt16:
+                    return UInt16.MaxValue;
+                case ETypeCode.UInt32:
+                    return UInt32.MaxValue;
+                case ETypeCode.UInt64:
+                    return UInt64.MaxValue;
+                case ETypeCode.Int16:
+                    return Int16.MaxValue;
+                case ETypeCode.Int32:
+                    return Int32.MaxValue;
+                case ETypeCode.Int64:
+                    return Int64.MaxValue;
+                case ETypeCode.Decimal:
+                    return 999999999999999999;
+                case ETypeCode.Double:
+                    return Double.MaxValue / 10;
+                case ETypeCode.Single:
+                    return Single.MaxValue/10;
+                case ETypeCode.String:
+                    return new string('A', Length);
+                case ETypeCode.Boolean:
+                    return true;
+                case ETypeCode.DateTime:
+                    return DateTime.MaxValue;
+                case ETypeCode.Time:
+                    return TimeSpan.FromDays(1) - TimeSpan.FromMilliseconds(1);
+                case ETypeCode.Guid:
+                    return Guid.NewGuid();
+                case ETypeCode.Unknown:
+                    return "";
+                default:
+                    return typeof(object);
+            }
+        }
 
-        /// <summary>
-        /// Converts a datatype to a simplified basic type.
-        /// </summary>
-        /// <param name="dataType">Data Type</param>
-        /// <returns>Basic Datatype</returns>
-        public static EBasicType GetBasicType(ETypeCode dataType)
+        public static object GetDataTypeMinValue(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Byte:
+                    return Byte.MinValue;
+                case ETypeCode.SByte:
+                    return sbyte.MinValue;
+                case ETypeCode.UInt16:
+                    return UInt16.MinValue;
+                case ETypeCode.UInt32:
+                    return UInt32.MinValue;
+                case ETypeCode.UInt64:
+                    return UInt64.MinValue;
+                case ETypeCode.Int16:
+                    return Int16.MinValue;
+                case ETypeCode.Int32:
+                    return Int32.MinValue;
+                case ETypeCode.Int64:
+                    return Int64.MinValue;
+                case ETypeCode.Decimal:
+                    return -999999999999999999;
+                case ETypeCode.Double:
+                    return Double.MinValue / 10;
+                case ETypeCode.Single:
+                    return Single.MinValue / 10;
+                case ETypeCode.String:
+                    return "";
+                case ETypeCode.Boolean:
+                    return false;
+                case ETypeCode.DateTime:
+                    return new DateTime(1753,01,01);
+                case ETypeCode.Time:
+                    return TimeSpan.FromDays(0);
+                case ETypeCode.Guid:
+                    return Guid.NewGuid();
+                case ETypeCode.Unknown:
+                    return "";
+                default:
+                    return typeof(object);
+            }
+        }
+
+
+/// <summary>
+/// Converts a datatype to a simplified basic type.
+/// </summary>
+/// <param name="dataType">Data Type</param>
+/// <returns>Basic Datatype</returns>
+public static EBasicType GetBasicType(ETypeCode dataType)
         {
             switch (dataType)
             {
@@ -224,6 +311,9 @@ namespace dexih.functions
                         return new ReturnValue<ECompareResult>(true, Math.Abs((Single)inputValue - (Single)compareValue) < 0.0001 ? ECompareResult.Equal : (Single)inputValue > (Single)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.String:
                         int compareResult = String.Compare((String)inputValue, (String)compareValue);
+                        return new ReturnValue<ECompareResult>(true, compareResult == 0 ? ECompareResult.Equal : compareResult < 0 ? ECompareResult.Less : ECompareResult.Greater);
+                    case ETypeCode.Guid:
+                        compareResult = String.Compare(inputValue.ToString(), compareValue.ToString());
                         return new ReturnValue<ECompareResult>(true, compareResult == 0 ? ECompareResult.Equal : compareResult < 0 ? ECompareResult.Less : ECompareResult.Greater);
                     case ETypeCode.Boolean:
                         return new ReturnValue<ECompareResult>(true, (Boolean)inputValue == (Boolean)compareValue ? ECompareResult.Equal : (Boolean)inputValue == true ? ECompareResult.Greater : ECompareResult.Less );

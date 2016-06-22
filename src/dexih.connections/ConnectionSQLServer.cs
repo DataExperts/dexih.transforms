@@ -11,6 +11,7 @@ using System.IO;
 using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
+using System.Threading;
 
 namespace dexih.connections
 {
@@ -26,7 +27,7 @@ namespace dexih.connections
 
         public override string SqlSelectNoLock { get; } = "WITH (NOLOCK)";
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader)
+        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
@@ -43,9 +44,12 @@ namespace dexih.connections
                     DestinationTableName = table.TableName
                 };
 
-                await bulkCopy.WriteToServerAsync(reader);
-
+                await bulkCopy.WriteToServerAsync(reader, cancelToken);
                 connection.Value.Close();
+
+                if (cancelToken.IsCancellationRequested)
+                    return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+
 
                 return new ReturnValue<int>(true, 0);
             }
@@ -222,15 +226,18 @@ namespace dexih.connections
             switch (dataType)
             {
                 case ETypeCode.Int32:
+                case ETypeCode.UInt16:
                     sqlType = "int";
                     break;
                 case ETypeCode.Byte:
                     sqlType = "tinyint";
                     break;
                 case ETypeCode.Int16:
+                case ETypeCode.SByte:
                     sqlType = "smallint";
                     break;
                 case ETypeCode.Int64:
+                case ETypeCode.UInt32:
                     sqlType = "bigint";
                     break;
                 case ETypeCode.String:
@@ -238,6 +245,12 @@ namespace dexih.connections
                         sqlType = "nvarchar(max)";
                     else
                         sqlType = "nvarchar(" + length.ToString() + ")";
+                    break;
+                case ETypeCode.Single:
+                    sqlType = "float";
+                    break;
+                case ETypeCode.UInt64:
+                    sqlType = "DECIMAL(20,0)";
                     break;
                 case ETypeCode.Double:
                     sqlType = "float";
@@ -251,6 +264,9 @@ namespace dexih.connections
                 case ETypeCode.Time:
                     sqlType = "time(7)";
                     break;
+                case ETypeCode.Guid:
+                    sqlType = "uniqueidentifier";
+                    break;
                 //case TypeCode.TimeSpan:
                 //    SQLType = "time(7)";
                 //    break;
@@ -258,10 +274,11 @@ namespace dexih.connections
                     sqlType = "nvarchar(max)";
                     break;
                 case ETypeCode.Decimal:
-                    if (precision.ToString() == "" || scale.ToString() == "")
-                        sqlType = "decimal";
-                    else
-                        sqlType = "decimal (" + precision.ToString() + "," + scale.ToString() + ")";
+                    if (precision.ToString() == "")
+                        precision = 28;
+                    if (scale.ToString() == "")
+                        scale = 0;
+                    sqlType = "decimal (" + precision.ToString() + "," + scale.ToString() + ")";
                     break;
                 default:
                     throw new Exception("The datatype " + dataType.ToString() + " is not compatible with the create table.");
@@ -285,6 +302,7 @@ namespace dexih.connections
             switch (type)
             {
                 case ETypeCode.Byte:
+                case ETypeCode.Single:
                 case ETypeCode.Int16:
                 case ETypeCode.Int32:
                 case ETypeCode.Int64:
@@ -297,6 +315,7 @@ namespace dexih.connections
                     returnValue = AddEscape(value.ToString());
                     break;
                 case ETypeCode.String:
+                case ETypeCode.Guid:
                 case ETypeCode.Boolean:
                 case ETypeCode.Unknown:
                     returnValue = "'" + AddEscape(value.ToString()) + "'";
@@ -309,7 +328,7 @@ namespace dexih.connections
                     break;
                 case ETypeCode.Time:
                     if (value is TimeSpan)
-                        returnValue = "convert(time, '" + AddEscape(((TimeSpan)value).ToString("HH:mm:ss.ff")) + "')";
+                        returnValue = "convert(time, '" + AddEscape(((TimeSpan)value).ToString()) + "')";
                     else
                         returnValue = "convert(time, '" + AddEscape((string)value) + "')";
                     break;
@@ -519,7 +538,8 @@ namespace dexih.connections
                     return new ReturnValue<Table>(false, "The source sqlserver table + " + tableName + " could have a select query run against it with the following error: " + ex.Message, ex);
                 }
 
-                table.LogicalName = table.TableName;
+                //for the logical, just trim out any "
+                table.LogicalName = table.TableName.Replace("\"", "");
 
                 while (await reader.ReadAsync())
                 {
@@ -607,7 +627,7 @@ namespace dexih.connections
                 case "time": return ETypeCode.Time;
                 case "timestamp": return ETypeCode.Int64;
                 case "tinyint": return ETypeCode.Byte;
-                case "uniqueidentifier": return ETypeCode.String;
+                case "uniqueidentifier": return ETypeCode.Guid;
                 case "varbinary": return ETypeCode.Unknown;
                 case "varchar": return ETypeCode.String;
                 case "xml": return ETypeCode.String;
@@ -631,7 +651,7 @@ namespace dexih.connections
             return null;
         }
 
-        public override async Task<ReturnValue> TruncateTable(Table table)
+        public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connection = await NewConnection();
             if (connection.Success == false)
@@ -644,7 +664,9 @@ namespace dexih.connections
 
             try
             {
-                await cmd.ExecuteNonQueryAsync();
+                await cmd.ExecuteNonQueryAsync(cancelToken);
+                if (cancelToken.IsCancellationRequested)
+                    return new ReturnValue(false, "Truncate cancelled", null);
             }
             catch (Exception ex)
             {

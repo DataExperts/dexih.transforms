@@ -12,6 +12,7 @@ using System.IO;
 using System.Data.Common;
 using System.Globalization;
 using static dexih.functions.DataType;
+using System.Threading;
 
 #if NET451
 using System.Web.Services.Description;
@@ -372,7 +373,7 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue> TruncateTable(Table table)
+        public override Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -382,22 +383,22 @@ namespace dexih.connections
             return await Task.Run(() => new ReturnValue(true));
         }
 
-        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query)
+        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query)
+        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query)
+        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query)
+        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -413,17 +414,17 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData)
+        public override Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null)
         {
             var reader = new ReaderWebService(this, table, referenceTransform);
-            await reader.Open(query);
-            return new ReturnValue<Transform>(true, reader);
+            return reader;
         }
+
 
     }
 }

@@ -2,12 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace dexih.transforms
 {
     public class TransformWriter
     {
+        #region Events
+        public delegate void ProgressUpdate(TransformWriterResult transformWriterResult);
+        public delegate void StatusUpdate(TransformWriterResult transformWriterResult);
+
+        public event ProgressUpdate OnProgressUpdate;
+        public event StatusUpdate OnStatusUpdate;
+
+        #endregion
+
         /// <summary>
         /// Indicates the rows buffer per commit.  
         /// </summary>
@@ -34,10 +44,17 @@ namespace dexih.transforms
         private Connection TargetConnection;
         private Connection RejectConnection;
 
+        private CancellationToken CancelToken;
+
         private InsertQuery TargetInsertQuery;
         private UpdateQuery TargetUpdateQuery;
         private DeleteQuery TargetDeleteQuery;
         private InsertQuery RejectInsertQuery;
+
+        public void doProgressUpdate(TransformWriterResult transformWriterResult)
+        {
+            OnProgressUpdate?.Invoke(transformWriterResult);
+        }
 
         /// <summary>
         /// Writes all record from the inTransform to the target table and reject table.
@@ -48,32 +65,83 @@ namespace dexih.transforms
         /// <param name="rejecteTableName">Reject table name</param>
         /// <param name="rejectConnection">Reject connection (if null will use connection)</param>
         /// <returns></returns>
-        public async Task<ReturnValue> WriteAllRecords(Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection = null)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, CancellationToken cancelToken)
         {
-            TargetConnection = targetConnection;
-            RejectConnection = rejectConnection;
-
-            TargetTable = targetTable;
-            RejectTable = rejectTable;
-
-            InTransform = inTransform;
-
-            var returnValue = await WriteStart();
-
-            if (returnValue.Success == false)
-                return returnValue;
-
-            while (inTransform.Read())
+            try
             {
-                returnValue = await WriteRecord(inTransform);
-                if (!returnValue.Success)
-                    return returnValue;
-            }
+                CancelToken = cancelToken;
+                TargetConnection = targetConnection;
+                RejectConnection = rejectConnection;
+                //WriterResult = new TransformWriterResult();
 
-            return await WriteFinish();
+                WriterResult.OnProgressUpdate += doProgressUpdate;
+
+                WriterResult.RunStatus = TransformWriterResult.ERunStatus.Started;
+                OnStatusUpdate?.Invoke(WriterResult);
+
+                TargetTable = targetTable;
+                RejectTable = rejectTable;
+
+                InTransform = inTransform;
+
+                var returnValue = await WriteStart();
+
+                if (returnValue.Success == false)
+                {
+                    WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
+                    WriterResult.Message = returnValue.Message;
+
+                    OnStatusUpdate?.Invoke(WriterResult);
+                    return new ReturnValue(false);
+                }
+
+                bool firstRead = true;
+                while (inTransform.Read())
+                {
+                    if (firstRead)
+                    {
+                        WriterResult.RunStatus = TransformWriterResult.ERunStatus.Running;
+                        OnStatusUpdate?.Invoke(WriterResult);
+                    }
+
+                    returnValue = await WriteRecord(inTransform);
+                    if (returnValue.Success == false)
+                    {
+                        WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
+                        WriterResult.Message = returnValue.Message;
+                        OnStatusUpdate?.Invoke(WriterResult);
+                        return new ReturnValue(false);
+                    }
+
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        WriterResult.RunStatus = TransformWriterResult.ERunStatus.Cancelled;
+                        OnStatusUpdate?.Invoke(WriterResult);
+                        return new ReturnValue(false);
+                    }
+                }
+
+                returnValue = await WriteFinish();
+                if (returnValue.Success == false)
+                {
+                    WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
+                    WriterResult.Message = returnValue.Message;
+                    OnStatusUpdate?.Invoke(WriterResult);
+                    return new ReturnValue(false, returnValue.Message, null);
+                }
+
+                WriterResult.RunStatus = TransformWriterResult.ERunStatus.Finished;
+                OnStatusUpdate?.Invoke(WriterResult);
+
+                return new ReturnValue(true);
+            }
+            catch(Exception ex)
+            {
+                return new ReturnValue(false, "The following error occurred when attempting to run the transform: " + ex.Message, ex);
+            }
         }
 
-        public async Task<ReturnValue> WriteStart()
+        public async Task<ReturnValue> WriteStart( )
         {
 
             if (WriteOpen == true)
@@ -241,7 +309,7 @@ namespace dexih.transforms
 
             Table createTable = new Table(TargetTable.TableName, WriteColumns, CreateRows);
             var createReader = new ReaderMemory(createTable);
-            CreateRecordsTask = TargetConnection.ExecuteInsertBulk(TargetTable, createReader);  //this has no await to ensure processing continues.
+            CreateRecordsTask = TargetConnection.ExecuteInsertBulk(TargetTable, createReader, CancelToken);  //this has no await to ensure processing continues.
 
             CreateRows = new TableCache();
             return new ReturnValue(true);
@@ -276,7 +344,7 @@ namespace dexih.transforms
                 updateQueries.Add(updateQuery);
             }
 
-            UpdateRecordsTask = TargetConnection.ExecuteUpdate(TargetTable, updateQueries);  //this has no await to ensure processing continues.
+            UpdateRecordsTask = TargetConnection.ExecuteUpdate(TargetTable, updateQueries, CancelToken);  //this has no await to ensure processing continues.
 
             UpdateRows = new TableCache();
 
@@ -320,7 +388,7 @@ namespace dexih.transforms
                 deleteQueries.Add(deleteQuery);
             }
 
-            DeleteRecordsTask = TargetConnection.ExecuteDelete(TargetTable, deleteQueries);  //this has no await to ensure processing continues.
+            DeleteRecordsTask = TargetConnection.ExecuteDelete(TargetTable, deleteQueries, CancelToken);  //this has no await to ensure processing continues.
 
             DeleteRows = new TableCache();
 
@@ -340,7 +408,7 @@ namespace dexih.transforms
             Table createTable = new Table(RejectTable.TableName, WriteColumns, RejectRows);
 
             var createReader = new ReaderMemory(createTable);
-            RejectRecordsTask = TargetConnection.ExecuteInsertBulk(createTable, createReader);  //this has no await to ensure processing continues.
+            RejectRecordsTask = TargetConnection.ExecuteInsertBulk(createTable, createReader, CancelToken);  //this has no await to ensure processing continues.
 
             return new ReturnValue(true);
         }

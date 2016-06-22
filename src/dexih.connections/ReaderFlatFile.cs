@@ -7,6 +7,7 @@ using dexih.functions;
 using System.Data.Common;
 using dexih.connections.IO.Csv;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace dexih.connections
 {
@@ -30,7 +31,7 @@ namespace dexih.connections
                 return new ReturnValue(false, "The file reader connection is already open.", null);
             }
 
-            var fileEnumerator = await ((ConnectionFlatFile)ReferenceConnection).GetFileEnumerator((string)CacheTable.ExtendedProperties["FileRootPath"], (string)CacheTable.ExtendedProperties["FileIncomingPath"]);
+            var fileEnumerator = await ((ConnectionFlatFile)ReferenceConnection).GetFileEnumerator((string)CacheTable.GetExtendedProperty("FileRootPath"), (string)CacheTable.GetExtendedProperty("FileIncomingPath"));
             if (fileEnumerator.Success == false)
                 return fileEnumerator;
 
@@ -41,11 +42,12 @@ namespace dexih.connections
                 return new ReturnValue(false, "There were no files in the incomming directory.", null);
             }
 
-            var fileStream = await ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheTable, (string)CacheTable.ExtendedProperties["FileIncomingPath"], _files.Current.FileName);
+            var fileStream = await ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheTable, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), _files.Current.FileName);
             if (fileStream.Success == false)
                 return fileStream;
 
-            _csvReader = new CsvReader(new StreamReader(fileStream.Value), ((FileFormat)CacheTable.ExtendedProperties["FileFormat"]).Headers);
+            FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(CacheTable.GetExtendedProperty("FileFormat"));
+            _csvReader = new CsvReader(new StreamReader(fileStream.Value), fileFormat.Headers);
 
             return new ReturnValue(true);
         }
@@ -62,7 +64,13 @@ namespace dexih.connections
 
         public override ReturnValue ResetTransform()
         {
-            throw new NotImplementedException();
+            if (_isOpen)
+            {
+                return new ReturnValue(true);
+            }
+            else
+                return new ReturnValue(false, "The sql reader can not be reset", null);
+
         }
 
         protected override ReturnValue<object[]> ReadRecord()
@@ -79,7 +87,7 @@ namespace dexih.connections
 
             if (notfinished == false)
             {
-                var moveFileResult = ((ConnectionFlatFile)ReferenceConnection).MoveFile(CacheTable, _files.Current.FileName, (string)CacheTable.ExtendedProperties["FileIncomingPath"], (string)CacheTable.ExtendedProperties["FileProcessedPath"]).Result; //backup the completed file
+                var moveFileResult = ((ConnectionFlatFile)ReferenceConnection).MoveFile(CacheTable, _files.Current.FileName, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), (string)CacheTable.GetExtendedProperty("FileProcessedPath")).Result; //backup the completed file
                 if (moveFileResult.Success == false)
                 {
                     throw new Exception("The flatfile reader failed with the following message: " + moveFileResult.Message);
@@ -89,11 +97,12 @@ namespace dexih.connections
                     _isOpen = false;
                 else
                 {
-                    var fileStream = ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheTable, (string)CacheTable.ExtendedProperties["FileIncomingPath"], _files.Current.FileName).Result;
+                    var fileStream = ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheTable, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), _files.Current.FileName).Result;
                     if (fileStream.Success == false)
                         throw new Exception("The flatfile reader failed with the following message: " + fileStream.Message);
 
-                    _csvReader = new CsvReader(new StreamReader(fileStream.Value), ((FileFormat)CacheTable.ExtendedProperties["FileFormat"]).Headers);
+                    FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(CacheTable.GetExtendedProperty("FileFormat"));
+                    _csvReader = new CsvReader(new StreamReader(fileStream.Value), fileFormat.Headers);
                     try
                     {
                         notfinished = _csvReader.Read();

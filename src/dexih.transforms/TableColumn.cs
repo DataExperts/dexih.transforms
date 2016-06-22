@@ -69,18 +69,31 @@ namespace dexih.transforms
         }
 
         public string ColumnName { get; set; }
+
         public string LogicalName { get; set; }
+
         public string Description { get; set; }
+
         public ETypeCode DataType { get; set; }
+
         public int? MaxLength { get; set; }
+
         public int? Precision { get; set; }
+
         public int? Scale { get; set; }
+
         public bool AllowDbNull { get; set; }
+
         public EDeltaType DeltaType { get; set; }
+
         public bool IsUnique { get; set; }
+
         public bool IsMandatory { get; set; } = false;
+
         public ESecurityFlag SecurityFlag { get; set; } = ESecurityFlag.None;
+
         public bool IsInput { get; set; }
+
         public bool IsIncrementalUpdate { get; set; }
         public Dictionary<string, object> ExtendedProperties { get; set; }
 
@@ -89,7 +102,7 @@ namespace dexih.transforms
         {
             get
             {
-                return Type.GetType("System." + DataType);
+                return functions.DataType.GetType(DataType);
             }
             set 
             {

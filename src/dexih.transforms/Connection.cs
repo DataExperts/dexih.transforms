@@ -73,13 +73,13 @@ namespace dexih.transforms
         //Functions required for managed connection
         public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable = false);
         //public abstract Task<ReturnValue> TestConnection();
-        public abstract Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries);
-        public abstract Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries);
-        public abstract Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries);
-        public abstract Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData);
-        public abstract Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query);
-        public abstract Task<ReturnValue<Transform>> GetTransformReader(Table table, SelectQuery query, Transform referenceTransform = null);
-        public abstract Task<ReturnValue> TruncateTable(Table table);
+        public abstract Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
+        public abstract Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
+        public abstract Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
+        public abstract Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken);
+        public abstract Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken);
+        public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null);
+        public abstract Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken);
 
         /// <summary>
         /// If database connection supports direct DbDataReader.
@@ -157,22 +157,21 @@ namespace dexih.transforms
             Stopwatch watch = new Stopwatch();
             watch.Start();
 
-            ReturnValue<Transform> returnValue = await GetTransformReader(table, query);
+            Transform reader = GetTransformReader(table);
+            ReturnValue returnValue = await reader.Open(query);
             if (returnValue.Success == false)
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
-            DbDataReader reader = returnValue.Value;
-
-            TableCache dataPreview = new TableCache();
+            reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
 
             int count = 0;
-            while (reader.Read() && query.Rows != -1 && count < query.Rows && cancellationToken.IsCancellationRequested == false)
+            while (count < query.Rows &&
+                query.Rows != -1 &&
+                cancellationToken.IsCancellationRequested == false && 
+                reader.Read() 
+                )
             {
-                object[] values = new object[reader.FieldCount];
-                reader.GetValues(values);
-                dataPreview.Add(values);
                 count++;
-
                 if (watch.ElapsedMilliseconds > maxMilliseconds)
                     break;
             }
@@ -180,9 +179,7 @@ namespace dexih.transforms
             watch.Stop();
             reader.Dispose();
 
-            Table dataTable = new Table(table.TableName, new TableColumns(query.Columns.Select(c => new TableColumn(c.Column))), dataPreview);
-
-            return new ReturnValue<Table>(true, "", null, dataTable);
+            return new ReturnValue<Table>(true, reader.CacheTable);
         }
 
     }

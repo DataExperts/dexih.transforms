@@ -9,6 +9,7 @@ using dexih.functions;
 using System.Linq;
 using System.Globalization;
 using static dexih.transforms.TableColumn;
+using System.Collections.ObjectModel;
 
 namespace dexih.transforms
 {
@@ -185,9 +186,9 @@ namespace dexih.transforms
         /// <param name="filters">Requested filters for underlying transform to execute.</param>
         /// <param name="sorts">Requested sort for underlying transform to execute.</param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> Open(SelectQuery query)
+        public virtual async Task<ReturnValue> Open(SelectQuery query = null)
         {
-            if(PrimaryTransform != null)
+            if (PrimaryTransform != null)
                 return await PrimaryTransform.Open(query);
             return new ReturnValue(true);
         }
@@ -224,9 +225,9 @@ namespace dexih.transforms
         /// <summary>
         /// Indicates if the cache is complete or at maximum capacity
         /// </summary>
-        public bool IsCacheFull { get; protected set; } 
+        public bool IsCacheFull { get; protected set; }
         #endregion
-        
+
         #region Encryption 
         /// <summary>
         /// Indictes the encryption method.  
@@ -252,7 +253,7 @@ namespace dexih.transforms
 
             var column = CacheTable[columnName];
 
-            if(column == null)
+            if (column == null)
                 throw new Exception("Security flag can not be set as the column " + columnName + " was not found in the table.");
 
             column.SecurityFlag = securityFlag;
@@ -294,8 +295,6 @@ namespace dexih.transforms
 
         #endregion
 
-
-
         #region Performance Diagnostics 
         //diagnostics to record the processing time for the transformation.
         public Stopwatch TransformTimer { get; set; }
@@ -330,7 +329,6 @@ namespace dexih.transforms
         }
 
         #endregion
-
 
         #region Record Navigation
 
@@ -404,7 +402,7 @@ namespace dexih.transforms
                 throw new Exception("RowPeek failed, as the row exceeded the number of rows in the cache");
 
             CacheTable.Data[rowNumber].CopyTo(values, 0);
-        } 
+        }
         #endregion
 
         #region Lookup
@@ -484,7 +482,7 @@ namespace dexih.transforms
         public virtual async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
         {
             return await Task.Run(() => new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null));
-        } 
+        }
         #endregion
 
         #region DbDataReader Implementation
@@ -497,9 +495,9 @@ namespace dexih.transforms
             CurrentRowNumber++;
 
             //check cache for a row first.
-            if(CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache)
+            if (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache)
             {
-                if(CurrentRowNumber < CacheTable.Data.Count)
+                if (CurrentRowNumber < CacheTable.Data.Count)
                 {
                     CurrentRow = CacheTable.Data[CurrentRowNumber];
                     TransformTimer.Stop();
@@ -535,7 +533,7 @@ namespace dexih.transforms
             return returnValue.Success;
         }
 
-        public override int FieldCount => CacheTable.Columns.Count; 
+        public override int FieldCount => CacheTable.Columns.Count;
         public override int GetOrdinal(string columnName) => CacheTable.GetOrdinal(columnName);
         public override string GetName(int i) => CacheTable.Columns[i].ColumnName;
         public override object this[string name]
@@ -589,7 +587,7 @@ namespace dexih.transforms
         {
             throw new NotSupportedException("GetChars is not supported.");
         }
- 
+
         public override string GetDataTypeName(int i)
         {
             return GetValue(i).GetType().Name;
@@ -657,7 +655,8 @@ namespace dexih.transforms
         {
             if (disposing)
             {
-                PrimaryTransform.Dispose(disposing);
+                if (PrimaryTransform != null)
+                    PrimaryTransform.Dispose(disposing);
                 if (ReferenceTransform != null)
                     ReferenceTransform.Dispose(disposing);
             }
@@ -754,10 +753,112 @@ namespace dexih.transforms
 
             return schema;
         }
+    }
+
 #else
-        
-#endif
-        #endregion
 
     }
+
+    public static class TransformExtensions
+    {
+        public static bool CanGetColumnSchema(this DbDataReader reader)
+        {
+            return true;
+        }
+
+        public static ReadOnlyCollection<DbColumn> GetColumnSchema(this DbDataReader reader)
+        {
+            Transform transform = (Transform)reader;
+
+            var columnSchema = new List<DbColumn>();
+
+            int ordinal = 0;
+            foreach(var col in transform.CacheTable.Columns)
+            {
+                var column = new TransformColumn(
+                    col.AllowDbNull,
+                    "",
+                    col.ColumnName,
+                    "",
+                    "",
+                    transform.CacheTable.TableName,
+                    col.ColumnName,
+                    ordinal,
+                    col.MaxLength > 0 ? col.MaxLength : int.MaxValue,
+                    DataType.GetType(col.DataType),
+                    col.DataType.ToString(),
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    col.DeltaType == EDeltaType.SurrogateKey ? true : false,
+                    col.DataType == DataType.ETypeCode.Int64 ? true : false,
+                    false,
+                    col.DeltaType == EDeltaType.SurrogateKey ? true : false,
+                    col.Precision,
+                    col.Scale
+                    );
+                columnSchema.Add(column);
+            }
+
+            return new ReadOnlyCollection<DbColumn>(columnSchema);
+        }
+    }
+
+    public class TransformColumn : DbColumn
+    {
+        public TransformColumn(
+                    bool? allowDBNull,
+        string baseCatalogName,
+        string baseColumnName ,
+        string baseSchemaName ,
+        string baseServerName ,
+        string baseTableName ,
+        string columnName ,
+        int? columnOrdinal ,
+        int? columnSize ,
+        Type dataType ,
+        string dataTypeName ,
+        bool? isAliased ,
+        bool? isAutoIncrement ,
+        bool? isExpression ,
+        bool? isHidden ,
+        bool? isIdentity ,
+        bool? isKey ,
+        bool? isLong ,
+        bool? isReadOnly ,
+        bool? isUnique ,
+        int? numericPrecision ,
+        int? numericScale 
+            )
+        {
+            AllowDBNull = allowDBNull;
+            BaseCatalogName = baseCatalogName;
+            BaseColumnName = baseColumnName;
+            BaseSchemaName = baseSchemaName;
+            BaseServerName = baseServerName;
+            BaseTableName = baseTableName;
+            ColumnName = columnName;
+            ColumnOrdinal = columnOrdinal;
+            ColumnSize = columnSize;
+            DataType = dataType;
+            DataTypeName = dataTypeName;
+            IsAliased = isAliased;
+            IsAutoIncrement = isAutoIncrement;
+            IsExpression = isExpression;
+            IsHidden = isHidden;
+            IsIdentity = isIdentity;
+            IsKey = isKey;
+            IsLong = isLong;
+            IsReadOnly = isReadOnly;
+            IsUnique = isUnique;
+            NumericPrecision = numericPrecision;
+            NumericScale = numericScale;
+        }
+    }
+#endif
+    #endregion
+
+
 }

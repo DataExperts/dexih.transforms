@@ -8,7 +8,7 @@ namespace dexih.transforms
 {
     public class TransformDelta : Transform
     {
-        public TransformDelta(Transform inReader, Transform targetTransform, EDeltaType deltaType, Int64 surrogateKey, Int64 auditKey)
+        public TransformDelta(Transform inReader, Transform targetTransform, EUpdateStrategy deltaType, Int64 surrogateKey, Int64 auditKey)
         {
             DeltaType = deltaType;
             AuditKey = auditKey;
@@ -19,19 +19,19 @@ namespace dexih.transforms
             doDelete = false;
             doPreserve = false;
 
-            if (deltaType == EDeltaType.AppendUpdate || deltaType == EDeltaType.AppendUpdateDelete || deltaType == EDeltaType.AppendUpdateDeletePreserve || deltaType == EDeltaType.AppendUpdatePreserve)
+            if (deltaType == EUpdateStrategy.AppendUpdate || deltaType == EUpdateStrategy.AppendUpdateDelete || deltaType == EUpdateStrategy.AppendUpdateDeletePreserve || deltaType == EUpdateStrategy.AppendUpdatePreserve)
                 doUpdate = true;
 
-            if (deltaType == EDeltaType.AppendUpdateDelete || deltaType == EDeltaType.AppendUpdateDeletePreserve)
+            if (deltaType == EUpdateStrategy.AppendUpdateDelete || deltaType == EUpdateStrategy.AppendUpdateDeletePreserve)
                 doDelete = true;
 
-            if (deltaType == EDeltaType.AppendUpdateDeletePreserve || deltaType == EDeltaType.AppendUpdatePreserve)
+            if (deltaType == EUpdateStrategy.AppendUpdateDeletePreserve || deltaType == EUpdateStrategy.AppendUpdatePreserve)
                 doPreserve = true;
 
             SetInTransform(inReader, targetTransform);
         }
 
-        public enum EDeltaType
+        public enum EUpdateStrategy
         {
             Reload, //truncates the table and reloads
             Append, //inserts records.  use if the data feed is always new data.
@@ -58,7 +58,7 @@ namespace dexih.transforms
         private TableColumn colRejectedReason;
         private TableColumn[] colNatrualKey;
 
-        private EDeltaType DeltaType { get; set; }
+        private EUpdateStrategy DeltaType { get; set; }
         public Int64 SurrogateKey { get; protected set; }
         private Int64 AuditKey { get; set; }
 
@@ -123,7 +123,7 @@ namespace dexih.transforms
 
         public override async Task<ReturnValue> Open(SelectQuery query)
         {
-            if (DeltaType == EDeltaType.Append || DeltaType == EDeltaType.Reload)
+            if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
             {
                 var returnValue = await PrimaryTransform.Open(query);
                 return returnValue;
@@ -146,7 +146,7 @@ namespace dexih.transforms
            get
             {
                 //if detla is load or reload, we don't need any filter/sorts
-                if (DeltaType == EDeltaType.Append || DeltaType == EDeltaType.Reload)
+                if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
                 {
                     return false;
                 }
@@ -211,7 +211,7 @@ namespace dexih.transforms
                 _targetOpen = ReferenceRead();
 
                 //if the delta is set to reload.  Set the first row as an operation T="truncate table"
-                if (DeltaType == EDeltaType.Reload)
+                if (DeltaType == EUpdateStrategy.Reload)
                 {
                     newRow = new object[CacheTable.Columns.Count];
                     newRow[0] = 'T';
@@ -636,7 +636,7 @@ namespace dexih.transforms
         {
             List<Sort> fields = new List<Sort>();
 
-            if (DeltaType == EDeltaType.Append || DeltaType == EDeltaType.Reload)
+            if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
             {
             }
             else
@@ -654,7 +654,7 @@ namespace dexih.transforms
         {
             List<Sort> fields = new List<Sort>();
 
-            if (DeltaType == EDeltaType.Append || DeltaType == EDeltaType.Reload)
+            if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
             {
             }
             else

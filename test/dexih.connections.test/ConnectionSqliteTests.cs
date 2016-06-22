@@ -23,8 +23,8 @@ namespace dexih.connections.test
         public void TestSqlite_BasicTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
-
-             CommonTests.UnitTests(GetConnection(), database);
+            ConnectionSqlite connection = GetConnection();
+             CommonTests.UnitTests(connection, database);
         }
 
         [Fact]
