@@ -18,7 +18,11 @@ The key features are:
 * Runs fast!  Can easily process 100,000's of rows per second.
 * Uses standard database classes and can be integrated with all popular databases.
 * Fully portable to any platform that supports the .NetStandard library (currently includes Windows, Mac and Linux variants).
-
+* Data profiling.
+* Manage change data capture
+* Preserve change history (i.e. slowly changing dimensions)
+* Column level valiation and rejection rules.
+* 
 This powerful library can be used as a foundation for applications such as:
 * Business Intelligence and reporting.
 * Batch processing, Data Integration or Extract Transform Load (ETL) processing.
@@ -28,11 +32,8 @@ This powerful library can be used as a foundation for applications such as:
 
 In the next few weeks we will be integrating the following capabilities into the transform processing:
 
-* Data profiling.
-* Manage change data capture
-* Preserve change history (i.e. slowly changing dimensions)
-* Column level valiation and rejection rules.
 * Logging and resiliance.
+* Additional data sources.
  
 
 ## How does it work?
