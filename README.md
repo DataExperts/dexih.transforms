@@ -1,9 +1,6 @@
-# Data Experts Transformation Library.
-### [Data Experts Group](http://dataexpertsgroup.com)
-
-## Data Transformation Libraries
-
+# Data Transformation Libraries
 [![][dex-img]][dex]
+
 [![][build-img]][build]
 [![][nuget-img]][nuget]
 
