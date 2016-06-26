@@ -1,14 +1,10 @@
 # Data Experts Transformation Library.
 ### [Data Experts Group](http://dataexpertsgroup.com)
 
-## Status
-
-[![Build Status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)](https://ci.appveyor.com/project/dataexperts/dexih-transforms)
+## Data Transformation Libraries
 
 [![][build-img]][build]
 [![][nuget-img]][nuget]
-
-Automated job scheduler with fluent interface.
 
 [build]:     https://ci.appveyor.com/project/dataexperts/dexih-transforms
 [build-img]: https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true
