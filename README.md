@@ -69,7 +69,7 @@ public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetC
         }
     );
 
-    // Add daily medium and sum columns
+    // Add median, and sum calculation
     TransformGroup transformGroup = new TransformGroup(
         transformFilter,
         new List<ColumnPair>() //The fields to groupby
