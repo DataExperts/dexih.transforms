@@ -5,6 +5,15 @@
 
 [![Build Status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)](https://ci.appveyor.com/project/dataexperts/dexih-transforms)
 
+[![][build-img]][build]
+[![][nuget-img]][nuget]
+
+Automated job scheduler with fluent interface.
+
+[build]:     https://ci.appveyor.com/project/dataexperts/dexih-transforms
+[build-img]: https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true
+[nuget]:     https://www.nuget.org/packages/dexih.transforms/
+[nuget-img]: https://badge.fury.io/nu/dexih.transforms.svg
 
 ## What is this?
 
