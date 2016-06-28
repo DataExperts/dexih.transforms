@@ -28,6 +28,11 @@ namespace dexih.connections
 
 
         public override bool CanBulkLoad => true;
+        public override bool CanSort => false;
+
+        public override bool CanFilter => true;
+        public override bool CanAggregate => false;
+
 
         public override bool IsValidDatabaseName(string name)
         {
@@ -57,6 +62,8 @@ namespace dexih.connections
                 int bufferSize = 0;
                 List<object[]> buffer = new List<object[]>();
 
+                var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+
                 while (reader.Read())
                 {
                     if (cancelToken.IsCancellationRequested)
@@ -73,7 +80,26 @@ namespace dexih.connections
                     }
 
                     object[] row = new object[table.Columns.Count];
-                    reader.GetValues(row);
+
+                    for (int i = 0; i < table.Columns.Count; i++)
+                    {
+                        if(i< reader.FieldCount)
+                            row[i] = reader[i];
+                        else
+                        {
+                            //if the reader does not have the azure fields, then just add defaults.
+                            if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AzurePartitionKey)
+                                row[i] = "default";
+                            else if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AzureRowKey)
+                            {
+                                if (sk != null)
+                                    row[i] = reader[sk.ColumnName];
+                                else
+                                    row[i] = Guid.NewGuid().ToString();
+                            }
+                        }
+                    }
+
                     buffer.Add(row);
                     bufferSize++;
                 }
@@ -108,56 +134,30 @@ namespace dexih.connections
             // Create the batch operation.
             TableBatchOperation batchOperation = new TableBatchOperation();
 
-            foreach(object[] row in buffer)
+            int partitionKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
+            int rowKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            int surrogateKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SurrogateKey);
+
+            foreach (object[] row in buffer)
             {
                 Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
                 for (int i = 0; i < table.Columns.Count; i++)
-                    if (table.Columns[i].DeltaType != TableColumn.EDeltaType.AzureRowKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.AzurePartitionKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.AutoGenerate)
+                    if (table.Columns[i].DeltaType != TableColumn.EDeltaType.AzureRowKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.AzurePartitionKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.TimeStamp)
                     {
                         object value = row[i];
                         if (value == DBNull.Value) value = null;
                         properties.Add(table.Columns[i].ColumnName, NewEntityProperty(table.Columns[i].DataType, value));
                     }
 
-                DynamicTableEntity entity = new DynamicTableEntity(row[table.GetOrdinal("partitionKey")].ToString(), row[table.GetOrdinal("rowKey")].ToString(), "*", properties);
+                var partionKeyValue = partitionKey >= 0 ? row[partitionKey] : "default";
+                var rowKeyValue = rowKey >= 0 ? row[rowKey] : surrogateKey >= 0 ? row[surrogateKey] : Guid.NewGuid().ToString();
+                DynamicTableEntity entity = new DynamicTableEntity(partionKeyValue.ToString(), rowKeyValue.ToString(), "*", properties);
 
                 batchOperation.Insert(entity);
             }
             await cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancelToken);
         }
 
-        private EntityProperty NewEntityProperty(ETypeCode type, object value)
-        {
-            switch (type)
-            {
-                case ETypeCode.Byte:
-                case ETypeCode.SByte:
-                case ETypeCode.UInt16:
-                case ETypeCode.UInt32:
-                case ETypeCode.Int16:
-                case ETypeCode.Int32:
-                    return new EntityProperty(Convert.ToInt32(value));
-                case ETypeCode.UInt64:
-                case ETypeCode.Int64:
-                    return new EntityProperty((long)value);
-                case ETypeCode.Decimal:
-                case ETypeCode.Double:
-                case ETypeCode.Single:
-                    return new EntityProperty(Convert.ToDouble(value));
-                case ETypeCode.Unknown:
-                case ETypeCode.String:
-                case ETypeCode.Guid:
-                    return new EntityProperty((string)value);
-                case ETypeCode.Boolean: 
-                    return new EntityProperty((bool)value);
-                case ETypeCode.DateTime: 
-                    return new EntityProperty((DateTime)value);
-                case ETypeCode.Time:
-                    return new EntityProperty((DateTimeOffset)value);
-                default:
-                    return new EntityProperty((string)value);
-            }
-        }
 
 
         /// <summary>
@@ -171,12 +171,12 @@ namespace dexih.connections
             try
             {
                 if (!IsValidTableName(table.TableName))
-                    return new ReturnValue(false, "The table " + table.TableName + " could not be created as it does not meet Azuere table naming standards.", null);
+                    return new ReturnValue(false, "The table " + table.TableName + " could not be created as it does not meet Azure table naming standards.", null);
 
                 foreach(var col in table.Columns)
                 {
                     if (!IsValidColumnName(col.ColumnName))
-                        return new ReturnValue(false, "The table " + table.TableName + " could not be created as the column + " + col.ColumnName + " does not meet Azuere table naming standards.", null);
+                        return new ReturnValue(false, "The table " + table.TableName + " could not be created as the column + " + col.ColumnName + " does not meet Azure table naming standards.", null);
                 }
 
                 CloudTableClient connection = GetCloudTableClient();
@@ -219,7 +219,7 @@ namespace dexih.connections
             if(UseConnectionString)
                 storageAccount = CloudStorageAccount.Parse(ConnectionString);
             // Retrieve the storage account from the connection string.
-            if (string.IsNullOrEmpty(UserName)) //no username, then use the development settings.
+            else if (string.IsNullOrEmpty(UserName)) //no username, then use the development settings.
                 storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true");
             else
                 storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + UserName + ";AccountKey=" + Password + ";TableEndpoint=" + ServerName );
@@ -355,6 +355,7 @@ namespace dexih.connections
                     {
                         case ETypeCode.String:
                         case ETypeCode.Guid:
+                        case ETypeCode.Unknown:
                             filterString = TableQuery.GenerateFilterCondition(filter.Column1, ConvertOperator(filter.Operator), (string)filter.Value2);
                             break;
                         case ETypeCode.Boolean:
@@ -453,7 +454,7 @@ namespace dexih.connections
                     });
                 }
 
-                if (table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.AutoGenerate).Count() == 0)
+                if (table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TimeStamp).Count() == 0)
                 {
 
                     //add the special columns for managed tables.
@@ -467,13 +468,90 @@ namespace dexih.connections
                         LogicalName = table.TableName + " timestamp.",
                         Description = "The Azure Timestamp for the managed table.",
                         IsUnique = true,
-                        DeltaType = TableColumn.EDeltaType.AutoGenerate,
+                        DeltaType = TableColumn.EDeltaType.TimeStamp,
                         IsMandatory = true
                     });
                 }
             });
 
             return new ReturnValue(true, "", null);
+        }
+
+        private EntityProperty NewEntityProperty(ETypeCode typeCode, object value)
+        {
+            var returnValue = DataType.TryParse(typeCode, value);
+            if (!returnValue.Success)
+                throw new Exception(returnValue.Message);
+
+            switch (typeCode)
+            {
+                case ETypeCode.Byte:
+                    return new EntityProperty((Byte)returnValue.Value);
+                case ETypeCode.SByte:
+                    return new EntityProperty((SByte)returnValue.Value);
+                case ETypeCode.UInt16:
+                    return new EntityProperty((UInt16)returnValue.Value);
+                case ETypeCode.UInt32:
+                    return new EntityProperty((UInt32)returnValue.Value);
+                case ETypeCode.UInt64:
+                    return new EntityProperty((UInt64)returnValue.Value);
+                case ETypeCode.Int16:
+                    return new EntityProperty((Int16)returnValue.Value);
+                case ETypeCode.Int32:
+                    return new EntityProperty((Int32)returnValue.Value);
+                case ETypeCode.Int64:
+                    return new EntityProperty((Int64)returnValue.Value);
+                case ETypeCode.Double:
+                    return new EntityProperty((Double)returnValue.Value);
+                case ETypeCode.Single:
+                    return new EntityProperty((Single)returnValue.Value);
+                case ETypeCode.String:
+                    return new EntityProperty((String)returnValue.Value);
+                case ETypeCode.Boolean:
+                    return new EntityProperty((Boolean)returnValue.Value);
+                case ETypeCode.DateTime:
+                    return new EntityProperty((DateTime)returnValue.Value);
+                case ETypeCode.Guid:
+                    return new EntityProperty((Guid)returnValue.Value);
+                case ETypeCode.Decimal:
+                case ETypeCode.Unknown:
+                    return new EntityProperty(value.ToString()); //decimal not supported, so convert to string
+                case ETypeCode.Time:
+                    return new EntityProperty(((TimeSpan)value).Ticks); //timespan not supported, so use ticks.
+                default:
+                    throw new Exception("Cannot create new azure entity as the data type: " + typeCode.ToString() + " is not suppored.");
+            }
+
+        }
+
+        public object ConvertEntityProperty(ETypeCode typeCode, object value)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Byte:
+                case ETypeCode.SByte:
+                case ETypeCode.UInt16:
+                case ETypeCode.UInt32:
+                case ETypeCode.UInt64:
+                case ETypeCode.Int16:
+                case ETypeCode.Int32:
+                case ETypeCode.Int64:
+                case ETypeCode.Double:
+                case ETypeCode.Single:
+                case ETypeCode.String:
+                case ETypeCode.Boolean:
+                case ETypeCode.DateTime:
+                case ETypeCode.Guid:
+                    return value;
+                case ETypeCode.Decimal:
+                    return Convert.ToDecimal(value);
+                case ETypeCode.Time:
+                    return new TimeSpan((long)value);
+                case ETypeCode.Unknown:
+                    return value.ToString();
+                default:
+                    return value;
+            }
         }
 
  
@@ -492,6 +570,10 @@ namespace dexih.connections
                 //start a batch operation to update the rows.
                 TableBatchOperation batchOperation = new TableBatchOperation();
 
+                var partitionKey = table.GetDeltaColumn(TableColumn.EDeltaType.AzurePartitionKey);
+                var rowKey = table.GetDeltaColumn(TableColumn.EDeltaType.AzureRowKey);
+                var timeStamp = table.GetDeltaColumn(TableColumn.EDeltaType.TimeStamp);
+
                 //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
                 {
@@ -501,24 +583,30 @@ namespace dexih.connections
                     Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
                     foreach (var field in query.InsertColumns)
                         if (field.Column != "rowKey" && field.Column != "partitionKey" && field.Column != "Timestamp")
-                            properties.Add(field.Column, new EntityProperty(field.Value.ToString()));
+                            properties.Add(field.Column, NewEntityProperty(table[field.Column].DataType, field.Value));
 
-                    string partitionKey = query.InsertColumns.SingleOrDefault(c => c.Column == "patitionKey")?.Value.ToString();
-                    if (string.IsNullOrEmpty(partitionKey)) partitionKey = "Undefined";
+                    string partitionKeyValue = null;
+                    if (partitionKey != null)
+                        partitionKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column == partitionKey.ColumnName)?.Value.ToString();
 
-                    string rowKey = query.InsertColumns.SingleOrDefault(c => c.Column == "rowKey")?.Value.ToString();
-                    if (string.IsNullOrEmpty(rowKey))
+                    if (string.IsNullOrEmpty(partitionKeyValue)) partitionKeyValue = "default";
+
+                    string rowKeyValue = null;
+                    if(rowKey != null)
+                        rowKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column ==partitionKey.ColumnName)?.Value.ToString();
+
+                    if (string.IsNullOrEmpty(rowKeyValue))
                     {
                         var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey)?.ColumnName;
 
                         if(sk == null)
-                            return new ReturnValue<int>(false, "The Azure insert query for " + table.TableName + " could not be run due to the mandatory rowKey column not being defined.", null);
-
-                        rowKey = query.InsertColumns.Single(c => c.Column == sk).Value.ToString();
+                            rowKeyValue = Guid.NewGuid().ToString();
+                        else
+                            rowKeyValue = query.InsertColumns.Single(c => c.Column == sk).Value.ToString();
                     }
 
 
-                    DynamicTableEntity entity = new DynamicTableEntity(partitionKey, rowKey, "*", properties);
+                    DynamicTableEntity entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
 
                     batchOperation.Insert(entity);
 
@@ -572,9 +660,10 @@ namespace dexih.connections
                 {
                     //Read the key fields from the table
                     TableQuery tableQuery = new TableQuery();
-                    tableQuery.SelectColumns = new[] { "partitionKey", "rowKey" };
-                    tableQuery.FilterString = BuildFilterString(query.Filters);
 
+                    //select all columns
+                    tableQuery.SelectColumns = (new[] { "partitionKey", "rowKey" }.Concat(table.Columns.Where(c=>c.ColumnName != "partitionKey" || c.ColumnName != "rowKey").Select(c=>c.ColumnName)).ToList());
+                    tableQuery.FilterString = BuildFilterString(query.Filters);
 
                     //run the update 
                     TableContinuationToken continuationToken = null;
@@ -591,7 +680,7 @@ namespace dexih.connections
 
                             foreach (var column in query.UpdateColumns)
                             {
-                                entity.Properties[column.Column].StringValue = column.Value.ToString();
+                                entity.Properties[column.Column] = NewEntityProperty(table[column.Column].DataType, column.Value);
                             }
 
                             batchOperation.Replace(entity);
@@ -710,7 +799,15 @@ namespace dexih.connections
 
                 continuationToken = result.ContinuationToken;
 
-                object value = result.Results[0].Properties[query.Columns[0].Column].PropertyAsObject;
+                object value;
+                //get the result value
+                if (result.Results.Count == 0)
+                    value = null;
+                else
+                    value = result.Results[0].Properties[query.Columns[0].Column].PropertyAsObject;
+
+                //convert it back to a .net type.
+                value = ConvertEntityProperty(table[query.Columns[0].Column].DataType, value);
 
                 return new ReturnValue<object>(true, value);
             }

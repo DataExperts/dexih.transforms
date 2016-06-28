@@ -20,6 +20,11 @@ namespace dexih.connections
         public override ECategory DatabaseCategory => ECategory.SqlDatabase;
 
         public override bool CanBulkLoad => true;
+        public override bool CanSort => true;
+        public override bool CanFilter => true;
+        public override bool CanAggregate => true;
+
+
 
         //These properties can be overridden for different databases
         public virtual string SqlDelimiterOpen { get; } = "\"";
@@ -52,6 +57,16 @@ namespace dexih.connections
         public abstract string GetSqlFieldValueQuote(ETypeCode type, object value);
 
         public abstract Task<ReturnValue<Boolean>> TableExists(Table table);
+
+        /// <summary>
+        /// This is used to convert any datatypes that are not compatible with the target database.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public virtual object ConvertParameterType(object value)
+        {
+            return value;
+        }
 
 
         public DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
@@ -115,7 +130,7 @@ namespace dexih.connections
                         {
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
-                                cmd.Parameters[i].Value = reader[i];
+                                cmd.Parameters[i].Value = ConvertParameterType(reader[i]);
                             }
                             await cmd.ExecuteNonQueryAsync(cancelToken);
                             if (cancelToken.IsCancellationRequested)
@@ -245,10 +260,11 @@ namespace dexih.connections
                 }
                 catch (Exception ex)
                 {
+                    connectionResult.Value.Close();
                     return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
                 }
 
-                connectionResult.Value.Dispose();
+                connectionResult.Value.Close();
 
                 return new ReturnValue(true, "", null);
             }
@@ -403,10 +419,14 @@ namespace dexih.connections
                         rows += await cmd.ExecuteNonQueryAsync(cancelToken);
 
                         if (cancelToken.IsCancellationRequested)
+                        {
+                            connection.Value.Close();
                             return new ReturnValue<int>(false, "Update rows cancelled.", null);
+                        }
                     }
                     catch (Exception ex)
                     {
+                        connection.Value.Close();
                         return new ReturnValue<int>(false, "The update query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, -1);
                     }
                 }
@@ -446,10 +466,14 @@ namespace dexih.connections
                         rows += await cmd.ExecuteNonQueryAsync(cancelToken);
 
                         if (cancelToken.IsCancellationRequested)
+                        {
+                            connection.Value.Close();
                             return new ReturnValue<int>(false, "Delete rows cancelled.", null);
+                        }
                     }
                     catch (Exception ex)
                     {
+                        connection.Value.Close();
                         return new ReturnValue<int>(false, "The delete query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, -1);
                     }
                 }
@@ -507,11 +531,15 @@ namespace dexih.connections
                             rows += await cmd.ExecuteNonQueryAsync(cancelToken);
 
                             if (cancelToken.IsCancellationRequested)
+                            {
+                                connection.Value.Close();
                                 return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
+                        connection.Value.Close();
                         return new ReturnValue<int>(false, "The insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, -1);
                     }
                 }
@@ -540,17 +568,26 @@ namespace dexih.connections
             try
             {
                 value = await cmd.ExecuteScalarAsync(cancelToken);
+                connection.Value.Close();
 
                 if (cancelToken.IsCancellationRequested)
                     return new ReturnValue<object>(false, "Execute scalar cancelled.", null);
+
+                if (query.Columns[0].Aggregate == SelectColumn.EAggregate.None)
+                {
+                    var returnValue = DataType.TryParse(table.Columns[query.Columns[0].Column].DataType, value);
+                    if (!returnValue.Success)
+                        return new ReturnValue<object>(returnValue);
+                    return new ReturnValue<object>(true, returnValue.Value);
+                }
+                else
+                    return new ReturnValue<object>(true, value);
             }
             catch (Exception ex)
             {
                 return new ReturnValue<object>(false, "The select query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  Sql command was: " + sql, ex, null);
             }
 
-            connection.Value.Close();
-            return new ReturnValue<object>(true, value);
         }
 
         public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
@@ -567,16 +604,16 @@ namespace dexih.connections
             try
             {
                 await cmd.ExecuteNonQueryAsync(cancelToken);
+                connection.Value.Close();
 
                 if (cancelToken.IsCancellationRequested)
                     return new ReturnValue<int>(false, "Truncate cancelled.", null);
             }
             catch (Exception ex)
             {
+                connection.Value.Close();
                 return new ReturnValue(false, "The truncate table query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex);
             }
-
-            connection.Value.Close();
 
             return new ReturnValue(true, "", null);
         }

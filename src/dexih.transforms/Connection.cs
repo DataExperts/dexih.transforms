@@ -69,6 +69,9 @@ namespace dexih.transforms
         public abstract bool AllowUserPass { get; }
 
         public abstract bool CanBulkLoad { get; }
+        public abstract bool CanSort { get; }
+        public abstract bool CanFilter { get; }
+        public abstract bool CanAggregate { get; }
 
         //Functions required for managed connection
         public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable = false);

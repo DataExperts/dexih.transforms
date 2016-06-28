@@ -15,6 +15,8 @@ namespace dexih.connections.test
             {
                 Name = "Test Connection",
                 NtAuthentication = Convert.ToBoolean(Helpers.AppSettings["SqlServer:NTAuthentication"]),
+                UserName = Convert.ToString(Helpers.AppSettings["SqlServer:UserName"]),
+                Password = Convert.ToString(Helpers.AppSettings["SqlServer:Password"]),
                 ServerName = Convert.ToString(Helpers.AppSettings["SqlServer:ServerName"]),
             };
         }
@@ -24,7 +26,7 @@ namespace dexih.connections.test
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            CommonTests.UnitTests(GetConnection(), database);
+            new UnitTests().Unit(GetConnection(), database);
         }
 
         [Fact]
@@ -32,7 +34,15 @@ namespace dexih.connections.test
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            CommonTests.PerformanceTests(GetConnection(), database);
+            new PerformanceTests().Performance(GetConnection(), database, 1000);
+        }
+
+        [Fact]
+        public void TestSqlServer_TransformTests()
+        {
+            string database = "Test-" + Guid.NewGuid().ToString();
+
+            new TransformTests().Transform(GetConnection(), database);
         }
 
         [Fact]

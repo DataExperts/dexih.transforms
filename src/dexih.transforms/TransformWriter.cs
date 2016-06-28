@@ -1,6 +1,7 @@
 ﻿using dexih.functions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,15 +10,6 @@ namespace dexih.transforms
 {
     public class TransformWriter
     {
-        #region Events
-        public delegate void ProgressUpdate(TransformWriterResult transformWriterResult);
-        public delegate void StatusUpdate(TransformWriterResult transformWriterResult);
-
-        public event ProgressUpdate OnProgressUpdate;
-        public event StatusUpdate OnStatusUpdate;
-
-        #endregion
-
         /// <summary>
         /// Indicates the rows buffer per commit.  
         /// </summary>
@@ -27,6 +19,7 @@ namespace dexih.transforms
         private TableCache UpdateRows;
         private TableCache DeleteRows;
         private TableCache RejectRows;
+
 
         private bool WriteOpen = false;
         private int OperationColumnIndex; //the index of the operation in the source data.
@@ -51,10 +44,8 @@ namespace dexih.transforms
         private DeleteQuery TargetDeleteQuery;
         private InsertQuery RejectInsertQuery;
 
-        public void doProgressUpdate(TransformWriterResult transformWriterResult)
-        {
-            OnProgressUpdate?.Invoke(transformWriterResult);
-        }
+        public Stopwatch WriteDataTimer;
+        public Stopwatch ProcessingDataTimer;
 
         /// <summary>
         /// Writes all record from the inTransform to the target table and reject table.
@@ -74,10 +65,7 @@ namespace dexih.transforms
                 RejectConnection = rejectConnection;
                 //WriterResult = new TransformWriterResult();
 
-                WriterResult.OnProgressUpdate += doProgressUpdate;
-
                 WriterResult.RunStatus = TransformWriterResult.ERunStatus.Started;
-                OnStatusUpdate?.Invoke(WriterResult);
 
                 TargetTable = targetTable;
                 RejectTable = rejectTable;
@@ -91,8 +79,7 @@ namespace dexih.transforms
                     WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
                     WriterResult.Message = returnValue.Message;
 
-                    OnStatusUpdate?.Invoke(WriterResult);
-                    return new ReturnValue(false);
+                    return returnValue;
                 }
 
                 bool firstRead = true;
@@ -101,37 +88,35 @@ namespace dexih.transforms
                     if (firstRead)
                     {
                         WriterResult.RunStatus = TransformWriterResult.ERunStatus.Running;
-                        OnStatusUpdate?.Invoke(WriterResult);
+                        firstRead = false;
                     }
 
-                    returnValue = await WriteRecord(inTransform);
+                    returnValue = await WriteRecord(WriterResult, inTransform);
                     if (returnValue.Success == false)
                     {
                         WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
                         WriterResult.Message = returnValue.Message;
-                        OnStatusUpdate?.Invoke(WriterResult);
                         return new ReturnValue(false);
                     }
 
                     if (cancelToken.IsCancellationRequested)
                     {
                         WriterResult.RunStatus = TransformWriterResult.ERunStatus.Cancelled;
-                        OnStatusUpdate?.Invoke(WriterResult);
                         return new ReturnValue(false);
                     }
                 }
 
-                returnValue = await WriteFinish();
+                WriteDataTimer.Stop();
+
+                returnValue = await WriteFinish(WriterResult, inTransform);
                 if (returnValue.Success == false)
                 {
                     WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
                     WriterResult.Message = returnValue.Message;
-                    OnStatusUpdate?.Invoke(WriterResult);
                     return new ReturnValue(false, returnValue.Message, null);
                 }
 
                 WriterResult.RunStatus = TransformWriterResult.ERunStatus.Finished;
-                OnStatusUpdate?.Invoke(WriterResult);
 
                 return new ReturnValue(true);
             }
@@ -148,6 +133,8 @@ namespace dexih.transforms
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
             var returnValue = await InTransform.Open(null);
+            if (!returnValue.Success)
+                return returnValue;
 
             OperationColumnIndex = InTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
 
@@ -184,6 +171,9 @@ namespace dexih.transforms
 
             returnValue = await TargetConnection.DataWriterStart(TargetTable);
 
+            WriteDataTimer = new Stopwatch();
+            ProcessingDataTimer = Stopwatch.StartNew();
+
             //await InTransform.Open();
 
             WriteOpen = true;
@@ -192,7 +182,7 @@ namespace dexih.transforms
         }
 
 
-        public async Task<ReturnValue> WriteRecord(Transform reader)
+        public async Task<ReturnValue> WriteRecord(TransformWriterResult writerResult, Transform reader)
         {
             if (WriteOpen == false)
                 return new ReturnValue(false, "Cannot write records as the WriteStart has not been called.", null);
@@ -226,16 +216,19 @@ namespace dexih.transforms
             {
                 case 'C':
                     CreateRows.Add(row);
+                    writerResult.IncrementRowsCreated();
                     if (CreateRows.Count >= CommitSize)
                         return await doCreates();
                     break;
                 case 'U':
                     UpdateRows.Add(row);
+                    writerResult.IncrementRowsUpdated();
                     if (UpdateRows.Count >= CommitSize)
                         return await doUpdate();
                     break;
                 case 'D':
                     DeleteRows.Add(row);
+                    writerResult.IncrementRowsDeleted();
                     if (DeleteRows.Count >= CommitSize)
                         return await doDelete();
                     break;
@@ -244,12 +237,17 @@ namespace dexih.transforms
                     if (RejectRows.Count >= CommitSize)
                         return await doReject();
                     break;
+                case 'T':
+                    var truncateResult = await TargetConnection.TruncateTable(TargetTable, CancelToken);
+                    if (!truncateResult.Success)
+                        return truncateResult;
+                    break;
             }
 
             return new ReturnValue(true);
         }
 
-        public async Task<ReturnValue> WriteFinish()
+        public async Task<ReturnValue> WriteFinish(TransformWriterResult writerResult, Transform reader)
         {
             WriteOpen = false;
 
@@ -293,6 +291,40 @@ namespace dexih.transforms
             if (RejectRecordsTask != null && !RejectRecordsTask.Result.Success)
                 return RejectRecordsTask.Result;
 
+            //update the statistics.
+            writerResult.RowsFiltered = reader.TotalRowsFiltered;
+            writerResult.RowsSorted = reader.TotalRowsSorted;
+            writerResult.RowsRejected = reader.TotalRowsRejected;
+            writerResult.RowsPreserved = reader.TotalRowsPreserved;
+            writerResult.RowsIgnored = reader.TotalRowsIgnored;
+            writerResult.RowsReadPrimary = reader.TotalRowsReadPrimary;
+            writerResult.RowsReadReference = reader.TotalRowsReadReference;
+
+            //calculate the throughput figures
+            long rowsWritten = writerResult.RowsTotal - writerResult.RowsIgnored;
+            if (WriteDataTimer.ElapsedMilliseconds == 0)
+                writerResult.WriteThroughput = 0;
+            else
+                writerResult.WriteThroughput = (Decimal)rowsWritten / ((decimal)WriteDataTimer.ElapsedMilliseconds / 1000);
+
+            //get read times for base connections.
+            int recordsRead = 0; long elapsedMilliseconds = 0;
+            reader.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
+            if (elapsedMilliseconds == 0)
+                writerResult.ReadThroughput = 0;
+            else
+                writerResult.ReadThroughput = (Decimal)recordsRead / ((decimal)elapsedMilliseconds / 1000);
+
+            //calculate the overall processing througput 
+            ProcessingDataTimer.Stop();
+            if (ProcessingDataTimer.ElapsedMilliseconds == 0)
+                writerResult.ProcessingThroughput = 0;
+            else
+                writerResult.ProcessingThroughput = (Decimal)writerResult.RowsTotal / ((decimal)ProcessingDataTimer.ElapsedMilliseconds / 1000);
+
+            writerResult.EndTime = DateTime.Now;
+            writerResult.MaxIncrementalValue = reader.GetMaxIncrementalValue();
+
             var returnValue2 = await TargetConnection.DataWriterFinish(TargetTable);
 
             return new ReturnValue(true);
@@ -309,7 +341,10 @@ namespace dexih.transforms
 
             Table createTable = new Table(TargetTable.TableName, WriteColumns, CreateRows);
             var createReader = new ReaderMemory(createTable);
+
+            WriteDataTimer.Start();
             CreateRecordsTask = TargetConnection.ExecuteInsertBulk(TargetTable, createReader, CancelToken);  //this has no await to ensure processing continues.
+            WriteDataTimer.Stop();
 
             CreateRows = new TableCache();
             return new ReturnValue(true);
@@ -344,7 +379,9 @@ namespace dexih.transforms
                 updateQueries.Add(updateQuery);
             }
 
+            WriteDataTimer.Start();
             UpdateRecordsTask = TargetConnection.ExecuteUpdate(TargetTable, updateQueries, CancelToken);  //this has no await to ensure processing continues.
+            WriteDataTimer.Stop();
 
             UpdateRows = new TableCache();
 
@@ -388,7 +425,9 @@ namespace dexih.transforms
                 deleteQueries.Add(deleteQuery);
             }
 
+            WriteDataTimer.Start();
             DeleteRecordsTask = TargetConnection.ExecuteDelete(TargetTable, deleteQueries, CancelToken);  //this has no await to ensure processing continues.
+            WriteDataTimer.Stop();
 
             DeleteRows = new TableCache();
 
@@ -408,7 +447,10 @@ namespace dexih.transforms
             Table createTable = new Table(RejectTable.TableName, WriteColumns, RejectRows);
 
             var createReader = new ReaderMemory(createTable);
+
+            WriteDataTimer.Start();
             RejectRecordsTask = TargetConnection.ExecuteInsertBulk(createTable, createReader, CancelToken);  //this has no await to ensure processing continues.
+            WriteDataTimer.Stop();
 
             return new ReturnValue(true);
         }

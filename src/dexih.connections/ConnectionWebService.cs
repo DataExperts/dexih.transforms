@@ -28,6 +28,11 @@ namespace dexih.connections
         public override bool AllowNtAuth => true;
         public override bool AllowUserPass => true;
         public override bool CanBulkLoad => false;
+        public override bool CanSort => false;
+        public override bool CanFilter => false;
+        public override bool CanAggregate => false;
+
+
         public override string DatabaseTypeName => "SOAP/Xml Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;
 

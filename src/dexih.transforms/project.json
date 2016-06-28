@@ -1,5 +1,5 @@
 {
-  "version": "0.1.40",
+  "version": "0.1.55",
   "title": "Data Experts Group - Transforms Library",
   "description": "This library enables advanced data transformation and analytics.  See the project url for more details.",
   "authors": [ "Gary Holland" ],
@@ -16,9 +16,9 @@
   },
   "frameworks": {
     "net451": { },
-    "netstandard1.5": {
+    "netstandard1.6": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-24027"
+        "NETStandard.Library": "1.6.0"
       },
       "imports": [
         "portable-net45+wp80+win8+wpa81+dnxcore50",

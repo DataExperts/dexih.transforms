@@ -24,15 +24,21 @@ namespace dexih.connections.test
         {
             string database = "Test-" + Guid.NewGuid().ToString();
             ConnectionSqlite connection = GetConnection();
-             CommonTests.UnitTests(connection, database);
+             new UnitTests().Unit(connection, database);
+        }
+
+        [Fact]
+        public void TestSqlite_TransformTests()
+        {
+            string database = "Test-" + Guid.NewGuid().ToString();
+
+            new TransformTests().Transform(GetConnection(), database);
         }
 
         [Fact]
         public void TestSqlite_PerformanceTests()
         {
-            string database = "Test-" + Guid.NewGuid().ToString();
-
-            CommonTests.PerformanceTests(GetConnection(), database);
+            new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 10000);
         }
     }
 }

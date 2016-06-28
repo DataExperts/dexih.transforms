@@ -143,7 +143,8 @@ namespace dexih.connections
 
                 //Add the primary key
                 TableColumn key = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
-                createSql.Append("ALTER TABLE " + AddDelimiter(table.TableName) + " ADD CONSTRAINT [PK_" + AddEscape(table.TableName) + "] PRIMARY KEY CLUSTERED ([" + AddEscape(key.ColumnName) + "])");
+                if(key!= null)
+                    createSql.Append("ALTER TABLE " + AddDelimiter(table.TableName) + " ADD CONSTRAINT [PK_" + AddEscape(table.TableName) + "] PRIMARY KEY CLUSTERED ([" + AddEscape(key.ColumnName) + "])");
 
                 var cmd = connectionResult.Value.CreateCommand();
                 cmd.CommandText = createSql.ToString();

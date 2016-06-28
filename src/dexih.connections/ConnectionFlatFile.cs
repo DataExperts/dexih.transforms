@@ -36,6 +36,11 @@ namespace dexih.connections
         public override bool AllowNtAuth => false;
         public override bool AllowUserPass => true;
         public override bool CanBulkLoad => true;
+        public override bool CanSort => false;
+
+        public override bool CanFilter => false;
+        public override bool CanAggregate => false;
+
         public override string DatabaseTypeName => "Flat Files";
         public override ECategory DatabaseCategory => ECategory.File;
 

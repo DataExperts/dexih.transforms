@@ -1,5 +1,5 @@
 {
-  "version": "0.1.40",
+  "version": "0.1.55",
   "title": "Data Experts Group - Functions Library",
   "description": "This is a support library containing helpers and functions for the transforms packages.",
   "authors": [ "Gary Holland" ],
@@ -12,7 +12,7 @@
   },
 
   "dependencies": {
-    "Newtonsoft.Json": "8.0.3"
+    "Newtonsoft.Json": "9.0.1"
   },
 
   "frameworks": {
@@ -22,40 +22,40 @@
         "System.Xml": "4.0.0.0"
       },
       "dependencies": {
-        "Microsoft.CodeAnalysis.Common": "1.2.2",
-        "Microsoft.CodeAnalysis.CSharp": "1.2.2",
+        "Microsoft.CodeAnalysis.Common": "1.3.0",
+        "Microsoft.CodeAnalysis.CSharp": "1.3.0",
         "System.Threading.Tasks": "4.0.0"
       }
     },
-    "netstandard1.5": {
+    "netstandard1.6": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-24027",
-        "System.Data.Common": "4.0.1-rc2-24027",
-        "System.Text.RegularExpressions": "4.0.12-rc2-24027",
-        "System.Reflection.TypeExtensions": "4.1.0-rc2-24027",
-        "System.Net.Security": "4.0.0-rc2-24027",
-        "System.Xml.XPath.XDocument": "4.0.1-rc2-24027",
-        "System.Xml.XPath": "4.0.1-rc2-24027",
-        "System.Runtime.Loader": "4.0.0-rc2-24027",
-        "System.Collections.NonGeneric": "4.0.1-rc2-24027",
-        "System.Threading.Thread": "4.0.0-rc2-24027",
-        "Microsoft.CodeAnalysis.Common": "1.3.0-beta1-20160429-01",
-        "Microsoft.CodeAnalysis.CSharp": "1.3.0-beta1-20160429-01"
+        "NETStandard.Library": "1.6.0",
+        "Microsoft.CodeAnalysis.Common": "1.3.0",
+        "Microsoft.CodeAnalysis.CSharp": "1.3.0",
+        "System.Data.Common": "4.1.0",
+        "System.Text.RegularExpressions": "4.1.0",
+        "System.Reflection.TypeExtensions": "4.1.0",
+        "System.Net.Security": "4.0.0",
+        "System.Xml.XPath.XDocument": "4.0.1",
+        "System.Xml.XPath": "4.0.1",
+        "System.Runtime.Loader": "4.0.0",
+        "System.Collections.NonGeneric": "4.0.1",
+        "System.Threading.Thread": "4.0.0"
       },
       "imports": [
         "portable-net45+wp80+win8+wpa81+dnxcore50",
         "portable-net451+win8"
       ]
     }
-  },
-  "scripts": {
-    "prebuild": [
-      "dotnet restore"
-    ],
-    "postcompile": [
-      "dotnet pack --no-build --configuration Debug -o ../../../packages"
-    ]
   }
+  //"scripts": {
+  //  "prebuild": [
+  //    "dotnet restore"
+  //  ],
+  //  "postcompile": [
+  //    "dotnet pack --no-build --configuration Debug -o ../../../packages"
+  //  ]
+  //}
 
 }
   

@@ -22,15 +22,13 @@ namespace dexih.connections
 
         CloudTable _tableReference;
         private int _currentReadRow;
-        string[] _outputFields;
 
         private ConnectionAzure _connection;
-        private Table _table;
 
         public ReaderAzure(Connection connection, Table table)
         {
             _connection = (ConnectionAzure)connection;
-            _table = table;
+            CacheTable = table;
         }
 
         public override async Task<ReturnValue> Open(SelectQuery query)
@@ -41,12 +39,20 @@ namespace dexih.connections
             }
 
             CloudTableClient tableClient = _connection.GetCloudTableClient();
-            _tableReference = tableClient.GetTableReference(_table.TableName);
+            _tableReference = tableClient.GetTableReference(CacheTable.TableName);
 
             _tableQuery = new TableQuery<DynamicTableEntity>().Take(10);
-            _tableQuery.SelectColumns = query.Columns.Select(c => c.Column).ToArray();
-            _tableQuery.FilterString = _connection.BuildFilterString(query.Filters);
-            _tableQuery.TakeCount = 1000;
+
+            if (query?.Columns?.Count > 0)
+                _tableQuery.SelectColumns = query.Columns.Select(c => c.Column).ToArray();
+            else
+                _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => c.ColumnName).ToArray();
+
+            if (query?.Filters != null)
+                _tableQuery.FilterString = _connection.BuildFilterString(query.Filters);
+
+            if(query?.Rows > 0)
+                _tableQuery.TakeCount = query.Rows;
 
             try
             {
@@ -54,7 +60,7 @@ namespace dexih.connections
             }
             catch (StorageException ex)
             {
-                string message = "Error reading Azure Storage table: " + _table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
+                string message = "Error reading Azure Storage table: " + CacheTable.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
                 return new ReturnValue(false, message, ex);
             }
 
@@ -62,7 +68,6 @@ namespace dexih.connections
 
             if (_tableResult != null && _tableResult.Any())
             {
-                _outputFields = _table.Columns.Select(c => c.ColumnName).ToArray();
                 return new ReturnValue(true);
             }
             else
@@ -121,22 +126,27 @@ namespace dexih.connections
 
         private object[] GetRow(DynamicTableEntity currentEntity)
         {
-            object[] row = new object[_outputFields.Length];
+            object[] row = new object[CacheTable.Columns.Count];
 
-            row[Array.IndexOf(_outputFields, "partitionKey")] = currentEntity.PartitionKey;
-            row[Array.IndexOf(_outputFields, "rowKey")] = currentEntity.RowKey;
-            row[Array.IndexOf(_outputFields, "Timestamp")] = currentEntity.Timestamp.ToString();
+            int partitionKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
+            if(partitionKeyOrdinal >= 0)
+                row[partitionKeyOrdinal] = currentEntity.PartitionKey;
 
-            foreach (var value in _tableResult.ElementAt(_currentReadRow).Properties)
+            int rowKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            if (rowKeyOrdinal >= 0)
+                row[rowKeyOrdinal] = currentEntity.RowKey;
+
+            int timestampOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.TimeStamp);
+            if (timestampOrdinal >= 0)
+                row[timestampOrdinal] = currentEntity.Timestamp;
+
+            foreach (var value in currentEntity.Properties)
             {
-                if (value.Key != "rowKey" && value.Key != "partitionKey" && value.Key != "Timestamp")
-                {
-                    object returnValue = value.Value.PropertyAsObject;
-                    if (returnValue == null)
-                        row[Array.IndexOf(_outputFields, value.Key)] = DBNull.Value;
-                    else
-                        row[Array.IndexOf(_outputFields, value.Key)] = returnValue;
-                }
+                object returnValue = value.Value.PropertyAsObject;
+                if (returnValue == null)
+                    row[CacheTable.GetOrdinal(value.Key)] = DBNull.Value;
+                else
+                    row[CacheTable.GetOrdinal(value.Key)] = _connection.ConvertEntityProperty(CacheTable[value.Key].DataType, returnValue);
             }
 
             return row;
@@ -154,11 +164,11 @@ namespace dexih.connections
             try
             {
                 CloudTableClient tableClient = _connection.GetCloudTableClient();
-                CloudTable cTable = tableClient.GetTableReference(_table.TableName);
+                CloudTable cTable = tableClient.GetTableReference(CacheTable.TableName);
 
                 //Read the key fields from the table
                 TableQuery tableQuery = new TableQuery();
-                tableQuery.SelectColumns = _table.Columns.Select(c=>c.ColumnName).ToArray();
+                tableQuery.SelectColumns = CacheTable.Columns.Select(c=>c.ColumnName).ToArray();
                 tableQuery.FilterString = _connection.BuildFilterString(filters);
                 tableQuery.Take(1);
 

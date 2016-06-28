@@ -26,6 +26,11 @@ namespace dexih.transforms
 
         public override string ServerHelp => "";
 
+        public override bool CanSort => false;
+
+        public override bool CanFilter => false;
+        public override bool CanAggregate => false;
+
         public override Task<ReturnValue> AddMandatoryColumns(Table table, int position) => Task.Run(() => new ReturnValue(true));
 
         public override Task<ReturnValue> CreateDatabase(string DatabaseName) => Task.Run(() => new ReturnValue(true));

@@ -12,8 +12,10 @@ namespace dexih.transforms
     {
         #region Events
         public delegate void ProgressUpdate(TransformWriterResult transformWriterResult);
-        public event ProgressUpdate OnProgressUpdate;
+        public delegate void StatusUpdate(TransformWriterResult transformWriterResult);
 
+        public event ProgressUpdate OnProgressUpdate;
+        public event StatusUpdate OnStatusUpdate;
         #endregion
 
         public TransformWriterResult()
@@ -44,6 +46,18 @@ namespace dexih.transforms
         public Int64 RowsPreserved { get; set; }
         public Int64 RowsIgnored { get; set; }
         public Int64 RowsRejected { get; set; }
+        public Int64 RowsFiltered { get; set; }
+        public Int64 RowsSorted { get; set; }
+        public Int64 RowsReadPrimary { get; set; }
+        public Int64 RowsReadReference { get; set; }
+
+        public decimal? ReadThroughput { get; set; }
+        public decimal? WriteThroughput { get; set; }
+        public decimal? ProcessingThroughput { get; set; }
+
+        public object MaxIncrementalValue { get; set; }
+
+
         public string Message { get; set; }
         public DateTime InitialiseTime { get; set; }
         public DateTime? StartTime { get; set; }
@@ -51,11 +65,29 @@ namespace dexih.transforms
         public DateTime LastUpdate { get; set; }
         private CancellationTokenSource CancelTokenSource { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public ERunStatus RunStatus { get; set; }
-        public bool IsRunning { get; set; } = false;
+        private ERunStatus _RunStatus;
 
-        public object MaxIncrementalValue { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ERunStatus RunStatus {
+            get {
+                return _RunStatus;
+            }
+            set {
+                LastUpdate = DateTime.Now;
+                if (_RunStatus != value)
+                {
+                    _RunStatus = value;
+                    OnStatusUpdate?.Invoke(this);
+                }
+            }
+        }
+        public bool IsRunning
+        {
+            get
+            {
+                return RunStatus == ERunStatus.Running || RunStatus == ERunStatus.RunningErrors || RunStatus == ERunStatus.Initialised || RunStatus == ERunStatus.Started;
+            }
+        }
 
         private int _progressCounter;
 
@@ -71,27 +103,9 @@ namespace dexih.transforms
             IncrementAll(value);
         }
 
-        public void IncrementRowsPreserved(int value = 1)
-        {
-            RowsUpdated += value;
-            IncrementAll(value);
-        }
-
         public void IncrementRowsDeleted(int value = 1)
         {
             RowsDeleted += value;
-            IncrementAll(value);
-        }
-
-        public void IncrementRowsIgnored(int value = 1)
-        {
-            RowsIgnored += value;
-            IncrementAll(value);
-        }
-
-        public void IncrementRowsRejected(int value = 1)
-        {
-            RowsRejected += value;
             IncrementAll(value);
         }
 

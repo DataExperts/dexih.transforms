@@ -94,6 +94,9 @@ namespace dexih.transforms
                 }
 
                 if (showRecord) break;
+
+                TransformRowsFiltered += 1;
+
             } while (PrimaryTransform.Read());
 
             object[] newRow;

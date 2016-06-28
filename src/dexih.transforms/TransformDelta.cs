@@ -43,6 +43,7 @@ namespace dexih.transforms
         }
 
         bool _firstRead;
+        bool _truncateComplete;
         bool _targetOpen;
         bool _primaryOpen;
 
@@ -69,12 +70,6 @@ namespace dexih.transforms
         private object[] _preserveRow { get; set; }
         private object[] _nextPrimaryRow { get; set; } 
 
-        public Int64 RowsCreated { get; protected set; }
-        public Int64 RowsUpdated { get; protected set; }
-        public Int64 RowsDeleted { get; protected set; }
-        public Int64 RowsPreserved { get; protected set; }
-        public Int64 RowsIgnored { get; protected set; }
-
         DateTime currentDateTime;
 
 
@@ -96,6 +91,7 @@ namespace dexih.transforms
             SetAuditColumns();
 
             _firstRead = true;
+            _truncateComplete = false;
             _primaryOpen = true;
             _targetOpen = true;
 
@@ -110,13 +106,6 @@ namespace dexih.transforms
 
             //set surrogate key to the key field.  This will indicate that the surrogate key should be used when update/deleting records.
             CacheTable.KeyFields = new List<string>() { colSurrogateKey.ColumnName };
-
-            //reset the statistics.
-            RowsCreated = 0;
-            RowsUpdated = 0;
-            RowsDeleted = 0;
-            RowsPreserved = 0;
-            RowsIgnored = 0;
 
             return true;
         }
@@ -180,6 +169,16 @@ namespace dexih.transforms
             object[] newRow = null;
             currentDateTime = DateTime.Now; //this is created here an ensure all datetime records in the row match exactly.
 
+            //if the delta is set to reload.  Set the first row as an operation T="truncate table"
+            if (DeltaType == EUpdateStrategy.Reload && _truncateComplete == false)
+            {
+                newRow = new object[CacheTable.Columns.Count];
+                newRow[0] = 'T';
+
+                _truncateComplete = true;
+                return new ReturnValue<object[]>(true, newRow);
+            }
+
             if (_firstRead)
             {
                 _firstRead = false;
@@ -209,15 +208,6 @@ namespace dexih.transforms
                 ReferenceTransform.Open(query).Wait();
 
                 _targetOpen = ReferenceRead();
-
-                //if the delta is set to reload.  Set the first row as an operation T="truncate table"
-                if (DeltaType == EUpdateStrategy.Reload)
-                {
-                    newRow = new object[CacheTable.Columns.Count];
-                    newRow[0] = 'T';
-
-                    return new ReturnValue<object[]>(true, newRow);
-                }
             }
 
             //if there are no updates. logic is simple, just push the source records through to the target.
@@ -347,7 +337,7 @@ namespace dexih.transforms
                     else
                     {
                         //if we have a full record match, then the record is to be skipped, and the next record read.
-                        RowsIgnored++;
+                        TransformRowsIgnored++;
                         _primaryOpen = PrimaryTransform.Read();
                         _targetOpen = ReferenceRead();
                         continue; //continue the loop
@@ -363,12 +353,11 @@ namespace dexih.transforms
                         //if the previous row is a match, and the tracking field values are different, then either delete or preserve it.
                         if (doPreserve)
                         {
-                            RowsPreserved++;
+                            TransformRowsPreserved++;
                             newRow[0] = 'U';
                         }
                         else
                         {
-                            RowsDeleted++;
                             newRow[0] = 'D';
                         }
 
@@ -446,9 +435,7 @@ namespace dexih.transforms
             newRow[0] = doPreserve ? 'U' : 'D';
 
             if (doPreserve)
-                RowsPreserved++;
-            else
-                RowsDeleted++;
+                TransformRowsPreserved++;
 
             for (int i = 1; i < CacheTable.Columns.Count; i++)
             {
@@ -485,13 +472,6 @@ namespace dexih.transforms
             object[] newRow = new object[CacheTable.Columns.Count];
 
             newRow[0] = operation;
-
-            switch (operation)
-            {
-                case 'C': RowsCreated++; break;
-                case 'U': RowsUpdated++; break;
-                case 'D': RowsDeleted++; break;
-            }
 
             for (int targetOrdinal = 1; targetOrdinal < CacheTable.Columns.Count; targetOrdinal++)
             {
@@ -616,13 +596,6 @@ namespace dexih.transforms
             _firstRead = true;
             _targetOpen = true;
             _primaryOpen = true;
-
-            //reset the statistics.
-            RowsCreated = 0;
-            RowsUpdated = 0;
-            RowsDeleted = 0;
-            RowsPreserved = 0;
-            RowsIgnored = 0;
 
             return new ReturnValue(true);
         }

@@ -78,10 +78,11 @@ namespace dexih.transforms
                     {
                         sortFields[i] = PrimaryTransform[SortFields[i].Column];
                     }
-                    sortFields[sortFields.Length-1] = rowcount; //add row count as last key field to ensure match rows remain in original order.
+                    sortFields[sortFields.Length-1] = rowcount; //add row count as last key field to ensure matching rows remain in original order.
 
                     _sortedDictionary.Add(sortFields, values);
                     rowcount++;
+                    TransformRowsSorted++;
                 }
                 _firstRead = false;
                 if (rowcount == 0)

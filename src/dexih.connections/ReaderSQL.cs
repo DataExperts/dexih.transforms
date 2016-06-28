@@ -65,8 +65,16 @@ namespace dexih.connections
             if (!_sqlReader.Read())
                 return new ReturnValue<object[]>(false, null);
 
+            //load the new row up, converting datatypes where neccessary.
             object[] row = new object[CacheTable.Columns.Count];
-            _sqlReader.GetValues(row);
+            for (int i = 0; i < _sqlReader.FieldCount; i++)
+            {
+                var returnValue = DataType.TryParse(CacheTable.Columns[i].DataType, _sqlReader[i]);
+                if (!returnValue.Success)
+                    return new ReturnValue<object[]>(returnValue);
+
+                row[i] = returnValue.Value;
+            }
             return new ReturnValue<object[]>(true, row);
         }
 

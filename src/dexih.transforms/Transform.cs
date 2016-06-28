@@ -67,6 +67,46 @@ namespace dexih.transforms
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
 
+        //indicates if the transform is on the primary stream.
+        public bool IsPrimaryTransform { get; set; } = true;
+
+        //indicates if the transform is a base reader.
+        public bool IsReader { get; set; } = true;
+
+        #endregion
+
+        #region Statistics
+
+        //statistics for this transform
+        public Int64 TransformRowsSorted { get; protected set; }
+        public Int64 TransformRowsPreserved { get; protected set; }
+        public Int64 TransformRowsIgnored { get; protected set; }
+        public Int64 TransformRowsRejected { get; protected set; }
+        public Int64 TransformRowsFiltered { get; protected set; }
+        public Int64 TransformRowsReadPrimary { get; protected set; }
+        public Int64 TransformRowsReadReference { get; protected set; }
+
+        //statistics for all child transforms.
+        public Int64 TotalRowsSorted { get { return TransformRowsSorted + PrimaryTransform?.TransformRowsSorted ?? 0 + ReferenceTransform?.TransformRowsSorted ?? 0; } }
+        public Int64 TotalRowsPreserved { get { return TransformRowsPreserved + PrimaryTransform?.TransformRowsPreserved ?? 0 + ReferenceTransform?.TransformRowsPreserved ?? 0; } }
+        public Int64 TotalRowsIgnored { get { return TransformRowsIgnored + PrimaryTransform?.TransformRowsIgnored ?? 0 + ReferenceTransform?.TransformRowsIgnored ?? 0; } }
+        public Int64 TotalRowsRejected { get { return TransformRowsRejected + PrimaryTransform?.TransformRowsRejected ?? 0 + ReferenceTransform?.TransformRowsRejected ?? 0; } }
+        public Int64 TotalRowsFiltered { get { return TransformRowsFiltered + PrimaryTransform?.TransformRowsFiltered ?? 0 + ReferenceTransform?.TransformRowsFiltered ?? 0; } }
+        public Int64 TotalRowsReadPrimary { get { return TransformRowsReadPrimary + PrimaryTransform?.TransformRowsReadPrimary ?? 0; } }
+        public Int64 TotalRowsReadReference { get { return TransformRowsReadReference + ReferenceTransform?.TransformRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0; } }
+
+        private object MaxIncrementalValue = null;
+        private int IncrementalColumnIndex = -1;
+        private DataType.ETypeCode IncrementalColumnType;
+
+        public object GetMaxIncrementalValue()
+        {
+            if (IsReader)
+                return MaxIncrementalValue;
+            else
+                return PrimaryTransform.GetMaxIncrementalValue();
+        }
+
         #endregion
 
         #region Virtual Properties
@@ -88,19 +128,6 @@ namespace dexih.transforms
         #region Initialization 
 
         /// <summary>
-        /// For readers that are a start point.  This passes the connection and reference transform.
-        /// </summary>
-        /// <returns></returns>
-        public virtual bool SetConnection(Connection connection, Table table, Transform referenceTransform = null)
-        {
-            ReferenceConnection = connection;
-            ReferenceTransform = referenceTransform;
-            CacheTable = table;
-
-            return true;
-        }
-
-        /// <summary>
         /// Sets the data readers for the transform.  Ensure the transform properties have been set prior to running this.
         /// </summary>
         /// <param name="primaryTransform">The primary input transform</param>
@@ -108,7 +135,6 @@ namespace dexih.transforms
         /// <returns></returns>
         public virtual bool SetInTransform(Transform primaryTransform, Transform referenceTransform = null)
         {
-
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
             {
@@ -153,6 +179,15 @@ namespace dexih.transforms
             }
             InitializeOutputFields();
             Reset();
+
+            //IsReader indicates if this is a base transform.
+            IsReader = primaryTransform == null ? true : false;
+            if (primaryTransform != null)
+                primaryTransform.IsPrimaryTransform = true;
+            if (referenceTransform != null)
+                referenceTransform.IsPrimaryTransform = false;
+
+           
             return true;
         }
 
@@ -309,7 +344,7 @@ namespace dexih.transforms
         {
             PrimaryTransform?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
 
-            PrimaryTransform.ReferenceTransform?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
+            ReferenceTransform?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
         }
 
         /// <summary>
@@ -353,6 +388,15 @@ namespace dexih.transforms
                 isResetting = true;
 
                 ReturnValue returnValue;
+
+                //reset stats.
+                TransformRowsSorted = 0;
+                TransformRowsFiltered = 0;
+                TransformRowsIgnored = 0;
+                TransformRowsPreserved = 0;
+                TransformRowsReadPrimary = 0;
+                TransformRowsReadReference = 0;
+                TransformRowsRejected = 0;
 
                 returnValue = ResetTransform();
 
@@ -487,10 +531,27 @@ namespace dexih.transforms
 
         #region DbDataReader Implementation
 
+        bool _isFirstRead = true;
+
         public override bool Read()
         {
             //starts  a timer that can be used to measure downstream transform and database performance.
             TransformTimer.Start();
+
+            if(_isFirstRead)
+            {
+                //get the incremental column (if it exists)
+                var incrementalCol = CacheTable.Columns.SingleOrDefault(c => c.IsIncrementalUpdate == true);
+                if (incrementalCol != null)
+                {
+                    IncrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol.ColumnName);
+                    IncrementalColumnType = incrementalCol.DataType;
+                }
+                else
+                    IncrementalColumnIndex = -1;
+
+                _isFirstRead = false;
+            }
 
             CurrentRowNumber++;
 
@@ -522,8 +583,23 @@ namespace dexih.transforms
                 CurrentRow = returnValue.Value;
             }
 
+            if(IsReader && IsPrimaryTransform && IncrementalColumnIndex != -1)
+            {
+                var compresult = DataType.Compare(IncrementalColumnType, CurrentRow[IncrementalColumnIndex], MaxIncrementalValue);
+                if (!compresult.Success )
+                    throw new Exception("There was an error comparing the incremental update column.  ");
+
+                if (compresult.Value == functions.DataType.ECompareResult.Greater)
+                    MaxIncrementalValue = CurrentRow[IncrementalColumnIndex];
+            }
+
             if (returnValue.Success == false)
+            {
+                if (returnValue.Message != "")
+                    throw new Exception("The following error was enountered read rows: " + returnValue.Message);
+
                 IsReaderFinished = true;
+            }
 
             //add the row to the cache
             if (returnValue.Success == true && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))

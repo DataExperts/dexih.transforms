@@ -147,6 +147,7 @@ namespace dexih.transforms
                                 rejectRow = new object[CacheTable.Columns.Count];
                                 passRow.CopyTo(rejectRow, 0);
                                 rejectRow[operationOrdinal] = 'R';
+                                TransformRowsRejected++;
                             }
 
                             //add a reject reason if it exists

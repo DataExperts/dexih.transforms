@@ -78,7 +78,7 @@ namespace dexih.functions
                 case ETypeCode.Time:
                     return TimeSpan.FromDays(1) - TimeSpan.FromMilliseconds(1);
                 case ETypeCode.Guid:
-                    return Guid.NewGuid();
+                    return Guid.Parse("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
                 case ETypeCode.Unknown:
                     return "";
                 default:
@@ -121,7 +121,7 @@ namespace dexih.functions
                 case ETypeCode.Time:
                     return TimeSpan.FromDays(0);
                 case ETypeCode.Guid:
-                    return Guid.NewGuid();
+                    return Guid.Parse("00000000-0000-0000-0000-000000000000");
                 case ETypeCode.Unknown:
                     return "";
                 default:
@@ -150,6 +150,7 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                 case ETypeCode.Decimal:
                 case ETypeCode.Double:
                 case ETypeCode.Single: return EBasicType.Numeric;
+                case ETypeCode.Guid:
                 case ETypeCode.String: return EBasicType.String;
                 case ETypeCode.Boolean: return EBasicType.Boolean;
                 case ETypeCode.DateTime: return EBasicType.Date;
@@ -195,6 +196,8 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                 return ETypeCode.DateTime;
             if (dataType == typeof(TimeSpan))
                 return ETypeCode.Time;
+            if (dataType == typeof(Guid))
+                return ETypeCode.Guid;
 
             return ETypeCode.Unknown;
         }
@@ -233,6 +236,8 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                     return typeof(DateTime);
                 case ETypeCode.Time: 
                     return typeof(TimeSpan);
+                case ETypeCode.Guid:
+                    return typeof(Guid);
                 default:
                     return typeof(object);
             }
@@ -390,11 +395,26 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                         case ETypeCode.Int64:
                             result = Convert.ToInt64(inputValue);
                             return new ReturnValue<object>(true, result);
+                        case ETypeCode.UInt16:
+                            result = Convert.ToUInt16(inputValue);
+                            return new ReturnValue<object>(true, result);
+                        case ETypeCode.UInt32:
+                            result = Convert.ToUInt32(inputValue);
+                            return new ReturnValue<object>(true, result);
+                        case ETypeCode.UInt64:
+                            result = Convert.ToUInt64(inputValue);
+                            return new ReturnValue<object>(true, result);
                         case ETypeCode.Double:
                             result = Convert.ToDouble(inputValue);
                             return new ReturnValue<object>(true, result);
                         case ETypeCode.Decimal:
                             result = Convert.ToDecimal(inputValue);
+                            return new ReturnValue<object>(true, result);
+                        case ETypeCode.SByte:
+                            result = Convert.ToSByte(inputValue);
+                            return new ReturnValue<object>(true, result);
+                        case ETypeCode.Single:
+                            result = Convert.ToSingle(inputValue);
                             return new ReturnValue<object>(true, result);
                         default:
                             string reason = "Cannot convert value " + inputValue + " from numeric to " + tryDataType;
@@ -447,11 +467,32 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                             result = int32Result;
                             break;
                         case ETypeCode.Int64:
-                            byte int64Result;
-                            returnValue = Byte.TryParse(value, out int64Result);
+                            Int64 int64Result;
+                            returnValue = Int64.TryParse(value, out int64Result);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Int64.", null);
                             result = int64Result;
+                            break;
+                        case ETypeCode.UInt16:
+                            UInt16 uint16Result;
+                            returnValue = UInt16.TryParse(value, out uint16Result);
+                            if (returnValue == false)
+                                return new ReturnValue<object>(false, "The value " + value + " could not be converted to a UInt16.", null);
+                            result = uint16Result;
+                            break;
+                        case ETypeCode.UInt32:
+                            UInt32 uint32Result;
+                            returnValue = UInt32.TryParse(value, out uint32Result);
+                            if (returnValue == false)
+                                return new ReturnValue<object>(false, "The value " + value + " could not be converted to a UInt32.", null);
+                            result = uint32Result;
+                            break;
+                        case ETypeCode.UInt64:
+                            UInt64 uint64Result;
+                            returnValue = UInt64.TryParse(value, out uint64Result);
+                            if (returnValue == false)
+                                return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Int64.", null);
+                            result = uint64Result;
                             break;
                         case ETypeCode.Double:
                             Double doubleResult;
@@ -467,8 +508,29 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Decimal.", null);
                             result = decimalResult;
                             break;
+                        case ETypeCode.Single:
+                            Single singleResult;
+                            returnValue = Single.TryParse(value, out singleResult);
+                            if (returnValue == false)
+                                return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Single.", null);
+                            result = singleResult;
+                            break;
+                        case ETypeCode.SByte:
+                            SByte sbyteResult;
+                            returnValue = SByte.TryParse(value, out sbyteResult);
+                            if (returnValue == false)
+                                return new ReturnValue<object>(false, "The value " + value + " could not be converted to a SByte.", null);
+                            result = sbyteResult;
+                            break;
                         case ETypeCode.String:
                             result = value;
+                            break;
+                        case ETypeCode.Guid:
+                            Guid guidResult;
+                            returnValue = Guid.TryParse(value, out guidResult);
+                            if (returnValue == false)
+                                return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Guid.", null);
+                            result = guidResult;
                             break;
                         case ETypeCode.Boolean:
                             Boolean booleanResult;

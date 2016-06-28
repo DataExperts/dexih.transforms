@@ -78,7 +78,6 @@ namespace dexih.transforms.tests
 
                 count++;
             }
-            Assert.Equal(10, transformDelta.RowsCreated);
             Assert.Equal(10, count);
 
             transformDelta.SetRowNumber(0);
@@ -103,7 +102,7 @@ namespace dexih.transforms.tests
                 count++;
             }
 
-            Assert.True(transformDelta.RowsIgnored == 10);
+            Assert.True(transformDelta.TotalRowsIgnored == 10);
             Assert.True(count == 0);
 
             //change 3 rows. (first, middle, last)
@@ -125,7 +124,6 @@ namespace dexih.transforms.tests
                 Assert.True((char)transformDelta["Operation"] == 'U');
             }
 
-            Assert.True(transformDelta.RowsUpdated == 3);
             Assert.True(count == 3);
 
             //delete rows from the target, which should trigger two creates.
@@ -135,13 +133,17 @@ namespace dexih.transforms.tests
             transformDelta.Reset();
 
             count = 0;
+            int rowsCreated = 0;
+            int rowsUpdated = 0;
             while (transformDelta.Read())
             {
+                rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
+                rowsUpdated += (char)transformDelta["Operation"] == 'U' ? 1 : 0;
                 count++;
             }
 
-            Assert.True(transformDelta.RowsCreated == 2);
-            Assert.True(transformDelta.RowsUpdated == 3);
+            Assert.True(rowsCreated == 2);
+            Assert.True(rowsUpdated == 3);
             Assert.True(count == 5);
 
             //delete rows from the source, which should not cause any change as delete detection is not on.
@@ -151,13 +153,17 @@ namespace dexih.transforms.tests
             transformDelta.Reset();
 
             count = 0;
+            rowsCreated = 0;
+            rowsUpdated = 0;
             while (transformDelta.Read())
             {
+                rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
+                rowsUpdated += (char)transformDelta["Operation"] == 'U' ? 1 : 0;
                 count++;
             }
 
-             Assert.True(transformDelta.RowsCreated == 1);
-            Assert.True(transformDelta.RowsUpdated == 2);
+             Assert.True(rowsCreated == 1);
+            Assert.True(rowsUpdated == 2);
             Assert.True(count == 3);
 
         }
@@ -222,13 +228,15 @@ namespace dexih.transforms.tests
             transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
             count = 0;
+            int rowsCreated = 0;
             while (transformDelta.Read())
             {
+                rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
                 count++;
             }
 
-            Assert.True(transformDelta.RowsCreated == 3);
-            Assert.True(transformDelta.RowsPreserved == 4);
+            Assert.True(rowsCreated == 3);
+            Assert.True(transformDelta.TotalRowsPreserved == 4);
             Assert.True(count == 6);
 
             //run the delta again.  this should ignore all 10 records.
@@ -244,7 +252,7 @@ namespace dexih.transforms.tests
                 count++;
             }
 
-            Assert.True(transformDelta.RowsIgnored == 10);
+            Assert.True(transformDelta.TotalRowsIgnored == 10);
             Assert.True(count == 0);
 
 
@@ -365,7 +373,7 @@ namespace dexih.transforms.tests
             {
                 count++;
             }
-            Assert.True(transformDelta.RowsCreated == 100000);
+            Assert.True(count == 100000);
 
             WriteTransformPerformance(transformDelta);
 

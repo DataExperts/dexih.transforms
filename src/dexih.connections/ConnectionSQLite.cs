@@ -25,6 +25,13 @@ namespace dexih.connections
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "SQLite";
 
+        public override object ConvertParameterType(object value)
+        {
+            if (value.GetType() == typeof(Guid) || value.GetType() == typeof(UInt64))
+                return value.ToString();
+            else
+                return value;
+        }
 
         public override async Task<ReturnValue<bool>> TableExists(Table table)
         {
@@ -177,7 +184,7 @@ namespace dexih.connections
                     sqlType = "float";
                     break;
                 case ETypeCode.UInt64:
-                    sqlType = "DECIMAL(20,0)";
+                    sqlType = "nvarchar(25)";
                     break;
                 case ETypeCode.Double:
                     sqlType = "float";
