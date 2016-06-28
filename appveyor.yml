@@ -20,6 +20,9 @@ test_script:
 - dotnet test .\test\dexih.transforms.tests
 artifacts:
   - path: artifacts\*.nupkg
+services:
+  - mssql2014
+  
 #deploy:
 # - provider: NuGet
 #   server: https://www.myget.org/F/ci/api/v2/package
