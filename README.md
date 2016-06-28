@@ -1,10 +1,15 @@
-# Data Experts Transformation Library.
-### [Data Experts Group](http://dataexpertsgroup.com)
+# Data Transformation Libraries
+[![][dex-img]][dex]
 
-## Status
+[![][build-img]][build]
+[![][nuget-img]][nuget]
 
-[![Build Status](https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true)](https://ci.appveyor.com/project/dataexperts/dexih-transforms)
-
+[build]:     https://ci.appveyor.com/project/dataexperts/dexih-transforms
+[build-img]: https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true
+[nuget]:     https://www.nuget.org/packages/dexih.transforms/
+[nuget-img]: https://badge.fury.io/nu/dexih.transforms.svg
+[dex-img]: http://dataexpertsgroup.com/img/dex_web_logo.png
+[dex]: http://dataexpertsgroup.com
 
 ## What is this?
 
@@ -18,7 +23,11 @@ The key features are:
 * Runs fast!  Can easily process 100,000's of rows per second.
 * Uses standard database classes and can be integrated with all popular databases.
 * Fully portable to any platform that supports the .NetStandard library (currently includes Windows, Mac and Linux variants).
-
+* Data profiling.
+* Manage change data capture
+* Preserve change history (i.e. slowly changing dimensions)
+* Column level valiation and rejection rules.
+* 
 This powerful library can be used as a foundation for applications such as:
 * Business Intelligence and reporting.
 * Batch processing, Data Integration or Extract Transform Load (ETL) processing.
@@ -28,11 +37,8 @@ This powerful library can be used as a foundation for applications such as:
 
 In the next few weeks we will be integrating the following capabilities into the transform processing:
 
-* Data profiling.
-* Manage change data capture
-* Preserve change history (i.e. slowly changing dimensions)
-* Column level valiation and rejection rules.
 * Logging and resiliance.
+* Additional data sources.
  
 
 ## How does it work?
@@ -63,7 +69,7 @@ public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetC
         }
     );
 
-    // Add daily medium and sum columns
+    // Add median, and sum calculation
     TransformGroup transformGroup = new TransformGroup(
         transformFilter,
         new List<ColumnPair>() //The fields to groupby
