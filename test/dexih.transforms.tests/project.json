@@ -6,10 +6,12 @@
   "dependencies": {
     "dexih.functions": "0.1.*",
     "dexih.transforms": "0.1.*",
-    "xunit": "2.1.0",
-    "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.Data.Sqlite": "1.0.0",
-    "System.Data.SqlClient": "4.1.0"
+    "System.Data.SqlClient": "4.1.0",
+
+    "xunit": "2.1.0",
+    "xunit.runner.visualstudio": "2.1.0",
+    "dotnet-test-xunit": "1.0.0-*"
   },
 
   "testRunner": "xunit",
@@ -25,9 +27,8 @@
         "System.Diagnostics.TraceSource": "4.0.0"
       },
       "imports": [
-        "portable-net45+wp80+win8+wpa81+dnxcore50",
-        "portable-net45+win8+wp8+wpa81",
-        "portable-net45+win8+wp8"
+        "dnxcore50",
+        "portable-net451+win8"
       ]
     },
     "net451": {

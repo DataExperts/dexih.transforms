@@ -7,14 +7,16 @@
 
   "dependencies": {
     "dexih.connections": "0.1.*",
-    "xunit": "2.2.0-beta1-build3239",
-    "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.Extensions.Configuration": "1.0.0",
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
-    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0"
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0",
+
+    "xunit": "2.1.0",
+    "xunit.runner.visualstudio": "2.1.0",
+    "dotnet-test-xunit": "1.0.0-*"
   },
 
   "testRunner": "xunit",
