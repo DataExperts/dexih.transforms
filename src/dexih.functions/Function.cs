@@ -26,12 +26,12 @@ namespace dexih.functions
     /// </summary>
     public class Function
     {
-        protected MethodInfo _functionMethod;
-        protected MethodInfo _resetMethod;
-        protected MethodInfo _resultMethod;
+        public MethodInfo FunctionMethod { get; set; }
+        public MethodInfo ResetMethod { get; set; }
+        public MethodInfo ResultMethod { get; set; }
+        public object ObjectReference { get; set; }
 
         object _returnValue;
-        object _objectReference;
 
         /// <summary>
         /// Invalid action when a validation function fails.  Order of these is important as determines priority(i.e. abend overrides a clean).
@@ -122,8 +122,8 @@ namespace dexih.functions
         public Function(Type targetType, string MethodName, string ResultMethodName, string ResetMethodName, string[] inputMappings, string targetColumn, string[] outputMappings)
         {
             FunctionName = MethodName;
-            _resultMethod = targetType.GetMethod(ResultMethodName);
-            _resetMethod = targetType.GetMethod(ResetMethodName);
+            ResultMethod = targetType.GetMethod(ResultMethodName);
+            ResetMethod = targetType.GetMethod(ResetMethodName);
 
             Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
         }
@@ -140,8 +140,8 @@ namespace dexih.functions
             
         {
             FunctionName = MethodName;
-            _resultMethod = Target.GetType().GetMethod(ResultMethodName);
-            _resetMethod = Target.GetType().GetMethod(ResetMethodName);
+            ResultMethod = Target.GetType().GetMethod(ResultMethodName);
+            ResetMethod = Target.GetType().GetMethod(ResetMethodName);
 
             Initialize(Target, Target.GetType().GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
         }
@@ -153,13 +153,13 @@ namespace dexih.functions
 
         private void Initialize(object Target, MethodInfo FunctionMethod, string[] inputMappings, string targetColumn, string[] outputMappings)
         {
-            _functionMethod = FunctionMethod;
-            _objectReference = Target;
+            this.FunctionMethod = FunctionMethod;
+            ObjectReference = Target;
 
             TargetColumn = targetColumn;
 
-            ReturnType = GetTypeCode(_functionMethod.ReturnType);
-            ParameterInfo[] inputParameters = _functionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
+            ReturnType = GetTypeCode(this.FunctionMethod.ReturnType);
+            ParameterInfo[] inputParameters = FunctionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
 
             if (inputMappings == null)
                 inputMappings = new string[inputParameters.Length];
@@ -197,10 +197,10 @@ namespace dexih.functions
 
             ParameterInfo[] outputParameters;
 
-            if (_resultMethod == null)
-                outputParameters = _functionMethod.GetParameters().Where(c => c.IsOut).ToArray();
+            if (ResultMethod == null)
+                outputParameters = FunctionMethod.GetParameters().Where(c => c.IsOut).ToArray();
             else
-                outputParameters = _resultMethod.GetParameters().Where(c => c.IsOut).ToArray();
+                outputParameters = ResultMethod.GetParameters().Where(c => c.IsOut).ToArray();
 
             parameterCount = 0;
             if (outputParameters.Length > 0)
@@ -306,12 +306,12 @@ namespace dexih.functions
 
         public ReturnValue<object> Invoke()
         {
-            MethodInfo mappingFunction = _functionMethod;
+            MethodInfo mappingFunction = FunctionMethod;
             try
             {
                 int inputsCount = Inputs?.Length ?? 0;
                 int outputsCount = 0;
-                if (_resultMethod == null)
+                if (ResultMethod == null)
                     outputsCount = Outputs?.Length ?? 0;
 
                 object[] parameters = new object[inputsCount + outputsCount];
@@ -348,7 +348,7 @@ namespace dexih.functions
                 int outputParameterNumber = parameterNumber;
 
                 //if there is no resultfunction, then this function will require the output parameters
-                if (_resultMethod == null)
+                if (ResultMethod == null)
                 {
                     arrayValues = null;
                     for (int i = 0; i < outputsCount; i++)
@@ -379,14 +379,14 @@ namespace dexih.functions
 
                 try
                 {
-                    _returnValue = mappingFunction.Invoke(_objectReference, parameters);
+                    _returnValue = mappingFunction.Invoke(ObjectReference, parameters);
                 }
                 catch (Exception ex)
                 {
                     throw new Exception("Error occurred running the custom function " + (FunctionName?? "") + ". The error message was: " + ex.Message + ".  Stacktrace: " + ex.StackTrace + ".  InnerException: " + ex.InnerException?.Message + ".");
                 }
 
-                if (_resultMethod == null)
+                if (ResultMethod == null)
                 {
                     int arrayNumber = 0;
                     for (int i = 0; i < outputsCount; i++)
@@ -430,7 +430,7 @@ namespace dexih.functions
         /// <returns></returns>
         public ReturnValue<object> ReturnValue(int? index = 0)
         {
-            if (_resultMethod != null)
+            if (ResultMethod != null)
             {
                 try
                 {
@@ -439,7 +439,7 @@ namespace dexih.functions
                     object[] parameters;
 
                     //if the result method has an "index" as the first parameter, then add the index
-                    if (_resultMethod.GetParameters().Count() > 0 && _resultMethod.GetParameters()[0].Name == "index")
+                    if (ResultMethod.GetParameters().Count() > 0 && ResultMethod.GetParameters()[0].Name == "index")
                     {
                         parameters = new object[outputsCount + 1];
                         parameters[0] = index;
@@ -471,7 +471,7 @@ namespace dexih.functions
                         parameters[outputsCount + indexAdjust] = arrayValues.Select(c => Convert.ChangeType(c, Type.GetType("System." + Outputs.Last().DataType)));
                     }
 
-                    _returnValue = _resultMethod.Invoke(_objectReference, parameters);
+                    _returnValue = ResultMethod.Invoke(ObjectReference, parameters);
 
                     int arrayNumber = 0;
                     for (int i = 0; i < outputsCount; i++)
@@ -509,7 +509,7 @@ namespace dexih.functions
                 //if(mappingFunction.Success == false)
                 //    return mappingFunction;
 
-                _resetMethod.Invoke(_objectReference, null);
+                ResetMethod.Invoke(ObjectReference, null);
                 return new ReturnValue(true); 
             }
             catch(Exception ex)

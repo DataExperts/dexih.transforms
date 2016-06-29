@@ -21,6 +21,12 @@ namespace dexih.connections
             Escape = DefaultEscape;
             Comment = DefaultComment;
             Headers = DefaultHeaders;
+            MissingFieldAction = DefaultMissingFieldAction;
+            ParseErrorAction = DefaultParseErrorAction;
+            Quote = DefaultQuote;
+            SkipEmptyLines = DefaultSkipEmptyLines;
+            SupportsMutiline = DefaultSupportsMutiline;
+            ValueTrimmingOptions = DefaultValueTrimmingOptions;
         }
 
         private int SubscriptionKey { get; set; }
@@ -30,6 +36,12 @@ namespace dexih.connections
         public const char DefaultEscape = '\"';
         public const char DefaultComment = '#';
         public const bool DefaultHeaders = true;
+        public const EMissingFieldAction DefaultMissingFieldAction = EMissingFieldAction.ReplaceByNull;
+        public const EParseErrorAction DefaultParseErrorAction = EParseErrorAction.ThrowException;
+        public const char DefaultQuote = '\"';
+        public const bool DefaultSkipEmptyLines = true;
+        public const bool DefaultSupportsMutiline = true;
+        public const EValueTrimmingOptions DefaultValueTrimmingOptions = EValueTrimmingOptions.All;
 
 
         public enum EParseErrorAction

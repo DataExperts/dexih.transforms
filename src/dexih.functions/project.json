@@ -1,5 +1,5 @@
 {
-  "version": "0.1.56",
+  "version": "0.1.57",
   "title": "Data Experts Group - Functions Library",
   "description": "This is a support library containing helpers and functions for the transforms packages.",
   "authors": [ "Gary Holland" ],
@@ -32,7 +32,6 @@
         "System.Net.Security": "4.0.0",
         "System.Xml.XPath.XDocument": "4.0.1",
         "System.Xml.XPath": "4.0.1",
-        "System.Runtime.Loader": "4.0.0",
         "System.Collections.NonGeneric": "4.0.1",
         "System.Threading.Thread": "4.0.0"
       },
