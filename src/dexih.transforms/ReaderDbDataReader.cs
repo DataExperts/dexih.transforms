@@ -27,46 +27,54 @@ namespace dexih.transforms
             CacheTable = new Table("InReader");
 
 #if NET451
-            DataTable schema = inReader.GetSchemaTable();
-            CacheTable.TableName = schema.Rows[0][SchemaTableColumn.BaseTableName].ToString();
+            try
+            {
 
-            foreach(DataRow row in schema.Rows)
-            {
-                var column = new TableColumn();
-                column.ColumnName = row[SchemaTableColumn.ColumnName].ToString();
-                column.DataType = DataType.GetTypeCode((Type)row[SchemaTableColumn.DataType]);
-                column.MaxLength = Convert.ToInt32(row[SchemaTableColumn.ColumnSize]);
-                column.Scale = Convert.ToInt32(row[SchemaTableColumn.NumericScale]);
-                column.Precision = Convert.ToInt32(row[SchemaTableColumn.NumericPrecision]);
+                DataTable schema = inReader.GetSchemaTable();
+                CacheTable.TableName = schema.Rows[0][SchemaTableColumn.BaseTableName].ToString();
+
+                foreach (DataRow row in schema.Rows)
+                {
+                    var column = new TableColumn();
+                    column.ColumnName = row[SchemaTableColumn.ColumnName].ToString();
+                    column.DataType = DataType.GetTypeCode((Type)row[SchemaTableColumn.DataType]);
+                    column.MaxLength = Convert.ToInt32(row[SchemaTableColumn.ColumnSize]);
+                    column.Scale = Convert.ToInt32(row[SchemaTableColumn.NumericScale]);
+                    column.Precision = Convert.ToInt32(row[SchemaTableColumn.NumericPrecision]);
+                    CacheTable.Columns.Add(column);
+                }
             }
-            for (int i = 0; i< inReader.FieldCount; i++)
+            catch (Exception)
             {
-                CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
-            }
-#else
-            //if we can't get a column schema we will have to settle for column names only
-            //if (!inReader.CanGetColumnSchema())
-            //{
                 for (int i = 0; i < inReader.FieldCount; i++)
                 {
                     CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
                 }
-            //}
-            //else
-            //{
-            //    var columnSchema = inReader.GetColumnSchema();
-            //    CacheTable.TableName = columnSchema[0].BaseTableName;
+            }
+#else
+            //if we can't get a column schema we will have to settle for column names only
+            if (!inReader.CanGetColumnSchema())
+            {
+                for (int i = 0; i < inReader.FieldCount; i++)
+                {
+                    CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
+                }
+            }
+            else
+            {
+                var columnSchema = inReader.GetColumnSchema();
+                CacheTable.TableName = columnSchema[0].BaseTableName;
 
-            //    foreach(var columnDetail in columnSchema)
-            //    {
-            //        var column = new TableColumn();
-            //        column.ColumnName = columnDetail.ColumnName;
-            //        column.DataType = DataType.GetTypeCode(columnDetail.DataType);
-            //        column.MaxLength = columnDetail.ColumnSize;
-            //        column.Scale = columnDetail.NumericScale;
-            //        column.Precision = columnDetail.NumericPrecision;
-            //    }
-            //}
+                foreach(var columnDetail in columnSchema)
+                {
+                    var column = new TableColumn();
+                    column.ColumnName = columnDetail.ColumnName;
+                    column.DataType = DataType.GetTypeCode(columnDetail.DataType);
+                    column.MaxLength = columnDetail.ColumnSize;
+                    column.Scale = columnDetail.NumericScale;
+                    column.Precision = columnDetail.NumericPrecision;
+                }
+            }
 #endif
 
             SortFields = sortFields;

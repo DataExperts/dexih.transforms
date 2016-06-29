@@ -837,12 +837,12 @@ namespace dexih.transforms
 
     public static class TransformExtensions
     {
-        public static bool CanGetColumnSchema(this DbDataReader reader)
+        public static bool CanGetColumnSchema(this Transform reader)
         {
             return true;
         }
 
-        public static ReadOnlyCollection<DbColumn> GetColumnSchema(this DbDataReader reader)
+        public static ReadOnlyCollection<DbColumn> GetColumnSchema(this Transform reader)
         {
             Transform transform = (Transform)reader;
 

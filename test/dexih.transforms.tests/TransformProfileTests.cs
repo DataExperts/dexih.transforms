@@ -91,9 +91,9 @@ namespace dexih.transforms.tests
                         break;
                     case "NullsBlanksColumn":
                         if((string)profileResults["Profile"] == "Nulls")
-                            Assert.Equal("20.00%", (string)profileResults["Result"]);
+                            Assert.Equal("20.00%", ((string)profileResults["Result"]).Replace(" %", "%"));
                         else
-                            Assert.Equal("40.00%", (string)profileResults["Result"]);
+                            Assert.Equal("40.00%", ((string)profileResults["Result"]).Replace(" %", "%"));
                         break;
                     case "MaxLengthColumn":
                         Assert.Equal("5", (string)profileResults["Result"]);
@@ -105,7 +105,7 @@ namespace dexih.transforms.tests
                         Assert.Equal("3", (string)profileResults["Result"]);
                         break;
                     case "PatternsColumn":
-                        Assert.Equal("Pattern Count=3, Most common(50.00%): 99999", (string)profileResults["Result"]);
+                        Assert.Equal("Pattern Count=3, Most common(50.00%): 99999", ((string)profileResults["Result"]).Replace(" %", "%"));
                         break;
                 }
                 count ++;
