@@ -18,7 +18,7 @@
         "System.Web.Services": "4.0.0.0"
       },
       "dependencies": {
-        "Oracle.ManagedDataAccess": "12.1.24160419"
+        //"Oracle.ManagedDataAccess": "12.1.24160419"
       }
     },
     "netstandard1.6": {
