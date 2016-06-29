@@ -6,10 +6,7 @@ using System.Text;
 using System.IO;
 using static dexih.functions.DataType;
 using System.Collections;
-#if NET451
-#else
-using System.Runtime.Loader;
-#endif
+
 
 namespace dexih.functions
 {
