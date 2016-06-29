@@ -1,5 +1,5 @@
 {
-  "version": "0.1.55",
+  "version": "0.1.56",
   "title": "Data Experts Group - Connections Library",
   "description": "This is a support library which enables the transform library to access different types of connections.",
   "authors": [ "Gary Holland" ],

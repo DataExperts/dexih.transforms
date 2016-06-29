@@ -22,7 +22,9 @@ namespace dexih.connections
             {
                 CloudStorageAccount storageAccount;
                 // Retrieve the storage account from the connection string.
-                if (string.IsNullOrEmpty(UserName)) //no username, then use the development settings.
+                if(UseConnectionString)
+                    storageAccount = CloudStorageAccount.Parse(ConnectionString);
+                else if (string.IsNullOrEmpty(UserName)) //no username, then use the development settings.
                     storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true");
                 else
                     storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + UserName + ";AccountKey=" + Password + ";BlobEndpoint=" + ServerName + ";TableEndpoint=" + ServerName + ";QueueEndpoint=" + ServerName + ";FileEndpoint=" + ServerName);
@@ -34,10 +36,13 @@ namespace dexih.connections
             return CloudFileClient;
         }
 
-        private CloudFileShare GetCloudFileShare()
+        private async Task<CloudFileShare> GetCloudFileShare()
         {
-            if(CloudFileShare == null)
+            if (CloudFileShare == null)
+            {
                 CloudFileShare = GetCloudFileClient().GetShareReference(DefaultDatabase);
+                await CloudFileShare.CreateIfNotExistsAsync();
+            }
 
             return CloudFileShare;
         }
@@ -72,15 +77,50 @@ namespace dexih.connections
             return new ReturnValue<List<string>>(true, "", null, fileShares);
         }
 
+        public async Task<ReturnValue<CloudFileDirectory>> GetDatabaseDirectory()
+        {
+            try
+            {
+                if (CloudFileShare == null)
+                {
+                    CloudFileShare = GetCloudFileClient().GetShareReference(DefaultDatabase);
+                    
+                    if (!await CloudFileShare.CreateIfNotExistsAsync())
+                    {
+                        return new ReturnValue<CloudFileDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase, null);
+                    }
+                }
+
+                return new ReturnValue<CloudFileDirectory>(true, CloudFileShare.GetRootDirectoryReference());
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<CloudFileDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase + ", message: " + ex.Message, ex);
+            }
+
+        }
+
 
         public override async Task<ReturnValue> CreateDirectory(string rootDirectory, string subDirectory)
         {
             try
             {
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference(rootDirectory);
-                await cloudFileDirectory.CreateIfNotExistsAsync();
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
-                await cloudSubDirectory.CreateIfNotExistsAsync();
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return getDatabaseDirectory;
+
+                if (!string.IsNullOrEmpty(rootDirectory))
+                {
+
+                    CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(rootDirectory);
+                    await cloudFileDirectory.CreateIfNotExistsAsync();
+
+                    if (!string.IsNullOrEmpty(subDirectory))
+                    {
+                        CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
+                        await cloudSubDirectory.CreateIfNotExistsAsync();
+                    }
+                }
                 return new ReturnValue(true);
             }
             catch (Exception ex)
@@ -98,7 +138,11 @@ namespace dexih.connections
                 int version = 0;
                 string newFileName;
 
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference(rootDirectory);
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return getDatabaseDirectory;
+
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(rootDirectory);
                 CloudFileDirectory cloudFromDirectory = cloudFileDirectory.GetDirectoryReference(fromDirectory);
                 CloudFileDirectory cloudToDirectory = cloudFileDirectory.GetDirectoryReference(toDirectory);
 
@@ -126,7 +170,11 @@ namespace dexih.connections
         {
             try
             {
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference(rootDirectory);
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return getDatabaseDirectory;
+
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(rootDirectory);
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
                 CloudFile cloudFile = cloudSubDirectory.GetFileReference(fileName);
                 await cloudFile.DeleteAsync();
@@ -143,7 +191,12 @@ namespace dexih.connections
             try
             {
                 List<DexihFileProperties> files = new List<DexihFileProperties>();
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference(mainDirectory);
+
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return new ReturnValue<DexihFiles>(getDatabaseDirectory);
+
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(mainDirectory);
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
 
                 FileContinuationToken continuationToken = null;
@@ -175,7 +228,12 @@ namespace dexih.connections
             try
             {
                 List<DexihFileProperties> files = new List<DexihFileProperties>();
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference(mainDirectory);
+
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return new ReturnValue<List<DexihFileProperties>>(getDatabaseDirectory);
+
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(mainDirectory);
                 await cloudFileDirectory.CreateIfNotExistsAsync();
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
                 await cloudSubDirectory.CreateIfNotExistsAsync();
@@ -207,7 +265,11 @@ namespace dexih.connections
         {
             try
             {
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return new ReturnValue<Stream>(getDatabaseDirectory);
+
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
                 Stream reader2 = await cloudSubDirectory.GetFileReference(fileName).OpenReadAsync();
                 return new ReturnValue<Stream>(true, "", null, reader2);
@@ -223,7 +285,11 @@ namespace dexih.connections
         {
             try
             {
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return new ReturnValue<Stream>(getDatabaseDirectory);
+
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
                 Stream reader2 = await cloudSubDirectory.GetFileReference(fileName).OpenWriteAsync(1000);
                 return new ReturnValue<Stream>(true, "", null, reader2);
@@ -243,7 +309,11 @@ namespace dexih.connections
                 int version = 0;
                 string newFileName;
 
-                CloudFileDirectory cloudFileDirectory = GetCloudFileShare().GetRootDirectoryReference().GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return getDatabaseDirectory;
+
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference((string)table.GetExtendedProperty("FileIncomingPath"));
                 CloudFile cloudFile = cloudSubDirectory.GetFileReference(fileName);
 

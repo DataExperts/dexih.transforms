@@ -12,13 +12,16 @@ namespace dexih.transforms.tests
         [Fact]
         public void Lookup_With_PreloadCache()
         {
-            var TestTransform = Helpers.CreateSortedTestData();
+            Task.Run(async () =>
+            {
+                var TestTransform = Helpers.CreateSortedTestData();
 
-            List<Filter> filters = new List<Filter>() { new Filter("StringColumn", Filter.ECompare.IsEqual, "value04") };
-            var row = TestTransform.LookupRow(filters).Result;
+                List<Filter> filters = new List<Filter>() { new Filter("StringColumn", Filter.ECompare.IsEqual, "value04") };
+                var row = await TestTransform.LookupRow(filters);
 
-            Assert.True(row.Success, "Row was not found");
-            Assert.True((string)row.Value[0] == "value04", "Correct row not found");
+                Assert.True(row.Success, "Row was not found");
+                Assert.True((string)row.Value[0] == "value04", "Correct row not found");
+            });
         }
     }
 }

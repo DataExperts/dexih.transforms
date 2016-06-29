@@ -1,5 +1,5 @@
 {
-  "version": "0.1.55",
+  "version": "0.1.56",
   "title": "Data Experts Group - Transforms Library",
   "description": "This library enables advanced data transformation and analytics.  See the project url for more details.",
   "authors": [ "Gary Holland" ],
@@ -27,12 +27,12 @@
     }
   }
 
-  //"scripts": {
-  //  "prebuild": [
-  //    "dotnet restore"
-  //  ],
-  //  "postcompile": [
-  //    "dotnet pack --no-build --configuration Debug -o ../../../packages"
-  //  ]
-  //}
+  "scripts": {
+    "prebuild": [
+      "dotnet restore"
+    ],
+    "postcompile": [
+      "dotnet pack --no-build --configuration Debug -o ../../../packages"
+    ]
+  }
 }
