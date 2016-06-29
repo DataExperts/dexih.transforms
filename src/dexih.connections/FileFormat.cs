@@ -20,14 +20,16 @@ namespace dexih.connections
             Delimiter = DefaultDelimiter;
             Escape = DefaultEscape;
             Comment = DefaultComment;
+            Headers = DefaultHeaders;
         }
 
         private int SubscriptionKey { get; set; }
 
         public const int DefaultBufferSize = 0x1000;
-        public const string DefaultDelimiter = ",";
-        public const string DefaultEscape = "\"";
-        public const string DefaultComment = "#";
+        public const char DefaultDelimiter = ',';
+        public const char DefaultEscape = '\"';
+        public const char DefaultComment = '#';
+        public const bool DefaultHeaders = true;
 
 
         public enum EParseErrorAction
@@ -54,13 +56,13 @@ namespace dexih.connections
 
         public int BufferSize { get; set; }
 
-        public string Delimiter { get; set; }
+        public char Delimiter { get; set; }
 
-        public string Quote { get; set; }
+        public char Quote { get; set; }
 
-        public string Escape { get; set; }
+        public char Escape { get; set; }
 
-        public string Comment { get; set; }
+        public char Comment { get; set; }
 
         public bool Headers { get; set; }
 

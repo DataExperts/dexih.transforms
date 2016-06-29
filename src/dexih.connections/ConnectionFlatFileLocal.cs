@@ -1,10 +1,11 @@
-﻿using dexih.functions;
+﻿//using dexih.functions;
 using dexih.transforms;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Data.Common;
+using dexih.functions;
 
 namespace dexih.connections
 {
@@ -12,7 +13,7 @@ namespace dexih.connections
     {
         public string FilePath()
         {
-            return ServerName + "\\" + DefaultDatabase;
+            return ServerName + "/" + DefaultDatabase;
         }
 
         public override async Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password)
@@ -24,7 +25,7 @@ namespace dexih.connections
                 var directories = await Task.Run(() => Directory.GetDirectories(serverName));
                 foreach (string directoryName in directories)
                 {
-                    string[] directoryComponents = directoryName.Split('\\');
+                    string[] directoryComponents = directoryName.Split('/');
                     fileShares.Add(directoryComponents[directoryComponents.Length-1]);
                 }
 
@@ -42,9 +43,9 @@ namespace dexih.connections
             {
                return await Task.Run(() =>
                {
-                   if (Directory.Exists(FilePath() + "\\" + rootDirectory) == false)
-                       Directory.CreateDirectory(FilePath() + "\\" + rootDirectory);
-                   Directory.CreateDirectory(FilePath() + "\\" + rootDirectory + "\\" + subDirectory);
+                   if (Directory.Exists(FilePath() + "/" + rootDirectory) == false)
+                       Directory.CreateDirectory(FilePath() + "/" + rootDirectory);
+                   Directory.CreateDirectory(FilePath() + "/" + rootDirectory + "/" + subDirectory);
                    return new ReturnValue(true);
                });
             }
@@ -66,12 +67,12 @@ namespace dexih.connections
                     string newFileName;
 
                     newFileName = fileName;
-                    while (File.Exists(FilePath() + "\\" + rootDirectory + "\\" + toDirectory + "\\" + newFileName))
+                    while (File.Exists(FilePath() + "/" + rootDirectory + "/" + toDirectory + "/" + newFileName))
                     {
                         version++;
                         newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
                     }
-                    File.Move(FilePath() + "\\" + rootDirectory + "\\" + fromDirectory + "\\" + fileName, FilePath() + "\\" + rootDirectory + "\\" + toDirectory + "\\" + newFileName);
+                    File.Move(FilePath() + "/" + rootDirectory + "/" + fromDirectory + "/" + fileName, FilePath() + "/" + rootDirectory + "/" + toDirectory + "/" + newFileName);
                     return new ReturnValue(true);
                 });
 
@@ -88,7 +89,7 @@ namespace dexih.connections
             {
                 return await Task.Run(() =>
                 {
-                    File.Delete(FilePath() + "\\" + rootDirectory + "\\" + subDirectory + "\\" + fileName);
+                    File.Delete(FilePath() + "/" + rootDirectory + "/" + subDirectory + "/" + fileName);
                     return new ReturnValue(true);
                 });
             }
@@ -106,7 +107,7 @@ namespace dexih.connections
                 {
                     List<DexihFileProperties> files = new List<DexihFileProperties>();
 
-                    foreach (var file in Directory.GetFiles(FilePath() + "\\" + mainDirectory + "\\" + subDirectory))
+                    foreach (var file in Directory.GetFiles(FilePath() + "/" + mainDirectory + "/" + subDirectory))
                     {
                         FileInfo fileInfo = new FileInfo(file);
                         files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length });
@@ -130,10 +131,10 @@ namespace dexih.connections
                 {
                     List<DexihFileProperties> files = new List<DexihFileProperties>();
 
-                    foreach (var file in Directory.GetFiles(FilePath() + "\\" + mainDirectory + "\\" + subDirectory))
+                    foreach (var file in Directory.GetFiles(FilePath() + "/" + mainDirectory + "/" + subDirectory))
                     {
                         FileInfo fileInfo = new FileInfo(file);
-                        string contentType = ""; //MimeMapping.GetMimeMapping(FilePath + "\\" + MainDirectory + "\\" + SubDirectory + "\\" + File); //TODO add MimeMapping
+                        string contentType = ""; //MimeMapping.GetMimeMapping(FilePath + "/" + MainDirectory + "/" + SubDirectory + "/" + File); //TODO add MimeMapping
                         files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length, ContentType = contentType });
                     }
 
@@ -152,7 +153,7 @@ namespace dexih.connections
             {
                 return await Task.Run(() =>
                 {
-                    Stream reader = File.OpenRead(FilePath() + "\\" + (string)table.GetExtendedProperty("FileRootPath") + "\\" + subDirectory + "\\" + "\\" + fileName);
+                    Stream reader = File.OpenRead(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + subDirectory + "/" + "/" + fileName);
                     return new ReturnValue<Stream>(true, "", null, reader);
                 });
             }
@@ -168,7 +169,7 @@ namespace dexih.connections
             {
                 return await Task.Run(() =>
                 {
-                    Stream reader = File.OpenWrite(FilePath() + "\\" + (string)table.GetExtendedProperty("FileRootPath") + "\\" + subDirectory + "\\" + "\\" + fileName);
+                    Stream reader = File.OpenWrite(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + subDirectory + "/" + "/" + fileName);
                     return new ReturnValue<Stream>(true, "", null, reader);
                 });
             }
@@ -178,7 +179,7 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue> SaveFileStream(Table table, string fileName, Stream fileStream)
+        public override async Task<ReturnValue> SaveFileStream(Table table, string fileName, Stream stream)
         {
             try
             {
@@ -187,15 +188,17 @@ namespace dexih.connections
                 int version = 0;
 
                 string newFileName = fileName;
-                while (File.Exists(FilePath() + "\\" + (string)table.GetExtendedProperty("FileRootPath") + "\\" + (string)table.GetExtendedProperty("FileIncomingPath") + "\\" + newFileName))
+                while (File.Exists(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName))
                 {
                     version++;
                     newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
                 }
-                FileStream newFile = File.Create(FilePath() + "\\" + (string)table.GetExtendedProperty("FileRootPath") + "\\" + (string)table.GetExtendedProperty("FileIncomingPath") + "\\" + newFileName);
-                fileStream.Seek(0, SeekOrigin.Begin);
-                await fileStream.CopyToAsync(newFile);
-                fileStream.Dispose();
+                //FileStream newFile = File.Create(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName);
+                FileStream newFile = new FileStream(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName, FileMode.Create, System.IO.FileAccess.Write);
+                //stream.Seek(0, SeekOrigin.Begin);
+                await stream.CopyToAsync(newFile);
+                await stream.FlushAsync();
+                newFile.Dispose();
 
                 return new ReturnValue(true);
             }

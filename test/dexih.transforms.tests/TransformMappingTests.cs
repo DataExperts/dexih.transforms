@@ -18,13 +18,19 @@ namespace dexih.transforms.tests
 
             List<Function> Mappings = new List<Function>();
 
-            Mappings.Add(new Function("CustomFunction", false, "test", "return StringColumn + number.ToString();", null, ETypeCode.String,
-                new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
-                    new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123)
-                }, null));
+            //Mappings.Add(new Function("CustomFunction", false, "test", "return StringColumn + number.ToString();", null, ETypeCode.String,
+            //    new dexih.functions.Parameter[] {
+            //        new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
+            //        new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123)
+            //    }, null));
 
-            Function Function = StandardFunctions.GetFunctionReference("Substring");
+            Function Function = new Function(new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()), new string[] { "StringColumn", "number" }, "CustomFunction", null);
+            Function.Inputs = new dexih.functions.Parameter[] {
+                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
+                    new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123) };
+            Mappings.Add(Function);
+
+            Function = StandardFunctions.GetFunctionReference("Substring");
             Function.TargetColumn = "Substring";
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("name", ETypeCode.String, true, null, "StringColumn" ),

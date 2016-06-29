@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System.IO;
-using Microsoft.CodeAnalysis.Emit;
 using static dexih.functions.DataType;
 using System.Collections;
 #if NET451
@@ -55,16 +52,6 @@ namespace dexih.functions
         public string FunctionName { get; set; }
 
         /// <summary>
-        /// C# custom code executed for everyrow.
-        /// </summary>
-        public string FunctionCode { get; set; }
-
-        /// <summary>
-        /// C# custom code used for aggregate functions that calculates the final result.
-        /// </summary>
-        public string FunctionResultCode { get; set; }
-
-        /// <summary>
         /// List of input parameters
         /// </summary>
         public Parameter[] Inputs { get; set; }
@@ -98,19 +85,6 @@ namespace dexih.functions
 
         public EInvalidAction InvalidAction { get; set; } = EInvalidAction.Reject;
         
-
-        public Function(string targetColumn, bool isStandardFunction, string functionName, string functionCode, string functionResultCode, ETypeCode returnType, Parameter[] inputs, Parameter[] outputs)
-        {
-            TargetColumn = targetColumn;
-            FunctionName = functionName;
-            FunctionCode = functionCode;
-            FunctionResultCode = functionResultCode;
-
-            Inputs = inputs;
-            Outputs = outputs;
-            ReturnType = returnType;
-        }
-
         /// <summary>
         /// Createa a new function from a "Delegate".
         /// </summary>
@@ -181,6 +155,8 @@ namespace dexih.functions
         {
             _functionMethod = FunctionMethod;
             _objectReference = Target;
+
+            TargetColumn = targetColumn;
 
             ReturnType = GetTypeCode(_functionMethod.ReturnType);
             ParameterInfo[] inputParameters = _functionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
@@ -326,191 +302,11 @@ namespace dexih.functions
             return Invoke();
         }
 
-        /// <summary>
-        /// this function is used to dump the current function call to a program which can be debugged.
-        /// </summary>
-        /// <returns></returns>
-        public string GetTestCode()
-        {
-            string code = CreateFunctionCode();
-
-            string parameter = "";
-
-            int inputsCount = Inputs?.Length ?? 0;
-            int outputsCount = Outputs?.Length ?? 0;
-
-            for (int i = 0; i < inputsCount; i++)
-            {
-                if (Inputs != null && DataType.GetBasicType(Inputs[i].DataType) == DataType.EBasicType.Numeric)
-                    parameter = parameter + Inputs[i].Value + ",";
-                else
-                    parameter = parameter + "\"" + Inputs[i].Value + "\",";
-            }
-
-            for (int i = 0; i < outputsCount; i++)
-            {
-                if (Inputs != null && DataType.GetBasicType(Inputs[i].DataType) == DataType.EBasicType.Numeric)
-                    parameter = "out " + parameter + Inputs[i].Value + ",";
-                else
-                    parameter = "out " + parameter + "\"" + Inputs[i].Value + "\",";
-            }
-
-            if (parameter != "")
-                parameter = parameter.Substring(0, parameter.Length - 1);
-
-            code = code.Replace("//TestReplace", "Console.WriteLine(CustomFunction(" + parameter + "));");
-
-            return code;
-        }
-
-        /// <summary>
-        /// Generates the function code using the custom code.
-        /// </summary>
-        /// <returns></returns>
-        public string CreateFunctionCode()
-        {
-            StringBuilder code = new StringBuilder();
-            code.Append(@"
-using System;
-using System.Collections;
-
-public class Program
-{
-	static int? CacheInt;
-	static double? CacheDouble;
-	static string CacheString;
-	static Hashtable CacheHashtable;
-
-	public static void Main()
-	{
-        //To test, uncomment line below and update parameters to test function
-		//TestReplace
-    }
-
-    public static $FunctionReturn CustomFunction($Parameters)
-    {
-        $FunctionCode
-    }
-
-    public static bool Reset()
-    {
-        CacheInt = null;
-        CacheDouble = null;
-        CacheString = null;
-        CacheHashtable = null;
-        return true;
-    }
-}
-                    ");
-
-            code.Replace("$FunctionCode", FunctionCode);
-            code.Replace("$FunctionReturn", ReturnType.ToString());
-
-            string parameterString = "";
-            if (Inputs != null)
-            {
-                foreach (Parameter t in Inputs)
-                {
-                    string addArray = "";
-                    if (t.IsArray) addArray = "[]";
-                    parameterString += t.DataType + addArray + " " + t.Name + ",";
-                }
-            }
-
-            if (Outputs != null)
-            {
-                foreach (Parameter t in Outputs)
-                {
-                    string addArray = "";
-                    if (t.IsArray) addArray = "[]";
-                    parameterString += "out " + t.DataType + addArray + " " + t.Name + ",";
-                }
-            }
-
-            if (parameterString != "") //remove last comma
-                parameterString = parameterString.Substring(0, parameterString.Length - 1);
-
-            code.Replace("$Parameters", parameterString);
-
-            return code.ToString();
-        }
-
-        /// <summary>
-        /// Creates a reference to a compiled version of the mapping function.
-        /// </summary>
-        /// <returns></returns>
-        public ReturnValue<MethodInfo> CreateFunctionMethod()
-        {
-            if (_functionMethod == null)
-            {
-                try
-                {
-                    string code = CreateFunctionCode();
-                    var syntaxTree = CSharpSyntaxTree.ParseText(code);
-
-                    MetadataReference[] references = new MetadataReference[]
-                    {
-                        MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(Hashtable).GetTypeInfo().Assembly.Location)
-                    }; 
-
-                        var compilation = CSharpCompilation.Create("Function" + Guid.NewGuid().ToString() + ".dll",
-                        syntaxTrees: new[] { syntaxTree },
-                        references: references,
-                        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-                    StringBuilder message = new StringBuilder();
-
-                    using (var ms = new MemoryStream())
-                    {
-                        EmitResult result = compilation.Emit(ms);
-
-                        if (!result.Success)
-                        {
-                            IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
-                                diagnostic.IsWarningAsError ||
-                                diagnostic.Severity == DiagnosticSeverity.Error);
-
-                            foreach (Diagnostic diagnostic in failures)
-                            {
-                                message.AppendFormat("{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
-                            }
-
-                            return new ReturnValue<MethodInfo>(false, "The following compile errors were encountered: " + message.ToString(), null);
-                        }
-                        else
-                        {
-                                
-                            ms.Seek(0, SeekOrigin.Begin);
-
-#if NET451
-                            Assembly assembly = Assembly.Load(ms.ToArray());
-#else
-                            AssemblyLoadContext context = AssemblyLoadContext.Default;
-                            Assembly assembly = context.LoadFromStream(ms);
-#endif
-
-                            Type mappingFunction = assembly.GetType("Program");
-                            _functionMethod = mappingFunction.GetMethod("CustomFunction");
-                            _resetMethod = mappingFunction.GetMethod("Reset");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<MethodInfo>(false, "The following exception was encountered when compiling the function: " + ex.Message, ex);
-                }
-            }
-            return new ReturnValue<MethodInfo>(true, _functionMethod);
-        }
+ 
 
         public ReturnValue<object> Invoke()
         {
-            var result = CreateFunctionMethod();
-            if (result.Success == false)
-                return new ReturnValue<object>(result);
-
-            MethodInfo mappingFunction = result.Value;
+            MethodInfo mappingFunction = _functionMethod;
             try
             {
                 int inputsCount = Inputs?.Length ?? 0;
@@ -552,7 +348,7 @@ public class Program
                 int outputParameterNumber = parameterNumber;
 
                 //if there is no resultfunction, then this function will require the output parameters
-                if (string.IsNullOrEmpty(FunctionResultCode))
+                if (_resultMethod == null)
                 {
                     arrayValues = null;
                     for (int i = 0; i < outputsCount; i++)
@@ -590,7 +386,7 @@ public class Program
                     throw new Exception("Error occurred running the custom function " + (FunctionName?? "") + ". The error message was: " + ex.Message + ".  Stacktrace: " + ex.StackTrace + ".  InnerException: " + ex.InnerException?.Message + ".");
                 }
 
-                if (string.IsNullOrEmpty(FunctionResultCode))
+                if (_resultMethod == null)
                 {
                     int arrayNumber = 0;
                     for (int i = 0; i < outputsCount; i++)
@@ -623,9 +419,7 @@ public class Program
             }
             catch (Exception ex)
             {
-                ex.Source = CreateFunctionCode();
-                //Clipboard.SetText(GetTestCode());
-                return new ReturnValue<object>(false, "Error invoking function: " + ex.Message, ex);
+                return new ReturnValue<object>(false, "Error invoking function: "+ FunctionName, ex);
             }
         }
 
@@ -711,9 +505,9 @@ public class Program
         {
             try
             {
-                var mappingFunction = CreateFunctionMethod();
-                if(mappingFunction.Success == false)
-                    return mappingFunction;
+                //var mappingFunction = CreateFunctionMethod();
+                //if(mappingFunction.Success == false)
+                //    return mappingFunction;
 
                 _resetMethod.Invoke(_objectReference, null);
                 return new ReturnValue(true); 

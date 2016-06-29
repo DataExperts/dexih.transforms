@@ -46,7 +46,7 @@ namespace dexih.connections
 
         public override bool IsValidColumnName(string name)
         {
-            return Regex.IsMatch(name, "^(?:((?!\\d)\\w+(?:\\.(?!\\d)\\w+)*)\\.)?((?!\\d)\\w+)$");
+            return Regex.IsMatch(name, "^(?:((?!/d)/w+(?:/.(?!/d)/w+)*)/.)?((?!/d)/w+)$");
         }
 
 

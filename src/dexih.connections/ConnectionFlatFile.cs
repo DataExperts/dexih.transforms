@@ -10,6 +10,7 @@ using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace dexih.connections
 {
@@ -29,7 +30,7 @@ namespace dexih.connections
         public abstract Task<ReturnValue> TestFileConnection();
 
 
-        public override string ServerHelp => "Path for the files (use \\\\server\\path format)";
+        public override string ServerHelp => "Path for the files (use //server/path format)";
 //help text for what the server means for this description
         public override string DefaultDatabaseHelp => "";
 //help text for what the default database means for this description
@@ -49,6 +50,8 @@ namespace dexih.connections
         StreamWriter _fileWriter;
         CsvReader _csvReader;
 
+        public string LastWrittenFile { get; protected set; } = "";
+
 
         public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
@@ -56,11 +59,12 @@ namespace dexih.connections
             return await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileIncomingPath"));
         }
 
-        public override async Task<ReturnValue> CreateDatabase(string DatabaseName)
+        public override async Task<ReturnValue> CreateDatabase(string databaseName)
         {
             ReturnValue returnValue;
+            DefaultDatabase = databaseName;
             //create the subdirectories
-            returnValue = await CreateDirectory((string)ServerName, "");
+            returnValue = await CreateDirectory("", "");
             return returnValue;
         }
 
@@ -154,10 +158,16 @@ namespace dexih.connections
         public override async Task<ReturnValue> DataWriterFinish(Table table)
         {
             string archiveFileName = table.TableName + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+
+            _fileWriter.Flush();
             _fileStream.Position = 0;
+
             ReturnValue returnValue = await SaveFileStream(table, archiveFileName, _fileStream);
 
+            _fileWriter.Dispose();
             _fileStream.Dispose();
+
+            LastWrittenFile = archiveFileName;
 
             return returnValue;
         }
@@ -286,29 +296,90 @@ namespace dexih.connections
 
         public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
         {
-            await Task.Run(() =>
-            {
-                //create path for the file management.
-                string rootPath = table.TableName + Guid.NewGuid().ToString();
-                table.SetExtendedProperty("FileIncomingPath", "Archives");
-                table.SetExtendedProperty("FileRootPath", rootPath);
-            });
+            //create path for the file management.
+            string rootPath = table.TableName + Guid.NewGuid().ToString();
+            table.SetExtendedProperty("FileIncomingPath", "Incoming");
+            table.SetExtendedProperty("FileProcessedPath", "Processed");
+            table.SetExtendedProperty("FileRejectedPath", "Rejected");
+            table.SetExtendedProperty("FileRootPath", rootPath);
+
+            await CreateFilePaths(table);
+
             return new ReturnValue(true);
         }
 
-        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
+        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
+        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
+        public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                int rows = 0;
+
+                //open a new filestream 
+                using (var stream = new MemoryStream())
+                {
+                    StreamWriter writer = new StreamWriter(stream);
+
+                    if (!(queries?.Count >= 0))
+                        return new ReturnValue<int>(true, 0);
+
+                    //write a header row.
+                    string[] s = new string[table.Columns.Count];
+                    for (Int32 j = 0; j < queries[0].InsertColumns.Count; j++)
+                    {
+                        s[j] = queries[0].InsertColumns[j].Column;
+                        if (s[j].Contains("\"")) //replace " with ""
+                            s[j] = s[j].Replace("\"", "\"\"");
+                        if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
+                            s[j] = "\"" + s[j] + "\"";
+                    }
+                    await writer.WriteLineAsync(string.Join(",", s));
+
+                    
+                    foreach (var query in queries)
+                    {
+                        for (Int32 j = 0; j < query.InsertColumns.Count; j++)
+                        {
+                            s[j] = queries[0].InsertColumns[j].Value.ToString();
+                            if (s[j].Contains("\"")) //replace " with ""
+                                s[j] = s[j].Replace("\"", "\"\"");
+                            if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
+                                s[j] = "\"" + s[j] + "\"";
+                        }
+                        await writer.WriteLineAsync(string.Join(",", s));
+                        rows++;
+                    }
+
+                    writer.Flush();
+                    stream.Position = 0;
+
+                    //save the file
+                    string fileName = table.TableName + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+
+                    ReturnValue returnValue = await SaveFileStream(table, fileName, stream);
+                    if (!returnValue.Success)
+                        return new ReturnValue<int>(returnValue);
+
+                    LastWrittenFile = FileName;
+
+                    stream.Dispose();
+                }
+
+                return new ReturnValue<int>(true, rows); //sometimes reader returns -1, when we want this to be error condition.
+            }
+            catch(Exception ex)
+            {
+                return new ReturnValue<int>(false, "The following error was encountered running the ExecuteInsert: " + ex.Message, ex);
+            }
         }
 
         public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)

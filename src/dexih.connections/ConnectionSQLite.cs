@@ -278,7 +278,7 @@ namespace dexih.connections
                     connectionString = ConnectionString;
                 else
                 {
-                    if (ServerName.Substring(ServerName.Length - 1) != "\\" || ServerName.Substring(ServerName.Length - 1) != "/") ServerName += "\\";
+                    if (ServerName.Substring(ServerName.Length - 1) != "/" || ServerName.Substring(ServerName.Length - 1) != "/") ServerName += "/";
                     connectionString = "Data Source=" + ServerName + DefaultDatabase + ".sqlite";
                 }
 
@@ -310,7 +310,7 @@ namespace dexih.connections
         {
             try
             {
-                string fileName = ServerName + "\\" + databaseName + ".sqlite";
+                string fileName = ServerName + "/" + databaseName + ".sqlite";
 
                 if (File.Exists(fileName))
                     return new ReturnValue(false, "The file " + fileName + " already exists.  Delete or move this file before attempting to create a new database.", null);

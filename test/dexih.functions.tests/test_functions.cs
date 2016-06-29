@@ -121,21 +121,21 @@ namespace dexih.unittests
             Assert.False((bool)StandardFunctions.GetFunctionReference("IsEqual").RunFunction(new object[] { 5, 5.1 }).Value, "Less Than failed");
         }
 
-        [Fact]
-        public void CustomFunction()
-        {
-            Function custom = new Function("CustomColumn", false, "Test", "return value1 + value2.ToString();", null, ETypeCode.String,
-                new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("value1", ETypeCode.String, false),
-                    new dexih.functions.Parameter("value2", ETypeCode.Int32, false),
-                }, null);
-            Assert.True(custom.CreateFunctionMethod().Success == true, "Compile errors not exected");
-            Assert.True("abc123" == (string)custom.RunFunction(new object[] { "abc", "123" }).Value, "Run should pass");
-            Assert.True(false == (bool)custom.RunFunction(new object[] { "123", "abc" }).Success, "Run should fail due to non-int parameter");
+        //[Fact]
+        //public void CustomFunction()
+        //{
+        //    Function custom = new Function("CustomColumn", false, "Test", "return value1 + value2.ToString();", null, ETypeCode.String,
+        //        new dexih.functions.Parameter[] {
+        //            new dexih.functions.Parameter("value1", ETypeCode.String, false),
+        //            new dexih.functions.Parameter("value2", ETypeCode.Int32, false),
+        //        }, null);
+        //    Assert.True(custom.CreateFunctionMethod().Success == true, "Compile errors not exected");
+        //    Assert.True("abc123" == (string)custom.RunFunction(new object[] { "abc", "123" }).Value, "Run should pass");
+        //    Assert.True(false == (bool)custom.RunFunction(new object[] { "123", "abc" }).Success, "Run should fail due to non-int parameter");
 
-            for (int i = 0; i < 1000; i++)
-                Assert.True("abc123" == (string)custom.RunFunction(new object[] { "abc", "123" }).Value, "Run many times didn't work");
-        }
+        //    for (int i = 0; i < 1000; i++)
+        //        Assert.True("abc123" == (string)custom.RunFunction(new object[] { "abc", "123" }).Value, "Run many times didn't work");
+        //}
 
         [Fact]
         public void SimpleFunctionTest()
@@ -369,11 +369,11 @@ namespace dexih.unittests
             Function function2 = StandardFunctions.GetFunctionReference("Add", new string[] { "value1", "value2" }, "Add", null);
             Assert.True((decimal)function2.RunFunction(new object[] { 6, 2 }).Value == 8);
 
-            Function function3 = new Function(
-                "CustomColumn", false, "Test", "return value1 + value2;", null, ETypeCode.Int32,
-                new dexih.functions.Parameter[] { new Parameter("value1", ETypeCode.Int32, false), new dexih.functions.Parameter("value2", ETypeCode.Int32, false)}, 
-                null);
-            Assert.True((int)function3.RunFunction(new object[] { 6, 2 }).Value == 8);
+            //Function function3 = new Function(
+            //    "CustomColumn", false, "Test", "return value1 + value2;", null, ETypeCode.Int32,
+            //    new dexih.functions.Parameter[] { new Parameter("value1", ETypeCode.Int32, false), new dexih.functions.Parameter("value2", ETypeCode.Int32, false)}, 
+            //    null);
+            //Assert.True((int)function3.RunFunction(new object[] { 6, 2 }).Value == 8);
 
         }
 

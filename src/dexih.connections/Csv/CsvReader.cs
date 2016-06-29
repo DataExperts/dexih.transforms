@@ -29,6 +29,7 @@ using System.Globalization;
 using System.IO;
 
 using dexih.connections.IO.Csv.Resources;
+using static dexih.connections.FileFormat;
 
 namespace dexih.connections.IO.Csv
 {
@@ -108,7 +109,7 @@ namespace dexih.connections.IO.Csv
 		/// <summary>
 		/// Determines which values should be trimmed.
 		/// </summary>
-		private ValueTrimmingOptions _trimmingOptions;
+		private EValueTrimmingOptions _trimmingOptions;
 
 		/// <summary>
 		/// Indicates if field names are located on the first non commented line.
@@ -239,7 +240,7 @@ namespace dexih.connections.IO.Csv
 		///		Cannot read from <paramref name="reader"/>.
 		/// </exception>
 		public CsvReader(TextReader reader, bool hasHeaders)
-			: this(reader, hasHeaders, DefaultDelimiter, DefaultQuote, DefaultEscape, DefaultComment, ValueTrimmingOptions.UnquotedOnly, DefaultBufferSize)
+			: this(reader, hasHeaders, DefaultDelimiter, DefaultQuote, DefaultEscape, DefaultComment, EValueTrimmingOptions.UnquotedOnly, DefaultBufferSize)
 		{
 		}
 
@@ -256,7 +257,7 @@ namespace dexih.connections.IO.Csv
 		///		Cannot read from <paramref name="reader"/>.
 		/// </exception>
 		public CsvReader(TextReader reader, bool hasHeaders, int bufferSize)
-			: this(reader, hasHeaders, DefaultDelimiter, DefaultQuote, DefaultEscape, DefaultComment, ValueTrimmingOptions.UnquotedOnly, bufferSize)
+			: this(reader, hasHeaders, DefaultDelimiter, DefaultQuote, DefaultEscape, DefaultComment, EValueTrimmingOptions.UnquotedOnly, bufferSize)
 		{
 		}
 
@@ -273,7 +274,7 @@ namespace dexih.connections.IO.Csv
 		///		Cannot read from <paramref name="reader"/>.
 		/// </exception>
 		public CsvReader(TextReader reader, bool hasHeaders, char delimiter)
-			: this(reader, hasHeaders, delimiter, DefaultQuote, DefaultEscape, DefaultComment, ValueTrimmingOptions.UnquotedOnly, DefaultBufferSize)
+			: this(reader, hasHeaders, delimiter, DefaultQuote, DefaultEscape, DefaultComment, EValueTrimmingOptions.UnquotedOnly, DefaultBufferSize)
 		{
 		}
 
@@ -291,30 +292,35 @@ namespace dexih.connections.IO.Csv
 		///		Cannot read from <paramref name="reader"/>.
 		/// </exception>
 		public CsvReader(TextReader reader, bool hasHeaders, char delimiter, int bufferSize)
-			: this(reader, hasHeaders, delimiter, DefaultQuote, DefaultEscape, DefaultComment, ValueTrimmingOptions.UnquotedOnly, bufferSize)
+			: this(reader, hasHeaders, delimiter, DefaultQuote, DefaultEscape, DefaultComment, EValueTrimmingOptions.UnquotedOnly, bufferSize)
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the CsvReader class.
-		/// </summary>
-		/// <param name="reader">A <see cref="T:TextReader"/> pointing to the CSV file.</param>
-		/// <param name="hasHeaders"><see langword="true"/> if field names are located on the first non commented line, otherwise, <see langword="false"/>.</param>
-		/// <param name="delimiter">The delimiter character separating each field (default is ',').</param>
-		/// <param name="quote">The quotation character wrapping every field (default is ''').</param>
-		/// <param name="escape">
-		/// The escape character letting insert quotation characters inside a quoted field (default is '\').
-		/// If no escape character, set to '\0' to gain some performance.
-		/// </param>
-		/// <param name="comment">The comment character indicating that a line is commented out (default is '#').</param>
-		/// <param name="trimmingOptions">Determines which values should be trimmed.</param>
-		/// <exception cref="T:ArgumentNullException">
-		///		<paramref name="reader"/> is a <see langword="null"/>.
-		/// </exception>
-		/// <exception cref="T:ArgumentException">
-		///		Cannot read from <paramref name="reader"/>.
-		/// </exception>
-		public CsvReader(TextReader reader, bool hasHeaders, char delimiter, char quote, char escape, char comment, ValueTrimmingOptions trimmingOptions)
+        public CsvReader(TextReader reader, FileFormat fileFormat)
+            : this(reader, fileFormat.Headers, fileFormat.Delimiter, fileFormat.Quote, fileFormat.Escape, fileFormat.Comment, fileFormat.ValueTrimmingOptions, fileFormat.BufferSize)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the CsvReader class.
+        /// </summary>
+        /// <param name="reader">A <see cref="T:TextReader"/> pointing to the CSV file.</param>
+        /// <param name="hasHeaders"><see langword="true"/> if field names are located on the first non commented line, otherwise, <see langword="false"/>.</param>
+        /// <param name="delimiter">The delimiter character separating each field (default is ',').</param>
+        /// <param name="quote">The quotation character wrapping every field (default is ''').</param>
+        /// <param name="escape">
+        /// The escape character letting insert quotation characters inside a quoted field (default is '\').
+        /// If no escape character, set to '\0' to gain some performance.
+        /// </param>
+        /// <param name="comment">The comment character indicating that a line is commented out (default is '#').</param>
+        /// <param name="trimmingOptions">Determines which values should be trimmed.</param>
+        /// <exception cref="T:ArgumentNullException">
+        ///		<paramref name="reader"/> is a <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="T:ArgumentException">
+        ///		Cannot read from <paramref name="reader"/>.
+        /// </exception>
+        public CsvReader(TextReader reader, bool hasHeaders, char delimiter, char quote, char escape, char comment, EValueTrimmingOptions trimmingOptions)
 			: this(reader, hasHeaders, delimiter, quote, escape, comment, trimmingOptions, DefaultBufferSize)
 		{
 		}
@@ -339,7 +345,7 @@ namespace dexih.connections.IO.Csv
 		/// <exception cref="ArgumentOutOfRangeException">
 		///		<paramref name="bufferSize"/> must be 1 or more.
 		/// </exception>
-		public CsvReader(TextReader reader, bool hasHeaders, char delimiter, char quote, char escape, char comment, ValueTrimmingOptions trimmingOptions, int bufferSize)
+		public CsvReader(TextReader reader, bool hasHeaders, char delimiter, char quote, char escape, char comment, EValueTrimmingOptions trimmingOptions, int bufferSize)
 		{
 //#if DEBUG
 //			_allocStack = new System.Diagnostics.StackTrace();
@@ -442,7 +448,7 @@ namespace dexih.connections.IO.Csv
 		/// Indicates if spaces at the start and end of a field are trimmed.
 		/// </summary>
 		/// <value><see langword="true"/> if spaces at the start and end of a field are trimmed, otherwise, <see langword="false"/>.</value>
-		public ValueTrimmingOptions TrimmingOption => _trimmingOptions;
+		public EValueTrimmingOptions TrimmingOption => _trimmingOptions;
 
 	    /// <summary>
 		/// Gets the buffer size.
@@ -1131,7 +1137,7 @@ namespace dexih.connections.IO.Csv
 				else
 				{
 					// Trim spaces at start
-					if ((_trimmingOptions & ValueTrimmingOptions.UnquotedOnly) != 0)
+					if ((_trimmingOptions & EValueTrimmingOptions.UnquotedOnly) != 0)
 						SkipWhiteSpaces(ref _nextFieldStart);
 
 					if (_eof)
@@ -1190,7 +1196,7 @@ namespace dexih.connections.IO.Csv
 
 						if (!discardValue)
 						{
-							if ((_trimmingOptions & ValueTrimmingOptions.UnquotedOnly) == 0)
+							if ((_trimmingOptions & EValueTrimmingOptions.UnquotedOnly) == 0)
 							{
 								if (!_eof && pos > start)
 									value += new string(_buffer, start, pos - start);
@@ -1260,7 +1266,7 @@ namespace dexih.connections.IO.Csv
 						bool quoted = true;
 						bool escaped = false;
 
-						if ((_trimmingOptions & ValueTrimmingOptions.QuotedOnly) != 0)
+						if ((_trimmingOptions & EValueTrimmingOptions.QuotedOnly) != 0)
 						{
 							SkipWhiteSpaces(ref start);
 							pos = start;
@@ -1319,7 +1325,7 @@ namespace dexih.connections.IO.Csv
 							if (!discardValue && pos > start)
 								value += new string(_buffer, start, pos - start);
 
-							if (!discardValue && value != null && (_trimmingOptions & ValueTrimmingOptions.QuotedOnly) != 0)
+							if (!discardValue && value != null && (_trimmingOptions & EValueTrimmingOptions.QuotedOnly) != 0)
 							{
 								int newLength = value.Length;
 								while (newLength > 0 && IsWhiteSpace(value[newLength - 1]))
@@ -1910,9 +1916,10 @@ namespace dexih.connections.IO.Csv
 			return false;
 		}
 
-        //void IDataReader.Close()
+        //public override void Close()
         //{
-        //	Dispose();
+
+        //    Dispose();
         //}
 
         public override bool Read()
@@ -2331,28 +2338,38 @@ namespace dexih.connections.IO.Csv
 				throw new ObjectDisposedException(GetType().FullName);
 		}
 
-		/// <summary>
-		/// Releases all resources used by the instance.
-		/// </summary>
-		/// <remarks>
-		/// 	Calls <see cref="M:Dispose(Boolean)"/> with the disposing parameter set to <see langword="true"/> to free unmanaged and managed resources.
-		/// </remarks>
-		//public override void Dispose()
-		//{
-		//	if (!_isDisposed)
-		//	{
-		//		Dispose(true);
-		//		GC.SuppressFinalize(this);
-		//	}
-		//}
+        /// <summary>
+        /// Releases all resources used by the instance.
+        /// </summary>
+        /// <remarks>
+        /// 	Calls <see cref="M:Dispose(Boolean)"/> with the disposing parameter set to <see langword="true"/> to free unmanaged and managed resources.
+        /// </remarks>
+        //public void Dispose()
+        //{
+        //    if (!_isDisposed)
+        //    {
+        //        Dispose(true);
+        //        GC.SuppressFinalize(this);
+        //    }
+        //}
 
-		/// <summary>
-		/// Releases the unmanaged resources used by this instance and optionally releases the managed resources.
-		/// </summary>
-		/// <param name="disposing">
-		/// 	<see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.
-		/// </param>
-		protected override void Dispose(bool disposing)
+        public void CloseFile()
+        {
+            if (!_isDisposed)
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by this instance and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">
+        /// 	<see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.
+        /// </param>
+        protected override void Dispose(bool disposing)
 		{
 			// Refer to http://www.bluebytesoftware.com/blog/PermaLink,guid,88e62cdf-5919-4ac7-bc33-20c06ae539ae.aspx
 			// Refer to http://www.gotdotnet.com/team/libraries/whitepapers/resourcemanagement/resourcemanagement.aspx
@@ -2418,6 +2435,6 @@ namespace dexih.connections.IO.Csv
 			Dispose(false);
 		}
 
-		#endregion
+#endregion
 	}
 }
