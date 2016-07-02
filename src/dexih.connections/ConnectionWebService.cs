@@ -14,7 +14,7 @@ using System.Globalization;
 using static dexih.functions.DataType;
 using System.Threading;
 
-#if NET451
+#if NET46
 using System.Web.Services.Description;
 #endif
 
@@ -37,7 +37,7 @@ namespace dexih.connections
         public override ECategory DatabaseCategory => ECategory.WebService;
 
 
-#if NET451
+#if NET46
 
         private async Task<ReturnValue<ServiceDescription>> GetServiceDescription()
         {
@@ -198,7 +198,7 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
         {
             try
             {
@@ -361,7 +361,7 @@ namespace dexih.connections
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties)
+        public override Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
         {
             throw new NotImplementedException();
         }

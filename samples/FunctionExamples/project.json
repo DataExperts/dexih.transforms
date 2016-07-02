@@ -5,7 +5,7 @@
   },
 
   "dependencies": {
-    "dexih.functions": "0.1.55"
+    "dexih.functions": "0.1.*"
   },
 
   "frameworks": {
@@ -17,7 +17,6 @@
           "version": "1.0.0"
         }
       }
-    },
-    "net451": {}
+    }
   }
 }

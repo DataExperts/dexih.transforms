@@ -52,7 +52,7 @@ namespace dexih.connections.test
 
 
                     int sortValue = 10;
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         Assert.Equal(sortValue, reader["IntColumn"]);
                         sortValue--;
@@ -74,7 +74,7 @@ namespace dexih.connections.test
 
 
                     int count = 0;
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         Assert.True((int)reader["IntColumn"] <= 5);
                         count++;
@@ -95,7 +95,7 @@ namespace dexih.connections.test
                 returnValue = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, null, null, CancellationToken.None);
                 Assert.True(returnValue.Success, returnValue.Message);
                 Assert.Equal(10, writerResult.RowsCreated);
-            });
+            }).Wait();
         }
 
     }

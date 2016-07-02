@@ -8,6 +8,7 @@ using System.Data.Common;
 using dexih.connections.IO.Csv;
 using System.IO;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace dexih.connections
 {
@@ -84,12 +85,12 @@ namespace dexih.connections
 
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             bool notfinished;
             try
             {
-                notfinished = _csvReader.Read();
+                notfinished = await _csvReader.ReadAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -100,7 +101,7 @@ namespace dexih.connections
             {
                 _csvReader.CloseFile();
 
-                var moveFileResult = ((ConnectionFlatFile)ReferenceConnection).MoveFile(CacheTable, _files.Current.FileName, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), (string)CacheTable.GetExtendedProperty("FileProcessedPath")).Result; //backup the completed file
+                var moveFileResult = await ((ConnectionFlatFile)ReferenceConnection).MoveFile(CacheTable, _files.Current.FileName, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), (string)CacheTable.GetExtendedProperty("FileProcessedPath")); //backup the completed file
                 if (moveFileResult.Success == false)
                 {
                     throw new Exception("The flatfile reader failed with the following message: " + moveFileResult.Message);
@@ -110,21 +111,21 @@ namespace dexih.connections
                     _isOpen = false;
                 else
                 {
-                    var fileStream = ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheTable, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), _files.Current.FileName).Result;
+                    var fileStream = await ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheTable, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), _files.Current.FileName);
                     if (fileStream.Success == false)
                         throw new Exception("The flatfile reader failed with the following message: " + fileStream.Message);
 
                     _csvReader = new CsvReader(new StreamReader(fileStream.Value), _fileFormat);
                     try
                     {
-                        notfinished = _csvReader.Read();
+                        notfinished = await _csvReader.ReadAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
                         throw new Exception("The flatfile reader failed with the following message: " + ex.Message, ex);
                     }
                     if (notfinished == false)
-                        return ReadRecord(); // this creates a recurive loop to cater for empty files.
+                        return await ReadRecord(cancellationToken); // this creates a recurive loop to cater for empty files.
                 }
             }
 

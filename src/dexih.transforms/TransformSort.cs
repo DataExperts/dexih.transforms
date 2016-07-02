@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -47,11 +48,11 @@ namespace dexih.transforms
         }
 
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             if(_alreadySorted)
             {
-                if (PrimaryTransform.Read())
+                if (await PrimaryTransform.ReadAsync(cancellationToken))
                 {
                     object[] values = new object[PrimaryTransform.FieldCount];
                     PrimaryTransform.GetValues(values);
@@ -67,7 +68,7 @@ namespace dexih.transforms
                 _sortedDictionary = new SortedDictionary<object[], object[]>(new SortKeyComparer(SortFields));
 
                 int rowcount = 0;
-                while (PrimaryTransform.Read())
+                while (await PrimaryTransform.ReadAsync(cancellationToken))
                 {
                     object[] values = new object[PrimaryTransform.FieldCount];
                     object[] sortFields = new object[SortFields.Count + 1];

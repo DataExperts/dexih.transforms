@@ -176,7 +176,7 @@ namespace dexih.connections
         {
             try
             {
-                while(reader.Read())
+                while(await reader.ReadAsync(cancelToken))
                 {
                     if (cancelToken.IsCancellationRequested)
                         return new ReturnValue<int>(false, "Insert rows cancelled.", null);
@@ -206,17 +206,17 @@ namespace dexih.connections
             return await GetFileShares(ServerName, UserName, Password);
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
         {
             try
             {
-                if (Properties == null || Properties["FileFormat"] == null || !(Properties["FileFormat"] is FileFormat) || Properties["FileSample"] == null )
+                if (Properties == null || !Properties.ContainsKey("FileFormat") || !Properties.ContainsKey("FileSample"))
                 {
                     return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileStream.", null);
                 }
 
-                FileFormat fileFormat = (FileFormat) Properties["FileFormat"];
-                string fileSample = (string) Properties["FileSample"];
+                FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(Properties["FileFormat"]);
+                string fileSample = Properties["FileSample"];
 
                 MemoryStream stream = new MemoryStream();
                 StreamWriter writer = new StreamWriter(stream);

@@ -64,7 +64,7 @@ namespace dexih.connections.test
                     int rowCount = 0;
                     var filereaderResult = await fileReader.Open();
                     Assert.True(filereaderResult.Success, "Open Reader:" + filereaderResult.Message);
-                    while (fileReader.Read()) rowCount++;
+                    while (await fileReader.ReadAsync()) rowCount++;
                     Assert.True(rowCount == 2, "Select count - value :" + rowCount);
                 }
                 else
@@ -213,7 +213,7 @@ namespace dexih.connections.test
                 int count = 0;
                 var openResult = await reader.Open();
                 Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
-                while (reader.Read()) count++;
+                while (await reader.ReadAsync()) count++;
                 Assert.True(count == 10, "Select count - value :" + count);
 
                 if (connection.CanFilter == true)
@@ -240,10 +240,10 @@ namespace dexih.connections.test
                     Assert.True(Convert.ToString(returnLookup.Value[0]) == "value5", "Select count - value :" + returnLookup.Value);
                 }
 
-            });
+            }).Wait();
         }
 
-        
+
 
     }
 }

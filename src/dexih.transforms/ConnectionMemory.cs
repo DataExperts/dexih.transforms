@@ -83,23 +83,20 @@ namespace dexih.transforms
 
         public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
+            Table insertTable = Tables[table.TableName];
+
+            int count = 0;
+            while(await sourceData.ReadAsync(cancelToken))
             {
-                Table insertTable = Tables[table.TableName];
+                if (cancelToken.IsCancellationRequested)
+                    return new ReturnValue<int>(false, "Insert rows cancelled.", null);
 
-                int count = 0;
-                while(sourceData.Read())
-                {
-                    if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
-
-                    object[] row = new object[sourceData.FieldCount];
-                    sourceData.GetValues(row);
-                    insertTable.Data.Add(row);
-                    count++;
-                }
-                return new ReturnValue<int>(true, count);
-            });
+                object[] row = new object[sourceData.FieldCount];
+                sourceData.GetValues(row);
+                insertTable.Data.Add(row);
+                count++;
+            }
+            return new ReturnValue<int>(true, count);
         }
 
 
@@ -157,7 +154,7 @@ namespace dexih.transforms
             return await Task.Run(() => new ReturnValue<List<string>>(true, new List<string>() { "" } ));
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
         {
             return await Task.Run( () => new ReturnValue<Table>(true, Tables[tableName]));
         }

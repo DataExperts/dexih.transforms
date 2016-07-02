@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -143,7 +144,7 @@ namespace dexih.transforms
             return new ReturnValue(true);
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             object[] newRow = null;
 
@@ -174,7 +175,7 @@ namespace dexih.transforms
             bool groupChanged = false;
             object[] newGroupValues = null;
 
-            if (PrimaryTransform.Read() == false)
+            if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
             {
                 if (_lastRecord) //return false is all record have been written.
                     return new ReturnValue<object[]>(false, null);
@@ -340,7 +341,7 @@ namespace dexih.transforms
                     if (groupChanged)
                         break;
 
-                } while (PrimaryTransform.Read());
+                } while (await PrimaryTransform.ReadAsync(cancellationToken));
             }
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record

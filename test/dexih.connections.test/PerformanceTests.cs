@@ -85,7 +85,7 @@ namespace dexih.connections.test
                 var reader = connection.GetTransformReader(table);
                 await reader.Open();
 
-                while (reader.Read()) count++;
+                while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows, "row count = " + count.ToString());
 
 
@@ -130,7 +130,7 @@ namespace dexih.connections.test
                 count = 0;
                 reader = connection.GetTransformReader(table);
                 await reader.Open(selectQuery);
-                while (reader.Read()) count++;
+                while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows / 10, "row count = " + count.ToString());
 
                 List<DeleteQuery> deleteQueries = new List<DeleteQuery>();
@@ -156,7 +156,7 @@ namespace dexih.connections.test
                 count = 0;
                 reader = connection.GetTransformReader(table);
                 await reader.Open();
-                while (reader.Read()) count++;
+                while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows - rows / 10, "row count = " + count.ToString());
 
 
@@ -166,7 +166,7 @@ namespace dexih.connections.test
                 Assert.Equal(true, previewTable.Success);
                 Assert.Equal(50, previewTable.Value.Data.Count);
 
-            });
+            }).Wait();
         }
 
     }

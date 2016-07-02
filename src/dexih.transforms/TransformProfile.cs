@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -48,12 +49,12 @@ namespace dexih.transforms
             return new ReturnValue(true);
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             if (_lastRecord)
                 return new ReturnValue<object[]>(false, null);
 
-            _lastRecord = !PrimaryTransform.Read();
+            _lastRecord = !await PrimaryTransform.ReadAsync(cancellationToken);
 
             if (!_lastRecord)
             {

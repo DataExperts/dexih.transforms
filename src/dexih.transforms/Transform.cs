@@ -10,6 +10,7 @@ using System.Linq;
 using System.Globalization;
 using static dexih.transforms.TableColumn;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -120,7 +121,7 @@ namespace dexih.transforms
 
         public abstract bool InitializeOutputFields();
         public abstract string Details();
-        protected abstract ReturnValue<object[]> ReadRecord();
+        protected abstract Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken);
         public abstract ReturnValue ResetTransform();
 
         #endregion
@@ -461,10 +462,7 @@ namespace dexih.transforms
             if (CacheMethod == ECacheMethod.PreLoadCache)
             {
                 //preload all records.
-                await Task.Run(() =>
-                {
-                    while (Read()) ;
-                });
+                while (await ReadAsync()) ;
 
                 return CacheTable.LookupSingleRow(filters);
             }
@@ -491,17 +489,14 @@ namespace dexih.transforms
                 else
                 {
                     //not found in the cache, keep reading until it's found.
-                    return await Task.Run(() =>
+                    while (await ReadAsync())
                     {
-                        while (Read())
-                        {
-                            //does a lookup, using the record count to only check the latest record.
-                            if (lookupResult.Success == true)
-                                return lookupResult;
-                        }
+                        //does a lookup, using the record count to only check the latest record.
+                        if (lookupResult.Success == true)
+                            return lookupResult;
+                    }
 
-                        return new ReturnValue<object[]>(false, "Lookup not found.", null);
-                    });
+                    return new ReturnValue<object[]>(false, "Lookup not found.", null);
                 }
             }
 
@@ -534,6 +529,11 @@ namespace dexih.transforms
         bool _isFirstRead = true;
 
         public override bool Read()
+        {
+            return Task.Run(() => ReadAsync()).Result;
+        }
+
+        public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
         {
             //starts  a timer that can be used to measure downstream transform and database performance.
             TransformTimer.Start();
@@ -573,7 +573,7 @@ namespace dexih.transforms
                 return false;
             }
 
-            var returnValue = ReadRecord();
+            var returnValue = await ReadRecord(cancellationToken);
 
             if (returnValue.Success)
             {
@@ -583,7 +583,7 @@ namespace dexih.transforms
                 CurrentRow = returnValue.Value;
             }
 
-            if(IsReader && IsPrimaryTransform && IncrementalColumnIndex != -1)
+            if(IsReader && IsPrimaryTransform && IncrementalColumnIndex != -1 && returnValue.Success)
             {
                 var compresult = DataType.Compare(IncrementalColumnType, CurrentRow[IncrementalColumnIndex], MaxIncrementalValue);
                 if (!compresult.Success )
@@ -746,12 +746,12 @@ namespace dexih.transforms
 
         public override IEnumerator GetEnumerator()
         {
-            throw new NotImplementedException("This feature is not currently implemnted.");
+            throw new NotImplementedException("This feature is not currently implemented.");
         }
 
         public override bool HasRows => PrimaryTransform.HasRows;
 
-#if NET451
+#if NET46
         public override DataTable GetSchemaTable()
         {
             DataTable schema = new DataTable("SchemaTable")

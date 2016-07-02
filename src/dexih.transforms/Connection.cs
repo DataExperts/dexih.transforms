@@ -103,7 +103,7 @@ namespace dexih.transforms
         /// <param name="tableName"></param>
         /// <param name="Properties"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties);
+        public abstract Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties);
 
         /// <summary>
         /// Adds any database specific mandatory column to the table object.
@@ -171,7 +171,7 @@ namespace dexih.transforms
             while (count < query.Rows &&
                 query.Rows != -1 &&
                 cancellationToken.IsCancellationRequested == false && 
-                reader.Read() 
+                await reader.ReadAsync(cancellationToken) 
                 )
             {
                 count++;

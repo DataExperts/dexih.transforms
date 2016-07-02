@@ -84,11 +84,7 @@ namespace dexih.connections
                 if (CloudFileShare == null)
                 {
                     CloudFileShare = GetCloudFileClient().GetShareReference(DefaultDatabase);
-                    
-                    if (!await CloudFileShare.CreateIfNotExistsAsync())
-                    {
-                        return new ReturnValue<CloudFileDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase, null);
-                    }
+                    await CloudFileShare.CreateIfNotExistsAsync();
                 }
 
                 return new ReturnValue<CloudFileDirectory>(true, CloudFileShare.GetRootDirectoryReference());

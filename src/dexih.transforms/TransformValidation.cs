@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Text;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -77,7 +78,7 @@ namespace dexih.transforms
             return new ReturnValue(true);
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             //the saved reject row is when a validation outputs two rows (pass & fail).
             if (savedRejectRow != null)
@@ -90,7 +91,7 @@ namespace dexih.transforms
             if (_lastRecord)
                 return new ReturnValue<object[]>(false, null);
 
-            while (PrimaryTransform.Read())
+            while (await PrimaryTransform.ReadAsync(cancellationToken))
             {
                 StringBuilder rejectReason = new StringBuilder();
                 Function.EInvalidAction finalInvalidAction = Function.EInvalidAction.Pass;

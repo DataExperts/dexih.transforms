@@ -126,7 +126,7 @@ namespace dexih.connections
                         }
                         cmd.Prepare();
 
-                        while (reader.Read())
+                        while (await reader.ReadAsync(cancelToken))
                         {
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
@@ -573,15 +573,10 @@ namespace dexih.connections
                 if (cancelToken.IsCancellationRequested)
                     return new ReturnValue<object>(false, "Execute scalar cancelled.", null);
 
-                if (query.Columns[0].Aggregate == SelectColumn.EAggregate.None)
-                {
-                    var returnValue = DataType.TryParse(table.Columns[query.Columns[0].Column].DataType, value);
-                    if (!returnValue.Success)
-                        return new ReturnValue<object>(returnValue);
-                    return new ReturnValue<object>(true, returnValue.Value);
-                }
-                else
-                    return new ReturnValue<object>(true, value);
+                var returnValue = DataType.TryParse(table.Columns[query.Columns[0].Column].DataType, value);
+                if (!returnValue.Success)
+                    return new ReturnValue<object>(returnValue);
+                return new ReturnValue<object>(true, returnValue.Value);
             }
             catch (Exception ex)
             {
@@ -625,33 +620,40 @@ namespace dexih.connections
 
         public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
         {
-            var connection = await NewConnection();
-            if (connection.Success == false)
-            {
-                return new ReturnValue<DbDataReader>(connection);
-            }
-
-            DbCommand cmd = connection.Value.CreateCommand();
-            cmd.CommandText = BuildSelectQuery(table, query);
-
-            DbDataReader reader;
-
             try
             {
-                reader = await cmd.ExecuteReaderAsync();
-            }
-            catch (Exception ex)
-            {
-                return new ReturnValue<DbDataReader>(false, "The connection reader for the sqlserver table " + table.TableName + " could failed due to the following error: " + ex.Message + ".  The sql command was: " + cmd.CommandText, ex);
-            }
+                var connection = await NewConnection();
+                if (connection.Success == false)
+                {
+                    return new ReturnValue<DbDataReader>(connection);
+                }
 
-            if (reader == null)
-            {
-                return new ReturnValue<DbDataReader>(false, "The connection reader for the sqlserver table " + table.TableName + " return null for an unknown reason.", null);
+                DbCommand cmd = connection.Value.CreateCommand();
+                cmd.CommandText = BuildSelectQuery(table, query);
+
+                DbDataReader reader;
+
+                try
+                {
+                    reader = await cmd.ExecuteReaderAsync();
+                }
+                catch (Exception ex)
+                {
+                    return new ReturnValue<DbDataReader>(false, "The connection reader for the sqlserver table " + table.TableName + " could failed due to the following error: " + ex.Message + ".  The sql command was: " + cmd.CommandText, ex);
+                }
+
+                if (reader == null)
+                {
+                    return new ReturnValue<DbDataReader>(false, "The connection reader for the sqlserver table " + table.TableName + " return null for an unknown reason.", null);
+                }
+                else
+                {
+                    return new ReturnValue<DbDataReader>(true, reader);
+                }
             }
-            else
+            catch(Exception ex)
             {
-                return new ReturnValue<DbDataReader>(true, reader);
+                return new ReturnValue<DbDataReader>(false, "The following error was encountered starting the connection reader for the sqlserver table " + table.TableName, ex);
             }
         }
 

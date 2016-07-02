@@ -425,7 +425,7 @@
 
 //                List<string> list = new List<string>();
 
-//                while (reader.Read())
+//                while (await reader.ReadAsync())
 //                {
 //                    list.Add((string)reader["name"]);
 //                }
@@ -462,7 +462,7 @@
 
 //                List<string> tableList = new List<string>();
 
-//                while(reader.Read())
+//                while(await reader.ReadAsync())
 //                {
 //                    tableList.Add("[" + reader["TABLE_SCHEMA"] + "].[" + reader["TABLE_NAME"] + "]");
 //                }
@@ -507,7 +507,7 @@
 //                    return new ReturnValue(false, "The source sqlserver table + " + table.TableName + " could have a select query run against it with the following error: " + ex.Message, ex);
 //                }
 
-//                if (reader.Read())
+//                if (await reader.ReadAsync())
 //                {
 //                    table.Description = (string)reader["Description"];
 //                }

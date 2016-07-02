@@ -33,14 +33,6 @@
         "dnxcore50",
         "portable-net451+win8"
       ]
-    },
-    "net451": {
-    }
-  },
-  "tools": {
-    "Microsoft.Extensions.SecretManager.Tools": {
-      "version": "1.0.0-preview1-final",
-      "imports": "portable-net45+win8+dnxcore50"
     }
   }
 }

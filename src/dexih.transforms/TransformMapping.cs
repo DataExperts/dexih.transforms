@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -234,12 +235,12 @@ namespace dexih.transforms
             return new ReturnValue(true);
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             int i = 0;
             var newRow = new object[FieldCount];
 
-            if (PrimaryTransform.Read() == false)
+            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
                 return new ReturnValue<object[]>(false, null);
             if (MapFields != null)
             {

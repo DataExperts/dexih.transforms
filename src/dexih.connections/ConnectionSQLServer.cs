@@ -297,7 +297,7 @@ namespace dexih.connections
         {
             string returnValue;
 
-            if (value.GetType().ToString() == "System.DBNull")
+            if (value == null || value.GetType().ToString() == "System.DBNull")
                 return "null";
 
             switch (type)
@@ -421,7 +421,7 @@ namespace dexih.connections
 
                 List<string> list = new List<string>();
 
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     list.Add((string)reader["name"]);
                 }
@@ -458,7 +458,7 @@ namespace dexih.connections
 
                 List<string> tableList = new List<string>();
 
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     tableList.Add( AddDelimiter(reader["TABLE_SCHEMA"].ToString()) + "." + AddDelimiter(reader["TABLE_NAME"].ToString()));
                 }
@@ -475,7 +475,7 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties = null)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties = null)
         {
             try
             {
@@ -505,7 +505,7 @@ namespace dexih.connections
                     return new ReturnValue<Table>(false, "The source sqlserver table + " + tableName + " could have a select query run against it with the following error: " + ex.Message, ex);
                 }
 
-                if (reader.Read())
+                if (await reader.ReadAsync())
                 {
                     table.Description = (string)reader["Description"];
                 }

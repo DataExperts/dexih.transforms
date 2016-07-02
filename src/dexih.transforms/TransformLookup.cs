@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using static dexih.functions.DataType;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -60,11 +61,11 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             object[] newRow = null;
 
-            if (PrimaryTransform.Read() == false)
+            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
             {
                 return new ReturnValue<object[]>(false, null);
             }

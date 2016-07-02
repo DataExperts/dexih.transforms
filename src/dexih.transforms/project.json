@@ -1,5 +1,5 @@
 {
-  "version": "0.1.57",
+  "version": "0.1.61",
   "title": "Data Experts Group - Transforms Library",
   "description": "This library enables advanced data transformation and analytics.  See the project url for more details.",
   "authors": [ "Gary Holland" ],
@@ -15,8 +15,8 @@
     "dexih.functions": "0.1.*"
   },
   "frameworks": {
-    "net451": { },
-    "netstandard1.6": {
+   // "net451": { },
+    "netstandard1.3": {
       "dependencies": {
         "NETStandard.Library": "1.6.0"
       },

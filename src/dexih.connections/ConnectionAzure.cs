@@ -46,7 +46,7 @@ namespace dexih.connections
 
         public override bool IsValidColumnName(string name)
         {
-            return Regex.IsMatch(name, "^(?:((?!/d)/w+(?:/.(?!/d)/w+)*)/.)?((?!/d)/w+)$");
+            return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,254}$");
         }
 
 
@@ -64,7 +64,7 @@ namespace dexih.connections
 
                 var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
 
-                while (reader.Read())
+                while (await reader.ReadAsync(cancelToken))
                 {
                     if (cancelToken.IsCancellationRequested)
                         return new ReturnValue<int>(false, "Insert rows cancelled.", null);
@@ -176,7 +176,7 @@ namespace dexih.connections
                 foreach(var col in table.Columns)
                 {
                     if (!IsValidColumnName(col.ColumnName))
-                        return new ReturnValue(false, "The table " + table.TableName + " could not be created as the column + " + col.ColumnName + " does not meet Azure table naming standards.", null);
+                        return new ReturnValue(false, "The table " + table.TableName + " could not be created as the column " + col.ColumnName + " does not meet Azure table naming standards.", null);
                 }
 
                 CloudTableClient connection = GetCloudTableClient();
@@ -266,7 +266,7 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties = null)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties = null)
         {
             try
             {

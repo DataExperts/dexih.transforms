@@ -1,5 +1,5 @@
 {
-  "version": "0.1.57",
+  "version": "0.1.60",
   "title": "Data Experts Group - Connections Library",
   "description": "This is a support library which enables the transform library to access different types of connections.",
   "authors": [ "Gary Holland" ],
@@ -12,7 +12,7 @@
   },
 
   "frameworks": {
-    "net451": {
+    "net46": {
       "frameworkAssemblies": {
         "System.Net.Http": "4.0.0.0",
         "System.Web.Services": "4.0.0.0"
@@ -21,7 +21,7 @@
         //"Oracle.ManagedDataAccess": "12.1.24160419"
       }
     },
-    "netstandard1.6": {
+    "netstandard1.5": {
       "dependencies": {
         "NETStandard.Library": "1.6.0"
       },

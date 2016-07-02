@@ -7,6 +7,7 @@ using dexih.functions;
 using static dexih.functions.DataType;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace dexih.connections
 {
@@ -65,11 +66,11 @@ namespace dexih.connections
             return new ReturnValue(true);
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             try
             {
-                if (ReferenceTransform.Read() == false)
+                if (await ReferenceTransform.ReadAsync(cancellationToken) == false)
                     return new ReturnValue<object[]>(false, null);
                 else
                 {

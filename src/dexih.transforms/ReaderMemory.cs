@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace dexih.transforms
 {
@@ -54,9 +56,9 @@ namespace dexih.transforms
             return new ReturnValue(true);
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
-            return new ReturnValue<object[]>(false, null);
+            return await Task.Run(() => new ReturnValue<object[]>(false, null));
             //position++;
             //if (position < CacheTable.Data.Count)
             //{

@@ -167,7 +167,7 @@ namespace dexih.transforms.tests
                 Assert.True(rowsCreated == 1);
                 Assert.True(rowsUpdated == 2);
                 Assert.True(count == 3);
-            });
+            }).Wait();
         }
 
         [Fact]
@@ -258,7 +258,7 @@ namespace dexih.transforms.tests
 
                Assert.True(transformDelta.TotalRowsIgnored == 10);
                Assert.True(count == 0);
-           });
+           }).Wait();
 
         }
 
@@ -266,7 +266,7 @@ namespace dexih.transforms.tests
         //[Fact]
         //public void RunDeltaTest_updatePreserveDelete()
         //{
-        //    ConnectionMemory Source = Helpers.CreateUnSortedTestData();
+        //    ReaderMemory Source = Helpers.CreateUnSortedTestData();
 
         //    Table targetTable = Source.CacheTable.Copy();
         //    targetTable.AddAuditColumns();

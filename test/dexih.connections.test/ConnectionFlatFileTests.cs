@@ -7,14 +7,18 @@ using Xunit;
 
 namespace dexih.connections.test
 {
-    public class ConnectionAzureTests
+    public class ConnectionAzureFlatFileTests
     {
         public ConnectionFlatFileLocal GetLocalConnection()
         {
+            var ServerName = Convert.ToString(Helpers.AppSettings["FlatFileLocal:ServerName"]);
+            if (ServerName == "")
+                return null;
+
             var connection  = new ConnectionFlatFileLocal()
             {
                 Name = "Test Connection",
-                ServerName = Convert.ToString(Helpers.AppSettings["FlatFileLocal:ServerName"]),
+                ServerName = ServerName,
             };
             return connection;
         }
@@ -39,12 +43,14 @@ namespace dexih.connections.test
             new UnitTests().Unit(GetLocalConnection(), database);
         }
 
-        //[Fact]
-        //public void FlatFileAzure_Basic()
-        //{
-        //    string database = "test" + Guid.NewGuid().ToString().Replace('-', 'a').Substring(1, 10);
+        [Fact]
+        public void FlatFileAzure_Basic()
+        {
+            string database = "test" + Guid.NewGuid().ToString().Replace('-', 'a').Substring(1, 10);
+            var con = GetAzureConnection();
 
-        //    new UnitTests().Unit(GetAzureConnection(), database);
-        //}
+            if(con != null)
+                new UnitTests().Unit(con, database);
+        }
     }
 }

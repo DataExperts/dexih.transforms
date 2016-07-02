@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Globalization;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -37,13 +38,14 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
+
             _currentRow = _currentRow + Increment;
             if (_currentRow > EndAt)
                 return new ReturnValue<object[]>(false, null);
             var newRow = new object[] { _currentRow };
-            return new ReturnValue<object[]>(true, newRow);
+            return await Task.Run( () => new ReturnValue<object[]>(true, newRow));
         }
 
         public override ReturnValue ResetTransform()

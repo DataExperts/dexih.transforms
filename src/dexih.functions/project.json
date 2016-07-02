@@ -1,5 +1,5 @@
 {
-  "version": "0.1.57",
+  "version": "0.1.60",
   "title": "Data Experts Group - Functions Library",
   "description": "This is a support library containing helpers and functions for the transforms packages.",
   "authors": [ "Gary Holland" ],
@@ -16,14 +16,14 @@
   },
 
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Data": "4.0.0.0",
-        "System.Xml": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0"
-      }
-    },
-    "netstandard1.6": {
+    //"net451": {
+    //  "frameworkAssemblies": {
+    //    "System.Data": "4.0.0.0",
+    //    "System.Xml": "4.0.0.0",
+    //    "System.Threading.Tasks": "4.0.0.0"
+    //  }
+    //},
+    "netstandard1.3": {
       "dependencies": {
         "NETStandard.Library": "1.6.0",
         "System.Data.Common": "4.1.0",

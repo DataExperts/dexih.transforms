@@ -8,6 +8,7 @@ using System.Data.Common;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage;
 using System.Net.Http;
+using System.Threading;
 
 namespace dexih.connections
 {
@@ -95,7 +96,7 @@ namespace dexih.connections
 
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             try
             {
@@ -103,9 +104,8 @@ namespace dexih.connections
                 {
                     if (_token == null)
                         return new ReturnValue<object[]>(false, null);
-                    var test = _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token).Result;
 
-                    _tableResult = _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token).Result;
+                    _tableResult = await _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token);
                     _token = _tableResult.ContinuationToken;
                     _currentReadRow = 0;
                 }

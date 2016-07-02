@@ -30,8 +30,6 @@
         "dnxcore50",
         "portable-net451+win8"
       ]
-    },
-    "net451": {
     }
   }
   //"scripts": {

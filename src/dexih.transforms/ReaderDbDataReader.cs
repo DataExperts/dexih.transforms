@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Data.Common;
 using System.Data;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -26,7 +27,7 @@ namespace dexih.transforms
 
             CacheTable = new Table("InReader");
 
-#if NET451
+#if NET46
             try
             {
 
@@ -112,9 +113,9 @@ namespace dexih.transforms
             return new ReturnValue(false, "The source reader cannot be reset as the DbReader is a forward only reader", null);
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
-            bool success = InReader.Read();
+            bool success = await InReader.ReadAsync();
             object[] newRow;
             if (success)
             {

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -78,11 +79,11 @@ namespace dexih.transforms
             return returnValue;
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             object[] newRow = null;
 
-            if (PrimaryTransform.Read() == false)
+            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
             {
                 return new ReturnValue<object[]>(false, null);
             }
@@ -92,7 +93,7 @@ namespace dexih.transforms
                 //first read get a row from the join table.
                 if (_firstRead)
                 {
-                    _joinReaderOpen = ReferenceTransform.Read();
+                    _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
                     _firstRead = false;
                 }
 
@@ -112,7 +113,7 @@ namespace dexih.transforms
 
                     if (recordMatch == false)
                     {
-                        _joinReaderOpen = ReferenceTransform.Read();
+                        _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
                     }
                     else
                     {
@@ -149,7 +150,7 @@ namespace dexih.transforms
                     _joinData = new SortedDictionary<object[], object[]>(new JoinKeyComparer());
 
                     //load the join data into an in memory list
-                    while (ReferenceTransform.Read())
+                    while (await ReferenceTransform.ReadAsync(cancellationToken))
                     {
                         object[] values = new object[ReferenceTransform.FieldCount];
                         object[] joinFields = new object[JoinPairs.Count];

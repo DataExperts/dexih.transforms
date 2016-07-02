@@ -14,7 +14,7 @@ namespace dexih.connections
             SetDefaults();
         }
 
-        private void SetDefaults()
+        public void SetDefaults()
         {
             BufferSize = DefaultBufferSize;
             Delimiter = DefaultDelimiter;

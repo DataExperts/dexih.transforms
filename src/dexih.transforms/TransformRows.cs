@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -144,7 +145,7 @@ namespace dexih.transforms
             return new ReturnValue(true);
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             bool moreRows = true;
             object[] newRow = null;
@@ -153,7 +154,7 @@ namespace dexih.transforms
                 newRow = new object[FieldCount];
 
             //if the top level rowgenerator needs a new record, then read from source
-            if (_rowGenerate[0] == false && PrimaryTransform.Read() == false)
+            if (_rowGenerate[0] == false && await PrimaryTransform.ReadAsync(cancellationToken)== false)
                 return new ReturnValue<object[]>(false, null);
             do
             {
@@ -239,7 +240,7 @@ namespace dexih.transforms
                 if (moreRows)
                     break;
 
-                moreRows = PrimaryTransform.Read();
+                moreRows = await PrimaryTransform.ReadAsync(cancellationToken);
                 _firstRecord = true;
                 //the rowgenerators have finished, so get the next row.
             } while (moreRows);

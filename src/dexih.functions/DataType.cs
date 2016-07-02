@@ -422,7 +422,12 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                     }
                 }
 
-                if(tryBasicType == EBasicType.Numeric && inputBasicType == EBasicType.Date)
+                if (tryBasicType == EBasicType.Boolean && inputBasicType == EBasicType.Numeric)
+                {
+                    result = Convert.ToBoolean(inputValue);
+                }
+
+                if (tryBasicType == EBasicType.Numeric && inputBasicType == EBasicType.Date)
                 {
                     result = ((DateTime)inputValue).Ticks;
                 }

@@ -51,7 +51,7 @@ namespace dexih.connections
         /// <param name="tableName">Table Name</param>
         /// <param name="Properties">Mandatory property "RestfulUri".  Additional properties for the default column values.  Use ColumnName=value</param>
         /// <returns></returns>
-         public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties)
+         public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
         {
             try
             {
@@ -60,7 +60,7 @@ namespace dexih.connections
                     return new ReturnValue<Table>(false, "The properties have not been set to Restful Web Service.  Required properties are (string)RestfulUri.", null);
                 }
 
-                string restfulUri = (string)Properties["RestfulUri"];
+                string restfulUri = Properties["RestfulUri"];
 
                 Table table = new Table(tableName);
                 table.TableName = table.TableName;

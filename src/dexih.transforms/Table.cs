@@ -82,7 +82,7 @@ namespace dexih.transforms
 
         public virtual TableColumns Columns { get; set; }
 
-        private Dictionary<string, string> ExtendedProperties { get; set; }
+        public Dictionary<string, string> ExtendedProperties { get; set; }
 
         public TableColumn this[string columnName]
         {

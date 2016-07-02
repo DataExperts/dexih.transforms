@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Data.Common;
+using System.Threading;
 
 namespace dexih.connections
 {
@@ -60,9 +61,9 @@ namespace dexih.connections
 
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
-            if (!_sqlReader.Read())
+            if (! await _sqlReader.ReadAsync())
                 return new ReturnValue<object[]>(false, null);
 
             //load the new row up, converting datatypes where neccessary.
@@ -102,7 +103,7 @@ namespace dexih.connections
 
             var reader = readerResult.Value;
 
-            if (reader.Read())
+            if (await reader.ReadAsync())
             {
                 object[] values = new object[CacheTable.Columns.Count];
                 reader.GetValues(values);

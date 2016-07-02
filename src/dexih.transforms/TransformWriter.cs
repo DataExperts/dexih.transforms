@@ -83,7 +83,7 @@ namespace dexih.transforms
                 }
 
                 bool firstRead = true;
-                while (inTransform.Read())
+                while (await inTransform.ReadAsync(cancelToken))
                 {
                     if (firstRead)
                     {

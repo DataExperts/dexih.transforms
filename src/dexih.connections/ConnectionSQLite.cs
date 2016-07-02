@@ -27,7 +27,9 @@ namespace dexih.connections
 
         public override object ConvertParameterType(object value)
         {
-            if (value.GetType() == typeof(Guid) || value.GetType() == typeof(UInt64))
+            if (value == null)
+                return DBNull.Value;
+            else if (value.GetType() == typeof(Guid) || value.GetType() == typeof(UInt64))
                 return value.ToString();
             else
                 return value;
@@ -226,7 +228,7 @@ namespace dexih.connections
         {
             string returnValue;
 
-            if (value.GetType().ToString() == "System.DBNull")
+            if (value == null || value.GetType().ToString() == "System.DBNull")
                 return "null";
 
             switch (type)
@@ -331,6 +333,9 @@ namespace dexih.connections
         {
             try
             {
+                if (!Directory.Exists(ServerName))
+                    return new ReturnValue<List<string>>(false, "The directory " + ServerName + " does not exist.", null);
+
                 var dbList = await Task.Factory.StartNew(() =>
                 {
                     var files = Directory.GetFiles(ServerName, "*.sqlite");
@@ -339,7 +344,7 @@ namespace dexih.connections
 
                     foreach (var file in files)
                     {
-                        list.Add(Path.GetFileName(file));
+                        list.Add(Path.GetFileName(file).Replace(".sqlite", ""));
                     }
 
                     return list;
@@ -376,7 +381,7 @@ namespace dexih.connections
 
                 List<string> tableList = new List<string>();
 
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     tableList.Add((string)reader["name"]);
                 }
@@ -392,7 +397,7 @@ namespace dexih.connections
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, object> Properties = null)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties = null)
         {
             try
             {

@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
+using System.Threading;
 
 namespace dexih.transforms
 {
@@ -62,9 +63,9 @@ namespace dexih.transforms
             return returnValue;
         }
 
-        protected override ReturnValue<object[]> ReadRecord()
+        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
-            if (PrimaryTransform.Read() == false)
+            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
                 return new ReturnValue<object[]>(false, null);
             bool showRecord;
             do //loop through the records util the filter is true
@@ -97,7 +98,7 @@ namespace dexih.transforms
 
                 TransformRowsFiltered += 1;
 
-            } while (PrimaryTransform.Read());
+            } while (await PrimaryTransform.ReadAsync(cancellationToken));
 
             object[] newRow;
 
