@@ -14,21 +14,23 @@ build_script:
 - appveyor-retry dotnet restore -v Minimal
 - dotnet build **\project.json -c %CONFIGURATION%
 - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.functions\project.json
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.functions\project.json
+- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.transforms\project.json
+- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections\project.json
 test_script:
 - dotnet test .\test\dexih.functions.tests
 - dotnet test .\test\dexih.transforms.tests
+- dotnet test .\test\dexih.connections.tests
 artifacts:
   - path: artifacts\*.nupkg
 services:
   - mssql2014
   
-#deploy:
-# - provider: NuGet
-#   server: https://www.myget.org/F/ci/api/v2/package
-#   api_key:
-#     secure: Qwf1a1BP2lCg6c9F5xt7hwDVciba1FhiYewLIAGzAVLeNh0TiAamxz78W06ij4tp
-#   skip_symbols: false
-#   symbol_server: https://www.myget.org/F/ci/api/v2/package
-#cache:
-# - '%USERPROFILE%\.nuget\packages'
+deploy:
+ - provider: NuGet
+   server: https://www.myget.org/F/ci/api/v2/package
+   api_key:
+     secure: 170059f0-89f0-472a-8d89-2ba78ca6cb2c
+   skip_symbols: false
+   symbol_server: https://www.myget.org/F/ci/api/v2/package
+cache:
+ - '%USERPROFILE%\.nuget\packages'
