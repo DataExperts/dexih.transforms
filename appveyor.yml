@@ -19,7 +19,7 @@ build_script:
 test_script:
 - dotnet test .\test\dexih.functions.tests
 - dotnet test .\test\dexih.transforms.tests
-- dotnet test .\test\dexih.connections.tests
+- dotnet test .\test\dexih.connections.test
 artifacts:
   - path: artifacts\*.nupkg
 services:
