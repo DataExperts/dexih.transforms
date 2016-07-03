@@ -30,10 +30,10 @@ services:
   
 deploy:
  - provider: NuGet
-   server: http://www.nuget.org/api/v2/package
+   server: https://www.nuget.org/api/v2/package
    api_key:
      secure: 170059f0-89f0-472a-8d89-2ba78ca6cb2c
    skip_symbols: false
-   symbol_server: http://www.nuget.org/api/v2/package
+   symbol_server: https://www.nuget.org/api/v2/package
 cache:
  - '%USERPROFILE%\.nuget\packages'
