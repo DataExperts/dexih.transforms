@@ -20,7 +20,7 @@ test_script:
 - dotnet test .\test\dexih.functions.tests
 - dotnet test .\test\dexih.transforms.tests
 - cd test\dexih.connections.test
-- 'C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe'
+- '"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start'
 - dotnet test 
 - cd ..\..
 artifacts:
