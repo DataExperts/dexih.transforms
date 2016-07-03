@@ -19,7 +19,10 @@ build_script:
 test_script:
 - dotnet test .\test\dexih.functions.tests
 - dotnet test .\test\dexih.transforms.tests
-- dotnet test .\test\dexih.connections.test
+- cd test\dexih.connections.test
+- "C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe"
+- dotnet test 
+- cd ..\..
 artifacts:
   - path: artifacts\*.nupkg
 services:
