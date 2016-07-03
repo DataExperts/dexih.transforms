@@ -89,7 +89,7 @@ namespace dexih.connections
                         });
                     }
 
-                    var result = LookupRow(filters).Result;
+                    var result = await LookupRow(filters);
 
                     return result;
                 }

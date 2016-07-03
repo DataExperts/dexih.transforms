@@ -402,7 +402,7 @@ namespace dexih.connections
 
                 CloudTable cTable = connection.GetTableReference(table.TableName);
                 await cTable.DeleteIfExistsAsync(null, null,cancelToken);
-                result = Retry.Do(() => cTable.CreateIfNotExistsAsync(null, null,cancelToken).Result, TimeSpan.FromSeconds(10), 6);
+                result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(null, null,cancelToken), TimeSpan.FromSeconds(10), 6);
 
                 return new ReturnValue(result);
             }

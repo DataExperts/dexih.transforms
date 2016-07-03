@@ -17,10 +17,12 @@ namespace dexih.connections.test
 
         static Helpers()
         {
+            Console.WriteLine("Current directory is: " + Directory.GetCurrentDirectory());
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
-                .AddUserSecrets()
+                //.AddUserSecrets()
                 .AddEnvironmentVariables();
 
             var Configuration = builder.Build();

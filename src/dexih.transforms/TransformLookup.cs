@@ -94,7 +94,7 @@ namespace dexih.transforms
                 });
             }
 
-            var lookup = ReferenceTransform.LookupRow(filters).Result;
+            var lookup = await ReferenceTransform.LookupRow(filters);
             if (lookup.Success)
             {
                 for (int i = 0; i < ReferenceTransform.FieldCount; i++)

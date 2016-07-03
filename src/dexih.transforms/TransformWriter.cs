@@ -279,16 +279,16 @@ namespace dexih.transforms
                     return returnValue;
             }
 
-            if (CreateRecordsTask != null && !CreateRecordsTask.Result.Success)
+            if (CreateRecordsTask != null && !(await CreateRecordsTask).Success)
                 return CreateRecordsTask.Result;
 
-            if (UpdateRecordsTask != null && !UpdateRecordsTask.Result.Success)
+            if (UpdateRecordsTask != null && !(await UpdateRecordsTask).Success)
                 return UpdateRecordsTask.Result;
 
-            if (DeleteRecordsTask != null && !DeleteRecordsTask.Result.Success)
+            if (DeleteRecordsTask != null && !(await DeleteRecordsTask).Success)
                 return DeleteRecordsTask.Result;
 
-            if (RejectRecordsTask != null && !RejectRecordsTask.Result.Success)
+            if (RejectRecordsTask != null && !(await RejectRecordsTask).Success)
                 return RejectRecordsTask.Result;
 
             //update the statistics.
