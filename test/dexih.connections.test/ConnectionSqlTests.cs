@@ -22,27 +22,27 @@ namespace dexih.connections.test
         }
 
         [Fact]
-        public void TestSqlServer_BasicTests()
+        public async Task TestSqlServer_BasicTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            new UnitTests().Unit(GetConnection(), database);
+            await new UnitTests().Unit(GetConnection(), database);
         }
 
         [Fact]
-        public void TestSqlServer_PerformanceTests()
+        public async Task TestSqlServer_PerformanceTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            new PerformanceTests().Performance(GetConnection(), database, 1000);
+            await new PerformanceTests().Performance(GetConnection(), database, 1000);
         }
 
         [Fact]
-        public void TestSqlServer_TransformTests()
+        public async Task TestSqlServer_TransformTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            new TransformTests().Transform(GetConnection(), database);
+            await new TransformTests().Transform(GetConnection(), database);
         }
 
         [Fact]

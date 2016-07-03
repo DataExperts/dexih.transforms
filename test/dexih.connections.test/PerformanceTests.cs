@@ -18,10 +18,8 @@ namespace dexih.connections.test
         /// Perfromance tests should run in around 1 minute. 
         /// </summary>
         /// <param name="connection"></param>
-        public void Performance(Connection connection, string databaseName, int rows)
+        public async Task Performance(Connection connection, string databaseName, int rows)
         {
-            Task.Run(async () =>
-            {
                 ReturnValue returnValue;
 
                 returnValue = await connection.CreateDatabase(databaseName);
@@ -166,7 +164,6 @@ namespace dexih.connections.test
                 Assert.Equal(true, previewTable.Success);
                 Assert.Equal(50, previewTable.Value.Data.Count);
 
-            }).Wait();
         }
 
     }

@@ -16,10 +16,8 @@ namespace dexih.connections.test
 
 
         //run tests applicable to a managed database.
-        public void Unit(Connection connection, string databaseName)
+        public async Task Unit(Connection connection, string databaseName)
         {
-            Task.Run(async () =>
-            {
                 ReturnValue returnValue;
 
                 returnValue = await connection.CreateDatabase(databaseName);
@@ -240,7 +238,6 @@ namespace dexih.connections.test
                     Assert.True(Convert.ToString(returnLookup.Value[0]) == "value5", "Select count - value :" + returnLookup.Value);
                 }
 
-            }).Wait();
         }
 
 

@@ -20,25 +20,25 @@ namespace dexih.connections.test
         }
 
         [Fact]
-        public void TestSqlite_BasicTests()
+        public async Task TestSqlite_BasicTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
             ConnectionSqlite connection = GetConnection();
-             new UnitTests().Unit(connection, database);
+            await new UnitTests().Unit(connection, database);
         }
 
         [Fact]
-        public void TestSqlite_TransformTests()
+        public async Task TestSqlite_TransformTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            new TransformTests().Transform(GetConnection(), database);
+            await new TransformTests().Transform(GetConnection(), database);
         }
 
         [Fact]
-        public void TestSqlite_PerformanceTests()
+        public async Task TestSqlite_PerformanceTests()
         {
-            new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 10000);
+            await new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 10000);
         }
     }
 }

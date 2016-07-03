@@ -25,10 +25,14 @@ namespace dexih.connections.test
 
         public ConnectionFlatFileAzureFile GetAzureConnection()
         {
+            var ConnectionString = Convert.ToString(Helpers.AppSettings["FlatFileAzure:ConnectionString"]);
+            if (ConnectionString == "")
+                return null;
+
             var connection = new ConnectionFlatFileAzureFile()
             {
                 Name = "Test Connection",
-                ConnectionString = Convert.ToString(Helpers.AppSettings["FlatFileAzure:ConnectionString"]),
+                ConnectionString = ConnectionString,
                 UseConnectionString = true
             };
             return connection;
@@ -36,21 +40,21 @@ namespace dexih.connections.test
 
 
         [Fact]
-        public void FlatFileLocal_Basic()
+        public async Task FlatFileLocal_Basic()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            new UnitTests().Unit(GetLocalConnection(), database);
+            await new UnitTests().Unit(GetLocalConnection(), database);
         }
 
         [Fact]
-        public void FlatFileAzure_Basic()
+        public async Task FlatFileAzure_Basic()
         {
             string database = "test" + Guid.NewGuid().ToString().Replace('-', 'a').Substring(1, 10);
             var con = GetAzureConnection();
 
             if(con != null)
-                new UnitTests().Unit(con, database);
+                await new UnitTests().Unit(con, database);
         }
     }
 }

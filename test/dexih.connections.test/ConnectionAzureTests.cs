@@ -25,26 +25,26 @@ namespace dexih.connections.test
         }
 
         [Fact]
-        public void Azure_Basic()
+        public async Task Azure_Basic()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            new UnitTests().Unit(GetConnection(), database);
+            await new UnitTests().Unit(GetConnection(), database);
         }
 
         [Fact]
-        public void Azure_Transform()
+        public async Task Azure_Transform()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            new TransformTests().Transform(GetConnection(), database);
+            await new TransformTests().Transform(GetConnection(), database);
         }
 
         [Fact]
-        public void Azure_Performance()
+        public async Task Azure_Performance()
         {
 
-            new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 100);
+            await new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 100);
         }
 
     }

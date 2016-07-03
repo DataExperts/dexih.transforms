@@ -22,7 +22,7 @@ namespace dexih.connections.test
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
-                //.AddUserSecrets()
+                .AddUserSecrets()
                 .AddEnvironmentVariables();
 
             var Configuration = builder.Build();

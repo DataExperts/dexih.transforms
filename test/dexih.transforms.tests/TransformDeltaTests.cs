@@ -56,10 +56,8 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public void RunDeltaTest_update()
+        public async Task RunDeltaTest_update()
         {
-            Task.Run(async () =>
-            {
                 ReaderMemory Source = Helpers.CreateUnSortedTestData();
 
                 Table targetTable = Source.CacheTable.Copy();
@@ -167,14 +165,11 @@ namespace dexih.transforms.tests
                 Assert.True(rowsCreated == 1);
                 Assert.True(rowsUpdated == 2);
                 Assert.True(count == 3);
-            }).Wait();
         }
 
         [Fact]
-        public void RunDeltaTest_updatePreserve()
+        public async Task RunDeltaTest_updatePreserve()
         {
-            Task.Run(async () =>
-           {
                ReaderMemory Source = Helpers.CreateUnSortedTestData();
 
                Table targetTable = Source.CacheTable.Copy();
@@ -258,7 +253,6 @@ namespace dexih.transforms.tests
 
                Assert.True(transformDelta.TotalRowsIgnored == 10);
                Assert.True(count == 0);
-           }).Wait();
 
         }
 

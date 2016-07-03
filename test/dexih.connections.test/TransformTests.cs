@@ -14,15 +14,8 @@ namespace dexih.connections.test
     public class TransformTests
     {
 
-
-
-
-
-
-        public void Transform(Connection connection, string databaseName)
+        public async Task Transform(Connection connection, string databaseName)
         {
-            Task.Run(async () =>
-            {
                 Table table = Helpers.CreateTable();
 
                 ReturnValue returnValue;
@@ -95,7 +88,6 @@ namespace dexih.connections.test
                 returnValue = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, null, null, CancellationToken.None);
                 Assert.True(returnValue.Success, returnValue.Message);
                 Assert.Equal(10, writerResult.RowsCreated);
-            }).Wait();
         }
 
     }
