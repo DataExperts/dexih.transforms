@@ -9,26 +9,22 @@
 [nuget]:     https://www.nuget.org/packages/dexih.transforms/
 [nuget-img]: https://badge.fury.io/nu/dexih.transforms.svg
 [dex-img]: http://dataexpertsgroup.com/img/dex_web_logo.png
-[dex]: http://dataexpertsgroup.com
+[dex]: https://dataexpertsgroup.com
 
 ## What is this?
 
-This library provides unlimited capabilities for you to transform, analyze and process data.  
+This cross platform library provides capabilities to transform, analyze and process data.  
 
 The key features are:
-* Seamlessly extract and deliver data within your application logic.
-* Easily Group, Sort, Pivot and Join data sets from heterogeneous data sources on the fly.
-* An extensive library of built in analytical functions.
-* Perform any type of analytical calculations across your datasets.
-* Runs fast!  Can easily process 100,000's of rows per second.
-* Uses standard database classes and can be integrated with all popular databases.
-* Fully portable to any platform that supports the .NetStandard library (currently includes Windows, Mac and Linux variants).
-* Data profiling.
-* Manage change data capture
+* Group, Sort, Pivot and Join data sets from heterogeneous data sources on the fly.
+* Track and manage changing data and preserve change history (i.e. slowly changing dimensions).
+* Leverage an extensive library of built in analytical functions, or create custom functions.
 * Preserve change history (i.e. slowly changing dimensions)
 * Column level valiation and rejection rules.
-* 
-This powerful library can be used as a foundation for applications such as:
+* Data profiling and column distribution analysis.
+* Built in data connectors load from databases, flatfiles & web services.
+
+This library can be used as a foundation for applications the process data such as:
 * Business Intelligence and reporting.
 * Batch processing, Data Integration or Extract Transform Load (ETL) processing.
 * Real-time analysis and alerting.
