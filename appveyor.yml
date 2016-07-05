@@ -15,14 +15,25 @@ build_script:
 - dotnet build **\project.json -c %CONFIGURATION%
 - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.functions\project.json
 - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.transforms\project.json
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections\project.json
+- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.azure\project.json
+- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.flatfile\project.json
+- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.sql\project.json
+- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.webservice.restful\project.json
+- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.webservice.soap\project.json
 test_script:
 - dotnet test .\test\dexih.functions.tests
 - dotnet test .\test\dexih.transforms.tests
-- cd test\dexih.connections.test
-- "C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe"
+- cd test\dexih.connections.azure.tests
+- '"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start'
 - dotnet test 
-- cd ..\..
+- cd ..\dexih.connections.flatfile.tests
+- dotnet test 
+- cd ..\dexih.connections.sql.tests
+- dotnet test 
+- cd ..\dexih.connections.webservice.restful.tests
+- dotnet test 
+- cd ..\dexih.connections.webservice.soap.tests
+- dotnet test 
 artifacts:
   - path: artifacts\*.nupkg
 services:
@@ -30,10 +41,10 @@ services:
   
 deploy:
  - provider: NuGet
-   server: https://www.myget.org/F/ci/api/v2/package
+   server: https://www.nuget.org/api/v2/package
    api_key:
-     secure: 170059f0-89f0-472a-8d89-2ba78ca6cb2c
+     secure: D2Fu0l/iyBVmVqt/yUztGOFPy3FhYdt9DdnYTgr5KvYYSvb+mRstFwoLeEpmZTUN
    skip_symbols: false
-   symbol_server: https://www.myget.org/F/ci/api/v2/package
+   symbol_server: https://www.nuget.org/api/v2/package
 cache:
  - '%USERPROFILE%\.nuget\packages'
