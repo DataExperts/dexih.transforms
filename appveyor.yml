@@ -32,7 +32,7 @@ deploy:
  - provider: NuGet
    server: https://www.nuget.org/api/v2/package
    api_key:
-     secure: 170059f0-89f0-472a-8d89-2ba78ca6cb2c
+     secure: D2Fu0l/iyBVmVqt/yUztGOFPy3FhYdt9DdnYTgr5KvYYSvb+mRstFwoLeEpmZTUN
    skip_symbols: false
    symbol_server: https://www.nuget.org/api/v2/package
 cache:
