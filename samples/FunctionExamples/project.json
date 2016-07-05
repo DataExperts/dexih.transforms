@@ -5,7 +5,7 @@
   },
 
   "dependencies": {
-    "dexih.functions": "0.1.*"
+    "dexih.functions": "0.2.*"
   },
 
   "frameworks": {

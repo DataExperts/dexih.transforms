@@ -1,5 +1,4 @@
-﻿using dexih.connections;
-using dexih.functions;
+﻿using dexih.functions;
 using dexih.transforms;
 using System;
 using System.Collections.Generic;
@@ -14,8 +13,6 @@ namespace dexih.connections.test
     public class UnitTests
     {
 
-
-        //run tests applicable to a managed database.
         public async Task Unit(Connection connection, string databaseName)
         {
                 ReturnValue returnValue;
@@ -23,7 +20,7 @@ namespace dexih.connections.test
                 returnValue = await connection.CreateDatabase(databaseName);
                 Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
 
-                Table table = Helpers.CreateTable();
+                Table table = DataSets.CreateTable();
 
                 await connection.AddMandatoryColumns(table, 1000);
 
@@ -190,7 +187,7 @@ namespace dexih.connections.test
 
                 //start a datawriter and insert the test data
                 await connection.DataWriterStart(table);
-                var testData = Helpers.CreateTestData();
+                var testData = DataSets.CreateTestData();
 
                 var bulkResult = await connection.ExecuteInsertBulk(table, testData, CancellationToken.None);
                 Assert.True(bulkResult.Success, "WriteDataBulk - Message:" + bulkResult.Message);

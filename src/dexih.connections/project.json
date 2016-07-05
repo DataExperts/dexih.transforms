@@ -1,7 +1,7 @@
 {
-  "version": "0.1.60",
-  "title": "Data Experts Group - Connections Library",
-  "description": "This is a support library which enables the transform library to access different types of connections.",
+  "version": "0.2.0-*",
+  "title": "Data Experts Group - Connections - Sql Server & Sqlite",
+  "description": "This is a support library which enables the transform library to access SqlServer and Sqlite databases.",
   "authors": [ "Gary Holland" ],
 
   "packOptions": {
@@ -12,16 +12,7 @@
   },
 
   "frameworks": {
-    "net46": {
-      "frameworkAssemblies": {
-        "System.Net.Http": "4.0.0.0",
-        "System.Web.Services": "4.0.0.0"
-      },
-      "dependencies": {
-        //"Oracle.ManagedDataAccess": "12.1.24160419"
-      }
-    },
-    "netstandard1.5": {
+    "netstandard1.3": {
       "dependencies": {
         "NETStandard.Library": "1.6.0"
       },
@@ -32,14 +23,8 @@
     }
   },
   "dependencies": {
-    "dexih.transforms": "0.1.*",
+    "dexih.transforms": "0.2.*",
     "Microsoft.Data.Sqlite": "1.0.0",
-    "System.Data.SqlClient": "4.1.0",
-    "WindowsAzure.Storage": "7.0.2-preview"
+    "System.Data.SqlClient": "4.1.0"
   }
-  //"scripts": {
-  //  "postcompile": [
-  //    "dotnet pack --no-build --configuration Debug -o ../../../packages"
-  //  ]
-  //}
 }

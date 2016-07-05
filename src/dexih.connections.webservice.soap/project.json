@@ -1,0 +1,33 @@
+﻿{
+  "version": "0.2.0-*",
+  "title": "Data Experts Group - Connections - Soap WebServices",
+  "description": "This is a support library which enables the transform library to access Soap based webservices.",
+  "authors": [ "Gary Holland" ],
+
+  "packOptions": {
+    "releaseNotes": "Note: This project is still under devlopement with regular breaking changes.",
+    "copyright": "Data Experts Group Ltd.",
+    "tags": [ "Business Intelligence", "BI", "ETL", "Data Integration", "Data Management", "DbDataReader", "Data Processing", "" ],
+    "projectUrl": "https://github.com/dataexperts/dexih.transforms"
+  },
+
+  "frameworks": {
+    "net46": {
+      "frameworkAssemblies": {
+        "System.Net.Http": "4.0.0.0",
+        "System.Web.Services": "4.0.0.0"
+      },
+      "dependencies": {
+        //"Oracle.ManagedDataAccess": "12.1.24160419"
+      }
+    }
+  },
+  "dependencies": {
+    "dexih.transforms": "0.2.*"
+  }
+  //"scripts": {
+  //  "postcompile": [
+  //    "dotnet pack --no-build --configuration Debug -o ../../../packages"
+  //  ]
+  //}
+}

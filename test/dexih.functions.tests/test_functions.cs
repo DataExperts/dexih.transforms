@@ -49,7 +49,6 @@ namespace dexih.unittests
             parameter.DataType = ETypeCode.Int32;
             result = parameter.SetValue("123");
             Assert.Equal("System.Int32", parameter.Value.GetType().ToString());
-
         }
 
         [Fact]

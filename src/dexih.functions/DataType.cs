@@ -325,14 +325,14 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                     case ETypeCode.DateTime:
                         return new ReturnValue<ECompareResult>(true, (DateTime)inputValue == (DateTime)compareValue ? ECompareResult.Equal : (DateTime)inputValue > (DateTime)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Time:
-                        return new ReturnValue<ECompareResult>(true, (TimeSpan)inputValue == (TimeSpan)compareValue ? ECompareResult.Equal : (DateTime)inputValue > (DateTime)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (TimeSpan)inputValue == (TimeSpan)compareValue ? ECompareResult.Equal : (TimeSpan)inputValue > (TimeSpan)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     default:
                         return new ReturnValue<ECompareResult>(false, "Unsupported datatype: " + dataType, null);
                 }
             }
             catch(Exception ex)
             {
-                return new ReturnValue<ECompareResult>(false, "The compare of " + inputValue.ToString() + " to " + compareValue.ToString() + " failed with the following errro: " + ex.Message, ex);
+                return new ReturnValue<ECompareResult>(false, "The compare of " + (inputValue??"Null").ToString() + " to " + (compareValue ?? "Null").ToString() + " failed with the following errror: " + ex.Message, ex);
             }
         }
 
@@ -386,6 +386,9 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                         case ETypeCode.Byte:
                             result = Convert.ToByte(inputValue);
                             return new ReturnValue<object>(true, result);
+                        case ETypeCode.SByte:
+                            result = Convert.ToSByte(inputValue);
+                            return new ReturnValue<object>(true, result);
                         case ETypeCode.Int16:
                             result = Convert.ToInt16(inputValue);
                             return new ReturnValue<object>(true, result);
@@ -409,9 +412,6 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                             return new ReturnValue<object>(true, result);
                         case ETypeCode.Decimal:
                             result = Convert.ToDecimal(inputValue);
-                            return new ReturnValue<object>(true, result);
-                        case ETypeCode.SByte:
-                            result = Convert.ToSByte(inputValue);
                             return new ReturnValue<object>(true, result);
                         case ETypeCode.Single:
                             result = Convert.ToSingle(inputValue);
@@ -443,9 +443,14 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                     return new ReturnValue<object>(false, reason, null);
                 }
 
-                if (inputBasicType == EBasicType.String)
+                if (result == null)
                 {
-                    string value = (string)inputValue;
+                    string value;
+
+                    if (inputType != ETypeCode.String)
+                        value = inputValue.ToString();
+                    else
+                        value = (string)inputValue;
 
                     bool returnValue;
                     switch (tryDataType)
@@ -541,8 +546,27 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                             Boolean booleanResult;
                             returnValue = Boolean.TryParse(value, out booleanResult);
                             if (returnValue == false)
-                                return new ReturnValue<object>(false, "The value " + value + " could not be converted to a boolean.", null);
-                            result = booleanResult;
+                            {
+                                returnValue = Int16.TryParse(value, out int16Result);
+                                if (returnValue == false)
+                                {
+                                    return new ReturnValue<object>(false, "The value " + value + " could not be converted to a boolean.", null);
+                                }
+                                switch(int16Result)
+                                {
+                                    case 0:
+                                        result = false;
+                                        break;
+                                    case 1:
+                                    case -1:
+                                        result = true;
+                                        break;
+                                    default:
+                                        return new ReturnValue<object>(false, "The value " + value + " could not be converted to a boolean.", null);
+                                }
+                            }
+                            else
+                                result = booleanResult;
                             break;
                         case ETypeCode.DateTime:
                             DateTime dateTimeResult;

@@ -16,14 +16,14 @@ namespace dexih.connections.test
 
         public async Task Transform(Connection connection, string databaseName)
         {
-                Table table = Helpers.CreateTable();
+                Table table = DataSets.CreateTable();
 
                 ReturnValue returnValue;
                 returnValue = await connection.CreateDatabase(databaseName);
                 Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
 
                 //create a new table and write some data to it.  
-                Transform reader = Helpers.CreateTestData();
+                Transform reader = DataSets.CreateTestData();
                 returnValue = await connection.CreateTable(table, true);
                 Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
                 TransformWriter writer = new TransformWriter();
@@ -75,7 +75,7 @@ namespace dexih.connections.test
                     Assert.Equal(5, count);
                 }
 
-                Table deltaTable = Helpers.CreateTable();
+                Table deltaTable = DataSets.CreateTable();
                 deltaTable.AddAuditColumns();
                 deltaTable.TableName = "DeltaTable";
                 returnValue = await connection.CreateTable(deltaTable, true);

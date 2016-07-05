@@ -28,7 +28,7 @@ namespace dexih.connections.test
                 Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
 
                 //create a table that utilizes every available datatype.
-                Table table = new Table("LargeTable" + (Helpers.counter++).ToString());
+                Table table = new Table("LargeTable" + (DataSets.counter++).ToString());
 
                 table.Columns.Add(new TableColumn("SurrogateKey", DataType.ETypeCode.Int32, TableColumn.EDeltaType.SurrogateKey));
                 table.Columns.Add(new TableColumn("UpdateTest", DataType.ETypeCode.Int32));

@@ -1,0 +1,30 @@
+{
+  "userSecretsId": "dexih.connections.test.44fc05ee-e883-4070-8840-c1d8b479a4fe",
+
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "dexih.connections.test": "1.0.0-*",
+    "dexih.connections.azure": "0.2.*",
+    "xunit": "2.1.0",
+    "xunit.runner.visualstudio": "2.1.0",
+    "dotnet-test-xunit": "1.0.0-*"
+  },
+
+  "testRunner": "xunit",
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0"
+        }
+      },
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
+    }
+  }
+}

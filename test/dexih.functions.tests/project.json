@@ -1,11 +1,7 @@
 {
-  "version": "1.0.0",
-  "description": "dexih_unit_tests Class Library",
-  "authors": [ "Gary" ],
-
   "dependencies": {
-    "dexih.functions": "0.1.*",
-    "dexih.transforms": "0.1.*",
+    "dexih.functions": "0.2.*",
+    "dexih.transforms": "0.2.*",
 
     "xunit": "2.1.0",
     "xunit.runner.visualstudio": "2.1.0",
@@ -21,7 +17,8 @@
           "type": "platform",
           "version": "1.0.0"
         },
-        "System.Reflection.TypeExtensions": "4.1.0"
+        "System.Reflection.TypeExtensions": "4.1.0",
+        "System.Diagnostics.TraceSource": "4.0.0"
       },
       "imports": [
         "dnxcore50",
@@ -29,12 +26,4 @@
       ]
     }
   }
-  //"scripts": {
-  //  "prebuild": [
-  //    "dotnet restore"
-  //  ],
-  //  "postbuild": [
-  //    "dotnet test"
-  //  ]
-  //}
 }

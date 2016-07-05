@@ -4,8 +4,8 @@
   "authors": [ "Gary" ],
 
   "dependencies": {
-    "dexih.functions": "0.1.*",
-    "dexih.transforms": "0.1.*",
+    "dexih.functions": "0.2.*",
+    "dexih.transforms": "0.2.*",
     "Microsoft.Data.Sqlite": "1.0.0",
     "System.Data.SqlClient": "4.1.0",
 
@@ -32,12 +32,4 @@
       ]
     }
   }
-  //"scripts": {
-  //  "prebuild": [
-  //    "dotnet restore"
-  //  ],
-  //  "postbuild": [
-  //    "dotnet test"
-  //  ]
-  //}
 }
