@@ -22,16 +22,16 @@
 [nuget-transforms-img]: https://badge.fury.io/nu/dexih.transforms.svg
 [nuget-functions]:     https://www.nuget.org/packages/dexih.functions/
 [nuget-functions-img]: https://badge.fury.io/nu/dexih.functions.svg
-[nuget-connections-sql]:     https://www.nuget.org/packages/dexih.connection.sql/
-[nuget-connections-sql-img]: https://badge.fury.io/nu/dexih.connection.sql.svg
-[nuget-connections-flatfile]:     https://www.nuget.org/packages/dexih.connection.flatfile/
-[nuget-connections-flatfile-img]: https://badge.fury.io/nu/dexih.connection.flatfile.svg
-[nuget-connections-azure]:     https://www.nuget.org/packages/dexih.connection.azure/
-[nuget-connections-azure-img]: https://badge.fury.io/nu/dexih.connection.azure.svg
-[nuget-connections-restful]:     https://www.nuget.org/packages/dexih.connection.restful/
-[nuget-connections-restful-img]: https://badge.fury.io/nu/dexih.connection.restful.svg
-[nuget-connections-soap]:     https://www.nuget.org/packages/dexih.connection.soap/
-[nuget-connections-soap-img]: https://badge.fury.io/nu/dexih.connection.soap.svg
+[nuget-connections-sql]:     https://www.nuget.org/packages/dexih.connections.sql/
+[nuget-connections-sql-img]: https://badge.fury.io/nu/dexih.connectiosn.sql.svg
+[nuget-connections-flatfile]:     https://www.nuget.org/packages/dexih.connections.flatfile/
+[nuget-connections-flatfile-img]: https://badge.fury.io/nu/dexih.connections.flatfile.svg
+[nuget-connections-azure]:     https://www.nuget.org/packages/dexih.connections.azure/
+[nuget-connections-azure-img]: https://badge.fury.io/nu/dexih.connections.azure.svg
+[nuget-connections-restful]:     https://www.nuget.org/packages/dexih.connections.restful/
+[nuget-connections-restful-img]: https://badge.fury.io/nu/dexih.connections.restful.svg
+[nuget-connections-soap]:     https://www.nuget.org/packages/dexih.connections.soap/
+[nuget-connections-soap-img]: https://badge.fury.io/nu/dexih.connections.soap.svg
 [dex-img]: http://dataexpertsgroup.com/img/dex_web_logo.png
 [dex]: https://dataexpertsgroup.com
 
