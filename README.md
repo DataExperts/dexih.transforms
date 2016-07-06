@@ -2,27 +2,50 @@
 [![][dex-img]][dex]
 
 [![][build-img]][build]
-[![][nuget-img]][nuget]
+
+## Nuget Packages
+
+|Package|Nuget Link|
+|---|---|
+|Transforms - (Start here) The base transforms library, table caching, and a basic connection.|[![][nuget-transforms-img]][nuget-transforms]|
+|Functions - Standard functions, data type conversations and other support libraries for the transforms.|[![][nuget-functions-img]][nuget-functions]|
+|Connections Sql - Connections for Sql Server and Sqlite.|[![][nuget-connections-sql-img]][nuget-connections-sql]|
+|Connections FlatFile - Connections for various types of delimited flat files.|[![][nuget-connections-flatfile-img]][nuget-connections-flatfile]|
+|Connections Azure - Connections Azure Table Storage and Azure File Storage.|[![][nuget-connections-azure-img]][nuget-connections-azure]|
+|Connections Restful - Connection to source data form Rest based web services.|[![][nuget-connections-restful-img]][nuget-connections-restful]|
+|Connections Soap - Connection to source data form Soap based web services.|[![][nuget-connections-soap-img]][nuget-connections-soap]|
+---
 
 [build]:     https://ci.appveyor.com/project/dataexperts/dexih-transforms
 [build-img]: https://ci.appveyor.com/api/projects/status/q5n1npq7r5a4udle?svg=true
-[nuget]:     https://www.nuget.org/packages/dexih.transforms/
-[nuget-img]: https://badge.fury.io/nu/dexih.transforms.svg
+[nuget-transforms]:     https://www.nuget.org/packages/dexih.transforms/
+[nuget-transforms-img]: https://badge.fury.io/nu/dexih.transforms.svg
+[nuget-functions]:     https://www.nuget.org/packages/dexih.functions/
+[nuget-functions-img]: https://badge.fury.io/nu/dexih.functions.svg
+[nuget-connections-sql]:     https://www.nuget.org/packages/dexih.connection.sql/
+[nuget-connections-sql-img]: https://badge.fury.io/nu/dexih.connection.sql.svg
+[nuget-connections-flatfile]:     https://www.nuget.org/packages/dexih.connection.flatfile/
+[nuget-connections-flatfile-img]: https://badge.fury.io/nu/dexih.connection.flatfile.svg
+[nuget-connections-azure]:     https://www.nuget.org/packages/dexih.connection.azure/
+[nuget-connections-azure-img]: https://badge.fury.io/nu/dexih.connection.azure.svg
+[nuget-connections-restful]:     https://www.nuget.org/packages/dexih.connection.restful/
+[nuget-connections-restful-img]: https://badge.fury.io/nu/dexih.connection.restful.svg
+[nuget-connections-soap]:     https://www.nuget.org/packages/dexih.connection.soap/
+[nuget-connections-soap-img]: https://badge.fury.io/nu/dexih.connection.soap.svg
 [dex-img]: http://dataexpertsgroup.com/img/dex_web_logo.png
 [dex]: https://dataexpertsgroup.com
 
 ## What is this?
 
-This cross platform library provides capabilities to transform, analyze and process data.  
+This is a cross platform library that provides capabilities to transform, analyze and process data.  
 
 The key features are:
 * Group, Sort, Pivot and Join data sets from heterogeneous data sources on the fly.
 * Track and manage changing data and preserve change history (i.e. slowly changing dimensions).
 * Leverage an extensive library of built in analytical functions, or create custom functions.
-* Preserve change history (i.e. slowly changing dimensions)
 * Column level valiation and rejection rules.
-* Data profiling and column distribution analysis.
-* Built in data connectors load from databases, flatfiles & web services.
+* Build in data profiling and column distribution analysis.
+* Optimized data connectors load from databases, flatfiles & web services.  
 
 This library can be used as a foundation for applications the process data such as:
 * Business Intelligence and reporting.
@@ -39,7 +62,7 @@ In the next few weeks we will be integrating the following capabilities into the
 
 ## How does it work?
 
-The transformation process works by chaining `transform` objects together and then reading the end of the chain as a `DbDataReader` object.  
+The transformation engine works by chaining `transform` objects together and then reading data from the  end of the chain as a `DbDataReader` object.  
 
 Here is an example that reads data from a sqlserver table, applies a filter, performs some analytics, and then writes the data to a sql server table.
 
@@ -89,11 +112,11 @@ public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetC
 ```
 ## Why not just use SQL?
 
-The transformations in this library generally work best when used in conjuction with optimised SQL queries, however SQL has it's limits.  Some of benefits leveraging the Data Transformation engine versus writing SQL queries:
+The transformations in this library generally work best when used in conjuction with optimised SQL queries, however Sql has limits in many areas of data processin.  The transform library can provide the following benefits:
 
 * Analytic calculations that are difficult to accomplish using SQL.  For example statitical calculations such as median, moving average are very difficult to accomplish with SQL.
 * Row pivoting functions can be used to easily translate structures such as Xml and Json into tabular data.
-* Join data from multiple sources.  For example you can join  datasets on the fly from different databases, or connect to csv files, web services, or no-sql databases.
+* Join data from multiple data sources.  For example you can join  datasets on the fly from different databases, or connect to csv files, web services, or no-sql databases.
 * Reduce workloads on databases can avoid database locking and performance problems when sourcing data from operational databases.
 * Building reusable functions and logic that can be reapplied across multiple databases and database types.
 
