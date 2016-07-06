@@ -5,6 +5,8 @@ configuration:
 platform: Any CPU
 init:
  - ps: $Env:LABEL = "CI" +$Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
+    on:
+    branch: development                # create a build label for dev releases only
 install:
 - ps: Start-FileDownload 'https://download.microsoft.com/download/A/3/8/A38489F3-9777-41DD-83F8-2CBDFAB2520C/packages/DotNetCore.1.0.0-SDK.Preview2-x64.exe'
 - DotNetCore.1.0.0-SDK.Preview2-x64.exe /quiet
