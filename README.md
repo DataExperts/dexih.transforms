@@ -23,7 +23,7 @@
 [nuget-functions]:     https://www.nuget.org/packages/dexih.functions/
 [nuget-functions-img]: https://badge.fury.io/nu/dexih.functions.svg
 [nuget-connections-sql]:     https://www.nuget.org/packages/dexih.connections.sql/
-[nuget-connections-sql-img]: https://badge.fury.io/nu/dexih.connectiosn.sql.svg
+[nuget-connections-sql-img]: https://badge.fury.io/nu/dexih.connections.sql.svg
 [nuget-connections-flatfile]:     https://www.nuget.org/packages/dexih.connections.flatfile/
 [nuget-connections-flatfile-img]: https://badge.fury.io/nu/dexih.connections.flatfile.svg
 [nuget-connections-azure]:     https://www.nuget.org/packages/dexih.connections.azure/
