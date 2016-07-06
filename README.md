@@ -28,10 +28,10 @@
 [nuget-connections-flatfile-img]: https://badge.fury.io/nu/dexih.connections.flatfile.svg
 [nuget-connections-azure]:     https://www.nuget.org/packages/dexih.connections.azure/
 [nuget-connections-azure-img]: https://badge.fury.io/nu/dexih.connections.azure.svg
-[nuget-connections-restful]:     https://www.nuget.org/packages/dexih.connections.restful/
-[nuget-connections-restful-img]: https://badge.fury.io/nu/dexih.connections.restful.svg
-[nuget-connections-soap]:     https://www.nuget.org/packages/dexih.connections.soap/
-[nuget-connections-soap-img]: https://badge.fury.io/nu/dexih.connections.soap.svg
+[nuget-connections-restful]:     https://www.nuget.org/packages/dexih.connections.webservice.restful/
+[nuget-connections-restful-img]: https://badge.fury.io/nu/dexih.connections.webservice.restful.svg
+[nuget-connections-soap]:     https://www.nuget.org/packages/dexih.connections.webservice.soap/
+[nuget-connections-soap-img]: https://badge.fury.io/nu/dexih.connections.webservice.soap.svg
 [dex-img]: http://dataexpertsgroup.com/img/dex_web_logo.png
 [dex]: https://dataexpertsgroup.com
 
