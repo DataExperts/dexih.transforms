@@ -212,8 +212,9 @@ namespace dexih.functions
         public DateTime DateNowUtc() { return DateTime.UtcNow; }
         public String Encrypt(String value, String key) { return EncryptString.Encrypt(value, key).Value; }
         public String Decrypt(String value, String key) { return EncryptString.Decrypt(value, key).Value; }
-        public String CreateSaltedHash(String value) { return PasswordHash.CreateHash(value); }
-        public Boolean ValidateSaltedHash(String value, String hash) { return PasswordHash.ValidatePassword(value, hash); }
+        public String CreateSaltedHash(String value) { return HashString.CreateHash(value); }
+        public Boolean ValidateSaltedHash(String value, String hash) { return HashString.ValidateHash(value, hash); }
+
         public Double Abs(Double value) { return Math.Abs(value); }
         public Double Acos(Double value) { return Math.Acos(value); }
         public Double Asin(Double value) { return Math.Asin(value); }
@@ -258,6 +259,26 @@ namespace dexih.functions
             return returnValue;
         }
         #endregion
+
+        #region Geographical
+        public double GetDistanceTo(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
+        {
+            double rlat1 = Math.PI * fromLatitude / 180;
+            double rlat2 = Math.PI * toLatitude / 180;
+            double theta = fromLongitude - toLongitude;
+            double rtheta = Math.PI * theta / 180;
+            double dist =
+                Math.Sin(rlat1) * Math.Sin(rlat2) + Math.Cos(rlat1) *
+                Math.Cos(rlat2) * Math.Cos(rtheta);
+            dist = Math.Acos(dist);
+            dist = dist * 180 / Math.PI;
+            dist = dist * 60 * 1853.159616F;
+
+            return dist;
+        }
+
+        #endregion
+
 
         #region Parsing Functions
         public bool XPathValues(string xml, string[] xPaths, out string[] values)
@@ -690,21 +711,7 @@ namespace dexih.functions
         }
         #endregion
 
-        public double GetDistanceTo(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
-        {
-            double rlat1 = Math.PI * fromLatitude / 180;
-            double rlat2 = Math.PI * toLatitude / 180;
-            double theta = fromLongitude - toLongitude;
-            double rtheta = Math.PI * theta / 180;
-            double dist =
-                Math.Sin(rlat1) * Math.Sin(rlat2) + Math.Cos(rlat1) *
-                Math.Cos(rlat2) * Math.Cos(rtheta);
-            dist = Math.Acos(dist);
-            dist = dist * 180 / Math.PI;
-            dist = dist * 60 * 6370.693486F;
 
-            return dist;
-        }
     }
 }
 

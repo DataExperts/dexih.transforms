@@ -183,10 +183,10 @@ namespace dexih.functions
                 else
                     Inputs[i].DataType = GetTypeCode(parameterType);
 
-                if (Inputs[i].DataType == ETypeCode.Unknown)
-                {
-                    throw new Exception("The datatype: " + inputParameters[i].GetType().ToString() + " for parameter " + inputParameters[i].Name + " is not a supported datatype.");
-                }
+                //if (Inputs[i].DataType == ETypeCode.Unknown)
+                //{
+                //    throw new Exception("The datatype: " + inputParameters[i].GetType().ToString() + " for parameter " + inputParameters[i].Name + " is not a supported datatype.");
+                //}
 
                 //when an array is found in a method, all parameters are mapped to this.  
                 if (!parameterType.IsArray) parameterCount++;

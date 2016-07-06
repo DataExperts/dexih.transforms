@@ -308,7 +308,7 @@ namespace dexih.transforms
                                 row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey);
                                 break;
                             case TableColumn.ESecurityFlag.OneWayHash:
-                                row[i] = PasswordHash.CreateHash(row[i].ToString());
+                                row[i] = HashString.CreateHash(row[i].ToString());
                                 break;
                         }
                     }
