@@ -123,7 +123,7 @@ namespace dexih.connections.sql
 
             using (var connection = connectionResult.Value)
             {
-                var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, connection);
+                var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, connection, query);
                 if (!readerResult.Success)
                 {
                     return new ReturnValue<object[]>(false, "The connection reader for the table " + CacheTable.TableName + " could failed due to the following error: " + readerResult.Message, readerResult.Exception);
