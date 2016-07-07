@@ -1,5 +1,4 @@
-﻿using dexih.connections.flatfile.azure;
-using dexih.connections.test;
+﻿using dexih.connections.test;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -9,9 +9,9 @@ namespace dexih.connections.azure
 {
     public class ConnectionAzureTests
     {
-        public ConnectionAzure GetConnection()
+        public ConnectionAzureTable GetConnection()
         {
-            return new ConnectionAzure()
+            return new ConnectionAzureTable()
             {
                 //Name = "Test Connection",
                 //ServerName = Convert.ToString(Helpers.AppSettings["Azure:ServerName"]),

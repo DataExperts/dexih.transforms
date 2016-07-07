@@ -1,5 +1,4 @@
-﻿using dexih.connections.sql.sqlite;
-using dexih.connections.test;
+﻿using dexih.connections.test;
 using dexih.functions;
 using System;
 using System.Collections.Generic;
