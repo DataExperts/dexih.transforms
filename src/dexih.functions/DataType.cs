@@ -265,11 +265,11 @@ public static EBasicType GetBasicType(ETypeCode dataType)
         {
             try
             {
-                if (inputValue == null && compareValue == null)
+                if ((inputValue == null || inputValue is DBNull) && (compareValue == null || compareValue is DBNull))
                     return new ReturnValue<ECompareResult>(true, ECompareResult.Equal);
 
-                if (inputValue == null || compareValue == null)
-                    return new ReturnValue<ECompareResult>(true, inputValue == null ? ECompareResult.Less : ECompareResult.Greater);
+                if (inputValue == null || inputValue is DBNull || compareValue == null || compareValue is DBNull)
+                    return new ReturnValue<ECompareResult>(true, (inputValue == null || inputValue is DBNull) ? ECompareResult.Less : ECompareResult.Greater);
 
                 Type type = GetType(dataType);
 

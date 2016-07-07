@@ -22,21 +22,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using Debug = System.Diagnostics.Debug;
 using System.Globalization;
 using System.IO;
 
 using dexih.connections.flatfile.Resources;
-using static dexih.connections.flatfile.FileFormat;
+using dexih.transforms;
+using static dexih.transforms.FileFormat;
 
 namespace dexih.connections.flatfile
 {
-	/// <summary>
-	/// Represents a reader that provides fast, non-cached, forward-only access to CSV data.  
-	/// </summary>
-	public partial class CsvReader : DbDataReader, IDisposable
+    /// <summary>
+    /// Represents a reader that provides fast, non-cached, forward-only access to CSV data.  
+    /// </summary>
+    public partial class CsvReader : DbDataReader, IDisposable
 	{
 		#region Constants
 

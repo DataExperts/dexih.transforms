@@ -13,11 +13,23 @@ namespace dexih.connections.sql
     {
         private bool _isOpen = false;
         private DbDataReader _sqlReader;
+        private DbConnection _sqlConnection;
 
-        public ReaderSQL(Connection connection, Table table)
+        public ReaderSQL(ConnectionSql connection, Table table)
         {
             ReferenceConnection = connection;
             CacheTable = table;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_sqlReader != null)
+                _sqlReader.Dispose();
+
+            if (_sqlConnection != null)
+                _sqlConnection.Dispose();
+
+            base.Dispose(disposing);
         }
 
         public override async Task<ReturnValue> Open(SelectQuery query)
@@ -27,7 +39,15 @@ namespace dexih.connections.sql
                 return new ReturnValue(false, "The reader is already open.", null);
             }
 
-            var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, query);
+            var connectionResult = await ((ConnectionSql)ReferenceConnection).NewConnection();
+            if(!connectionResult.Success)
+            {
+                return new ReturnValue(false, "The connection reader for the table " + CacheTable.TableName + " could failed due to the following error: " + connectionResult.Message, connectionResult.Exception);
+            }
+
+            _sqlConnection = connectionResult.Value;
+
+            var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, query);
 
             if (!readerResult.Success)
             {
@@ -70,11 +90,12 @@ namespace dexih.connections.sql
             object[] row = new object[CacheTable.Columns.Count];
             for (int i = 0; i < _sqlReader.FieldCount; i++)
             {
-                var returnValue = DataType.TryParse(CacheTable.Columns[i].DataType, _sqlReader[i]);
+                int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
+                var returnValue = DataType.TryParse(CacheTable.Columns[ordinal].DataType, _sqlReader[i]);
                 if (!returnValue.Success)
                     return new ReturnValue<object[]>(returnValue);
 
-                row[i] = returnValue.Value;
+                row[ordinal] = returnValue.Value;
             }
             return new ReturnValue<object[]>(true, row);
         }
@@ -94,23 +115,32 @@ namespace dexih.connections.sql
                 Filters = filters,
             };
 
-            var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, query);
-
-            if (!readerResult.Success)
+            ReturnValue<DbConnection> connectionResult = await ((ConnectionSql)ReferenceConnection).NewConnection();
+            if (!connectionResult.Success)
             {
-                return new ReturnValue<object[]>(false, "The connection reader for the table " + CacheTable.TableName + " could failed due to the following error: " + readerResult.Message, readerResult.Exception);
+                return new ReturnValue<object[]>(false, "The connection reader for the table " + CacheTable.TableName + " could failed due to the following error: " + connectionResult.Message, connectionResult.Exception);
             }
 
-            var reader = readerResult.Value;
-
-            if (await reader.ReadAsync())
+            using (var connection = connectionResult.Value)
             {
-                object[] values = new object[CacheTable.Columns.Count];
-                reader.GetValues(values);
-                return new ReturnValue<object[]>(true, values);
+                var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, connection);
+                if (!readerResult.Success)
+                {
+                    return new ReturnValue<object[]>(false, "The connection reader for the table " + CacheTable.TableName + " could failed due to the following error: " + readerResult.Message, readerResult.Exception);
+                }
+
+                using (var reader = readerResult.Value)
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        object[] values = new object[CacheTable.Columns.Count];
+                        reader.GetValues(values);
+                        return new ReturnValue<object[]>(true, values);
+                    }
+                    else
+                        return new ReturnValue<object[]>(false, "The lookup query for " + CacheTable.TableName + " return no rows.", null);
+                }
             }
-            else
-                return new ReturnValue<object[]>(false, "The lookup query for " + CacheTable.TableName + " return no rows.", null);
         }
     }
 }

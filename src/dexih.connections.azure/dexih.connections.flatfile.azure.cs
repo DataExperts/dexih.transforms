@@ -10,7 +10,7 @@ using dexih.transforms;
 using System.Data.Common;
 using dexih.connections.flatfile;
 
-namespace dexih.connections.flatfile.azure
+namespace dexih.connections.azure
 {
     public class ConnectionFlatFileAzureFile : ConnectionFlatFile
     {
@@ -346,7 +346,7 @@ namespace dexih.connections.flatfile.azure
             }
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
         {
             throw new NotImplementedException();
         }

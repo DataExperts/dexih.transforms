@@ -24,11 +24,11 @@ namespace dexih.connections.azure
         CloudTable _tableReference;
         private int _currentReadRow;
 
-        private ConnectionAzure _connection;
+        private ConnectionAzureTable _connection;
 
         public ReaderAzure(Connection connection, Table table)
         {
-            _connection = (ConnectionAzure)connection;
+            _connection = (ConnectionAzureTable)connection;
             CacheTable = table;
         }
 

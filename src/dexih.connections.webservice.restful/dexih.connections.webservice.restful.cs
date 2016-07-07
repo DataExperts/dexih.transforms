@@ -14,7 +14,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using static dexih.functions.DataType;
 
-namespace dexih.connections.webservice.restful
+namespace dexih.connections.webservice
 {
     
     public class ConnectionRestful : Connection
@@ -305,7 +305,7 @@ namespace dexih.connections.webservice.restful
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
         {
             throw new NotImplementedException();
         }

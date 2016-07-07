@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 
-namespace dexih.connections.flatfile
+namespace dexih.transforms
 {
     public class DexihFileProperties
     {

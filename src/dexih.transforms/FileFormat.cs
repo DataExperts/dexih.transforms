@@ -4,8 +4,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace dexih.connections.flatfile
-{
+namespace dexih.transforms
+{ 
     
     public class FileFormat
     {

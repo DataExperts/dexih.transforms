@@ -9,7 +9,7 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-namespace dexih.connections.webservice.restful
+namespace dexih.connections.webservice
 {
     public class ReaderRestful : Transform
     {

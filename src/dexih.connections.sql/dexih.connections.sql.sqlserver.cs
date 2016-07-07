@@ -13,7 +13,7 @@ using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
 
-namespace dexih.connections.sql.sqlserver
+namespace dexih.connections.sql
 {
     public class ConnectionSqlServer : ConnectionSql
     {
@@ -31,25 +31,25 @@ namespace dexih.connections.sql.sqlserver
         {
             try
             {
-                ReturnValue<DbConnection> connection = await NewConnection();
-
-                SqlConnection sqlConnection = (SqlConnection)connection.Value;
-
-                if (connection.Success == false)
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<int>(connection);
+                    return new ReturnValue<int>(connectionResult);
                 }
-                SqlBulkCopy bulkCopy = new SqlBulkCopy(sqlConnection)
+
+                using (SqlConnection sqlConnection = (SqlConnection)connectionResult.Value)
                 {
-                    DestinationTableName = table.TableName
-                };
 
-                await bulkCopy.WriteToServerAsync(reader, cancelToken);
-                connection.Value.Close();
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(sqlConnection)
+                    {
+                        DestinationTableName = table.TableName
+                    };
 
-                if (cancelToken.IsCancellationRequested)
-                    return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                    await bulkCopy.WriteToServerAsync(reader, cancelToken);
 
+                    if (cancelToken.IsCancellationRequested)
+                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                }
 
                 return new ReturnValue<int>(true, 0);
             }
@@ -67,25 +67,26 @@ namespace dexih.connections.sql.sqlserver
                 return new ReturnValue<bool>(connectionResult);
             }
 
-            DbConnection connection = connectionResult.Value;
-
-            DbCommand cmd = CreateCommand(connection,"select name from sys.tables where object_id = OBJECT_ID(@NAME)");
-            cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
-
-            object tableExists = null;
-            try
+            using (DbConnection connection = connectionResult.Value)
+            using (DbCommand cmd = CreateCommand(connection, "select name from sys.tables where object_id = OBJECT_ID(@NAME)"))
             {
-                tableExists = await cmd.ExecuteScalarAsync();
-            }
-            catch (Exception ex)
-            {
-                return new ReturnValue<bool>(false, "The table exists query could not be run due to the following error: " + ex.Message, ex);
-            }
+                cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
 
-            if (tableExists == null )
-                return new ReturnValue<bool>(true, false);
-            else
-                return new ReturnValue<bool>(true, true);
+                object tableExists = null;
+                try
+                {
+                    tableExists = await cmd.ExecuteScalarAsync();
+                }
+                catch (Exception ex)
+                {
+                    return new ReturnValue<bool>(false, "The table exists query could not be run due to the following error: " + ex.Message, ex);
+                }
+
+                if (tableExists == null)
+                    return new ReturnValue<bool>(true, false);
+                else
+                    return new ReturnValue<bool>(true, true);
+            }
 
         }
 
@@ -97,14 +98,6 @@ namespace dexih.connections.sql.sqlserver
         {
             try
             {
-                ReturnValue<DbConnection> connectionResult = await NewConnection();
-                if (connectionResult.Success == false)
-                {
-                    return connectionResult;
-                }
-
-                DbConnection connection = connectionResult.Value;
-
                 var tableExistsResult = await TableExists(table);
                 if (!tableExistsResult.Success)
                     return tableExistsResult;
@@ -143,74 +136,89 @@ namespace dexih.connections.sql.sqlserver
 
                 //Add the primary key
                 TableColumn key = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
-                if(key!= null)
+                if (key != null)
                     createSql.Append("ALTER TABLE " + AddDelimiter(table.TableName) + " ADD CONSTRAINT [PK_" + AddEscape(table.TableName) + "] PRIMARY KEY CLUSTERED ([" + AddEscape(key.ColumnName) + "])");
 
-                var cmd = connectionResult.Value.CreateCommand();
-                cmd.CommandText = createSql.ToString();
-                try
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
                 {
-                    await cmd.ExecuteNonQueryAsync();
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
+                    return connectionResult;
                 }
 
-                //run a query to get the schema name and also check the table has been created.
-                cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT s.name SchemaName FROM sys.tables AS t INNER JOIN sys.schemas AS s ON t.[schema_id] = s.[schema_id] where object_id = OBJECT_ID(@NAME)";
-                cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
-
-                object schemaName = null;
-                try
+                using (DbConnection connection = connectionResult.Value)
                 {
-                    schemaName = await cmd.ExecuteScalarAsync();
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<List<string>>(false, "The sql server 'get tables' query could not be run due to the following error: " + ex.Message, ex);
-                }
-
-                if (schemaName == null)
-                {
-                    return new ReturnValue(false, "The table " + table.TableName + " was not correctly created.  The reason is unknown.", null);
-                }
-
-                try
-                {
-                    //Add the table description
-                    if (!string.IsNullOrEmpty(table.Description))
+                    using (var cmd = connectionResult.Value.CreateCommand())
                     {
-                        cmd = connectionResult.Value.CreateCommand();
-                        cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename";
-                        cmd.Parameters.Add(CreateParameter(cmd, "@description", table.Description));
-                        cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
-                        cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.TableName));
-                        await cmd.ExecuteNonQueryAsync();
-                    }
-
-                    //Add the column descriptions
-                    foreach (TableColumn col in table.Columns)
-                    {
-                        if (!string.IsNullOrEmpty(col.Description))
+                        cmd.CommandText = createSql.ToString();
+                        try
                         {
-                            cmd = connectionResult.Value.CreateCommand();
-                            cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename, @level2type=N'COLUMN',@level2name=@columnname";
-                            cmd.Parameters.Add(CreateParameter(cmd, "@description", col.Description));
-                            cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
-                            cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.TableName));
-                            cmd.Parameters.Add(CreateParameter(cmd, "@columnname", col.ColumnName));
                             await cmd.ExecuteNonQueryAsync();
                         }
+                        catch (Exception ex)
+                        {
+                            return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
+                        }
+                    }
+
+                    //run a query to get the schema name and also check the table has been created.
+                    object schemaName = null;
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.CommandText = "SELECT s.name SchemaName FROM sys.tables AS t INNER JOIN sys.schemas AS s ON t.[schema_id] = s.[schema_id] where object_id = OBJECT_ID(@NAME)";
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
+
+                        try
+                        {
+                            schemaName = await cmd.ExecuteScalarAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            return new ReturnValue<List<string>>(false, "The sql server 'get tables' query could not be run due to the following error: " + ex.Message, ex);
+                        }
+
+                        if (schemaName == null)
+                        {
+                            return new ReturnValue(false, "The table " + table.TableName + " was not correctly created.  The reason is unknown.", null);
+                        }
+                    }
+
+                    try
+                    {
+                        //Add the table description
+                        if (!string.IsNullOrEmpty(table.Description))
+                        {
+                            using (var cmd = connectionResult.Value.CreateCommand())
+                            {
+                                cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename";
+                                cmd.Parameters.Add(CreateParameter(cmd, "@description", table.Description));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.TableName));
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+                        }
+
+                        //Add the column descriptions
+                        foreach (TableColumn col in table.Columns)
+                        {
+                            if (!string.IsNullOrEmpty(col.Description))
+                            {
+                                using (var cmd = connectionResult.Value.CreateCommand())
+                                {
+                                    cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename, @level2type=N'COLUMN',@level2name=@columnname";
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@description", col.Description));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.TableName));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@columnname", col.ColumnName));
+                                    await cmd.ExecuteNonQueryAsync();
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return new ReturnValue(false, "The table " + table.TableName + " encountered an error when adding table/column descriptions: " + ex.Message, ex);
                     }
                 }
-                catch (Exception ex)
-                {
-                    return new ReturnValue(false, "The table " + table.TableName + " encountered an error when adding table/column descriptions: " + ex.Message, ex);
-                }
-
-                connectionResult.Value.Close();
 
                 return new ReturnValue(true, "", null);
             }
@@ -376,17 +384,18 @@ namespace dexih.connections.sql.sqlserver
             try
             {
                 DefaultDatabase = "";
-                ReturnValue<DbConnection> connection = await NewConnection();
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
 
-                if (connection.Success == false)
+                if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<List<string>>(connection.Success, connection.Message, connection.Exception, null);
+                    return new ReturnValue<List<string>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
                 }
 
-                DbCommand cmd = CreateCommand(connection.Value, "create database " + AddDelimiter(databaseName) );
-                int value = await cmd.ExecuteNonQueryAsync();
-
-                connection.Value.Close();
+                using (var connection = connectionResult.Value)
+                using (DbCommand cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
+                {
+                    int value = await cmd.ExecuteNonQueryAsync();
+                }
 
                 DefaultDatabase = databaseName;
 
@@ -402,31 +411,23 @@ namespace dexih.connections.sql.sqlserver
         {
             try
             {
-                ReturnValue<DbConnection> connection = await NewConnection();
-                if (connection.Success == false)
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<List<string>>(connection.Success, connection.Message, connection.Exception, null);
-                }
-
-                DbCommand cmd = CreateCommand(connection.Value, "SELECT name FROM sys.databases where name NOT IN ('master', 'tempdb', 'model', 'msdb') order by name");
-                DbDataReader reader;
-                try
-                {
-                    reader = await cmd.ExecuteReaderAsync();
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<List<string>>(false, "The sql server 'get databases' query could not be run due to the following error: " + ex.Message, ex);
+                    return new ReturnValue<List<string>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
                 }
 
                 List<string> list = new List<string>();
 
-                while (await reader.ReadAsync())
+                using (var connection = connectionResult.Value)
+                using (DbCommand cmd = CreateCommand(connection, "SELECT name FROM sys.databases where name NOT IN ('master', 'tempdb', 'model', 'msdb') order by name"))
+                using (var reader = await cmd.ExecuteReaderAsync())
                 {
-                    list.Add((string)reader["name"]);
+                    while (await reader.ReadAsync())
+                    {
+                        list.Add((string)reader["name"]);
+                    }
                 }
-
-                connection.Value.Close();
                 return new ReturnValue<List<string>>(true, "", null, list);
             }
             catch (Exception ex)
@@ -439,34 +440,23 @@ namespace dexih.connections.sql.sqlserver
         {
             try
             {
-                ReturnValue<DbConnection> connection = await NewConnection();
-                if (connection.Success == false)
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<List<string>>(connection.Success, connection.Message, connection.Exception, null);
-                }
-
-                DbCommand cmd = CreateCommand(connection.Value, "SELECT * FROM INFORMATION_SCHEMA.Tables where TABLE_TYPE='BASE TABLE' order by TABLE_NAME");
-                DbDataReader reader;
-                try
-                {
-                    reader = await cmd.ExecuteReaderAsync();
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<List<string>>(false, "The sql server 'get tables' query could not be run due to the following error: " + ex.Message, ex);
+                    return new ReturnValue<List<string>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
                 }
 
                 List<string> tableList = new List<string>();
 
-                while (await reader.ReadAsync())
+                using (var connection = connectionResult.Value)
+                using (DbCommand cmd = CreateCommand(connection, "SELECT * FROM INFORMATION_SCHEMA.Tables where TABLE_TYPE='BASE TABLE' order by TABLE_NAME"))
+                using (var reader = await cmd.ExecuteReaderAsync())
                 {
-                    tableList.Add( AddDelimiter(reader["TABLE_SCHEMA"].ToString()) + "." + AddDelimiter(reader["TABLE_NAME"].ToString()));
+                    while (await reader.ReadAsync())
+                    {
+                        tableList.Add(AddDelimiter(reader["TABLE_SCHEMA"].ToString()) + "." + AddDelimiter(reader["TABLE_NAME"].ToString()));
+                    }
                 }
-
-                reader.Dispose();
-
-                connection.Value.Close();
-
                 return new ReturnValue<List<string>>(true, "", null, tableList);
             }
             catch (Exception ex)
@@ -481,46 +471,36 @@ namespace dexih.connections.sql.sqlserver
             {
                 Table table = new Table(tableName);
 
-                ReturnValue<DbConnection> connection = await NewConnection();
-                if (connection.Success == false)
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<Table>(connection.Success, connection.Message, connection.Exception);
+                    return new ReturnValue<Table>(connectionResult.Success, connectionResult.Message, connectionResult.Exception);
                 }
 
-                DbDataReader reader;
-
-                // The schema table description if it exists
-                DbCommand cmd = CreateCommand(connection.Value, @"select value 'Description' 
+                using (var connection = connectionResult.Value)
+                {
+                    using (DbCommand cmd = CreateCommand(connection, @"select value 'Description' 
                             FROM sys.extended_properties
                             WHERE minor_id = 0 and class = 1 and name = 'MS_Description' and
-                            major_id = OBJECT_ID('" + AddEscape(tableName) + "')"
-                );
+                            major_id = OBJECT_ID('" + AddEscape(tableName) + "')"))
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            table.Description = (string)reader["Description"];
+                        }
+                        else
+                        {
+                            table.Description = "";
+                        }
 
-                try
-                {
-                    reader = await cmd.ExecuteReaderAsync();
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<Table>(false, "The source sqlserver table + " + tableName + " could have a select query run against it with the following error: " + ex.Message, ex);
-                }
+                    }
 
-                if (await reader.ReadAsync())
-                {
-                    table.Description = (string)reader["Description"];
-                }
-                else
-                {
-                    table.Description = "";
-                }
+                    //The new datatable that will contain the table schema
+                    table.Columns.Clear();
 
-                reader.Dispose();
-
-                //The new datatable that will contain the table schema
-                table.Columns.Clear();
-
-                // The schema table 
-                cmd = CreateCommand(connection.Value, @"
+                    // The schema table 
+                    using (var cmd = CreateCommand(connection, @"
                          SELECT c.column_id, c.name 'ColumnName', t2.Name 'DataType', c.max_length 'MaxLength', c.precision 'Precision', c.scale 'Scale', c.is_nullable 'IsNullable', ep.value 'Description',
                         case when exists(select * from sys.index_columns ic JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id where ic.object_id = c.object_id and ic.column_id = c.column_id and is_primary_key = 1) then 1 else 0 end 'PrimaryKey'
                         FROM sys.columns c
@@ -528,68 +508,58 @@ namespace dexih.connections.sql.sqlserver
 						INNER JOIN sys.types t2 on t.system_type_id = t2.user_type_id 
                         LEFT OUTER JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id and ep.name = 'MS_Description' and ep.class = 1 
                         WHERE c.object_id = OBJECT_ID('" + AddEscape(tableName) + "') "
-                        );
-
-                try
-                {
-                    reader = await cmd.ExecuteReaderAsync();
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<Table>(false, "The source sqlserver table + " + tableName + " could have a select query run against it with the following error: " + ex.Message, ex);
-                }
-
-                //for the logical, just trim out any "
-                table.LogicalName = table.TableName.Replace("\"", "");
-
-                while (await reader.ReadAsync())
-                {
-                    TableColumn col = new TableColumn();
-
-                    //add the basic properties
-                    col.ColumnName = reader["ColumnName"].ToString();
-                    col.LogicalName = reader["ColumnName"].ToString();
-                    col.IsInput = false;
-                    col.DataType = ConvertSqlToTypeCode(reader["DataType"].ToString());
-                    if (col.DataType == ETypeCode.Unknown)
+                            ))
+                    using (var reader = await cmd.ExecuteReaderAsync())
                     {
-                        col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+
+                        //for the logical, just trim out any "
+                        table.LogicalName = table.TableName.Replace("\"", "");
+
+                        while (await reader.ReadAsync())
+                        {
+                            TableColumn col = new TableColumn();
+
+                            //add the basic properties
+                            col.ColumnName = reader["ColumnName"].ToString();
+                            col.LogicalName = reader["ColumnName"].ToString();
+                            col.IsInput = false;
+                            col.DataType = ConvertSqlToTypeCode(reader["DataType"].ToString());
+                            if (col.DataType == ETypeCode.Unknown)
+                            {
+                                col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+                            }
+                            else
+                            {
+                                //add the primary key
+                                if (Convert.ToBoolean(reader["PrimaryKey"]) == true)
+                                    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                else
+                                    col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                            }
+
+                            if (col.DataType == ETypeCode.String)
+                                col.MaxLength = ConvertSqlMaxLength(reader["DataType"].ToString(), Convert.ToInt32(reader["MaxLength"]));
+                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
+                            {
+                                col.Precision = Convert.ToInt32(reader["Precision"]);
+                                if ((string)reader["DataType"] == "money" || (string)reader["DataType"] == "smallmoney") // this is required as bug in sqlschematable query for money types doesn't get proper scale.
+                                    col.Scale = 4;
+                                else
+                                    col.Scale = Convert.ToInt32(reader["Scale"]);
+                            }
+
+                            //make anything with a large string unlimited.  This will be created as varchar(max)
+                            if (col.MaxLength > 4000)
+                                col.MaxLength = null;
+
+
+                            col.Description = reader["Description"].ToString();
+                            col.AllowDbNull = Convert.ToBoolean(reader["IsNullable"]);
+                            //col.IsUnique = Convert.ToBoolean(reader["IsUnique"]);
+                            table.Columns.Add(col);
+                        }
                     }
-                    else
-                    {
-                        //add the primary key
-                        if (Convert.ToBoolean(reader["PrimaryKey"]) == true)
-                            col.DeltaType = TableColumn.EDeltaType.NaturalKey;
-                        else
-                            col.DeltaType = TableColumn.EDeltaType.TrackingField;
-                    }
-
-                    if (col.DataType == ETypeCode.String)
-                        col.MaxLength = ConvertSqlMaxLength(reader["DataType"].ToString(), Convert.ToInt32(reader["MaxLength"]));
-                    else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
-                    {
-                        col.Precision = Convert.ToInt32(reader["Precision"]);
-                        if ((string)reader["DataType"] == "money" || (string)reader["DataType"] == "smallmoney") // this is required as bug in sqlschematable query for money types doesn't get proper scale.
-                            col.Scale = 4;
-                        else
-                            col.Scale = Convert.ToInt32(reader["Scale"]);
-                    }
-
-                    //make anything with a large string unlimited.  This will be created as varchar(max)
-                    if (col.MaxLength > 4000)
-                        col.MaxLength = null;
-
-
-                    col.Description = reader["Description"].ToString();
-                    col.AllowDbNull = Convert.ToBoolean(reader["IsNullable"]);
-                    //col.IsUnique = Convert.ToBoolean(reader["IsUnique"]);
-                    table.Columns.Add(col);
                 }
-
-                reader.Dispose();
-                connection.Value.Close();
-
-
                 return new ReturnValue<Table>(true, table);
             }
             catch (Exception ex)
@@ -654,27 +624,29 @@ namespace dexih.connections.sql.sqlserver
 
         public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
-            ReturnValue<DbConnection> connection = await NewConnection();
-            if (connection.Success == false)
+            ReturnValue<DbConnection> connectionResult = await NewConnection();
+            if (connectionResult.Success == false)
             {
-                return connection;
+                return connectionResult;
             }
 
-            DbCommand cmd = connection.Value.CreateCommand();
-            cmd.CommandText = "truncate table " + AddDelimiter(table.TableName);
-
-            try
+            using (var connection = connectionResult.Value)
+            using (DbCommand cmd = connection.CreateCommand())
             {
-                await cmd.ExecuteNonQueryAsync(cancelToken);
-                if (cancelToken.IsCancellationRequested)
-                    return new ReturnValue(false, "Truncate cancelled", null);
-            }
-            catch (Exception ex)
-            {
-                return new ReturnValue(false, "The truncate table query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex);
-            }
 
-            connection.Value.Close();
+                cmd.CommandText = "truncate table " + AddDelimiter(table.TableName);
+
+                try
+                {
+                    await cmd.ExecuteNonQueryAsync(cancelToken);
+                    if (cancelToken.IsCancellationRequested)
+                        return new ReturnValue(false, "Truncate cancelled", null);
+                }
+                catch (Exception ex)
+                {
+                    return new ReturnValue(false, "The truncate table query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex);
+                }
+            }
 
             return new ReturnValue(true, "", null);
         }

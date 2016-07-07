@@ -208,9 +208,14 @@ namespace dexih.transforms
                     }
 
                     SelectQuery query = new SelectQuery() { Filters = filters };
-                    await ReferenceTransform.Open(query);
 
-                    _targetOpen = await ReferenceRead(cancellationToken);
+                    if (doUpdate || doDelete || doPreserve)
+                    {
+                        await ReferenceTransform.Open(query);
+                        _targetOpen = await ReferenceRead(cancellationToken);
+                    }
+                    else
+                        _targetOpen = false;
                 }
 
                 //if there are no updates. logic is simple, just push the source records through to the target.

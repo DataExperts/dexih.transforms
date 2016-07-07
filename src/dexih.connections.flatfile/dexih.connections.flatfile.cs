@@ -30,9 +30,7 @@ namespace dexih.connections.flatfile
 
 
         public override string ServerHelp => "Path for the files (use //server/path format)";
-//help text for what the server means for this description
         public override string DefaultDatabaseHelp => "";
-//help text for what the default database means for this description
         public override bool AllowNtAuth => false;
         public override bool AllowUserPass => true;
         public override bool CanBulkLoad => true;
@@ -386,7 +384,7 @@ namespace dexih.connections.flatfile
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
         {
             throw new NotImplementedException();
         }

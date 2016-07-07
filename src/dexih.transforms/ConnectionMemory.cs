@@ -105,7 +105,7 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
         {
            return await Task.Run(() =>
           {

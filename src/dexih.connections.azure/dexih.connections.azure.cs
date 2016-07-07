@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace dexih.connections.azure
 {
-    public class ConnectionAzure : Connection
+    public class ConnectionAzureTable : Connection
     {
 
         public override string ServerHelp => "Server Name";
@@ -817,7 +817,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
         {
             throw new NotImplementedException("The execute reader is not available for Azure table connections.");
         }

@@ -12,7 +12,7 @@ using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
 
-namespace dexih.connections.sql.sqlite
+namespace dexih.connections.sql
 {
     public class ConnectionSqlite : ConnectionSql
     {
@@ -43,25 +43,29 @@ namespace dexih.connections.sql.sqlite
                 return new ReturnValue<bool>(connectionResult);
             }
 
-            DbConnection connection = connectionResult.Value;
-
-            DbCommand cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;");
-            cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
-
-            object tableExists = null;
-            try
+            using (var connection = connectionResult.Value)
             {
-                tableExists = await cmd.ExecuteScalarAsync();
-            }
-            catch (Exception ex)
-            {
-                return new ReturnValue<bool>(false, "The table exists query could not be run due to the following error: " + ex.Message, ex);
-            }
 
-            if (tableExists == null)
-                return new ReturnValue<bool>(true, false);
-            else
-                return new ReturnValue<bool>(true, true);
+                using (DbCommand cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
+                {
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
+
+                    object tableExists = null;
+                    try
+                    {
+                        tableExists = await cmd.ExecuteScalarAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        return new ReturnValue<bool>(false, "The table exists query could not be run due to the following error: " + ex.Message, ex);
+                    }
+
+                    if (tableExists == null)
+                        return new ReturnValue<bool>(true, false);
+                    else
+                        return new ReturnValue<bool>(true, true);
+                }
+            }
         }
 
         /// <summary>
@@ -78,81 +82,83 @@ namespace dexih.connections.sql.sqlite
                     return connectionResult;
                 }
 
-                DbConnection connection = connectionResult.Value;
-
-                var tableExistsResult = await TableExists(table);
-                if (!tableExistsResult.Success)
-                    return tableExistsResult;
-
-                //if table exists, and the dropTable flag is set to false, then error.
-                if (tableExistsResult.Value && dropTable == false)
+                using (var connection = connectionResult.Value)
                 {
-                    return new ReturnValue(false, "The table " + table.TableName + " already exists on the underlying database.  Please drop the table first.", null);
+                    var tableExistsResult = await TableExists(table);
+                    if (!tableExistsResult.Success)
+                        return tableExistsResult;
+
+                    //if table exists, and the dropTable flag is set to false, then error.
+                    if (tableExistsResult.Value && dropTable == false)
+                    {
+                        return new ReturnValue(false, "The table " + table.TableName + " already exists on the underlying database.  Please drop the table first.", null);
+                    }
+
+                    //if table exists, then drop it.
+                    if (tableExistsResult.Value)
+                    {
+                        var dropResult = await DropTable(table);
+                        if (!dropResult.Success)
+                            return dropResult;
+                    }
+
+                    StringBuilder createSql = new StringBuilder();
+
+                    //Create the table
+                    createSql.Append("create table " + AddDelimiter(table.TableName) + " ");
+
+                    //sqlite does not support table/column comments, so add a comment string into the ddl.
+                    if (!string.IsNullOrEmpty(table.Description))
+                        createSql.Append(" -- " + table.Description);
+
+                    createSql.AppendLine("");
+                    createSql.Append("(");
+
+                    for (int i = 0; i < table.Columns.Count; i++)
+                    {
+                        TableColumn col = table.Columns[i];
+
+                        createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.DataType, col.MaxLength, col.Scale, col.Precision) + " ");
+                        if (col.AllowDbNull == false)
+                            createSql.Append("NOT NULL ");
+                        else
+                            createSql.Append("NULL ");
+
+                        if (col.DeltaType == TableColumn.EDeltaType.SurrogateKey)
+                            createSql.Append("PRIMARY KEY ASC ");
+
+                        if (i < table.Columns.Count - 1)
+                            createSql.Append(",");
+
+                        if (!string.IsNullOrEmpty(col.Description))
+                            createSql.Append(" -- " + col.Description);
+
+                        createSql.AppendLine();
+                    }
+
+                    createSql.AppendLine(")");
+
+                    using (var command = connectionResult.Value.CreateCommand())
+                    {
+                        command.CommandText = createSql.ToString();
+                        try
+                        {
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
+                        }
+                    }
+
+                    return new ReturnValue(true, "", null);
                 }
-
-                //if table exists, then drop it.
-                if (tableExistsResult.Value)
-                {
-                    var dropResult = await DropTable(table);
-                    if (!dropResult.Success)
-                        return dropResult;
-                }
-
-                StringBuilder createSql = new StringBuilder();
-
-                //Create the table
-                createSql.Append("create table " + AddDelimiter(table.TableName) + " ");
-
-                //sqlite does not support table/column comments, so add a comment string into the ddl.
-                if(!string.IsNullOrEmpty(table.Description))
-                    createSql.Append(" -- " + table.Description);
-
-                createSql.AppendLine("");
-                createSql.Append("(");
-
-                for(int i = 0; i< table.Columns.Count; i++)
-                {
-                    TableColumn col = table.Columns[i];
-
-                    createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.DataType, col.MaxLength, col.Scale, col.Precision) + " ");
-                    if (col.AllowDbNull == false)
-                        createSql.Append("NOT NULL ");
-                    else
-                        createSql.Append("NULL ");
-
-                    if (col.DeltaType == TableColumn.EDeltaType.SurrogateKey)
-                        createSql.Append("PRIMARY KEY ASC ");
-
-                    if(i < table.Columns.Count -1)
-                        createSql.Append(",");
-
-                    if (!string.IsNullOrEmpty(col.Description))
-                        createSql.Append(" -- " + col.Description);
-
-                    createSql.AppendLine();
-                }
-
-                createSql.AppendLine(")");
-
-                var command = connectionResult.Value.CreateCommand();
-                command.CommandText = createSql.ToString();
-                try
-                {
-                    await command.ExecuteNonQueryAsync();
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
-                }
-
-                connectionResult.Value.Dispose();
-
-                return new ReturnValue(true, "", null);
             }
             catch (Exception ex)
             {
                 return new ReturnValue(false, "An error occurred creating the table " + table.TableName + ".  " + ex.Message, ex);
             }
+
         }
 
         public override string GetSqlType(ETypeCode dataType, int? length, int? scale, int? precision)
@@ -314,7 +320,9 @@ namespace dexih.connections.sql.sqlite
             {
                 string fileName = ServerName + "/" + databaseName + ".sqlite";
 
-                if (File.Exists(fileName))
+                bool fileExists = await Task.Run(() => File.Exists(fileName));
+
+                if (fileExists)
                     return new ReturnValue(false, "The file " + fileName + " already exists.  Delete or move this file before attempting to create a new database.", null);
 
                 var stream = await Task.Run(() => File.Create(fileName));
@@ -333,7 +341,8 @@ namespace dexih.connections.sql.sqlite
         {
             try
             {
-                if (!Directory.Exists(ServerName))
+                bool directoryExists = await Task.Run(() => Directory.Exists(ServerName));
+                if (!directoryExists)
                     return new ReturnValue<List<string>>(false, "The directory " + ServerName + " does not exist.", null);
 
                 var dbList = await Task.Factory.StartNew(() =>
@@ -362,34 +371,41 @@ namespace dexih.connections.sql.sqlite
         {
             try
             {
-                ReturnValue<DbConnection> connection = await NewConnection();
-                if (connection.Success == false)
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<List<string>>(connection.Success, connection.Message, connection.Exception, null);
+                    return new ReturnValue<List<string>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
                 }
 
-                DbCommand cmd = CreateCommand(connection.Value,"SELECT name FROM sqlite_master WHERE type='table';");
-                DbDataReader reader;
-                try
+                using (var connection = connectionResult.Value)
                 {
-                    reader = await cmd.ExecuteReaderAsync();
+
+                    using (DbCommand cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type='table';"))
+                    {
+                        DbDataReader reader;
+                        try
+                        {
+                            reader = await cmd.ExecuteReaderAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            return new ReturnValue<List<string>>(false, "The sqllite 'get tables' query could not be run due to the following error: " + ex.Message, ex);
+                        }
+
+                        using (reader)
+                        {
+
+                            List<string> tableList = new List<string>();
+
+                            while (await reader.ReadAsync())
+                            {
+                                tableList.Add((string)reader["name"]);
+                            }
+
+                            return new ReturnValue<List<string>>(true, "", null, tableList);
+                        }
+                    }
                 }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<List<string>>(false, "The sqllite 'get tables' query could not be run due to the following error: " + ex.Message, ex);
-                }
-
-                List<string> tableList = new List<string>();
-
-                while (await reader.ReadAsync())
-                {
-                    tableList.Add((string)reader["name"]);
-                }
-
-                reader.Dispose();
-
-                connection.Value.Dispose();
-                return new ReturnValue<List<string>>(true, "", null, tableList);
             }
             catch (Exception ex)
             {
@@ -401,89 +417,82 @@ namespace dexih.connections.sql.sqlite
         {
             try
             {
-                ReturnValue<DbConnection> connection = await NewConnection();
-                if (connection.Success == false)
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<Table>(connection.Success, connection.Message, connection.Exception);
+                    return new ReturnValue<Table>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
                 }
 
-                Table table = new Table(tableName);
+                using (var connection = connectionResult.Value)
+                { 
 
-                table.Description = ""; //sqllite doesn't have table descriptions.
+                    Table table = new Table(tableName);
 
-                //The new datatable that will contain the table schema
-                table.Columns.Clear();
+                    table.Description = ""; //sqllite doesn't have table descriptions.
 
-                // The schema table 
-                var cmd = CreateCommand(connection.Value, @"PRAGMA table_info('" + table.TableName + "')");
+                    //The new datatable that will contain the table schema
+                    table.Columns.Clear();
 
-                DbDataReader reader;
-
-                try
-                {
-                    reader = await cmd.ExecuteReaderAsync();
-                }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<Table>(false, "The source sqlite table + " + table.TableName + " could have a select query run against it with the following error: " + ex.Message, ex);
-                }
-
-                //for the logical, just trim out any "
-                table.LogicalName = table.TableName.Replace("\"", "");
-
-                while (await reader.ReadAsync())
-                {
-                    TableColumn col = new TableColumn();
-
-                    //add the basic properties
-                    col.ColumnName = reader["name"].ToString();
-                    col.LogicalName = reader["name"].ToString();
-                    col.IsInput = false;
-
-                    string[] dataType = reader["type"].ToString().Split('(', ')');
-                    col.DataType = ConvertSqlToTypeCode(dataType[0]);
-                    if (col.DataType == ETypeCode.Unknown)
+                    // The schema table 
+                    using (var cmd = CreateCommand(connection, @"PRAGMA table_info('" + table.TableName + "')"))
+                    using (DbDataReader reader = await cmd.ExecuteReaderAsync())
                     {
-                        col.DeltaType = TableColumn.EDeltaType.IgnoreField;
-                    }
-                    else
-                    {
-                        //add the primary key
-                        if (Convert.ToInt32(reader["pk"]) == 1)
-                            col.DeltaType = TableColumn.EDeltaType.NaturalKey;
-                        else
-                            col.DeltaType = TableColumn.EDeltaType.TrackingField;
-                    }
 
-                    if (col.DataType == ETypeCode.String)
-                    {
-                        if (dataType.Length > 1)
-                            col.MaxLength = Convert.ToInt32(dataType[1]);
-                    }
-                    else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
-                    {
-                        if (dataType.Length > 1)
+                        //for the logical, just trim out any "
+                        table.LogicalName = table.TableName.Replace("\"", "");
+
+                        while (await reader.ReadAsync())
                         {
-                            string[] precisionScale = dataType[1].Split(',');
-                            col.Scale = Convert.ToInt32(precisionScale[0]);
-                            if (precisionScale.Length > 1)
-                                col.Precision = Convert.ToInt32(precisionScale[1]);
+                            TableColumn col = new TableColumn();
+
+                            //add the basic properties
+                            col.ColumnName = reader["name"].ToString();
+                            col.LogicalName = reader["name"].ToString();
+                            col.IsInput = false;
+
+                            string[] dataType = reader["type"].ToString().Split('(', ')');
+                            col.DataType = ConvertSqlToTypeCode(dataType[0]);
+                            if (col.DataType == ETypeCode.Unknown)
+                            {
+                                col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+                            }
+                            else
+                            {
+                                //add the primary key
+                                if (Convert.ToInt32(reader["pk"]) == 1)
+                                    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                else
+                                    col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                            }
+
+                            if (col.DataType == ETypeCode.String)
+                            {
+                                if (dataType.Length > 1)
+                                    col.MaxLength = Convert.ToInt32(dataType[1]);
+                            }
+                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
+                            {
+                                if (dataType.Length > 1)
+                                {
+                                    string[] precisionScale = dataType[1].Split(',');
+                                    col.Scale = Convert.ToInt32(precisionScale[0]);
+                                    if (precisionScale.Length > 1)
+                                        col.Precision = Convert.ToInt32(precisionScale[1]);
+                                }
+                            }
+
+                            //make anything with a large string unlimited.  
+                            if (col.MaxLength > 4000)
+                                col.MaxLength = null;
+
+                            col.Description = "";
+                            col.AllowDbNull = Convert.ToInt32(reader["notnull"]) == 0;
+                            table.Columns.Add(col);
                         }
                     }
 
-                    //make anything with a large string unlimited.  
-                    if (col.MaxLength > 4000)
-                        col.MaxLength = null;
-
-                    col.Description = "";
-                    col.AllowDbNull = Convert.ToInt32(reader["notnull"]) == 0;
-                    table.Columns.Add(col);
+                    return new ReturnValue<Table>(true, table);
                 }
-
-                reader.Dispose();
-                connection.Value.Dispose();
-
-                return new ReturnValue<Table>(true, table);
             }
             catch (Exception ex)
             {

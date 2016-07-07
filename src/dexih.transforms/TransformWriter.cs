@@ -325,6 +325,8 @@ namespace dexih.transforms
             writerResult.EndTime = DateTime.Now;
             writerResult.MaxIncrementalValue = reader.GetMaxIncrementalValue();
 
+            reader.Dispose();
+
             var returnValue2 = await TargetConnection.DataWriterFinish(TargetTable);
 
             return new ReturnValue(true);

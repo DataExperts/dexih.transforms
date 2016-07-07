@@ -358,7 +358,7 @@ namespace dexih.transforms
         {
             return new SelectQuery()
             {
-                Columns = Columns.Select(c => new SelectColumn(c.ColumnName, SelectColumn.EAggregate.None)).ToList(),
+                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.DataType != DataType.ETypeCode.Unknown).Select(c => new SelectColumn(c.ColumnName, SelectColumn.EAggregate.None)).ToList(),
                 Table = TableName,
                 Rows = rows
             };

@@ -732,9 +732,9 @@ namespace dexih.transforms
             if (disposing)
             {
                 if (PrimaryTransform != null)
-                    PrimaryTransform.Dispose(disposing);
+                    PrimaryTransform.Dispose();
                 if (ReferenceTransform != null)
-                    ReferenceTransform.Dispose(disposing);
+                    ReferenceTransform.Dispose();
             }
             base.Dispose(disposing);
         }

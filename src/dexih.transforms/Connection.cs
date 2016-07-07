@@ -90,7 +90,7 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null);
+        public abstract Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null);
 
         //Functions required for datapoint.
         public abstract Task<ReturnValue> CreateDatabase(string DatabaseName);

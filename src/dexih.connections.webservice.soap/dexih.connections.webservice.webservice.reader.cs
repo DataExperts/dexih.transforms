@@ -9,7 +9,7 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-namespace dexih.connections.webservice.webservice
+namespace dexih.connections.webservice
 {
     public class ReaderWebService : Transform
     {
@@ -34,7 +34,7 @@ namespace dexih.connections.webservice.webservice
                     return new ReturnValue(false, "The web service connection is already open.", null);
                 }
 
-                var wsResult = await ((ConnectionWebService) ReferenceConnection).GetWebService();
+                var wsResult = await ((ConnectionSoap) ReferenceConnection).GetWebService();
                 if (wsResult.Success == false)
                     return wsResult;
 
@@ -115,7 +115,7 @@ namespace dexih.connections.webservice.webservice
         /// <returns></returns>
         public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
         {
-            return await ((ConnectionWebService)ReferenceConnection).LookupRow(CacheTable, filters, _webServiceType, _webServiceObject);
+            return await ((ConnectionSoap)ReferenceConnection).LookupRow(CacheTable, filters, _webServiceType, _webServiceObject);
         }
     }
 }

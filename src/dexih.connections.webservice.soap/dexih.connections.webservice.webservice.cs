@@ -18,10 +18,10 @@ using System.Threading;
 using System.Web.Services.Description;
 #endif
 
-namespace dexih.connections.webservice.webservice
+namespace dexih.connections.webservice
 {
     
-    public class ConnectionWebService : Connection
+    public class ConnectionSoap : Connection
     {
         public override string ServerHelp => "The full path (including http://) of the Web Service Description Language (WSDL) file.";
         public override string DefaultDatabaseHelp => "Service Name";
@@ -414,7 +414,7 @@ namespace dexih.connections.webservice.webservice
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
         {
             throw new NotImplementedException();
         }
