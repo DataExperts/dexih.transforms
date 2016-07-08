@@ -25,7 +25,7 @@ namespace dexih.transforms.tests
 
             TransformValidation transformValidation = new TransformValidation(Table, Validations, true);
 
-            Assert.Equal(7, transformValidation.FieldCount);
+            Assert.Equal(8, transformValidation.FieldCount);
 
             int count = 0;
             while (transformValidation.Read() == true)
@@ -56,7 +56,7 @@ namespace dexih.transforms.tests
 
             transformValidation = new TransformValidation(Table, Validations, true);
 
-            Assert.Equal(7, transformValidation.FieldCount);
+            Assert.Equal(8, transformValidation.FieldCount);
 
             int passCount = 0;
             int rejectCount = 0;
@@ -84,7 +84,7 @@ namespace dexih.transforms.tests
 
             transformValidation = new TransformValidation(Table, Validations, true);
 
-            Assert.Equal(7, transformValidation.FieldCount);
+            Assert.Equal(8, transformValidation.FieldCount);
 
             passCount = 0;
             rejectCount = 0;

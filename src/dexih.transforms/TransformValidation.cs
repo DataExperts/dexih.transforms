@@ -31,6 +31,8 @@ namespace dexih.transforms
         private string rejectReasonColumnName;
         private int rejectReasonOrdinal;
         private int operationOrdinal;
+        private int validationStatusOrdinal;
+        private Table TargetTable;
 
         public List<Function> Validations
         {
@@ -54,9 +56,18 @@ namespace dexih.transforms
             //add the rejection reason, which details the reason for a rejection.
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.RejectedReason) == null)
             {
-                CacheTable.Columns.Insert(0, new TableColumn("RejectReason", DataType.ETypeCode.Byte)
+                CacheTable.Columns.Add(new TableColumn("RejectReason", DataType.ETypeCode.String)
                 {
                     DeltaType = TableColumn.EDeltaType.RejectedReason
+                });
+            }
+
+            //add the rejection reason, which details the reason for a rejection.
+            if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.ValidationStatus) == null)
+            {
+                CacheTable.Columns.Add(new TableColumn("ValidationStatus", DataType.ETypeCode.String)
+                {
+                    DeltaType = TableColumn.EDeltaType.ValidationStatus
                 });
             }
 
@@ -66,6 +77,7 @@ namespace dexih.transforms
                 rejectReasonColumnName = CacheTable.Columns[rejectReasonOrdinal].ColumnName;
 
             operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+            validationStatusOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
 
             return true;
         }
@@ -229,12 +241,21 @@ namespace dexih.transforms
                 switch(finalInvalidAction)
                 {
                     case Function.EInvalidAction.Pass:
+                        passRow[validationStatusOrdinal] = "passed";
+                        return new ReturnValue<object[]>(true, passRow);
                     case Function.EInvalidAction.Clean:
+                        passRow[validationStatusOrdinal] = "cleaned";
                         return new ReturnValue<object[]>(true, passRow);
                     case Function.EInvalidAction.RejectClean:
+                        passRow[validationStatusOrdinal] = "rejected-cleaned";
+                        rejectRow[validationStatusOrdinal] = "rejected-cleaned";
+                        rejectRow[rejectReasonOrdinal] = rejectReason.ToString();
                         savedRejectRow = rejectRow;
                         return new ReturnValue<object[]>(true, passRow);
                     case Function.EInvalidAction.Reject:
+                        passRow[validationStatusOrdinal] = "rejected";
+                        rejectRow[validationStatusOrdinal] = "rejected";
+                        rejectRow[rejectReasonOrdinal] = rejectReason.ToString();
                         return new ReturnValue<object[]>(true, rejectRow);
                 }
 

@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0-*",
+  "version": "0.2.1-*",
   "title": "Data Experts Group - Transforms Library",
   "description": "This library enables advanced data transformation and analytics.  See the project url for more details.",
   "authors": [ "Gary Holland" ],

@@ -23,7 +23,6 @@ namespace dexih.transforms
 
         private bool WriteOpen = false;
         private int OperationColumnIndex; //the index of the operation in the source data.
-        private TableColumns WriteColumns; //the column being written (excludes operation column).
 
         private Task<ReturnValue<int>> CreateRecordsTask; //task is use to allow writes to run asych with other processing.
         private Task<ReturnValue<int>> UpdateRecordsTask; //task is use to allow writes to run asych with other processing.
@@ -138,15 +137,6 @@ namespace dexih.transforms
 
             OperationColumnIndex = InTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
 
-            WriteColumns = new TableColumns();
-            for (int i = 0; i < InTransform.CacheTable.Columns.Count; i++)
-            {
-                if (i != OperationColumnIndex)
-                {
-                    WriteColumns.Add(InTransform.CacheTable.Columns[i]);
-                }
-            }
-
             CreateRows = new TableCache();
             UpdateRows = new TableCache();
             DeleteRows = new TableCache();
@@ -163,8 +153,11 @@ namespace dexih.transforms
 
             TargetDeleteQuery = new DeleteQuery(TargetTable.TableName, TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c.ColumnName, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
-            if(RejectTable != null)
+            if (RejectTable != null)
+            {
                 RejectInsertQuery = new InsertQuery(RejectTable.TableName, RejectTable.Columns.Select(c => new QueryColumn(c.ColumnName, c.DataType, "@param" + RejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
+                returnValue = await TargetConnection.CreateTable(RejectTable, false);
+            }
 
             //if the table doesn't exist, create it.  
             returnValue = await TargetConnection.CreateTable(TargetTable, false);
@@ -188,28 +181,31 @@ namespace dexih.transforms
                 return new ReturnValue(false, "Cannot write records as the WriteStart has not been called.", null);
 
             //split the operation field (if it exists) and create copy of the row.
-            object[] row = new object[WriteColumns.Count];
             char operation;
-
 
             //determine the type of operation (create, update, delete, reject)
             if (OperationColumnIndex == -1)
             {
                 operation = 'C';
-                reader.GetValues(row);
             }
             else
             {
                 operation = (char)reader[OperationColumnIndex];
-                int count = 0;
-                for (int i = 0; i < InTransform.FieldCount; i++)
-                {
-                    if (i != OperationColumnIndex)
-                    {
-                        row[count] = reader[i];
-                        count++;
-                    }
-                }
+            }
+
+            Table table;
+            if (operation == 'R')
+                table = RejectTable;
+            else
+                table = TargetTable;
+
+            object[] row = new object[table.Columns.Count];
+
+            for (int i = 0; i < table.Columns.Count; i++)
+            {
+                int ordinal = reader.GetOrdinal(table.Columns[i].ColumnName);
+                if(ordinal >= 0)
+                    row[i] = reader[ordinal];
             }
 
             switch (operation)
@@ -341,7 +337,7 @@ namespace dexih.transforms
                     return result;
             }
 
-            Table createTable = new Table(TargetTable.TableName, WriteColumns, CreateRows);
+            Table createTable = new Table(TargetTable.TableName, TargetTable.Columns, CreateRows);
             var createReader = new ReaderMemory(createTable);
 
             WriteDataTimer.Start();
@@ -446,7 +442,7 @@ namespace dexih.transforms
                     return result;
             }
 
-            Table createTable = new Table(RejectTable.TableName, WriteColumns, RejectRows);
+            Table createTable = new Table(RejectTable.TableName, RejectTable.Columns, RejectRows);
 
             var createReader = new ReaderMemory(createTable);
 

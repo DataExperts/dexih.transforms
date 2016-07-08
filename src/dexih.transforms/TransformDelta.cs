@@ -57,7 +57,11 @@ namespace dexih.transforms
         private TableColumn colSourceSurrogateKey;
         private TableColumn colCreateAuditKey;
         private TableColumn colUpdateAuditKey;
-        private TableColumn colRejectedReason;
+
+        private int DatabaseOperationOrdinal;
+        private int RejectedReasonOrdinal;
+        private int ValidationStatusOrdinal;
+
         private TableColumn[] colNatrualKey;
 
         private EUpdateStrategy DeltaType { get; set; }
@@ -160,8 +164,15 @@ namespace dexih.transforms
             colSourceSurrogateKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
             colCreateAuditKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
             colUpdateAuditKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.UpdateAuditKey);
-            colRejectedReason = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason);
-            colNatrualKey = CacheTable.Columns.Where(c=>c.DeltaType == TableColumn.EDeltaType.NaturalKey).ToArray();
+            DatabaseOperationOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+            ValidationStatusOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
+            colNatrualKey = PrimaryTransform.CacheTable.Columns.Where(c=>c.DeltaType == TableColumn.EDeltaType.NaturalKey).ToArray();
+
+            RejectedReasonOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
+            if(CacheTable.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
+            {
+                CacheTable.AddColumn("RejectedReason", DataType.ETypeCode.String, TableColumn.EDeltaType.RejectedReason);
+            }
         }
 
 
@@ -216,6 +227,14 @@ namespace dexih.transforms
                     }
                     else
                         _targetOpen = false;
+                }
+
+                //if row is marked reject, then just push it through.
+                if(DatabaseOperationOrdinal >=0 && (char)PrimaryTransform[DatabaseOperationOrdinal] == 'R')
+                {
+                    newRow = CreateOutputRow('R');
+                    _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
+                    return new ReturnValue<object[]>(true, newRow);
                 }
 
                 //if there are no updates. logic is simple, just push the source records through to the target.
@@ -554,12 +573,19 @@ namespace dexih.transforms
                     case TableColumn.EDeltaType.IgnoreField:
                         //do nothing
                         break;
+                    case TableColumn.EDeltaType.ValidationStatus:
+                        if(ValidationStatusOrdinal >= 0)
+                            newRow[targetOrdinal] = PrimaryTransform[ValidationStatusOrdinal];
+                        break;
+                    case TableColumn.EDeltaType.RejectedReason:
+                        if (RejectedReasonOrdinal >= 0)
+                            newRow[targetOrdinal] = PrimaryTransform[RejectedReasonOrdinal];
+                        break;
                     default:
                         int ordinal = PrimaryTransform.GetOrdinal(col.ColumnName);
 
                         if (ordinal > -1)
                         newRow[targetOrdinal] = PrimaryTransform[ordinal];
-
 
                         break;
                 }
