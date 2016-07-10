@@ -4,7 +4,7 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "dexih.transforms": "0.2.0-*",
+    "dexih.transforms": "0.2.1-*",
     "Microsoft.Extensions.Configuration": "1.0.0",
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
