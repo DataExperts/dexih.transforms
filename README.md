@@ -194,12 +194,14 @@ The following example uses a Sql Server table to start a transformation chain:
 
 ```csharp
 // Retrieve the data from the database
-SqlConnection sqlConnection = new SqlConnection("Data Source=(localDb)\11.0;Trusted_Connection=True;Initial Catalog=AdventureWorks2012");
-SqlCommand sqlCommand = new SqlCommand("select * from Sales.SalesOrderHeader ", sqlConnection);
-DbDataReader sqlReader = sqlCommand.ExecuteReader();
-
+using(var sqlConnection = new SqlConnection("Data Source=(localDb)\11.0;Trusted_Connection=True;Initial Catalog=AdventureWorks2012"))
+using(SqlCommand sqlCommand = new SqlCommand("select * from Sales.SalesOrderHeader ", sqlConnection))
+using(DbDataReader sqlReader = sqlCommand.ExecuteReader())
+{
 // Load the Dbreader into the ReaderDbDataReader which will start the transform chain.
 ReaderDbDataReader reader = new ReaderDbDataReader(sqlReader);
+
+}
 ```
 
 ***Using the built in dexih.connections***
@@ -277,10 +279,10 @@ TransformWriterResult writerResult = new TransformWriterResult();
 var returnResult = await writer.WriteAllRecords(writerResult, transform, targetTable, targetConnection, rejectTable, rejectConnection, CancellationToken.None);
 
 if(!returnResult.Success)
-    throw new Exception("The writter failed to run with message: " returnResult.Message);
+    throw new Exception("The writer failed to run with message: " returnResult.Message);
 
 if(!writerResult.RunStatus == Abended)
-    throw new Exception("The writter failed with message: " writerResult.Message);
+    throw new Exception("The writer failed with message: " writerResult.Message);
 
 Console.WriteLine("Finished with status {0}, and processed {1} rows.", writerResult.RunStatus, writerResult.RowsTotal.ToString());
 ```
