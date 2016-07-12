@@ -166,5 +166,91 @@ namespace dexih.connections.test
 
         }
 
+
+        /// <summary>
+        /// Perfromance tests should run in around 1 minute. 
+        /// </summary>
+        /// <param name="connection"></param>
+        public async Task PerformanceTransformWriter(Connection connection, string databaseName, int rows)
+        {
+            ReturnValue returnValue;
+
+            returnValue = await connection.CreateDatabase(databaseName);
+            Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
+
+            Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
+
+            //create a table that utilizes every available datatype.
+            Table table = new Table("LargeTable" + (DataSets.counter++).ToString());
+
+            table.Columns.Add(new TableColumn("SurrogateKey", DataType.ETypeCode.Int32, TableColumn.EDeltaType.SurrogateKey));
+            table.Columns.Add(new TableColumn("UpdateTest", DataType.ETypeCode.Int32));
+
+            foreach (DataType.ETypeCode typeCode in Enum.GetValues(typeof(DataType.ETypeCode)))
+            {
+                table.Columns.Add(new TableColumn() { ColumnName = "column" + typeCode.ToString(), DataType = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
+            }
+
+            //create the table
+            returnValue = await connection.CreateTable(table, true);
+            Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
+
+            //add rows.
+            int buffer = 0;
+            for (int i = 0; i < rows; i++)
+            {
+                object[] row = new object[table.Columns.Count];
+
+                row[0] = i;
+                row[1] = 0;
+
+                //load the rows with random values.
+                for (int j = 2; j < table.Columns.Count; j++)
+                {
+                    Type dataType = DataType.GetType(table.Columns[j].DataType);
+                    if (i % 2 == 0)
+                        row[j] = DataType.GetDataTypeMaxValue(table.Columns[j].DataType);
+                    else
+                        row[j] = DataType.GetDataTypeMinValue(table.Columns[j].DataType);
+                }
+                table.Data.Add(row);
+                buffer++;
+
+                if (buffer >= 5000 || rows == i + 1)
+                {
+                    //start a datawriter and insert the test data
+                    await connection.DataWriterStart(table);
+
+                    var bulkResult = await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
+                    Assert.True(bulkResult.Success, "WriteDataBulk - Message:" + bulkResult.Message);
+
+                    table.Data.Clear();
+                    buffer = 0;
+                }
+            }
+
+            var targetTable = table.Copy();
+            targetTable.AddAuditColumns();
+            targetTable.TableName = "TargetTable";
+            await connection.CreateTable(targetTable);
+
+            Transform targetTransform = connection.GetTransformReader(targetTable);
+
+            //count rows using reader
+            Transform transform = connection.GetTransformReader(table);
+            transform = new TransformMapping(transform, true, null, null);
+            transform = new TransformValidation(transform, null, false);
+            transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, 1 );
+
+            await transform.Open();
+            while (await transform.ReadAsync()) ;
+
+            //TransformWriter writer = new TransformWriter();
+            //TransformWriterResult writerResult = new TransformWriterResult();
+            //var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, CancellationToken.None);
+
+            //Assert.Equal(rows, writerResult.RowsCreated);
+        }
+
     }
 }

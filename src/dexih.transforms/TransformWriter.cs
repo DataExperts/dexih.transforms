@@ -45,6 +45,9 @@ namespace dexih.transforms
 
         public Stopwatch WriteDataTimer;
         public Stopwatch ProcessingDataTimer;
+        public Stopwatch TestDataTimer;
+
+        private List<int> _fieldOrdinals;
 
         /// <summary>
         /// Writes all record from the inTransform to the target table and reject table.
@@ -71,7 +74,7 @@ namespace dexih.transforms
 
                 InTransform = inTransform;
 
-                var returnValue = await WriteStart();
+                var returnValue = await WriteStart(InTransform);
 
                 if (returnValue.Success == false)
                 {
@@ -82,6 +85,8 @@ namespace dexih.transforms
                 }
 
                 bool firstRead = true;
+                Task<ReturnValue> writeTask = null;
+
                 while (await inTransform.ReadAsync(cancelToken))
                 {
                     if (firstRead)
@@ -90,7 +95,11 @@ namespace dexih.transforms
                         firstRead = false;
                     }
 
-                    returnValue = await WriteRecord(WriterResult, inTransform);
+                    if (writeTask != null)
+                        await writeTask;
+
+                    writeTask = WriteRecord(WriterResult, inTransform);
+
                     if (returnValue.Success == false)
                     {
                         WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
@@ -125,13 +134,13 @@ namespace dexih.transforms
             }
         }
 
-        public async Task<ReturnValue> WriteStart( )
+        public async Task<ReturnValue> WriteStart(Transform inTransform)
         {
 
             if (WriteOpen == true)
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
-            var returnValue = await InTransform.Open(null);
+            var returnValue = await InTransform.Open(null); 
             if (!returnValue.Success)
                 return returnValue;
 
@@ -167,13 +176,20 @@ namespace dexih.transforms
             WriteDataTimer = new Stopwatch();
             ProcessingDataTimer = Stopwatch.StartNew();
 
+            TestDataTimer = new Stopwatch();
+
             //await InTransform.Open();
+
+            _fieldOrdinals = new List<int>();
+            for (int i = 0; i < TargetTable.Columns.Count; i++)
+            {
+                _fieldOrdinals.Add(inTransform.GetOrdinal(TargetTable.Columns[i].ColumnName));
+            }
 
             WriteOpen = true;
 
             return new ReturnValue(true);
         }
-
 
         public async Task<ReturnValue> WriteRecord(TransformWriterResult writerResult, Transform reader)
         {
@@ -195,7 +211,15 @@ namespace dexih.transforms
 
             Table table;
             if (operation == 'R')
+            {
                 table = RejectTable;
+                if(RejectTable == null)
+                {
+                    writerResult.Message = "Records have been rejected, however there is no reject table.";
+                    writerResult.RunStatus = TransformWriterResult.ERunStatus.RunningErrors;
+                    return new ReturnValue(false, writerResult.Message, null);
+                }
+            }
             else
                 table = TargetTable;
 
@@ -203,8 +227,9 @@ namespace dexih.transforms
 
             for (int i = 0; i < table.Columns.Count; i++)
             {
-                int ordinal = reader.GetOrdinal(table.Columns[i].ColumnName);
-                if(ordinal >= 0)
+                //int ordinal = reader.GetOrdinal(table.Columns[i].ColumnName);
+                int ordinal = _fieldOrdinals[i];
+                if (ordinal >= 0)
                     row[i] = reader[ordinal];
             }
 

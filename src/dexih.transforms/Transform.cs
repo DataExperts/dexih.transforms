@@ -11,6 +11,7 @@ using System.Globalization;
 using static dexih.transforms.TableColumn;
 using System.Collections.ObjectModel;
 using System.Threading;
+using System.Text;
 
 namespace dexih.transforms
 {
@@ -357,11 +358,31 @@ namespace dexih.transforms
             long ticks = TransformTimer.ElapsedTicks;
 
             if (PrimaryTransform != null)
-                ticks = ticks - PrimaryTransform.TransformTimerTicks();
+                ticks = ticks - PrimaryTransform.TimerTicks();
             if (ReferenceTransform != null)
-                ticks = ticks - ReferenceTransform.TransformTimerTicks();
+                ticks = ticks - ReferenceTransform.TimerTicks();
 
             return ticks;
+        }
+
+        public long TimerTicks()
+        {
+            return TransformTimer.ElapsedTicks;
+        }
+
+        public string PerformanceSummary()
+        {
+            StringBuilder performance = new StringBuilder();
+
+            long ticks = TransformTimerTicks();
+            performance.AppendLine(Details() + " - " + ticks.ToString() + "(" + ((decimal)ticks / TimeSpan.TicksPerSecond).ToString()  + " seconds)");
+
+            if (PrimaryTransform != null)
+                performance.AppendLine(PrimaryTransform.PerformanceSummary());
+            if (ReferenceTransform != null)
+                performance.AppendLine("Reference: " + ReferenceTransform.PerformanceSummary());
+
+            return performance.ToString();
         }
 
         #endregion

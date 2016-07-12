@@ -67,12 +67,13 @@ namespace dexih.transforms
         {
             if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
                 return new ReturnValue<object[]>(false, null);
-            bool showRecord;
-            do //loop through the records util the filter is true
+
+            bool showRecord = true;
+            if (Conditions != null && Conditions.Count > 0)
             {
-                showRecord = true;
-                if (Conditions != null)
+                do //loop through the records util the filter is true
                 {
+                    showRecord = true;
                     foreach (Function condition in Conditions)
                     {
                         foreach (Parameter input in condition.Inputs.Where(c => c.IsColumn))
@@ -83,7 +84,7 @@ namespace dexih.transforms
                         }
 
                         var invokeresult = condition.Invoke();
-                        if(invokeresult.Success == false)
+                        if (invokeresult.Success == false)
                             throw new Exception("Error invoking condition function: " + invokeresult.Message);
 
                         if ((bool)invokeresult.Value == false)
@@ -92,21 +93,22 @@ namespace dexih.transforms
                             break;
                         }
                     }
-                }
 
-                if (showRecord) break;
+                    if (showRecord) break;
 
-                TransformRowsFiltered += 1;
+                    TransformRowsFiltered += 1;
 
-            } while (await PrimaryTransform.ReadAsync(cancellationToken));
+                } while (await PrimaryTransform.ReadAsync(cancellationToken));
+            }
 
             object[] newRow;
 
             if (showRecord)
             {
                 newRow = new object[FieldCount];
-                for (int i = 0; i < FieldCount; i++)
-                    newRow[i] = PrimaryTransform[i];
+                PrimaryTransform.GetValues(newRow);
+                //for (int i = 0; i < FieldCount; i++)
+                //    newRow[i] = PrimaryTransform[i];
             }
             else
                 newRow = null;

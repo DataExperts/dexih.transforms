@@ -4,12 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 using static dexih.functions.DataType;
 
 namespace dexih.transforms.tests
 {
     public class TransformValidationTests
     {
+        private readonly ITestOutputHelper output;
+
+        public TransformValidationTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
         [Fact]
         public void Validations_unit()
         {
@@ -102,6 +110,41 @@ namespace dexih.transforms.tests
             Assert.Equal(10, passCount);
             Assert.Equal(5, rejectCount);
 
+        }
+
+        [Theory]
+        [InlineData(100000)] //should run in ~ 250ms
+        public async Task ValidationPerformanceValidationOff(int rows)
+        {
+            var data = Helpers.CreateLargeTable(rows);
+            TransformValidation transform = new TransformValidation();
+            transform.SetInTransform(data);
+
+            int count = 0;
+            while (await transform.ReadAsync())
+                count++;
+
+            Assert.Equal(rows, count);
+
+            output.WriteLine(transform.PerformanceSummary());
+        }
+
+        [Theory]
+        [InlineData(100000)] //should run in ~ 250ms
+        public async Task ValidationPerformanceValidationOn(int rows)
+        {
+            var data = Helpers.CreateLargeTable(rows);
+            TransformValidation transform = new TransformValidation();
+            transform.ValidateDataTypes = true;
+            transform.SetInTransform(data);
+
+            int count = 0;
+            while (await transform.ReadAsync())
+                count++;
+
+            Assert.Equal(rows, count);
+
+            output.WriteLine(transform.PerformanceSummary());
         }
 
     }

@@ -76,14 +76,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                ReturnValue<DbConnection> connectionResult = await NewConnection();
-                if (connectionResult.Success == false)
-                {
-                    return connectionResult;
-                }
 
-                using (var connection = connectionResult.Value)
-                {
                     var tableExistsResult = await TableExists(table);
                     if (!tableExistsResult.Success)
                         return tableExistsResult;
@@ -138,21 +131,27 @@ namespace dexih.connections.sql
 
                     createSql.AppendLine(")");
 
-                    using (var command = connectionResult.Value.CreateCommand())
+                ReturnValue<DbConnection> connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
+                {
+                    return connectionResult;
+                }
+
+                using (var connection = connectionResult.Value)
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = createSql.ToString();
+                    try
                     {
-                        command.CommandText = createSql.ToString();
-                        try
-                        {
-                            await command.ExecuteNonQueryAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
-                        }
+                        await command.ExecuteNonQueryAsync();
                     }
+                    catch (Exception ex)
+                    {
+                        return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
+                    }
+                }
 
                     return new ReturnValue(true, "", null);
-                }
             }
             catch (Exception ex)
             {

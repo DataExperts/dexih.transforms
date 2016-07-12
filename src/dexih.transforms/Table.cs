@@ -80,7 +80,7 @@ namespace dexih.transforms
 
         public TableCache Data { get; set; }
 
-        public virtual TableColumns Columns { get; set; }
+        public virtual TableColumns Columns { get; protected set; }
 
         public Dictionary<string, string> ExtendedProperties { get; set; }
 

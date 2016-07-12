@@ -4,12 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 using static dexih.functions.DataType;
 
 namespace dexih.transforms.tests
 {
     public class TransformMappingTests
     {
+        private readonly ITestOutputHelper output;
+
+        public TransformMappingTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
         [Fact]
         public void Mappings()
         {
@@ -41,7 +49,7 @@ namespace dexih.transforms.tests
             List<ColumnPair> MappingColumn = new List<ColumnPair>();
             MappingColumn.Add(new ColumnPair("DateColumn", "DateColumn"));
 
-            transformMapping = new TransformMapping(Source, MappingColumn, Mappings);
+            transformMapping = new TransformMapping(Source, false, MappingColumn, Mappings);
 
             Assert.Equal(3, transformMapping.FieldCount);
 
@@ -61,5 +69,77 @@ namespace dexih.transforms.tests
             //Assert.Equal("CustomFunction", SchemaTable.Rows[1]["ColumnName"]);
             //Assert.Equal("Substring", SchemaTable.Rows[2]["ColumnName"]);
         }
+
+        [Theory]
+        [InlineData(100000)] //should run in ~ 250ms
+        public async Task MappingPerformancePassthrough(int rows)
+        {
+            var data = Helpers.CreateLargeTable(rows);
+            TransformMapping transformMapping = new TransformMapping();
+            transformMapping.PassThroughColumns = true;
+            transformMapping.SetInTransform(data);
+
+            int count = 0;
+            while (await transformMapping.ReadAsync())
+                count++;
+
+            Assert.Equal(rows, count);
+
+            output.WriteLine(transformMapping.PerformanceSummary());
+        }
+
+        [Theory]
+        [InlineData(100000)] //should run in ~ 250ms
+        public async Task MappingPerformanceColumnPairs(int rows)
+        {
+            var data = Helpers.CreateLargeTable(rows);
+            TransformMapping transformMapping = new TransformMapping();
+            List<ColumnPair> columnMappings = new List<ColumnPair>();
+
+            for (int i = 0; i < data.FieldCount; i++)
+                columnMappings.Add(new ColumnPair(data.GetName(i)));
+
+            transformMapping.PassThroughColumns = false;
+            transformMapping.MapFields = columnMappings;
+            transformMapping.SetInTransform(data);
+
+            int count = 0;
+            while (await transformMapping.ReadAsync())
+                count++;
+
+            Assert.Equal(rows, count);
+
+            output.WriteLine(transformMapping.PerformanceSummary());
+
+        }
+
+        [Theory]
+        [InlineData(100000)] //should run in ~ 900ms
+        public async Task MappingPerformanceFunctions(int rows)
+        {
+            var data = Helpers.CreateLargeTable(rows);
+            TransformMapping transformMapping = new TransformMapping();
+            List<Function> columnMappings = new List<Function>();
+
+            for (int i = 0; i < data.FieldCount; i++)
+            {
+                Function newFunction = new Function(new Func<object, object>((value) => value), new string[] { data.GetName(i) }, data.GetName(i), null);
+                columnMappings.Add(newFunction);
+            }
+
+            transformMapping.PassThroughColumns = false;
+            transformMapping.Functions = columnMappings;
+            transformMapping.SetInTransform(data);
+
+            int count = 0;
+            while (await transformMapping.ReadAsync())
+                count++;
+
+            Assert.Equal(rows, count);
+
+            output.WriteLine(transformMapping.PerformanceSummary());
+
+        }
+
     }
 }

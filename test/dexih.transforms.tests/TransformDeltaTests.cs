@@ -354,24 +354,34 @@ namespace dexih.transforms.tests
 
         //}
 
-        [Fact]
-        public void DeltaLargeTable()
+        [Theory]
+        [InlineData(100000, TransformDelta.EUpdateStrategy.Append)]
+        [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdate)]
+        [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdateDelete)]
+        [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve)]
+        [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdatePreserve)]
+        [InlineData(100000, TransformDelta.EUpdateStrategy.Reload)]
+        public void TransformDeltaPerformance(int rows, TransformDelta.EUpdateStrategy updateStrategy)
         {
-            ReaderMemory Source = Helpers.CreateLargeTable(100000);
+            ReaderMemory Source = Helpers.CreateLargeTable(rows);
 
             Table targetTable = Source.CacheTable.Copy();
             targetTable.AddAuditColumns();
 
             Transform Target = new ReaderMemory(targetTable);
 
-            TransformDelta transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve, 1, 10);
+            TransformDelta transformDelta = new TransformDelta(Source, Target, updateStrategy, 1, 10);
 
             int count = 0;
             while(transformDelta.Read())
             {
                 count++;
             }
-            Assert.True(count == 100000);
+
+            if(updateStrategy == TransformDelta.EUpdateStrategy.Reload)
+                Assert.True(count == rows+1);
+            else
+                Assert.True(count == rows);
 
             WriteTransformPerformance(transformDelta);
 

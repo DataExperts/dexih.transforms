@@ -15,6 +15,8 @@ namespace dexih.connections.sql
         private DbDataReader _sqlReader;
         private DbConnection _sqlConnection;
 
+        private List<int> _fieldOrdinals;
+
         public ReaderSQL(ConnectionSql connection, Table table)
         {
             ReferenceConnection = connection;
@@ -56,6 +58,12 @@ namespace dexih.connections.sql
 
             _sqlReader = readerResult.Value;
 
+            _fieldOrdinals = new List<int>();
+            for (int i = 0; i < _sqlReader.FieldCount; i++)
+            {
+                _fieldOrdinals.Add(CacheTable.GetOrdinal(_sqlReader.GetName(i)));
+            }
+
             _isOpen = true;
             return new ReturnValue(true, "", null);
         }
@@ -90,12 +98,13 @@ namespace dexih.connections.sql
             object[] row = new object[CacheTable.Columns.Count];
             for (int i = 0; i < _sqlReader.FieldCount; i++)
             {
-                int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
-                var returnValue = DataType.TryParse(CacheTable.Columns[ordinal].DataType, _sqlReader[i]);
-                if (!returnValue.Success)
-                    return new ReturnValue<object[]>(returnValue);
+                //int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
+                //var returnValue = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].DataType, _sqlReader[i]);
+                //if (!returnValue.Success)
+                //    return new ReturnValue<object[]>(returnValue);
 
-                row[ordinal] = returnValue.Value;
+                //row[_fieldOrdinals[i]] = returnValue.Value;
+                row[_fieldOrdinals[i]] = _sqlReader[i];
             }
             return new ReturnValue<object[]>(true, row);
         }

@@ -36,7 +36,7 @@ namespace dexih.transforms
         {
             Reload, //truncates the table and reloads
             Append, //inserts records.  use if the data feed is always new data.
-            Bulk, //same is insert, however uses database bulk load feature.
+            //Bulk, //same is insert, however uses database bulk load feature.
             AppendUpdate, //inserts new records, and updates records.  use if the data feed is new and existing data.
             AppendUpdateDelete, //inserts new records, updates existing records, and (logically) deletes removed records.  use to maintain an exact copy of the data feed.
             AppendUpdatePreserve, //inserts new records, updates existing records, and preserves the changes.
@@ -61,6 +61,8 @@ namespace dexih.transforms
         private int DatabaseOperationOrdinal;
         private int RejectedReasonOrdinal;
         private int ValidationStatusOrdinal;
+        private int SourceSurrogateKeyOrdinal;
+        private int ValidFromOrdinal;
 
         private TableColumn[] colNatrualKey;
 
@@ -73,7 +75,9 @@ namespace dexih.transforms
         private bool doPreserve { get; set; }
 
         private object[] _preserveRow { get; set; }
-        private object[] _nextPrimaryRow { get; set; } 
+        private object[] _nextPrimaryRow { get; set; }
+
+        private List<int> _sourceOrdinals;
 
         DateTime currentDateTime;
 
@@ -111,6 +115,13 @@ namespace dexih.transforms
 
             //set surrogate key to the key field.  This will indicate that the surrogate key should be used when update/deleting records.
             CacheTable.KeyFields = new List<string>() { colSurrogateKey.ColumnName };
+
+            //preload the source-target ordinal mapping to improve performance.
+            _sourceOrdinals = new List<int>();
+            for (int targetOrdinal = 1; targetOrdinal < CacheTable.Columns.Count; targetOrdinal++)
+            {
+                _sourceOrdinals.Add(PrimaryTransform.GetOrdinal(CacheTable.Columns[targetOrdinal].ColumnName));
+            }
 
             return true;
         }
@@ -173,6 +184,10 @@ namespace dexih.transforms
             {
                 CacheTable.AddColumn("RejectedReason", DataType.ETypeCode.String, TableColumn.EDeltaType.RejectedReason);
             }
+
+            SourceSurrogateKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
+            ValidFromOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
+
         }
 
 
@@ -486,7 +501,7 @@ namespace dexih.transforms
                 {
                     case TableColumn.EDeltaType.ValidToDate:
                         if (nextRow != null && colValidFrom != null)
-                            newRow[i] = nextRow[CacheTable.GetOrdinal(colValidFrom.ColumnName)];
+                            newRow[i] = nextRow[ValidFromOrdinal];
                         else
                             newRow[i] = currentDateTime;
                         break;
@@ -518,12 +533,10 @@ namespace dexih.transforms
 
             for (int targetOrdinal = 1; targetOrdinal < CacheTable.Columns.Count; targetOrdinal++)
             {
-                var col = CacheTable.Columns[targetOrdinal];
-
                 //check if a matching source field exists (-1 will be returned if it doesn't)
-                int sourceOrdinal = PrimaryTransform.GetOrdinal(col.ColumnName);
+                int sourceOrdinal = _sourceOrdinals[targetOrdinal - 1];
 
-                switch (col.DeltaType)
+                switch (CacheTable.Columns[targetOrdinal].DeltaType)
                 {
                     case TableColumn.EDeltaType.ValidFromDate:
                         if (colValidFrom == null || sourceOrdinal == -1)
@@ -558,11 +571,10 @@ namespace dexih.transforms
                             newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
                         else
                         {
-                            int ordinal2 = PrimaryTransform.GetOrdinal(colSourceSurrogateKey.ColumnName);
-                            if (ordinal2 == -1)
+                            if (SourceSurrogateKeyOrdinal == -1)
                                 newRow[targetOrdinal] = 0;
                             else
-                                newRow[targetOrdinal] = PrimaryTransform[ordinal2];
+                                newRow[targetOrdinal] = PrimaryTransform[SourceSurrogateKeyOrdinal];
                         }
                         break;
                     case TableColumn.EDeltaType.CreateAuditKey:
@@ -582,10 +594,8 @@ namespace dexih.transforms
                             newRow[targetOrdinal] = PrimaryTransform[RejectedReasonOrdinal];
                         break;
                     default:
-                        int ordinal = PrimaryTransform.GetOrdinal(col.ColumnName);
-
-                        if (ordinal > -1)
-                        newRow[targetOrdinal] = PrimaryTransform[ordinal];
+                        if (sourceOrdinal > -1)
+                        newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
 
                         break;
                 }

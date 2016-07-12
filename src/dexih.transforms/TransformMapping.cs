@@ -14,15 +14,18 @@ namespace dexih.transforms
     {
         public TransformMapping() { }
 
-        public TransformMapping(Transform inTransform, List<ColumnPair> mapFields, List<Function> mappings)
+        public TransformMapping(Transform inTransform, bool passThroughColumns, List<ColumnPair> mapFields, List<Function> mappings)
         {
             Mappings = mappings;
             MapFields = mapFields;
+            PassThroughColumns = passThroughColumns;
 
             SetInTransform(inTransform, null);
         }
 
-        List<string> _passThroughFields;
+        List<int> _passThroughFields;
+        List<int> _mapFieldOrdinals; 
+        List<int> _functionInputOrdinals;
 
         public List<Function> Mappings
         {
@@ -141,19 +144,31 @@ namespace dexih.transforms
 
             if (MapFields != null)
             {
+                _mapFieldOrdinals = new List<int>();
+
                 foreach (ColumnPair mapField in MapFields)
                 {
                     var column = PrimaryTransform.CacheTable.Columns.Single(c => c.ColumnName == mapField.SourceColumn);
                     column.ColumnName = mapField.TargetColumn;
                     CacheTable.Columns.Add(column);
+                    //store an mapFieldOrdinal to improve performance.
+                    _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn));
                     i++;
                 }
             }
 
             if (Mappings != null)
             {
+                _functionInputOrdinals = new List<int>();
+
                 foreach (Function mapping in Mappings)
                 {
+                    //store the ordinals for each parameter to improve performance
+                    foreach(var parameter in mapping.Inputs)
+                    {
+                        if (parameter.IsColumn)
+                            _functionInputOrdinals.Add(PrimaryTransform.GetOrdinal(parameter.ColumnName));
+                    }
                     if (mapping.TargetColumn != "")
                     {
                         var column = new TableColumn(mapping.TargetColumn, mapping.ReturnType);
@@ -180,14 +195,15 @@ namespace dexih.transforms
             //if passthrough is set-on load any unused columns to the output.
             if(PassThroughColumns)
             {
-                _passThroughFields = new List<string>();
+                _passThroughFields = new List<int>();
 
-                foreach (var column in PrimaryTransform.CacheTable.Columns)
+                for(int j = 0; j< PrimaryTransform.CacheTable.Columns.Count; j++)
                 {
+                    var column = PrimaryTransform.CacheTable.Columns[j];
                     if (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName) == null)
                     {
                         CacheTable.Columns.Add(column.Copy());
-                        _passThroughFields.Add(column.ColumnName);
+                        _passThroughFields.Add(j);
                     }
                 }
             }
@@ -240,24 +256,27 @@ namespace dexih.transforms
             int i = 0;
             var newRow = new object[FieldCount];
 
-            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
+            var readResult = await PrimaryTransform.ReadAsync(cancellationToken);
+            if (readResult == false)
                 return new ReturnValue<object[]>(false, null);
             if (MapFields != null)
             {
-                foreach (ColumnPair mapField in MapFields)
+                foreach (int mapField in _mapFieldOrdinals)
                 {
-                    newRow[i] = PrimaryTransform[mapField.SourceColumn];
+                    newRow[i] = PrimaryTransform[mapField];
                     i = i + 1;
                 }
             }
             //processes the mappings
             if (Mappings != null)
             {
+                int parameterInputCount = 0;
                 foreach (Function mapping in Mappings)
                 {
                     foreach (Parameter input in mapping.Inputs.Where(c => c.IsColumn))
                     {
-                        var result = input.SetValue(PrimaryTransform[input.ColumnName]);
+                        var result = input.SetValue(PrimaryTransform[_functionInputOrdinals[parameterInputCount]]);
+                        parameterInputCount++;
                         if (result.Success == false)
                             throw new Exception("Error setting mapping values: " + result.Message);
                     }
@@ -287,9 +306,9 @@ namespace dexih.transforms
 
             if (PassThroughColumns)
             {
-                foreach (string columnName in _passThroughFields)
+                foreach (int index in _passThroughFields)
                 {
-                    newRow[i] = PrimaryTransform[columnName];
+                    newRow[i] = PrimaryTransform[index];
                     i = i + 1;
                 }
             }

@@ -35,7 +35,15 @@ namespace dexih.connections.sql.sqlserver
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            await new PerformanceTests().Performance(GetConnection(), database, 1000);
+            await new PerformanceTests().Performance(GetConnection(), database, 100000);
+        }
+
+        [Fact]
+        public async Task SqlServer_TransformWriter()
+        {
+            string database = "Test-" + Guid.NewGuid().ToString();
+
+            await new PerformanceTests().PerformanceTransformWriter(GetConnection(), database, 100000);
         }
 
         [Fact]

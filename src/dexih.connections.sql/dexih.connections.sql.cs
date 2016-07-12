@@ -163,20 +163,19 @@ namespace dexih.connections.sql
                 }
 
                 using (var connection = connectionResult.Value)
+                using (DbCommand command = connection.CreateCommand())
                 {
-                    using (DbCommand command = connection.CreateCommand())
-                    {
-                        command.CommandText = "drop table " + AddDelimiter(table.TableName);
+                    command.CommandText = "drop table " + AddDelimiter(table.TableName);
 
-                        try
-                        {
-                            await command.ExecuteNonQueryAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            return new ReturnValue(false, "The following error occurred when attempting to drop the table " + table.TableName + ".  " + ex.Message, ex);
-                        }
+                    try
+                    {
+                        await command.ExecuteNonQueryAsync();
                     }
+                    catch (Exception ex)
+                    {
+                        return new ReturnValue(false, "The following error occurred when attempting to drop the table " + table.TableName + ".  " + ex.Message, ex);
+                    }
+
                     return new ReturnValue(true);
                 }
             }

@@ -32,7 +32,8 @@ namespace dexih.transforms
         private int rejectReasonOrdinal;
         private int operationOrdinal;
         private int validationStatusOrdinal;
-        private Table TargetTable;
+
+        List<int> _mapFieldOrdinals;
 
         public List<Function> Validations
         {
@@ -79,6 +80,12 @@ namespace dexih.transforms
             operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
             validationStatusOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
 
+            _mapFieldOrdinals = new List<int>();
+            for (int i = 0; i < PrimaryTransform.FieldCount; i++)
+            {
+                _mapFieldOrdinals.Add(GetOrdinal(PrimaryTransform.GetName(i)));
+            }
+
             return true;
         }
 
@@ -112,88 +119,91 @@ namespace dexih.transforms
                 object[] passRow = new object[CacheTable.Columns.Count];
                 for (int i = 0; i < PrimaryTransform.FieldCount; i++)
                 {
-                    passRow[GetOrdinal(PrimaryTransform.GetName(i))] = PrimaryTransform[i];
-
-                    if (passRow[operationOrdinal] == null)
-                        passRow[operationOrdinal] = 'C';
+                    passRow[_mapFieldOrdinals[i]] = PrimaryTransform[i];
                 }
+
+                if (passRow[operationOrdinal] == null)
+                    passRow[operationOrdinal] = 'C';
 
                 object[] rejectRow = null;
 
                 //run the validation functions
-                foreach (Function validation in Validations)
+                if (Validations != null)
                 {
-                    //set inputs for the validation function
-                    foreach (Parameter input in validation.Inputs.Where(c => c.IsColumn))
+                    foreach (Function validation in Validations)
                     {
-                        var result = input.SetValue(PrimaryTransform[input.ColumnName]);
-                        if (result.Success == false)
-                            throw new Exception("Error setting validation values: " + result.Message);
-                    }
-                    var invokeresult = validation.Invoke();
-
-                    //if the validation function had an error, then throw exception.
-                    if (invokeresult.Success == false)
-                        throw new Exception("Error invoking validation function: " + invokeresult.Message);
-
-                    //if the validation is negative.  apply any output columns, and set a reject status
-                    if ((bool)invokeresult.Value == false)
-                    {
-                        rejectReason.AppendLine("function: " + validation.FunctionName + ", values: " + string.Join(",", validation.Inputs.Select(c => c.ColumnName + "=" + c.Value.ToString()).ToArray()) + ".");
-
-                        // fail job immediately.
-                        if (validation.InvalidAction == Function.EInvalidAction.Abend)
-                            throw new Exception(rejectReason.ToString());
-
-                        //if the record is to be discarded, continue the loop and get the next source record.
-                        if (validation.InvalidAction == Function.EInvalidAction.Discard)
-                            continue;
-
-                        //set the final invalidation action based on priority order of other rejections.
-                        finalInvalidAction = finalInvalidAction < validation.InvalidAction ? validation.InvalidAction : finalInvalidAction;
-
-                        if(validation.InvalidAction == Function.EInvalidAction.Reject || validation.InvalidAction == Function.EInvalidAction.RejectClean)
+                        //set inputs for the validation function
+                        foreach (Parameter input in validation.Inputs.Where(c => c.IsColumn))
                         {
-                            //if the row is rejected, copy unmodified row to a reject row.
-                            if (rejectRow == null)
-                            {
-                                rejectRow = new object[CacheTable.Columns.Count];
-                                passRow.CopyTo(rejectRow, 0);
-                                rejectRow[operationOrdinal] = 'R';
-                                TransformRowsRejected++;
-                            }
+                            var result = input.SetValue(PrimaryTransform[input.ColumnName]);
+                            if (result.Success == false)
+                                throw new Exception("Error setting validation values: " + result.Message);
+                        }
+                        var invokeresult = validation.Invoke();
 
-                            //add a reject reason if it exists
-                            if (rejectReasonOrdinal >= 0)
+                        //if the validation function had an error, then throw exception.
+                        if (invokeresult.Success == false)
+                            throw new Exception("Error invoking validation function: " + invokeresult.Message);
+
+                        //if the validation is negative.  apply any output columns, and set a reject status
+                        if ((bool)invokeresult.Value == false)
+                        {
+                            rejectReason.AppendLine("function: " + validation.FunctionName + ", values: " + string.Join(",", validation.Inputs.Select(c => c.ColumnName + "=" + c.Value.ToString()).ToArray()) + ".");
+
+                            // fail job immediately.
+                            if (validation.InvalidAction == Function.EInvalidAction.Abend)
+                                throw new Exception(rejectReason.ToString());
+
+                            //if the record is to be discarded, continue the loop and get the next source record.
+                            if (validation.InvalidAction == Function.EInvalidAction.Discard)
+                                continue;
+
+                            //set the final invalidation action based on priority order of other rejections.
+                            finalInvalidAction = finalInvalidAction < validation.InvalidAction ? validation.InvalidAction : finalInvalidAction;
+
+                            if (validation.InvalidAction == Function.EInvalidAction.Reject || validation.InvalidAction == Function.EInvalidAction.RejectClean)
                             {
-                                if (validation.Outputs != null)
+                                //if the row is rejected, copy unmodified row to a reject row.
+                                if (rejectRow == null)
                                 {
-                                    Parameter param = validation.Outputs.SingleOrDefault(c => c.ColumnName == rejectReasonColumnName);
-                                    if (param != null)
+                                    rejectRow = new object[CacheTable.Columns.Count];
+                                    passRow.CopyTo(rejectRow, 0);
+                                    rejectRow[operationOrdinal] = 'R';
+                                    TransformRowsRejected++;
+                                }
+
+                                //add a reject reason if it exists
+                                if (rejectReasonOrdinal >= 0)
+                                {
+                                    if (validation.Outputs != null)
                                     {
-                                        rejectReason.Append("  Reason: " + (string)param.Value);
+                                        Parameter param = validation.Outputs.SingleOrDefault(c => c.ColumnName == rejectReasonColumnName);
+                                        if (param != null)
+                                        {
+                                            rejectReason.Append("  Reason: " + (string)param.Value);
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        if (validation.InvalidAction == Function.EInvalidAction.Clean || validation.InvalidAction == Function.EInvalidAction.RejectClean)
-                        {
-                            if (validation.Outputs != null)
+                            if (validation.InvalidAction == Function.EInvalidAction.Clean || validation.InvalidAction == Function.EInvalidAction.RejectClean)
                             {
-                                foreach (Parameter output in validation.Outputs)
+                                if (validation.Outputs != null)
                                 {
-                                    if (output.ColumnName != "")
+                                    foreach (Parameter output in validation.Outputs)
                                     {
-                                        int ordinal = CacheTable.GetOrdinal(output.ColumnName);
-                                        TableColumn col = CacheTable[output.ColumnName];
-                                        if (ordinal >= 0)
+                                        if (output.ColumnName != "")
                                         {
-                                            var parseresult = DataType.TryParse(col.DataType, output.Value, col.MaxLength);
-                                            if(!parseresult.Success)
-                                                throw new Exception("Error parsing the cleaned value: " + output.Value.ToString() + " as a datatype: " + col.DataType.ToString());
+                                            int ordinal = CacheTable.GetOrdinal(output.ColumnName);
+                                            TableColumn col = CacheTable[output.ColumnName];
+                                            if (ordinal >= 0)
+                                            {
+                                                var parseresult = DataType.TryParse(col.DataType, output.Value, col.MaxLength);
+                                                if (!parseresult.Success)
+                                                    throw new Exception("Error parsing the cleaned value: " + output.Value.ToString() + " as a datatype: " + col.DataType.ToString());
 
-                                            passRow[ordinal] = parseresult.Value;
+                                                passRow[ordinal] = parseresult.Value;
+                                            }
                                         }
                                     }
                                 }
@@ -216,6 +226,13 @@ namespace dexih.transforms
                             {
                                 if (col.AllowDbNull == false)
                                 {
+                                    if (rejectRow == null)
+                                    {
+                                        rejectRow = new object[CacheTable.Columns.Count];
+                                        passRow.CopyTo(rejectRow, 0);
+                                        rejectRow[operationOrdinal] = 'R';
+                                        TransformRowsRejected++;
+                                    }
                                     rejectReason.AppendLine("Column:" + col.ColumnName + ": Tried to insert null into non-null column.");
                                     finalInvalidAction = Function.EInvalidAction.Reject;
                                 }
@@ -226,6 +243,13 @@ namespace dexih.transforms
                                 var parseresult = DataType.TryParse(col.DataType, value, col.MaxLength);
                                 if (parseresult.Success == false)
                                 {
+                                    if (rejectRow == null)
+                                    {
+                                        rejectRow = new object[CacheTable.Columns.Count];
+                                        passRow.CopyTo(rejectRow, 0);
+                                        rejectRow[operationOrdinal] = 'R';
+                                        TransformRowsRejected++;
+                                    }
                                     rejectReason.AppendLine(parseresult.Message);
                                     finalInvalidAction = Function.EInvalidAction.Reject;
                                 }
