@@ -46,5 +46,7 @@ deploy:
      secure: D2Fu0l/iyBVmVqt/yUztGOFPy3FhYdt9DdnYTgr5KvYYSvb+mRstFwoLeEpmZTUN
    skip_symbols: false
    symbol_server: https://www.nuget.org/api/v2/package
+   on:
+      configuration: Release
 cache:
  - '%USERPROFILE%\.nuget\packages'
