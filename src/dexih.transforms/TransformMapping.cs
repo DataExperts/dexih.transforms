@@ -122,9 +122,12 @@ namespace dexih.transforms
                 return outputColumn;
             else
             {
-                var mapping = MapFields.SingleOrDefault(c => c.TargetColumn == outputColumn);
-                if (mapping != null)
-                    return mapping.SourceColumn;
+                if (MapFields != null)
+                {
+                    var mapping = MapFields.SingleOrDefault(c => c.TargetColumn == outputColumn);
+                    if (mapping != null)
+                        return mapping.SourceColumn;
+                }
 
                 if(PassThroughColumns)
                 {

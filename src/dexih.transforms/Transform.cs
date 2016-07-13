@@ -301,7 +301,8 @@ namespace dexih.transforms
             switch (EncryptionMethod)
             {
                 case EEncryptionMethod.EncryptSecureFields:
-                    for (int i = 0; i < CacheTable.Columns.Count; i++)
+                    int columnCount = CacheTable.Columns.Count;
+                    for (int i = 0; i < columnCount; i++)
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
@@ -315,7 +316,8 @@ namespace dexih.transforms
                     }
                     break;
                 case EEncryptionMethod.DecryptSecureFields:
-                    for (int i = 0; i < CacheTable.Columns.Count; i++)
+                    int columnCount2 = CacheTable.Columns.Count;
+                    for (int i = 0; i < columnCount2; i++)
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {

@@ -17,6 +17,9 @@ namespace dexih.transforms
     /// </summary>
     public class TransformLookup : Transform
     {
+        int _primaryFieldCount;
+        int _referenceFieldCount;
+
         public TransformLookup() { }
 
         public TransformLookup(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs)
@@ -56,6 +59,9 @@ namespace dexih.transforms
 
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
+            _primaryFieldCount = PrimaryTransform.FieldCount;
+            _referenceFieldCount = ReferenceTransform.FieldCount;
+
             return true;
         }
 
@@ -73,7 +79,7 @@ namespace dexih.transforms
             //load in the primary table values
             newRow = new object[FieldCount];
             int pos = 0;
-            for (int i = 0; i < PrimaryTransform.FieldCount; i++)
+            for (int i = 0; i < _primaryFieldCount; i++)
             {
                 newRow[pos] = PrimaryTransform[i];
                 pos++;
@@ -97,7 +103,7 @@ namespace dexih.transforms
             var lookup = await ReferenceTransform.LookupRow(filters);
             if (lookup.Success)
             {
-                for (int i = 0; i < ReferenceTransform.FieldCount; i++)
+                for (int i = 0; i < _referenceFieldCount; i++)
                 {
                     newRow[pos] = ReferenceTransform.GetValue(i);
                     pos++;

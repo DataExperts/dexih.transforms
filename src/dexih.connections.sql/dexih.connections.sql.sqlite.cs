@@ -11,6 +11,8 @@ using System.IO;
 using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
+using System.Threading;
+using System.Diagnostics;
 
 namespace dexih.connections.sql
 {
@@ -298,12 +300,12 @@ namespace dexih.connections.sql
                     return new ReturnValue<DbConnection>(false, "The sqlserver connection failed to open with a state of : " + connection.State.ToString(), null, null);
                 }
 
-                using (var command = new SqliteCommand())
-                {
-                    command.Connection = connection;
-                    command.CommandText = "PRAGMA journal_mode=WAL";
-                    command.ExecuteNonQuery();
-                }
+                //using (var command = new SqliteCommand())
+                //{
+                //    command.Connection = connection;
+                //    command.CommandText = "PRAGMA journal_mode=WAL";
+                //    command.ExecuteNonQuery();
+                //}
 
                 return new ReturnValue<DbConnection>(true, "", null, connection);
             }

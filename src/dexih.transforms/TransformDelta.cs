@@ -1,6 +1,7 @@
 ﻿using dexih.functions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,6 +64,7 @@ namespace dexih.transforms
         private int ValidationStatusOrdinal;
         private int SourceSurrogateKeyOrdinal;
         private int ValidFromOrdinal;
+        private int ColumnCount;
 
         private TableColumn[] colNatrualKey;
 
@@ -118,7 +120,8 @@ namespace dexih.transforms
 
             //preload the source-target ordinal mapping to improve performance.
             _sourceOrdinals = new List<int>();
-            for (int targetOrdinal = 1; targetOrdinal < CacheTable.Columns.Count; targetOrdinal++)
+            int columnCount = CacheTable.Columns.Count;
+            for (int targetOrdinal = 1; targetOrdinal < columnCount; targetOrdinal++)
             {
                 _sourceOrdinals.Add(PrimaryTransform.GetOrdinal(CacheTable.Columns[targetOrdinal].ColumnName));
             }
@@ -187,6 +190,7 @@ namespace dexih.transforms
 
             SourceSurrogateKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
             ValidFromOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
+            ColumnCount = CacheTable.Columns.Count;
 
         }
 
@@ -201,7 +205,7 @@ namespace dexih.transforms
                 //if the delta is set to reload.  Set the first row as an operation T="truncate table"
                 if (DeltaType == EUpdateStrategy.Reload && _truncateComplete == false)
                 {
-                    newRow = new object[CacheTable.Columns.Count];
+                    newRow = new object[ColumnCount];
                     newRow[0] = 'T';
 
                     _truncateComplete = true;
@@ -414,7 +418,7 @@ namespace dexih.transforms
                                 newRow[0] = 'D';
                             }
 
-                            for (int i = 1; i < CacheTable.Columns.Count; i++)
+                            for (int i = 1; i < ColumnCount; i++)
                             {
                                 if (CacheTable.Columns[i].DeltaType == TableColumn.EDeltaType.IsCurrentField)
                                     newRow[i] = false;
@@ -489,13 +493,13 @@ namespace dexih.transforms
 
         public object[] CreateDeleteRow(object[] nextRow = null)
         {
-            object[] newRow = new object[CacheTable.Columns.Count];
+            object[] newRow = new object[ColumnCount];
             newRow[0] = doPreserve ? 'U' : 'D';
 
             if (doPreserve)
                 TransformRowsPreserved++;
 
-            for (int i = 1; i < CacheTable.Columns.Count; i++)
+            for (int i = 1; i < ColumnCount; i++)
             {
                 switch(CacheTable.Columns[i].DeltaType)
                 {
@@ -527,11 +531,12 @@ namespace dexih.transforms
 
         public object[] CreateOutputRow(char operation)
         {
-            object[] newRow = new object[CacheTable.Columns.Count];
+            object[] newRow = new object[ColumnCount];
 
             newRow[0] = operation;
 
-            for (int targetOrdinal = 1; targetOrdinal < CacheTable.Columns.Count; targetOrdinal++)
+            Stopwatch timer = new Stopwatch();
+            for (int targetOrdinal = 1; targetOrdinal < ColumnCount; targetOrdinal++)
             {
                 //check if a matching source field exists (-1 will be returned if it doesn't)
                 int sourceOrdinal = _sourceOrdinals[targetOrdinal - 1];
@@ -594,13 +599,15 @@ namespace dexih.transforms
                             newRow[targetOrdinal] = PrimaryTransform[RejectedReasonOrdinal];
                         break;
                     default:
+                        timer.Start();
+
                         if (sourceOrdinal > -1)
                         newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                        timer.Stop();
 
                         break;
                 }
             }
-
 
             return newRow;
         }

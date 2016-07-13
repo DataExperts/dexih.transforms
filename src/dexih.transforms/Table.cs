@@ -370,8 +370,9 @@ namespace dexih.transforms
 
             string[] columns = Columns.Select(c => c.ColumnName).ToArray();
             //add column headers
-            string[] s = new string[Columns.Count];
-            for (Int32 j = 0; j < Columns.Count; j++)
+            int columnCount = Columns.Count;
+            string[] s = new string[columnCount];
+            for (Int32 j = 0; j < columnCount; j++)
             {
                 s[j] = columns[j];
                 if (s[j].Contains("\"")) //replace " with ""
@@ -384,7 +385,7 @@ namespace dexih.transforms
             //add rows
             foreach (var row in Data)
             {
-                for (int j = 0; j < Columns.Count; j++)
+                for (int j = 0; j < columnCount; j++)
                 {
                     s[j] = row[j] == null ? "" : row[j].ToString();
                     if (s[j].Contains("\"")) //replace " with ""

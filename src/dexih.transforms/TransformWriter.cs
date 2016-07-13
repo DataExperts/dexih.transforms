@@ -47,7 +47,7 @@ namespace dexih.transforms
         public Stopwatch ProcessingDataTimer;
         public Stopwatch TestDataTimer;
 
-        private List<int> _fieldOrdinals;
+        private int[] _fieldOrdinals;
 
         /// <summary>
         /// Writes all record from the inTransform to the target table and reject table.
@@ -126,6 +126,8 @@ namespace dexih.transforms
 
                 WriterResult.RunStatus = TransformWriterResult.ERunStatus.Finished;
 
+                WriterResult.PerformanceSummary = inTransform.PerformanceSummary();
+
                 return new ReturnValue(true);
             }
             catch(Exception ex)
@@ -180,10 +182,11 @@ namespace dexih.transforms
 
             //await InTransform.Open();
 
-            _fieldOrdinals = new List<int>();
-            for (int i = 0; i < TargetTable.Columns.Count; i++)
+            int columnCount = TargetTable.Columns.Count;
+            _fieldOrdinals = new int[columnCount];
+            for (int i = 0; i < columnCount; i++)
             {
-                _fieldOrdinals.Add(inTransform.GetOrdinal(TargetTable.Columns[i].ColumnName));
+                _fieldOrdinals[i] = inTransform.GetOrdinal(TargetTable.Columns[i].ColumnName);
             }
 
             WriteOpen = true;
@@ -223,13 +226,15 @@ namespace dexih.transforms
             else
                 table = TargetTable;
 
-            object[] row = new object[table.Columns.Count];
+            int columnCount = table.Columns.Count;
 
-            for (int i = 0; i < table.Columns.Count; i++)
+            object[] row = new object[columnCount];
+
+            for (int i = 0; i < columnCount; i++)
             {
                 //int ordinal = reader.GetOrdinal(table.Columns[i].ColumnName);
                 int ordinal = _fieldOrdinals[i];
-                if (ordinal >= 0)
+                if (ordinal >= 0) 
                     row[i] = reader[ordinal];
             }
 

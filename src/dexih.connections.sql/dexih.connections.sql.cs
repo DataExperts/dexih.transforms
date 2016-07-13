@@ -12,6 +12,7 @@ using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
+using System.Diagnostics;
 
 namespace dexih.connections.sql
 {
@@ -99,13 +100,14 @@ namespace dexih.connections.sql
 
                 using (var connection = connectionResult.Value)
                 {
+                    int fieldCount = reader.FieldCount;
                     StringBuilder insert = new StringBuilder();
                     StringBuilder values = new StringBuilder();
 
                     insert.Append("INSERT INTO " + AddDelimiter(table.TableName) + " (");
                     values.Append("VALUES (");
 
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    for (int i = 0; i < fieldCount; i++)
                     {
                         insert.Append("[" + reader.GetName(i) + "],");
                         values.Append("@col" + i.ToString() + ",");
@@ -113,34 +115,42 @@ namespace dexih.connections.sql
 
                     string insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " + values.Remove(values.Length - 1, 1).ToString() + ");";
 
+                    Stopwatch timer = new Stopwatch();
+                    timer.Start();
                     using (var transaction = connection.BeginTransaction())
                     {
                         using (var cmd = connection.CreateCommand())
                         {
                             cmd.CommandText = insertCommand;
-                            cmd.Transaction = transaction;
-                            for (int i = 0; i < reader.FieldCount; i++)
+                            //cmd.Transaction = transaction;
+
+                            DbParameter[] parameters = new DbParameter[fieldCount];
+                            for (int i = 0; i < fieldCount; i++)
                             {
                                 DbParameter param = cmd.CreateParameter();
                                 param.ParameterName = "@col" + i.ToString();
-                                param.Value = "";
                                 cmd.Parameters.Add(param);
+                                parameters[i] = param;
                             }
-                            cmd.Prepare();
+                            //cmd.Prepare();
 
                             while (await reader.ReadAsync(cancelToken))
                             {
-                                for (int i = 0; i < reader.FieldCount; i++)
+                                for (int i = 0; i < fieldCount; i++)
                                 {
-                                    cmd.Parameters[i].Value = ConvertParameterType(reader[i]);
+                                    parameters[i].Value = ConvertParameterType(reader[i]);
                                 }
                                 await cmd.ExecuteNonQueryAsync(cancelToken);
                                 if (cancelToken.IsCancellationRequested)
+                                {
+                                    transaction.Rollback();
                                     return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                                }
                             }
                         }
                         transaction.Commit();
                     }
+                    timer.Stop();
 
                     return new ReturnValue<int>(true, 0);
                 }

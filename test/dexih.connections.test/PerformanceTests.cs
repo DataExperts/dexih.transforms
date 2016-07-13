@@ -242,15 +242,14 @@ namespace dexih.connections.test
             transform = new TransformValidation(transform, null, false);
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, 1 );
 
-            await transform.Open();
-            while (await transform.ReadAsync()) ;
+            TransformWriter writer = new TransformWriter();
+            TransformWriterResult writerResult = new TransformWriterResult();
+            var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, CancellationToken.None);
 
-            //TransformWriter writer = new TransformWriter();
-            //TransformWriterResult writerResult = new TransformWriterResult();
-            //var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, CancellationToken.None);
-
-            //Assert.Equal(rows, writerResult.RowsCreated);
+            Assert.Equal(rows, writerResult.RowsCreated);
         }
+
+
 
     }
 }

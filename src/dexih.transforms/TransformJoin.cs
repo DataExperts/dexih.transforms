@@ -30,6 +30,9 @@ namespace dexih.transforms
 
         bool _joinReaderOpen;
 
+        int _primaryFieldCount;
+        int _referenceFieldCount;
+
         public override bool InitializeOutputFields()
         {
             if (ReferenceTransform == null || JoinPairs == null || JoinPairs.Count == 0)
@@ -60,6 +63,9 @@ namespace dexih.transforms
             }
 
             _firstRead = true;
+
+            _primaryFieldCount = PrimaryTransform.FieldCount;
+            _referenceFieldCount = ReferenceTransform.FieldCount;
 
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
@@ -122,12 +128,12 @@ namespace dexih.transforms
                 }
                 newRow = new object[FieldCount];
                 int pos = 0;
-                for (int i = 0; i < PrimaryTransform.FieldCount; i++)
+                for (int i = 0; i < _primaryFieldCount; i++)
                 {
                     newRow[pos] = PrimaryTransform[i];
                     pos++;
                 }
-                for (int i = 0; i < ReferenceTransform.FieldCount; i++)
+                for (int i = 0; i < _referenceFieldCount; i++)
                 {
                     if (_joinReaderOpen)
                     {
@@ -152,7 +158,7 @@ namespace dexih.transforms
                     //load the join data into an in memory list
                     while (await ReferenceTransform.ReadAsync(cancellationToken))
                     {
-                        object[] values = new object[ReferenceTransform.FieldCount];
+                        object[] values = new object[_referenceFieldCount];
                         object[] joinFields = new object[JoinPairs.Count];
 
                         ReferenceTransform.GetValues(values);
@@ -171,7 +177,7 @@ namespace dexih.transforms
                 //load in the primary table values
                 newRow = new object[FieldCount];
                 int pos = 0;
-                for (int i = 0; i < PrimaryTransform.FieldCount; i++)
+                for (int i = 0; i < _primaryFieldCount; i++)
                 {
                     newRow[pos] = PrimaryTransform[i];
                     pos++;

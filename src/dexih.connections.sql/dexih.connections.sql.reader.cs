@@ -16,6 +16,7 @@ namespace dexih.connections.sql
         private DbConnection _sqlConnection;
 
         private List<int> _fieldOrdinals;
+        private int _fieldCount;
 
         public ReaderSQL(ConnectionSql connection, Table table)
         {
@@ -58,6 +59,7 @@ namespace dexih.connections.sql
 
             _sqlReader = readerResult.Value;
 
+            _fieldCount = _sqlReader.FieldCount;
             _fieldOrdinals = new List<int>();
             for (int i = 0; i < _sqlReader.FieldCount; i++)
             {
@@ -86,7 +88,6 @@ namespace dexih.connections.sql
             }
             else
                 return new ReturnValue(false, "The sql reader can not be reset", null);
-
         }
 
         protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
@@ -96,7 +97,8 @@ namespace dexih.connections.sql
 
             //load the new row up, converting datatypes where neccessary.
             object[] row = new object[CacheTable.Columns.Count];
-            for (int i = 0; i < _sqlReader.FieldCount; i++)
+
+            for (int i = 0; i < _fieldCount; i++)
             {
                 //int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
                 //var returnValue = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].DataType, _sqlReader[i]);

@@ -63,6 +63,7 @@ namespace dexih.transforms
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public DateTime LastUpdate { get; set; }
+        public string PerformanceSummary { get; set; }
         private CancellationTokenSource CancelTokenSource { get; set; }
 
         private ERunStatus _RunStatus;

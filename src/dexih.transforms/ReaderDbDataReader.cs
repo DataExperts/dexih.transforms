@@ -24,6 +24,7 @@ namespace dexih.transforms
         public ReaderDbDataReader(DbDataReader inReader, List<Sort> sortFields = null)
         {
             InReader = inReader;
+            int fieldCount = inReader.FieldCount;
 
             CacheTable = new Table("InReader");
 
@@ -47,7 +48,7 @@ namespace dexih.transforms
             }
             catch (Exception)
             {
-                for (int i = 0; i < inReader.FieldCount; i++)
+                for (int i = 0; i < fieldCount; i++)
                 {
                     CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
                 }
@@ -56,7 +57,7 @@ namespace dexih.transforms
             //if we can't get a column schema we will have to settle for column names only
             if (!inReader.CanGetColumnSchema())
             {
-                for (int i = 0; i < inReader.FieldCount; i++)
+                for (int i = 0; i < fieldCount; i++)
                 {
                     CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
                 }

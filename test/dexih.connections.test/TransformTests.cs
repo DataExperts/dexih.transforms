@@ -47,7 +47,7 @@ namespace dexih.connections.test
                     int sortValue = 10;
                     while (await reader.ReadAsync())
                     {
-                        Assert.Equal(sortValue, reader["IntColumn"]);
+                        Assert.Equal(sortValue, Convert.ToInt32(reader["IntColumn"]));
                         sortValue--;
                     }
                     Assert.Equal(0, sortValue);
@@ -69,7 +69,7 @@ namespace dexih.connections.test
                     int count = 0;
                     while (await reader.ReadAsync())
                     {
-                        Assert.True((int)reader["IntColumn"] <= 5);
+                        Assert.True(Convert.ToInt32(reader["IntColumn"]) <= 5);
                         count++;
                     }
                     Assert.Equal(5, count);

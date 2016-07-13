@@ -34,6 +34,8 @@ namespace dexih.transforms
         private int validationStatusOrdinal;
 
         List<int> _mapFieldOrdinals;
+        int _primaryFieldCount;
+        int _columnCount;
 
         public List<Function> Validations
         {
@@ -80,11 +82,15 @@ namespace dexih.transforms
             operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
             validationStatusOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
 
+            _primaryFieldCount = PrimaryTransform.FieldCount;
+            _columnCount = CacheTable.Columns.Count;
             _mapFieldOrdinals = new List<int>();
-            for (int i = 0; i < PrimaryTransform.FieldCount; i++)
+            for (int i = 0; i < _primaryFieldCount; i++)
             {
                 _mapFieldOrdinals.Add(GetOrdinal(PrimaryTransform.GetName(i)));
             }
+
+
 
             return true;
         }
@@ -116,8 +122,8 @@ namespace dexih.transforms
                 Function.EInvalidAction finalInvalidAction = Function.EInvalidAction.Pass;
 
                 //copy row data.
-                object[] passRow = new object[CacheTable.Columns.Count];
-                for (int i = 0; i < PrimaryTransform.FieldCount; i++)
+                object[] passRow = new object[_columnCount];
+                for (int i = 0; i < _primaryFieldCount; i++)
                 {
                     passRow[_mapFieldOrdinals[i]] = PrimaryTransform[i];
                 }
@@ -214,7 +220,7 @@ namespace dexih.transforms
 
                 if (ValidateDataTypes && (finalInvalidAction == Function.EInvalidAction.Pass || finalInvalidAction == Function.EInvalidAction.Clean))
                 {
-                    for (int i = 0; i < CacheTable.Columns.Count; i++)
+                    for (int i = 0; i < _columnCount; i++)
                     {
                         object value = passRow[i];
                         var col = CacheTable.Columns[i];
@@ -228,7 +234,7 @@ namespace dexih.transforms
                                 {
                                     if (rejectRow == null)
                                     {
-                                        rejectRow = new object[CacheTable.Columns.Count];
+                                        rejectRow = new object[_columnCount];
                                         passRow.CopyTo(rejectRow, 0);
                                         rejectRow[operationOrdinal] = 'R';
                                         TransformRowsRejected++;
@@ -245,7 +251,7 @@ namespace dexih.transforms
                                 {
                                     if (rejectRow == null)
                                     {
-                                        rejectRow = new object[CacheTable.Columns.Count];
+                                        rejectRow = new object[_columnCount];
                                         passRow.CopyTo(rejectRow, 0);
                                         rejectRow[operationOrdinal] = 'R';
                                         TransformRowsRejected++;
