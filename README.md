@@ -122,19 +122,102 @@ The transformations in this library generally work best when used in conjunction
 
 ## The Transform Class
 
-The *transform* class is a feature rich implementation of the DbReader class that leverages all the benefits of the DbReader, whilst extending the functionality to allow for more advanced data integration.
+The *transform* class is a feature rich implementation of the DbDataReader class that leverages all the benefits of the DbDataReader, whilst extending the functionality to allow for more advanced data integration.
+
+### Basics
+
+The transform class inherits the `DbDataReader` class and can be used in the same way to read data.
+
+The following is a simple example of reading records from a `Transform` object.
+
+```csharp
+while(await transform.ReadAsync())
+{
+    for(int i =0; i < transform.FieldCount; i++)
+    {
+        Console.WriteLine("Field: {0}, Value: {1}", transform.GetName(i), transform[i].ToString());
+    }
+}
+```
 
 ### Caching
 
-The *transform* class inherits one of the key benefits of using a DbReader, which is fast, forward only record streaming.  
-
-The *transform* class enhances this by providing a built-in caching mechanism.  The caching can be switched off or set to  full caching or partial caching.  When caching is enabled, this allows:
+The *transform* class enhances the `DbDataReader` class by providing a built-in caching mechanism.  The caching can be switched off or set to  full caching or partial caching.  When caching is enabled, this allows:
   
 * Navigate backwards through previous records.
 * Reset the reader to the start, without re-accessing the source database again.
 * Peek at previous records (without resetting the current row).
 * Search / lookup against previous loaded records.
 * On demand lookup, where the cache is first referenced, and then referred to the data source if not found.
+
+#### Caching Settings
+
+The transform can store a cache of records already read.  By default the cache is off.  There are two types of caching options.  
+* *OnDemandCache* - Will retain records that have been read by the `ReadAsync()` or `LookupRow()` function.  Whenever the `LookupRow` function is called the transform will first check the cache for the row, and if not found ask the underlying conneciton for the row.
+* *PreLoadCache* - Will load all records into memory the first time the `LookupRow` function is called.  It will then only refer to the cache when retrieving additional records.
+
+The transform can also set a maximum cache size, which causes the transform to store the last *n* rows.  This can be useful to manage memory usage on large tables, and store rows when a commit fails.
+
+The following example sets the caching to OnDemandCache and stores a maximum of 1000 rows.
+```csharp
+transform.SetCacheMethod(ECacheMethod.OnDemandCache, 1000);
+```
+
+#### Navigating through the cache
+
+The following methods are available to navigate through cached records:
+* *SetRowNumber(int rowNumber)* - Sets a specific row number.  When the `ReadAsync()` is called, it will start reading from this number.  An exception will be raised if the row number exceeds the number of cached rows.
+* *RowPeek(int rowNumber, object[] values)* - Populates the `values` array with the rows values as the specified `rowNumber`.
+
+#### Lookup Function
+
+The lookup function can be used to retrieve values from the cache or directly through a supported connection.
+
+The syntax for the lookup function is:
+`Task<ReturnValue<object[]>> LookupRow(List<Filter> filters)`
+
+The lookup function applies the following logic to retrive a record:
+1. Looks in the cache for the record.
+2. Executes a *direct lookup* if supported by the `Connection`.
+3. Scans through each row until the lookup is found.
+
+The following connections support direct lookups:
+* ConnectionSqlite
+* ConnectionSql
+* ConnectionAzure
+* ConnectionWebServiceRestful
+* ConnectionWebServiceSoap
+* ConnectionMemory
+
+The following example shows how to use the lookup function
+
+```csharp
+//gets the transform reader.
+var reader = connection.GetTransformReader(table, null);
+
+//open the reader
+openResult = await reader.Open();
+if(!openResult.Success)
+    throw new Exception("Open Reader failed:" + openResult.Message);
+
+//set the caching
+reader.SetCacheMethod(ECacheMethod.PreLoadCache);
+
+//set a filter for the lookup
+var filters = new List<Filter> { new Filter("IntColumn", Filter.ECompare.IsEqual, 5) };
+
+//call the lookup
+var returnLookup = await reader.LookupRow(filters);
+
+if(returnLookup.Success)
+    Console.WriteLine("The record was found.");
+else
+    Console.WriteLine("The record was not found.");
+
+```
+
+*Note:  Lookups best used where there are a low number of lookup values, or when calling a function (such as a web service) where the lookup has specific parameters (such as current datetime).  Where there are two (or more) large datasets that need to be joined together, the JoinTransform will generally perform faster.*
+
 
 ### Chaining Transforms
 
@@ -289,11 +372,20 @@ Console.WriteLine("Finished with status {0}, and processed {1} rows.", writerRes
 
 ### Table Class
 
-The table class is required by every transform, and is provides metadata and caching capabilities.
+The table class is required by every transform, and it provides metadata and caching capabilities.
 
+A table can either be created manually, or by calling the `GetSourceTableInfo` function in a connection class.
 
+To retrieve from a connection:
 
+```csharp
+var getTableResult = connection.GetSourceTableInfo("MyTable", null);
+if(!getTableResult.Success)
+    throw new Exception("There was an issue getting the table: " + getTableResult.Message);
 
+Table table = getTableResult.Value;
+
+```
 
 
 ### Encryption & Hashing
