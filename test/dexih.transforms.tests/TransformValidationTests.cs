@@ -50,12 +50,12 @@ namespace dexih.transforms.tests
             Validations = new List<Function>();
 
             //create a simple clean function that set's the max value.
-            Function = StandardValidations.GetValidationReference("MaxValue");
+            Function = StandardFunctions.GetFunctionReference("MaxLength");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("value", ETypeCode.Decimal, true, null, "IntColumn" ),
-                    new dexih.functions.Parameter("maxValue", ETypeCode.Decimal, false, 5) };
+                    new dexih.functions.Parameter("value", ETypeCode.String, true, null, "StringColumn" ),
+                    new dexih.functions.Parameter("maxLength", ETypeCode.Int32, false, 5) };
             Function.Outputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("cleanedValue", ETypeCode.Decimal, true, null, "IntColumn" )
+                    new dexih.functions.Parameter("cleanedValue", ETypeCode.String, true, null, "StringColumn" )
             };
             Function.InvalidAction = Function.EInvalidAction.Clean;
 
@@ -71,17 +71,17 @@ namespace dexih.transforms.tests
             while (transformValidation.Read() == true)
             {
                 Assert.Equal('C', transformValidation["Operation"]);
-                Assert.True((int)transformValidation["IntColumn"] <= 5);
+                Assert.True((string)transformValidation["StringColumn"] == "value");
                 passCount++;
             }
 
             Assert.Equal(10, passCount);
 
             //Run the same valuidation with RejectClean set.
-            Function = StandardValidations.GetValidationReference("MaxValue");
+            Function = StandardFunctions.GetFunctionReference("MaxValue");
             Function.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("value", ETypeCode.Decimal, true, null, "IntColumn" ),
-                    new dexih.functions.Parameter("maxValue", ETypeCode.Decimal, false, 5) };
+                    new dexih.functions.Parameter("maxLength", ETypeCode.Decimal, false, 5) };
             Function.Outputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("cleanedValue", ETypeCode.Decimal, true, null, "IntColumn" )
             };
@@ -109,7 +109,6 @@ namespace dexih.transforms.tests
 
             Assert.Equal(10, passCount);
             Assert.Equal(5, rejectCount);
-
         }
 
         [Theory]

@@ -34,6 +34,11 @@ namespace dexih.functions
             _detailedResults = DetailedResults;
         }
 
+        public StandardProfiles()
+        {
+            _detailedResults = false;
+        }
+
         public void BestDataType(string value)
         {
             _recordCount++;
@@ -127,8 +132,6 @@ namespace dexih.functions
             }
             return result;
         }
-
-
 
         public void Nulls(string value)
         {

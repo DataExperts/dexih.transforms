@@ -423,7 +423,7 @@ namespace dexih.functions
         /// <summary>
         /// Get the return value from an aggregate function.  
         /// </summary>
-        /// <param name="index">Index represents result row, and is used for series functions that return multiple results from one aggregation.</param>
+        /// <param name="index">Index represents result row number within the grouping, and is used for series functions that return multiple results from one aggregation.</param>
         /// <returns></returns>
         public ReturnValue<object> ReturnValue(int? index = 0)
         {

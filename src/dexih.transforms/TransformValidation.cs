@@ -194,6 +194,7 @@ namespace dexih.transforms
 
                             if (validation.InvalidAction == Function.EInvalidAction.Clean || validation.InvalidAction == Function.EInvalidAction.RejectClean)
                             {
+                                validation.ReturnValue();
                                 if (validation.Outputs != null)
                                 {
                                     foreach (Parameter output in validation.Outputs)

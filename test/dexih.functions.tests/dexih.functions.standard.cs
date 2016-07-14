@@ -98,6 +98,7 @@ namespace dexih.functions.tests
         [InlineData("Truncate", new object[] { 6.4 }, (double)6)]
         [InlineData("IsIn", new object[] { "test2", "test1", "test2", "test3" }, true)]
         [InlineData("GetDistanceTo", new object[] { -38, -145, -34 ,- 151 }, 699082.1288)] //melbourne to sydney distance
+        [InlineData("MaxLength", new object[] { "abcdef", 5 }, false)] 
         [MemberData("OtherFunctions")]
         public void StandardFunctionTest(string functionName, object[] parameters, object expectedResult)
         {

@@ -279,7 +279,6 @@ namespace dexih.functions
 
         #endregion
 
-
         #region Parsing Functions
         public bool XPathValues(string xml, string[] xPaths, out string[] values)
         {
@@ -711,7 +710,37 @@ namespace dexih.functions
         }
         #endregion
 
+        #region Validation Functions
 
+        public bool MaxLength(string value, int maxLength, out string trimmedValue)
+        {
+            if (value.Length > maxLength)
+            {
+                trimmedValue = value.Substring(0, maxLength);
+                return false;
+            }
+            else
+            {
+                trimmedValue = null;
+                return true;
+            }
+        }
+
+        public bool MaxValue(decimal value, decimal maxValue, out decimal adjustedValue)
+        {
+            if (value > maxValue)
+            {
+                adjustedValue = maxValue;
+                return false;
+            }
+            else
+            {
+                adjustedValue = value;
+                return true;
+            }
+        }
+
+        #endregion
     }
 }
 
