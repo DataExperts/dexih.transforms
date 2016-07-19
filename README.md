@@ -574,13 +574,62 @@ The mapping transform can also use the property `PassThroughColumns`.  If this i
 
 ###Join Transform
 
-The join allows an extra input data stream to be joined to the primary table.
+The join allows an extra input data stream to be joined to the primary table, and is similar to an sql `left outer join`.  The rows from the primary table will be maintained, with the join fields being added based on the join conditions.
 
+The join is optimized to work with sorted data or non-sorted data:
 
+* Merge Join - If the incoming data from the primary and join tables are sorted in the same order as the join field, the join transform will perform a `merge join`.  The `merge join` if fast and can operate effectively over high volumes of data with very low memory usage.
+* Hash Join - If the incoming datasets are not sorted, a hash join will be used.  The Hash join loads the join table into memory, and streams the primary table.   The primary table should be the larger of the two tables being joined for optimal performance.  This performs quickly with smaller join tables, however if the join table is in the millions of records, memory constraints can cause failures.  
+
+The following example shows a merge join operation. If the sort operations were not specified, the transform would default to a `hash join`.
+
+```csharp
+//create primary table
+Table primaryTable = new Table("Sales", 0,
+    new TableColumn("SaleDate", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("ProductId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("SalesValue", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.TrackingField);
+
+//add data, note the productid column is sorted.
+primaryTable.AddRow( Convert.ToDateTime("2015/01/01"), 10, 123 );
+primaryTable.AddRow( Convert.ToDateTime("2015/01/01"), 10, 124 );
+primaryTable.AddRow( Convert.ToDateTime("2015/01/02"), 20, 111 );
+primaryTable.AddRow( Convert.ToDateTime("2015/01/02"), 20, 112 );
+
+//create a reader, and indicate data is sorted by the productid
+ReaderMemory primaryReader = new ReaderMemory(primaryTable, new List<Sort>() { new Sort("ProductId") } );
+
+//create join table
+joinTable table = new Table("Products", 0,
+    new TableColumn("ProductId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("ProductName", DataType.ETypeCode.String, TableColumn.EDeltaType.TrackingField);
+
+//add data, note the productid column is sorted.
+joinTable.AddRow( 10, "Product Number 10" );
+joinTable.AddRow( 20, "Product Number 20" );
+
+//create a reader, and indicate data is sorted by the productid
+ReaderMemory joinReader = new ReaderMemory(joinTable, new List<Sort>() { new Sort("ProductId") } );
+
+//create the join reader which can now be streamed by calling transformJoin.ReadAsync()
+TransformJoin transformJoin = new TransformJoin(
+    primaryReader, 
+    joinReader, 
+    new List<JoinPair>() { new JoinPair("ProductId", "ProductId") }
+);
+```
 
 ###Lookup Transform
 
-This allows a row lookup to be performed against another data source or external function.
+The lookup transform is simliar to the join transform in that is performs a `left outer join` type of operation on a primary and secondary dataset.  The differences are:
+
+* The lookup transform can perform direct lookups to the underlying connection.  For example if the underlying connection is a database, the lookup will execute a database lookup repeatedly for each primary row.  If the connection is a web serivce it will call the web service function repeatedly for each primary row.  
+* The lookup transform can utilize a cache on demand process.  This means that after a single lookup is completed, the value can stay in cache for future lookups.  
+* The lookup can use more complex operations through functions, whereas the join can only perform `equal` operations.
+* The lookup can not be used against connections where the secondary table does not support a direct lookup (i.e. flat files).
+
+The lookup is best used when calling functions or when the reference table is very large.  For example calling function to retrive stock price at a precice time.
+
 
 
 ###Group Transform
