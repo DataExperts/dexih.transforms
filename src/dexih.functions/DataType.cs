@@ -353,13 +353,18 @@ public static EBasicType GetBasicType(ETypeCode dataType)
                     return new ReturnValue<object>(true, null);
                 }
 
-                if (tryDataType == ETypeCode.String || tryDataType == ETypeCode.Unknown)
+                if (tryDataType == ETypeCode.String)
                 {
                     result = inputValue is DBNull ? null : inputValue.ToString();
                     if(maxLength != null && result != null && ((string)result).Length > maxLength)
                         return new ReturnValue<object>(false, "The string " + inputValue + " exceeds the maximum length of " + maxLength.ToString());
                     else
                         return new ReturnValue<object>(true, result);
+                }
+
+                if (tryDataType == ETypeCode.Unknown)
+                {
+                    return new ReturnValue<object>(true, inputValue);
                 }
 
                 if (inputValue is DBNull)

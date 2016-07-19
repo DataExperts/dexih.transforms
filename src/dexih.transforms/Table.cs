@@ -274,6 +274,40 @@ namespace dexih.transforms
         }
 
         /// <summary>
+        /// Create as a rejected table based on the current table.
+        /// </summary>
+        /// <returns></returns>
+        public Table GetRejectedTable(string rejectedTableName)
+        {
+            Table table = Copy();
+
+            table.TableName = rejectedTableName;
+            table.Description = "Rejected table for: " + Description;
+
+            if(this.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
+                table.Columns.Add(new TableColumn("RejectedReason", DataType.ETypeCode.String, TableColumn.EDeltaType.RejectedReason));
+
+            return table;
+        }
+
+        /// <summary>
+        /// Create as a profile results table.
+        /// </summary>
+        /// <returns></returns>
+        public Table GetProfileTable(string profileTableName)
+        {
+            Table profileResults = new Table(profileTableName);
+            profileResults.Columns.Add(new TableColumn("AuditKey", DataType.ETypeCode.Int64, TableColumn.EDeltaType.CreateAuditKey));
+            profileResults.Columns.Add(new TableColumn("Profile", DataType.ETypeCode.String));
+            profileResults.Columns.Add(new TableColumn("ColumnName", DataType.ETypeCode.String));
+            profileResults.Columns.Add(new TableColumn("IsSummary", DataType.ETypeCode.Boolean));
+            profileResults.Columns.Add(new TableColumn("Value", DataType.ETypeCode.String) { AllowDbNull = true });
+            profileResults.Columns.Add(new TableColumn("Count", DataType.ETypeCode.Int32) { AllowDbNull = true });
+
+            return profileResults;
+        }
+
+        /// <summary>
         /// Creates a copy of the table, excluding cached data, and sort columns
         /// </summary>
         /// <returns></returns>

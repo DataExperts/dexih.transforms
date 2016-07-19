@@ -105,7 +105,7 @@ namespace dexih.transforms
             {
                 for (int i = 0; i < _referenceFieldCount; i++)
                 {
-                    newRow[pos] = ReferenceTransform.GetValue(i);
+                    newRow[pos] = lookup.Value[i];
                     pos++;
                 }
             }

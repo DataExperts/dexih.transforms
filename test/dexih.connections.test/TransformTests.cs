@@ -28,7 +28,7 @@ namespace dexih.connections.test
                 Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
                 TransformWriter writer = new TransformWriter();
                 TransformWriterResult writerResult = new TransformWriterResult();
-                returnValue = await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, CancellationToken.None);
+                returnValue = await writer.WriteAllRecords(1, writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
                 Assert.True(returnValue.Success, "Write data:" + returnValue.Message);
 
                 //check database can sort 
@@ -41,7 +41,7 @@ namespace dexih.connections.test
                     {
                         Sorts = new List<Sort>() { new Sort("IntColumn", Sort.EDirection.Descending) }
                     };
-                    await reader.Open(query);
+                    await reader.Open(0, query);
 
 
                     int sortValue = 10;
@@ -63,7 +63,7 @@ namespace dexih.connections.test
                     {
                         Filters = new List<Filter>() { new Filter("IntColumn", Filter.ECompare.LessThanEqual, 5) }
                     };
-                    await reader.Open(query);
+                    await reader.Open(0, query);
 
 
                     int count = 0;
@@ -82,10 +82,10 @@ namespace dexih.connections.test
 
                 Transform targetReader = connection.GetTransformReader(deltaTable);
                 reader = connection.GetTransformReader(table);
-                TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, 1);
+                TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1);
 
                 writerResult = new TransformWriterResult();
-                returnValue = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, null, null, CancellationToken.None);
+                returnValue = await writer.WriteAllRecords(1, writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
                 Assert.True(returnValue.Success, returnValue.Message);
                 Assert.Equal(10, writerResult.RowsCreated);
         }

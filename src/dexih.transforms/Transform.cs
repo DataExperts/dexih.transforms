@@ -75,6 +75,8 @@ namespace dexih.transforms
         //indicates if the transform is a base reader.
         public bool IsReader { get; set; } = true;
 
+        public Int64 AuditKey { get; set; }
+
         #endregion
 
         #region Statistics
@@ -109,6 +111,14 @@ namespace dexih.transforms
                 return PrimaryTransform.GetMaxIncrementalValue();
         }
 
+        public virtual Transform GetProfileResults()
+        {
+            if (IsReader)
+                return null;
+            else
+                return PrimaryTransform.GetProfileResults();
+        }
+
         #endregion
 
         #region Virtual Properties
@@ -116,6 +126,7 @@ namespace dexih.transforms
         public virtual List<Sort> RequiredReferenceSortFields() { return null; }
 
         public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input 
+
         #endregion
 
         #region Abstract Properties
@@ -223,11 +234,26 @@ namespace dexih.transforms
         /// <param name="filters">Requested filters for underlying transform to execute.</param>
         /// <param name="sorts">Requested sort for underlying transform to execute.</param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> Open(SelectQuery query = null)
+        public virtual async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query = null)
         {
+            AuditKey = auditKey;
+
+            ReturnValue result = null;
+
             if (PrimaryTransform != null)
-                return await PrimaryTransform.Open(query);
-            return new ReturnValue(true);
+            {
+                result = await PrimaryTransform.Open(auditKey, query);
+                if (!result.Success)
+                    return result;
+            }
+
+            if (ReferenceTransform != null)
+                result = await ReferenceTransform.Open(auditKey, null);
+
+            if (result == null)
+                result = new ReturnValue(true);
+
+            return result;
         }
 
         #endregion
@@ -398,6 +424,7 @@ namespace dexih.transforms
 
         private bool isResetting = false; //flag to indicate reset is underway.
         private object[] CurrentRow; //stores data for the current row.
+        bool CurrentRowCached;
         protected int CurrentRowNumber = -1; //current row number
 
 
@@ -507,6 +534,7 @@ namespace dexih.transforms
                             EncryptRow(lookupResult.Value);
 
                         CacheTable.Data.Add(lookupResult.Value);
+                        CurrentRowCached = true;
                     }
                 }
                 else
@@ -596,6 +624,8 @@ namespace dexih.transforms
                 return false;
             }
 
+            CurrentRowCached = false;
+
             var returnValue = await ReadRecord(cancellationToken);
 
             if (returnValue.Success)
@@ -625,11 +655,11 @@ namespace dexih.transforms
             }
 
             //add the row to the cache
-            if (returnValue.Success == true && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
+            if (returnValue.Success == true && !CurrentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
                 CacheTable.Data.Add(CurrentRow);
 
             TransformTimer.Stop();
-            return returnValue.Success;
+            return !IsReaderFinished;
         }
 
         public override int FieldCount => CacheTable.Columns.Count;

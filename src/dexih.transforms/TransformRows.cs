@@ -113,14 +113,15 @@ namespace dexih.transforms
         }
 
 
-        public override async Task<ReturnValue> Open(SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
+            AuditKey = auditKey;
             if (query == null)
                 query = new SelectQuery();
 
             query.Sorts = RequiredSortFields();
 
-            var returnValue = await PrimaryTransform.Open(query);
+            var returnValue = await PrimaryTransform.Open(auditKey, query);
             return returnValue;
         }
 
@@ -150,7 +151,7 @@ namespace dexih.transforms
             bool moreRows = true;
             object[] newRow = null;
 
-            if (_rowGenerate[0] == false)
+            //if (_rowGenerate[0] == false)
                 newRow = new object[FieldCount];
 
             //if the top level rowgenerator needs a new record, then read from source

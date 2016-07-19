@@ -13,7 +13,7 @@ namespace dexih.functions
         private object _objectValue = null;
 
         private int _recordCount = 0;
-        private bool _detailedResults;
+        public bool DetailedResults { get; set; }
 
         public static Function GetProfileReference(bool detailedResults, string profileName, string inputColumn)
         {
@@ -29,14 +29,14 @@ namespace dexih.functions
             _recordCount = 0;
         }
 
-        public StandardProfiles(bool DetailedResults = false)
+        public StandardProfiles(bool detailedResults = false)
         {
-            _detailedResults = DetailedResults;
+            DetailedResults = detailedResults;
         }
 
         public StandardProfiles()
         {
-            _detailedResults = false;
+            DetailedResults = false;
         }
 
         public void BestDataType(string value)
@@ -125,7 +125,7 @@ namespace dexih.functions
                 if (result == "")
                     result = "String";
 
-                if (_detailedResults)
+                if (DetailedResults)
                     distribution = _dictionary;
                 else
                     distribution = null;
@@ -141,7 +141,7 @@ namespace dexih.functions
 
         public string NullsResult(out Dictionary<string, int> distribution)
         {
-            if (_detailedResults)
+            if (DetailedResults)
             {
                 distribution = new Dictionary<string, int>();
                 distribution.Add("Nulls", _intValue);
@@ -160,7 +160,7 @@ namespace dexih.functions
 
         public string BlanksResult(out Dictionary<string, int> distribution)
         {
-            if (_detailedResults)
+            if (DetailedResults)
             {
                 distribution = new Dictionary<string, int>();
                 distribution.Add("Blanks", _intValue);
@@ -174,14 +174,14 @@ namespace dexih.functions
         public void Zeros(string value)
         {
             decimal number;
-            if (Decimal.TryParse(value.ToString(), out number))
+            if (value != null && Decimal.TryParse(value.ToString(), out number))
                 if (number == 0) _intValue++;
             _recordCount++;
         }
 
         public string ZerosResult(out Dictionary<string, int> distribution)
         {
-            if (_detailedResults)
+            if (DetailedResults)
             {
                 distribution = new Dictionary<string, int>();
                 distribution.Add("Zeros", _intValue);
@@ -199,12 +199,12 @@ namespace dexih.functions
         public void MaxLength(string value)
         {
             _recordCount++;
-            int length = value.ToString().Length;
-            if (value.ToString().Length > _intValue)
+            int length = value == null ? 0 : value.ToString().Length;
+            if (length > _intValue)
             {
-                _intValue = value.ToString().Length;
+                _intValue = length;
             }
-            if(_detailedResults)
+            if(DetailedResults)
             {
                 if (_dictionary.ContainsKey(length.ToString()))
                     _dictionary[length.ToString()]++;
@@ -216,7 +216,7 @@ namespace dexih.functions
 
         public string MaxLengthResult(out Dictionary<string, int> distribution)
         {
-            if (_detailedResults)
+            if (DetailedResults)
             {
                 distribution = _dictionary;
             }
@@ -234,14 +234,14 @@ namespace dexih.functions
             double number;
             _recordCount++;
 
-            if (Double.TryParse(value.ToString(), out number))
+            if (value != null &&  Double.TryParse(value.ToString(), out number))
             {
                 if (_objectValue == null || Convert.ToDouble(_objectValue) < number)
                 {
                     _objectValue = value;
                 }
 
-                if (_detailedResults)
+                if (DetailedResults)
                 {
                     if (_dictionary.ContainsKey(_objectValue.ToString()))
                         _dictionary[_objectValue.ToString()]++;
@@ -252,7 +252,7 @@ namespace dexih.functions
             }
             else
             {
-                if(_detailedResults)
+                if(DetailedResults)
                 {
                     if (_dictionary.ContainsKey("Non Numeric"))
                         _dictionary["Non Numeric"]++;
@@ -265,7 +265,7 @@ namespace dexih.functions
 
         public string MaxValueResult(out Dictionary<string, int> distribution)
         {
-            if (_detailedResults)
+            if (DetailedResults)
             {
                 distribution = _dictionary;
             }
@@ -282,7 +282,7 @@ namespace dexih.functions
         {
             _recordCount++;
 
-            if (value.GetType().Name == "DBNull" || value == null)
+            if (value == null )
                 value = "Null";
 
             if (_dictionary.ContainsKey(value.ToString()) == false)
@@ -293,7 +293,7 @@ namespace dexih.functions
 
         public string DistinctValuesResult(out Dictionary<string, int> distribution)
         {
-            if (_detailedResults)
+            if (DetailedResults)
             {
                 distribution = _dictionary;
             }
@@ -315,8 +315,7 @@ namespace dexih.functions
         {
             _recordCount++;
 
-            Type type = value.GetType();
-            if (type != typeof(DBNull) && type == typeof(String))
+            if (value != null)
             {
                 string pattern = value.ToString();
                 if (pattern.Length < 50)
@@ -331,12 +330,12 @@ namespace dexih.functions
                         _dictionary.Add(pattern, 1);
                 }
             }
-            value = "DBNull";
+            value = "Null";
         }
 
         public string PatternsResult(out Dictionary<string, int> distribution)
         {
-            if (_detailedResults)
+            if (DetailedResults)
             {
                 distribution = _dictionary;
             }

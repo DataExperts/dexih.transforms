@@ -81,7 +81,7 @@ namespace dexih.transforms
         public abstract Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
         public abstract Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken);
         public abstract Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken);
-        public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null);
+        public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null);
         public abstract Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken);
 
         /// <summary>
@@ -161,15 +161,14 @@ namespace dexih.transforms
             watch.Start();
 
             Transform reader = GetTransformReader(table);
-            ReturnValue returnValue = await reader.Open(query);
+            ReturnValue returnValue = await reader.Open(0, query);
             if (returnValue.Success == false)
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
             reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
 
             int count = 0;
-            while (count < query.Rows &&
-                query.Rows != -1 &&
+            while ((count < query.Rows || query.Rows == -1 ) &&
                 cancellationToken.IsCancellationRequested == false && 
                 await reader.ReadAsync(cancellationToken) 
                 )
@@ -183,6 +182,37 @@ namespace dexih.transforms
             reader.Dispose();
 
             return new ReturnValue<Table>(true, reader.CacheTable);
+        }
+
+        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, int maxMilliseconds, CancellationToken cancellationToken, Transform referenceTransform, List<JoinPair> referenceJoins)
+        {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+
+            Transform reader = GetTransformReader(table, referenceTransform);
+            reader.JoinPairs = referenceJoins;
+            ReturnValue returnValue = await reader.Open(0, query);
+            if (returnValue.Success == false)
+                return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
+
+            reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
+
+            int count = 0;
+            while ((count < query.Rows || query.Rows == -1) &&
+                cancellationToken.IsCancellationRequested == false &&
+                await reader.ReadAsync(cancellationToken)
+                )
+            {
+                count++;
+                if (watch.ElapsedMilliseconds > maxMilliseconds)
+                    break;
+            }
+
+            watch.Stop();
+            reader.Dispose();
+
+            return new ReturnValue<Table>(true, reader.CacheTable);
+
         }
 
     }

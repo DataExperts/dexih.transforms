@@ -662,7 +662,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null)
         {
             var reader = new ReaderSQL(this, table);
             return reader;

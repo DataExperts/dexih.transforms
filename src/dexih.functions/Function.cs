@@ -358,8 +358,9 @@ namespace dexih.functions
                         }
                         else
                         {
-                            parameters[parameterNumber] = null; // Outputs[i].Value;
-                                                                //if (Parameters[ParameterNumber].GetType() == typeof(DBNull)) Parameters[ParameterNumber] = null;
+                            parameters[parameterNumber] = Outputs[i].Value;
+                            if (parameters[parameterNumber] != null && parameters[parameterNumber].GetType() == typeof(DBNull)) parameters[parameterNumber] = null;
+
                             parameterNumber++;
                         }
                     }

@@ -177,7 +177,7 @@ namespace dexih.transforms
 
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null)
         {
             var reader = new ReaderMemory(table);
             return reader;

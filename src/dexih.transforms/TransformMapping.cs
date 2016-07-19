@@ -51,8 +51,9 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<ReturnValue> Open(SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
+            AuditKey = auditKey;
             List<Filter> newFilters = null;
             List<Sort> newSorts = null;
 
@@ -112,7 +113,7 @@ namespace dexih.transforms
                 }
             }
 
-            var returnValue = await PrimaryTransform.Open(query);
+            var returnValue = await PrimaryTransform.Open(auditKey, query);
             return returnValue;
         }
 

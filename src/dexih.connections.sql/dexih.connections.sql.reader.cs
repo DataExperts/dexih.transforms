@@ -35,8 +35,10 @@ namespace dexih.connections.sql
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
+            AuditKey = auditKey;
+
             if (_isOpen)
             {
                 return new ReturnValue(false, "The reader is already open.", null);

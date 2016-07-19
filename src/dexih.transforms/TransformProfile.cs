@@ -24,8 +24,15 @@ namespace dexih.transforms
 
         private List<Function> _profiles;
 
-        public Transform ProfileResults { get; protected set; }
-        public Transform DistributionResults { get; protected set; }
+        private Table _profileResults;
+
+        public override Transform GetProfileResults()
+        {
+            if (_profileResults != null)
+                return new ReaderMemory(_profileResults);
+            else
+                return null;
+        }
 
         public override bool InitializeOutputFields()
         {
@@ -79,30 +86,51 @@ namespace dexih.transforms
             }
             else
             {
-                Table profileResults = new Table("ProfileResults");
-                profileResults.Columns.Add(new TableColumn("Profile", DataType.ETypeCode.String));
-                profileResults.Columns.Add(new TableColumn("Column", DataType.ETypeCode.String));
-                profileResults.Columns.Add(new TableColumn("Result", DataType.ETypeCode.String));
+
+                Table profileResults = CacheTable.GetProfileTable("ProfileResults");
 
                 foreach (Function profile in _profiles)
                 {
                     var result = profile.ReturnValue();
                     if (result.Success == false)
-                        throw new Exception("Error retrieving aggregate result.  Message: " + result.Message);
+                        throw new Exception("Error retrieving profile result.  Message: " + result.Message);
 
-                    object[] row = new object[3];
-                    row[0] = profile.FunctionName;
-                    row[1] = profile.Inputs[0].ColumnName;
+                    object[] row = new object[6];
+                    row[0] = AuditKey;
+                    row[1] = profile.FunctionName;
+                    row[2] = profile.Inputs[0].ColumnName;
+                    row[3] = true;
 
-                    if(profile.ReturnValue().Success)
-                        row[2] = profile.ReturnValue().Value;
+                    if (profile.ReturnValue().Success)
+                        row[4] = profile.ReturnValue().Value;
                     else
-                        row[2] = "Error: " + profile.ReturnValue().Message;
+                        row[4] = "Error: " + profile.ReturnValue().Message;
 
                     profileResults.Data.Add(row);
-                }
 
-                ProfileResults = new ReaderMemory(profileResults);
+                    if (profile.Outputs.Length > 0)
+                    {
+                        Dictionary<string, int> details = (Dictionary <string,int>)profile.Outputs[0].Value;
+
+                        if(details != null && details.Count > 0)
+                        {
+                            foreach(string value  in details.Keys)
+                            {
+                                row = new object[6];
+                                row[0] = AuditKey;
+                                row[1] = profile.FunctionName;
+                                row[2] = profile.Inputs[0].ColumnName;
+                                row[3] = false;
+                                row[4] = value;
+                                row[5] = details[value];
+
+                                profileResults.Data.Add(row);
+                            }
+                        }
+                    }
+
+                    _profileResults = profileResults;
+                }
 
                 return new ReturnValue<object[]>(false, null);
             }

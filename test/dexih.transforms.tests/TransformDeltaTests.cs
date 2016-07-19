@@ -22,7 +22,7 @@ namespace dexih.transforms.tests
             ReaderMemory Target = new ReaderMemory(targetTable);
 
             //run a reload.  
-            TransformDelta transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.Reload, 0, 10);
+            TransformDelta transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.Reload, 0);
             transformDelta.Read();
             Assert.True((char)transformDelta["Operation"] == 'T');
 
@@ -38,7 +38,7 @@ namespace dexih.transforms.tests
             Assert.True(count == 10);
 
             //run an append.  (only difference from reload is no truncate record at start.
-            transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.Append, 0, 20);
+            transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.Append, 0);
             transformDelta.Reset();
 
             count = 0;
@@ -66,7 +66,7 @@ namespace dexih.transforms.tests
                 Transform Target = new ReaderMemory(targetTable);
 
                 //run an update load with nothing in the target, which will result in 10 rows created.
-                TransformDelta transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, 10);
+                TransformDelta transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdate, 0);
                 transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
                 int count = 0;
@@ -86,7 +86,7 @@ namespace dexih.transforms.tests
                 ConnectionMemory memoryConnection = new ConnectionMemory();
                 TransformWriter writer = new TransformWriter();
                 TransformWriterResult result = new TransformWriterResult();
-                await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, null, null, CancellationToken.None);
+                await writer.WriteAllRecords(10, result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
                 Target = new ReaderMemory(Target.CacheTable, null);
 
                 //Set the target pointer back to the start and rerun.  Now 10 rows should be ignored.
@@ -94,7 +94,7 @@ namespace dexih.transforms.tests
                 Target.SetRowNumber(0);
 
                 //run an append.  (only difference from reload is no truncate record at start.
-                transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, 10);
+                transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdate, 0);
 
                 count = 0;
                 while (transformDelta.Read())
@@ -180,7 +180,7 @@ namespace dexih.transforms.tests
                Transform Target = new ReaderMemory(targetTable);
 
                 //run an update load with nothing in the target.  
-                TransformDelta transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve, SurrrogateKey, 10);
+                TransformDelta transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve, SurrrogateKey);
                transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
                int count = 0;
@@ -201,11 +201,11 @@ namespace dexih.transforms.tests
                 ConnectionMemory memoryConnection = new ConnectionMemory();
                TransformWriter writer = new TransformWriter();
                TransformWriterResult result = new TransformWriterResult();
-               await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, null, null, CancellationToken.None);
+               await writer.WriteAllRecords(10, result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
                Target = new ReaderMemory(Target.CacheTable, null);
 
                 //run an append.  (only difference from reload is no truncate record at start.
-                transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey, 20);
+                transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey);
 
                count = 0;
                while (transformDelta.Read())
@@ -223,7 +223,7 @@ namespace dexih.transforms.tests
                Target.CacheTable.Data[9].CopyTo(row, 0);
                Target.CacheTable.Data.Add(row);
 
-               transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey, 30);
+               transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey);
                transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
                count = 0;
@@ -241,9 +241,9 @@ namespace dexih.transforms.tests
                 //run the delta again.  this should ignore all 10 records.
                 transformDelta.SetRowNumber(0);
                result = new TransformWriterResult();
-               await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, null, null, CancellationToken.None);
+               await writer.WriteAllRecords(30, result, transformDelta, Target.CacheTable, memoryConnection,CancellationToken.None);
                Target = new ReaderMemory(Target.CacheTable, null);
-               transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey, 40);
+               transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey);
 
                count = 0;
                while (transformDelta.Read())
@@ -370,7 +370,7 @@ namespace dexih.transforms.tests
 
             Transform Target = new ReaderMemory(targetTable);
 
-            TransformDelta transformDelta = new TransformDelta(Source, Target, updateStrategy, 1, 10);
+            TransformDelta transformDelta = new TransformDelta(Source, Target, updateStrategy, 1);
 
             int count = 0;
             while(transformDelta.Read())

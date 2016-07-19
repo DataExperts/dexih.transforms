@@ -32,9 +32,13 @@ namespace dexih.transforms
         private Transform InTransform;
         private Table TargetTable;
         private Table RejectTable;
+        private Table ProfileTable;
 
         private Connection TargetConnection;
         private Connection RejectConnection;
+        private Connection ProfileConnection;
+
+        private Int64 AuditKey;
 
         private CancellationToken CancelToken;
 
@@ -49,6 +53,27 @@ namespace dexih.transforms
 
         private int[] _fieldOrdinals;
 
+        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, CancellationToken cancelToken)
+        {
+            return await WriteAllRecords(auditKey,WriterResult, inTransform, targetTable, targetConnection, null, null, null, null, cancelToken);
+        }
+
+        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, CancellationToken cancelToken)
+        {
+            return await WriteAllRecords(auditKey,WriterResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, null, null, cancelToken);
+        }
+
+        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Table profileTable, CancellationToken cancelToken)
+        {
+            return await WriteAllRecords(auditKey,WriterResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, profileTable, targetConnection, cancelToken);
+        }
+
+
+        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, CancellationToken cancelToken)
+        {
+            return await WriteAllRecords(auditKey,WriterResult, inTransform, targetTable, targetConnection, rejectTable, rejectConnection, null, null, cancelToken);
+        }
+
         /// <summary>
         /// Writes all record from the inTransform to the target table and reject table.
         /// </summary>
@@ -57,20 +82,35 @@ namespace dexih.transforms
         /// <param name="connection">Target to write data to</param>
         /// <param name="rejecteTableName">Reject table name</param>
         /// <param name="rejectConnection">Reject connection (if null will use connection)</param>
+        /// <param name="profileTableName">Reject table name</param>
+        /// <param name="profileConnection">Reject connection (if null will use connection)</param>
         /// <returns></returns>
-        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, Table profileTable, Connection profileConnection, CancellationToken cancelToken)
         {
             try
             {
+                AuditKey = auditKey;
                 CancelToken = cancelToken;
                 TargetConnection = targetConnection;
-                RejectConnection = rejectConnection;
+
+                if (rejectConnection == null)
+                    RejectConnection = targetConnection;
+                else
+                    RejectConnection = rejectConnection;
+
+                if (profileConnection == null)
+                    ProfileConnection = targetConnection;
+                else
+                    ProfileConnection = profileConnection;
+
+
                 //WriterResult = new TransformWriterResult();
 
                 WriterResult.RunStatus = TransformWriterResult.ERunStatus.Started;
 
                 TargetTable = targetTable;
                 RejectTable = rejectTable;
+                ProfileTable = profileTable;
 
                 InTransform = inTransform;
 
@@ -114,8 +154,6 @@ namespace dexih.transforms
                     }
                 }
 
-                WriteDataTimer.Stop();
-
                 returnValue = await WriteFinish(WriterResult, inTransform);
                 if (returnValue.Success == false)
                 {
@@ -124,9 +162,21 @@ namespace dexih.transforms
                     return new ReturnValue(false, returnValue.Message, null);
                 }
 
-                WriterResult.RunStatus = TransformWriterResult.ERunStatus.Finished;
+                if (ProfileTable != null)
+                {
+                    var profileResult = await ProfileConnection.ExecuteInsertBulk(ProfileTable, inTransform.GetProfileResults(), cancelToken);
+                    if (!profileResult.Success)
+                    {
+                        WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
+                        WriterResult.Message = "Failed to save profile results with error: " + profileResult.Message;
 
-                WriterResult.PerformanceSummary = inTransform.PerformanceSummary();
+                        return profileResult;
+                    }
+                }
+
+                WriteDataTimer.Stop();
+
+                WriterResult.RunStatus = TransformWriterResult.ERunStatus.Finished;
 
                 return new ReturnValue(true);
             }
@@ -142,7 +192,7 @@ namespace dexih.transforms
             if (WriteOpen == true)
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
-            var returnValue = await InTransform.Open(null); 
+            var returnValue = await InTransform.Open(AuditKey, null); 
             if (!returnValue.Success)
                 return returnValue;
 
@@ -167,7 +217,12 @@ namespace dexih.transforms
             if (RejectTable != null)
             {
                 RejectInsertQuery = new InsertQuery(RejectTable.TableName, RejectTable.Columns.Select(c => new QueryColumn(c.ColumnName, c.DataType, "@param" + RejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
-                returnValue = await TargetConnection.CreateTable(RejectTable, false);
+                returnValue = await RejectConnection.CreateTable(RejectTable, false);
+            }
+
+            if (ProfileTable != null)
+            {
+                returnValue = await ProfileConnection.CreateTable(ProfileTable, false);
             }
 
             //if the table doesn't exist, create it.  
@@ -325,6 +380,8 @@ namespace dexih.transforms
             writerResult.RowsIgnored = reader.TotalRowsIgnored;
             writerResult.RowsReadPrimary = reader.TotalRowsReadPrimary;
             writerResult.RowsReadReference = reader.TotalRowsReadReference;
+
+            writerResult.PerformanceSummary = reader.PerformanceSummary();
 
             //calculate the throughput figures
             long rowsWritten = writerResult.RowsTotal - writerResult.RowsIgnored;

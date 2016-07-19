@@ -22,8 +22,10 @@ namespace dexih.connections.webservice
             ReferenceTransform = referenceTransform;
         }
 
-        public override async Task<ReturnValue> Open(SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
+            AuditKey = auditKey;
+
             return await Task.Run(() =>
             {
                 try

@@ -57,7 +57,7 @@ namespace dexih.connections.test
                     //check the table loaded 10 rows successully
                     Transform fileReader = connection.GetTransformReader(table, null);
                     int rowCount = 0;
-                    var filereaderResult = await fileReader.Open();
+                    var filereaderResult = await fileReader.Open(0);
                     Assert.True(filereaderResult.Success, "Open Reader:" + filereaderResult.Message);
                     while (await fileReader.ReadAsync()) rowCount++;
                     Assert.True(rowCount == 2, "Select count - value :" + rowCount);
@@ -206,7 +206,7 @@ namespace dexih.connections.test
                 //check the table loaded 10 rows successully
                 Transform reader = connection.GetTransformReader(table, null);
                 int count = 0;
-                var openResult = await reader.Open();
+                var openResult = await reader.Open(0);
                 Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == 10, "Select count - value :" + count);
@@ -218,7 +218,7 @@ namespace dexih.connections.test
 
                     //should return value5
                     reader = connection.GetTransformReader(table, null);
-                    openResult = await reader.Open();
+                    openResult = await reader.Open(0);
                     Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
 
                     var returnLookup = await reader.LookupRow(filters);
@@ -227,7 +227,7 @@ namespace dexih.connections.test
 
                     //run lookup again with caching set.
                     reader = connection.GetTransformReader(table, null);
-                    openResult = await reader.Open();
+                    openResult = await reader.Open(0);
                     Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
                     reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
                     returnLookup = await reader.LookupRow(filters);

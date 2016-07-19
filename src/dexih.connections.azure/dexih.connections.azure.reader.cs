@@ -32,8 +32,9 @@ namespace dexih.connections.azure
             CacheTable = table;
         }
 
-        public override async Task<ReturnValue> Open(SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
+            AuditKey = auditKey;
             if (_isOpen)
             {
                 return new ReturnValue(false, "The current connection is already open.", null);

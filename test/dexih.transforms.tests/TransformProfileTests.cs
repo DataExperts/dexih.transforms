@@ -48,17 +48,17 @@ namespace dexih.transforms.tests
 
             List<Function> profiles = new List<Function>();
 
-            profiles.Add(StandardProfiles.GetProfileReference(false, "BestDataType", "StringColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "BestDataType", "IntColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "BestDataType", "DecimalColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "BestDataType", "DateColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "Nulls", "NullsBlanksColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "Blanks", "NullsBlanksColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "Zeros", "ZerosColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "MaxLength", "MaxLengthColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "MaxValue", "MaxValueColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "DistinctValues", "DistinctValuesColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(false, "Patterns", "PatternsColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "BestDataType", "StringColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "BestDataType", "IntColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "BestDataType", "DecimalColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "BestDataType", "DateColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "Nulls", "NullsBlanksColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "Blanks", "NullsBlanksColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "Zeros", "ZerosColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "MaxLength", "MaxLengthColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "MaxValue", "MaxValueColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "DistinctValues", "DistinctValuesColumn"));
+            profiles.Add(StandardProfiles.GetProfileReference(true, "Patterns", "PatternsColumn"));
 
             TransformProfile transformProfile = new TransformProfile(Table, profiles);
 
@@ -71,47 +71,55 @@ namespace dexih.transforms.tests
 
             Assert.Equal(10, count); //confirm profile hasn't impacted the read.
 
-            Transform profileResults = transformProfile.ProfileResults;
+            Transform profileResults = transformProfile.GetProfileResults();
             count = 0;
+            int detailCount = 0;
             while(profileResults.Read())
             {
-                switch((string)profileResults["Column"])
+                if ((bool)profileResults["IsSummary"] == true)
                 {
-                    case "StringColumn":
-                        Assert.Equal("String", (string)profileResults["Result"]);
-                        break;
-                    case "IntColumn":
-                        Assert.Equal("Integer", (string)profileResults["Result"]);
-                        break;
-                    case "DecimalColumn":
-                        Assert.Equal("Double", (string)profileResults["Result"]);
-                        break;
-                    case "DateColumn":
-                        Assert.Equal("DateTime", (string)profileResults["Result"]);
-                        break;
-                    case "NullsBlanksColumn":
-                        if((string)profileResults["Profile"] == "Nulls")
-                            Assert.Equal("20.00%", ((string)profileResults["Result"]).Replace(" %", "%"));
-                        else
-                            Assert.Equal("40.00%", ((string)profileResults["Result"]).Replace(" %", "%"));
-                        break;
-                    case "MaxLengthColumn":
-                        Assert.Equal("5", (string)profileResults["Result"]);
-                        break;
-                    case "MaxValueColumn":
-                        Assert.Equal("4.1", (string)profileResults["Result"]);
-                        break;
-                    case "DistinctValuesColumn":
-                        Assert.Equal("3", (string)profileResults["Result"]);
-                        break;
-                    case "PatternsColumn":
-                        Assert.Equal("Pattern Count=3, Most common(50.00%): 99999", ((string)profileResults["Result"]).Replace(" %", "%"));
-                        break;
+                    switch ((string)profileResults["ColumnName"])
+                    {
+                        case "StringColumn":
+                            Assert.Equal("String", (string)profileResults["Value"]);
+                            break;
+                        case "IntColumn":
+                            Assert.Equal("Integer", (string)profileResults["Value"]);
+                            break;
+                        case "DecimalColumn":
+                            Assert.Equal("Double", (string)profileResults["Value"]);
+                            break;
+                        case "DateColumn":
+                            Assert.Equal("DateTime", (string)profileResults["Value"]);
+                            break;
+                        case "NullsBlanksColumn":
+                            if ((string)profileResults["Profile"] == "Nulls")
+                                Assert.Equal("20.00%", ((string)profileResults["Value"]).Replace(" %", "%"));
+                            else
+                                Assert.Equal("40.00%", ((string)profileResults["Value"]).Replace(" %", "%"));
+                            break;
+                        case "MaxLengthColumn":
+                            Assert.Equal("5", (string)profileResults["Value"]);
+                            break;
+                        case "MaxValueColumn":
+                            Assert.Equal("4.1", (string)profileResults["Value"]);
+                            break;
+                        case "DistinctValuesColumn":
+                            Assert.Equal("3", (string)profileResults["Value"]);
+                            break;
+                        case "PatternsColumn":
+                            Assert.Equal("Pattern Count=3, Most common(50.00%): 99999", ((string)profileResults["Value"]).Replace(" %", "%"));
+                            break;
+                    }
+                    count++;
                 }
-                count ++;
+                else
+                    detailCount++;
+
             }
 
             Assert.Equal(11, count);
+            Assert.Equal(25, detailCount);
         }
 
     }

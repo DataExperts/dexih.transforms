@@ -822,7 +822,7 @@ namespace dexih.connections.azure
             throw new NotImplementedException("The execute reader is not available for Azure table connections.");
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null)
         {
             var reader = new ReaderAzure(this, table);
             return reader;

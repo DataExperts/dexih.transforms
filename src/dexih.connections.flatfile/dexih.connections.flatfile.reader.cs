@@ -29,8 +29,10 @@ namespace dexih.connections.flatfile
             CacheTable = table;
         }
 
-        public override async Task<ReturnValue> Open(SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
+            AuditKey = auditKey;
+
             if (_isOpen)
             {
                 return new ReturnValue(false, "The file reader connection is already open.", null);

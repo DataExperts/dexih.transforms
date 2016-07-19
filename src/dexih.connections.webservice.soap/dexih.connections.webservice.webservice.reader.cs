@@ -18,15 +18,17 @@ namespace dexih.connections.webservice
         private Type _webServiceType;
         private object _webServiceObject;
 
-        public ReaderWebService(Connection connection, Table table, Transform referenceTransform)
+        public ReaderWebService(Connection connection, Table table, Transform referenceTransform, List<JoinPair> referenceJoins)
         {
             ReferenceConnection = connection;
             CacheTable = table;
             ReferenceTransform = referenceTransform;
+            JoinPairs = referenceJoins;
         }
 
-        public override async Task<ReturnValue> Open(SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
+            AuditKey = auditKey;
             try
             {
                 if (_isOpen)

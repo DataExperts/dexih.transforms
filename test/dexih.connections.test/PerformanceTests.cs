@@ -81,7 +81,7 @@ namespace dexih.connections.test
                 //count rows using reader
                 int count = 0;
                 var reader = connection.GetTransformReader(table);
-                await reader.Open();
+                await reader.Open(0);
 
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows, "row count = " + count.ToString());
@@ -127,7 +127,7 @@ namespace dexih.connections.test
                 //count rows using reader
                 count = 0;
                 reader = connection.GetTransformReader(table);
-                await reader.Open(selectQuery);
+                await reader.Open(0, selectQuery);
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows / 10, "row count = " + count.ToString());
 
@@ -153,7 +153,7 @@ namespace dexih.connections.test
                 //count rows using reader
                 count = 0;
                 reader = connection.GetTransformReader(table);
-                await reader.Open();
+                await reader.Open(0);
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows - rows / 10, "row count = " + count.ToString());
 
@@ -240,11 +240,11 @@ namespace dexih.connections.test
             Transform transform = connection.GetTransformReader(table);
             transform = new TransformMapping(transform, true, null, null);
             transform = new TransformValidation(transform, null, false);
-            transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, 1 );
+            transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1);
 
             TransformWriter writer = new TransformWriter();
             TransformWriterResult writerResult = new TransformWriterResult();
-            var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, CancellationToken.None);
+            var result = await writer.WriteAllRecords(1, writerResult, transform, targetTable, connection, null, null, null, null, CancellationToken.None);
 
             Assert.Equal(rows, writerResult.RowsCreated);
         }

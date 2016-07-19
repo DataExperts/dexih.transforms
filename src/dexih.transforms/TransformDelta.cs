@@ -10,10 +10,9 @@ namespace dexih.transforms
 {
     public class TransformDelta : Transform
     {
-        public TransformDelta(Transform inReader, Transform targetTransform, EUpdateStrategy deltaType, Int64 surrogateKey, Int64 auditKey)
+        public TransformDelta(Transform inReader, Transform targetTransform, EUpdateStrategy deltaType, Int64 surrogateKey)
         {
             DeltaType = deltaType;
-            AuditKey = auditKey;
             SurrogateKey = surrogateKey;
             CacheTable = targetTransform.CacheTable.Copy();
 
@@ -70,7 +69,7 @@ namespace dexih.transforms
 
         private EUpdateStrategy DeltaType { get; set; }
         public Int64 SurrogateKey { get; protected set; }
-        private Int64 AuditKey { get; set; }
+        
 
         private bool doUpdate { get; set; }
         private bool doDelete { get; set; }
@@ -129,11 +128,13 @@ namespace dexih.transforms
             return true;
         }
 
-        public override async Task<ReturnValue> Open(SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
+            AuditKey = auditKey;
+
             if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
             {
-                var returnValue = await PrimaryTransform.Open(query);
+                var returnValue = await PrimaryTransform.Open(auditKey, query);
                 return returnValue;
                 }
             else
@@ -143,7 +144,7 @@ namespace dexih.transforms
 
                 query.Sorts = RequiredSortFields();
 
-                var returnValue = await PrimaryTransform.Open(query);
+                var returnValue = await PrimaryTransform.Open(auditKey, query);
                 return returnValue;
             }
 
@@ -241,7 +242,7 @@ namespace dexih.transforms
 
                     if (doUpdate || doDelete || doPreserve)
                     {
-                        await ReferenceTransform.Open(query);
+                        await ReferenceTransform.Open(AuditKey, query);
                         _targetOpen = await ReferenceRead(cancellationToken);
                     }
                     else
