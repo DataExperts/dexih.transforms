@@ -490,3 +490,114 @@ class CalculateSum
 }
 ```
 
+##Using the Transforms
+
+###Filter Transform
+
+Filters the rows based on boolean conditions specified by the filter functions.
+
+The filter transform consists of one or more functions that return a boolean result.  A record will filtered through when any of the functions are false.
+
+The following example uses the Equal function to remove any rows where the JunkColumn is equal to the value "junk".
+
+```csharp
+//set a Conditions list
+List<Function> Conditions = new List<Function>();
+
+//use the built in IsEqual function.
+Function Function = StandardFunctions.GetFunctionReference("IsEqual");
+Function.Inputs = new dexih.functions.Parameter[] {
+        new dexih.functions.Parameter("JunkColumn", ETypeCode.String, true, null, "StringColumn" ),
+        new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk") };
+
+//use the NotCondition property to change the funciton to `not equal`.
+Function.NotCondition = true
+
+//add the function to the conditions list
+Conditions.Add(Function);
+
+//create the new filter transform with the conditions applied.
+TransformFilter TransformFilter = new TransformFilter(InTransform, Conditions);
+```
+
+###Sort Transform
+
+Sorts the dataset by one or more columns and an ascending or descending order.
+
+The following exmaple sorts the incoming data by Column1 (ascending) and Column2 (descending).
+
+```csharp
+
+var SortFields = new List<Sort> { 
+    new Sort("Column1", Sort.EDirection.Ascending) 
+    new Sort("Column2", Sort.EDirection.Descending) 
+};
+TransformSort TransformSort = new TransformSort(Source, SortFields);    
+```
+
+**Note:**
+The sort transform outputs the `OutputSortFields` property.  This property is used to inform downstream transforms that the dataset is sorted.  This is used by the Group, Row, Join and Delta transforms to indicate the data is sorted as needed by this.  If the inbound transform already has `OutputSortFields` set to the same sort order as the sort transform, the sort will do nothing.  
+
+###Mapping Transform
+
+Maps source fields to target fields using simple source-target mappings or advanced calculations using mapping functions.
+
+The following example uses the ColumnPair class to perform some column mappings, and a function to perform a substring.
+
+```csharp
+List<ColumnPair> MappingColumns = new List<ColumnPair>();
+
+//map the sourceFieldName to the targetFieldName
+MappingColumns.Add(new ColumnPair("sourceFieldName", "targetFieldName"));
+
+//map some other fields without any name change.
+MappingColumns.Add(new ColumnPair("createDate"));
+MappingColumns.Add(new ColumnPair("updateDate"));
+
+List<Function> MappingFunctions = new List<Function>();
+
+//use the substring function to limit the 'bigField' to 20 characters
+Function = StandardFunctions.GetFunctionReference("Substring");
+Function.TargetColumn = "trimmedField";
+Function.Inputs = new dexih.functions.Parameter[] {
+        new dexih.functions.Parameter("name", ETypeCode.String, true, null, "bigField" ),
+        new dexih.functions.Parameter("start", ETypeCode.Int32, false, 0),
+        new dexih.functions.Parameter("length", ETypeCode.Int32, false, 20) 
+};
+MappingFunctions.Add(Function);
+
+//create the mapping transform
+transformMapping = new TransformMapping(InTransform, MappingColumns, MappingFunctions);
+```
+
+The mapping transform can also use the property `PassThroughColumns`.  If this is set to `true`, the mapping transform will map any source fields that haven't already been used by a mapping function or mapping columnpair.
+
+###Join Transform
+
+The join allows an extra input data stream to be joined to the primary table.
+
+
+
+###Lookup Transform
+
+This allows a row lookup to be performed against another data source or external function.
+
+
+###Group Transform
+
+Allows rows to be grouped and analytic and aggregate functions to be applied to the result.  Using the "Pass Through Columns" setting, the group will keep the original number of rows and join in the analytic calculation. 
+
+###Row Transform
+
+Using a row function, translates values into rows.  This can be used to pivot values, or to parse JSON/XML fields into data rows.
+
+
+###Profile Transform
+
+Generates statistics a dataset, without impacting the dataset (meaning it can be inserted anywhere statistics are required).  The built in profile functions allow for detection of string patterns, data types, uniqueness et.
+
+###Validation Transform 
+
+The validation transform automatically checks the fitness of incoming data, against configurable validation rules, and the data type of the data.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
+| Delta | Compares the incoming dataset, against another dataset, produces a delta, and generates a set of audit data.  The delta has a number of update strategies that can be configured, including update/delete detection and history preservation.  In a data warehouse this can be used to generate [type 2 slowly changing dimensions](https://en.wikipedia.org/wiki/Slowly_changing_dimension).
+
