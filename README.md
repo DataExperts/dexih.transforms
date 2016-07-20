@@ -54,11 +54,12 @@ This library can be used as a foundation for applications the process data such 
 
 ## Coming soon
 
-In the next few weeks we will be integrating the following capabilities into the transform processing:
+In the next few months we will be integrating the following capabilities into the transform libraries:
 
 * Logging and resilience.
-* Additional data sources.
 * More documentation!
+* Additional transforms - hierarchy scan, pivot rows to columns.
+* Planned additional data sources - PostgresSQL, Oracle, MySql, Microsoft Access & Excel.  
 
 ## How does it work?
 
