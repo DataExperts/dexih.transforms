@@ -54,11 +54,12 @@ This library can be used as a foundation for applications the process data such 
 
 ## Coming soon
 
-In the next few weeks we will be integrating the following capabilities into the transform processing:
+In the next few months we will be integrating the following capabilities into the transform libraries:
 
 * Logging and resilience.
-* Additional data sources.
 * More documentation!
+* Additional transforms - hierarchy scan, pivot rows to columns.
+* Planned additional data sources - PostgresSQL, Oracle, MySql, Microsoft Access & Excel.  
 
 ## How does it work?
 
@@ -489,4 +490,164 @@ class CalculateSum
 	}
 }
 ```
+
+##Using the Transforms
+
+###Filter Transform
+
+Filters the rows based on boolean conditions specified by the filter functions.
+
+The filter transform consists of one or more functions that return a boolean result.  A record will filtered through when any of the functions are false.
+
+The following example uses the Equal function to remove any rows where the JunkColumn is equal to the value "junk".
+
+```csharp
+//set a Conditions list
+List<Function> Conditions = new List<Function>();
+
+//use the built in IsEqual function.
+Function Function = StandardFunctions.GetFunctionReference("IsEqual");
+Function.Inputs = new dexih.functions.Parameter[] {
+        new dexih.functions.Parameter("JunkColumn", ETypeCode.String, true, null, "StringColumn" ),
+        new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk") };
+
+//use the NotCondition property to change the funciton to `not equal`.
+Function.NotCondition = true
+
+//add the function to the conditions list
+Conditions.Add(Function);
+
+//create the new filter transform with the conditions applied.
+TransformFilter TransformFilter = new TransformFilter(InTransform, Conditions);
+```
+
+###Sort Transform
+
+Sorts the dataset by one or more columns and an ascending or descending order.
+
+The following exmaple sorts the incoming data by Column1 (ascending) and Column2 (descending).
+
+```csharp
+
+var SortFields = new List<Sort> { 
+    new Sort("Column1", Sort.EDirection.Ascending) 
+    new Sort("Column2", Sort.EDirection.Descending) 
+};
+TransformSort TransformSort = new TransformSort(Source, SortFields);    
+```
+
+**Note:**
+The sort transform outputs the `OutputSortFields` property.  This property is used to inform downstream transforms that the dataset is sorted.  This is used by the Group, Row, Join and Delta transforms to indicate the data is sorted as needed by this.  If the inbound transform already has `OutputSortFields` set to the same sort order as the sort transform, the sort will do nothing.  
+
+###Mapping Transform
+
+Maps source fields to target fields using simple source-target mappings or advanced calculations using mapping functions.
+
+The following example uses the ColumnPair class to perform some column mappings, and a function to perform a substring.
+
+```csharp
+List<ColumnPair> MappingColumns = new List<ColumnPair>();
+
+//map the sourceFieldName to the targetFieldName
+MappingColumns.Add(new ColumnPair("sourceFieldName", "targetFieldName"));
+
+//map some other fields without any name change.
+MappingColumns.Add(new ColumnPair("createDate"));
+MappingColumns.Add(new ColumnPair("updateDate"));
+
+List<Function> MappingFunctions = new List<Function>();
+
+//use the substring function to limit the 'bigField' to 20 characters
+Function = StandardFunctions.GetFunctionReference("Substring");
+Function.TargetColumn = "trimmedField";
+Function.Inputs = new dexih.functions.Parameter[] {
+        new dexih.functions.Parameter("name", ETypeCode.String, true, null, "bigField" ),
+        new dexih.functions.Parameter("start", ETypeCode.Int32, false, 0),
+        new dexih.functions.Parameter("length", ETypeCode.Int32, false, 20) 
+};
+MappingFunctions.Add(Function);
+
+//create the mapping transform
+transformMapping = new TransformMapping(InTransform, MappingColumns, MappingFunctions);
+```
+
+The mapping transform can also use the property `PassThroughColumns`.  If this is set to `true`, the mapping transform will map any source fields that haven't already been used by a mapping function or mapping columnpair.
+
+###Join Transform
+
+The join allows an extra input data stream to be joined to the primary table, and is similar to an sql `left outer join`.  The rows from the primary table will be maintained, with the join fields being added based on the join conditions.
+
+The join is optimized to work with sorted data or non-sorted data:
+
+* Merge Join - If the incoming data from the primary and join tables are sorted in the same order as the join field, the join transform will perform a `merge join`.  The `merge join` if fast and can operate effectively over high volumes of data with very low memory usage.
+* Hash Join - If the incoming datasets are not sorted, a hash join will be used.  The Hash join loads the join table into memory, and streams the primary table.   The primary table should be the larger of the two tables being joined for optimal performance.  This performs quickly with smaller join tables, however if the join table is in the millions of records, memory constraints can cause failures.  
+
+The following example shows a merge join operation. If the sort operations were not specified, the transform would default to a `hash join`.
+
+```csharp
+//create primary table
+Table primaryTable = new Table("Sales", 0,
+    new TableColumn("SaleDate", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("ProductId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("SalesValue", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.TrackingField);
+
+//add data, note the productid column is sorted.
+primaryTable.AddRow( Convert.ToDateTime("2015/01/01"), 10, 123 );
+primaryTable.AddRow( Convert.ToDateTime("2015/01/01"), 10, 124 );
+primaryTable.AddRow( Convert.ToDateTime("2015/01/02"), 20, 111 );
+primaryTable.AddRow( Convert.ToDateTime("2015/01/02"), 20, 112 );
+
+//create a reader, and indicate data is sorted by the productid
+ReaderMemory primaryReader = new ReaderMemory(primaryTable, new List<Sort>() { new Sort("ProductId") } );
+
+//create join table
+joinTable table = new Table("Products", 0,
+    new TableColumn("ProductId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("ProductName", DataType.ETypeCode.String, TableColumn.EDeltaType.TrackingField);
+
+//add data, note the productid column is sorted.
+joinTable.AddRow( 10, "Product Number 10" );
+joinTable.AddRow( 20, "Product Number 20" );
+
+//create a reader, and indicate data is sorted by the productid
+ReaderMemory joinReader = new ReaderMemory(joinTable, new List<Sort>() { new Sort("ProductId") } );
+
+//create the join reader which can now be streamed by calling transformJoin.ReadAsync()
+TransformJoin transformJoin = new TransformJoin(
+    primaryReader, 
+    joinReader, 
+    new List<JoinPair>() { new JoinPair("ProductId", "ProductId") }
+);
+```
+
+###Lookup Transform
+
+The lookup transform is simliar to the join transform in that is performs a `left outer join` type of operation on a primary and secondary dataset.  The differences are:
+
+* The lookup transform can perform direct lookups to the underlying connection.  For example if the underlying connection is a database, the lookup will execute a database lookup repeatedly for each primary row.  If the connection is a web serivce it will call the web service function repeatedly for each primary row.  
+* The lookup transform can utilize a cache on demand process.  This means that after a single lookup is completed, the value can stay in cache for future lookups.  
+* The lookup can use more complex operations through functions, whereas the join can only perform `equal` operations.
+* The lookup can not be used against connections where the secondary table does not support a direct lookup (i.e. flat files).
+
+The lookup is best used when calling functions or when the reference table is very large.  For example calling function to retrive stock price at a precice time.
+
+
+
+###Group Transform
+
+Allows rows to be grouped and analytic and aggregate functions to be applied to the result.  Using the "Pass Through Columns" setting, the group will keep the original number of rows and join in the analytic calculation. 
+
+###Row Transform
+
+Using a row function, translates values into rows.  This can be used to pivot values, or to parse JSON/XML fields into data rows.
+
+
+###Profile Transform
+
+Generates statistics a dataset, without impacting the dataset (meaning it can be inserted anywhere statistics are required).  The built in profile functions allow for detection of string patterns, data types, uniqueness et.
+
+###Validation Transform 
+
+The validation transform automatically checks the fitness of incoming data, against configurable validation rules, and the data type of the data.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
+| Delta | Compares the incoming dataset, against another dataset, produces a delta, and generates a set of audit data.  The delta has a number of update strategies that can be configured, including update/delete detection and history preservation.  In a data warehouse this can be used to generate [type 2 slowly changing dimensions](https://en.wikipedia.org/wiki/Slowly_changing_dimension).
 
