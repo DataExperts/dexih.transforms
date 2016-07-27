@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using dexih.functions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -18,9 +19,19 @@ namespace dexih.transforms
         public event StatusUpdate OnStatusUpdate;
         #endregion
 
-        public TransformWriterResult()
+        public TransformWriterResult(Int64 subscriptionKey, Int64 auditKey, string auditType, Int64 referenceKey, string referenceName, Connection auditConnection, TransformWriterResult lastSuccessfulResult)
         {
+            SubscriptionKey = subscriptionKey;
+            AuditKey = auditKey;
+            AuditType = auditType;
+            ReferenceKey = referenceKey;
+            ReferenceName = referenceName;
+            AuditConnection = auditConnection;
+            LastSuccessfulResult = lastSuccessfulResult;
 
+            InitializeTime = DateTime.Now;
+            LastUpdateTime = InitializeTime;
+            RunStatus = ERunStatus.Initialised;
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
@@ -37,6 +48,17 @@ namespace dexih.transforms
             NotRunning
         }
 
+        private Connection AuditConnection;
+
+        public Int64 AuditKey { get; set; }
+        public string AuditType { get; set; }
+        public Int64 ReferenceKey { get; set; }
+        public string ReferenceName { get; set; }
+        public Int64 SubscriptionKey { get; set; }
+
+        [JsonIgnore]
+        public TransformWriterResult LastSuccessfulResult { get; set; }
+
         public Int32 RowsPerProgressEvent { get; set; } = 1000;
 
         public Int64 RowsTotal { get; set; }
@@ -51,37 +73,92 @@ namespace dexih.transforms
         public Int64 RowsReadPrimary { get; set; }
         public Int64 RowsReadReference { get; set; }
 
-        public decimal? ReadThroughput { get; set; }
-        public decimal? WriteThroughput { get; set; }
-        public decimal? ProcessingThroughput { get; set; }
+        public Int64 ReadTicks { get; set; }
+        public Int64 WriteTicks { get; set; }
+        public Int64 ProcessingTicks { get; set; }
 
         public object MaxIncrementalValue { get; set; }
+        public long MaxSurrogateKey { get; set; }
 
 
         public string Message { get; set; }
-        public DateTime InitialiseTime { get; set; }
-        public DateTime? StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
-        public DateTime LastUpdate { get; set; }
+        public DateTime InitializeTime { get; set; }
+        public DateTime StartTime { get; set; } = Convert.ToDateTime("1900-01-01");
+        public DateTime EndTime { get; set; } = Convert.ToDateTime("1900-01-01");
+        public DateTime LastUpdateTime { get; set; }
         public string PerformanceSummary { get; set; }
         private CancellationTokenSource CancelTokenSource { get; set; }
 
-        private ERunStatus _RunStatus;
-
         [JsonConverter(typeof(StringEnumConverter))]
-        public ERunStatus RunStatus {
-            get {
-                return _RunStatus;
-            }
-            set {
-                LastUpdate = DateTime.Now;
-                if (_RunStatus != value)
-                {
-                    _RunStatus = value;
-                    OnStatusUpdate?.Invoke(this);
-                }
+        public ERunStatus RunStatus { get; set; }
+
+        public TimeSpan? TimeTaken()
+        {
+            if (EndTime == Convert.ToDateTime("1900-01-01") || StartTime == Convert.ToDateTime("1900-01-01"))
+                return null;
+            else
+                return EndTime.Subtract((DateTime)StartTime);
+        }
+
+        public decimal WriteThroughput()
+        {
+            if (WriteTicks == 0)
+                return 0;
+            else
+            {
+                TimeSpan ts = TimeSpan.FromTicks(WriteTicks);
+                return (decimal)RowsTotal / Convert.ToDecimal(ts.TotalSeconds);
             }
         }
+
+        public decimal ProcessingThroughput()
+        {
+            if (ProcessingTicks == 0)
+                return 0;
+            else
+            {
+                TimeSpan ts = TimeSpan.FromTicks(ProcessingTicks);
+                return (decimal)(RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
+            }
+        }
+
+        public decimal ReadThroughput()
+        {
+            if (ReadTicks == 0)
+                return 0;
+            else
+            {
+                TimeSpan ts = TimeSpan.FromTicks(ReadTicks);
+                return (decimal)(RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
+            }
+        }
+        public async Task<ReturnValue> SetRunStatus(ERunStatus newStatus, string message = null)
+        {
+            RunStatus = newStatus;
+            if (message != null)
+            {
+                if (Message == null)
+                    Message = message;
+                else
+                    Message += Environment.NewLine + message;
+            }
+
+            if (AuditConnection != null)
+            {
+                LastUpdateTime = DateTime.Now;
+
+                var updateResult = await AuditConnection.UpdateAudit(this);
+                if (!updateResult.Success)
+                {
+                    RunStatus = ERunStatus.Abended;
+                    return updateResult;
+                }
+            }
+            OnStatusUpdate?.Invoke(this);
+
+            return new ReturnValue(true);
+        }
+
         public bool IsRunning
         {
             get
@@ -118,9 +195,23 @@ namespace dexih.transforms
             if (_progressCounter >= RowsPerProgressEvent)
             {
                 _progressCounter = 0;
-                LastUpdate = DateTime.Now;
+                LastUpdateTime = DateTime.Now;
                 OnProgressUpdate?.Invoke(this);
             }
         }
+
+        public int PercentageComplete
+        {
+            get
+            {
+                if (RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.Abended) return 100;
+                if (RunStatus == ERunStatus.Initialised) return 0;
+                if (LastSuccessfulResult == null || LastSuccessfulResult.RowsTotal == 0) return 50;
+                int value = Convert.ToInt32(100 * ((double)RowsTotal / LastSuccessfulResult.RowsTotal));
+                if (value > 100) return 100; else return value;
+            }
+        }
+
+
     }
 }

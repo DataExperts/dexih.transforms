@@ -24,12 +24,12 @@ namespace dexih.transforms
             MissingFieldAction = DefaultMissingFieldAction;
             ParseErrorAction = DefaultParseErrorAction;
             Quote = DefaultQuote;
-            SkipEmptyLines = DefaultSkipEmptyLines;
-            SupportsMutiline = DefaultSupportsMutiline;
+            SkipBlankLines = DefaultSkipEmptyLines;
+            SupportsMultiline = DefaultSupportsMutiline;
             ValueTrimmingOptions = DefaultValueTrimmingOptions;
         }
 
-        private int SubscriptionKey { get; set; }
+        private long SubscriptionKey { get; set; }
 
         public const int DefaultBufferSize = 0x1000;
         public const char DefaultDelimiter = ',';
@@ -82,9 +82,9 @@ namespace dexih.transforms
 
         public EMissingFieldAction MissingFieldAction { get; set; }
 
-        public bool SupportsMutiline { get; set; }
+        public bool SupportsMultiline { get; set; }
 
-        public bool SkipEmptyLines { get; set; }
+        public bool SkipBlankLines { get; set; }
 
         public EValueTrimmingOptions ValueTrimmingOptions { get; set; }
 

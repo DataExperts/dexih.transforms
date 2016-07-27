@@ -57,8 +57,6 @@ namespace dexih.connections.sql
         public abstract ETypeCode ConvertSqlToTypeCode(string SqlType);
         public abstract string GetSqlFieldValueQuote(ETypeCode type, object value);
 
-        public abstract Task<ReturnValue<Boolean>> TableExists(Table table);
-
         /// <summary>
         /// This is used to convert any datatypes that are not compatible with the target database.
         /// </summary>
@@ -88,7 +86,7 @@ namespace dexih.connections.sql
             return param;
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+         public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
@@ -297,6 +295,7 @@ namespace dexih.connections.sql
                 case Filter.ECompare.LessThan: return "<";
                 case Filter.ECompare.LessThanEqual: return "<=";
                 case Filter.ECompare.NotEqual: return "!=";
+                case Filter.ECompare.IsIn: return "IN";
                 default:
                     return "";
             }
@@ -372,7 +371,17 @@ namespace dexih.connections.sql
                     if (filter.Column2 != null)
                         sql.Append(" " + AddDelimiter(filter.Column2) + " ");
                     else
-                        sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value2) + " ");
+                    {
+                        if(filter.Value2.GetType().IsArray == true)
+                        {
+                            List<string> array = new List<string>();
+                            foreach (object value in (Array)filter.Value2)
+                                array.Add(value.ToString());
+                            sql.Append(" (" + string.Join(",", array.Select(c => GetSqlFieldValueQuote(filter.CompareDataType, c))) + ") ");
+                        }
+                        else
+                            sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value2) + " ");
+                    }
 
                     sql.Append(filter.AndOr.ToString());
                 }
@@ -535,7 +544,7 @@ namespace dexih.connections.sql
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i.ToString();
-                                    param.Value = query.InsertColumns[i].Value;
+                                    param.Value = query.InsertColumns[i].Value == null ? DBNull.Value : query.InsertColumns[i].Value;
                                     cmd.Parameters.Add(param);
                                 }
                                 rows += await cmd.ExecuteNonQueryAsync(cancelToken);
@@ -658,7 +667,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<DbDataReader>(false, "The following error was encountered starting the connection reader for the sqlserver table " + table.TableName, ex);
+                return new ReturnValue<DbDataReader>(false, "The following error was encountered starting the connection reader for the sqlserver table " + table.TableName + ": " + ex.Message, ex);
             }
         }
 

@@ -226,5 +226,18 @@ namespace dexih.connections.flatfile
             }
         }
 
+        public override async Task<ReturnValue<bool>> TableExists(Table table)
+        {
+            try
+            {
+                bool exists = await Task.Run(() => new DirectoryInfo(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath")).Exists);
+                return new ReturnValue<bool>(true, exists);
+            }
+            catch(Exception ex)
+            {
+                return new ReturnValue<bool>(false, "The following error occurred testing if a directory exists: " + ex.Message, ex);
+            }
+        }
+
     }
 }

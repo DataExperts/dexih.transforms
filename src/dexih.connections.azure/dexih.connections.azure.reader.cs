@@ -68,12 +68,12 @@ namespace dexih.connections.azure
 
             _token = _tableResult.ContinuationToken;
 
-            if (_tableResult != null && _tableResult.Any())
-            {
+            //if (_tableResult != null && _tableResult.Any())
+            //{
                 return new ReturnValue(true);
-            }
-            else
-                return new ReturnValue(false);
+            //}
+            //else
+                //return new ReturnValue(false);
         }
 
         public override string Details()

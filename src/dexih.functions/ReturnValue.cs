@@ -104,7 +104,7 @@ namespace dexih.functions
         public string MessageToken { get; set; }
         public string RemoteToken { get; set; }
         public string Command { get; set; }
-        public int SubscriptionKey { get; set; }
+        public long SubscriptionKey { get; set; }
 
         public Message() { }
 

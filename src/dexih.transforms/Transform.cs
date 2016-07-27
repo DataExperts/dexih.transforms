@@ -370,11 +370,11 @@ namespace dexih.transforms
         /// <param name="recordsRead"></param>
         /// <param name="elapsedMilliseconds"></param>
         /// <returns></returns>
-        public virtual void ReadThroughput(ref int recordsRead, ref long elapsedMilliseconds)
+        public virtual void ReadThroughput(ref int recordsRead, ref long elapsedTicks)
         {
-            PrimaryTransform?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
+            PrimaryTransform?.ReadThroughput(ref recordsRead, ref elapsedTicks);
 
-            ReferenceTransform?.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
+            ReferenceTransform?.ReadThroughput(ref recordsRead, ref elapsedTicks);
         }
 
         /// <summary>

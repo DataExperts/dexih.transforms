@@ -182,5 +182,10 @@ namespace dexih.transforms
             var reader = new ReaderMemory(table);
             return reader;
         }
+
+        public override Task<ReturnValue<bool>> TableExists(Table table)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

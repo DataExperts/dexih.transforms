@@ -171,7 +171,7 @@ namespace dexih.connections.test
         /// Perfromance tests should run in around 1 minute. 
         /// </summary>
         /// <param name="connection"></param>
-        public async Task PerformanceTransformWriter(Connection connection, string databaseName, int rows)
+        public async Task PerformanceTransformWriter(Connection connection, string databaseName, long rows)
         {
             ReturnValue returnValue;
 
@@ -183,7 +183,7 @@ namespace dexih.connections.test
             //create a table that utilizes every available datatype.
             Table table = new Table("LargeTable" + (DataSets.counter++).ToString());
 
-            table.Columns.Add(new TableColumn("SurrogateKey", DataType.ETypeCode.Int32, TableColumn.EDeltaType.SurrogateKey));
+            table.Columns.Add(new TableColumn("SurrogateKey", DataType.ETypeCode.Int32, TableColumn.EDeltaType.SurrogateKey) { IsIncrementalUpdate = true });
             table.Columns.Add(new TableColumn("UpdateTest", DataType.ETypeCode.Int32));
 
             foreach (DataType.ETypeCode typeCode in Enum.GetValues(typeof(DataType.ETypeCode)))
@@ -243,10 +243,18 @@ namespace dexih.connections.test
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1);
 
             TransformWriter writer = new TransformWriter();
-            TransformWriterResult writerResult = new TransformWriterResult();
-            var result = await writer.WriteAllRecords(1, writerResult, transform, targetTable, connection, null, null, null, null, CancellationToken.None);
+            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test");
+            Assert.True(auditResult.Success);
+            TransformWriterResult writerResult = auditResult.Value;
+            var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, null, null, CancellationToken.None);
 
             Assert.Equal(rows, writerResult.RowsCreated);
+
+            //check the audit table loaded correctly.
+            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, null, 1, 0, CancellationToken.None);
+            Assert.Equal(writerResult.RowsCreated, auditTable.Value[0].RowsCreated);
+            Assert.Equal(rows - 1, Convert.ToInt64(auditTable.Value[0].MaxIncrementalValue));
+
         }
 
 
