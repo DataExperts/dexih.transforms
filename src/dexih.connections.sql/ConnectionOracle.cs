@@ -525,7 +525,7 @@
 
 //                // The schema table 
 //                cmd = new OracleCommand(@"
-//                         SELECT c.column_id, c.name 'ColumnName', t2.Name 'DataType', c.max_length 'MaxLength', c.precision 'Precision', c.scale 'Scale', c.is_nullable 'IsNullable', ep.value 'Description',
+//                         SELECT c.column_id, c.name 'ColumnName', t2.Name 'DataType', c.MaxLength 'MaxLength', c.precision 'Precision', c.scale 'Scale', c.is_nullable 'IsNullable', ep.value 'Description',
 //                        case when exists(select * from sys.index_columns ic JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id where ic.object_id = c.object_id and ic.column_id = c.column_id and is_primary_key = 1) then 1 else 0 end 'PrimaryKey'
 //                        FROM sys.columns c
 //                        INNER JOIN sys.types t ON c.user_type_id = t.user_type_id

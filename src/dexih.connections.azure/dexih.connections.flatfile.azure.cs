@@ -350,5 +350,25 @@ namespace dexih.connections.azure
         {
             throw new NotImplementedException();
         }
+
+        public override async Task<ReturnValue<bool>> TableExists(Table table)
+        {
+            try
+            {
+                var getDatabaseDirectory = await GetDatabaseDirectory();
+                if (!getDatabaseDirectory.Success)
+                    return new ReturnValue<bool>(getDatabaseDirectory);
+
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
+                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference((string)table.GetExtendedProperty("FileIncomingPath"));
+
+                var exists = await cloudFileDirectory.ExistsAsync();
+                return new ReturnValue<bool>(true, exists);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<bool>(false, "The following error occurred testing if a directory exists: " + ex.Message, ex);
+            }
+        }
     }
 }

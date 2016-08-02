@@ -13,6 +13,7 @@ using dexih.transforms;
 using static dexih.functions.DataType;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Diagnostics;
 
 namespace dexih.connections.azure
 {
@@ -49,6 +50,23 @@ namespace dexih.connections.azure
             return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,254}$");
         }
 
+        public override async Task<ReturnValue<bool>> TableExists(Table table)
+        {
+            try
+            {
+                CloudTableClient connection = GetCloudTableClient();
+                CloudTable cTable = connection.GetTableReference(table.TableName);
+
+                var exists = await cTable.ExistsAsync();
+
+                return new ReturnValue<bool>(true, exists);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<bool>(false, "Error testing table exists: " + ex.Message, ex);
+            }
+        }
+
 
         public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
@@ -83,7 +101,7 @@ namespace dexih.connections.azure
 
                     for (int i = 0; i < table.Columns.Count; i++)
                     {
-                        if(i< reader.FieldCount)
+                        if (i < reader.FieldCount)
                             row[i] = reader[i];
                         else
                         {
@@ -114,7 +132,7 @@ namespace dexih.connections.azure
 
                 return new ReturnValue<int>(true, 0);
             }
-            catch(StorageException ex)
+            catch (StorageException ex)
             {
                 string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
                 return new ReturnValue<int>(false, message, ex);
@@ -173,7 +191,7 @@ namespace dexih.connections.azure
                 if (!IsValidTableName(table.TableName))
                     return new ReturnValue(false, "The table " + table.TableName + " could not be created as it does not meet Azure table naming standards.", null);
 
-                foreach(var col in table.Columns)
+                foreach (var col in table.Columns)
                 {
                     if (!IsValidColumnName(col.ColumnName))
                         return new ReturnValue(false, "The table " + table.TableName + " could not be created as the column " + col.ColumnName + " does not meet Azure table naming standards.", null);
@@ -184,10 +202,14 @@ namespace dexih.connections.azure
                 if (dropTable)
                     await cTable.DeleteIfExistsAsync();
 
+                var exists = await cTable.ExistsAsync();
+                if (exists)
+                    return new ReturnValue(true);
+
                 //bool result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(), TimeSpan.FromSeconds(10), 6);
 
                 bool isCreated = false;
-                for (int i = 0; i< 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     try
                     {
@@ -216,13 +238,13 @@ namespace dexih.connections.azure
         {
             CloudStorageAccount storageAccount;
 
-            if(UseConnectionString)
+            if (UseConnectionString)
                 storageAccount = CloudStorageAccount.Parse(ConnectionString);
             // Retrieve the storage account from the connection string.
             else if (string.IsNullOrEmpty(UserName)) //no username, then use the development settings.
                 storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true");
             else
-                storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + UserName + ";AccountKey=" + Password + ";TableEndpoint=" + ServerName );
+                storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + UserName + ";AccountKey=" + Password + ";TableEndpoint=" + ServerName);
 
             //ServicePoint tableServicePoint = ServicePointManager.FindServicePoint(storageAccount.TableEndpoint);
             //tableServicePoint.UseNagleAlgorithm = false;
@@ -239,7 +261,7 @@ namespace dexih.connections.azure
 
         public override async Task<ReturnValue<List<string>>> GetDatabaseList()
         {
-            List<string> list = await Task.Run(() => new List<string> {"Default"} );
+            List<string> list = await Task.Run(() => new List<string> { "Default" });
             return new ReturnValue<List<string>>(true, list);
         }
 
@@ -254,7 +276,7 @@ namespace dexih.connections.azure
                 {
                     var table = await connection.ListTablesSegmentedAsync(continuationToken);
                     continuationToken = table.ContinuationToken;
-                    list.AddRange(table.Results.Select(c=>c.Name));
+                    list.AddRange(table.Results.Select(c => c.Name));
 
                 } while (continuationToken != null);
 
@@ -319,12 +341,12 @@ namespace dexih.connections.azure
             }
         }
 
- 
+
         public string ConvertOperator(Filter.ECompare Operator)
         {
-            switch( Operator)
+            switch (Operator)
             {
-                case Filter.ECompare.IsEqual: 
+                case Filter.ECompare.IsEqual:
                     return "eq";
                 case Filter.ECompare.GreaterThan:
                     return "gt";
@@ -348,49 +370,83 @@ namespace dexih.connections.azure
             else
             {
                 string combinedFilterString = "";
+
                 foreach (var filter in filters)
                 {
+                    var filterOperator = filter.Operator;
+
                     string filterString;
-                    switch (filter.CompareDataType)
+
+                    if (filter.Value2.GetType().IsArray == true)
                     {
-                        case ETypeCode.String:
-                        case ETypeCode.Guid:
-                        case ETypeCode.Unknown:
-                            filterString = TableQuery.GenerateFilterCondition(filter.Column1, ConvertOperator(filter.Operator), (string)filter.Value2);
-                            break;
-                        case ETypeCode.Boolean:
-                            filterString = TableQuery.GenerateFilterConditionForBool(filter.Column1, ConvertOperator(filter.Operator), (bool) filter.Value2);
-                            break;
-                        case ETypeCode.Int16:
-                        case ETypeCode.Int32:
-                        case ETypeCode.UInt16:
-                        case ETypeCode.UInt32:
-                            filterString = TableQuery.GenerateFilterConditionForInt(filter.Column1, ConvertOperator(filter.Operator), (int)filter.Value2);
-                            break;
-                        case ETypeCode.UInt64:
-                        case ETypeCode.Int64:
-                            filterString = TableQuery.GenerateFilterConditionForLong(filter.Column1, ConvertOperator(filter.Operator), (long) filter.Value2);
-                            break;
-                        case ETypeCode.DateTime:
-                            filterString = TableQuery.GenerateFilterConditionForDate(filter.Column1, ConvertOperator(filter.Operator), (DateTime)filter.Value2);
-                            break;
-                        case ETypeCode.Time:
-                            filterString = TableQuery.GenerateFilterCondition(filter.Column1, ConvertOperator(filter.Operator), filter.Value2.ToString());
-                            break;
-                        case ETypeCode.Double:
-                        case ETypeCode.Decimal:
-                            filterString = TableQuery.GenerateFilterConditionForDouble(filter.Column1, ConvertOperator(filter.Operator), (double)filter.Value2);
-                            break;
-                        default:
-                            throw new Exception("The data type: " + filter.CompareDataType.ToString() + " is not supported by Azure table storage.");
+                        List<object> array = new List<object>();
+                        foreach (object value in (Array)filter.Value2)
+                        {
+                            var valueparse = TryParse(filter.CompareDataType, value);
+                            if (!valueparse.Success)
+                                throw new Exception("The filter value " + value.ToString() + " could not be convered to a " + filter.CompareDataType.ToString());
+                            array.Add(valueparse.Value);
+                        }
+                        filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1, Filter.ECompare.IsEqual, filter.CompareDataType, c))) + ")";
                     }
+                    else
+                    {
+                        var value2parse = TryParse(filter.CompareDataType, filter.Value2);
+                        if (!value2parse.Success)
+                            throw new Exception("The filter value " + filter.Value2.ToString() + " could not be convered to a " + filter.CompareDataType.ToString());
+                        var value2 = value2parse.Value;
+
+                        filterString = GenerateFilterCondition(filter.Column1, filter.Operator, filter.CompareDataType, value2);
+                    }
+
                     if (combinedFilterString == "")
                         combinedFilterString = filterString;
-                    else if(filterString != "")
+                    else if (filterString != "")
                         combinedFilterString = TableQuery.CombineFilters(combinedFilterString, filter.AndOr.ToString().ToLower(), filterString);
                 }
                 return combinedFilterString;
             }
+        }
+
+        private string GenerateFilterCondition(string column, Filter.ECompare filterOperator, ETypeCode compareDataType, object value)
+        {
+            string filterString;
+
+            switch (compareDataType)
+            {
+                case ETypeCode.String:
+                case ETypeCode.Guid:
+                case ETypeCode.Unknown:
+                    filterString = TableQuery.GenerateFilterCondition(column, ConvertOperator(filterOperator), (string)value);
+                    break;
+                case ETypeCode.Boolean:
+                    filterString = TableQuery.GenerateFilterConditionForBool(column, ConvertOperator(filterOperator), (bool)value);
+                    break;
+                case ETypeCode.Int16:
+                case ETypeCode.Int32:
+                case ETypeCode.UInt16:
+                case ETypeCode.UInt32:
+                    filterString = TableQuery.GenerateFilterConditionForInt(column, ConvertOperator(filterOperator), (int)value);
+                    break;
+                case ETypeCode.UInt64:
+                case ETypeCode.Int64:
+                    filterString = TableQuery.GenerateFilterConditionForLong(column, ConvertOperator(filterOperator), (long)value);
+                    break;
+                case ETypeCode.DateTime:
+                    filterString = TableQuery.GenerateFilterConditionForDate(column, ConvertOperator(filterOperator), (DateTime)value);
+                    break;
+                case ETypeCode.Time:
+                    filterString = TableQuery.GenerateFilterCondition(column, ConvertOperator(filterOperator), value.ToString());
+                    break;
+                case ETypeCode.Double:
+                case ETypeCode.Decimal:
+                    filterString = TableQuery.GenerateFilterConditionForDouble(column, ConvertOperator(filterOperator), (double)value);
+                    break;
+                default:
+                    throw new Exception("The data type: " + compareDataType.ToString() + " is not supported by Azure table storage.");
+            }
+
+            return filterString;
         }
 
         public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
@@ -401,8 +457,8 @@ namespace dexih.connections.azure
                 bool result;
 
                 CloudTable cTable = connection.GetTableReference(table.TableName);
-                await cTable.DeleteIfExistsAsync(null, null,cancelToken);
-                result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(null, null,cancelToken), TimeSpan.FromSeconds(10), 6);
+                await cTable.DeleteIfExistsAsync(null, null, cancelToken);
+                result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(null, null, cancelToken), TimeSpan.FromSeconds(10), 6);
 
                 return new ReturnValue(result);
             }
@@ -422,12 +478,12 @@ namespace dexih.connections.azure
                     //partion key uses the AuditKey which allows bulk load, and can be used as an incremental checker.
                     table.Columns.Add(new TableColumn()
                     {
-                        ColumnName = "partitionKey",
+                        ColumnName = "PartitionKey",
                         DataType = ETypeCode.String,
                         MaxLength = 0,
                         Precision = 0,
                         AllowDbNull = false,
-                        LogicalName = table.TableName + " parition key.",
+                        LogicalName = table.TableName + " partition key.",
                         Description = "The Azure partition key and UpdateAuditKey for this table.",
                         IsUnique = true,
                         DeltaType = TableColumn.EDeltaType.AzurePartitionKey,
@@ -441,7 +497,7 @@ namespace dexih.connections.azure
                     //add the special columns for managed tables.
                     table.Columns.Add(new TableColumn()
                     {
-                        ColumnName = "rowKey",
+                        ColumnName = "RowKey",
                         DataType = ETypeCode.String,
                         MaxLength = 0,
                         Precision = 0,
@@ -526,6 +582,9 @@ namespace dexih.connections.azure
 
         public object ConvertEntityProperty(ETypeCode typeCode, object value)
         {
+            if (value == null)
+                return null;
+
             switch (typeCode)
             {
                 case ETypeCode.Byte:
@@ -554,7 +613,7 @@ namespace dexih.connections.azure
             }
         }
 
- 
+
         public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             try
@@ -582,8 +641,10 @@ namespace dexih.connections.azure
 
                     Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
                     foreach (var field in query.InsertColumns)
-                        if (field.Column != "rowKey" && field.Column != "partitionKey" && field.Column != "Timestamp")
+                    {
+                        if (!(field.Column == "RowKey" || field.Column == "PartitionKey" || field.Column == "Timestamp"))
                             properties.Add(field.Column, NewEntityProperty(table[field.Column].DataType, field.Value));
+                    }
 
                     string partitionKeyValue = null;
                     if (partitionKey != null)
@@ -592,14 +653,14 @@ namespace dexih.connections.azure
                     if (string.IsNullOrEmpty(partitionKeyValue)) partitionKeyValue = "default";
 
                     string rowKeyValue = null;
-                    if(rowKey != null)
-                        rowKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column ==partitionKey.ColumnName)?.Value.ToString();
+                    if (rowKey != null)
+                        rowKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column == rowKey.ColumnName)?.Value.ToString();
 
                     if (string.IsNullOrEmpty(rowKeyValue))
                     {
                         var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey)?.ColumnName;
 
-                        if(sk == null)
+                        if (sk == null)
                             rowKeyValue = Guid.NewGuid().ToString();
                         else
                             rowKeyValue = query.InsertColumns.Single(c => c.Column == sk).Value.ToString();
@@ -662,7 +723,7 @@ namespace dexih.connections.azure
                     TableQuery tableQuery = new TableQuery();
 
                     //select all columns
-                    tableQuery.SelectColumns = (new[] { "partitionKey", "rowKey" }.Concat(table.Columns.Where(c=>c.ColumnName != "partitionKey" || c.ColumnName != "rowKey").Select(c=>c.ColumnName)).ToList());
+                    tableQuery.SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.ColumnName != "PartitionKey" && c.ColumnName != "RowKey").Select(c => c.ColumnName)).ToList());
                     tableQuery.FilterString = BuildFilterString(query.Filters);
 
                     //run the update 
@@ -675,12 +736,23 @@ namespace dexih.connections.azure
 
                         continuationToken = result.ContinuationToken;
 
-                        foreach(var entity in result.Results)
+                        foreach (var entity in result.Results)
                         {
 
                             foreach (var column in query.UpdateColumns)
                             {
-                                entity.Properties[column.Column] = NewEntityProperty(table[column.Column].DataType, column.Value);
+                                switch (column.Column)
+                                {
+                                    case "RowKey":
+                                        entity.RowKey = column.Value.ToString();
+                                        break;
+                                    case "PartitionKey":
+                                        entity.PartitionKey = column.Value.ToString();
+                                        break;
+                                    default:
+                                        entity.Properties[column.Column] = NewEntityProperty(table[column.Column].DataType, column.Value);
+                                        break;
+                                }
                             }
 
                             batchOperation.Replace(entity);
@@ -688,7 +760,7 @@ namespace dexih.connections.azure
                             rowcount++;
                             rowsUpdated++;
 
-                            if(rowcount > 99)
+                            if (rowcount > 99)
                             {
                                 rowcount = 0;
                                 batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation));
@@ -708,7 +780,7 @@ namespace dexih.connections.azure
 
                 return new ReturnValue<int>(true, rowsUpdated);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new ReturnValue<int>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
             }
@@ -737,7 +809,7 @@ namespace dexih.connections.azure
 
                     //Read the key fields from the table
                     TableQuery tableQuery = new TableQuery();
-                    tableQuery.SelectColumns = new[] { "partitionKey", "rowKey" };
+                    tableQuery.SelectColumns = new[] { "PartitionKey", "RowKey" };
                     tableQuery.FilterString = BuildFilterString(query.Filters);
                     //TableResult = TableReference.ExecuteQuery(TableQuery);
 
@@ -770,7 +842,7 @@ namespace dexih.connections.azure
                     await cTable.ExecuteBatchAsync(batchOperation);
                 }
 
-                return new ReturnValue<int>(true, "", null, rowsDeleted); 
+                return new ReturnValue<int>(true, "", null, rowsDeleted);
             }
             catch (Exception ex)
             {
@@ -787,29 +859,52 @@ namespace dexih.connections.azure
 
                 //Read the key fields from the table
                 TableQuery tableQuery = new TableQuery();
-                tableQuery.SelectColumns = query.Columns.Select(c=>c.Column).ToArray();
+                tableQuery.SelectColumns = query.Columns.Select(c => c.Column).ToArray();
                 tableQuery.FilterString = BuildFilterString(query.Filters);
                 tableQuery.Take(1);
 
                 TableContinuationToken continuationToken = null;
-                var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancelToken);
+                try
+                {
+                    var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancelToken);
 
-                if (cancelToken.IsCancellationRequested)
-                    return new ReturnValue<object>(false, "Execute scalar cancelled.", null);
+                    if (cancelToken.IsCancellationRequested)
+                        return new ReturnValue<object>(false, "Execute scalar cancelled.", null);
 
-                continuationToken = result.ContinuationToken;
+                    continuationToken = result.ContinuationToken;
 
-                object value;
-                //get the result value
-                if (result.Results.Count == 0)
-                    value = null;
-                else
-                    value = result.Results[0].Properties[query.Columns[0].Column].PropertyAsObject;
+                    object value;
+                    //get the result value
+                    if (result.Results.Count == 0)
+                        value = null;
+                    else
+                    {
+                        switch (query.Columns[0].Column)
+                        {
+                            case "RowKey":
+                                value = result.Results[0].RowKey;
+                                break;
+                            case "PartitionKey":
+                                value = result.Results[0].PartitionKey;
+                                break;
+                            default:
+                                value = result.Results[0].Properties[query.Columns[0].Column].PropertyAsObject;
+                                break;
+                        }
+                    }
 
-                //convert it back to a .net type.
-                value = ConvertEntityProperty(table[query.Columns[0].Column].DataType, value);
+                    //convert it back to a .net type.
+                    value = ConvertEntityProperty(table[query.Columns[0].Column].DataType, value);
+                    return new ReturnValue<object>(true, value);
 
-                return new ReturnValue<object>(true, value);
+                }
+                catch (StorageException ex)
+                {
+                    string message = "Error running a command against table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
+                    return new ReturnValue<object>(false, message, ex);
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -827,5 +922,6 @@ namespace dexih.connections.azure
             var reader = new ReaderAzure(this, table);
             return reader;
         }
-    }
+
+     }
 }

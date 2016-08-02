@@ -187,7 +187,10 @@ namespace dexih.transforms
             Operator = operator1;
             Value2 = value2;
 
-            CompareDataType = DataType.GetTypeCode(Value2.GetType());
+            if(Value2.GetType().IsArray)
+                CompareDataType = GetTypeCode(Value2.GetType().GetElementType());
+            else
+                CompareDataType = GetTypeCode(Value2.GetType());
         }
 
         /// <summary>
@@ -212,7 +215,8 @@ namespace dexih.transforms
             GreaterThanEqual,
             LessThan,
             LessThanEqual,
-            NotEqual
+            NotEqual,
+            IsIn
         }
 
         public enum EAndOr

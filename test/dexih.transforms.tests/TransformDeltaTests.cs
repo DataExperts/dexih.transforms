@@ -85,8 +85,8 @@ namespace dexih.transforms.tests
                 //write result to a memory table
                 ConnectionMemory memoryConnection = new ConnectionMemory();
                 TransformWriter writer = new TransformWriter();
-                TransformWriterResult result = new TransformWriterResult();
-                await writer.WriteAllRecords(10, result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
+                TransformWriterResult result = new TransformWriterResult(0, 10, "DataLink", 1, "Test", null, null);
+                await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
                 Target = new ReaderMemory(Target.CacheTable, null);
 
                 //Set the target pointer back to the start and rerun.  Now 10 rows should be ignored.
@@ -200,8 +200,8 @@ namespace dexih.transforms.tests
                 //write result to a memory table
                 ConnectionMemory memoryConnection = new ConnectionMemory();
                TransformWriter writer = new TransformWriter();
-               TransformWriterResult result = new TransformWriterResult();
-               await writer.WriteAllRecords(10, result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
+               TransformWriterResult result = new TransformWriterResult(0, 1, "DataLink", 1, "Test", null, null);
+               await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
                Target = new ReaderMemory(Target.CacheTable, null);
 
                 //run an append.  (only difference from reload is no truncate record at start.
@@ -240,8 +240,8 @@ namespace dexih.transforms.tests
 
                 //run the delta again.  this should ignore all 10 records.
                 transformDelta.SetRowNumber(0);
-               result = new TransformWriterResult();
-               await writer.WriteAllRecords(30, result, transformDelta, Target.CacheTable, memoryConnection,CancellationToken.None);
+               result = new TransformWriterResult(0, 1, "DataLink", 30, "Test", null, null);
+               await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection,CancellationToken.None);
                Target = new ReaderMemory(Target.CacheTable, null);
                transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey);
 

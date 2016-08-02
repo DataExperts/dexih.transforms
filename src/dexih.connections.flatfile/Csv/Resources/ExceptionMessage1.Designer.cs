@@ -39,7 +39,7 @@ namespace dexih.connections.flatfile.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("dexih_connections.IO.Csv.Resources.ExceptionMessage", typeof(ExceptionMessage).GetTypeInfo().Assembly);
+                    System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("DexihConnections.IO.Csv.Resources.ExceptionMessage", typeof(ExceptionMessage).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

@@ -430,6 +430,11 @@ namespace dexih.connections.webservice
             return reader;
         }
 
+        public override Task<ReturnValue<bool>> TableExists(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
 
     }
 }

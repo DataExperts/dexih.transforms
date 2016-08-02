@@ -38,8 +38,6 @@ namespace dexih.transforms
         private Connection RejectConnection;
         private Connection ProfileConnection;
 
-        private Int64 AuditKey;
-
         private CancellationToken CancelToken;
 
         private InsertQuery TargetInsertQuery;
@@ -52,26 +50,27 @@ namespace dexih.transforms
         public Stopwatch TestDataTimer;
 
         private int[] _fieldOrdinals;
+        private int[] _rejectFieldOrdinals;
 
-        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, CancellationToken cancelToken)
         {
-            return await WriteAllRecords(auditKey,WriterResult, inTransform, targetTable, targetConnection, null, null, null, null, cancelToken);
+            return await WriteAllRecords(WriterResult, inTransform, targetTable, targetConnection, null, null, null, null, cancelToken);
         }
 
-        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, CancellationToken cancelToken)
         {
-            return await WriteAllRecords(auditKey,WriterResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, null, null, cancelToken);
+            return await WriteAllRecords(WriterResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, null, null, cancelToken);
         }
 
-        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Table profileTable, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords( TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Table profileTable, CancellationToken cancelToken)
         {
-            return await WriteAllRecords(auditKey,WriterResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, profileTable, targetConnection, cancelToken);
+            return await WriteAllRecords(WriterResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, profileTable, targetConnection, cancelToken);
         }
 
 
-        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, CancellationToken cancelToken)
         {
-            return await WriteAllRecords(auditKey,WriterResult, inTransform, targetTable, targetConnection, rejectTable, rejectConnection, null, null, cancelToken);
+            return await WriteAllRecords(WriterResult, inTransform, targetTable, targetConnection, rejectTable, rejectConnection, null, null, cancelToken);
         }
 
         /// <summary>
@@ -85,11 +84,10 @@ namespace dexih.transforms
         /// <param name="profileTableName">Reject table name</param>
         /// <param name="profileConnection">Reject connection (if null will use connection)</param>
         /// <returns></returns>
-        public async Task<ReturnValue> WriteAllRecords(Int64 auditKey, TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, Table profileTable, Connection profileConnection, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, Table profileTable, Connection profileConnection, CancellationToken cancelToken)
         {
             try
             {
-                AuditKey = auditKey;
                 CancelToken = cancelToken;
                 TargetConnection = targetConnection;
 
@@ -103,10 +101,9 @@ namespace dexih.transforms
                 else
                     ProfileConnection = profileConnection;
 
-
-                //WriterResult = new TransformWriterResult();
-
-                WriterResult.RunStatus = TransformWriterResult.ERunStatus.Started;
+                var updateResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Started);
+                if (!updateResult.Success)
+                    return updateResult;
 
                 TargetTable = targetTable;
                 RejectTable = rejectTable;
@@ -114,13 +111,11 @@ namespace dexih.transforms
 
                 InTransform = inTransform;
 
-                var returnValue = await WriteStart(InTransform);
+                var returnValue = await WriteStart(InTransform, WriterResult);
 
                 if (returnValue.Success == false)
                 {
-                    WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
-                    WriterResult.Message = returnValue.Message;
-
+                    await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue.Message);
                     return returnValue;
                 }
 
@@ -131,7 +126,9 @@ namespace dexih.transforms
                 {
                     if (firstRead)
                     {
-                        WriterResult.RunStatus = TransformWriterResult.ERunStatus.Running;
+                        var runStatusResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Running);
+                        if (!runStatusResult.Success)
+                            return runStatusResult;
                         firstRead = false;
                     }
 
@@ -140,25 +137,23 @@ namespace dexih.transforms
 
                     writeTask = WriteRecord(WriterResult, inTransform);
 
-                    if (returnValue.Success == false)
+                    if (!returnValue.Success)
                     {
-                        WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
-                        WriterResult.Message = returnValue.Message;
-                        return new ReturnValue(false);
+                        await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue.Message);
+                        return returnValue;
                     }
 
                     if (cancelToken.IsCancellationRequested)
                     {
-                        WriterResult.RunStatus = TransformWriterResult.ERunStatus.Cancelled;
-                        return new ReturnValue(false);
+                        var runStatusResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Cancelled);
+                        return runStatusResult;
                     }
                 }
 
                 returnValue = await WriteFinish(WriterResult, inTransform);
                 if (returnValue.Success == false)
                 {
-                    WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
-                    WriterResult.Message = returnValue.Message;
+                    await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue.Message);
                     return new ReturnValue(false, returnValue.Message, null);
                 }
 
@@ -167,18 +162,15 @@ namespace dexih.transforms
                     var profileResult = await ProfileConnection.ExecuteInsertBulk(ProfileTable, inTransform.GetProfileResults(), cancelToken);
                     if (!profileResult.Success)
                     {
-                        WriterResult.RunStatus = TransformWriterResult.ERunStatus.Abended;
-                        WriterResult.Message = "Failed to save profile results with error: " + profileResult.Message;
-
+                        await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, "Failed to save profile results with error: " + profileResult.Message);
                         return profileResult;
                     }
                 }
 
                 WriteDataTimer.Stop();
 
-                WriterResult.RunStatus = TransformWriterResult.ERunStatus.Finished;
-
-                return new ReturnValue(true);
+                var setRunStatusResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished);
+                return setRunStatusResult;
             }
             catch(Exception ex)
             {
@@ -186,13 +178,13 @@ namespace dexih.transforms
             }
         }
 
-        public async Task<ReturnValue> WriteStart(Transform inTransform)
+        public async Task<ReturnValue> WriteStart(Transform inTransform, TransformWriterResult writerResult)
         {
 
             if (WriteOpen == true)
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
-            var returnValue = await InTransform.Open(AuditKey, null); 
+            var returnValue = await InTransform.Open(writerResult.AuditKey, null); 
             if (!returnValue.Success)
                 return returnValue;
 
@@ -218,11 +210,15 @@ namespace dexih.transforms
             {
                 RejectInsertQuery = new InsertQuery(RejectTable.TableName, RejectTable.Columns.Select(c => new QueryColumn(c.ColumnName, c.DataType, "@param" + RejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
                 returnValue = await RejectConnection.CreateTable(RejectTable, false);
+                if (!returnValue.Success)
+                    return returnValue;
             }
 
             if (ProfileTable != null)
             {
                 returnValue = await ProfileConnection.CreateTable(ProfileTable, false);
+                if (!returnValue.Success)
+                    return returnValue;
             }
 
             //if the table doesn't exist, create it.  
@@ -232,7 +228,6 @@ namespace dexih.transforms
 
             WriteDataTimer = new Stopwatch();
             ProcessingDataTimer = Stopwatch.StartNew();
-
             TestDataTimer = new Stopwatch();
 
             //await InTransform.Open();
@@ -242,6 +237,16 @@ namespace dexih.transforms
             for (int i = 0; i < columnCount; i++)
             {
                 _fieldOrdinals[i] = inTransform.GetOrdinal(TargetTable.Columns[i].ColumnName);
+            }
+
+            if(RejectTable != null)
+            {
+                columnCount = RejectTable.Columns.Count;
+                _rejectFieldOrdinals = new int[columnCount];
+                for (int i = 0; i < columnCount; i++)
+                {
+                    _rejectFieldOrdinals[i] = inTransform.GetOrdinal(RejectTable.Columns[i].ColumnName);
+                }
             }
 
             WriteOpen = true;
@@ -268,14 +273,16 @@ namespace dexih.transforms
             }
 
             Table table;
+            int[] ordinals = _fieldOrdinals;
+
             if (operation == 'R')
             {
                 table = RejectTable;
-                if(RejectTable == null)
+                ordinals = _rejectFieldOrdinals;
+                if (RejectTable == null)
                 {
-                    writerResult.Message = "Records have been rejected, however there is no reject table.";
-                    writerResult.RunStatus = TransformWriterResult.ERunStatus.RunningErrors;
-                    return new ReturnValue(false, writerResult.Message, null);
+                    var setStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.RunningErrors, "Records have been rejected, however there is no reject table.");
+                    return setStatusResult;
                 }
             }
             else
@@ -288,7 +295,7 @@ namespace dexih.transforms
             for (int i = 0; i < columnCount; i++)
             {
                 //int ordinal = reader.GetOrdinal(table.Columns[i].ColumnName);
-                int ordinal = _fieldOrdinals[i];
+                int ordinal = ordinals[i];
                 if (ordinal >= 0) 
                     row[i] = reader[ordinal];
             }
@@ -385,25 +392,16 @@ namespace dexih.transforms
 
             //calculate the throughput figures
             long rowsWritten = writerResult.RowsTotal - writerResult.RowsIgnored;
-            if (WriteDataTimer.ElapsedMilliseconds == 0)
-                writerResult.WriteThroughput = 0;
-            else
-                writerResult.WriteThroughput = (Decimal)rowsWritten / ((decimal)WriteDataTimer.ElapsedMilliseconds / 1000);
+            writerResult.WriteTicks = WriteDataTimer.ElapsedTicks;
 
             //get read times for base connections.
-            int recordsRead = 0; long elapsedMilliseconds = 0;
-            reader.ReadThroughput(ref recordsRead, ref elapsedMilliseconds);
-            if (elapsedMilliseconds == 0)
-                writerResult.ReadThroughput = 0;
-            else
-                writerResult.ReadThroughput = (Decimal)recordsRead / ((decimal)elapsedMilliseconds / 1000);
+            int recordsRead = 0; long elapsedTicks = 0;
+            reader.ReadThroughput(ref recordsRead, ref elapsedTicks);
+            writerResult.ReadTicks = elapsedTicks;
 
             //calculate the overall processing througput 
             ProcessingDataTimer.Stop();
-            if (ProcessingDataTimer.ElapsedMilliseconds == 0)
-                writerResult.ProcessingThroughput = 0;
-            else
-                writerResult.ProcessingThroughput = (Decimal)writerResult.RowsTotal / ((decimal)ProcessingDataTimer.ElapsedMilliseconds / 1000);
+            writerResult.ProcessingTicks = ProcessingDataTimer.ElapsedTicks;
 
             writerResult.EndTime = DateTime.Now;
             writerResult.MaxIncrementalValue = reader.GetMaxIncrementalValue();
