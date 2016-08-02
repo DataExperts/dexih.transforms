@@ -621,7 +621,7 @@ TransformJoin transformJoin = new TransformJoin(
 
 ###Lookup Transform
 
-The lookup transform is simliar to the join transform in that is performs a `left outer join` type of operation on a primary and secondary dataset.  The differences are:
+The lookup transform is simliar to the join transform in that it performs a `left outer join` type of operation on a primary and secondary dataset.  The differences are:
 
 * The lookup transform can perform direct lookups to the underlying connection.  For example if the underlying connection is a database, the lookup will execute a database lookup repeatedly for each primary row.  If the connection is a web serivce it will call the web service function repeatedly for each primary row.  
 * The lookup transform can utilize a cache on demand process.  This means that after a single lookup is completed, the value can stay in cache for future lookups.  
@@ -630,11 +630,60 @@ The lookup transform is simliar to the join transform in that is performs a `lef
 
 The lookup is best used when calling functions or when the reference table is very large.  For example calling function to retrive stock price at a precice time.
 
-
-
 ###Group Transform
 
-Allows rows to be grouped and analytic and aggregate functions to be applied to the result.  Using the "Pass Through Columns" setting, the group will keep the original number of rows and join in the analytic calculation. 
+The group transform can be used perform an `SQL like` group by process, or to run analytical/aggregate functions against a dataset.
+
+This example shows how to use the group transform to perform a simple `sum` function against the `product` column of the dataset.
+
+```cshparp
+//create primary table
+Table primaryTable = new Table("Sales", 0,
+    new TableColumn("Product", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("Value", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.TrackingField);
+
+//add data, note the productid column is sorted.
+primaryTable.AddRow( 'Product1', 1 );
+primaryTable.AddRow( 'Product1', 2 );
+primaryTable.AddRow( 'Product2', 3 );
+primaryTable.AddRow( 'Product2', 4 );
+
+//create a reader, and indicate data is sorted by the productid
+ReaderMemory primaryReader = new ReaderMemory(primaryTable, new List<Sort>() { new Sort("ProductId") } );
+
+List<Function> Aggregates = new List<Function>() {
+    StandardFunctions.GetFunctionReference("Sum", new[] { "Value" }, "SumValue", null)
+};
+
+TransformGroup transformGroup = new TransformGroup(primaryReader, null, Aggregates, true);
+```
+
+The transform group supports the `PassThroughColumns` setting.  When this is set to true the Group transform will run the aggregatation function, but will leave the original rows and columns intact.
+
+For example the following dataset:
+
+|Product|Value|
+|---|---|
+|Apples|1|
+|Apples|2|
+|Oranges|3|
+|Oranges|4|
+
+If `PassthroughColumns` is set to false, will aggregate to:
+
+|Product|Sum|
+|---|---|
+|Apples|3|
+|Oranges|7|
+
+If is `PassThroughColumns` is set to true, this will keep the base records, and add the aggregates as follows:
+
+|Product|Value|Sum|
+|---|---|---|
+|Apples|1|3|
+|Apples|2|3|
+|Oranges|3|7|
+|Oranges|4|7|
 
 ###Row Transform
 
@@ -643,10 +692,10 @@ Using a row function, translates values into rows.  This can be used to pivot va
 
 ###Profile Transform
 
-Generates statistics a dataset, without impacting the dataset (meaning it can be inserted anywhere statistics are required).  The built in profile functions allow for detection of string patterns, data types, uniqueness et.
+The profile transform generates statistics a dataset, without impacting the primary dataset (meaning it can be inserted anywhere statistics are required).  The built in profile functions allow for detection of string patterns, data types, uniqueness et.
 
 ###Validation Transform 
 
-The validation transform automatically checks the fitness of incoming data, against configurable validation rules, and the data type of the data.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
+The validation transform automatically checks the fitness of incoming data.  The validation transform performans automatic testswill automatically the data types of incoming data, and ens, against configurable validation rules, and the data type of the data.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
 | Delta | Compares the incoming dataset, against another dataset, produces a delta, and generates a set of audit data.  The delta has a number of update strategies that can be configured, including update/delete detection and history preservation.  In a data warehouse this can be used to generate [type 2 slowly changing dimensions](https://en.wikipedia.org/wiki/Slowly_changing_dimension).
 
