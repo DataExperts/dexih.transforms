@@ -91,8 +91,6 @@ namespace dexih.connections.test
 
                     var returnUpdate = await connection.ExecuteUpdate(table, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
                     Assert.True(returnUpdate.Success, "UpdateQuery - Message:" + returnUpdate.Message);
-                    Assert.True(returnUpdate.Value == 1, "UpdateQuery - Message:" + returnUpdate.Message);
-
 
                     //run a select query to validate the updated row.
                     selectQuery = new SelectQuery()
