@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using System.Diagnostics;
 
 namespace dexih.transforms
 {
@@ -55,21 +56,23 @@ namespace dexih.transforms
             });
         }
 
-        public override async Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
                 var deleteTable = Tables[table.TableName];
 
                 int count = 0;
+                var timer = Stopwatch.StartNew();
+
                 foreach (DeleteQuery query in deleteQueries)
                 {
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                        return new ReturnValue<long>(false, "Insert rows cancelled.", null);
 
                     var lookupResult = deleteTable.LookupMultipleRows(query.Filters);
                     if (lookupResult.Success == false)
-                        return new ReturnValue<int>(lookupResult);
+                        return new ReturnValue<long>(lookupResult);
 
                     foreach (object[] row in lookupResult.Value)
                     {
@@ -77,30 +80,31 @@ namespace dexih.transforms
                         deleteTable.Data.Remove(row);
                     }
                 }
-                return new ReturnValue<int>(true, count);
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
             });
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
             Table insertTable = Tables[table.TableName];
 
-            int count = 0;
+            var timer = Stopwatch.StartNew();
             while(await sourceData.ReadAsync(cancelToken))
             {
                 if (cancelToken.IsCancellationRequested)
-                    return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                    return new ReturnValue<long>(false, "Insert rows cancelled.", null);
 
                 object[] row = new object[sourceData.FieldCount];
                 sourceData.GetValues(row);
                 insertTable.Data.Add(row);
-                count++;
             }
-            return new ReturnValue<int>(true, count);
+            timer.Stop();
+            return new ReturnValue<long>(true, timer.ElapsedTicks);
         }
 
 
-        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -119,21 +123,23 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
                 var updateTable = Tables[table.TableName];
 
                 int count = 0;
+                var timer = Stopwatch.StartNew();
+
                 foreach (UpdateQuery query in updateQueries)
                 {
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<int>(false, "Update cancelled", null);
+                        return new ReturnValue<long>(false, "Update cancelled", null);
 
                     var lookupResult = updateTable.LookupMultipleRows(query.Filters);
                     if (lookupResult.Success == false)
-                        return new ReturnValue<int>(lookupResult);
+                        return new ReturnValue<long>(lookupResult);
 
                     foreach (object[] row in lookupResult.Value)
                     {
@@ -145,7 +151,9 @@ namespace dexih.transforms
                         }
                     }
                 }
-                return new ReturnValue<int>(true, count);
+
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
             });
         }
 

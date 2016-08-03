@@ -388,17 +388,17 @@ namespace dexih.connections.webservice
             return await Task.Run(() => new ReturnValue(true));
         }
 
-        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
+        public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
+        public override Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
+        public override Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -419,7 +419,7 @@ namespace dexih.connections.webservice
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
+        public override Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

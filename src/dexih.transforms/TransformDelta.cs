@@ -571,7 +571,7 @@ namespace dexih.transforms
                         newRow[targetOrdinal] = SurrogateKey;
                         break;
                     case TableColumn.EDeltaType.SourceSurrogateKey:
-                        if (colSurrogateKey == null || sourceOrdinal == -1)
+                        if (colSurrogateKey == null && sourceOrdinal == -1)
                             newRow[targetOrdinal] = 0;
                         else if (sourceOrdinal != -1)
                             newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];

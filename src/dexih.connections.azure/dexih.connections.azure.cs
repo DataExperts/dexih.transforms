@@ -68,11 +68,12 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
                 string targetTableName = table.TableName;
+                var timer = Stopwatch.StartNew();
 
                 List<Task> tasks = new List<Task>();
 
@@ -85,13 +86,13 @@ namespace dexih.connections.azure
                 while (await reader.ReadAsync(cancelToken))
                 {
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                        return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
 
                     if (bufferSize > 99)
                     {
                         tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancelToken));
                         if (cancelToken.IsCancellationRequested)
-                            return new ReturnValue<int>(false, "Update rows cancelled.", null);
+                            return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);
 
                         bufferSize = 0;
                         buffer = new List<object[]>();
@@ -123,24 +124,24 @@ namespace dexih.connections.azure
                 }
                 tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancelToken));
                 if (cancelToken.IsCancellationRequested)
-                    return new ReturnValue<int>(false, "Update rows cancelled.", null);
+                    return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);
 
                 bufferSize = 0;
                 buffer = new List<object[]>();
 
                 await Task.WhenAll(tasks);
 
-                return new ReturnValue<int>(true, 0);
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
             }
             catch (StorageException ex)
             {
                 string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
-                return new ReturnValue<int>(false, message, ex);
+                return new ReturnValue<long>(false, message, ex);
             }
             catch (Exception ex)
             {
                 string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message;
-                return new ReturnValue<int>(false, message, ex);
+                return new ReturnValue<long>(false, message, ex);
             }
         }
 
@@ -614,7 +615,7 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             try
             {
@@ -623,6 +624,7 @@ namespace dexih.connections.azure
 
                 int rowsInserted = 0;
                 int rowcount = 0;
+                Stopwatch timer = Stopwatch.StartNew();
 
                 List<Task> batchTasks = new List<Task>();
 
@@ -637,7 +639,7 @@ namespace dexih.connections.azure
                 foreach (var query in queries)
                 {
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                        return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
 
                     Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
                     foreach (var field in query.InsertColumns)
@@ -680,7 +682,7 @@ namespace dexih.connections.azure
                         batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation, null, null, cancelToken));
 
                         if (cancelToken.IsCancellationRequested)
-                            return new ReturnValue<int>(false, "Update rows cancelled.", null);
+                            return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);
 
                         batchOperation = new TableBatchOperation();
                     }
@@ -693,15 +695,15 @@ namespace dexih.connections.azure
 
                 await Task.WhenAll(batchTasks.ToArray());
 
-                return new ReturnValue<int>(true, "", null, 1);
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<int>(false, "The Azure insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+                return new ReturnValue<long>(false, "The Azure insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
             }
         }
 
-        public override async Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
         {
             try
             {
@@ -710,6 +712,7 @@ namespace dexih.connections.azure
 
                 int rowsUpdated = 0;
                 int rowcount = 0;
+                Stopwatch timer = Stopwatch.StartNew();
 
                 List<Task> batchTasks = new List<Task>();
 
@@ -732,7 +735,7 @@ namespace dexih.connections.azure
                     {
                         var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancelToken);
                         if (cancelToken.IsCancellationRequested)
-                            return new ReturnValue<int>(false, "Update rows cancelled.", null);
+                            return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);
 
                         continuationToken = result.ContinuationToken;
 
@@ -778,21 +781,23 @@ namespace dexih.connections.azure
 
                 await Task.WhenAll(batchTasks.ToArray());
 
-                return new ReturnValue<int>(true, rowsUpdated);
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<int>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+                return new ReturnValue<long>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
             }
         }
 
-        public override async Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
         {
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
                 CloudTable cTable = connection.GetTableReference(table.TableName);
 
+                Stopwatch timer = Stopwatch.StartNew();
                 int rowsDeleted = 0;
                 int rowcount = 0;
 
@@ -805,7 +810,7 @@ namespace dexih.connections.azure
                 foreach (var query in queries)
                 {
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<int>(false, "Delete rows cancelled.", null);
+                        return new ReturnValue<long>(false, "Delete rows cancelled.", null, timer.ElapsedTicks);
 
                     //Read the key fields from the table
                     TableQuery tableQuery = new TableQuery();
@@ -842,11 +847,12 @@ namespace dexih.connections.azure
                     await cTable.ExecuteBatchAsync(batchOperation);
                 }
 
-                return new ReturnValue<int>(true, "", null, rowsDeleted);
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<int>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+                return new ReturnValue<long>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
             }
         }
 

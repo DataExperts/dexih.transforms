@@ -24,10 +24,10 @@ namespace dexih.transforms
         private bool WriteOpen = false;
         private int OperationColumnIndex; //the index of the operation in the source data.
 
-        private Task<ReturnValue<int>> CreateRecordsTask; //task is use to allow writes to run asych with other processing.
-        private Task<ReturnValue<int>> UpdateRecordsTask; //task is use to allow writes to run asych with other processing.
-        private Task<ReturnValue<int>> DeleteRecordsTask; //task is use to allow writes to run asych with other processing.
-        private Task<ReturnValue<int>> RejectRecordsTask; //task is use to allow writes to run asych with other processing.
+        private Task<ReturnValue<long>> CreateRecordsTask; //task to allow writes to run async with other processing.
+        private Task<ReturnValue<long>> UpdateRecordsTask; //task to allow writes to run async with other processing.
+        private Task<ReturnValue<long>> DeleteRecordsTask; //task to allow writes to run async with other processing.
+        private Task<ReturnValue<long>> RejectRecordsTask; //task to allow writes to run async with other processing.
 
         private Transform InTransform;
         private Table TargetTable;
@@ -45,9 +45,7 @@ namespace dexih.transforms
         private DeleteQuery TargetDeleteQuery;
         private InsertQuery RejectInsertQuery;
 
-        public Stopwatch WriteDataTimer;
-        public Stopwatch ProcessingDataTimer;
-        public Stopwatch TestDataTimer;
+        public long WriteDataTicks;
 
         private int[] _fieldOrdinals;
         private int[] _rejectFieldOrdinals;
@@ -133,15 +131,16 @@ namespace dexih.transforms
                     }
 
                     if (writeTask != null)
-                        await writeTask;
+                    {
+                        var result = await writeTask;
+                        if(!result.Success)
+                        {
+                            await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue.Message);
+                            return returnValue;
+                        }
+                    }
 
                     writeTask = WriteRecord(WriterResult, inTransform);
-
-                    if (!returnValue.Success)
-                    {
-                        await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue.Message);
-                        return returnValue;
-                    }
 
                     if (cancelToken.IsCancellationRequested)
                     {
@@ -159,15 +158,17 @@ namespace dexih.transforms
 
                 if (ProfileTable != null)
                 {
-                    var profileResult = await ProfileConnection.ExecuteInsertBulk(ProfileTable, inTransform.GetProfileResults(), cancelToken);
-                    if (!profileResult.Success)
+                    var profileResults = inTransform.GetProfileResults();
+                    if (profileResults != null)
                     {
-                        await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, "Failed to save profile results with error: " + profileResult.Message);
-                        return profileResult;
+                        var profileResult = await ProfileConnection.ExecuteInsertBulk(ProfileTable, profileResults, cancelToken);
+                        if (!profileResult.Success)
+                        {
+                            await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, "Failed to save profile results with error: " + profileResult.Message);
+                            return profileResult;
+                        }
                     }
                 }
-
-                WriteDataTimer.Stop();
 
                 var setRunStatusResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished);
                 return setRunStatusResult;
@@ -214,23 +215,15 @@ namespace dexih.transforms
                     return returnValue;
             }
 
+            //create the profile results table if it doesn't exist.
             if (ProfileTable != null)
             {
                 returnValue = await ProfileConnection.CreateTable(ProfileTable, false);
-                if (!returnValue.Success)
-                    return returnValue;
             }
 
             //if the table doesn't exist, create it.  
             returnValue = await TargetConnection.CreateTable(TargetTable, false);
-
             returnValue = await TargetConnection.DataWriterStart(TargetTable);
-
-            WriteDataTimer = new Stopwatch();
-            ProcessingDataTimer = Stopwatch.StartNew();
-            TestDataTimer = new Stopwatch();
-
-            //await InTransform.Open();
 
             int columnCount = TargetTable.Columns.Count;
             _fieldOrdinals = new int[columnCount];
@@ -339,6 +332,7 @@ namespace dexih.transforms
         {
             WriteOpen = false;
 
+            //write out the remaining rows.
             if (CreateRows.Count > 0)
             {
                 var returnValue = await doCreates();
@@ -367,17 +361,46 @@ namespace dexih.transforms
                     return returnValue;
             }
 
-            if (CreateRecordsTask != null && !(await CreateRecordsTask).Success)
-                return CreateRecordsTask.Result;
+            //wait for any write tasks to finish
+            if (CreateRecordsTask != null)
+            {
+                var result = await CreateRecordsTask;
+                WriteDataTicks += result.Value;
+                if (!result.Success)
+                    return result;
+            }
 
-            if (UpdateRecordsTask != null && !(await UpdateRecordsTask).Success)
-                return UpdateRecordsTask.Result;
+            if (CreateRecordsTask != null)
+            {
+                var result = await CreateRecordsTask;
+                WriteDataTicks += result.Value;
+                if (!result.Success)
+                    return result;
+            }
 
-            if (DeleteRecordsTask != null && !(await DeleteRecordsTask).Success)
-                return DeleteRecordsTask.Result;
+            if (UpdateRecordsTask != null)
+            {
+                var result = await UpdateRecordsTask;
+                WriteDataTicks += result.Value;
+                if (!result.Success)
+                    return result;
+            }
 
-            if (RejectRecordsTask != null && !(await RejectRecordsTask).Success)
-                return RejectRecordsTask.Result;
+            if (DeleteRecordsTask != null)
+            {
+                var result = await DeleteRecordsTask;
+                WriteDataTicks += result.Value;
+                if (!result.Success)
+                    return result;
+            }
+
+            if (RejectRecordsTask != null)
+            {
+                var result = await RejectRecordsTask;
+                WriteDataTicks += result.Value;
+                if (!result.Success)
+                    return result;
+            }
 
             //update the statistics.
             writerResult.RowsFiltered = reader.TotalRowsFiltered;
@@ -392,16 +415,10 @@ namespace dexih.transforms
 
             //calculate the throughput figures
             long rowsWritten = writerResult.RowsTotal - writerResult.RowsIgnored;
-            writerResult.WriteTicks = WriteDataTimer.ElapsedTicks;
 
-            //get read times for base connections.
-            int recordsRead = 0; long elapsedTicks = 0;
-            reader.ReadThroughput(ref recordsRead, ref elapsedTicks);
-            writerResult.ReadTicks = elapsedTicks;
-
-            //calculate the overall processing througput 
-            ProcessingDataTimer.Stop();
-            writerResult.ProcessingTicks = ProcessingDataTimer.ElapsedTicks;
+            writerResult.WriteTicks = WriteDataTicks;
+            writerResult.ReadTicks = reader.ReaderTimerTicks();
+            writerResult.ProcessingTicks = reader.ProcessingTimerTicks();
 
             writerResult.EndTime = DateTime.Now;
             writerResult.MaxIncrementalValue = reader.GetMaxIncrementalValue();
@@ -418,6 +435,7 @@ namespace dexih.transforms
             if (CreateRecordsTask != null)
             {
                 var result = await CreateRecordsTask;
+                WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
@@ -425,9 +443,7 @@ namespace dexih.transforms
             Table createTable = new Table(TargetTable.TableName, TargetTable.Columns, CreateRows);
             var createReader = new ReaderMemory(createTable);
 
-            WriteDataTimer.Start();
             CreateRecordsTask = TargetConnection.ExecuteInsertBulk(TargetTable, createReader, CancelToken);  //this has no await to ensure processing continues.
-            WriteDataTimer.Stop();
 
             CreateRows = new TableCache();
             return new ReturnValue(true);
@@ -439,6 +455,7 @@ namespace dexih.transforms
             if (CreateRecordsTask != null)
             {
                 var result = await CreateRecordsTask;
+                WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
@@ -446,6 +463,7 @@ namespace dexih.transforms
             if (UpdateRecordsTask != null)
             {
                 var result = await UpdateRecordsTask;
+                WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
@@ -462,9 +480,7 @@ namespace dexih.transforms
                 updateQueries.Add(updateQuery);
             }
 
-            WriteDataTimer.Start();
             UpdateRecordsTask = TargetConnection.ExecuteUpdate(TargetTable, updateQueries, CancelToken);  //this has no await to ensure processing continues.
-            WriteDataTimer.Stop();
 
             UpdateRows = new TableCache();
 
@@ -477,6 +493,7 @@ namespace dexih.transforms
             if (CreateRecordsTask != null)
             {
                 var result = await CreateRecordsTask;
+                WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
@@ -484,6 +501,7 @@ namespace dexih.transforms
             if (UpdateRecordsTask != null)
             {
                 var result = await UpdateRecordsTask;
+                WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
@@ -491,6 +509,7 @@ namespace dexih.transforms
             if (DeleteRecordsTask != null)
             {
                 var result = await DeleteRecordsTask;
+                WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
@@ -508,9 +527,7 @@ namespace dexih.transforms
                 deleteQueries.Add(deleteQuery);
             }
 
-            WriteDataTimer.Start();
             DeleteRecordsTask = TargetConnection.ExecuteDelete(TargetTable, deleteQueries, CancelToken);  //this has no await to ensure processing continues.
-            WriteDataTimer.Stop();
 
             DeleteRows = new TableCache();
 
@@ -523,6 +540,7 @@ namespace dexih.transforms
             if (RejectRecordsTask != null)
             {
                 var result = await RejectRecordsTask;
+                WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
@@ -531,9 +549,7 @@ namespace dexih.transforms
 
             var createReader = new ReaderMemory(createTable);
 
-            WriteDataTimer.Start();
             RejectRecordsTask = TargetConnection.ExecuteInsertBulk(createTable, createReader, CancelToken);  //this has no await to ensure processing continues.
-            WriteDataTimer.Stop();
 
             return new ReturnValue(true);
         }

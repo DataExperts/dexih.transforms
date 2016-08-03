@@ -10,6 +10,7 @@ using dexih.transforms;
 using System.Threading;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Diagnostics;
 
 namespace dexih.connections.flatfile
 {
@@ -169,14 +170,16 @@ namespace dexih.connections.flatfile
             return returnValue;
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
+                Stopwatch timer = Stopwatch.StartNew();
+
                 while(await reader.ReadAsync(cancelToken))
                 {
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                        return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
 
                     string[] s = new string[reader.FieldCount];
                     for (int j = 0; j < reader.FieldCount; j++)
@@ -189,11 +192,11 @@ namespace dexih.connections.flatfile
                     }
                     await _fileWriter.WriteLineAsync(string.Join(",", s));
                 }
-                return new ReturnValue<int>(true, "", null);
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<int>(false, "The file could not be written to due to the following error: " + ex.Message, ex);
+                return new ReturnValue<long>(false, "The file could not be written to due to the following error: " + ex.Message, ex);
             }
         }
 
@@ -305,21 +308,22 @@ namespace dexih.connections.flatfile
             return new ReturnValue(true);
         }
 
-        public override Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
+        public override Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             try
             {
                 int rows = 0;
+                Stopwatch timer = Stopwatch.StartNew();
 
                 //open a new filestream 
                 using (var stream = new MemoryStream())
@@ -327,7 +331,7 @@ namespace dexih.connections.flatfile
                     StreamWriter writer = new StreamWriter(stream);
 
                     if (!(queries?.Count >= 0))
-                        return new ReturnValue<int>(true, 0);
+                        return new ReturnValue<long>(true, 0);
 
                     //write a header row.
                     string[] s = new string[table.Columns.Count];
@@ -364,18 +368,19 @@ namespace dexih.connections.flatfile
 
                     ReturnValue returnValue = await SaveFileStream(table, fileName, stream);
                     if (!returnValue.Success)
-                        return new ReturnValue<int>(returnValue);
+                        return new ReturnValue<long>(returnValue.Success, returnValue.Message, returnValue.Exception, timer.ElapsedTicks);
 
                     LastWrittenFile = FileName;
 
                     stream.Dispose();
                 }
 
-                return new ReturnValue<int>(true, rows); //sometimes reader returns -1, when we want this to be error condition.
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks); //sometimes reader returns -1, when we want this to be error condition.
             }
             catch(Exception ex)
             {
-                return new ReturnValue<int>(false, "The following error was encountered running the ExecuteInsert: " + ex.Message, ex);
+                return new ReturnValue<long>(false, "The following error was encountered running the ExecuteInsert: " + ex.Message, ex);
             }
         }
 

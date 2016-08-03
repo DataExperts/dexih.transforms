@@ -308,6 +308,27 @@ namespace dexih.transforms
         }
 
         /// <summary>
+        /// Gets the secured version of the table, with columns tagged as secured set to appropriate string type
+        /// </summary>
+        /// <returns></returns>
+        public Table GetSecureTable()
+        {
+            var table = Copy();
+
+            foreach(var column in table.Columns)
+            {
+                column.SecurityFlag = this.Columns[column.ColumnName].SecurityFlag;
+                if(column.SecurityFlag != TableColumn.ESecurityFlag.None)
+                {
+                    column.DataType = DataType.ETypeCode.String;
+                    column.MaxLength = 250;
+                }
+            }
+
+            return table;
+        }
+
+        /// <summary>
         /// Creates a copy of the table, excluding cached data, and sort columns
         /// </summary>
         /// <returns></returns>

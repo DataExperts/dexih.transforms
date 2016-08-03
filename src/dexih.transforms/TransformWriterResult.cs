@@ -27,7 +27,8 @@ namespace dexih.transforms
             ReferenceKey = referenceKey;
             ReferenceName = referenceName;
             AuditConnection = auditConnection;
-            LastSuccessfulResult = lastSuccessfulResult;
+            LastRowTotal = lastSuccessfulResult == null ? 0 : lastSuccessfulResult.RowsTotal;
+            LastMaxIncrementalValue = lastSuccessfulResult == null ? null : lastSuccessfulResult.MaxIncrementalValue;
 
             InitializeTime = DateTime.Now;
             LastUpdateTime = InitializeTime;
@@ -56,8 +57,8 @@ namespace dexih.transforms
         public string ReferenceName { get; set; }
         public Int64 SubscriptionKey { get; set; }
 
-        [JsonIgnore]
-        public TransformWriterResult LastSuccessfulResult { get; set; }
+        public long LastRowTotal { get; set; }
+        public object LastMaxIncrementalValue { get; set; }
 
         public Int32 RowsPerProgressEvent { get; set; } = 1000;
 
@@ -154,6 +155,10 @@ namespace dexih.transforms
                     return updateResult;
                 }
             }
+
+            if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors)
+                EndTime = DateTime.Now;
+
             OnStatusUpdate?.Invoke(this);
 
             return new ReturnValue(true);
@@ -206,8 +211,8 @@ namespace dexih.transforms
             {
                 if (RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.Abended) return 100;
                 if (RunStatus == ERunStatus.Initialised) return 0;
-                if (LastSuccessfulResult == null || LastSuccessfulResult.RowsTotal == 0) return 50;
-                int value = Convert.ToInt32(100 * ((double)RowsTotal / LastSuccessfulResult.RowsTotal));
+                if (LastRowTotal == 0) return 50;
+                int value = Convert.ToInt32(100 * ((double)RowsTotal / LastRowTotal));
                 if (value > 100) return 100; else return value;
             }
         }

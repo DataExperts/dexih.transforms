@@ -130,7 +130,20 @@ namespace dexih.transforms
             if (query == null)
                 query = new SelectQuery();
 
-            query.Sorts = RequiredSortFields();
+            var requiredSorts = RequiredSortFields();
+
+            if(query.Sorts != null && query.Sorts.Count > 0)
+            {
+                for(int i =0; i<requiredSorts.Count; i++)
+                {
+                    if (query.Sorts[i].Column == requiredSorts[i].Column)
+                        requiredSorts[i].Direction = query.Sorts[i].Direction;
+                    else
+                        break;
+                }
+            }
+
+            query.Sorts = requiredSorts;
 
             var returnValue = await PrimaryTransform.Open(auditKey, query);
             return returnValue;

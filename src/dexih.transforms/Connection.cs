@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Data.Common;
 using static dexih.functions.DataType;
+using static dexih.transforms.Transform;
 
 namespace dexih.transforms
 {
@@ -77,10 +78,18 @@ namespace dexih.transforms
         //Functions required for managed connection
         public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable = false);
         //public abstract Task<ReturnValue> TestConnection();
-        public abstract Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken);
+        public abstract Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
+        public abstract Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
+        public abstract Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
+
+        /// <summary>
+        /// Runs a bulk insert operation for the connection.  
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="sourceData"></param>
+        /// <param name="cancelToken"></param>
+        /// <returns>ReturnValue with the value = elapsed timer ticks taken to write the record.</returns>
+        public abstract Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken);
         public abstract Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken);
         public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null);
         public abstract Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken);
@@ -186,7 +195,7 @@ namespace dexih.transforms
             else
             {
                 //get the last successful audit result, and add + 1 for new key.
-                var lastAuditResult = await GetTransformWriterResults(subScriptionKey, null, null, null, false, null, 1, 0, CancellationToken.None);
+                var lastAuditResult = await GetTransformWriterResults(null, null, null, null, false, null, 1, 0, CancellationToken.None);
                 if (!lastAuditResult.Success)
                     return new ReturnValue<TransformWriterResult>(lastAuditResult);
                 var lastAudit = lastAuditResult.Value;
@@ -300,7 +309,7 @@ namespace dexih.transforms
             return updateResult;
         }
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long subscriptionKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool lastResultOnly, DateTime? startTime, int rows, int maxMilliseconds, CancellationToken cancellationToken)
+        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? subscriptionKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool lastResultOnly, DateTime? startTime, int rows, int maxMilliseconds, CancellationToken cancellationToken)
         {
             try
             {
@@ -310,7 +319,7 @@ namespace dexih.transforms
                 Transform reader = GetTransformReader(AuditTable);
 
                 var filters = new List<Filter>();
-                filters.Add(new Filter("SubscriptionKey", Filter.ECompare.IsEqual, subscriptionKey));
+                if(subscriptionKey != null) filters.Add(new Filter("SubscriptionKey", Filter.ECompare.IsEqual, subscriptionKey));
                 if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter("ReferenceKey", Filter.ECompare.IsIn, referenceKeys));
                 if (auditKey != null) filters.Add(new Filter("AuditKey", Filter.ECompare.IsEqual, auditKey));
                 if (runStatus != null) filters.Add(new Filter("RunStatus", Filter.ECompare.IsEqual, runStatus.ToString()));
@@ -319,9 +328,8 @@ namespace dexih.transforms
                 var sorts = new List<Sort>() { new Sort("AuditKey", Sort.EDirection.Descending) };
                 var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
 
-                //if connection cannot sort, then add a sort transform.
-                if(!CanSort)
-                    reader = new TransformSort(reader, sorts);
+                //add a sort transform to ensure sort order.
+                reader = new TransformSort(reader, sorts);
 
                 //if lastResult only, create a group by to get most recent rows.
                 if(lastResultOnly)
@@ -471,6 +479,7 @@ namespace dexih.transforms
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
             reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
+            reader.SetEncryptionMethod(Transform.EEncryptionMethod.BlankSecureFields, "", "<hidden field>");
 
             int count = 0;
             while ((count < query.Rows || query.Rows == -1) &&
@@ -487,6 +496,33 @@ namespace dexih.transforms
             reader.Dispose();
 
             return new ReturnValue<Table>(true, reader.CacheTable);
+        }
+
+
+        /// <summary>
+        /// This compares the physical table with the table structure to ensure that it can be used.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        public async Task<ReturnValue> CompareTable(Table table)
+        {
+            var physicalTableResult = await GetSourceTableInfo(table.TableName, null);
+            if (!physicalTableResult.Success)
+                return physicalTableResult;
+
+            var physicalTable = physicalTableResult.Value;
+
+            foreach(var col in table.Columns)
+            {
+                var compareCol = physicalTable.Columns.SingleOrDefault(c => c.ColumnName == col.ColumnName);
+
+                if (compareCol == null)
+                    return new ReturnValue(false, "The physical table " + table.TableName + " does contain the column " + col.ColumnName + ".  Reimport the table or recreate the table to fix.", null);
+
+            }
+
+            return new ReturnValue(true);
+
         }
 
     }

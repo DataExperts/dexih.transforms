@@ -13,6 +13,7 @@ using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
+using static dexih.transforms.Transform;
 
 namespace dexih.connections.sql
 {
@@ -86,14 +87,14 @@ namespace dexih.connections.sql
             return param;
         }
 
-         public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+         public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<int>(connectionResult);
+                    return new ReturnValue<long>(connectionResult);
                 }
 
                 using (var connection = connectionResult.Value)
@@ -142,7 +143,7 @@ namespace dexih.connections.sql
                                 if (cancelToken.IsCancellationRequested)
                                 {
                                     transaction.Rollback();
-                                    return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                                    return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
                                 }
                             }
                         }
@@ -150,12 +151,12 @@ namespace dexih.connections.sql
                     }
                     timer.Stop();
 
-                    return new ReturnValue<int>(true, 0);
+                    return new ReturnValue<long>(true, timer.ElapsedTicks);
                 }
             }
             catch (Exception ex)
             {
-                return new ReturnValue<int>(false, "The following error occurred in the bulkload processing: " + ex.Message, ex);
+                return new ReturnValue<long>(false, "The following error occurred in the bulkload processing: " + ex.Message, ex);
             }
         }
 
@@ -392,12 +393,12 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<int>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connectionResult = await NewConnection();
             if (connectionResult.Success == false)
             {
-                return new ReturnValue<int>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, -1);
+                return new ReturnValue<long>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, -1);
             }
 
             using (var connection = connectionResult.Value)
@@ -406,6 +407,8 @@ namespace dexih.connections.sql
                 StringBuilder sql = new StringBuilder();
 
                 int rows = 0;
+
+                var timer = Stopwatch.StartNew();
 
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -436,34 +439,37 @@ namespace dexih.connections.sql
 
                                 if (cancelToken.IsCancellationRequested)
                                 {
-                                    return new ReturnValue<int>(false, "Update rows cancelled.", null);
+                                    return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);
                                 }
                             }
                             catch (Exception ex)
                             {
-                                return new ReturnValue<int>(false, "The update query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, -1);
+                                return new ReturnValue<long>(false, "The update query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, timer.ElapsedTicks);
                             }
                         }
                     }
                     transaction.Commit();
                 }
 
-                return new ReturnValue<int>(true, "", null, rows == -1 ? 0 : rows); //sometimes reader returns -1, when we want this to be error condition.
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks); //sometimes reader returns -1, when we want this to be error condition.
             }
         }
 
-        public override async Task<ReturnValue<int>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connectionResult = await NewConnection();
             if (connectionResult.Success == false)
             {
-                return new ReturnValue<int>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, -1);
+                return new ReturnValue<long>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, -1);
             }
 
             using (var connection = connectionResult.Value)
             {
                 StringBuilder sql = new StringBuilder();
                 int rows = 0;
+
+                var timer = Stopwatch.StartNew();
 
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -485,28 +491,29 @@ namespace dexih.connections.sql
 
                                 if (cancelToken.IsCancellationRequested)
                                 {
-                                    return new ReturnValue<int>(false, "Delete rows cancelled.", null);
+                                    return new ReturnValue<long>(false, "Delete rows cancelled.", null, timer.ElapsedTicks);
                                 }
                             }
                             catch (Exception ex)
                             {
-                                return new ReturnValue<int>(false, "The delete query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, -1);
+                                return new ReturnValue<long>(false, "The delete query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, timer.ElapsedTicks);
                             }
                         }
                     }
                     transaction.Commit();
                 }
 
-                return new ReturnValue<int>(true, "", null, rows == -1 ? 0 : rows); //sometimes reader returns -1, when we want this to be error condition.
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks); //sometimes reader returns -1, when we want this to be error condition.
             }
         }
 
-        public override async Task<ReturnValue<int>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connectionResult = await NewConnection();
             if (connectionResult.Success == false)
             {
-                return new ReturnValue<int>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, -1);
+                return new ReturnValue<long>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, -1);
             }
 
             using (var connection = connectionResult.Value)
@@ -515,6 +522,7 @@ namespace dexih.connections.sql
                 StringBuilder values = new StringBuilder();
                 int rows = 0;
 
+                var timer = Stopwatch.StartNew();
                 using (var transaction = connection.BeginTransaction())
                 {
                     foreach (var query in queries)
@@ -551,19 +559,20 @@ namespace dexih.connections.sql
 
                                 if (cancelToken.IsCancellationRequested)
                                 {
-                                    return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                                    return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            return new ReturnValue<int>(false, "The insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, -1);
+                            return new ReturnValue<long>(false, "The insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, timer.ElapsedTicks);
                         }
                     }
                     transaction.Commit();
                 }
 
-                return new ReturnValue<int>(true, "", null, rows == -1 ? 0 : rows); //sometimes reader returns -1, when we want this to be error condition.
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks); //sometimes reader returns -1, when we want this to be error condition.
             }
         }
 

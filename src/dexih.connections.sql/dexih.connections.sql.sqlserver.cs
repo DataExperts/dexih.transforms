@@ -12,6 +12,7 @@ using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
+using System.Diagnostics;
 
 namespace dexih.connections.sql
 {
@@ -27,14 +28,16 @@ namespace dexih.connections.sql
 
         public override string SqlSelectNoLock { get; } = "WITH (NOLOCK)";
 
-        public override async Task<ReturnValue<int>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
+                var timer = Stopwatch.StartNew();
+
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<int>(connectionResult);
+                    return new ReturnValue<long>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, timer.ElapsedTicks);
                 }
 
                 using (SqlConnection sqlConnection = (SqlConnection)connectionResult.Value)
@@ -48,14 +51,15 @@ namespace dexih.connections.sql
                     await bulkCopy.WriteToServerAsync(reader, cancelToken);
 
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<int>(false, "Insert rows cancelled.", null);
+                        return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
                 }
 
-                return new ReturnValue<int>(true, 0);
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<int>(false, "The following error occurred in the bulkload processing: " + ex.Message, ex);
+                return new ReturnValue<long>(false, "The following error occurred in the bulkload processing: " + ex.Message, ex);
             }
         }
 

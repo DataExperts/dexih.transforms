@@ -32,8 +32,8 @@ namespace dexih.transforms
         public enum EEncryptionMethod
         {
             NoEncryption = 0,
-            EncryptSecureFields = 1,
-            DecryptSecureFields = 2
+            EncryptDecryptSecureFields = 1,
+            BlankSecureFields = 2
         }
 
         #endregion
@@ -91,13 +91,13 @@ namespace dexih.transforms
         public Int64 TransformRowsReadReference { get; protected set; }
 
         //statistics for all child transforms.
-        public Int64 TotalRowsSorted { get { return TransformRowsSorted + PrimaryTransform?.TransformRowsSorted ?? 0 + ReferenceTransform?.TransformRowsSorted ?? 0; } }
-        public Int64 TotalRowsPreserved { get { return TransformRowsPreserved + PrimaryTransform?.TransformRowsPreserved ?? 0 + ReferenceTransform?.TransformRowsPreserved ?? 0; } }
-        public Int64 TotalRowsIgnored { get { return TransformRowsIgnored + PrimaryTransform?.TransformRowsIgnored ?? 0 + ReferenceTransform?.TransformRowsIgnored ?? 0; } }
-        public Int64 TotalRowsRejected { get { return TransformRowsRejected + PrimaryTransform?.TransformRowsRejected ?? 0 + ReferenceTransform?.TransformRowsRejected ?? 0; } }
-        public Int64 TotalRowsFiltered { get { return TransformRowsFiltered + PrimaryTransform?.TransformRowsFiltered ?? 0 + ReferenceTransform?.TransformRowsFiltered ?? 0; } }
-        public Int64 TotalRowsReadPrimary { get { return TransformRowsReadPrimary + PrimaryTransform?.TransformRowsReadPrimary ?? 0; } }
-        public Int64 TotalRowsReadReference { get { return TransformRowsReadReference + ReferenceTransform?.TransformRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0; } }
+        public Int64 TotalRowsSorted { get { return TransformRowsSorted + PrimaryTransform?.TotalRowsSorted ?? 0 + ReferenceTransform?.TotalRowsSorted ?? 0; } }
+        public Int64 TotalRowsPreserved { get { return TransformRowsPreserved + PrimaryTransform?.TotalRowsPreserved ?? 0 + ReferenceTransform?.TotalRowsPreserved ?? 0; } }
+        public Int64 TotalRowsIgnored { get { return TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0; } }
+        public Int64 TotalRowsRejected { get { return TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0; } }
+        public Int64 TotalRowsFiltered { get { return TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0; } }
+        public Int64 TotalRowsReadPrimary { get { return TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0); } }
+        public Int64 TotalRowsReadReference { get { return TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0; } }
 
         private object MaxIncrementalValue = null;
         private int IncrementalColumnIndex = -1;
@@ -205,7 +205,7 @@ namespace dexih.transforms
         }
 
         /// <summary>
-        /// This function will confirm that the ActualSort is equivalent to the RequiredSort.
+        /// This function will confirm that the ActualSort is equivalent to the RequiredSort.  Note: ascending/descending is ignored as this makes no difference for the transforms.
         /// </summary>
         /// <param name="PrimarySort"></param>
         /// <param name="CompareSort"></param>
@@ -297,16 +297,21 @@ namespace dexih.transforms
         /// </summary>
         public EEncryptionMethod EncryptionMethod { get; protected set; }
         private string EncryptionKey { get; set; }
+        private string MaskValue { get; set; }
 
         /// <summary>
         /// Sets the method for the transform to encrypt data.  If encryption method is set to encrypt, then all columns with the SecurityFlag set will be encrypted or hashed as specified.  If encryption method is set to decrypt when columns with the security flag set to encrypt will be decrypted (note: hashed columns are one-way and cannot be decrypted.).
         /// </summary>
         /// <param name="encryptionMethod"></param>
         /// <param name="key"></param>
-        public void SetEncryptionMethod(EEncryptionMethod encryptionMethod, string key)
+        public void SetEncryptionMethod(EEncryptionMethod encryptionMethod, string key, string maskValue = "")
         {
             EncryptionMethod = encryptionMethod;
             EncryptionKey = key;
+            MaskValue = maskValue;
+
+            PrimaryTransform?.SetEncryptionMethod(encryptionMethod, key, maskValue);
+            ReferenceTransform?.SetEncryptionMethod(encryptionMethod, key, maskValue);
         }
 
         public void SetColumnSecurityFlag(string columnName, ESecurityFlag securityFlag)
@@ -326,29 +331,38 @@ namespace dexih.transforms
         {
             switch (EncryptionMethod)
             {
-                case EEncryptionMethod.EncryptSecureFields:
+                case EEncryptionMethod.EncryptDecryptSecureFields:
                     int columnCount = CacheTable.Columns.Count;
                     for (int i = 0; i < columnCount; i++)
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
                             case TableColumn.ESecurityFlag.Encrypt:
-                                row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey);
+                                var encryptResult = EncryptString.Encrypt(row[i].ToString(), EncryptionKey);
+                                if (encryptResult.Success)
+                                    row[i] = encryptResult.Value;
                                 break;
                             case TableColumn.ESecurityFlag.OneWayHash:
                                 row[i] = HashString.CreateHash(row[i].ToString());
                                 break;
+                            case ESecurityFlag.Decrypt:
+                                var decryptResult = EncryptString.Decrypt(row[i].ToString(), EncryptionKey);
+                                if (decryptResult.Success)
+                                    row[i] = decryptResult.Value;
+                                break;
+
                         }
                     }
                     break;
-                case EEncryptionMethod.DecryptSecureFields:
-                    int columnCount2 = CacheTable.Columns.Count;
-                    for (int i = 0; i < columnCount2; i++)
+                case EEncryptionMethod.BlankSecureFields:
+                    columnCount = CacheTable.Columns.Count;
+                    for (int i = 0; i < columnCount; i++)
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
                             case TableColumn.ESecurityFlag.Encrypt:
-                                row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey);
+                            case TableColumn.ESecurityFlag.OneWayHash:
+                                row[i] = MaskValue;
                                 break;
                         }
                     }
@@ -364,26 +378,33 @@ namespace dexih.transforms
         //diagnostics to record the processing time for the transformation.
         public Stopwatch TransformTimer { get; set; }
 
-        /// <summary>
-        /// This is a recursive function that goes through each of the transforms and returns timer values when it gets to a connection.
-        /// </summary>
-        /// <param name="recordsRead"></param>
-        /// <param name="elapsedMilliseconds"></param>
-        /// <returns></returns>
-        public virtual void ReadThroughput(ref int recordsRead, ref long elapsedTicks)
-        {
-            PrimaryTransform?.ReadThroughput(ref recordsRead, ref elapsedTicks);
+        ///// <summary>
+        ///// This is a recursive function that goes through each of the transforms and returns timer values when it gets to a connection.
+        ///// </summary>
+        ///// <param name="recordsRead"></param>
+        ///// <param name="elapsedMilliseconds"></param>
+        ///// <returns></returns>
+        //public virtual void ReadThroughput(ref long recordsRead, ref long elapsedTicks)
+        //{
+        //    if (PrimaryTransform == null)
+        //    {
+        //        elapsedTicks += TimerTicks();
+        //        recordsRead += TransformRowsReadPrimary;
+        //    }
+        //    else
+        //        PrimaryTransform?.ReadThroughput(ref recordsRead, ref elapsedTicks);
 
-            ReferenceTransform?.ReadThroughput(ref recordsRead, ref elapsedTicks);
-        }
+        //    if(ReferenceTransform != null)
+        //        ReferenceTransform?.ReadThroughput(ref recordsRead, ref elapsedTicks);
+        //}
 
         /// <summary>
-        /// The number of timer ticks during the read function for this transform (underlying transform performance is substracted from this one.).
+        /// The number of timer ticks specifically for this transform.
         /// </summary>
         /// <returns></returns>
         public long TransformTimerTicks()
         {
-            long ticks = TransformTimer.ElapsedTicks;
+            long ticks = TimerTicks();
 
             if (PrimaryTransform != null)
                 ticks = ticks - PrimaryTransform.TimerTicks();
@@ -393,10 +414,36 @@ namespace dexih.transforms
             return ticks;
         }
 
-        public long TimerTicks()
+        /// <summary>
+        /// The aggregates the number of timer ticks for any underlying base readers.  This provides a view of how long database/read operations are taking.
+        /// </summary>
+        /// <returns></returns>
+        public long ReaderTimerTicks()
         {
-            return TransformTimer.ElapsedTicks;
+            if (IsReader)
+                return TransformTimer.ElapsedTicks;
+            else
+            {
+                var ticks = PrimaryTransform?.ReaderTimerTicks()??0 + ReferenceTransform?.ReaderTimerTicks()??0;
+                return ticks;
+            }
         }
+
+        /// <summary>
+        /// The aggregates the number of timer ticks for this and underlying transforms, excluding the time taken for base readers. 
+        /// </summary>
+        /// <returns></returns>
+        public long ProcessingTimerTicks()
+        {
+            return TransformTimer.ElapsedTicks - ReaderTimerTicks();
+        }
+
+        /// <summary>
+        /// The total timer ticks for this transform.  This includes any underlying processing.
+        /// </summary>
+        /// <returns></returns>
+        public long TimerTicks() => TransformTimer.ElapsedTicks;
+
 
         public string PerformanceSummary()
         {
@@ -646,12 +693,20 @@ namespace dexih.transforms
                     MaxIncrementalValue = CurrentRow[IncrementalColumnIndex];
             }
 
+            if (IsReader && !IsPrimaryTransform)
+                TransformRowsReadReference++;
+
             if (returnValue.Success == false)
             {
                 if (returnValue.Message != "")
                     throw new Exception("The following error was enountered read rows: " + returnValue.Message);
 
                 IsReaderFinished = true;
+            }
+            else
+            {
+                //if this is a primary (i.e. starting reader), increment the rows read.
+                if (IsReader) TransformRowsReadPrimary++;
             }
 
             //add the row to the cache

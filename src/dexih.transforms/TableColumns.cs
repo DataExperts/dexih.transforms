@@ -78,8 +78,11 @@ namespace dexih.transforms
 
         public void Add(TableColumn item)
         {
-            _TableColumns.Add(item);
-            _ColumnOrdinals.Add(item.ColumnName, _TableColumns.Count - 1);
+            if (!_ColumnOrdinals.ContainsKey(item.ColumnName))
+            {
+                _TableColumns.Add(item);
+                _ColumnOrdinals.Add(item.ColumnName, _TableColumns.Count - 1);
+            }
         }
 
         public void Clear()

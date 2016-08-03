@@ -65,6 +65,7 @@ namespace dexih.transforms
         {
             None,
             Encrypt,
+            Decrypt,
             OneWayHash
         }
 
@@ -74,9 +75,40 @@ namespace dexih.transforms
 
         public string Description { get; set; }
 
-        public ETypeCode DataType { get; set; }
+        public ETypeCode DataType
+        {
+            get
+            {
+                if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.Decrypt)
+                    return BaseDataType;
+                else
+                    return ETypeCode.String;
+            }
+            set
+            {
+                BaseDataType = value;
+            }
+        }
 
-        public int? MaxLength { get; set; }
+        public int? MaxLength
+        {
+            get
+            {
+                if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.Decrypt)
+                    return BaseMaxLength;
+                else
+                    return 250;
+            }
+            set
+            {
+                BaseMaxLength = value;
+            }
+        }
+
+        //this is the underlying datatype of a non encrypted data type.  
+        public ETypeCode BaseDataType { get; set; }
+        //this is the max length of the non-encrypted data type.
+        public int? BaseMaxLength { get; set; }
 
         public int? Precision { get; set; }
 
@@ -96,7 +128,6 @@ namespace dexih.transforms
 
         public bool IsIncrementalUpdate { get; set; }
         public Dictionary<string, object> ExtendedProperties { get; set; }
-
 
         public Type ColumnGetType
         {
@@ -168,7 +199,7 @@ namespace dexih.transforms
         /// <returns></returns>
         public TableColumn Copy()
         {
-            return new TableColumn()
+            var newColumn = new TableColumn()
             {
                 ColumnName = ColumnName,
                 LogicalName = LogicalName,
@@ -185,6 +216,8 @@ namespace dexih.transforms
                 IsMandatory = IsMandatory,
                 IsIncrementalUpdate = IsIncrementalUpdate
             };
+
+            return newColumn;
         }
     }
 }

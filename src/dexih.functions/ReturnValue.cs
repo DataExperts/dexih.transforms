@@ -28,6 +28,14 @@ namespace dexih.functions
             Exception = returnValue.Exception;
         }
 
+        public void Add(string Name, string Message)
+        {
+            if (Errors == null)
+                Errors = new List<KeyValuePair<string, string>>();
+
+            Errors.Add(new KeyValuePair<string, string>(Name, Message));
+        }
+
         public List<KeyValuePair<string, string>> Errors { get; set; }
         public T Value { get; set; }
 
