@@ -143,6 +143,10 @@ namespace dexih.transforms
                 auditTable.Columns.Add(new TableColumn("AuditType", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
                 auditTable.Columns.Add(new TableColumn("ReferenceKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("ReferenceName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
+                auditTable.Columns.Add(new TableColumn("SourceTableKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
+                auditTable.Columns.Add(new TableColumn("SourceTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
+                auditTable.Columns.Add(new TableColumn("TargetTableKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
+                auditTable.Columns.Add(new TableColumn("TargetTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
                 auditTable.Columns.Add(new TableColumn("RowsTotal", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("RowsCreated", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("RowsUpdated", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
@@ -170,7 +174,7 @@ namespace dexih.transforms
             }
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, string referenceName)
+        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName)
         {
             var auditTable = AuditTable;
 
@@ -217,7 +221,7 @@ namespace dexih.transforms
                 }
             }
 
-            var writerResult = new TransformWriterResult(subScriptionKey, auditKey, auditType, referenceKey, referenceName, this, lastResult);
+            var writerResult = new TransformWriterResult(subScriptionKey, auditKey, auditType, referenceKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, lastResult);
 
             var queryColumns = new List<QueryColumn>
                 {
@@ -226,6 +230,10 @@ namespace dexih.transforms
                     new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
                     new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
                     new QueryColumn("ReferenceName", ETypeCode.String, writerResult.ReferenceName),
+                    new QueryColumn("SourceTableKey", ETypeCode.Int64, writerResult.SourceTableKey),
+                    new QueryColumn("SourceTableName", ETypeCode.String, writerResult.SourceTableName),
+                    new QueryColumn("TargetTableKey", ETypeCode.Int64, writerResult.TargetTableKey),
+                    new QueryColumn("TargetTableName", ETypeCode.String, writerResult.TargetTableName),
                     new QueryColumn("RowsTotal", ETypeCode.Int64, writerResult.RowsTotal),
                     new QueryColumn("RowsCreated", ETypeCode.Int64, writerResult.RowsCreated),
                     new QueryColumn("RowsUpdated", ETypeCode.Int64, writerResult.RowsUpdated),
@@ -276,6 +284,10 @@ namespace dexih.transforms
                     new QueryColumn("SubscriptionKey", ETypeCode.Int64,  writerResult.SubscriptionKey),
                     new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
                     new QueryColumn("ReferenceName", ETypeCode.String, writerResult.ReferenceName),
+                    new QueryColumn("SourceTableKey", ETypeCode.Int64, writerResult.SourceTableKey),
+                    new QueryColumn("SourceTableName", ETypeCode.String, writerResult.SourceTableName),
+                    new QueryColumn("TargetTableKey", ETypeCode.Int64, writerResult.TargetTableKey),
+                    new QueryColumn("TargetTableName", ETypeCode.String, writerResult.TargetTableName),
                     new QueryColumn("RowsTotal", ETypeCode.Int64, writerResult.RowsTotal),
                     new QueryColumn("RowsCreated", ETypeCode.Int64, writerResult.RowsCreated),
                     new QueryColumn("RowsUpdated", ETypeCode.Int64, writerResult.RowsUpdated),
@@ -356,7 +368,17 @@ namespace dexih.transforms
                     await reader.ReadAsync(cancellationToken)
                     )
                 {
-                    TransformWriterResult result = new TransformWriterResult((long)TryParse(ETypeCode.Int64, reader["SubscriptionKey"]).Value, (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value, (string)reader["AuditType"], (long)(long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value, (string)reader["ReferenceName"], null, null)
+                    TransformWriterResult result = new TransformWriterResult(
+                        (long)TryParse(ETypeCode.Int64, reader["SubscriptionKey"]).Value, 
+                        (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value, 
+                        (string)reader["AuditType"], 
+                        (long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value, 
+                        (string)reader["ReferenceName"],
+                        (long)TryParse(ETypeCode.Int64, reader["SourceTableKey"]).Value,
+                        (string)reader["SourceTableName"], 
+                        (long)TryParse(ETypeCode.Int64, reader["TargetTableKey"]).Value,
+                        (string)reader["TargetTableName"], null, null
+                        )
                     {
                         RowsTotal = (long)TryParse(ETypeCode.Int64, reader["RowsTotal"]).Value,
                         RowsCreated = (long)TryParse(ETypeCode.Int64, reader["RowsCreated"]).Value,

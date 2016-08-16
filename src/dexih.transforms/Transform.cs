@@ -337,20 +337,29 @@ namespace dexih.transforms
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
-                            case TableColumn.ESecurityFlag.Encrypt:
-                                var encryptResult = EncryptString.Encrypt(row[i].ToString(), EncryptionKey);
+                            case TableColumn.ESecurityFlag.StrongEncrypt:
+                                var encryptResult = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 1000);
                                 if (encryptResult.Success)
                                     row[i] = encryptResult.Value;
                                 break;
                             case TableColumn.ESecurityFlag.OneWayHash:
                                 row[i] = HashString.CreateHash(row[i].ToString());
                                 break;
-                            case ESecurityFlag.Decrypt:
-                                var decryptResult = EncryptString.Decrypt(row[i].ToString(), EncryptionKey);
+                            case ESecurityFlag.StrongDecrypt:
+                                var decryptResult = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 1000);
                                 if (decryptResult.Success)
                                     row[i] = decryptResult.Value;
                                 break;
-
+                            case TableColumn.ESecurityFlag.FastEncrypt:
+                                encryptResult = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 5);
+                                if (encryptResult.Success)
+                                    row[i] = encryptResult.Value;
+                                break;
+                            case ESecurityFlag.FastDecrypt:
+                                decryptResult = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 5);
+                                if (decryptResult.Success)
+                                    row[i] = decryptResult.Value;
+                                break;
                         }
                     }
                     break;
@@ -360,15 +369,16 @@ namespace dexih.transforms
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
-                            case TableColumn.ESecurityFlag.Encrypt:
+                            case TableColumn.ESecurityFlag.FastEncrypt:
+                            case TableColumn.ESecurityFlag.StrongEncrypt:
                             case TableColumn.ESecurityFlag.OneWayHash:
+                            case TableColumn.ESecurityFlag.NoPreview:
                                 row[i] = MaskValue;
                                 break;
                         }
                     }
                     break;
             }
-
         }
 
 

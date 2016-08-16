@@ -19,13 +19,17 @@ namespace dexih.transforms
         public event StatusUpdate OnStatusUpdate;
         #endregion
 
-        public TransformWriterResult(Int64 subscriptionKey, Int64 auditKey, string auditType, Int64 referenceKey, string referenceName, Connection auditConnection, TransformWriterResult lastSuccessfulResult)
+        public TransformWriterResult(Int64 subscriptionKey, Int64 auditKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, Connection auditConnection, TransformWriterResult lastSuccessfulResult)
         {
             SubscriptionKey = subscriptionKey;
             AuditKey = auditKey;
             AuditType = auditType;
             ReferenceKey = referenceKey;
             ReferenceName = referenceName;
+            SourceTableKey = sourceTableKey;
+            SourceTableName = sourceTableName;
+            TargetTableKey = targetTableKey;
+            TargetTableName = targetTableName;
             AuditConnection = auditConnection;
             LastRowTotal = lastSuccessfulResult == null ? 0 : lastSuccessfulResult.RowsTotal;
             LastMaxIncrementalValue = lastSuccessfulResult == null ? null : lastSuccessfulResult.MaxIncrementalValue;
@@ -55,6 +59,11 @@ namespace dexih.transforms
         public string AuditType { get; set; }
         public Int64 ReferenceKey { get; set; }
         public string ReferenceName { get; set; }
+        public Int64 SourceTableKey { get; set; }
+        public string SourceTableName { get; set; }
+        public Int64 TargetTableKey { get; set; }
+        public string TargetTableName { get; set; }
+
         public Int64 SubscriptionKey { get; set; }
 
         public long LastRowTotal { get; set; }

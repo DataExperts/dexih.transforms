@@ -178,6 +178,37 @@ namespace dexih.functions.tests
             }
         }
 
+        [Theory]
+        [InlineData("FirstWhen", 1, "1")]
+        [InlineData("LastWhen", 1, "9")]
+        public void AggregateWhenFunctionTest(string functionName, object test, object expectedResult)
+        {
+            var function = StandardFunctions.GetFunctionReference(functionName);
+
+            for (int a = 0; a < 2; a++) // run all tests twice to ensure reset functions are working
+            {
+                for (int i = 1; i <= 10; i++)
+                {
+                    int value = i % 2;
+
+                    var functionResult = function.RunFunction(new object[] { test, value, i });
+                    Assert.True(functionResult.Success);
+                }
+
+                var aggregateResult = function.ReturnValue();
+                Assert.True(aggregateResult.Success);
+
+                if (aggregateResult.Value.GetType() == typeof(double))
+                {
+                    Assert.Equal(expectedResult, Math.Round((double)aggregateResult.Value, 4));
+                }
+                else
+                    Assert.Equal(expectedResult, aggregateResult.Value);
+
+                function.Reset();
+            }
+        }
+
         [Fact]
         public void MinMaxDateTest()
         {

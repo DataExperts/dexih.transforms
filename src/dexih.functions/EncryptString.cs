@@ -16,7 +16,7 @@ namespace dexih.functions
         private const int Keysize = 128;
 
         // This constant determines the number of iterations for the password bytes generation function.
-        private const int DerivationIterations = 1000;
+        //private const int DerivationIterations = 1000;
 
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace dexih.functions
         /// <param name="plainText">String to encrypt</param>
         /// <param name="passPhrase">Encryption Key</param>
         /// <returns></returns>
-        public static ReturnValue<string> Encrypt(string plainText, string passPhrase)
+        public static ReturnValue<string> Encrypt(string plainText, string passPhrase, int DerivationIterations)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace dexih.functions
         /// <param name="cipherText">The encrypted value to decrypt.</param>
         /// <param name="passPhrase">The encryption key used to initially encrypt the string.</param>
         /// <returns></returns>
-        public static ReturnValue<string> Decrypt(string cipherText, string passPhrase)
+        public static ReturnValue<string> Decrypt(string cipherText, string passPhrase, int DerivationIterations)
         {
             try
             {
@@ -129,7 +129,7 @@ namespace dexih.functions
         private static byte[] Generate256BitsOfRandomEntropy()
         {
             var randomBytes = new byte[Keysize/8]; // 32 Bytes will give us 256 bits.
-            using (var rngCsp = RandomNumberGenerator.Create()) // new RNGCryptoServiceProvider())
+            using (var rngCsp = RandomNumberGenerator.Create()) // // not supported in .net core new RNGCryptoServiceProvider())
             {
                 // Fill the array with cryptographically secure random bytes.
                 rngCsp.GetBytes(randomBytes);

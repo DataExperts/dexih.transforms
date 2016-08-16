@@ -64,9 +64,12 @@ namespace dexih.transforms
         public enum ESecurityFlag
         {
             None,
-            Encrypt,
-            Decrypt,
-            OneWayHash
+            FastEncrypt,
+            FastDecrypt,
+            StrongEncrypt,
+            StrongDecrypt,
+            OneWayHash,
+            NoPreview
         }
 
         public string ColumnName { get; set; }
@@ -79,7 +82,7 @@ namespace dexih.transforms
         {
             get
             {
-                if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.Decrypt)
+                if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.FastDecrypt || SecurityFlag == ESecurityFlag.StrongDecrypt)
                     return BaseDataType;
                 else
                     return ETypeCode.String;
@@ -94,7 +97,7 @@ namespace dexih.transforms
         {
             get
             {
-                if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.Decrypt)
+                if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.FastDecrypt || SecurityFlag == ESecurityFlag.StrongDecrypt)
                     return BaseMaxLength;
                 else
                     return 250;

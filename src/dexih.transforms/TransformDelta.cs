@@ -115,7 +115,8 @@ namespace dexih.transforms
                 throw new Exception("The delta transform requires the table to have at least ont natrual key field for updates to be possible.");
 
             //set surrogate key to the key field.  This will indicate that the surrogate key should be used when update/deleting records.
-            CacheTable.KeyFields = new List<string>() { colSurrogateKey.ColumnName };
+            if(colSurrogateKey != null)
+                CacheTable.KeyFields = new List<string>() { colSurrogateKey.ColumnName };
 
             //preload the source-target ordinal mapping to improve performance.
             _sourceOrdinals = new List<int>();

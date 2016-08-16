@@ -55,7 +55,7 @@ namespace dexih.connections.webservice
         {
             try
             {
-                if (Properties == null || Properties["RestfulUri"] == null || !(Properties["FileFormat"] is string) )
+                if (Properties == null || Properties["RestfulUri"] == null )
                 {
                     return new ReturnValue<Table>(false, "The properties have not been set to Restful Web Service.  Required properties are (string)RestfulUri.", null);
                 }

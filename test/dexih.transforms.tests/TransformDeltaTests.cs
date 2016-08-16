@@ -85,7 +85,7 @@ namespace dexih.transforms.tests
                 //write result to a memory table
                 ConnectionMemory memoryConnection = new ConnectionMemory();
                 TransformWriter writer = new TransformWriter();
-                TransformWriterResult result = new TransformWriterResult(0, 10, "DataLink", 1, "Test", null, null);
+                TransformWriterResult result = new TransformWriterResult(0, 10, "DataLink", 1, "Test", 1, "Source", 2, "Target", null, null);
                 await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
                 Target = new ReaderMemory(Target.CacheTable, null);
 
@@ -200,7 +200,7 @@ namespace dexih.transforms.tests
                 //write result to a memory table
                 ConnectionMemory memoryConnection = new ConnectionMemory();
                TransformWriter writer = new TransformWriter();
-               TransformWriterResult result = new TransformWriterResult(0, 1, "DataLink", 1, "Test", null, null);
+               TransformWriterResult result = new TransformWriterResult(0, 1, "DataLink", 1, "Test", 1, "Source", 2, "Target", null, null);
                await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
                Target = new ReaderMemory(Target.CacheTable, null);
 
@@ -240,7 +240,7 @@ namespace dexih.transforms.tests
 
                 //run the delta again.  this should ignore all 10 records.
                 transformDelta.SetRowNumber(0);
-               result = new TransformWriterResult(0, 1, "DataLink", 30, "Test", null, null);
+               result = new TransformWriterResult(0, 1, "DataLink", 30, "Test", 1, "Source", 2, "Target", null, null);
                await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection,CancellationToken.None);
                Target = new ReaderMemory(Target.CacheTable, null);
                transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey);

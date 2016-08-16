@@ -210,8 +210,8 @@ namespace dexih.functions
         public String DateToString(DateTime dateValue, String format) { return dateValue.ToString(format); }
         public DateTime DateNow() { return DateTime.Now; }
         public DateTime DateNowUtc() { return DateTime.UtcNow; }
-        public String Encrypt(String value, String key) { return EncryptString.Encrypt(value, key).Value; }
-        public String Decrypt(String value, String key) { return EncryptString.Decrypt(value, key).Value; }
+        public String Encrypt(String value, String key) { return EncryptString.Encrypt(value, key, 1000).Value; }
+        public String Decrypt(String value, String key) { return EncryptString.Decrypt(value, key, 1000).Value; }
         public String CreateSaltedHash(String value) { return HashString.CreateHash(value); }
         public Boolean ValidateSaltedHash(String value, String hash) { return HashString.ValidateHash(value, hash); }
 
@@ -543,6 +543,29 @@ namespace dexih.functions
         {
             return _cacheStringBuilder.ToString();
         }
+
+        public void FirstWhen(String condition, String conditionValue, String resultValue)
+        {
+            if (condition == conditionValue && _cacheString == null)
+                _cacheString = resultValue;
+        }
+
+        public String FirstWhenResult(int index)
+        {
+            return _cacheString;
+        }
+
+        public void LastWhen(String condition, String conditionValue, String resultValue)
+        {
+            if (condition == conditionValue)
+                _cacheString = resultValue;
+        }
+
+        public String LastWhenResult(int index)
+        {
+            return _cacheString;
+        }
+
         #endregion
 
         #region Series Functions

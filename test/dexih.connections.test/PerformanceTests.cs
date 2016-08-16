@@ -243,7 +243,7 @@ namespace dexih.connections.test
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1);
 
             TransformWriter writer = new TransformWriter();
-            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test");
+            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test", 1, "Source", 2, "Target");
             Assert.True(auditResult.Success);
             TransformWriterResult writerResult = auditResult.Value;
             var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, null, null, CancellationToken.None);
