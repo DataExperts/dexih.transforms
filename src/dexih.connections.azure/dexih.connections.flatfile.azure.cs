@@ -84,7 +84,7 @@ namespace dexih.connections.azure
             {
                 if (CloudFileShare == null)
                 {
-                    CloudFileShare = GetCloudFileClient().GetShareReference(DefaultDatabase);
+                    CloudFileShare = GetCloudFileClient().GetShareReference(DefaultDatabase.ToLower());
                     await CloudFileShare.CreateIfNotExistsAsync();
                 }
 

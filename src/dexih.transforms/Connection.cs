@@ -139,7 +139,7 @@ namespace dexih.transforms
                 AddMandatoryColumns(auditTable, 0).Wait();
 
                 auditTable.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, TableColumn.EDeltaType.SurrogateKey));
-                auditTable.Columns.Add(new TableColumn("SubscriptionKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
+                auditTable.Columns.Add(new TableColumn("HubKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("AuditType", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
                 auditTable.Columns.Add(new TableColumn("ReferenceKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("ReferenceName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
@@ -226,7 +226,7 @@ namespace dexih.transforms
             var queryColumns = new List<QueryColumn>
                 {
                     new QueryColumn("AuditKey", ETypeCode.Int64, writerResult.AuditKey),
-                    new QueryColumn("SubscriptionKey", ETypeCode.Int64,  writerResult.SubscriptionKey),
+                    new QueryColumn("HubKey", ETypeCode.Int64,  writerResult.HubKey),
                     new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
                     new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
                     new QueryColumn("ReferenceName", ETypeCode.String, writerResult.ReferenceName),
@@ -281,7 +281,7 @@ namespace dexih.transforms
             var updateColumns = new List<QueryColumn>()
             {
                     new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
-                    new QueryColumn("SubscriptionKey", ETypeCode.Int64,  writerResult.SubscriptionKey),
+                    new QueryColumn("HubKey", ETypeCode.Int64,  writerResult.HubKey),
                     new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
                     new QueryColumn("ReferenceName", ETypeCode.String, writerResult.ReferenceName),
                     new QueryColumn("SourceTableKey", ETypeCode.Int64, writerResult.SourceTableKey),
@@ -321,7 +321,7 @@ namespace dexih.transforms
             return updateResult;
         }
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? subscriptionKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool lastResultOnly, DateTime? startTime, int rows, int maxMilliseconds, CancellationToken cancellationToken)
+        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool lastResultOnly, DateTime? startTime, int rows, int maxMilliseconds, CancellationToken cancellationToken)
         {
             try
             {
@@ -331,7 +331,7 @@ namespace dexih.transforms
                 Transform reader = GetTransformReader(AuditTable);
 
                 var filters = new List<Filter>();
-                if(subscriptionKey != null) filters.Add(new Filter("SubscriptionKey", Filter.ECompare.IsEqual, subscriptionKey));
+                if(hubKey != null) filters.Add(new Filter("HubKey", Filter.ECompare.IsEqual, hubKey));
                 if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter("ReferenceKey", Filter.ECompare.IsIn, referenceKeys));
                 if (auditKey != null) filters.Add(new Filter("AuditKey", Filter.ECompare.IsEqual, auditKey));
                 if (runStatus != null) filters.Add(new Filter("RunStatus", Filter.ECompare.IsEqual, runStatus.ToString()));
@@ -369,7 +369,7 @@ namespace dexih.transforms
                     )
                 {
                     TransformWriterResult result = new TransformWriterResult(
-                        (long)TryParse(ETypeCode.Int64, reader["SubscriptionKey"]).Value, 
+                        (long)TryParse(ETypeCode.Int64, reader["HubKey"]).Value, 
                         (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value, 
                         (string)reader["AuditType"], 
                         (long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value, 

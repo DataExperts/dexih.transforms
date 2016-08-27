@@ -64,9 +64,28 @@ namespace dexih.functions
         public String PadLeft(String value, Int32 width, String paddingChar) { return value.PadLeft(width, paddingChar[0]); }
         public String PadRight(String value, Int32 width, String paddingChar) { return value.PadRight(width, paddingChar[0]); }
         public String Remove(String value, Int32 startIndex, Int32 count) { return value.Remove(startIndex, count); }
-        public String Replace(String value, String oldValue, String newValue) { return value.Replace(oldValue, newValue); }
+
+        public String Replace(String value, String oldValue, String newValue)
+        {
+            if (String.IsNullOrEmpty(value))
+                return null;
+
+            if (String.IsNullOrEmpty(oldValue))
+                return value;
+
+            if (newValue == null)
+                newValue = "";
+
+            return value.Replace(oldValue, newValue);
+        }
+
         public Int32 Split(String value, String separator, Int32 count, out string[] result)
         {
+            if(String.IsNullOrEmpty(value))
+            {
+                result = null;
+                return 0;
+            }
             result = value.Split(separator.ToCharArray(), count);
             return result.Length;
         }
@@ -85,6 +104,9 @@ namespace dexih.functions
         public Int32 Length(String value) { return value.Length; }
         public Int32 WordCount(String value)
         {
+            if (string.IsNullOrEmpty(value))
+                return 0;
+
             int c = 0;
             for (int i = 1; i < value.Length; i++)
                 if (char.IsWhiteSpace(value[i - 1]))
@@ -94,6 +116,9 @@ namespace dexih.functions
         }
         public String WordExtract(String value, Int32 wordNumber)
         {
+            if (string.IsNullOrEmpty(value))
+                return null;
+
             int start = 0; int c = 0; int i;
             for (i = 1; i < value.Length; i++)
                 if (char.IsWhiteSpace(value[i - 1]))
@@ -106,15 +131,55 @@ namespace dexih.functions
         public Boolean LessThanEqual(Double value, Double compare) { return value <= compare; }
         public Boolean GreaterThan(Double value, Double compare) { return value > compare; }
         public Boolean GreaterThanEqual(Double value, Double compare) { return value >= compare; }
-        public Boolean IsEqual(String value, String compare) { return value == compare; }
+        public Boolean IsEqual(String[] values)
+        {
+            for(int i = 1; i< values.Length; i++)
+            {
+                if (values[0] != values[i]) return false;
+            }
+
+            return true;
+        }
+        public Boolean IsNumericEqual(Decimal[] values)
+        {
+            for (int i = 1; i < values.Length; i++)
+            {
+                if (values[0] != values[i]) return false;
+            }
+
+            return true;
+        }
+        public Boolean IsDateTimeEqual(DateTime[] values)
+        {
+            for (int i = 1; i < values.Length; i++)
+            {
+                if (values[0] != values[i]) return false;
+            }
+
+            return true;
+        }
+        public Boolean IsBooleanEqual(Boolean[] values)
+        {
+            for (int i = 1; i < values.Length; i++)
+            {
+                if (values[0] != values[i]) return false;
+            }
+
+            return true;
+        }
+
         public Boolean IsNumber(String value)
         {
             Decimal result;
             return Decimal.TryParse(value, out result);
         }
-        public Boolean IsDate(String value)
+        public Boolean ToDate(String value, out DateTime result)
         {
-            DateTime result;
+            if (string.IsNullOrEmpty(value))
+            {
+                result = DateTime.MinValue;
+                return false;
+            }
             return DateTime.TryParse(value, out result);
         }
         public Boolean IsNull(String value) { return value == null;  }

@@ -100,7 +100,7 @@ namespace dexih.functions
             return Exception != null;
         }
 
-        public bool Success { get; set; }
+        public bool Success {   get; set; }
         public string Message { get; set; }
 
         [JsonIgnore]
@@ -112,7 +112,7 @@ namespace dexih.functions
         public string MessageToken { get; set; }
         public string RemoteToken { get; set; }
         public string Command { get; set; }
-        public long SubscriptionKey { get; set; }
+        public long HubKey { get; set; }
 
         public Message() { }
 

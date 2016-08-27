@@ -133,7 +133,7 @@ namespace dexih.connections.flatfile
                 //open a new filestream and write a headerrow
                 _fileStream = new MemoryStream();
                 _fileWriter = new StreamWriter(_fileStream);
-
+                 
                 string[] s = new string[table.Columns.Count];
                 for (Int32 j = 0; j < table.Columns.Count; j++)
                 {

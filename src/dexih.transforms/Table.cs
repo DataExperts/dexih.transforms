@@ -452,7 +452,6 @@ namespace dexih.transforms
             }
 
             return CsvData.ToString();
-
         }
     }
 }

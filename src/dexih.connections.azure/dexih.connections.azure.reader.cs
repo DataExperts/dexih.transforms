@@ -62,7 +62,7 @@ namespace dexih.connections.azure
             }
             catch (StorageException ex)
             {
-                string message = "Error reading Azure Storage table: " + CacheTable.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
+                string message = "Error reading Azure Storage table: " + CacheTable.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation?.ExtendedErrorInformation?.ErrorMessage + ".";
                 return new ReturnValue(false, message, ex);
             }
 

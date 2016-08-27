@@ -29,7 +29,7 @@ namespace dexih.transforms
             ValueTrimmingOptions = DefaultValueTrimmingOptions;
         }
 
-        private long SubscriptionKey { get; set; }
+        private long HubKey { get; set; }
 
         public const int DefaultBufferSize = 0x1000;
         public const char DefaultDelimiter = ',';

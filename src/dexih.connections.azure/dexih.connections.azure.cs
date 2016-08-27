@@ -262,8 +262,16 @@ namespace dexih.connections.azure
 
         public override async Task<ReturnValue<List<string>>> GetDatabaseList()
         {
-            List<string> list = await Task.Run(() => new List<string> { "Default" });
-            return new ReturnValue<List<string>>(true, list);
+            try
+            {
+                var testConnect = GetCloudTableClient();
+                List<string> list = await Task.Run(() => new List<string> { "Default" });
+                return new ReturnValue<List<string>>(true, list);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<List<string>>(false, "The following error was encountered when getting a list databases: " + ex.Message, ex);
+            }
         }
 
         public override async Task<ReturnValue<List<string>>> GetTableList()

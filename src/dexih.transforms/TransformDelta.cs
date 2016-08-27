@@ -224,7 +224,8 @@ namespace dexih.transforms
                     //create a filter that will be passed (if supported to the database).  Improves performance.
                     List<Filter> filters = new List<Filter>();
                     //first add a where IsCurrentField = true
-                    filters.Add(new Filter(colIsCurrentField.ColumnName, Filter.ECompare.IsEqual, true));
+                    if(colIsCurrentField != null)
+                        filters.Add(new Filter(colIsCurrentField.ColumnName, Filter.ECompare.IsEqual, true));
 
                     //second add a where natrual key is greater than the first record key.  (excluding where delete detection is on).
                     if (_primaryOpen && !doDelete)

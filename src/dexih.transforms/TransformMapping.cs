@@ -173,7 +173,7 @@ namespace dexih.transforms
                         if (parameter.IsColumn)
                             _functionInputOrdinals.Add(PrimaryTransform.GetOrdinal(parameter.ColumnName));
                     }
-                    if (mapping.TargetColumn != "")
+                    if (!string.IsNullOrEmpty(mapping.TargetColumn))
                     {
                         var column = new TableColumn(mapping.TargetColumn, mapping.ReturnType);
                         CacheTable.Columns.Add(column);
@@ -185,7 +185,7 @@ namespace dexih.transforms
                     {
                         foreach (Parameter param in mapping.Outputs)
                         {
-                            if (param.ColumnName != "")
+                            if (!string.IsNullOrEmpty(param.ColumnName))
                             {
                                 var column = new TableColumn(param.ColumnName, param.DataType);
                                 CacheTable.Columns.Add(column);
@@ -288,7 +288,7 @@ namespace dexih.transforms
                     if(invokeresult.Success== false)
                         throw new Exception("Error invoking mapping function: " + invokeresult.Message);
 
-                    if (mapping.TargetColumn != "")
+                    if (!string.IsNullOrEmpty(mapping.TargetColumn))
                     {
                         newRow[i] = invokeresult.Value;
                         i = i + 1;
@@ -298,7 +298,7 @@ namespace dexih.transforms
                     {
                         foreach (Parameter output in mapping.Outputs)
                         {
-                            if (output.ColumnName != "")
+                            if (!string.IsNullOrEmpty(output.ColumnName))
                             {
                                 newRow[i] = output.Value;
                                 i = i + 1;

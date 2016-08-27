@@ -26,31 +26,34 @@ namespace dexih.connections.webservice
         {
             AuditKey = auditKey;
 
-            return await Task.Run(() =>
+            try
             {
-                try
+                if (_isOpen)
                 {
-                    if (_isOpen)
-                    {
-                        return new ReturnValue(false, "The web service connection is already open.", null);
-                    }
-
-                    //if no driving table is set, then use the row creator to simulate a single row.
-                    if (ReferenceTransform == null)
-                    {
-                        ReaderRowCreator rowCreator = new ReaderRowCreator();
-                        rowCreator.InitializeRowCreator(1, 1, 1);
-                        base.ReferenceTransform = rowCreator;
-                    }
-
-                    //create a dummy inreader to allow fieldcount and other queries to work.
-                    return new ReturnValue(true);
+                    return new ReturnValue(false, "The web service connection is already open.", null);
                 }
-                catch (Exception ex)
+
+                //if no driving table is set, then use the row creator to simulate a single row.
+                if (ReferenceTransform == null)
                 {
-                    return new ReturnValue(false, "The following error occurred when starting the web service: " + ex.Message, ex);
+                    ReaderRowCreator rowCreator = new ReaderRowCreator();
+                    rowCreator.InitializeRowCreator(1, 1, 1);
+                    base.ReferenceTransform = rowCreator;
                 }
-            });
+                else
+                {
+                    var result = await ReferenceTransform.Open(auditKey, null);
+                    if (!result.Success)
+                        return result;
+                }
+
+                //create a dummy inreader to allow fieldcount and other queries to work.
+                return new ReturnValue(true);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue(false, "The following error occurred when starting the web service: " + ex.Message, ex);
+            }
         }
 
         public override string Details()

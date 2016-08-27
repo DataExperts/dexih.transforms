@@ -316,12 +316,17 @@ namespace dexih.functions
                 int parameterNumber = 0;
 
                 List<object> arrayValues = null;
+                ETypeCode arrayType = ETypeCode.String;
                 for (int i = 0; i < inputsCount; i++)
                 {
                     //FYI: this code will only accommodate for array being last parameter.
                     if (Inputs != null && Inputs[i].IsArray)
                     {
-                        if (arrayValues == null) arrayValues = new List<object>();
+                        if (arrayValues == null)
+                        {
+                            arrayValues = new List<object>();
+                            arrayType = Inputs[i].DataType;
+                        }
                         var try1 = DataType.TryParse(Inputs[i].DataType, Inputs[i].Value);
                         if (try1.Success == false)
                             return try1;
@@ -338,7 +343,61 @@ namespace dexih.functions
                 if (arrayValues != null)
                 {
                     //convert the values and load them into the parameter array.
-                    parameters[parameterNumber] = arrayValues.Select(c => c?.ToString()).ToArray();
+                    switch (arrayType)
+                    {
+                        case ETypeCode.Byte:
+                            parameters[parameterNumber] = arrayValues.Select(c=>(Byte)c).ToArray();
+                            break;
+                        case ETypeCode.SByte:
+                            parameters[parameterNumber] = arrayValues.Select(c => (SByte)c).ToArray();
+                            break;
+                        case ETypeCode.UInt16:
+                            parameters[parameterNumber] = arrayValues.Select(c => (UInt16)c).ToArray();
+                            break;
+                        case ETypeCode.UInt32:
+                            parameters[parameterNumber] = arrayValues.Select(c => (UInt32)c).ToArray();
+                            break;
+                        case ETypeCode.UInt64:
+                            parameters[parameterNumber] = arrayValues.Select(c => (UInt64)c).ToArray();
+                            break;
+                        case ETypeCode.Int16:
+                            parameters[parameterNumber] = arrayValues.Select(c => (Int16)c).ToArray();
+                            break;
+                        case ETypeCode.Int32:
+                            parameters[parameterNumber] = arrayValues.Select(c => (Int32)c).ToArray();
+                            break;
+                        case ETypeCode.Int64:
+                            parameters[parameterNumber] = arrayValues.Select(c => (Int64)c).ToArray();
+                            break;
+                        case ETypeCode.Decimal:
+                            parameters[parameterNumber] = arrayValues.Select(c => (Decimal)c).ToArray();
+                            break;
+                        case ETypeCode.Double:
+                            parameters[parameterNumber] = arrayValues.Select(c => (Double)c).ToArray();
+                            break;
+                        case ETypeCode.Single:
+                            parameters[parameterNumber] = arrayValues.Select(c => (Single)c).ToArray();
+                            break;
+                        case ETypeCode.String:
+                            parameters[parameterNumber] = arrayValues.Select(c => (String)c).ToArray();
+                            break;
+                        case ETypeCode.Boolean:
+                            parameters[parameterNumber] = arrayValues.Select(c => (Boolean)c).ToArray();
+                            break;
+                        case ETypeCode.DateTime:
+                            parameters[parameterNumber] = arrayValues.Select(c => (DateTime)c).ToArray();
+                            break;
+                        case ETypeCode.Time:
+                            parameters[parameterNumber] = arrayValues.Select(c => (DateTime)c).ToArray();
+                            break;
+                        case ETypeCode.Guid:
+                            parameters[parameterNumber] = arrayValues.Select(c => (Guid)c).ToArray();
+                            break;
+                        case ETypeCode.Unknown:
+                        default:
+                            parameters[parameterNumber] = arrayValues.ToArray();
+                            break;
+                    }
                     parameterNumber++;
                 }
 
@@ -395,7 +454,10 @@ namespace dexih.functions
                         if (Outputs != null && Outputs[i].IsArray)
                         {
                             object[] parametersArray = (object[])parameters[outputParameterNumber];
-                            result1 = Outputs[i].SetValue(arrayNumber >= parametersArray.Length ? DBNull.Value : parametersArray[arrayNumber]);
+                            if (parametersArray == null)
+                                result1 = Outputs[i].SetValue(DBNull.Value);
+                            else
+                                result1 = Outputs[i].SetValue(arrayNumber >= parametersArray.Length ? DBNull.Value : parametersArray[arrayNumber]);
 
                             arrayNumber++;
                         }

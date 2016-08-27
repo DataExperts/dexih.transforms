@@ -50,6 +50,12 @@ namespace dexih.connections.webservice
                     rowCreator.InitializeRowCreator(1, 1, 1);
                     ReferenceTransform = rowCreator;
                 }
+                else
+                {
+                    var result = await ReferenceTransform.Open(auditKey, null);
+                    if (!result.Success)
+                        return result;
+                }
 
                 //create a dummy inreader to allow fieldcount and other queries to work.
                 return new ReturnValue(true);

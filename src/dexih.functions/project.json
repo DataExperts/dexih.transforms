@@ -1,5 +1,5 @@
 {
-  "version": "0.2.1-*",
+  "version": "0.2.2-*",
   "title": "Data Experts Group - Functions Library",
   "description": "This is a support library containing helpers and functions for the transforms packages.",
   "authors": [ "Gary Holland" ],
