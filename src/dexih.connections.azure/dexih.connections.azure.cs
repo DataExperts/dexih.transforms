@@ -350,6 +350,43 @@ namespace dexih.connections.azure
             }
         }
 
+        /// <summary>
+        /// Azure can always return true for CompareTable, as the columns are not created in the same way relational tables are.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        public override async Task<ReturnValue> CompareTable(Table table)
+        {
+            return await Task.Run(() => new ReturnValue(true));
+        }
+
+        /// <summary>
+        /// Azure does not have a max function, so use a different method to generate a surrogate key.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="surrogateKeyColumn"></param>
+        /// <param name="cancelToken"></param>
+        /// <returns></returns>
+        public override async Task<ReturnValue<object>> GetNextSurrogateKey(Table table, string surrogateKeyColumn, long AuditKey, CancellationToken cancelToken)
+        {
+            try
+            {
+                return await Task.Run(() =>
+                {
+                    if (AuditKey > 9223372)
+                        throw new Exception("The AuditKey is greater than 9,223,372 which is the maximum value supported.");
+
+                    object key = AuditKey * 1000000000000;
+
+                    return new ReturnValue<object>(true, key);
+                });
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<object>(false, ex.Message, ex);
+            }
+        }
+
 
         public string ConvertOperator(Filter.ECompare Operator)
         {
@@ -465,11 +502,12 @@ namespace dexih.connections.azure
                 CloudTableClient connection = GetCloudTableClient();
                 bool result;
 
-                CloudTable cTable = connection.GetTableReference(table.TableName);
-                await cTable.DeleteIfExistsAsync(null, null, cancelToken);
-                result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(null, null, cancelToken), TimeSpan.FromSeconds(10), 6);
+                return await CreateTable(table, true);
 
-                return new ReturnValue(result);
+                //CloudTable cTable = connection.GetTableReference(table.TableName);
+                //await cTable.DeleteIfExistsAsync(null, null, cancelToken);
+                //result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(null, null, cancelToken), TimeSpan.FromSeconds(10), 6);
+                //return new ReturnValue(result);
             }
             catch (Exception ex)
             {
@@ -727,6 +765,8 @@ namespace dexih.connections.azure
                 //start a batch operation to update the rows.
                 TableBatchOperation batchOperation = new TableBatchOperation();
 
+                var surrogateKeyColumn = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+
                 //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
                 {
@@ -735,7 +775,31 @@ namespace dexih.connections.azure
 
                     //select all columns
                     tableQuery.SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.ColumnName != "PartitionKey" && c.ColumnName != "RowKey").Select(c => c.ColumnName)).ToList());
+
+                    //the rowkey is the same as the surrogate key, so add this to the filter string if the surrogate key is used.
+                    if (surrogateKeyColumn != null)
+                    {
+                        int filtercount = query.Filters.Count;
+                        for(int i = 0; i < filtercount; i++)
+                        {
+                            if (query.Filters[i].Column1 == surrogateKeyColumn.ColumnName)
+                            {
+                                query.Filters.Add(new Filter()
+                                {
+                                    Column1 = "RowKey",
+                                    Column2 = query.Filters[i].Column2,
+                                    Value1 = query.Filters[i].Value1,
+                                    Value2 = query.Filters[i].Value2.ToString(),
+                                    AndOr = query.Filters[i].AndOr,
+                                    CompareDataType = ETypeCode.String,
+                                    Operator = query.Filters[i].Operator
+                                });
+                            }
+                        }
+                    }
+
                     tableQuery.FilterString = BuildFilterString(query.Filters);
+
 
                     //run the update 
                     TableContinuationToken continuationToken = null;

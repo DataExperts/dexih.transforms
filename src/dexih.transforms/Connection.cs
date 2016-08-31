@@ -174,7 +174,7 @@ namespace dexih.transforms
             }
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName)
+        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, bool requireLastResult)
         {
             var auditTable = AuditTable;
 
@@ -212,12 +212,15 @@ namespace dexih.transforms
                 {
                     auditKey = lastAudit[0].AuditKey + 1;
 
-                    //get the last audit result for this reference to collect previous run information
-                    lastAuditResult = await GetTransformWriterResults(subScriptionKey, new long[] { referenceKey }, null, TransformWriterResult.ERunStatus.Finished, false, null, 1, 0, CancellationToken.None);
-                    if (!lastAuditResult.Success)
-                        return new ReturnValue<TransformWriterResult>(lastAuditResult);
-                    if(lastAuditResult.Value.Count > 0)
-                        lastResult = lastAuditResult.Value[0];
+                    if (requireLastResult)
+                    {
+                        //get the last audit result for this reference to collect previous run information
+                        lastAuditResult = await GetTransformWriterResults(subScriptionKey, new long[] { referenceKey }, null, TransformWriterResult.ERunStatus.Finished, false, null, 1, 0, CancellationToken.None);
+                        if (!lastAuditResult.Success)
+                            return new ReturnValue<TransformWriterResult>(lastAuditResult);
+                        if (lastAuditResult.Value.Count > 0)
+                            lastResult = lastAuditResult.Value[0];
+                    }
                 }
             }
 
@@ -439,6 +442,32 @@ namespace dexih.transforms
         }
 
 
+        /// <summary>
+        /// Gets the next surrogatekey.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="surrogateKeyColumn"></param>
+        /// <param name="AuditKey">Included as Azure storage tables use the AuditKey to generate a new surrogate key</param>
+        /// <param name="cancelToken"></param>
+        /// <returns></returns>
+        public virtual async Task<ReturnValue<object>> GetNextSurrogateKey(Table table, string surrogateKeyColumn, long AuditKey, CancellationToken cancelToken)
+        {
+            try
+            {
+                var query = new SelectQuery()
+                {
+                    Columns = new List<SelectColumn>() { new SelectColumn(surrogateKeyColumn, SelectColumn.EAggregate.Max) },
+                    Table = table.TableName
+                };
+
+                return await ExecuteScalar(table, query, cancelToken);
+            }
+            catch(Exception ex)
+            {
+                return new ReturnValue<object>(false, ex.Message, ex);
+            }
+        }
+
 
         /// <summary>
         /// Function runs when a data write comments.  This is used to put headers on csv files.
@@ -526,7 +555,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public async Task<ReturnValue> CompareTable(Table table)
+        public virtual async Task<ReturnValue> CompareTable(Table table)
         {
             var physicalTableResult = await GetSourceTableInfo(table.TableName, null);
             if (!physicalTableResult.Success)

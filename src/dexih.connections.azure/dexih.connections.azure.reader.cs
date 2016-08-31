@@ -43,7 +43,7 @@ namespace dexih.connections.azure
             CloudTableClient tableClient = _connection.GetCloudTableClient();
             _tableReference = tableClient.GetTableReference(CacheTable.TableName);
 
-            _tableQuery = new TableQuery<DynamicTableEntity>().Take(10);
+            _tableQuery = new TableQuery<DynamicTableEntity>().Take(1000);
 
             if (query?.Columns?.Count > 0)
                 _tableQuery.SelectColumns = query.Columns.Select(c => c.Column).ToArray();
@@ -53,7 +53,7 @@ namespace dexih.connections.azure
             if (query?.Filters != null)
                 _tableQuery.FilterString = _connection.BuildFilterString(query.Filters);
 
-            if(query?.Rows > 0)
+            if(query?.Rows > 0 && query?.Rows < 1000)
                 _tableQuery.TakeCount = query.Rows;
 
             try
@@ -101,12 +101,18 @@ namespace dexih.connections.azure
         {
             try
             {
+                if(_tableResult.Count() == 0)
+                    return new ReturnValue<object[]>(false, null);
+
                 if (_currentReadRow >= _tableResult.Count())
                 {
                     if (_token == null)
                         return new ReturnValue<object[]>(false, null);
 
                     _tableResult = await _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token);
+                    if (_tableResult.Count() == 0)
+                        return new ReturnValue<object[]>(false, null);
+
                     _token = _tableResult.ContinuationToken;
                     _currentReadRow = 0;
                 }

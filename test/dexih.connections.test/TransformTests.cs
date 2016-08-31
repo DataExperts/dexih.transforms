@@ -28,7 +28,7 @@ namespace dexih.connections.test
             Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
             TransformWriter writer = new TransformWriter();
 
-            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test", 1, "Source", 2, "Target");
+            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test", 1, "Source", 2, "Target", true);
             Assert.True(auditResult.Success);
             TransformWriterResult writerResult = auditResult.Value;
 
@@ -88,7 +88,7 @@ namespace dexih.connections.test
             reader = connection.GetTransformReader(table);
             TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1);
 
-            auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test", 1, "Source", 2, "Target");
+            auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test", 1, "Source", 2, "Target", true);
             Assert.True(auditResult.Success);
             writerResult = auditResult.Value;
 
