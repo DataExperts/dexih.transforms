@@ -27,8 +27,8 @@ namespace dexih.transforms.tests
             List<Function> Conditions = new List<Function>();
             Function Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
-                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk") };
+                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn", isArray: true  ),
+                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk", isArray: true ) };
             Conditions.Add(Function);
 
             TransformFilter TransformFilter = new TransformFilter(Table, Conditions);
@@ -46,8 +46,8 @@ namespace dexih.transforms.tests
             Conditions = new List<Function>();
             Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
-                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value03") };
+                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn", isArray: true ),
+                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value03", isArray: true ) };
             Conditions.Add(Function);
 
             TransformFilter.Conditions = Conditions;

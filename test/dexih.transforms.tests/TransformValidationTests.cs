@@ -27,8 +27,8 @@ namespace dexih.transforms.tests
             List<Function> Validations = new List<Function>();
             Function Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
-                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk") };
+                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn", isArray: true  ),
+                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk", isArray: true ) };
             Validations.Add(Function);
 
             TransformValidation transformValidation = new TransformValidation(Table, Validations, true);
