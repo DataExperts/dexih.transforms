@@ -372,13 +372,13 @@ namespace dexih.transforms
                     )
                 {
                     TransformWriterResult result = new TransformWriterResult(
-                        (long)TryParse(ETypeCode.Int64, reader["HubKey"]).Value, 
-                        (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value, 
-                        (string)reader["AuditType"], 
-                        (long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value, 
+                        (long)TryParse(ETypeCode.Int64, reader["HubKey"]).Value,
+                        (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value,
+                        (string)reader["AuditType"],
+                        (long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value,
                         (string)reader["ReferenceName"],
                         (long)TryParse(ETypeCode.Int64, reader["SourceTableKey"]).Value,
-                        (string)reader["SourceTableName"], 
+                        (string)reader["SourceTableName"],
                         (long)TryParse(ETypeCode.Int64, reader["TargetTableKey"]).Value,
                         (string)reader["TargetTableName"], null, null
                         )
@@ -402,9 +402,10 @@ namespace dexih.transforms
                         InitializeTime = (DateTime)TryParse(ETypeCode.DateTime, reader["InitializeTime"]).Value,
                         StartTime = (DateTime)TryParse(ETypeCode.DateTime, reader["StartTime"]).Value,
                         EndTime = (DateTime)TryParse(ETypeCode.DateTime, reader["EndTime"]).Value,
-                        LastUpdateTime = (DateTime)TryParse(ETypeCode.DateTime, reader["LastUpdateTime"]).Value
+                        LastUpdateTime = (DateTime)TryParse(ETypeCode.DateTime, reader["LastUpdateTime"]).Value,
+                        RunStatus = (TransformWriterResult.ERunStatus)Enum.Parse(typeof(TransformWriterResult.ERunStatus), (string)reader["RunStatus"]),
+                        Message = (string)(reader["Message"] is DBNull ? null : reader["Message"])
                     };
-                    await result.SetRunStatus((TransformWriterResult.ERunStatus)Enum.Parse(typeof(TransformWriterResult.ERunStatus), (string)reader["RunStatus"]), (string)(reader["Message"] is DBNull ? null : reader["Message"]));
 
                     writerResults.Add(result);
 

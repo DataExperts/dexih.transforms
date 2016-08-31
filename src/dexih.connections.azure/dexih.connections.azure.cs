@@ -800,11 +800,10 @@ namespace dexih.connections.azure
 
                     tableQuery.FilterString = BuildFilterString(query.Filters);
 
-
                     //run the update 
                     TableContinuationToken continuationToken = null;
                     do
-                    {
+                    {   
                         var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancelToken);
                         if (cancelToken.IsCancellationRequested)
                             return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);

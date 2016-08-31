@@ -94,7 +94,8 @@ namespace dexih.transforms
         public string Message { get; set; }
         public DateTime InitializeTime { get; set; }
         public DateTime StartTime { get; set; } = Convert.ToDateTime("1900-01-01");
-        public DateTime EndTime { get; set; } = Convert.ToDateTime("1900-01-01");
+        public DateTime EndTime { get;
+            set; } = Convert.ToDateTime("1900-01-01");
         public DateTime LastUpdateTime { get; set; }
         public string PerformanceSummary { get; set; }
         private CancellationTokenSource CancelTokenSource { get; set; }

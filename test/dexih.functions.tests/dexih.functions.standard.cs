@@ -53,11 +53,10 @@ namespace dexih.functions.tests
         [InlineData("GreaterThan", new object[] { 2, 1 }, true)]
         [InlineData("GreaterThanEqual", new object[] { 2, 1 }, true)]
         [InlineData("IsEqual", new object[] { 2, 2 }, true)]
+        [InlineData("IsBooleanEqual", new object[] { true, true }, true)]
         [InlineData("IsEqual", new object[] { 3, 2 }, false)]
         [InlineData("IsNumber", new object[] { "123" }, true)]
         [InlineData("IsNumber", new object[] { "123a" }, false)]
-        [InlineData("IsDate", new object[] { "1 Jan 2000" }, true)]
-        [InlineData("IsDate", new object[] { "35 Jan 2000" }, false)]
         [InlineData("IsNull", new object[] { null }, true)]
         [InlineData("IsBetween", new object[] { 2, 1, 3 }, true)]
         [InlineData("IsBetweenInclusive", new object[] { 2, 1, 3 }, true)]
@@ -134,7 +133,8 @@ namespace dexih.functions.tests
                 new object[] { "Multiply", new object[] { 6, 2 }, (Decimal)12 },
                 new object[] { "Negate", new object[] { 6 }, (Decimal) (-6)},
                 new object[] { "Remainder", new object[] { 6, 4 }, (Decimal)2 },
-                new object[] { "Subtract", new object[] { 6, 2 }, (Decimal)4 }
+                new object[] { "Subtract", new object[] { 6, 2 }, (Decimal)4 },
+                new object[] { "IsDateTimeEqual", new object[] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015") }, true }
             };
             }
         }

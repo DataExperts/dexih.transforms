@@ -556,7 +556,6 @@ namespace dexih.connections.sql
                             if (col.MaxLength > 4000)
                                 col.MaxLength = null;
 
-
                             col.Description = reader["Description"].ToString();
                             col.AllowDbNull = Convert.ToBoolean(reader["IsNullable"]);
                             //col.IsUnique = Convert.ToBoolean(reader["IsUnique"]);
