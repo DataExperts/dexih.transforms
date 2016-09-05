@@ -80,7 +80,15 @@ namespace dexih.transforms
         //public abstract Task<ReturnValue> TestConnection();
         public abstract Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
         public abstract Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="queries"></param>
+        /// <param name="cancelToken"></param>
+        /// <returns>Item1 = elapsed time, Item2 = autoincrement value</returns>
+        public abstract Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
 
         /// <summary>
         /// Runs a bulk insert operation for the connection.  
@@ -135,10 +143,10 @@ namespace dexih.transforms
         {
             get
             {
-                Table auditTable = new Table("DexihAudit");
+                Table auditTable = new Table("DexihHistory");
                 AddMandatoryColumns(auditTable, 0).Wait();
 
-                auditTable.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, TableColumn.EDeltaType.SurrogateKey));
+                auditTable.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, TableColumn.EDeltaType.AutoIncrement));
                 auditTable.Columns.Add(new TableColumn("HubKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("AuditType", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
                 auditTable.Columns.Add(new TableColumn("ReferenceKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
@@ -169,18 +177,18 @@ namespace dexih.transforms
                 auditTable.Columns.Add(new TableColumn("LastUpdateTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("RunStatus", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
                 auditTable.Columns.Add(new TableColumn("Message", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
+                auditTable.Columns.Add(new TableColumn("IsLatest", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
 
                 return auditTable;
             }
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, bool requireLastResult)
+        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName)
         {
             var auditTable = AuditTable;
 
             var tableExistsResult = await TableExists(auditTable);
 
-            long auditKey;
             TransformWriterResult lastResult = null;
 
             if (!tableExistsResult.Success)
@@ -193,42 +201,21 @@ namespace dexih.transforms
                 var createAuditResult = await CreateTable(auditTable, false);
                 if (!createAuditResult.Success)
                     return new ReturnValue<TransformWriterResult>(createAuditResult);
-
-                auditKey = 1;
             }
             else
             {
-                //get the last successful audit result, and add + 1 for new key.
-                var lastAuditResult = await GetTransformWriterResults(null, null, null, null, false, null, 1, 0, CancellationToken.None);
+                //get the last audit result for this reference to collect previous run information
+                var lastAuditResult = await GetTransformWriterResults(subScriptionKey, new long[] { referenceKey }, null, TransformWriterResult.ERunStatus.Finished, true, null, 1, 0, CancellationToken.None);
                 if (!lastAuditResult.Success)
                     return new ReturnValue<TransformWriterResult>(lastAuditResult);
-                var lastAudit = lastAuditResult.Value;
-
-                if(lastAudit.Count == 0)
-                {
-                    auditKey = 1;
-                }
-                else
-                {
-                    auditKey = lastAudit[0].AuditKey + 1;
-
-                    if (requireLastResult)
-                    {
-                        //get the last audit result for this reference to collect previous run information
-                        lastAuditResult = await GetTransformWriterResults(subScriptionKey, new long[] { referenceKey }, null, TransformWriterResult.ERunStatus.Finished, false, null, 1, 0, CancellationToken.None);
-                        if (!lastAuditResult.Success)
-                            return new ReturnValue<TransformWriterResult>(lastAuditResult);
-                        if (lastAuditResult.Value.Count > 0)
-                            lastResult = lastAuditResult.Value[0];
-                    }
-                }
+                if (lastAuditResult.Value.Count > 0)
+                    lastResult = lastAuditResult.Value[0];
             }
 
-            var writerResult = new TransformWriterResult(subScriptionKey, auditKey, auditType, referenceKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, lastResult);
+            var writerResult = new TransformWriterResult(subScriptionKey, 0, auditType, referenceKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, lastResult);
 
             var queryColumns = new List<QueryColumn>
                 {
-                    new QueryColumn("AuditKey", ETypeCode.Int64, writerResult.AuditKey),
                     new QueryColumn("HubKey", ETypeCode.Int64,  writerResult.HubKey),
                     new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
                     new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
@@ -258,13 +245,15 @@ namespace dexih.transforms
                     new QueryColumn("EndTime", ETypeCode.DateTime, writerResult.EndTime),
                     new QueryColumn("LastUpdateTime", ETypeCode.DateTime, writerResult.LastUpdateTime),
                     new QueryColumn("RunStatus", ETypeCode.DateTime, writerResult.RunStatus.ToString()),
-                    new QueryColumn("Message", ETypeCode.DateTime, writerResult.Message)
+                    new QueryColumn("Message", ETypeCode.DateTime, writerResult.Message),
+                    new QueryColumn("IsLatest", ETypeCode.String, false)
+
             };
 
             //add connection specific values
-            var rowKeyOrdinal = auditTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
-            if (rowKeyOrdinal > 0)
-                queryColumns.Add(new QueryColumn(auditTable.Columns[rowKeyOrdinal].ColumnName, ETypeCode.String, writerResult.AuditKey));
+            //var rowKeyOrdinal = auditTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            //if (rowKeyOrdinal > 0)
+            //    queryColumns.Add(new QueryColumn(auditTable.Columns[rowKeyOrdinal].ColumnName, ETypeCode.String, writerResult.AuditKey));
 
             var partitionKeyOrdinal = auditTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
             if (partitionKeyOrdinal > 0)
@@ -272,6 +261,8 @@ namespace dexih.transforms
 
             var insertQuery = new InsertQuery(auditTable.TableName, queryColumns);
             var insertResult = await ExecuteInsert(auditTable, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
+
+            writerResult.AuditKey = insertResult.Value.Item2;
 
             if (!insertResult.Success)
                 return new ReturnValue<TransformWriterResult>(insertResult);
@@ -281,6 +272,25 @@ namespace dexih.transforms
 
         public virtual async Task<ReturnValue> UpdateAudit(TransformWriterResult writerResult)
         {
+            //when the runstatus is successful, update any previous records with an islatest = false.
+            bool IsLatest = false;
+
+            if (writerResult.RunStatus == TransformWriterResult.ERunStatus.Finished || writerResult.RunStatus == TransformWriterResult.ERunStatus.FinishedErrors)
+            {
+                var updateLatestColumn = new List<QueryColumn>() { new QueryColumn("IsLatest", ETypeCode.Boolean, false) };
+                var updateLatestFilters = new List<Filter>() {
+                    new Filter("HubKey", Filter.ECompare.IsEqual, writerResult.HubKey),
+                    new Filter("ReferenceKey", Filter.ECompare.IsEqual, writerResult.ReferenceKey),
+                    new Filter("IsLatest", Filter.ECompare.IsEqual, true),
+                };
+
+                var updateIsLatest = new UpdateQuery(AuditTable.TableName, updateLatestColumn, updateLatestFilters);
+                var updateLatestResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
+
+                IsLatest = true;
+            }
+
+
             var updateColumns = new List<QueryColumn>()
             {
                     new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
@@ -312,26 +322,29 @@ namespace dexih.transforms
                     new QueryColumn("EndTime", ETypeCode.DateTime, writerResult.EndTime),
                     new QueryColumn("LastUpdateTime", ETypeCode.DateTime, writerResult.LastUpdateTime),
                     new QueryColumn("RunStatus", ETypeCode.String, writerResult.RunStatus.ToString()),
-                    new QueryColumn("Message", ETypeCode.String, writerResult.Message)
+                    new QueryColumn("Message", ETypeCode.String, writerResult.Message),
+                    new QueryColumn("IsLatest", ETypeCode.String, IsLatest)
             };
 
             var updateFilters = new List<Filter>() { new Filter("AuditKey", Filter.ECompare.IsEqual, writerResult.AuditKey) };
 
             var updateQuery = new UpdateQuery(AuditTable.TableName, updateColumns, updateFilters);
-
             var updateResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
 
             return updateResult;
         }
 
+
+
         public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool lastResultOnly, DateTime? startTime, int rows, int maxMilliseconds, CancellationToken cancellationToken)
         {
+            Transform reader = null;
             try
             {
                 Stopwatch watch = new Stopwatch();
                 watch.Start();
 
-                Transform reader = GetTransformReader(AuditTable);
+                reader = GetTransformReader(AuditTable);
 
                 var filters = new List<Filter>();
                 if(hubKey != null) filters.Add(new Filter("HubKey", Filter.ECompare.IsEqual, hubKey));
@@ -339,6 +352,7 @@ namespace dexih.transforms
                 if (auditKey != null) filters.Add(new Filter("AuditKey", Filter.ECompare.IsEqual, auditKey));
                 if (runStatus != null) filters.Add(new Filter("RunStatus", Filter.ECompare.IsEqual, runStatus.ToString()));
                 if (startTime != null) filters.Add(new Filter("StartTime", Filter.ECompare.GreaterThanEqual, startTime));
+                if (lastResultOnly) filters.Add(new Filter("IsLatest", Filter.ECompare.IsEqual, true));
 
                 var sorts = new List<Sort>() { new Sort("AuditKey", Sort.EDirection.Descending) };
                 var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
@@ -346,18 +360,18 @@ namespace dexih.transforms
                 //add a sort transform to ensure sort order.
                 reader = new TransformSort(reader, sorts);
 
-                //if lastResult only, create a group by to get most recent rows.
-                if(lastResultOnly)
-                {
-                    var groupFields = new List<ColumnPair>() { new ColumnPair("AuditKey") };
-                    var aggregates = new List<Function>();
-                    foreach(var column in AuditTable.Columns)
-                    {
-                        if (column.ColumnName != "AuditKey")
-                            aggregates.Add(StandardFunctions.GetFunctionReference("First", new string[] { column.ColumnName }, column.ColumnName, null));
-                    }
-                    reader = new TransformGroup(reader, groupFields, aggregates, false);
-                }
+                ////if lastResult only, create a group by to get most recent rows.
+                //if(lastResultOnly)
+                //{
+                //    var groupFields = new List<ColumnPair>() { new ColumnPair("AuditKey") };
+                //    var aggregates = new List<Function>();
+                //    foreach(var column in AuditTable.Columns)
+                //    {
+                //        if (column.ColumnName != "AuditKey")
+                //            aggregates.Add(StandardFunctions.GetFunctionReference("First", new string[] { column.ColumnName }, column.ColumnName, null));
+                //    }
+                //    reader = new TransformGroup(reader, groupFields, aggregates, false);
+                //}
 
                 ReturnValue returnValue = await reader.Open(0, query);
                 if (returnValue.Success == false)
@@ -421,6 +435,7 @@ namespace dexih.transforms
             }
             catch(Exception ex)
             {
+                if(reader != null) reader.Dispose();
                 return new ReturnValue<List<TransformWriterResult>>(false, "Get Transform Writer Results failed with error: " + ex.Message, ex);
             }
         }
@@ -451,7 +466,7 @@ namespace dexih.transforms
         /// <param name="AuditKey">Included as Azure storage tables use the AuditKey to generate a new surrogate key</param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue<object>> GetNextSurrogateKey(Table table, string surrogateKeyColumn, long AuditKey, CancellationToken cancelToken)
+        public virtual async Task<ReturnValue<long>> GetIncrementalKey(Table table, string surrogateKeyColumn, CancellationToken cancelToken)
         {
             try
             {
@@ -461,14 +476,33 @@ namespace dexih.transforms
                     Table = table.TableName
                 };
 
-                return await ExecuteScalar(table, query, cancelToken);
+                long surrogateKeyValue;
+                var executeResult = await ExecuteScalar(table, query, cancelToken);
+                if (!executeResult.Success)
+                    return new ReturnValue<long>(executeResult);
+
+                if (executeResult.Value == null || executeResult.Value is DBNull)
+                    surrogateKeyValue = 0;
+                else
+                {
+                    var convertResult = DataType.TryParse(ETypeCode.Int64, executeResult.Value);
+                    if (!convertResult.Success)
+                        return new ReturnValue<long>(convertResult);
+                    surrogateKeyValue = (long)convertResult.Value;
+                }
+
+                return new ReturnValue<long>(true, surrogateKeyValue);
             }
             catch(Exception ex)
             {
-                return new ReturnValue<object>(false, ex.Message, ex);
+                return new ReturnValue<long>(false, ex.Message, ex);
             }
         }
 
+        public virtual async Task<ReturnValue> UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancelToken)
+        {
+            return await Task.Run(() => new ReturnValue(true));
+        }
 
         /// <summary>
         /// Function runs when a data write comments.  This is used to put headers on csv files.

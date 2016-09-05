@@ -104,7 +104,7 @@ namespace dexih.transforms
         }
 
 
-        public override Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

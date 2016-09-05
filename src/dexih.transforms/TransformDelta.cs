@@ -443,7 +443,11 @@ namespace dexih.transforms
         {
             while (await ReferenceTransform.ReadAsync(cancellationToken))
             {
-                if ((bool)ReferenceTransform[colIsCurrentField.ColumnName])
+                var returnValue = DataType.TryParse(DataType.ETypeCode.Boolean, ReferenceTransform[colIsCurrentField.ColumnName]);
+                if (!returnValue.Success)
+                    throw new Exception("The column " + colIsCurrentField.ColumnName + " is expected to have a boolean value, however the value " + ReferenceTransform[colIsCurrentField.ColumnName] + " was found.");
+
+                if ((bool) returnValue.Value)
                 {
                     return true;
                 }

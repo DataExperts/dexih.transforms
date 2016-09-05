@@ -318,7 +318,7 @@ namespace dexih.connections.flatfile
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             try
             {
@@ -331,7 +331,7 @@ namespace dexih.connections.flatfile
                     StreamWriter writer = new StreamWriter(stream);
 
                     if (!(queries?.Count >= 0))
-                        return new ReturnValue<long>(true, 0);
+                        return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.Elapsed.Ticks, (long)0));
 
                     //write a header row.
                     string[] s = new string[table.Columns.Count];
@@ -368,7 +368,7 @@ namespace dexih.connections.flatfile
 
                     ReturnValue returnValue = await SaveFileStream(table, fileName, stream);
                     if (!returnValue.Success)
-                        return new ReturnValue<long>(returnValue.Success, returnValue.Message, returnValue.Exception, timer.ElapsedTicks);
+                        return new ReturnValue<Tuple<long, long>>(returnValue.Success, returnValue.Message, returnValue.Exception, Tuple.Create(timer.Elapsed.Ticks, (long)0));
 
                     LastWrittenFile = FileName;
 
@@ -376,11 +376,11 @@ namespace dexih.connections.flatfile
                 }
 
                 timer.Stop();
-                return new ReturnValue<long>(true, timer.ElapsedTicks); //sometimes reader returns -1, when we want this to be error condition.
+                return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.Elapsed.Ticks, (long)0)); //sometimes reader returns -1, when we want this to be error condition.
             }
             catch(Exception ex)
             {
-                return new ReturnValue<long>(false, "The following error was encountered running the ExecuteInsert: " + ex.Message, ex);
+                return new ReturnValue<Tuple<long, long>>(false, "The following error was encountered running the ExecuteInsert: " + ex.Message, ex);
             }
         }
 

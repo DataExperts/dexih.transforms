@@ -75,7 +75,7 @@ namespace dexih.transforms
         //indicates if the transform is a base reader.
         public bool IsReader { get; set; } = true;
 
-        public Int64 AuditKey { get; set; }
+        public long AuditKey { get; set; }
 
         #endregion
 
@@ -234,7 +234,7 @@ namespace dexih.transforms
         /// <param name="filters">Requested filters for underlying transform to execute.</param>
         /// <param name="sorts">Requested sort for underlying transform to execute.</param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query = null)
+        public virtual async Task<ReturnValue> Open(long auditKey, SelectQuery query = null)
         {
             AuditKey = auditKey;
 

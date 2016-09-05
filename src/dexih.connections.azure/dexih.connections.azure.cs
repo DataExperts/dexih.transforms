@@ -169,7 +169,7 @@ namespace dexih.connections.azure
                     }
 
                 var partionKeyValue = partitionKey >= 0 ? row[partitionKey] : "default";
-                var rowKeyValue = rowKey >= 0 ? row[rowKey] : surrogateKey >= 0 ? row[surrogateKey] : Guid.NewGuid().ToString();
+                var rowKeyValue = rowKey >= 0 ? row[rowKey] : surrogateKey >= 0 ? ((long)row[surrogateKey]).ToString("D20") : Guid.NewGuid().ToString();
                 DynamicTableEntity entity = new DynamicTableEntity(partionKeyValue.ToString(), rowKeyValue.ToString(), "*", properties);
 
                 batchOperation.Insert(entity);
@@ -367,23 +367,85 @@ namespace dexih.connections.azure
         /// <param name="surrogateKeyColumn"></param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object>> GetNextSurrogateKey(Table table, string surrogateKeyColumn, long AuditKey, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> GetIncrementalKey(Table table, string surrogateKeyColumn, CancellationToken cancelToken)
         {
             try
             {
-                return await Task.Run(() =>
+                CloudTableClient connection = GetCloudTableClient();
+                CloudTable cTable = connection.GetTableReference("DexihKeys");
+
+                long incrementalKey = 0;
+                Guid lockGuid = Guid.NewGuid();
+
+                if (!await cTable.ExistsAsync())
                 {
-                    if (AuditKey > 9223372)
-                        throw new Exception("The AuditKey is greater than 9,223,372 which is the maximum value supported.");
+                    await cTable.CreateAsync();
+                }
 
-                    object key = AuditKey * 1000000000000;
+                DynamicTableEntity entity = null;
+                TableResult tableResult;
 
-                    return new ReturnValue<object>(true, key);
-                });
+                do
+                {
+                    //get the last key value if it exists.
+                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.TableName, surrogateKeyColumn, new List<string>() { "IncrementalValue", "LockGuid" }));
+                    if (tableResult.Result == null)
+                    {
+                        entity = new DynamicTableEntity(table.TableName, surrogateKeyColumn);
+                        entity.Properties.Add("IncrementalValue", new EntityProperty((long)1));
+                        entity.Properties.Add("LockGuid", new EntityProperty(lockGuid));
+                        incrementalKey = 1;
+                    }
+                    else
+                    {
+                        entity = tableResult.Result as DynamicTableEntity;
+                        incrementalKey = entity.Properties["IncrementalValue"].Int64Value.Value;
+                        incrementalKey++;
+                        entity.Properties["IncrementalValue"] = new EntityProperty(incrementalKey);
+                        entity.Properties["LockGuid"] = new EntityProperty(lockGuid);
+                    }
+
+                    //update the record with the new incrementalvalue and the guid.
+                    await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
+
+                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.TableName, surrogateKeyColumn, new List<string>() { "IncrementalValue", "LockGuid" }));
+                    entity = tableResult.Result as DynamicTableEntity;
+
+                } while (entity.Properties["LockGuid"].GuidValue.Value != lockGuid);
+
+                return new ReturnValue<long>(true, incrementalKey);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<object>(false, ex.Message, ex);
+                return new ReturnValue<long>(false, ex.Message, ex);
+            }
+        }
+
+        public override async Task<ReturnValue> UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancelToken)
+        {
+            try
+            {
+                CloudTableClient connection = GetCloudTableClient();
+                CloudTable cTable = connection.GetTableReference("DexihKeys");
+
+                if (!await cTable.ExistsAsync())
+                {
+                    await cTable.CreateAsync();
+                }
+
+                DynamicTableEntity entity = null;
+                entity = new DynamicTableEntity(table.TableName, surrogateKeyColumn);
+                entity.Properties.Add("IncrementalValue", new EntityProperty(value));
+                entity.Properties.Add("LockGuid", new EntityProperty(Guid.NewGuid()));
+
+                //update the record with the new incrementalvalue and the guid.
+                await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
+
+                return new ReturnValue(true);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue(false, ex.Message, ex);
             }
         }
 
@@ -500,14 +562,7 @@ namespace dexih.connections.azure
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
-                bool result;
-
                 return await CreateTable(table, true);
-
-                //CloudTable cTable = connection.GetTableReference(table.TableName);
-                //await cTable.DeleteIfExistsAsync(null, null, cancelToken);
-                //result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(null, null, cancelToken), TimeSpan.FromSeconds(10), 6);
-                //return new ReturnValue(result);
             }
             catch (Exception ex)
             {
@@ -661,7 +716,7 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             try
             {
@@ -674,6 +729,9 @@ namespace dexih.connections.azure
 
                 List<Task> batchTasks = new List<Task>();
 
+                var autoIncrement = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+                long lastAutoIncrement = 0;
+
                 //start a batch operation to update the rows.
                 TableBatchOperation batchOperation = new TableBatchOperation();
 
@@ -685,13 +743,21 @@ namespace dexih.connections.azure
                 foreach (var query in queries)
                 {
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
+                        return new ReturnValue<Tuple<long, long>>(false, "Insert rows cancelled.", null, Tuple.Create(timer.ElapsedTicks, (long)0));
 
                     Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
                     foreach (var field in query.InsertColumns)
                     {
                         if (!(field.Column == "RowKey" || field.Column == "PartitionKey" || field.Column == "Timestamp"))
                             properties.Add(field.Column, NewEntityProperty(table[field.Column].DataType, field.Value));
+                    }
+
+                    if (autoIncrement != null)
+                    {
+                        var autoIncrementResult = await GetIncrementalKey(table, autoIncrement.ColumnName, CancellationToken.None);
+                        lastAutoIncrement = autoIncrementResult.Value;
+
+                        properties.Add(autoIncrement.ColumnName, NewEntityProperty(ETypeCode.UInt64, lastAutoIncrement));
                     }
 
                     string partitionKeyValue = null;
@@ -709,11 +775,13 @@ namespace dexih.connections.azure
                         var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey)?.ColumnName;
 
                         if (sk == null)
-                            rowKeyValue = Guid.NewGuid().ToString();
+                            if (autoIncrement == null)
+                                rowKeyValue = Guid.NewGuid().ToString();
+                            else
+                                rowKeyValue = lastAutoIncrement.ToString("D20");
                         else
                             rowKeyValue = query.InsertColumns.Single(c => c.Column == sk).Value.ToString();
                     }
-
 
                     DynamicTableEntity entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
 
@@ -728,7 +796,7 @@ namespace dexih.connections.azure
                         batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation, null, null, cancelToken));
 
                         if (cancelToken.IsCancellationRequested)
-                            return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);
+                            return new ReturnValue<Tuple<long, long>>(false, "Update rows cancelled.", null, Tuple.Create(timer.ElapsedTicks, (long)0));
 
                         batchOperation = new TableBatchOperation();
                     }
@@ -741,11 +809,11 @@ namespace dexih.connections.azure
 
                 await Task.WhenAll(batchTasks.ToArray());
 
-                return new ReturnValue<long>(true, timer.ElapsedTicks);
+                return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.ElapsedTicks, (long)lastAutoIncrement));
             }
             catch (Exception ex)
             {
-                return new ReturnValue<long>(false, "The Azure insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+                return new ReturnValue<Tuple<long, long>>(false, "The Azure insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex);
             }
         }
 
@@ -780,7 +848,7 @@ namespace dexih.connections.azure
                     if (surrogateKeyColumn != null)
                     {
                         int filtercount = query.Filters.Count;
-                        for(int i = 0; i < filtercount; i++)
+                        for (int i = 0; i < filtercount; i++)
                         {
                             if (query.Filters[i].Column1 == surrogateKeyColumn.ColumnName)
                             {
@@ -803,7 +871,7 @@ namespace dexih.connections.azure
                     //run the update 
                     TableContinuationToken continuationToken = null;
                     do
-                    {   
+                    {
                         var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancelToken);
                         if (cancelToken.IsCancellationRequested)
                             return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);
@@ -1000,5 +1068,5 @@ namespace dexih.connections.azure
             return reader;
         }
 
-     }
+    }
 }

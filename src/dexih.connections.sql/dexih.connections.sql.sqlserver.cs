@@ -48,6 +48,7 @@ namespace dexih.connections.sql
                         DestinationTableName = table.TableName
                     };
 
+                    bulkCopy.BulkCopyTimeout = 60;
                     await bulkCopy.WriteToServerAsync(reader, cancelToken);
 
                     if (cancelToken.IsCancellationRequested)
@@ -126,11 +127,13 @@ namespace dexih.connections.sql
                 createSql.Append("create table " + AddDelimiter(table.TableName) + " ( ");
                 foreach (TableColumn col in table.Columns)
                 {
-                    createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.DataType, col.MaxLength, col.Scale, col.Precision) + " ");
+                    createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.DataType, col.MaxLength, col.Scale, col.Precision));
+                    if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                        createSql.Append(" IDENTITY(1,1)");
                     if (col.AllowDbNull == false)
-                        createSql.Append("NOT NULL");
+                        createSql.Append(" NOT NULL");
                     else
-                        createSql.Append("NULL");
+                        createSql.Append(" NULL");
 
                     createSql.Append(",");
                 }
@@ -138,8 +141,13 @@ namespace dexih.connections.sql
                 createSql.Remove(createSql.Length - 1, 1);
                 createSql.Append(")");
 
-                //Add the primary key
+                //Add the primary key using surrogate key or autoincrement.
                 TableColumn key = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+                if(key == null)
+                {
+                    key = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+                }
+
                 if (key != null)
                     createSql.Append("ALTER TABLE " + AddDelimiter(table.TableName) + " ADD CONSTRAINT [PK_" + AddEscape(table.TableName) + "] PRIMARY KEY CLUSTERED ([" + AddEscape(key.ColumnName) + "])");
 
@@ -354,6 +362,8 @@ namespace dexih.connections.sql
 
         public override async Task<ReturnValue<DbConnection>> NewConnection()
         {
+            SqlConnection connection = null;
+
             try
             {
                 string connectionString;
@@ -367,18 +377,21 @@ namespace dexih.connections.sql
                         connectionString = "Data Source=" + ServerName + "; Trusted_Connection=True;Initial Catalog=" + DefaultDatabase;
                 }
 
-                SqlConnection connection = new SqlConnection(connectionString);
+                connection = new SqlConnection(connectionString);
                 await connection.OpenAsync();
                 State = (EConnectionState)connection.State;
 
                 if (connection.State != ConnectionState.Open)
                 {
+                    connection.Dispose();
                     return new ReturnValue<DbConnection>(false, "The sqlserver connection failed to open with a state of : " + connection.State.ToString(), null, null);
                 }
                 return new ReturnValue<DbConnection>(true, "", null, connection);
             }
             catch (Exception ex)
             {
+                if(connection != null)
+                    connection.Dispose();
                 return new ReturnValue<DbConnection>(false, "The sqlserver connection failed with the following message: " + ex.Message, null, null);
             }
         }
@@ -652,6 +665,79 @@ namespace dexih.connections.sql
             }
 
             return new ReturnValue(true, "", null);
+        }
+
+        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        {
+            ReturnValue<DbConnection> connectionResult = await NewConnection();
+            if (connectionResult.Success == false)
+            {
+                return new ReturnValue<Tuple<long, long>>(false, connectionResult.Message, connectionResult.Exception);
+            }
+
+            var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null ? "" : "SELECT SCOPE_IDENTITY()";
+            long identityValue = 0;
+
+            using (var connection = connectionResult.Value)
+            {
+                StringBuilder insert = new StringBuilder();
+                StringBuilder values = new StringBuilder();
+
+                var timer = Stopwatch.StartNew();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    foreach (var query in queries)
+                    {
+                        insert.Clear();
+                        values.Clear();
+
+                        insert.Append("INSERT INTO " + AddDelimiter(table.TableName) + " (");
+                        values.Append("VALUES (");
+
+                        for (int i = 0; i < query.InsertColumns.Count; i++)
+                        {
+                            insert.Append("[" + query.InsertColumns[i].Column + "],");
+                            values.Append("@col" + i.ToString() + ",");
+                        }
+
+                        string insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
+                            values.Remove(values.Length - 1, 1).ToString() + "); " + autoIncrementSql;
+
+                        try
+                        {
+                            using (var cmd = connection.CreateCommand())
+                            {
+                                cmd.CommandText = insertCommand;
+                                cmd.Transaction = transaction;
+
+                                for (int i = 0; i < query.InsertColumns.Count; i++)
+                                {
+                                    var param = cmd.CreateParameter();
+                                    param.ParameterName = "@col" + i.ToString();
+                                    param.Value = query.InsertColumns[i].Value == null ? DBNull.Value : query.InsertColumns[i].Value;
+                                    cmd.Parameters.Add(param);
+                                }
+
+                                var identity = await cmd.ExecuteScalarAsync(cancelToken);
+                                identityValue = Convert.ToInt64(identity);
+
+                                if (cancelToken.IsCancellationRequested)
+                                {
+                                    return new ReturnValue<Tuple<long, long>>(false, "Insert rows cancelled.", null, Tuple.Create(timer.ElapsedTicks, identityValue));
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            return new ReturnValue<Tuple<long, long>>(false, "The insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, Tuple.Create(timer.ElapsedTicks, (long)0));
+                        }
+                    }
+                    transaction.Commit();
+                }
+
+                timer.Stop();
+                return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.ElapsedTicks, identityValue)); //sometimes reader returns -1, when we want this to be error condition.
+            }
         }
 
 

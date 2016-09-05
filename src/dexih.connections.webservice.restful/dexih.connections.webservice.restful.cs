@@ -284,7 +284,7 @@ namespace dexih.connections.webservice
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
+        public override Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

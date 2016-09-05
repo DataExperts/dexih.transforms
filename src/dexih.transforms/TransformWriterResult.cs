@@ -14,9 +14,12 @@ namespace dexih.transforms
         #region Events
         public delegate void ProgressUpdate(TransformWriterResult transformWriterResult);
         public delegate void StatusUpdate(TransformWriterResult transformWriterResult);
+        public delegate void Finish(TransformWriterResult transformWriterResult);
 
         public event ProgressUpdate OnProgressUpdate;
         public event StatusUpdate OnStatusUpdate;
+        public event Finish OnFinish;
+
         #endregion
 
         public TransformWriterResult(Int64 hubKey, Int64 auditKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, Connection auditConnection, TransformWriterResult lastSuccessfulResult)
@@ -55,7 +58,7 @@ namespace dexih.transforms
 
         private Connection AuditConnection;
 
-        public Int64 AuditKey { get; set; }
+        public long AuditKey { get; set; }
         public string AuditType { get; set; }
         public Int64 ReferenceKey { get; set; }
         public string ReferenceName { get; set; }
@@ -154,6 +157,12 @@ namespace dexih.transforms
                     Message += Environment.NewLine + message;
             }
 
+            if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors)
+            {
+                EndTime = DateTime.Now;
+                OnFinish?.Invoke(this);
+            }
+
             if (AuditConnection != null)
             {
                 LastUpdateTime = DateTime.Now;
@@ -165,9 +174,6 @@ namespace dexih.transforms
                     return updateResult;
                 }
             }
-
-            if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors)
-                EndTime = DateTime.Now;
 
             OnStatusUpdate?.Invoke(this);
 

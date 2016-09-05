@@ -79,59 +79,72 @@ namespace dexih.connections.sql
             try
             {
 
-                    var tableExistsResult = await TableExists(table);
-                    if (!tableExistsResult.Success)
-                        return tableExistsResult;
+                var tableExistsResult = await TableExists(table);
+                if (!tableExistsResult.Success)
+                    return tableExistsResult;
 
-                    //if table exists, and the dropTable flag is set to false, then error.
-                    if (tableExistsResult.Value && dropTable == false)
+                //if table exists, and the dropTable flag is set to false, then error.
+                if (tableExistsResult.Value && dropTable == false)
+                {
+                    return new ReturnValue(false, "The table " + table.TableName + " already exists on the underlying database.  Please drop the table first.", null);
+                }
+
+                //if table exists, then drop it.
+                if (tableExistsResult.Value)
+                {
+                    var dropResult = await DropTable(table);
+                    if (!dropResult.Success)
+                        return dropResult;
+                }
+
+                StringBuilder createSql = new StringBuilder();
+
+                //Create the table
+                createSql.Append("create table " + AddDelimiter(table.TableName) + " ");
+
+                //sqlite does not support table/column comments, so add a comment string into the ddl.
+                if (!string.IsNullOrEmpty(table.Description))
+                    createSql.Append(" -- " + table.Description);
+
+                createSql.AppendLine("");
+                createSql.Append("(");
+
+                for (int i = 0; i < table.Columns.Count; i++)
+                {
+                    TableColumn col = table.Columns[i];
+
+                    //ignore datatypes for autoincrement and create a primary key.
+                    if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
                     {
-                        return new ReturnValue(false, "The table " + table.TableName + " already exists on the underlying database.  Please drop the table first.", null);
+                        createSql.Append(AddDelimiter(col.ColumnName) + " INTEGER PRIMARY KEY ");
                     }
-
-                    //if table exists, then drop it.
-                    if (tableExistsResult.Value)
+                    else
                     {
-                        var dropResult = await DropTable(table);
-                        if (!dropResult.Success)
-                            return dropResult;
-                    }
-
-                    StringBuilder createSql = new StringBuilder();
-
-                    //Create the table
-                    createSql.Append("create table " + AddDelimiter(table.TableName) + " ");
-
-                    //sqlite does not support table/column comments, so add a comment string into the ddl.
-                    if (!string.IsNullOrEmpty(table.Description))
-                        createSql.Append(" -- " + table.Description);
-
-                    createSql.AppendLine("");
-                    createSql.Append("(");
-
-                    for (int i = 0; i < table.Columns.Count; i++)
-                    {
-                        TableColumn col = table.Columns[i];
-
                         createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.DataType, col.MaxLength, col.Scale, col.Precision) + " ");
                         if (col.AllowDbNull == false)
-                            createSql.Append("NOT NULL ");
-                        else
-                            createSql.Append("NULL ");
+                                createSql.Append("NOT NULL ");
+                            else
+                                createSql.Append("NULL ");
 
                         if (col.DeltaType == TableColumn.EDeltaType.SurrogateKey)
-                            createSql.Append("PRIMARY KEY ASC ");
-
-                        if (i < table.Columns.Count - 1)
-                            createSql.Append(",");
-
-                        if (!string.IsNullOrEmpty(col.Description))
-                            createSql.Append(" -- " + col.Description);
-
-                        createSql.AppendLine();
+                        {
+                            if (table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null)
+                                createSql.Append("PRIMARY KEY ASC ");
+                            else
+                                createSql.Append("UNIQUE ");
+                        }
                     }
 
-                    createSql.AppendLine(")");
+                    if (i < table.Columns.Count - 1)
+                        createSql.Append(",");
+
+                    if (!string.IsNullOrEmpty(col.Description))
+                        createSql.Append(" -- " + col.Description);
+
+                    createSql.AppendLine();
+                }
+
+                createSql.AppendLine(")");
 
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
@@ -153,7 +166,7 @@ namespace dexih.connections.sql
                     }
                 }
 
-                    return new ReturnValue(true, "", null);
+                return new ReturnValue(true, "", null);
             }
             catch (Exception ex)
             {
@@ -254,7 +267,7 @@ namespace dexih.connections.sql
                     returnValue = AddEscape(value.ToString());
                     break;
                 case ETypeCode.Boolean:
-                    returnValue = (bool)value == true ? "1" : "0";
+                    returnValue = (bool)value == true ? "'True'" : "'False'";
                     break;
                 case ETypeCode.String:
                 case ETypeCode.Guid:
@@ -277,6 +290,7 @@ namespace dexih.connections.sql
 
             return returnValue;
         }
+
 
         public override async Task<ReturnValue<DbConnection>> NewConnection()
         {
@@ -425,7 +439,7 @@ namespace dexih.connections.sql
                 }
 
                 using (var connection = connectionResult.Value)
-                { 
+                {
 
                     Table table = new Table(tableName);
 
@@ -565,6 +579,79 @@ namespace dexih.connections.sql
                     return ETypeCode.DateTime;
             }
             return ETypeCode.Unknown;
+        }
+
+        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        {
+            ReturnValue<DbConnection> connectionResult = await NewConnection();
+            if (connectionResult.Success == false)
+            {
+                return new ReturnValue<Tuple<long, long>>(false, connectionResult.Message, connectionResult.Exception);
+            }
+
+            var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null ? "" : " select last_insert_rowid() from [" + table.TableName + "]";
+            long identityValue = 0;
+
+            using (var connection = connectionResult.Value)
+            {
+                StringBuilder insert = new StringBuilder();
+                StringBuilder values = new StringBuilder();
+
+                var timer = Stopwatch.StartNew();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    foreach (var query in queries)
+                    {
+                        insert.Clear();
+                        values.Clear();
+
+                        insert.Append("INSERT INTO " + AddDelimiter(table.TableName) + " (");
+                        values.Append("VALUES (");
+
+                        for (int i = 0; i < query.InsertColumns.Count; i++)
+                        {
+                            insert.Append("[" + query.InsertColumns[i].Column + "],");
+                            values.Append("@col" + i.ToString() + ",");
+                        }
+
+                        string insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
+                            values.Remove(values.Length - 1, 1).ToString() + "); " + autoIncrementSql;
+
+                        try
+                        {
+                            using (var cmd = connection.CreateCommand())
+                            {
+                                cmd.CommandText = insertCommand;
+                                cmd.Transaction = transaction;
+
+                                for (int i = 0; i < query.InsertColumns.Count; i++)
+                                {
+                                    var param = cmd.CreateParameter();
+                                    param.ParameterName = "@col" + i.ToString();
+                                    param.Value = query.InsertColumns[i].Value == null ? DBNull.Value : query.InsertColumns[i].Value;
+                                    cmd.Parameters.Add(param);
+                                }
+
+                                var identity = await cmd.ExecuteScalarAsync(cancelToken);
+                                identityValue = Convert.ToInt64(identity);
+
+                                if (cancelToken.IsCancellationRequested)
+                                {
+                                    return new ReturnValue<Tuple<long, long>>(false, "Insert rows cancelled.", null, Tuple.Create(timer.ElapsedTicks, identityValue));
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            return new ReturnValue<Tuple<long, long>>(false, "The insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, Tuple.Create(timer.ElapsedTicks, (long)0));
+                        }
+                    }
+                    transaction.Commit();
+                }
+
+                timer.Stop();
+                return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.ElapsedTicks, identityValue)); //sometimes reader returns -1, when we want this to be error condition.
+            }
         }
 
 

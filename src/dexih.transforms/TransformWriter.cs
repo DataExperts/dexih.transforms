@@ -171,6 +171,7 @@ namespace dexih.transforms
                 }
 
                 var setRunStatusResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished);
+
                 return setRunStatusResult;
             }
             catch(Exception ex)

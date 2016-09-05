@@ -58,6 +58,7 @@ namespace dexih.connections.sql
         public abstract ETypeCode ConvertSqlToTypeCode(string SqlType);
         public abstract string GetSqlFieldValueQuote(ETypeCode type, object value);
 
+
         /// <summary>
         /// This is used to convert any datatypes that are not compatible with the target database.
         /// </summary>
@@ -498,74 +499,6 @@ namespace dexih.connections.sql
                             {
                                 return new ReturnValue<long>(false, "The delete query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, timer.ElapsedTicks);
                             }
-                        }
-                    }
-                    transaction.Commit();
-                }
-
-                timer.Stop();
-                return new ReturnValue<long>(true, timer.ElapsedTicks); //sometimes reader returns -1, when we want this to be error condition.
-            }
-        }
-
-        public override async Task<ReturnValue<long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
-        {
-            ReturnValue<DbConnection> connectionResult = await NewConnection();
-            if (connectionResult.Success == false)
-            {
-                return new ReturnValue<long>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, -1);
-            }
-
-            using (var connection = connectionResult.Value)
-            {
-                StringBuilder insert = new StringBuilder();
-                StringBuilder values = new StringBuilder();
-                int rows = 0;
-
-                var timer = Stopwatch.StartNew();
-                using (var transaction = connection.BeginTransaction())
-                {
-                    foreach (var query in queries)
-                    {
-                        insert.Clear();
-                        values.Clear();
-
-                        insert.Append("INSERT INTO " + AddDelimiter(table.TableName) + " (");
-                        values.Append("VALUES (");
-
-                        for (int i = 0; i < query.InsertColumns.Count; i++)
-                        {
-                            insert.Append("[" + query.InsertColumns[i].Column + "],");
-                            values.Append("@col" + i.ToString() + ",");
-                        }
-
-                        string insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " + values.Remove(values.Length - 1, 1).ToString() + ");";
-
-                        try
-                        {
-                            using (var cmd = connection.CreateCommand())
-                            {
-                                cmd.CommandText = insertCommand;
-                                cmd.Transaction = transaction;
-
-                                for (int i = 0; i < query.InsertColumns.Count; i++)
-                                {
-                                    var param = cmd.CreateParameter();
-                                    param.ParameterName = "@col" + i.ToString();
-                                    param.Value = query.InsertColumns[i].Value == null ? DBNull.Value : query.InsertColumns[i].Value;
-                                    cmd.Parameters.Add(param);
-                                }
-                                rows += await cmd.ExecuteNonQueryAsync(cancelToken);
-
-                                if (cancelToken.IsCancellationRequested)
-                                {
-                                    return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            return new ReturnValue<long>(false, "The insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, timer.ElapsedTicks);
                         }
                     }
                     transaction.Commit();
