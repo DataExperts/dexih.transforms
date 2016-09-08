@@ -28,7 +28,7 @@ namespace dexih.connections.test
             Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
             TransformWriter writer = new TransformWriter();
 
-            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test", 1, "Source", 2, "Target", true);
+            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test");
             Assert.True(auditResult.Success);
             TransformWriterResult writerResult = auditResult.Value;
 
@@ -88,7 +88,7 @@ namespace dexih.connections.test
             reader = connection.GetTransformReader(table);
             TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1);
 
-            auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test", 1, "Source", 2, "Target", true);
+            auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test");
             Assert.True(auditResult.Success);
             writerResult = auditResult.Value;
 
@@ -97,7 +97,7 @@ namespace dexih.connections.test
             Assert.Equal(10, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, null, 1, 0, CancellationToken.None);
+            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, null, 1, 0, null, CancellationToken.None);
             Assert.Equal((long)10, auditTable.Value[0].RowsCreated);
 
         }

@@ -33,7 +33,7 @@ namespace dexih.connections.sql
         public virtual string SqlDelimiterClose { get; } = "\"";
         public virtual string SqlValueOpen { get; } = "'";
         public virtual string SqlValueClose { get; } = "'";
-        public virtual string SqlSelectNoLock { get; } = "";
+        public virtual string SqlFromAttribute(Table table) => "";
 
         public string AddDelimiter(string name)
         {
@@ -332,7 +332,7 @@ namespace dexih.connections.sql
             sql.Append("select ");
             sql.Append(columns + " ");
             sql.Append("from " + AddDelimiter(table.TableName) + " ");
-            sql.Append(" " + SqlSelectNoLock + " ");
+            sql.Append(" " + SqlFromAttribute(table) + " ");
 
             if (query?.Filters != null)
                 sql.Append(BuildFiltersString(query.Filters));

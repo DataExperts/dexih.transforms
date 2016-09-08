@@ -150,6 +150,7 @@ namespace dexih.transforms
                 auditTable.Columns.Add(new TableColumn("HubKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("AuditType", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
                 auditTable.Columns.Add(new TableColumn("ReferenceKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
+                auditTable.Columns.Add(new TableColumn("ParentAuditKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("ReferenceName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
                 auditTable.Columns.Add(new TableColumn("SourceTableKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
                 auditTable.Columns.Add(new TableColumn("SourceTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
@@ -172,10 +173,13 @@ namespace dexih.transforms
                 auditTable.Columns.Add(new TableColumn("MaxIncrementalValue", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 255, AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("MaxSurrogateKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField) { MaxLength = 255, AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("InitializeTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField));
+                auditTable.Columns.Add(new TableColumn("ScheduledTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("StartTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("EndTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("LastUpdateTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("RunStatus", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
+                auditTable.Columns.Add(new TableColumn("TriggerMethod", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
+                auditTable.Columns.Add(new TableColumn("TriggerInfo", ETypeCode.String, TableColumn.EDeltaType.TrackingField) );
                 auditTable.Columns.Add(new TableColumn("Message", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("IsLatest", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
 
@@ -183,7 +187,7 @@ namespace dexih.transforms
             }
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName)
+        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, Int64 parentAuditKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo)
         {
             var auditTable = AuditTable;
 
@@ -205,20 +209,22 @@ namespace dexih.transforms
             else
             {
                 //get the last audit result for this reference to collect previous run information
-                var lastAuditResult = await GetTransformWriterResults(subScriptionKey, new long[] { referenceKey }, null, TransformWriterResult.ERunStatus.Finished, true, null, 1, 0, CancellationToken.None);
+                var lastAuditResult = await GetTransformWriterResults(subScriptionKey, new long[] { referenceKey }, null, TransformWriterResult.ERunStatus.Finished, true, null, 1, 0, null, CancellationToken.None);
                 if (!lastAuditResult.Success)
                     return new ReturnValue<TransformWriterResult>(lastAuditResult);
                 if (lastAuditResult.Value.Count > 0)
                     lastResult = lastAuditResult.Value[0];
             }
 
-            var writerResult = new TransformWriterResult(subScriptionKey, 0, auditType, referenceKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, lastResult);
+            var writerResult = new TransformWriterResult(subScriptionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, lastResult, triggerMethod, triggerInfo);
 
+            //note AuditKey not included in query columns as it is an AutoGenerate type.
             var queryColumns = new List<QueryColumn>
                 {
                     new QueryColumn("HubKey", ETypeCode.Int64,  writerResult.HubKey),
                     new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
                     new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
+                    new QueryColumn("ParentAuditKey", ETypeCode.Int64, writerResult.ParentAuditKey),
                     new QueryColumn("ReferenceName", ETypeCode.String, writerResult.ReferenceName),
                     new QueryColumn("SourceTableKey", ETypeCode.Int64, writerResult.SourceTableKey),
                     new QueryColumn("SourceTableName", ETypeCode.String, writerResult.SourceTableName),
@@ -241,12 +247,15 @@ namespace dexih.transforms
                     new QueryColumn("MaxIncrementalValue", ETypeCode.String, writerResult.MaxIncrementalValue),
                     new QueryColumn("MaxSurrogateKey", ETypeCode.String, writerResult.MaxSurrogateKey),
                     new QueryColumn("InitializeTime", ETypeCode.DateTime, writerResult.InitializeTime),
+                    new QueryColumn("ScheduledTime", ETypeCode.DateTime, writerResult.ScheduledTime),
                     new QueryColumn("StartTime", ETypeCode.DateTime, writerResult.StartTime),
                     new QueryColumn("EndTime", ETypeCode.DateTime, writerResult.EndTime),
                     new QueryColumn("LastUpdateTime", ETypeCode.DateTime, writerResult.LastUpdateTime),
-                    new QueryColumn("RunStatus", ETypeCode.DateTime, writerResult.RunStatus.ToString()),
+                    new QueryColumn("RunStatus", ETypeCode.String, writerResult.RunStatus.ToString()),
+                    new QueryColumn("TriggerMethod", ETypeCode.String, writerResult.TriggerMethod.ToString()),
+                    new QueryColumn("TriggerInfo", ETypeCode.String, writerResult.TriggerInfo),
                     new QueryColumn("Message", ETypeCode.DateTime, writerResult.Message),
-                    new QueryColumn("IsLatest", ETypeCode.String, false)
+                    new QueryColumn("IsLatest", ETypeCode.Boolean, false)
 
             };
 
@@ -296,6 +305,7 @@ namespace dexih.transforms
                     new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
                     new QueryColumn("HubKey", ETypeCode.Int64,  writerResult.HubKey),
                     new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
+                    new QueryColumn("ParentAuditKey", ETypeCode.Int64, writerResult.ParentAuditKey),
                     new QueryColumn("ReferenceName", ETypeCode.String, writerResult.ReferenceName),
                     new QueryColumn("SourceTableKey", ETypeCode.Int64, writerResult.SourceTableKey),
                     new QueryColumn("SourceTableName", ETypeCode.String, writerResult.SourceTableName),
@@ -318,12 +328,15 @@ namespace dexih.transforms
                     new QueryColumn("MaxIncrementalValue", ETypeCode.String, writerResult.MaxIncrementalValue),
                     new QueryColumn("MaxSurrogateKey", ETypeCode.String, writerResult.MaxSurrogateKey),
                     new QueryColumn("InitializeTime", ETypeCode.DateTime, writerResult.InitializeTime),
+                    new QueryColumn("ScheduledTime", ETypeCode.DateTime, writerResult.ScheduledTime),
                     new QueryColumn("StartTime", ETypeCode.DateTime, writerResult.StartTime),
                     new QueryColumn("EndTime", ETypeCode.DateTime, writerResult.EndTime),
                     new QueryColumn("LastUpdateTime", ETypeCode.DateTime, writerResult.LastUpdateTime),
                     new QueryColumn("RunStatus", ETypeCode.String, writerResult.RunStatus.ToString()),
+                    new QueryColumn("TriggerMethod", ETypeCode.String, writerResult.TriggerMethod.ToString()),
+                    new QueryColumn("TriggerInfo", ETypeCode.String, writerResult.TriggerInfo.ToString()),
                     new QueryColumn("Message", ETypeCode.String, writerResult.Message),
-                    new QueryColumn("IsLatest", ETypeCode.String, IsLatest)
+                    new QueryColumn("IsLatest", ETypeCode.Boolean, IsLatest)
             };
 
             var updateFilters = new List<Filter>() { new Filter("AuditKey", Filter.ECompare.IsEqual, writerResult.AuditKey) };
@@ -336,7 +349,7 @@ namespace dexih.transforms
 
 
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool lastResultOnly, DateTime? startTime, int rows, int maxMilliseconds, CancellationToken cancellationToken)
+        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool lastResultOnly, DateTime? startTime, int rows, int maxMilliseconds, long? parentAuditKey, CancellationToken cancellationToken)
         {
             Transform reader = null;
             try
@@ -353,25 +366,13 @@ namespace dexih.transforms
                 if (runStatus != null) filters.Add(new Filter("RunStatus", Filter.ECompare.IsEqual, runStatus.ToString()));
                 if (startTime != null) filters.Add(new Filter("StartTime", Filter.ECompare.GreaterThanEqual, startTime));
                 if (lastResultOnly) filters.Add(new Filter("IsLatest", Filter.ECompare.IsEqual, true));
+                if (parentAuditKey != null) filters.Add(new Filter("ParentAuditKey", Filter.ECompare.IsEqual, parentAuditKey));
 
                 var sorts = new List<Sort>() { new Sort("AuditKey", Sort.EDirection.Descending) };
                 var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
 
                 //add a sort transform to ensure sort order.
                 reader = new TransformSort(reader, sorts);
-
-                ////if lastResult only, create a group by to get most recent rows.
-                //if(lastResultOnly)
-                //{
-                //    var groupFields = new List<ColumnPair>() { new ColumnPair("AuditKey") };
-                //    var aggregates = new List<Function>();
-                //    foreach(var column in AuditTable.Columns)
-                //    {
-                //        if (column.ColumnName != "AuditKey")
-                //            aggregates.Add(StandardFunctions.GetFunctionReference("First", new string[] { column.ColumnName }, column.ColumnName, null));
-                //    }
-                //    reader = new TransformGroup(reader, groupFields, aggregates, false);
-                //}
 
                 ReturnValue returnValue = await reader.Open(0, query);
                 if (returnValue.Success == false)
@@ -390,11 +391,14 @@ namespace dexih.transforms
                         (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value,
                         (string)reader["AuditType"],
                         (long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value,
+                        (long)TryParse(ETypeCode.Int64, reader["ParentAuditKey"]).Value,
                         (string)reader["ReferenceName"],
                         (long)TryParse(ETypeCode.Int64, reader["SourceTableKey"]).Value,
                         (string)reader["SourceTableName"],
                         (long)TryParse(ETypeCode.Int64, reader["TargetTableKey"]).Value,
-                        (string)reader["TargetTableName"], null, null
+                        (string)reader["TargetTableName"], null, null,
+                        (TransformWriterResult.ETriggerMethod)Enum.Parse(typeof(TransformWriterResult.ETriggerMethod), (string)reader["TriggerMethod"]),
+                        (string)(reader["TriggerInfo"] is DBNull ? null : reader["TriggerInfo"])
                         )
                     {
                         RowsTotal = (long)TryParse(ETypeCode.Int64, reader["RowsTotal"]).Value,
@@ -414,9 +418,10 @@ namespace dexih.transforms
                         MaxIncrementalValue = reader["MaxIncrementalValue"],
                         MaxSurrogateKey = (long)TryParse(ETypeCode.Int64, reader["MaxSurrogateKey"]).Value,
                         InitializeTime = (DateTime)TryParse(ETypeCode.DateTime, reader["InitializeTime"]).Value,
-                        StartTime = (DateTime)TryParse(ETypeCode.DateTime, reader["StartTime"]).Value,
-                        EndTime = (DateTime)TryParse(ETypeCode.DateTime, reader["EndTime"]).Value,
-                        LastUpdateTime = (DateTime)TryParse(ETypeCode.DateTime, reader["LastUpdateTime"]).Value,
+                        ScheduledTime = reader["ScheduledTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["ScheduledTime"]).Value,
+                        StartTime = reader["StartTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["StartTime"]).Value,
+                        EndTime = reader["EndTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["EndTime"]).Value,
+                        LastUpdateTime = reader["LastUpdateTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["LastUpdateTime"]).Value,
                         RunStatus = (TransformWriterResult.ERunStatus)Enum.Parse(typeof(TransformWriterResult.ERunStatus), (string)reader["RunStatus"]),
                         Message = (string)(reader["Message"] is DBNull ? null : reader["Message"])
                     };

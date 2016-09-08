@@ -26,7 +26,17 @@ namespace dexih.connections.sql
         public override string DatabaseTypeName => "SQL Server";
         public override ECategory DatabaseCategory => ECategory.SqlDatabase;
 
-        public override string SqlSelectNoLock { get; } = "WITH (NOLOCK)";
+        public override string SqlFromAttribute(Table table)
+        {
+            string sql = "";
+
+            if (table.IsVersioned == true)
+                sql = "FOR system_time all";
+
+            sql = sql + " WITH(NOLOCK) ";
+
+            return sql;
+        }
 
         public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
@@ -466,13 +476,45 @@ namespace dexih.connections.sql
                 List<string> tableList = new List<string>();
 
                 using (var connection = connectionResult.Value)
-                using (DbCommand cmd = CreateCommand(connection, "SELECT * FROM INFORMATION_SCHEMA.Tables where TABLE_TYPE='BASE TABLE' order by TABLE_NAME"))
-                using (var reader = await cmd.ExecuteReaderAsync())
                 {
-                    while (await reader.ReadAsync())
+                    int sqlversion = 0;
+                    //get the sql server version.
+                    using (DbCommand cmd = CreateCommand(connection, "SELECT SERVERPROPERTY('ProductVersion') AS ProductVersion"))
                     {
-                        tableList.Add(AddDelimiter(reader["TABLE_SCHEMA"].ToString()) + "." + AddDelimiter(reader["TABLE_NAME"].ToString()));
+                        string fullversion = cmd.ExecuteScalar().ToString();
+
+                        sqlversion = Convert.ToInt32(fullversion.Split('.')[0]);
                     }
+
+                    using (DbCommand cmd = CreateCommand(connection, "SELECT * FROM INFORMATION_SCHEMA.Tables where TABLE_TYPE='BASE TABLE' order by TABLE_NAME"))
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            string tableName = AddDelimiter(reader["TABLE_SCHEMA"].ToString()) + "." + AddDelimiter(reader["TABLE_NAME"].ToString());
+                            tableList.Add(tableName);
+                        }
+                    }
+
+                    if (sqlversion >= 13)
+                    {
+                        var newTableList = new List<string>();
+
+                        foreach (string tableName in tableList)
+                        {
+                            //select the temporal type 
+                            using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + tableName + "')"))
+                            {
+                                int temporalType = Convert.ToInt32(cmd.ExecuteScalar());
+                                //Exclude history table from the list (temporalType = 1)
+                                if (temporalType != 1)
+                                    newTableList.Add(tableName);
+                            }
+                        }
+
+                        tableList = newTableList;
+                    }
+
                 }
                 return new ReturnValue<List<string>>(true, "", null, tableList);
             }
@@ -496,9 +538,20 @@ namespace dexih.connections.sql
 
                 using (var connection = connectionResult.Value)
                 {
+                    int sqlversion = 0;
+
+                    //get the sql server version.
+                    using (DbCommand cmd = CreateCommand(connection, "SELECT SERVERPROPERTY('ProductVersion') AS ProductVersion"))
+                    {
+                        string fullversion = cmd.ExecuteScalar().ToString();
+
+                        sqlversion = Convert.ToInt32(fullversion.Split('.')[0]);
+                    }
+
+                    //get the column descriptions.
                     using (DbCommand cmd = CreateCommand(connection, @"select value 'Description' 
                             FROM sys.extended_properties
-                            WHERE minor_id = 0 and class = 1 and name = 'MS_Description' and
+                            WHERE minor_id = 0 and class = 1 and (name = 'MS_Description' or name = 'Description') and
                             major_id = OBJECT_ID('" + AddEscape(tableName) + "')"))
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
@@ -510,20 +563,39 @@ namespace dexih.connections.sql
                         {
                             table.Description = "";
                         }
+                    }
 
+                    if (sqlversion >= 13)
+                    {
+                        //select the temporal type 
+                        using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + tableName + "')"))
+                        {
+                            int temporalType = Convert.ToInt32(cmd.ExecuteScalar());
+                        //If the table is a temporarl table, mark it.
+                        if (temporalType == 2)
+                            table.IsVersioned = true;
+                        }
                     }
 
                     //The new datatable that will contain the table schema
                     table.Columns.Clear();
 
+                    string generatedAlwaysTypeColumn = "";
+
+                    //if this is sql server 2016 or newer, check is the column is a temporal row_start or row_end column
+                    if (sqlversion >= 13)
+                    {
+                        generatedAlwaysTypeColumn = "c.generated_always_type,";
+                    }
+
                     // The schema table 
                     using (var cmd = CreateCommand(connection, @"
-                         SELECT c.column_id, c.name 'ColumnName', t2.Name 'DataType', c.Max_Length 'Max_Length', c.precision 'Precision', c.scale 'Scale', c.is_nullable 'IsNullable', ep.value 'Description',
-                        case when exists(select * from sys.index_columns ic JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id where ic.object_id = c.object_id and ic.column_id = c.column_id and is_primary_key = 1) then 1 else 0 end 'PrimaryKey'
+                         SELECT c.column_id, c.name 'ColumnName', t2.Name 'DataType', c.Max_Length 'Max_Length', c.precision 'Precision', c.scale 'Scale', c.is_nullable 'IsNullable', ep.value 'Description', " + generatedAlwaysTypeColumn + 
+                        @"case when exists(select * from sys.index_columns ic JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id where ic.object_id = c.object_id and ic.column_id = c.column_id and is_primary_key = 1) then 1 else 0 end 'PrimaryKey'
                         FROM sys.columns c
                         INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
 						INNER JOIN sys.types t2 on t.system_type_id = t2.user_type_id 
-                        LEFT OUTER JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id and ep.name = 'MS_Description' and ep.class = 1 
+                        LEFT OUTER JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id and (ep.name = 'MS_Description' or ep.name = 'Description') and ep.class = 1 
                         WHERE c.object_id = OBJECT_ID('" + AddEscape(tableName) + "') "
                             ))
                     using (var reader = await cmd.ExecuteReaderAsync())
@@ -572,6 +644,18 @@ namespace dexih.connections.sql
                             col.Description = reader["Description"].ToString();
                             col.AllowDbNull = Convert.ToBoolean(reader["IsNullable"]);
                             //col.IsUnique = Convert.ToBoolean(reader["IsUnique"]);
+
+                            //if this is sql server 2016 or newer, check is the column is a temporal row_start or row_end column
+                            if (sqlversion >= 13)
+                            {
+                                int generatedAlwaysTypeValue = Convert.ToInt32(reader["generated_always_type"]);
+                                
+                                if(generatedAlwaysTypeValue == 1)
+                                    col.DeltaType = TableColumn.EDeltaType.ValidFromDate;
+                                if(generatedAlwaysTypeValue == 2)
+                                    col.DeltaType = TableColumn.EDeltaType.ValidToDate;
+                            }
+
                             table.Columns.Add(col);
                         }
                     }

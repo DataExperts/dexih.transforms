@@ -68,6 +68,11 @@ namespace dexih.transforms
         public string Description { get; set; }
 
         /// <summary>
+        /// Indicates if the table contains versions (history) of data change, such as sql temporal tables.
+        /// </summary>
+        public bool IsVersioned { get; set; }
+
+        /// <summary>
         /// Indicates the output sort fields for the table.
         /// </summary>
         /// <returns></returns>

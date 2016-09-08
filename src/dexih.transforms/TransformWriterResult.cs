@@ -22,12 +22,13 @@ namespace dexih.transforms
 
         #endregion
 
-        public TransformWriterResult(Int64 hubKey, Int64 auditKey, string auditType, Int64 referenceKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, Connection auditConnection, TransformWriterResult lastSuccessfulResult)
+        public TransformWriterResult(Int64 hubKey, Int64 auditKey, string auditType, Int64 referenceKey, Int64 parentAuditKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, Connection auditConnection, TransformWriterResult lastSuccessfulResult, ETriggerMethod triggerMethod, string triggerInfo)
         {
             HubKey = hubKey;
             AuditKey = auditKey;
             AuditType = auditType;
             ReferenceKey = referenceKey;
+            ParentAuditKey = parentAuditKey;
             ReferenceName = referenceName;
             SourceTableKey = sourceTableKey;
             SourceTableName = sourceTableName;
@@ -40,12 +41,15 @@ namespace dexih.transforms
             InitializeTime = DateTime.Now;
             LastUpdateTime = InitializeTime;
             RunStatus = ERunStatus.Initialised;
+            TriggerMethod = triggerMethod;
+            TriggerInfo = triggerInfo;
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public enum ERunStatus
         {
             Initialised,
+            Scheduled,
             Started,
             Running,
             RunningErrors,
@@ -56,11 +60,23 @@ namespace dexih.transforms
             NotRunning
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
+        public enum ETriggerMethod
+        {
+            NotTriggered,
+            Manual,
+            Schedule,
+            FileWatcher,
+            External,
+            DataJob
+        }
+
         private Connection AuditConnection;
 
         public long AuditKey { get; set; }
         public string AuditType { get; set; }
         public Int64 ReferenceKey { get; set; }
+        public Int64 ParentAuditKey { get; set; }
         public string ReferenceName { get; set; }
         public Int64 SourceTableKey { get; set; }
         public string SourceTableName { get; set; }
@@ -96,11 +112,14 @@ namespace dexih.transforms
 
         public string Message { get; set; }
         public DateTime InitializeTime { get; set; }
-        public DateTime StartTime { get; set; } = Convert.ToDateTime("1900-01-01");
-        public DateTime EndTime { get;
-            set; } = Convert.ToDateTime("1900-01-01");
-        public DateTime LastUpdateTime { get; set; }
+        public DateTime? ScheduledTime { get; set; } 
+        public DateTime? StartTime { get; set; } 
+        public DateTime? EndTime { get; set; } 
+        public DateTime? LastUpdateTime { get; set; }
+        public ETriggerMethod TriggerMethod { get; set; }
+        public string TriggerInfo { get; set; }
         public string PerformanceSummary { get; set; }
+
         private CancellationTokenSource CancelTokenSource { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
@@ -108,10 +127,10 @@ namespace dexih.transforms
 
         public TimeSpan? TimeTaken()
         {
-            if (EndTime == Convert.ToDateTime("1900-01-01") || StartTime == Convert.ToDateTime("1900-01-01"))
+            if (EndTime == null || StartTime == null)
                 return null;
             else
-                return EndTime.Subtract((DateTime)StartTime);
+                return EndTime.Value.Subtract((DateTime)StartTime.Value);
         }
 
         public decimal WriteThroughput()
@@ -186,6 +205,30 @@ namespace dexih.transforms
             {
                 return RunStatus == ERunStatus.Running || RunStatus == ERunStatus.RunningErrors || RunStatus == ERunStatus.Initialised || RunStatus == ERunStatus.Started;
             }
+        }
+
+        public bool IsFinished
+        {
+            get
+            {
+                return RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Cancelled || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors;
+            }
+        }
+
+        public bool IsScheduled
+        {
+            get
+            {
+                return RunStatus == ERunStatus.Scheduled;
+            }
+        }
+
+        public TimeSpan? ScheduleDuration()
+        {
+            if (ScheduledTime == null)
+                return null;
+            else
+                return DateTime.Now - ScheduledTime;
         }
 
         private int _progressCounter;

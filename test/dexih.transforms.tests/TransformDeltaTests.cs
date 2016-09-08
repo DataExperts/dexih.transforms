@@ -85,7 +85,7 @@ namespace dexih.transforms.tests
                 //write result to a memory table
                 ConnectionMemory memoryConnection = new ConnectionMemory();
                 TransformWriter writer = new TransformWriter();
-                TransformWriterResult result = new TransformWriterResult(0, 10, "DataLink", 1, "Test", 1, "Source", 2, "Target", null, null);
+                TransformWriterResult result = new TransformWriterResult(0, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                 await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
                 Target = new ReaderMemory(Target.CacheTable, null);
 
@@ -200,7 +200,7 @@ namespace dexih.transforms.tests
                 //write result to a memory table
                 ConnectionMemory memoryConnection = new ConnectionMemory();
                TransformWriter writer = new TransformWriter();
-               TransformWriterResult result = new TransformWriterResult(0, 1, "DataLink", 1, "Test", 1, "Source", 2, "Target", null, null);
+               TransformWriterResult result = new TransformWriterResult(0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection, CancellationToken.None);
                Target = new ReaderMemory(Target.CacheTable, null);
 
@@ -235,12 +235,12 @@ namespace dexih.transforms.tests
                }
 
                Assert.True(rowsCreated == 3);
-               Assert.True(transformDelta.TotalRowsPreserved == 4);
+               Assert.True(transformDelta.TotalRowsPreserved == 3);
                Assert.True(count == 6);
 
                 //run the delta again.  this should ignore all 10 records.
                 transformDelta.SetRowNumber(0);
-               result = new TransformWriterResult(0, 1, "DataLink", 30, "Test", 1, "Source", 2, "Target", null, null);
+               result = new TransformWriterResult(0, 1, "DataLink", 30, 40, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                await writer.WriteAllRecords(result, transformDelta, Target.CacheTable, memoryConnection,CancellationToken.None);
                Target = new ReaderMemory(Target.CacheTable, null);
                transformDelta = new TransformDelta(Source, Target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, SurrrogateKey);
@@ -361,7 +361,7 @@ namespace dexih.transforms.tests
         [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve)]
         [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdatePreserve)]
         [InlineData(100000, TransformDelta.EUpdateStrategy.Reload)]
-        public void TransformDeltaPerformance(int rows, TransformDelta.EUpdateStrategy updateStrategy)
+        public async void TransformDeltaPerformance(int rows, TransformDelta.EUpdateStrategy updateStrategy)
         {
             ReaderMemory Source = Helpers.CreateLargeTable(rows);
 
@@ -373,12 +373,16 @@ namespace dexih.transforms.tests
             TransformDelta transformDelta = new TransformDelta(Source, Target, updateStrategy, 1);
 
             int count = 0;
-            while(transformDelta.Read())
+            while(await transformDelta.ReadAsync())
             {
                 count++;
             }
 
-            if(updateStrategy == TransformDelta.EUpdateStrategy.Reload)
+            //appendupdate and appenddelete will merge all rows in to one.  
+            if(updateStrategy == TransformDelta.EUpdateStrategy.AppendUpdate || updateStrategy == TransformDelta.EUpdateStrategy.AppendUpdateDelete)
+                Assert.True(count == 1);
+            //reload has one extract row which is the truncate row.
+            else if (updateStrategy == TransformDelta.EUpdateStrategy.Reload)
                 Assert.True(count == rows+1);
             else
                 Assert.True(count == rows);

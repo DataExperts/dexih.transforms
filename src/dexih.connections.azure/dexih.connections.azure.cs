@@ -644,33 +644,33 @@ namespace dexih.connections.azure
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return new EntityProperty((Byte)returnValue.Value);
+                    return new EntityProperty((Byte?)returnValue.Value);
                 case ETypeCode.SByte:
-                    return new EntityProperty((SByte)returnValue.Value);
+                    return new EntityProperty((SByte?)returnValue.Value);
                 case ETypeCode.UInt16:
-                    return new EntityProperty((UInt16)returnValue.Value);
+                    return new EntityProperty((UInt16?)returnValue.Value);
                 case ETypeCode.UInt32:
-                    return new EntityProperty((UInt32)returnValue.Value);
+                    return new EntityProperty((UInt32?)returnValue.Value);
                 case ETypeCode.UInt64:
-                    return new EntityProperty((UInt64)returnValue.Value);
+                    return new EntityProperty((UInt64?)returnValue.Value);
                 case ETypeCode.Int16:
-                    return new EntityProperty((Int16)returnValue.Value);
+                    return new EntityProperty((Int16?)returnValue.Value);
                 case ETypeCode.Int32:
-                    return new EntityProperty((Int32)returnValue.Value);
+                    return new EntityProperty((Int32?)returnValue.Value);
                 case ETypeCode.Int64:
-                    return new EntityProperty((Int64)returnValue.Value);
+                    return new EntityProperty((Int64?)returnValue.Value);
                 case ETypeCode.Double:
-                    return new EntityProperty((Double)returnValue.Value);
+                    return new EntityProperty((Double?)returnValue.Value);
                 case ETypeCode.Single:
-                    return new EntityProperty((Single)returnValue.Value);
+                    return new EntityProperty((Single?)returnValue.Value);
                 case ETypeCode.String:
                     return new EntityProperty((String)returnValue.Value);
                 case ETypeCode.Boolean:
-                    return new EntityProperty((Boolean)returnValue.Value);
+                    return new EntityProperty((Boolean?)returnValue.Value);
                 case ETypeCode.DateTime:
-                    return new EntityProperty((DateTime)returnValue.Value);
+                    return new EntityProperty((DateTime?)returnValue.Value);
                 case ETypeCode.Guid:
-                    return new EntityProperty((Guid)returnValue.Value);
+                    return new EntityProperty((Guid?)returnValue.Value);
                 case ETypeCode.Decimal:
                 case ETypeCode.Unknown:
                     return new EntityProperty(value.ToString()); //decimal not supported, so convert to string
@@ -757,7 +757,7 @@ namespace dexih.connections.azure
                         var autoIncrementResult = await GetIncrementalKey(table, autoIncrement.ColumnName, CancellationToken.None);
                         lastAutoIncrement = autoIncrementResult.Value;
 
-                        properties.Add(autoIncrement.ColumnName, NewEntityProperty(ETypeCode.UInt64, lastAutoIncrement));
+                        properties.Add(autoIncrement.ColumnName, NewEntityProperty(ETypeCode.Int64, lastAutoIncrement));
                     }
 
                     string partitionKeyValue = null;
@@ -780,7 +780,7 @@ namespace dexih.connections.azure
                             else
                                 rowKeyValue = lastAutoIncrement.ToString("D20");
                         else
-                            rowKeyValue = query.InsertColumns.Single(c => c.Column == sk).Value.ToString();
+                            rowKeyValue = ((long)query.InsertColumns.Single(c => c.Column == sk).Value).ToString("D20");
                     }
 
                     DynamicTableEntity entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
@@ -852,12 +852,14 @@ namespace dexih.connections.azure
                         {
                             if (query.Filters[i].Column1 == surrogateKeyColumn.ColumnName)
                             {
+                                var rowKeyValue = ((long)query.Filters[i].Value2).ToString("D20");
+
                                 query.Filters.Add(new Filter()
                                 {
                                     Column1 = "RowKey",
                                     Column2 = query.Filters[i].Column2,
                                     Value1 = query.Filters[i].Value1,
-                                    Value2 = query.Filters[i].Value2.ToString(),
+                                    Value2 = rowKeyValue,
                                     AndOr = query.Filters[i].AndOr,
                                     CompareDataType = ETypeCode.String,
                                     Operator = query.Filters[i].Operator

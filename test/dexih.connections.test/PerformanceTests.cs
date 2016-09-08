@@ -30,7 +30,7 @@ namespace dexih.connections.test
                 //create a table that utilizes every available datatype.
                 Table table = new Table("LargeTable" + (DataSets.counter++).ToString());
 
-                table.Columns.Add(new TableColumn("SurrogateKey", DataType.ETypeCode.Int32, TableColumn.EDeltaType.SurrogateKey));
+                table.Columns.Add(new TableColumn("SurrogateKey", DataType.ETypeCode.Int64, TableColumn.EDeltaType.SurrogateKey));
                 table.Columns.Add(new TableColumn("UpdateTest", DataType.ETypeCode.Int32));
 
                 foreach (DataType.ETypeCode typeCode in Enum.GetValues(typeof(DataType.ETypeCode)))
@@ -44,11 +44,11 @@ namespace dexih.connections.test
 
                 //add rows.
                 int buffer = 0;
-                for (int i = 0; i < rows; i++)
+                for (long i = 0; i < rows; i++)
                 {
                     object[] row = new object[table.Columns.Count];
 
-                    row[0] = i;
+                    row[0] = i; //surrogate key column
                     row[1] = 0;
 
                     //load the rows with random values.
@@ -67,7 +67,6 @@ namespace dexih.connections.test
                     {
                         //start a datawriter and insert the test data
                         await connection.DataWriterStart(table);
-
 
                         var bulkResult = await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
                         Assert.True(bulkResult.Success, "WriteDataBulk - Message:" + bulkResult.Message);
@@ -90,7 +89,7 @@ namespace dexih.connections.test
                 List<UpdateQuery> updateQueries = new List<UpdateQuery>();
 
                 //run a update on 10% of rows
-                for (int i = 0; i < (rows / 10); i++)
+                for (long i = 0; i < (rows / 10); i++)
                 {
                     var updateColumns = new List<QueryColumn>();
 
@@ -243,7 +242,7 @@ namespace dexih.connections.test
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1);
 
             TransformWriter writer = new TransformWriter();
-            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, "Test", 1, "Source", 2, "Target", true);
+            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test");
             Assert.True(auditResult.Success);
             TransformWriterResult writerResult = auditResult.Value;
             var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, null, null, CancellationToken.None);
@@ -251,7 +250,7 @@ namespace dexih.connections.test
             Assert.Equal(rows, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, null, 1, 0, CancellationToken.None);
+            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, null, 1, 0, 2, CancellationToken.None);
             Assert.Equal(writerResult.RowsCreated, auditTable.Value[0].RowsCreated);
             Assert.Equal(rows - 1, Convert.ToInt64(auditTable.Value[0].MaxIncrementalValue));
 

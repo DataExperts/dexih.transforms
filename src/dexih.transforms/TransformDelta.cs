@@ -58,11 +58,18 @@ namespace dexih.transforms
         private TableColumn colCreateAuditKey;
         private TableColumn colUpdateAuditKey;
 
+        //preload ordinals to improve performance.
         private int DatabaseOperationOrdinal;
         private int RejectedReasonOrdinal;
         private int ValidationStatusOrdinal;
         private int SourceSurrogateKeyOrdinal;
         private int ValidFromOrdinal;
+        private int IsCurrentOrdinal;
+
+        private int SourceValidFromOrdinal;
+        private int SourceValidToOrdinal;
+        private int SourceIsCurrentOrdinal;
+
         private int ColumnCount;
 
         private TableColumn[] colNatrualKey;
@@ -192,6 +199,11 @@ namespace dexih.transforms
 
             SourceSurrogateKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
             ValidFromOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
+            IsCurrentOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
+
+            SourceValidFromOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
+            SourceValidToOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
+            SourceIsCurrentOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
             ColumnCount = CacheTable.Columns.Count;
 
         }
@@ -405,20 +417,26 @@ namespace dexih.transforms
                     }
 
 
+                    //the delta always puts a sort against natural key, so duplicates rows will be next to each other.
                     //check the newRow against the previous row in the file to deduplicate any matching natural keys.
-                    if (CompareNewRowPrevious(newRow))
+                    if (_primaryOpen && CompareNewRowPrevious(newRow))
                     {
-                        if (!CompareNewRowPreviousValues(newRow))
+                        //if the row is a match against the tracking keys then just ignore it.
+                        if (CompareNewRowPreviousValues(newRow))
+                            continue;
+                        else
                         {
-                            //if the previous row is a match, and the tracking field values are different, then either delete or preserve it.
+                            //if the previous row is a match, and the tracking field values are different, then either updated it or ignore it.
                             if (doPreserve)
                             {
                                 TransformRowsPreserved++;
-                                newRow[0] = 'U';
+                                if (IsCurrentOrdinal >= 0)
+                                    newRow[IsCurrentOrdinal] = false;
+                                newRow[0] = 'C';
                             }
                             else
                             {
-                                newRow[0] = 'D';
+                                continue;
                             }
 
                             for (int i = 1; i < ColumnCount; i++)
@@ -551,26 +569,33 @@ namespace dexih.transforms
                 switch (CacheTable.Columns[targetOrdinal].DeltaType)
                 {
                     case TableColumn.EDeltaType.ValidFromDate:
-                        if (colValidFrom == null || sourceOrdinal == -1)
+                        if (SourceValidFromOrdinal == -1 && sourceOrdinal == -1)
                             newRow[targetOrdinal] = currentDateTime;
-                        else
+                        else if(sourceOrdinal >= 0)
                             newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                        else
+                            newRow[targetOrdinal] = PrimaryTransform[SourceValidFromOrdinal];
+
                         break;
                     case TableColumn.EDeltaType.ValidToDate:
-                        if (colValidTo == null || sourceOrdinal == -1)
+                        if (SourceValidToOrdinal == -1 && sourceOrdinal == -1)
                             newRow[targetOrdinal] = DateTime.MaxValue;
-                        else
+                        else if(sourceOrdinal >= 0)
                             newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                        else
+                            newRow[targetOrdinal] = PrimaryTransform[SourceValidToOrdinal];
                         break;
                     case TableColumn.EDeltaType.CreateDate:
                     case TableColumn.EDeltaType.UpdateDate:
                         newRow[targetOrdinal] = currentDateTime;
                         break;
                     case TableColumn.EDeltaType.IsCurrentField:
-                        if (colIsCurrentField == null || sourceOrdinal == -1)
+                        if (SourceIsCurrentOrdinal == -1 && sourceOrdinal == -1)
                             newRow[targetOrdinal] = true;
+                        else if (sourceOrdinal >= 0)
+                            newRow[targetOrdinal] = PrimaryTransform[SourceIsCurrentOrdinal];
                         else
-                            newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                            newRow[targetOrdinal] = PrimaryTransform[SourceIsCurrentOrdinal];
                         break;
                     case TableColumn.EDeltaType.SurrogateKey:
                         SurrogateKey++; //increment now that key has been used.
@@ -579,15 +604,12 @@ namespace dexih.transforms
                     case TableColumn.EDeltaType.SourceSurrogateKey:
                         if (colSurrogateKey == null && sourceOrdinal == -1)
                             newRow[targetOrdinal] = 0;
-                        else if (sourceOrdinal != -1)
+                        else if (sourceOrdinal >= 0)
                             newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                        else if (SourceSurrogateKeyOrdinal == -1)
+                            newRow[targetOrdinal] = 0;
                         else
-                        {
-                            if (SourceSurrogateKeyOrdinal == -1)
-                                newRow[targetOrdinal] = 0;
-                            else
-                                newRow[targetOrdinal] = PrimaryTransform[SourceSurrogateKeyOrdinal];
-                        }
+                            newRow[targetOrdinal] = PrimaryTransform[SourceSurrogateKeyOrdinal];
                         break;
                     case TableColumn.EDeltaType.CreateAuditKey:
                     case TableColumn.EDeltaType.UpdateAuditKey:
