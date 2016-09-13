@@ -590,11 +590,10 @@ namespace dexih.connections.sql
 
                     // The schema table 
                     using (var cmd = CreateCommand(connection, @"
-                         SELECT c.column_id, c.name 'ColumnName', t2.Name 'DataType', c.Max_Length 'Max_Length', c.precision 'Precision', c.scale 'Scale', c.is_nullable 'IsNullable', ep.value 'Description', " + generatedAlwaysTypeColumn + 
+                         SELECT c.column_id, c.name 'ColumnName', t.Name 'DataType', c.Max_Length 'Max_Length', c.precision 'Precision', c.scale 'Scale', c.is_nullable 'IsNullable', ep.value 'Description', " + generatedAlwaysTypeColumn + 
                         @"case when exists(select * from sys.index_columns ic JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id where ic.object_id = c.object_id and ic.column_id = c.column_id and is_primary_key = 1) then 1 else 0 end 'PrimaryKey'
                         FROM sys.columns c
                         INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
-						INNER JOIN sys.types t2 on t.system_type_id = t2.user_type_id 
                         LEFT OUTER JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id and (ep.name = 'MS_Description' or ep.name = 'Description') and ep.class = 1 
                         WHERE c.object_id = OBJECT_ID('" + AddEscape(tableName) + "') "
                             ))
@@ -699,6 +698,7 @@ namespace dexih.connections.sql
                 case "timestamp": return ETypeCode.Int64;
                 case "tinyint": return ETypeCode.Byte;
                 case "uniqueidentifier": return ETypeCode.Guid;
+                case "geography": return ETypeCode.Unknown;
                 case "varbinary": return ETypeCode.Unknown;
                 case "varchar": return ETypeCode.String;
                 case "xml": return ETypeCode.String;
@@ -744,7 +744,17 @@ namespace dexih.connections.sql
                 }
                 catch (Exception ex)
                 {
-                    return new ReturnValue(false, "The truncate table query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex);
+                    cmd.CommandText = "delete from " + AddDelimiter(table.TableName);
+                    try
+                    {
+                        await cmd.ExecuteNonQueryAsync(cancelToken);
+                        if (cancelToken.IsCancellationRequested)
+                            return new ReturnValue(false, "Delete table cancelled", null);
+                    }
+                    catch(Exception ex2)
+                    {
+                        return new ReturnValue(false, "The truncate and delete table query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex2);
+                    }
                 }
             }
 

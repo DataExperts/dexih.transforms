@@ -828,6 +828,48 @@ namespace dexih.functions
             }
         }
 
+        public bool DefaultNullString(string value, string defaultValue, out string adjustedValue)
+        {
+            if (value == null || value.GetType() == typeof(DBNull))
+            {
+                adjustedValue = defaultValue;
+                return false;
+            }
+            else
+            {
+                adjustedValue = value;
+                return true;
+            }
+        }
+
+        public bool DefaultBlankString(string value, string defaultValue, out string adjustedValue)
+        {
+            if (String.IsNullOrEmpty(value))
+            {
+                adjustedValue = defaultValue;
+                return false;
+            }
+            else
+            {
+                adjustedValue = value;
+                return true;
+            }
+        }
+
+        public bool DefaultNullNumber(decimal? value, decimal defaultValue, out decimal adjustedValue)
+        {
+            if (value == null)
+            {
+                adjustedValue = defaultValue;
+                return false;
+            }
+            else
+            {
+                adjustedValue = (decimal)value;
+                return true;
+            }
+        }
+
         #endregion
     }
 }

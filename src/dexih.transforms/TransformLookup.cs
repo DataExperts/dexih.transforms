@@ -66,6 +66,8 @@ namespace dexih.transforms
         }
 
         public override bool RequiresSort => false;
+        public override bool PassThroughColumns => true;
+
 
         protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {

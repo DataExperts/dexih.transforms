@@ -122,6 +122,8 @@ namespace dexih.transforms
 
         public EDeltaType DeltaType { get; set; }
 
+        public string DefaultValue { get; set; }
+
         public bool IsUnique { get; set; }
 
         public bool IsMandatory { get; set; } = false;
@@ -213,6 +215,7 @@ namespace dexih.transforms
                 Precision = Precision,
                 Scale = Scale,
                 AllowDbNull = AllowDbNull,
+                DefaultValue = DefaultValue,
                 DeltaType = DeltaType,
                 IsUnique = IsUnique,
                 SecurityFlag = ESecurityFlag.None, //don't copy securityFlag as only the first table requires encryption.

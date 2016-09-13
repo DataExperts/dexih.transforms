@@ -64,7 +64,7 @@ namespace dexih.transforms
         public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
-        public bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
+        public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
         public List<Sort> SortFields { get; set; } //indicates fields for the sort transform.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
@@ -646,17 +646,24 @@ namespace dexih.transforms
             //starts  a timer that can be used to measure downstream transform and database performance.
             TransformTimer.Start();
 
-            if(_isFirstRead)
+            if (_isFirstRead)
             {
-                //get the incremental column (if it exists)
-                var incrementalCol = CacheTable.Columns.SingleOrDefault(c => c.IsIncrementalUpdate == true);
-                if (incrementalCol != null)
+                if (IsReader && IsPrimaryTransform)
                 {
-                    IncrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol.ColumnName);
-                    IncrementalColumnType = incrementalCol.DataType;
+                    //get the incremental column (if it exists)
+                    var incrementalCol = CacheTable.Columns.Where(c => c.IsIncrementalUpdate == true).ToArray();
+                    if (incrementalCol.Length == 1)
+                    {
+                        IncrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].ColumnName);
+                        IncrementalColumnType = incrementalCol[0].DataType;
+                    }
+                    else if (incrementalCol.Length > 1)
+                    {
+                        throw new Exception("Cannot run the transform as two columns have been defined with IncrementalUpdate flags.");
+                    }
+                    else
+                        IncrementalColumnIndex = -1;
                 }
-                else
-                    IncrementalColumnIndex = -1;
 
                 _isFirstRead = false;
             }

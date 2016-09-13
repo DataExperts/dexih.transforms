@@ -49,6 +49,7 @@ namespace dexih.transforms
             foreach (var column in ReferenceTransform.CacheTable.Columns)
             {
                 var newColumn = column.Copy();
+                newColumn.IsIncrementalUpdate = false;
 
                 //if a column of the same name exists, append a 1 to the name
                 if (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName) != null)
@@ -73,6 +74,8 @@ namespace dexih.transforms
         }
 
         public override bool RequiresSort => false;
+        public override bool PassThroughColumns => true;
+
 
         public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
@@ -83,6 +86,11 @@ namespace dexih.transforms
             query.Sorts = RequiredSortFields();
 
             var returnValue = await PrimaryTransform.Open(auditKey, query);
+            if (!returnValue.Success)
+                return returnValue;
+
+            returnValue = await ReferenceTransform.Open(auditKey, null);
+
             return returnValue;
         }
 
@@ -110,7 +118,7 @@ namespace dexih.transforms
                     bool recordMatch = true;
                     foreach (JoinPair join in JoinPairs)
                     {
-                        var joinValue = join.SourceColumn == null ? join.JoinValue : PrimaryTransform[join.SourceColumn].ToString();
+                        var joinValue = string.IsNullOrEmpty(join.SourceColumn)? join.JoinValue : PrimaryTransform[join.SourceColumn].ToString();
                         if (joinValue != ReferenceTransform[join.JoinColumn].ToString())
                         {
                             recordMatch = false;
@@ -188,7 +196,7 @@ namespace dexih.transforms
                 object[] sourceKeys = new object[JoinPairs.Count];
                 for (int i = 0; i < JoinPairs.Count; i++)
                 {
-                    if (JoinPairs[i].SourceColumn != "")
+                    if (!String.IsNullOrEmpty(JoinPairs[i].SourceColumn ))
                         sourceKeys[i] = PrimaryTransform[JoinPairs[i].SourceColumn];
                     else
                         sourceKeys[i] = JoinPairs[i].JoinValue;
@@ -266,7 +274,7 @@ namespace dexih.transforms
         public override List<Sort> RequiredSortFields()
         {
             List<Sort> fields = new List<Sort>();
-            foreach (JoinPair joinPair in JoinPairs.Where(c=>c.SourceColumn != ""))
+            foreach (JoinPair joinPair in JoinPairs.Where(c=> !string.IsNullOrEmpty(c.SourceColumn)))
                 fields.Add(new Sort { Column = joinPair.SourceColumn, Direction = Sort.EDirection.Ascending });
 
             return fields;
@@ -275,7 +283,7 @@ namespace dexih.transforms
         public override List<Sort> RequiredReferenceSortFields()
         {
             List<Sort> fields = new List<Sort>();
-            foreach (JoinPair joinPair in JoinPairs.Where(c=>c.SourceColumn != null))
+            foreach (JoinPair joinPair in JoinPairs.Where(c=> !string.IsNullOrEmpty(c.SourceColumn)))
                 fields.Add(new Sort { Column = joinPair.JoinColumn, Direction = Sort.EDirection.Ascending });
 
             return fields;

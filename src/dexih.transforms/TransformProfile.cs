@@ -49,6 +49,8 @@ namespace dexih.transforms
 
 
         public override bool RequiresSort => false;
+        public override bool PassThroughColumns => true;
+
 
         public override ReturnValue ResetTransform()
         {

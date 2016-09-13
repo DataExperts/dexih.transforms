@@ -109,6 +109,7 @@ namespace dexih.connections.sql
 
                 //row[_fieldOrdinals[i]] = returnValue.Value;
                 row[_fieldOrdinals[i]] = _sqlReader[i];
+               
             }
             return new ReturnValue<object[]>(true, row);
         }

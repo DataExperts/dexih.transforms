@@ -43,7 +43,10 @@ namespace dexih.transforms
         {
             get
             {
-                return _TableColumns[_ColumnOrdinals[tableName]];
+                if (_ColumnOrdinals.ContainsKey(tableName))
+                    return _TableColumns[_ColumnOrdinals[tableName]];
+                else
+                    return null;
             }
 
             set

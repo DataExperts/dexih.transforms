@@ -40,6 +40,7 @@ namespace dexih.transforms
         }
 
         public override bool RequiresSort => false;
+        public override bool PassThroughColumns => true;
 
         public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
