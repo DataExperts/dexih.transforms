@@ -239,7 +239,7 @@ namespace dexih.connections.test
             Transform transform = connection.GetTransformReader(table);
             transform = new TransformMapping(transform, true, null, null);
             transform = new TransformValidation(transform, null, false);
-            transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1);
+            transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, false);
 
             TransformWriter writer = new TransformWriter();
             var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test");
@@ -250,7 +250,7 @@ namespace dexih.connections.test
             Assert.Equal(rows, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, null, 1, 0, 2, CancellationToken.None);
+            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, false, false, null, 1, 0, 2, CancellationToken.None);
             Assert.Equal(writerResult.RowsCreated, auditTable.Value[0].RowsCreated);
             Assert.Equal(rows - 1, Convert.ToInt64(auditTable.Value[0].MaxIncrementalValue));
 

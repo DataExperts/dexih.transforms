@@ -130,12 +130,12 @@ namespace dexih.functions
         }
 
 
-/// <summary>
-/// Converts a datatype to a simplified basic type.
-/// </summary>
-/// <param name="dataType">Data Type</param>
-/// <returns>Basic Datatype</returns>
-public static EBasicType GetBasicType(ETypeCode dataType)
+        /// <summary>
+        /// Converts a datatype to a simplified basic type.
+        /// </summary>
+        /// <param name="dataType">Data Type</param>
+        /// <returns>Basic Datatype</returns>
+        public static EBasicType GetBasicType(ETypeCode dataType)
         {
             switch (dataType)
             {
@@ -254,13 +254,25 @@ public static EBasicType GetBasicType(ETypeCode dataType)
             Equal
         }
 
-       /// <summary>
-       /// Compares two values of the specified typecode and returns a result indicating null, greater, less ,equal, not equal.  for example if inputValue is greater than comparevalue the return will be "Greater".
-       /// </summary>
-       /// <param name="dataType">data type to compare</param>
-       /// <param name="inputValue">primary value</param>
-       /// <param name="compareValue">value to compare against</param>
-       /// <returns>Success = false for compare error</returns>
+        /// <summary>
+        /// truncates a string to a fixed length and adds ... where it exceeds the length.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
+        public static string TruncateString(this string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength-3) + "...";
+        }
+
+        /// <summary>
+        /// Compares two values of the specified typecode and returns a result indicating null, greater, less ,equal, not equal.  for example if inputValue is greater than comparevalue the return will be "Greater".
+        /// </summary>
+        /// <param name="dataType">data type to compare</param>
+        /// <param name="inputValue">primary value</param>
+        /// <param name="compareValue">value to compare against</param>
+        /// <returns>Success = false for compare error</returns>
         public static ReturnValue<ECompareResult> Compare(ETypeCode dataType, object inputValue, object compareValue)
         {
             try

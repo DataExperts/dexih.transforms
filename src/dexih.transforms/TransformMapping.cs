@@ -89,6 +89,8 @@ namespace dexih.transforms
 
                     newFilters.Add(newFilter);
                 }
+
+                query.Filters = newFilters;
             }
 
             //we need to translate filters and sorts to source column names before passing them through.
@@ -111,6 +113,8 @@ namespace dexih.transforms
                     newSort.Direction = sort.Direction;
                     newSorts.Add(newSort);
                 }
+
+                query.Sorts = newSorts;
             }
 
             var returnValue = await PrimaryTransform.Open(auditKey, query);
@@ -262,7 +266,7 @@ namespace dexih.transforms
 
             var readResult = await PrimaryTransform.ReadAsync(cancellationToken);
             if (readResult == false)
-                return new ReturnValue<object[]>(false, null);
+                return new ReturnValue<object[]>(false, null);  
             if (MapFields != null)
             {
                 foreach (int mapField in _mapFieldOrdinals)

@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "0.2.2-*",
   "title": "Data Experts Group - Connections Azure",
   "description": "This is a support library which enables the transform library to access Azure Storage Tables and Azure File Storage.",
@@ -26,7 +26,7 @@
   "dependencies": {
     "dexih.transforms": "0.2.*",
     "dexih.connections.flatfile": "0.2.*",
-    "WindowsAzure.Storage": "7.0.2-preview"
+    "WindowsAzure.Storage": "7.2.0"
   }
   //"scripts": {
   //  "postcompile": [

@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "0.2.2-*",
   "title": "Data Experts Group - Connections Library - Restful Web Services",
   "description": "This is a support library which enables the transform library to access Restful based web services.",
@@ -12,7 +12,10 @@
   },
 
   "frameworks": {
-    "net46": {},
+    "net46": {
+      "dependencies": {
+      }
+    },
     "netstandard1.3": {
       "dependencies": {
         "NETStandard.Library": "1.6.0"

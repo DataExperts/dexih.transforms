@@ -86,7 +86,7 @@ namespace dexih.connections.test
 
             Transform targetReader = connection.GetTransformReader(deltaTable);
             reader = connection.GetTransformReader(table);
-            TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1);
+            TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
 
             auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test");
             Assert.True(auditResult.Success);
@@ -97,7 +97,7 @@ namespace dexih.connections.test
             Assert.Equal(10, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, null, 1, 0, null, CancellationToken.None);
+            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, false, false, null, 1, 0, null, CancellationToken.None);
             Assert.Equal((long)10, auditTable.Value[0].RowsCreated);
 
         }

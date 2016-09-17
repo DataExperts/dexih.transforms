@@ -1,0 +1,2 @@
+IntColumn,StringColumn,DateColumn,DecimalColumn,GuidColumn
+2,value2,2001-01-22,1.2,89eff2b7-8314-47c1-8ed1-312970a9ae8a

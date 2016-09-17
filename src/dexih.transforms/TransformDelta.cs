@@ -125,8 +125,8 @@ namespace dexih.transforms
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             //do some integrity checks
-            if (doUpdate == true && colSurrogateKey == null)
-                throw new Exception("The delta transform requires the table to have a single surrogate key field for updates to be possible.");
+            if (doPreserve == true && colSurrogateKey == null)
+                throw new Exception("The delta transform requires the table to have a single surrogate key field for row preservations to be possible.");
 
             if (doUpdate == true && CacheTable.Columns.Where(c=>c.DeltaType == TableColumn.EDeltaType.NaturalKey).Count() == 0)
                 throw new Exception("The delta transform requires the table to have at least ont natrual key field for updates to be possible.");

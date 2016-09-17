@@ -13,6 +13,7 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using static dexih.functions.DataType;
+using System.Net;
 
 namespace dexih.connections.webservice
 {
@@ -233,7 +234,14 @@ namespace dexih.connections.webservice
                     row[table.GetOrdinal(filter.Column1)] = filter.Value2.ToString();
                 }
 
-                using (var client = new HttpClient())
+                HttpClientHandler handler = null;
+                if (!String.IsNullOrEmpty(UserName))
+                {
+                    var credentials = new NetworkCredential(UserName, Password);
+                    handler = new HttpClientHandler { Credentials = credentials };
+                }
+
+                using (var client = new HttpClient(handler))
                 {
                     client.BaseAddress = new Uri(ServerName);
                     client.DefaultRequestHeaders.Accept.Clear();

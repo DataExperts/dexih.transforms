@@ -181,8 +181,9 @@ namespace dexih.transforms
                 auditTable.Columns.Add(new TableColumn("TriggerMethod", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
                 auditTable.Columns.Add(new TableColumn("TriggerInfo", ETypeCode.String, TableColumn.EDeltaType.TrackingField) );
                 auditTable.Columns.Add(new TableColumn("Message", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("IsLatest", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
-
+                auditTable.Columns.Add(new TableColumn("IsCurrent", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
+                auditTable.Columns.Add(new TableColumn("IsPrevious", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
+                auditTable.Columns.Add(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
                 return auditTable;
             }
         }
@@ -193,7 +194,7 @@ namespace dexih.transforms
 
             var tableExistsResult = await TableExists(auditTable);
 
-            TransformWriterResult lastResult = null;
+            TransformWriterResult previousResult = null;
 
             if (!tableExistsResult.Success)
                 return new ReturnValue<TransformWriterResult>(tableExistsResult);
@@ -209,14 +210,13 @@ namespace dexih.transforms
             else
             {
                 //get the last audit result for this reference to collect previous run information
-                var lastAuditResult = await GetTransformWriterResults(subScriptionKey, new long[] { referenceKey }, null, TransformWriterResult.ERunStatus.Finished, true, null, 1, 0, null, CancellationToken.None);
+                var lastAuditResult = await GetPreviousResult(subScriptionKey, referenceKey, CancellationToken.None);
                 if (!lastAuditResult.Success)
                     return new ReturnValue<TransformWriterResult>(lastAuditResult);
-                if (lastAuditResult.Value.Count > 0)
-                    lastResult = lastAuditResult.Value[0];
+                previousResult = lastAuditResult.Value;
             }
 
-            var writerResult = new TransformWriterResult(subScriptionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, lastResult, triggerMethod, triggerInfo);
+            var writerResult = new TransformWriterResult(subScriptionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, triggerMethod, triggerInfo);
 
             //note AuditKey not included in query columns as it is an AutoGenerate type.
             var queryColumns = new List<QueryColumn>
@@ -255,14 +255,11 @@ namespace dexih.transforms
                     new QueryColumn("TriggerMethod", ETypeCode.String, writerResult.TriggerMethod.ToString()),
                     new QueryColumn("TriggerInfo", ETypeCode.String, writerResult.TriggerInfo),
                     new QueryColumn("Message", ETypeCode.DateTime, writerResult.Message),
-                    new QueryColumn("IsLatest", ETypeCode.Boolean, false)
+                    new QueryColumn("IsCurrent", ETypeCode.Boolean, true),
+                    new QueryColumn("IsPrevious", ETypeCode.Boolean, false),
+                    new QueryColumn("IsPreviousSuccess", ETypeCode.Boolean, false)
 
             };
-
-            //add connection specific values
-            //var rowKeyOrdinal = auditTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
-            //if (rowKeyOrdinal > 0)
-            //    queryColumns.Add(new QueryColumn(auditTable.Columns[rowKeyOrdinal].ColumnName, ETypeCode.String, writerResult.AuditKey));
 
             var partitionKeyOrdinal = auditTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
             if (partitionKeyOrdinal > 0)
@@ -281,22 +278,49 @@ namespace dexih.transforms
 
         public virtual async Task<ReturnValue> UpdateAudit(TransformWriterResult writerResult)
         {
-            //when the runstatus is successful, update any previous records with an islatest = false.
-            bool IsLatest = false;
+            bool isCurrent = true;
+            bool isPrevious = false;
+            bool isPreviousSuccess = false;
 
+            //when the runstatuss is finished or finished with errors, the previous success record to false.
             if (writerResult.RunStatus == TransformWriterResult.ERunStatus.Finished || writerResult.RunStatus == TransformWriterResult.ERunStatus.FinishedErrors)
             {
-                var updateLatestColumn = new List<QueryColumn>() { new QueryColumn("IsLatest", ETypeCode.Boolean, false) };
+                var updateLatestColumn = new List<QueryColumn>() {
+                    new QueryColumn("IsCurrent", ETypeCode.Boolean, false),
+                    new QueryColumn("IsPreviousSuccess", ETypeCode.Boolean, false)
+                };
+
                 var updateLatestFilters = new List<Filter>() {
                     new Filter("HubKey", Filter.ECompare.IsEqual, writerResult.HubKey),
                     new Filter("ReferenceKey", Filter.ECompare.IsEqual, writerResult.ReferenceKey),
-                    new Filter("IsLatest", Filter.ECompare.IsEqual, true),
+                    new Filter("IsPreviousSuccess", Filter.ECompare.IsEqual, true),
                 };
 
                 var updateIsLatest = new UpdateQuery(AuditTable.TableName, updateLatestColumn, updateLatestFilters);
                 var updateLatestResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
 
-                IsLatest = true;
+                isPreviousSuccess = true;
+            }
+
+            //when finished, mark the previous result to false.
+            if (writerResult.IsFinished)
+            {
+                var updateLatestColumn = new List<QueryColumn>() {
+                    new QueryColumn("IsCurrent", ETypeCode.Boolean, false),
+                    new QueryColumn("IsPrevious", ETypeCode.Boolean, false)
+                };
+
+                var updateLatestFilters = new List<Filter>() {
+                    new Filter("HubKey", Filter.ECompare.IsEqual, writerResult.HubKey),
+                    new Filter("ReferenceKey", Filter.ECompare.IsEqual, writerResult.ReferenceKey),
+                    new Filter("IsPrevious", Filter.ECompare.IsEqual, true),
+                };
+
+                var updateIsLatest = new UpdateQuery(AuditTable.TableName, updateLatestColumn, updateLatestFilters);
+                var updateLatestResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
+
+                isCurrent = false;
+                isPrevious = true;
             }
 
 
@@ -336,7 +360,9 @@ namespace dexih.transforms
                     new QueryColumn("TriggerMethod", ETypeCode.String, writerResult.TriggerMethod.ToString()),
                     new QueryColumn("TriggerInfo", ETypeCode.String, writerResult.TriggerInfo.ToString()),
                     new QueryColumn("Message", ETypeCode.String, writerResult.Message),
-                    new QueryColumn("IsLatest", ETypeCode.Boolean, IsLatest)
+                    new QueryColumn("IsCurrent", ETypeCode.Boolean, isCurrent),
+                    new QueryColumn("IsPrevious", ETypeCode.Boolean, isPrevious),
+                    new QueryColumn("IsPreviousSuccess", ETypeCode.Boolean, isPreviousSuccess)
             };
 
             var updateFilters = new List<Filter>() { new Filter("AuditKey", Filter.ECompare.IsEqual, writerResult.AuditKey) };
@@ -348,8 +374,58 @@ namespace dexih.transforms
         }
 
 
+        public virtual async Task<ReturnValue<TransformWriterResult>> GetPreviousResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        {
+            var results = await GetTransformWriterResults(hubKey, new long[] {referenceKey } , null, null, true, false, false, null, -1, 0, null, cancellationToken);
+            if (!results.Success)
+                return new ReturnValue<TransformWriterResult>(results);
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool lastResultOnly, DateTime? startTime, int rows, int maxMilliseconds, long? parentAuditKey, CancellationToken cancellationToken)
+            if (results.Value.Count > 0)
+                return new ReturnValue<TransformWriterResult>(true, results.Value[0]);
+            else
+                return new ReturnValue<TransformWriterResult>(true, null);
+        }
+
+        public virtual async Task<ReturnValue<TransformWriterResult>> GetPreviousSuccessResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        {
+            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, true, false, null, -1, 0, null, cancellationToken);
+            if (!results.Success)
+                return new ReturnValue<TransformWriterResult>(results);
+
+            if (results.Value.Count > 0)
+                return new ReturnValue<TransformWriterResult>(true, results.Value[0]);
+            else
+                return new ReturnValue<TransformWriterResult>(true, null);
+        }
+
+        public virtual async Task<ReturnValue<TransformWriterResult>> GetCurrentResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        {
+            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, false, true, null, -1, 0, null, cancellationToken);
+            if (!results.Success)
+                return new ReturnValue<TransformWriterResult>(results);
+
+            if (results.Value.Count > 0)
+                return new ReturnValue<TransformWriterResult>(true, results.Value[0]);
+            else
+                return new ReturnValue<TransformWriterResult>(true, null);
+        }
+
+        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetPreviousResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        {
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, true, false, false, null, -1, 0, null, cancellationToken);
+        }
+
+        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetPreviousSuccessResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        {
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, true, false, null, -1, 0, null, cancellationToken);
+        }
+
+        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetCurrentResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        {
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, false, true, null, -1, 0, null, cancellationToken);
+        }
+
+        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, int maxMilliseconds, long? parentAuditKey, CancellationToken cancellationToken)
         {
             Transform reader = null;
             try
@@ -365,7 +441,9 @@ namespace dexih.transforms
                 if (auditKey != null) filters.Add(new Filter("AuditKey", Filter.ECompare.IsEqual, auditKey));
                 if (runStatus != null) filters.Add(new Filter("RunStatus", Filter.ECompare.IsEqual, runStatus.ToString()));
                 if (startTime != null) filters.Add(new Filter("StartTime", Filter.ECompare.GreaterThanEqual, startTime));
-                if (lastResultOnly) filters.Add(new Filter("IsLatest", Filter.ECompare.IsEqual, true));
+                if (currentResult) filters.Add(new Filter("IsCurrent", Filter.ECompare.IsEqual, true));
+                if (previousResult) filters.Add(new Filter("IsPrevious", Filter.ECompare.IsEqual, true));
+                if (previousSuccessResult) filters.Add(new Filter("IsPreviousSuccess", Filter.ECompare.IsEqual, true));
                 if (parentAuditKey != null) filters.Add(new Filter("ParentAuditKey", Filter.ECompare.IsEqual, parentAuditKey));
 
                 var sorts = new List<Sort>() { new Sort("AuditKey", Sort.EDirection.Descending) };
@@ -504,6 +582,15 @@ namespace dexih.transforms
             }
         }
 
+        /// <summary>
+        /// This is called to update any reference tables that need to store the surrogatekey, which is returned by the GetIncrementalKey.  
+        /// For sql databases, this does not thing as as select max(key) is called to get key, however nosql tables have no max() function.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="surrogateKeyColumn"></param>
+        /// <param name="value"></param>
+        /// <param name="cancelToken"></param>
+        /// <returns></returns>
         public virtual async Task<ReturnValue> UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancelToken)
         {
             return await Task.Run(() => new ReturnValue(true));
