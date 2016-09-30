@@ -14,7 +14,7 @@ namespace dexih.transforms
         {
             DeltaType = deltaType;
             SurrogateKey = surrogateKey;
-            CacheTable = targetTransform.CacheTable.Copy();
+            CacheTable = targetTransform.CacheTable.Copy(true);
             AddDefaultRow = addDefaultRow;
 
             doUpdate = false;
@@ -248,16 +248,44 @@ namespace dexih.transforms
 
                     newRow = CreateDefaultRow();
 
+                    //if this is a truncate job, always add the default row
+                    if (DeltaType == EUpdateStrategy.Reload)
+                        return new ReturnValue<object[]>(true, newRow);
+
                     //query the reference transform to check if the row already exists.
                     List<Filter> filters = new List<Filter>();
-                    filters.Add(new Filter(colSurrogateKey.ColumnName, Filter.ECompare.IsEqual, "0"));
+
+                    //lookup the default value by the surrogate key (always = 0) or natrual key if a target surrogate key does not exist.
+                    if (colSurrogateKey != null)
+                    {
+                        filters.Add(new Filter(colSurrogateKey, Filter.ECompare.IsEqual, "0"));
+                    }
+                    else
+                    {
+                        var naturalKey = CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey);
+
+                        if(naturalKey.Count()==0)
+                        {
+                            return new ReturnValue<object[]>(false, "The datalink cannot run as there are no natural key columns specified on the target table.", null);
+                        }
+
+                        foreach (TableColumn col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey))
+                        {
+                            if(col.DefaultValue == null)
+                            {
+                                return new ReturnValue<object[]>(false, "The datalink could not be run due to a null default value on the column " + col.ColumnName + ".  Edit the table columns and specify a default value, or switch of the generate default row setting for the datalink", null);
+                            }
+                            filters.Add(new Filter(col, Filter.ECompare.IsEqual, col.DefaultValue));
+                        }
+                    }
+
                     SelectQuery query = new SelectQuery() { Filters = filters };
 
                     var referenceOpenResult = await ReferenceTransform.Open(AuditKey, query);
                     if (!referenceOpenResult.Success)
                         return new ReturnValue<object[]>(referenceOpenResult);
 
-                    //if no row in the reference transform, then return the createde default value.
+                    //if no row in the reference transform, then return the created default value.
                     if(!await ReferenceTransform.ReadAsync())
                     {
                         return new ReturnValue<object[]>(true, newRow);
@@ -287,7 +315,8 @@ namespace dexih.transforms
                             return new ReturnValue<object[]>(true, newRow);
                         }
 
-                        //otherwise continue below.
+                        //rows is ignored.
+                        TransformRowsIgnored++;
                     }
                 }
 
@@ -303,7 +332,7 @@ namespace dexih.transforms
                     List<Filter> filters = new List<Filter>();
                     //first add a where IsCurrentField = true
                     if(colIsCurrentField != null)
-                        filters.Add(new Filter(colIsCurrentField.ColumnName, Filter.ECompare.IsEqual, true));
+                        filters.Add(new Filter(colIsCurrentField, Filter.ECompare.IsEqual, true));
 
                     //second add a where natrual key is greater than the first record key.  (excluding where delete detection is on).
                     if (_primaryOpen && !doDelete)
@@ -313,7 +342,7 @@ namespace dexih.transforms
                             int targetOrdinal = PrimaryTransform.GetOrdinal(col.ColumnName); //ignore any comparisons on columns that do not exist in source.
                             if (targetOrdinal > -1)
                             {
-                                filters.Add(new Filter(col.ColumnName, Filter.ECompare.GreaterThanEqual, PrimaryTransform[col.ColumnName]));
+                                filters.Add(new Filter(col, Filter.ECompare.GreaterThanEqual, PrimaryTransform[col.ColumnName]));
                             }
                         }
                     }
@@ -322,6 +351,7 @@ namespace dexih.transforms
 
                     if (doUpdate || doDelete || doPreserve)
                     {
+                        ReferenceTransform.Dispose();
                         await ReferenceTransform.Open(AuditKey, query);
                         _targetOpen = await ReferenceRead(cancellationToken);
                     }
@@ -779,6 +809,12 @@ namespace dexih.transforms
                         case TableColumn.EDeltaType.IgnoreField:
                             //do nothing
                             break;
+                        case TableColumn.EDeltaType.NaturalKey:
+                            if (string.IsNullOrWhiteSpace(targetColumn.DefaultValue))
+                                throw new Exception("A default column could not be created as the column \"" + targetColumn.ColumnName + "\" is part of the natural key and has a default value of null.  Edit the target table columns and set the default value to a non-null value to continue.");
+                            else
+                                newRow[targetOrdinal] = targetColumn.DefaultValue;
+                            break;
                         default:
                             newRow[targetOrdinal] = targetColumn.DefaultValue;
                             break;
@@ -858,10 +894,13 @@ namespace dexih.transforms
             }
             else
             {
-                foreach (var col in CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
+                foreach (var col in PrimaryTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
                 {
                     fields.Add(new Sort(col));
                 }
+                var validTo = PrimaryTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
+                if (validTo != null)
+                    fields.Add(new Sort(validTo));
             }
 
             return fields;
@@ -876,7 +915,7 @@ namespace dexih.transforms
             }
             else
             {
-                foreach (var col in CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
+                foreach (var col in ReferenceTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
                 {
                     fields.Add(new Sort(col));
                 }

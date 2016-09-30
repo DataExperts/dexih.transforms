@@ -31,7 +31,7 @@ namespace dexih.transforms
             CacheTable = new Table("RowCreator");
             CacheTable.Columns.Add(new TableColumn("RowNumber", DataType.ETypeCode.Int32));
 
-            CacheTable.OutputSortFields = new List<Sort>() { new Sort("RowNumber") };
+            CacheTable.OutputSortFields = new List<Sort>() { new Sort(new TableColumn("RowNumber", DataType.ETypeCode.Int32)) };
             _currentRow = StartAt-1;
             return true;
         }
@@ -67,6 +67,14 @@ namespace dexih.transforms
         public override List<Sort> RequiredReferenceSortFields()
         {
             return null;
+        }
+
+        public override List<Sort> SortFields
+        {
+            get
+            {
+                return new List<Sort>() { new Sort(new TableColumn("RowNumber", DataType.ETypeCode.Int32)) };
+            }
         }
 
     }

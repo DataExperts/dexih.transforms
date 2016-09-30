@@ -5,8 +5,9 @@ using dexih.functions;
 using static dexih.functions.DataType;
 using System.Collections.Generic;
 using System.Collections;
+using Newtonsoft.Json;
 
-namespace dexih.transforms
+namespace dexih.functions
 {
    
     public class TableColumn
@@ -23,18 +24,20 @@ namespace dexih.transforms
             DeltaType = EDeltaType.TrackingField;
         }
 
-        public TableColumn(string columName, ETypeCode dataType) : base()
+        public TableColumn(string columName, ETypeCode dataType, string schema = null) : base()
         {
             ColumnName = columName;
             DataType = dataType;
             DeltaType = EDeltaType.TrackingField;
+            Schema = schema;
         }
 
-        public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType) : base()
+        public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType, string schema = null) : base()
         {
             ColumnName = columName;
             DataType = dataType;
             DeltaType = deltaType;
+            Schema = schema;
         }
 
         public enum EDeltaType
@@ -73,6 +76,7 @@ namespace dexih.transforms
             NoPreview
         }
 
+        public virtual string Schema { get; set; }
         public string ColumnName { get; set; }
 
         public string LogicalName { get; set; }
@@ -135,6 +139,7 @@ namespace dexih.transforms
         public bool IsIncrementalUpdate { get; set; }
         public Dictionary<string, object> ExtendedProperties { get; set; }
 
+        [JsonIgnore]
         public Type ColumnGetType
         {
             get
@@ -145,6 +150,16 @@ namespace dexih.transforms
             {
                 DataType = GetTypeCode(value);
             }
+        }
+
+        /// <summary>
+        /// Returns a string with the schema.columnname
+        /// </summary>
+        /// <returns></returns>
+        public string SchemaColumnName()
+        {
+            string columnName = string.IsNullOrEmpty(Schema) ? ColumnName : Schema + "." + ColumnName;
+            return columnName;
         }
 
         /// <summary>
@@ -207,6 +222,7 @@ namespace dexih.transforms
         {
             var newColumn = new TableColumn()
             {
+                Schema = Schema,
                 ColumnName = ColumnName,
                 LogicalName = LogicalName,
                 Description = Description,

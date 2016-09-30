@@ -81,7 +81,7 @@ namespace dexih.transforms
                     {
                         foreach (Parameter input in condition.Inputs.Where(c => c.IsColumn))
                         {
-                            var result = input.SetValue(PrimaryTransform[input.ColumnName]);
+                            var result = input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
                             if (result.Success == false)
                                 throw new Exception("Error setting condition values: " + result.Message);
                         }

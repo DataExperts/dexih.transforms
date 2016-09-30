@@ -16,6 +16,8 @@ namespace dexih.transforms
     {
         public ReaderDbDataReader() { }
 
+        public List<Sort> _sortFields;
+
         /// <summary>
         /// Initialises a transform source.  
         /// </summary>
@@ -79,7 +81,7 @@ namespace dexih.transforms
             }
 #endif
 
-            SortFields = sortFields;
+            _sortFields = sortFields;
         }
 
         /// <summary>
@@ -93,7 +95,7 @@ namespace dexih.transforms
             InReader = inReader;
 
             CacheTable = table;
-            SortFields = sortFields;
+            _sortFields = sortFields;
         }
 
         public DbDataReader InReader { get; set; }
@@ -107,6 +109,14 @@ namespace dexih.transforms
         public override bool InitializeOutputFields()
         {
             return true;
+        }
+
+        public override List<Sort> SortFields
+        {
+            get
+            {
+                return _sortFields;
+            }
         }
 
         public override ReturnValue ResetTransform()

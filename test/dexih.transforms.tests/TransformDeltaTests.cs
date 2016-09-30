@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dexih.functions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -70,7 +71,7 @@ namespace dexih.transforms.tests
                 transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
                 int count = 0;
-                while (transformDelta.Read())
+                while (await transformDelta.ReadAsync())
                 {
                     Assert.True((char)transformDelta["Operation"] == 'C');
                     Assert.True((Int64)transformDelta["SurrogateKey"] == count + 1);

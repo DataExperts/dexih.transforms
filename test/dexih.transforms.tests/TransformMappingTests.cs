@@ -32,22 +32,22 @@ namespace dexih.transforms.tests
             //        new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123)
             //    }, null));
 
-            Function Function = new Function(new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()), new string[] { "StringColumn", "number" }, "CustomFunction", null);
+            Function Function = new Function(new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()), new TableColumn[] { new TableColumn("StringColumn"), new TableColumn("number", ETypeCode.Int32) }, new TableColumn("CustomFunction"), null);
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn" ),
+                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
                     new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123) };
             Mappings.Add(Function);
 
             Function = StandardFunctions.GetFunctionReference("Substring");
-            Function.TargetColumn = "Substring";
+            Function.TargetColumn = new TableColumn("Substring");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("name", ETypeCode.String, true, null, "StringColumn" ),
+                    new dexih.functions.Parameter("name", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
                     new dexih.functions.Parameter("start", ETypeCode.Int32, false, 1),
                     new dexih.functions.Parameter("start", ETypeCode.Int32, false, 3) };
             Mappings.Add(Function);
 
             List<ColumnPair> MappingColumn = new List<ColumnPair>();
-            MappingColumn.Add(new ColumnPair("DateColumn", "DateColumn"));
+            MappingColumn.Add(new ColumnPair(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)));
 
             transformMapping = new TransformMapping(Source, false, MappingColumn, Mappings);
 
@@ -97,7 +97,7 @@ namespace dexih.transforms.tests
             List<ColumnPair> columnMappings = new List<ColumnPair>();
 
             for (int i = 0; i < data.FieldCount; i++)
-                columnMappings.Add(new ColumnPair(data.GetName(i)));
+                columnMappings.Add(new ColumnPair(new TableColumn(data.GetName(i))));
 
             transformMapping.PassThroughColumns = false;
             transformMapping.MapFields = columnMappings;
@@ -123,7 +123,7 @@ namespace dexih.transforms.tests
 
             for (int i = 0; i < data.FieldCount; i++)
             {
-                Function newFunction = new Function(new Func<object, object>((value) => value), new string[] { data.GetName(i) }, data.GetName(i), null);
+                Function newFunction = new Function(new Func<object, object>((value) => value), new TableColumn[] { new TableColumn(data.GetName(i)) }, new TableColumn(data.GetName(i)), null);
                 columnMappings.Add(newFunction);
             }
 

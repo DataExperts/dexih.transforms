@@ -61,11 +61,10 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateSortedJoinData()
         {
-            Table table = new Table("test", 0, 
-                new TableColumn("StringColumn", DataType.ETypeCode.String),
-                new TableColumn("IntColumn", DataType.ETypeCode.Int32),
-                new TableColumn("LookupValue", DataType.ETypeCode.String)
-            );
+            Table table = new Table("Join", 0);
+            table.AddColumn("StringColumn", DataType.ETypeCode.String);
+            table.AddColumn("IntColumn", DataType.ETypeCode.Int32);
+            table.AddColumn("LookupValue", DataType.ETypeCode.String);
 
             table.AddRow("value01", 1, "lookup1" );
             table.AddRow("value02", 2, "lookup2" );
@@ -82,13 +81,14 @@ namespace dexih.transforms.tests
             return Adapter;
         }
 
+
+
         public static ReaderMemory CreateUnSortedJoinData()
         {
-            Table table = new Table("test", 0, 
-                new TableColumn("StringColumn", DataType.ETypeCode.String),
-                new TableColumn("IntColumn", DataType.ETypeCode.Int32),
-                new TableColumn("LookupValue", DataType.ETypeCode.String)
-                );
+            Table table = new Table("Join", 0);
+            table.AddColumn("StringColumn", DataType.ETypeCode.String);
+            table.AddColumn("IntColumn", DataType.ETypeCode.Int32);
+            table.AddColumn("LookupValue", DataType.ETypeCode.String);
 
             table.AddRow("value09", 9, "lookup9" );
             table.AddRow("value06", 6, "lookup6" );
@@ -99,6 +99,30 @@ namespace dexih.transforms.tests
             table.AddRow("value03", 3, "lookup3" );
             table.AddRow("value07", 7, "lookup7" );
             table.AddRow("value08", 8, "lookup8" );
+
+            ReaderMemory Adapter = new ReaderMemory(table);
+            Adapter.Reset();
+            return Adapter;
+        }
+
+        public static ReaderMemory CreateDuplicatesJoinData()
+        {
+            Table table = new Table("Join", 0);
+            table.AddColumn("StringColumn", DataType.ETypeCode.String);
+            table.AddColumn("IntColumn", DataType.ETypeCode.Int32);
+            table.AddColumn("LookupValue", DataType.ETypeCode.String);
+            table.AddColumn("IsValid", DataType.ETypeCode.Boolean, TableColumn.EDeltaType.IsCurrentField);
+
+            table.AddRow("value09", 9, "lookup9", true);
+            table.AddRow("value06", 6, "lookup6", true);
+            table.AddRow("value01", 1, "lookup1", true);
+            table.AddRow("value05", 5, "lookup5", true);
+            table.AddRow("value02", 2, "lookup2", true);
+            table.AddRow("value04", 4, "lookup4a", false);
+            table.AddRow("value04", 4, "lookup4", true);
+            table.AddRow("value03", 3, "lookup3", true);
+            table.AddRow("value07", 7, "lookup7", true);
+            table.AddRow("value08", 8, "lookup8", true);
 
             ReaderMemory Adapter = new ReaderMemory(table);
             Adapter.Reset();

@@ -15,10 +15,16 @@ namespace dexih.functions
         private int _recordCount = 0;
         public bool DetailedResults { get; set; }
 
-        public static Function GetProfileReference(bool detailedResults, string profileName, string inputColumn)
+        public static Function GetProfileReference(bool detailedResults, string profileName, TableColumn inputColumn)
         {
             StandardProfiles newProfile = new StandardProfiles(detailedResults);
-            return new Function(newProfile, profileName, profileName + "Result", "Reset", new string[] { inputColumn }, "Result", new string[] { "Distribution" });
+            return new Function(newProfile, profileName, profileName + "Result", "Reset", new TableColumn[] { inputColumn }, new TableColumn("Result"), new TableColumn[] { new TableColumn("Distribution") });
+        }
+
+        public static Function GetProfileReference(bool detailedResults, string profileName, string inputColumnName)
+        {
+            StandardProfiles newProfile = new StandardProfiles(detailedResults);
+            return new Function(newProfile, profileName, profileName + "Result", "Reset", new TableColumn[] { new TableColumn(inputColumnName) }, new TableColumn("Result"), new TableColumn[] { new TableColumn("Distribution") });
         }
 
         public void Reset()

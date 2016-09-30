@@ -337,7 +337,7 @@ namespace dexih.connections.flatfile
                     string[] s = new string[table.Columns.Count];
                     for (Int32 j = 0; j < queries[0].InsertColumns.Count; j++)
                     {
-                        s[j] = queries[0].InsertColumns[j].Column;
+                        s[j] = queries[0].InsertColumns[j].Column.ColumnName;
                         if (s[j].Contains("\"")) //replace " with ""
                             s[j] = s[j].Replace("\"", "\"\"");
                         if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "

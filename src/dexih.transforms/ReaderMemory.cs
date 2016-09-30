@@ -25,12 +25,24 @@ namespace dexih.transforms
             }
         }
 
+        List<Sort> _sortFields;
+
         #region Constructors
         public ReaderMemory(Table dataTable,  List<Sort> sortFields = null)
         {
             CacheTable = dataTable;
             CacheTable.OutputSortFields = sortFields;
             Reset();
+
+            _sortFields = sortFields;
+        }
+
+        public override List<Sort> SortFields
+        {
+            get
+            {
+                return _sortFields;
+            }
         }
 
         public void Add(object[] values)

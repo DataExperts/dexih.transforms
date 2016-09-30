@@ -330,6 +330,9 @@ namespace dexih.connections.sql
             if (value == null || value is DBNull)
                 return "null";
 
+            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
+            //    return "null";
+
             switch (type)
             {
                 case ETypeCode.Byte:
@@ -790,7 +793,7 @@ namespace dexih.connections.sql
 
                         for (int i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            insert.Append("[" + query.InsertColumns[i].Column + "],");
+                            insert.Append("[" + query.InsertColumns[i].Column.ColumnName + "],");
                             values.Append("@col" + i.ToString() + ",");
                         }
 

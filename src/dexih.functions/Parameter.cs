@@ -29,7 +29,7 @@ namespace dexih.functions
             ETypeCode parameterType, 
             bool isColumn = false, 
             object value = null, 
-            string columnName = "", 
+            TableColumn column = null, 
             bool isArray = false)
         {
             Name = name;
@@ -41,7 +41,7 @@ namespace dexih.functions
                 if (result.Success == false)
                     throw new Exception("Error creating parameter as the value " + value + " could not be set with the parameter type : " + parameterType);
             }
-            ColumnName = columnName;
+            Column = column;
             IsColumn = isColumn;
         }
 
@@ -50,12 +50,21 @@ namespace dexih.functions
         /// </summary>
         /// <param name="parameterType">Parameter datatype</param>
         /// <param name="columnName">Column Name for the parameter to map to.</param>
-        public Parameter( ETypeCode parameterType, string columnName)
+        public Parameter( ETypeCode parameterType, TableColumn column)
+        {
+            Name = column.ColumnName;
+            DataType = parameterType;
+            IsColumn = true;
+            Column = column;
+            IsColumn = true;
+        }
+
+        public Parameter(ETypeCode parameterType, string columnName)
         {
             Name = columnName;
             DataType = parameterType;
             IsColumn = true;
-            ColumnName = columnName;
+            Column = new TableColumn(columnName);
             IsColumn = true;
         }
 
@@ -75,7 +84,7 @@ namespace dexih.functions
         /// </summary>
         public bool IsColumn { get; set; }
         public bool IsArray { get; set; }
-        public string ColumnName { get; set; } 
+        public TableColumn Column { get; set; } 
 
         private object _value;
 

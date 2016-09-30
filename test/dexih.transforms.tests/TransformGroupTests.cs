@@ -18,30 +18,30 @@ namespace dexih.transforms.tests
 
             List<Function> Aggregates = new List<Function>();
 
-            dexih.functions.Parameter[] IntParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("IntColumn", ETypeCode.Double, true, null, "IntColumn") };
-            dexih.functions.Parameter[] StringParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn") };
-            dexih.functions.Parameter[] ConcatParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("Seperator", ETypeCode.String, false, ","), new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn") };
+            dexih.functions.Parameter[] IntParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("IntColumn", ETypeCode.Double, true, null, new TableColumn("IntColumn", ETypeCode.Int32)) };
+            dexih.functions.Parameter[] StringParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, new TableColumn("StringColumn")) };
+            dexih.functions.Parameter[] ConcatParam = new dexih.functions.Parameter[] { new dexih.functions.Parameter("Seperator", ETypeCode.String, false, ","), new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, new TableColumn("StringColumn")) };
 
             Function sum = StandardFunctions.GetFunctionReference("Sum");
             sum.Inputs = IntParam;
-            sum.TargetColumn = "Sum";
+            sum.TargetColumn = new TableColumn("Sum", ETypeCode.Double);
             Function average = StandardFunctions.GetFunctionReference("Average");
             average.Inputs = IntParam;
-            average.TargetColumn = "Average";
+            average.TargetColumn = new TableColumn("Average", ETypeCode.Double);
             Function min = StandardFunctions.GetFunctionReference("Min");
             min.Inputs = IntParam;
-            min.TargetColumn = "Minimum";
+            min.TargetColumn = new TableColumn("Minimum", ETypeCode.Double);
             Function max = StandardFunctions.GetFunctionReference("Max");
             max.Inputs = IntParam;
-            max.TargetColumn = "Maximum";
+            max.TargetColumn = new TableColumn("Maximum", ETypeCode.Double);
             Function count = StandardFunctions.GetFunctionReference("Count");
-            count.TargetColumn = "Count";
+            count.TargetColumn = new TableColumn("Count", ETypeCode.Double);
             Function countdistinct = StandardFunctions.GetFunctionReference("CountDistinct");
             countdistinct.Inputs = StringParam;
-            countdistinct.TargetColumn = "CountDistinct";
+            countdistinct.TargetColumn = new TableColumn("CountDistinct", ETypeCode.Double);
             Function concat = StandardFunctions.GetFunctionReference("ConcatAgg");
             concat.Inputs = ConcatParam;
-            concat.TargetColumn = "Concat";
+            concat.TargetColumn = new TableColumn("Concat", ETypeCode.String);
 
             Aggregates.Add(sum);
             Aggregates.Add(average);
@@ -71,7 +71,7 @@ namespace dexih.transforms.tests
             //add a row to use for grouping.
             Source.Add(new object[] { "value10", 10, 10.1, "2015/01/10", 10, "Even" });
 
-            List<ColumnPair> GroupColumns = new List<ColumnPair>() { new ColumnPair("StringColumn", "StringColumn") };
+            List<ColumnPair> GroupColumns = new List<ColumnPair>() { new ColumnPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
 
             transformGroup = new TransformGroup(Source, GroupColumns, Aggregates, false);
 
@@ -115,26 +115,26 @@ namespace dexih.transforms.tests
 
             Function mavg = StandardFunctions.GetFunctionReference("MovingAverage");
             mavg.Inputs = new dexih.functions.Parameter[] {
-                new dexih.functions.Parameter("Series", ETypeCode.DateTime, true, null, "DateColumn"),
-                new dexih.functions.Parameter("Value", ETypeCode.Double, true, null, "IntColumn"),
+                new dexih.functions.Parameter("Series", ETypeCode.DateTime, true, null, new TableColumn("DateColumn", ETypeCode.DateTime)),
+                new dexih.functions.Parameter("Value", ETypeCode.Double, true, null, new TableColumn("IntColumn", ETypeCode.Double)),
                 new dexih.functions.Parameter("PreCount", ETypeCode.Int32, value: 3),
                 new dexih.functions.Parameter("PostCount", ETypeCode.Int32, value: 3)
             };
-            mavg.TargetColumn = "MAvg";
+            mavg.TargetColumn = new TableColumn("MAvg", ETypeCode.Double);
             Aggregates.Add(mavg);
 
             Function highest = StandardFunctions.GetFunctionReference("HighestSince");
             highest.Inputs = new dexih.functions.Parameter[] {
-                new dexih.functions.Parameter("Series", ETypeCode.DateTime, true, null, "DateColumn"),
-                new dexih.functions.Parameter("Value", ETypeCode.Double, true, null, "IntColumn")
+                new dexih.functions.Parameter("Series", ETypeCode.DateTime, true, null, new TableColumn("DateColumn", ETypeCode.DateTime)),
+                new dexih.functions.Parameter("Value", ETypeCode.Double, true, null, new TableColumn("IntColumn", ETypeCode.Int32))
             };
             highest.Outputs = new dexih.functions.Parameter[] {
-                new dexih.functions.Parameter("Value", ETypeCode.Double, true, null, "HighestValue")
+                new dexih.functions.Parameter("Value", ETypeCode.Double, true, null, new TableColumn("HighestValue", ETypeCode.Double))
             };
-            highest.TargetColumn = "Highest";
+            highest.TargetColumn = new TableColumn("Highest", ETypeCode.Double);
             Aggregates.Add(highest);
 
-            List<ColumnPair> GroupColumns = new List<ColumnPair>() { new ColumnPair("DateColumn", "DateColumn") };
+            List<ColumnPair> GroupColumns = new List<ColumnPair>() { new ColumnPair(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)) };
 
             TransformGroup transformGroup = new TransformGroup(Source, null, Aggregates, true);
 

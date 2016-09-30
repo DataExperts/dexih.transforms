@@ -198,22 +198,22 @@ namespace dexih.transforms
             RejectRows = new TableCache();
 
             //create template queries, with the values set to paramaters (i.e. @param1, @param2)
-            TargetInsertQuery = new InsertQuery(TargetTable.TableName, TargetTable.Columns.Select(c => new QueryColumn(c.ColumnName, c.DataType, "@param" + TargetTable.GetOrdinal(c.ColumnName).ToString())).ToList());
+            TargetInsertQuery = new InsertQuery(TargetTable.TableName, TargetTable.Columns.Select(c => new QueryColumn(new TableColumn(c.ColumnName, c.DataType), "@param" + TargetTable.GetOrdinal(c.ColumnName).ToString())).ToList());
 
             TargetUpdateQuery = new UpdateQuery(
                 TargetTable.TableName,
-                TargetTable.Columns.Where(c=> c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c.ColumnName, c.DataType, "@param" + TargetTable.GetOrdinal(c.ColumnName).ToString())).ToList(),
-                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c=> new Filter(c.ColumnName, Filter.ECompare.IsEqual, "@surrogateKey")).ToList()
+                TargetTable.Columns.Where(c=> c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, "@param" + TargetTable.GetOrdinal(c.ColumnName).ToString())).ToList(),
+                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c=> new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList()
                 );
 
-            TargetDeleteQuery = new DeleteQuery(TargetTable.TableName, TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c.ColumnName, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
+            TargetDeleteQuery = new DeleteQuery(TargetTable.TableName, TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
             if (RejectTable != null)
             {
-                RejectInsertQuery = new InsertQuery(RejectTable.TableName, RejectTable.Columns.Select(c => new QueryColumn(c.ColumnName, c.DataType, "@param" + RejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
+                RejectInsertQuery = new InsertQuery(RejectTable.TableName, RejectTable.Columns.Select(c => new QueryColumn(c, "@param" + RejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
                 returnValue = await RejectConnection.CreateTable(RejectTable, false);
-                if (!returnValue.Success)
-                    return returnValue;
+                //if (!returnValue.Success)
+                //    return returnValue;
             }
 
             //create the profile results table if it doesn't exist.
@@ -275,7 +275,14 @@ namespace dexih.transforms
                 ordinals = _rejectFieldOrdinals;
                 if (RejectTable == null)
                 {
-                    var setStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.RunningErrors, "Records have been rejected, however there is no reject table.");
+                    var rejectColumn = reader.GetOrdinal("RejectedReason");
+                    string rejectReason = "";
+                    if (rejectColumn > 0)
+                        rejectReason = reader[rejectColumn].ToString();
+                    else
+                        rejectReason = "No reject reason found.";
+
+                    var setStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.RunningErrors, "A record was rejected, however there is no reject table.  The message was: " + rejectReason);
                     return setStatusResult;
                 }
             }
@@ -422,7 +429,11 @@ namespace dexih.transforms
             writerResult.ProcessingTicks = reader.ProcessingTimerTicks();
 
             writerResult.EndTime = DateTime.Now;
-            writerResult.MaxIncrementalValue = reader.GetMaxIncrementalValue();
+
+            if (writerResult.RowsTotal == 0)
+                writerResult.MaxIncrementalValue = writerResult.LastMaxIncrementalValue;
+            else
+                writerResult.MaxIncrementalValue = reader.GetMaxIncrementalValue();
 
             reader.Dispose();
 
@@ -474,8 +485,8 @@ namespace dexih.transforms
             {
                 UpdateQuery updateQuery = new UpdateQuery(
                 TargetTable.TableName,
-                TargetTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c.ColumnName, c.DataType, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList(),
-                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c.ColumnName, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList()
+                TargetTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList(),
+                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList()
                 );
 
                 updateQueries.Add(updateQuery);
@@ -515,14 +526,14 @@ namespace dexih.transforms
                     return result;
             }
 
-            TargetDeleteQuery = new DeleteQuery(TargetTable.TableName, TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c.ColumnName, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
+            TargetDeleteQuery = new DeleteQuery(TargetTable.TableName, TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
             List<DeleteQuery> deleteQueries = new List<DeleteQuery>();
             foreach (object[] row in DeleteRows)
             {
                 DeleteQuery deleteQuery = new DeleteQuery(
                 TargetTable.TableName,
-                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c.ColumnName, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList()
+                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList()
                 );
 
                 deleteQueries.Add(deleteQuery);

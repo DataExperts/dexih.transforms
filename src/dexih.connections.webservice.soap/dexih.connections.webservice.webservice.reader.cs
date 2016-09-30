@@ -26,6 +26,14 @@ namespace dexih.connections.webservice
             JoinPairs = referenceJoins;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            _isOpen = false;
+
+            base.Dispose(disposing);
+        }
+
+
         public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
             AuditKey = auditKey;

@@ -367,7 +367,7 @@ namespace dexih.connections.azure
         /// <param name="surrogateKeyColumn"></param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<long>> GetIncrementalKey(Table table, string surrogateKeyColumn, CancellationToken cancelToken)
+        public override async Task<ReturnValue<long>> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancelToken)
         {
             try
             {
@@ -388,10 +388,10 @@ namespace dexih.connections.azure
                 do
                 {
                     //get the last key value if it exists.
-                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.TableName, surrogateKeyColumn, new List<string>() { "IncrementalValue", "LockGuid" }));
+                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.TableName, surrogateKeyColumn.ColumnName, new List<string>() { "IncrementalValue", "LockGuid" }));
                     if (tableResult.Result == null)
                     {
-                        entity = new DynamicTableEntity(table.TableName, surrogateKeyColumn);
+                        entity = new DynamicTableEntity(table.TableName, surrogateKeyColumn.ColumnName);
                         entity.Properties.Add("IncrementalValue", new EntityProperty((long)1));
                         entity.Properties.Add("LockGuid", new EntityProperty(lockGuid));
                         incrementalKey = 1;
@@ -408,7 +408,7 @@ namespace dexih.connections.azure
                     //update the record with the new incrementalvalue and the guid.
                     await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
 
-                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.TableName, surrogateKeyColumn, new List<string>() { "IncrementalValue", "LockGuid" }));
+                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.TableName, surrogateKeyColumn.ColumnName, new List<string>() { "IncrementalValue", "LockGuid" }));
                     entity = tableResult.Result as DynamicTableEntity;
 
                 } while (entity.Properties["LockGuid"].GuidValue.Value != lockGuid);
@@ -495,7 +495,7 @@ namespace dexih.connections.azure
                                 throw new Exception("The filter value " + value.ToString() + " could not be convered to a " + filter.CompareDataType.ToString());
                             array.Add(valueparse.Value);
                         }
-                        filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1, Filter.ECompare.IsEqual, filter.CompareDataType, c))) + ")";
+                        filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1.ColumnName, Filter.ECompare.IsEqual, filter.CompareDataType, c))) + ")";
                     }
                     else
                     {
@@ -504,7 +504,7 @@ namespace dexih.connections.azure
                             throw new Exception("The filter value " + filter.Value2.ToString() + " could not be convered to a " + filter.CompareDataType.ToString());
                         var value2 = value2parse.Value;
 
-                        filterString = GenerateFilterCondition(filter.Column1, filter.Operator, filter.CompareDataType, value2);
+                        filterString = GenerateFilterCondition(filter.Column1.ColumnName, filter.Operator, filter.CompareDataType, value2);
                     }
 
                     if (combinedFilterString == "")
@@ -748,13 +748,13 @@ namespace dexih.connections.azure
                     Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
                     foreach (var field in query.InsertColumns)
                     {
-                        if (!(field.Column == "RowKey" || field.Column == "PartitionKey" || field.Column == "Timestamp"))
-                            properties.Add(field.Column, NewEntityProperty(table[field.Column].DataType, field.Value));
+                        if (!(field.Column.ColumnName == "RowKey" || field.Column.ColumnName == "PartitionKey" || field.Column.ColumnName == "Timestamp"))
+                            properties.Add(field.Column.ColumnName, NewEntityProperty(table.Columns[field.Column].DataType, field.Value));
                     }
 
                     if (autoIncrement != null)
                     {
-                        var autoIncrementResult = await GetIncrementalKey(table, autoIncrement.ColumnName, CancellationToken.None);
+                        var autoIncrementResult = await GetIncrementalKey(table, autoIncrement, CancellationToken.None);
                         lastAutoIncrement = autoIncrementResult.Value;
 
                         properties.Add(autoIncrement.ColumnName, NewEntityProperty(ETypeCode.Int64, lastAutoIncrement));
@@ -762,13 +762,13 @@ namespace dexih.connections.azure
 
                     string partitionKeyValue = null;
                     if (partitionKey != null)
-                        partitionKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column == partitionKey.ColumnName)?.Value.ToString();
+                        partitionKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column.ColumnName == partitionKey.ColumnName)?.Value.ToString();
 
                     if (string.IsNullOrEmpty(partitionKeyValue)) partitionKeyValue = "default";
 
                     string rowKeyValue = null;
                     if (rowKey != null)
-                        rowKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column == rowKey.ColumnName)?.Value.ToString();
+                        rowKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column.ColumnName == rowKey.ColumnName)?.Value.ToString();
 
                     if (string.IsNullOrEmpty(rowKeyValue))
                     {
@@ -780,7 +780,7 @@ namespace dexih.connections.azure
                             else
                                 rowKeyValue = lastAutoIncrement.ToString("D20");
                         else
-                            rowKeyValue = ((long)query.InsertColumns.Single(c => c.Column == sk).Value).ToString("D20");
+                            rowKeyValue = ((long)query.InsertColumns.Single(c => c.Column.ColumnName == sk).Value).ToString("D20");
                     }
 
                     DynamicTableEntity entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
@@ -850,13 +850,13 @@ namespace dexih.connections.azure
                         int filtercount = query.Filters.Count;
                         for (int i = 0; i < filtercount; i++)
                         {
-                            if (query.Filters[i].Column1 == surrogateKeyColumn.ColumnName)
+                            if (query.Filters[i].Column1.ColumnName == surrogateKeyColumn.ColumnName)
                             {
                                 var rowKeyValue = ((long)query.Filters[i].Value2).ToString("D20");
 
                                 query.Filters.Add(new Filter()
                                 {
-                                    Column1 = "RowKey",
+                                    Column1 = new TableColumn("RowKey", ETypeCode.String),
                                     Column2 = query.Filters[i].Column2,
                                     Value1 = query.Filters[i].Value1,
                                     Value2 = rowKeyValue,
@@ -885,7 +885,7 @@ namespace dexih.connections.azure
 
                             foreach (var column in query.UpdateColumns)
                             {
-                                switch (column.Column)
+                                switch (column.Column.ColumnName)
                                 {
                                     case "RowKey":
                                         entity.RowKey = column.Value.ToString();
@@ -894,7 +894,7 @@ namespace dexih.connections.azure
                                         entity.PartitionKey = column.Value.ToString();
                                         break;
                                     default:
-                                        entity.Properties[column.Column] = NewEntityProperty(table[column.Column].DataType, column.Value);
+                                        entity.Properties[column.Column.ColumnName] = NewEntityProperty(table[column.Column.ColumnName].DataType, column.Value);
                                         break;
                                 }
                             }
@@ -1006,7 +1006,7 @@ namespace dexih.connections.azure
 
                 //Read the key fields from the table
                 TableQuery tableQuery = new TableQuery();
-                tableQuery.SelectColumns = query.Columns.Select(c => c.Column).ToArray();
+                tableQuery.SelectColumns = query.Columns.Select(c => c.Column.ColumnName).ToArray();
                 tableQuery.FilterString = BuildFilterString(query.Filters);
                 tableQuery.Take(1);
 
@@ -1026,7 +1026,7 @@ namespace dexih.connections.azure
                         value = null;
                     else
                     {
-                        switch (query.Columns[0].Column)
+                        switch (query.Columns[0].Column.ColumnName)
                         {
                             case "RowKey":
                                 value = result.Results[0].RowKey;
@@ -1035,13 +1035,13 @@ namespace dexih.connections.azure
                                 value = result.Results[0].PartitionKey;
                                 break;
                             default:
-                                value = result.Results[0].Properties[query.Columns[0].Column].PropertyAsObject;
+                                value = result.Results[0].Properties[query.Columns[0].Column.ColumnName].PropertyAsObject;
                                 break;
                         }
                     }
 
                     //convert it back to a .net type.
-                    value = ConvertEntityProperty(table[query.Columns[0].Column].DataType, value);
+                    value = ConvertEntityProperty(table.Columns[query.Columns[0].Column].DataType, value);
                     return new ReturnValue<object>(true, value);
 
                 }

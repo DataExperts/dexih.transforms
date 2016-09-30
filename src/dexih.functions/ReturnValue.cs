@@ -109,17 +109,17 @@ namespace dexih.functions
 
     public class Message : ReturnValue<string>
     {
-        public string MessageToken { get; set; }
+        public string MessageId { get; set; }
         public string RemoteToken { get; set; }
         public string Command { get; set; }
         public long HubKey { get; set; }
 
         public Message() { }
 
-        public Message(string remoteToken, string messageToken, string command, ReturnValue<string> returnValue)
+        public Message(string remoteToken, string messageId, string command, ReturnValue<string> returnValue)
         {
             RemoteToken = remoteToken;
-            MessageToken = messageToken;
+            MessageId = messageId;
             Command = command;
             Success = returnValue.Success;
             Message = returnValue.Message;
@@ -130,10 +130,10 @@ namespace dexih.functions
                 Value = JsonConvert.SerializeObject(returnValue.Value);
         }
 
-        public Message(string remoteToken, string messageToken, string command, object returnValue)
+        public Message(string remoteToken, string messageId, string command, object returnValue)
         {
             RemoteToken = remoteToken;
-            MessageToken = messageToken;
+            MessageId = messageId;
             Command = command;
             Success = true;
             Message = "";
@@ -144,10 +144,10 @@ namespace dexih.functions
                 Value = JsonConvert.SerializeObject(returnValue);
         }
 
-        public Message(string remoteToken, string messageToken, string command, string returnValue)
+        public Message(string remoteToken, string messageId, string command, string returnValue)
         {
             RemoteToken = remoteToken;
-            MessageToken = messageToken;
+            MessageId = messageId;
             Command = command;
             Success = true;
             Message = "";

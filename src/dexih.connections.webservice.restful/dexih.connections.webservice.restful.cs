@@ -152,8 +152,8 @@ namespace dexih.connections.webservice
                 table.Columns.Add(col);
 
                 SelectQuery query = new SelectQuery();
-                query.Columns.Add(new SelectColumn("Response", SelectColumn.EAggregate.None));
-                query.Columns.Add(new SelectColumn("ResponseSuccess", SelectColumn.EAggregate.None));
+                query.Columns.Add(new SelectColumn(new TableColumn("Response"), SelectColumn.EAggregate.None));
+                query.Columns.Add(new SelectColumn(new TableColumn("ResponseSuccess"), SelectColumn.EAggregate.None));
                 query.Table = table.TableName;
                 query.Rows = 1;
 
@@ -231,7 +231,7 @@ namespace dexih.connections.webservice
                 foreach (var filter in filters)
                 {
                     uri = uri.Replace("{" + filter.Column1 + "}", filter.Value2.ToString());
-                    row[table.GetOrdinal(filter.Column1)] = filter.Value2.ToString();
+                    row[table.GetOrdinal(filter.Column1.SchemaColumnName())] = filter.Value2.ToString();
                 }
 
                 HttpClientHandler handler = null;
@@ -303,8 +303,8 @@ namespace dexih.connections.webservice
             if (!lookupResult.Success)
                 return new ReturnValue<object>(lookupResult);
 
-            string column = query.Columns[0].Column;
-            object value = lookupResult.Value[table.GetOrdinal(column)];
+            string schemaColumn = query.Columns[0].Column.SchemaColumnName();
+            object value = lookupResult.Value[table.GetOrdinal(schemaColumn)];
             return new ReturnValue<object>(true, value);
         }
 

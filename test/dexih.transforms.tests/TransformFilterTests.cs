@@ -27,7 +27,7 @@ namespace dexih.transforms.tests
             List<Function> Conditions = new List<Function>();
             Function Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn", isArray: true  ),
+                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null,  new TableColumn("StringColumn"), isArray: true  ),
                     new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk", isArray: true ) };
             Conditions.Add(Function);
 
@@ -46,7 +46,7 @@ namespace dexih.transforms.tests
             Conditions = new List<Function>();
             Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn", isArray: true ),
+                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null,  new TableColumn("StringColumn"), isArray: true ),
                     new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value03", isArray: true ) };
             Conditions.Add(Function);
 
@@ -66,7 +66,7 @@ namespace dexih.transforms.tests
             Conditions = new List<Function>();
             Function = StandardFunctions.GetFunctionReference("IsIn");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("Value", ETypeCode.String, true, null, "StringColumn" ),
+                    new dexih.functions.Parameter("Value", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
                     new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value03", isArray: true) ,
                     new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value05", isArray: true) ,
                     new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value07", isArray: true) };
@@ -86,9 +86,9 @@ namespace dexih.transforms.tests
             // create a mapping, and use the filter after the calculation.
             List<Function> Mappings = new List<Function>();
             Function = StandardFunctions.GetFunctionReference("Substring");
-            Function.TargetColumn = "Substring";
+            Function.TargetColumn = new TableColumn("Substring");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("name", ETypeCode.String, true, null, "StringColumn" ),
+                    new dexih.functions.Parameter("name", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
                     new dexih.functions.Parameter("start", ETypeCode.Int32, false, 5),
                     new dexih.functions.Parameter("end", ETypeCode.Int32, false, 50) };
             Mappings.Add(Function);
@@ -99,7 +99,7 @@ namespace dexih.transforms.tests
             Conditions = new List<Function>();
             Function = StandardFunctions.GetFunctionReference("LessThan");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("Substring", ETypeCode.Int32, true, null, "Substring" ),
+                    new dexih.functions.Parameter("Substring", ETypeCode.Int32, true, null,  new TableColumn("Substring") ),
                     new dexih.functions.Parameter("Compare", ETypeCode.Int32, false, 5) };
             Conditions.Add(Function);
             TransformFilter.Conditions = Conditions;
@@ -140,7 +140,7 @@ namespace dexih.transforms.tests
 
             List<Function> filters = new List<Function>();
 
-            Function newFilter = new Function(new Func<int, bool>((value) => value < 0), new string[] { data.GetName(0) }, null, null);
+            Function newFilter = new Function(new Func<int, bool>((value) => value < 0), new TableColumn[] { new TableColumn(data.GetName(0)) }, null, null);
             filters.Add(newFilter);
             transformFilter.Functions = filters;
             transformFilter.SetInTransform(data);

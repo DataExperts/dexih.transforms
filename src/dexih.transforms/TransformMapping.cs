@@ -63,19 +63,19 @@ namespace dexih.transforms
                 newFilters = new List<Filter>();
                 foreach(var filter in query.Filters)
                 {
-                    string column1 = null;
-                    string column2 = null;
-                    if (!String.IsNullOrEmpty(filter.Column1))
+                    TableColumn column1 = null;
+                    TableColumn column2 = null;
+                    if (filter.Column1 != null)
                     {
                         column1 = TranslateColumnName(filter.Column1);
-                        if (string.IsNullOrEmpty(column1))
+                        if (column1 == null)
                             continue;
                     }
 
-                    if (!String.IsNullOrEmpty(filter.Column2))
+                    if (filter.Column2 != null)
                     {
                         column2 = TranslateColumnName(filter.Column2);
-                        if (string.IsNullOrEmpty(column2))
+                        if (column2 == null)
                             continue;
                     }
 
@@ -99,11 +99,11 @@ namespace dexih.transforms
                 newSorts = new List<Sort>();
                 foreach (var sort in query.Sorts)
                 {
-                    string column = null;
-                    if (!String.IsNullOrEmpty(sort.Column))
+                    TableColumn column = null;
+                    if (sort.Column != null)
                     {
                         column = TranslateColumnName(sort.Column);
-                        if (string.IsNullOrEmpty(column))
+                        if (column == null)
                             continue;
                     }
 
@@ -121,22 +121,22 @@ namespace dexih.transforms
             return returnValue;
         }
 
-        public string TranslateColumnName(string outputColumn)
+        public TableColumn TranslateColumnName(TableColumn outputColumn)
         {
-            if (String.IsNullOrEmpty(outputColumn))
-                return outputColumn;
+            if (outputColumn == null)
+                return null;
             else
             {
                 if (MapFields != null)
                 {
-                    var mapping = MapFields.SingleOrDefault(c => c.TargetColumn == outputColumn);
+                    var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.SchemaColumnName() == outputColumn.SchemaColumnName());
                     if (mapping != null)
-                        return mapping.SourceColumn;
+                        return mapping.SourceColumn.Copy();
                 }
 
                 if(PassThroughColumns)
                 {
-                    var column = CacheTable.Columns.SingleOrDefault(c => c.ColumnName == outputColumn);
+                    var column = CacheTable.Columns.SingleOrDefault(c => c.SchemaColumnName() == outputColumn.SchemaColumnName());
                     if (column != null)
                         return outputColumn;
                 }
@@ -156,11 +156,15 @@ namespace dexih.transforms
 
                 foreach (ColumnPair mapField in MapFields)
                 {
-                    var column = PrimaryTransform.CacheTable.Columns.Single(c => c.ColumnName == mapField.SourceColumn);
-                    column.ColumnName = mapField.TargetColumn;
+                    var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn];
+                    if(column == null)
+                    {
+                        throw new Exception("The mapping " + mapField.SourceColumn + " to " + mapField.TargetColumn + " could not be completed, as the source field was missing.");
+                    }
+                    column.ColumnName = mapField.TargetColumn.ColumnName;
                     CacheTable.Columns.Add(column);
                     //store an mapFieldOrdinal to improve performance.
-                    _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn));
+                    _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn.SchemaColumnName()));
                     i++;
                 }
             }
@@ -175,11 +179,15 @@ namespace dexih.transforms
                     foreach(var parameter in mapping.Inputs)
                     {
                         if (parameter.IsColumn)
-                            _functionInputOrdinals.Add(PrimaryTransform.GetOrdinal(parameter.ColumnName));
+                        {
+                            if (parameter.Column == null)
+                                throw new Exception("The mapping " + mapping.FunctionDetail() + " could not be executed as there was an error with one of the parameters.");
+                            _functionInputOrdinals.Add(PrimaryTransform.GetOrdinal(parameter.Column.SchemaColumnName()));
+                        }
                     }
-                    if (!string.IsNullOrEmpty(mapping.TargetColumn))
+                    if (mapping.TargetColumn != null)
                     {
-                        var column = new TableColumn(mapping.TargetColumn, mapping.ReturnType);
+                        var column = new TableColumn(mapping.TargetColumn.ColumnName, mapping.ReturnType);
                         CacheTable.Columns.Add(column);
 
                         i++;
@@ -189,9 +197,9 @@ namespace dexih.transforms
                     {
                         foreach (Parameter param in mapping.Outputs)
                         {
-                            if (!string.IsNullOrEmpty(param.ColumnName))
+                            if (param.Column != null)
                             {
-                                var column = new TableColumn(param.ColumnName, param.DataType);
+                                var column = new TableColumn(param.Column.ColumnName, param.DataType);
                                 CacheTable.Columns.Add(column);
                                 i++;
                             }
@@ -226,8 +234,8 @@ namespace dexih.transforms
                     ColumnPair mapping = ColumnPairs?.FirstOrDefault(c => c.SourceColumn == t.Column);
                     if (mapping == null)
                     {
-                        //if passthrough column is on, and non of the function mappings override the target field then it is included.
-                        if (PassThroughColumns && !Functions.Any(c => c.TargetColumn == t.Column || c.Inputs.Any(d => d.ColumnName == t.Column)))
+                        //if passthrough column is on, and none of the function mappings override the target field then it is included.
+                        if (PassThroughColumns && !Functions.Any(c => c.TargetColumn == t.Column || c.Inputs.Any(d => d.Column.ColumnName == t.Column.ColumnName)))
                         {
                             fields.Add(t);
                         }
@@ -292,7 +300,7 @@ namespace dexih.transforms
                     if(invokeresult.Success== false)
                         throw new Exception("Error invoking mapping function: " + invokeresult.Message);
 
-                    if (!string.IsNullOrEmpty(mapping.TargetColumn))
+                    if (mapping.TargetColumn != null)
                     {
                         newRow[i] = invokeresult.Value;
                         i = i + 1;
@@ -302,7 +310,7 @@ namespace dexih.transforms
                     {
                         foreach (Parameter output in mapping.Outputs)
                         {
-                            if (!string.IsNullOrEmpty(output.ColumnName))
+                            if (output.Column != null)
                             {
                                 newRow[i] = output.Value;
                                 i = i + 1;

@@ -143,7 +143,7 @@ namespace dexih.transforms
                         //set inputs for the validation function
                         foreach (Parameter input in validation.Inputs.Where(c => c.IsColumn))
                         {
-                            var result = input.SetValue(PrimaryTransform[input.ColumnName]);
+                            var result = input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
                             if (result.Success == false)
                                 throw new Exception("Error setting validation values: " + result.Message);
                         }
@@ -156,7 +156,7 @@ namespace dexih.transforms
                         //if the validation is negative.  apply any output columns, and set a reject status
                         if ((bool)invokeresult.Value == false)
                         {
-                            rejectReason.AppendLine("function: " + validation.FunctionName + ", values: " + string.Join(",", validation.Inputs.Select(c => c.ColumnName + "=" + c.Value.ToString()).ToArray()) + ".");
+                            rejectReason.AppendLine("function: " + validation.FunctionName + ", parameters: " + string.Join(",", validation.Inputs.Select(c => c.Name + "=" + (c.IsColumn ? c.Column.SchemaColumnName() : c.Value.ToString())).ToArray()) + ".");
 
                             // fail job immediately.
                             if (validation.InvalidAction == Function.EInvalidAction.Abend)
@@ -185,7 +185,7 @@ namespace dexih.transforms
                                 {
                                     if (validation.Outputs != null)
                                     {
-                                        Parameter param = validation.Outputs.SingleOrDefault(c => c.ColumnName == rejectReasonColumnName);
+                                        Parameter param = validation.Outputs.SingleOrDefault(c => c.Column.SchemaColumnName() == rejectReasonColumnName);
                                         if (param != null)
                                         {
                                             rejectReason.Append("  Reason: " + (string)param.Value);
@@ -201,10 +201,10 @@ namespace dexih.transforms
                                 {
                                     foreach (Parameter output in validation.Outputs)
                                     {
-                                        if (output.ColumnName != "")
+                                        if (output.Column.SchemaColumnName() != "")
                                         {
-                                            int ordinal = CacheTable.GetOrdinal(output.ColumnName);
-                                            TableColumn col = CacheTable[output.ColumnName];
+                                            int ordinal = CacheTable.GetOrdinal(output.Column.SchemaColumnName());
+                                            TableColumn col = CacheTable[output.Column.SchemaColumnName()];
                                             if (ordinal >= 0)
                                             {
                                                 var parseresult = DataType.TryParse(col.DataType, output.Value, col.MaxLength);

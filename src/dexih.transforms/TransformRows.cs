@@ -65,8 +65,9 @@ namespace dexih.transforms
 
                 foreach (ColumnPair groupField in GroupFields)
                 {
-                    var column = PrimaryTransform.CacheTable.Columns.Single(c => c.ColumnName == groupField.SourceColumn);
-                    column.ColumnName = groupField.TargetColumn;
+                    var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn];
+                    column.Schema = "";
+                    column.ColumnName = groupField.TargetColumn.ColumnName;
                     CacheTable.Columns.Add(column);
                     i++;
                 }
@@ -84,7 +85,7 @@ namespace dexih.transforms
                 {
                     foreach (Parameter param in rowFunction.Outputs)
                     {
-                        var column = new TableColumn(param.ColumnName, param.DataType);
+                        var column = new TableColumn(param.Column.ColumnName, param.DataType);
                         CacheTable.Columns.Add(column);
                         i++;
                     }
@@ -194,7 +195,7 @@ namespace dexih.transforms
 
                     foreach (Parameter input in rowFunction.Inputs.Where(c => c.IsColumn))
                     {
-                        var result = input.SetValue(PrimaryTransform[input.ColumnName]);
+                        var result = input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
                         if (result.Success == false)
                             throw new Exception("Error setting row function values: " + result.Message);
                     }
@@ -224,7 +225,7 @@ namespace dexih.transforms
                     {
                         foreach (Parameter output in rowFunction.Outputs)
                         {
-                            if (output.ColumnName != "")
+                            if (output.Column != null)
                             {
                                 newRow[functionColumn] = output.Value;
                                 functionColumn = functionColumn - 1;

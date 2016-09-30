@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dexih.functions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace dexih.transforms
         /// Sets the source and target mappings to the same column name
         /// </summary>
         /// <param name="sourceTargetColumn">Column Name</param>
-        public ColumnPair(string sourceTargetColumn)
+        public ColumnPair(TableColumn sourceTargetColumn)
         {
             SourceColumn = sourceTargetColumn;
             TargetColumn = sourceTargetColumn;
@@ -22,27 +23,33 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="sourceColumn">Source Column Name</param>
         /// <param name="targetColumn">Target Column Name</param>
-        public ColumnPair(string sourceColumn, string targetColumn)
+        public ColumnPair(TableColumn sourceColumn, TableColumn targetColumn)
         {
             SourceColumn = sourceColumn;
             TargetColumn = targetColumn;
         }
 
-        public string SourceColumn { get; set; }
-        public string TargetColumn { get; set; }
+        public TableColumn SourceColumn { get; set; }
+        public TableColumn TargetColumn { get; set; }
     }
 
     public class JoinPair
     {
         public JoinPair() { }
-        public JoinPair(string sourceColumn, string joinColumn)
+        public JoinPair(TableColumn sourceColumn, TableColumn joinColumn)
         {
             SourceColumn = sourceColumn;
             JoinColumn = joinColumn;
         }
 
-        public string SourceColumn { get; set; }
-        public string JoinColumn { get; set; }
-        public string JoinValue { get; set; }
+        public JoinPair(TableColumn joinColumn, object joinValue)
+        {
+            JoinColumn = joinColumn;
+            JoinValue = joinValue;
+        }
+
+        public TableColumn SourceColumn { get; set; }
+        public TableColumn JoinColumn { get; set; }
+        public object JoinValue { get; set; }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace dexih.transforms
+namespace dexih.functions
 {
     public class TableCache : IList<object[]>
     {

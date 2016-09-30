@@ -70,8 +70,9 @@ namespace dexih.transforms
 
                 foreach (ColumnPair groupField in GroupFields)
                 {
-                    var column = PrimaryTransform.CacheTable.Columns.Single(c=>c.ColumnName == groupField.SourceColumn);
-                    column.ColumnName = groupField.TargetColumn;
+                    var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn];
+                    column.Schema = "";
+                    column.ColumnName = groupField.TargetColumn.ColumnName;
                     CacheTable.Columns.Add(column);
                     i++;
                 }
@@ -79,7 +80,7 @@ namespace dexih.transforms
 
             foreach (Function aggregate in Aggregates)
             {
-                var column = new TableColumn(aggregate.TargetColumn, aggregate.ReturnType);
+                var column = new TableColumn(aggregate.TargetColumn.ColumnName, aggregate.ReturnType);
                 CacheTable.Columns.Add(column);
                 i++;
 
@@ -87,8 +88,8 @@ namespace dexih.transforms
                 {
                     foreach (Parameter param in aggregate.Outputs)
                     {
-                        column = new TableColumn(param.ColumnName, param.DataType);
-                        CacheTable.Columns.Add(column);
+                        var paramColumn = new TableColumn(param.Column.ColumnName, param.DataType);
+                        CacheTable.Columns.Add(paramColumn);
                         i++;
                     }
                 }
@@ -101,7 +102,7 @@ namespace dexih.transforms
 
                 foreach (var column in PrimaryTransform.CacheTable.Columns)
                 {
-                    if (CacheTable.Columns.SingleOrDefault(c=>c.ColumnName == column.ColumnName) == null)
+                    if (!CacheTable.Columns.ContainsMatching(column))
                         CacheTable.Columns.Add(column.Copy());
                 }
             }
@@ -343,7 +344,7 @@ namespace dexih.transforms
                         {
                             foreach (Parameter input in mapping.Inputs.Where(c => c.IsColumn))
                             {
-                                var result = input.SetValue(PrimaryTransform[input.ColumnName]);
+                                var result = input.SetValue(PrimaryTransform[input.Column]);
                                 if (result.Success == false)
                                     throw new Exception("Error setting aggregate values: " + result.Message);
                             }

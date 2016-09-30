@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using static dexih.functions.DataType;
 
 namespace dexih.connections.test
 {
@@ -94,13 +95,13 @@ namespace dexih.connections.test
                     var updateColumns = new List<QueryColumn>();
 
                     //use this column to validate the update success
-                    var updateColumn = new QueryColumn(table.Columns[1].ColumnName, table.Columns[1].DataType, 1);
+                    var updateColumn = new QueryColumn(table.Columns[1], 1);
                     updateColumns.Add(updateColumn);
 
                     //load the columns with random values.
                     for (int j = 2; j < table.Columns.Count; j++)
                     {
-                        updateColumn = new QueryColumn(table.Columns[j].ColumnName, table.Columns[j].DataType, DataType.GetDataTypeMaxValue(table.Columns[j].DataType));
+                        updateColumn = new QueryColumn(table.Columns[j], DataType.GetDataTypeMaxValue(table.Columns[j].DataType));
                         updateColumns.Add(updateColumn);
                     }
                     updateQueries.Add(new UpdateQuery()
@@ -118,7 +119,7 @@ namespace dexih.connections.test
                 var selectQuery = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn("UpdateTest") },
-                    Filters = new List<Filter>() { new Filter() { Column1 = "UpdateTest", CompareDataType = DataType.ETypeCode.Int32, Operator = Filter.ECompare.IsEqual, Value2 = 1 } },
+                    Filters = new List<Filter>() { new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), Filter.ECompare.IsEqual, 1) },
                     Rows = -1,
                     Table = table.TableName
                 };
@@ -134,7 +135,7 @@ namespace dexih.connections.test
                 //delete 10,000 rows
                 deleteQueries.Add(new DeleteQuery()
                 {
-                    Filters = new List<Filter>() { new Filter() { Column1 = "UpdateTest", CompareDataType = DataType.ETypeCode.Int32, Operator = Filter.ECompare.IsEqual, Value2 = 1 } },
+                    Filters = new List<Filter>() { new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), Filter.ECompare.IsEqual, 1) },
                     Table = table.TableName,
                 });
 

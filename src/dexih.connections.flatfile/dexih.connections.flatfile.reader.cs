@@ -29,6 +29,16 @@ namespace dexih.connections.flatfile
             CacheTable = table;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (_csvReader != null)
+                _csvReader.Dispose();
+
+            _isOpen = false;
+
+            base.Dispose(disposing);
+        }
+
         public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
             AuditKey = auditKey;

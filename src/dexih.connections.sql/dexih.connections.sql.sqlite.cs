@@ -251,6 +251,9 @@ namespace dexih.connections.sql
             if (value == null || value.GetType().ToString() == "System.DBNull")
                 return "null";
 
+            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
+            //    return "null";
+
             switch (type)
             {
                 case ETypeCode.Byte:
@@ -314,12 +317,12 @@ namespace dexih.connections.sql
                     return new ReturnValue<DbConnection>(false, "The sqlserver connection failed to open with a state of : " + connection.State.ToString(), null, null);
                 }
 
-                //using (var command = new SqliteCommand())
-                //{
-                //    command.Connection = connection;
-                //    command.CommandText = "PRAGMA journal_mode=WAL";
-                //    command.ExecuteNonQuery();
-                //}
+                using (var command = new SqliteCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = "PRAGMA journal_mode=WAL";
+                    command.ExecuteNonQuery();
+                }
 
                 return new ReturnValue<DbConnection>(true, "", null, connection);
             }
@@ -610,7 +613,7 @@ namespace dexih.connections.sql
 
                         for (int i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            insert.Append("[" + query.InsertColumns[i].Column + "],");
+                            insert.Append("[" + query.InsertColumns[i].Column.ColumnName + "],");
                             values.Append("@col" + i.ToString() + ",");
                         }
 

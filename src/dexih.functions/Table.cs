@@ -4,7 +4,7 @@ using System;
 using dexih.functions;
 using System.Text;
 
-namespace dexih.transforms
+namespace dexih.functions
 {
     
     public class Table 
@@ -20,6 +20,7 @@ namespace dexih.transforms
         public Table(string tableName, TableColumns columns, TableCache data) 
         {
             TableName = tableName;
+            BaseTableName = DataType.CleanString(tableName);
             Columns = columns;
             Data = data;
         }
@@ -27,6 +28,7 @@ namespace dexih.transforms
         public Table(string tableName, int maxRows, params TableColumn[] columns) 
         {
             TableName = tableName;
+            BaseTableName = DataType.CleanString(tableName);
             Columns = new TableColumns();
             foreach (TableColumn column in columns)
                 Columns.Add(column);
@@ -37,6 +39,7 @@ namespace dexih.transforms
         public Table(string tableName, int maxRows, TableColumns columns)
         {
             TableName = tableName;
+            BaseTableName = DataType.CleanString(tableName);
             Columns = columns;
             Data = new TableCache(maxRows);
         }
@@ -44,6 +47,7 @@ namespace dexih.transforms
         public Table(string tableName, int maxRows = 0) 
         {
             TableName = tableName;
+            BaseTableName = DataType.CleanString(tableName);
             Columns = new TableColumns();
             Data = new TableCache(maxRows);
         }
@@ -66,6 +70,11 @@ namespace dexih.transforms
         /// Table description.
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Is the original base table name.
+        /// </summary>
+        public string BaseTableName { get; set; }
 
         /// <summary>
         /// Indicates if the table contains versions (history) of data change, such as sql temporal tables.
@@ -184,14 +193,14 @@ namespace dexih.transforms
                     value1 = filter.Value1;
                 else
                 {
-                    value1 = row[GetOrdinal(filter.Column1)];
+                    value1 = row[GetOrdinal(filter.Column1.ColumnName)];
                 }
 
                 if (filter.Value2 != null)
                     value2 = filter.Value2;
                 else
                 {
-                    value2 = row[GetOrdinal(filter.Column2)];
+                    value2 = row[GetOrdinal(filter.Column2.ColumnName)];
                 }
 
                 var compareResult = DataType.Compare(filter.CompareDataType, value1, value2);
@@ -337,7 +346,7 @@ namespace dexih.transforms
         /// Creates a copy of the table, excluding cached data, and sort columns
         /// </summary>
         /// <returns></returns>
-        public Table Copy()
+        public Table Copy(bool removeSchema = false)
         {
             Table table = new Table(TableName);
             table.Description = Description;
@@ -351,7 +360,12 @@ namespace dexih.transforms
             table.LogicalName = LogicalName;
 
             foreach (var column in Columns)
-                table.Columns.Add(column.Copy());
+            {
+                var newCol = column.Copy();
+                if (removeSchema) newCol.Schema = null;
+
+                table.Columns.Add(newCol);
+            }
 
             return table;
         }
@@ -361,7 +375,7 @@ namespace dexih.transforms
             if (Columns == null)
                 Columns = new TableColumns();
 
-            Columns.Add(new TableColumn(columnName, dataType));
+            Columns.Add(new TableColumn(columnName, dataType, TableName));
         }
 
         public void AddColumn(string columnName, DataType.ETypeCode dataType = DataType.ETypeCode.String, TableColumn.EDeltaType deltaType = TableColumn.EDeltaType.TrackingField)
@@ -369,7 +383,7 @@ namespace dexih.transforms
             if (Columns == null)
                 Columns = new TableColumns();
 
-            Columns.Add(new TableColumn(columnName, dataType, deltaType));
+            Columns.Add(new TableColumn(columnName, dataType, deltaType, TableName));
         }
 
         public void AddRow(params object[] values)
@@ -383,9 +397,9 @@ namespace dexih.transforms
             Data.Add(values);
         }
 
-        public int GetOrdinal(string columnName)
+        public int GetOrdinal(string schemaColumnName)
         {
-            return Columns.GetOrdinal(columnName);
+            return Columns.GetOrdinal(schemaColumnName);
         }
 
         public TableColumn GetDeltaColumn(TableColumn.EDeltaType deltaType)
@@ -402,9 +416,9 @@ namespace dexih.transforms
             return -1;
         }
 
-        public string[] GetColumnsByDeltaType(TableColumn.EDeltaType deltaType)
+        public TableColumn[] GetColumnsByDeltaType(TableColumn.EDeltaType deltaType)
         {
-            string[] columns = (from s in Columns where s.DeltaType == deltaType select s.ColumnName).ToArray();
+            TableColumn[] columns = (from s in Columns where s.DeltaType == deltaType select s).ToArray();
             return columns;
         }
         
@@ -418,7 +432,7 @@ namespace dexih.transforms
         {
             return new SelectQuery()
             {
-                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.DataType != DataType.ETypeCode.Unknown).Select(c => new SelectColumn(c.ColumnName, SelectColumn.EAggregate.None)).ToList(),
+                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.DataType != DataType.ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
                 Table = TableName,
                 Rows = rows
             };

@@ -63,7 +63,7 @@ namespace dexih.functions
         /// </summary>
         public ETypeCode ReturnType { get; set; }
 
-        public string TargetColumn { get; set; } //default column to map return type to
+        public TableColumn TargetColumn { get; set; } //default column to map return type to
 
         /// <summary>
         /// Action to take if there is an error in the function.
@@ -89,7 +89,7 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Delegate functionMethod, string[] inputMappings, string targetColumn, string[] outputMappings) :
+        public Function(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings) :
             this(functionMethod.Target, functionMethod.GetMethodInfo(), inputMappings, targetColumn, outputMappings)
         {
         }
@@ -102,7 +102,7 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Type targetType, string MethodName, string[] inputMappings, string targetColumn, string[] outputMappings)
+        public Function(Type targetType, string MethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             FunctionName = MethodName;
             Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
@@ -116,7 +116,7 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Type targetType, string MethodName, string ResultMethodName, string ResetMethodName, string[] inputMappings, string targetColumn, string[] outputMappings)
+        public Function(Type targetType, string MethodName, string ResultMethodName, string ResetMethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             FunctionName = MethodName;
             ResultMethod = targetType.GetMethod(ResultMethodName);
@@ -133,7 +133,7 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(object Target, string MethodName, string ResultMethodName, string ResetMethodName, string[] inputMappings, string targetColumn, string[] outputMappings)
+        public Function(object Target, string MethodName, string ResultMethodName, string ResetMethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
             
         {
             FunctionName = MethodName;
@@ -143,12 +143,12 @@ namespace dexih.functions
             Initialize(Target, Target.GetType().GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
         }
 
-        public Function(object Target, MethodInfo FunctionMethod, string[] inputMappings, string targetColumn, string[] outputMappings)
+        public Function(object Target, MethodInfo FunctionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             Initialize(Target, FunctionMethod, inputMappings, targetColumn, outputMappings);
         }
 
-        private void Initialize(object Target, MethodInfo FunctionMethod, string[] inputMappings, string targetColumn, string[] outputMappings)
+        private void Initialize(object Target, MethodInfo FunctionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             this.FunctionMethod = FunctionMethod;
             ObjectReference = Target;
@@ -159,7 +159,7 @@ namespace dexih.functions
             ParameterInfo[] inputParameters = FunctionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
 
             if (inputMappings == null)
-                inputMappings = new string[inputParameters.Length];
+                inputMappings = new TableColumn[inputParameters.Length];
 
             Inputs = new Parameter[inputMappings.Length];
 
@@ -172,7 +172,7 @@ namespace dexih.functions
                 }
 
                 Inputs[i] = new Parameter();
-                Inputs[i].ColumnName = inputMappings[i];
+                Inputs[i].Column = inputMappings[i];
                 Inputs[i].Name = inputParameters[parameterCount].Name;
                 Inputs[i].IsColumn = true;
 
@@ -205,7 +205,7 @@ namespace dexih.functions
                 Outputs = new Parameter[outputParameters.Length];
 
                 if (outputMappings == null)
-                    outputMappings = new string[outputParameters.Length];
+                    outputMappings = new TableColumn[outputParameters.Length];
 
                 for (int i = 0; i < outputMappings.Length; i++)
                 {
@@ -215,7 +215,7 @@ namespace dexih.functions
                     }
 
                     Outputs[i] = new Parameter();
-                    Outputs[i].ColumnName = outputMappings[i];
+                    Outputs[i].Column = outputMappings[i];
                     Outputs[i].Name = outputParameters[parameterCount].Name;
 
                     Type parameterType = outputParameters[parameterCount].ParameterType.GetElementType();

@@ -18,6 +18,8 @@ namespace dexih.connections.sql
         private List<int> _fieldOrdinals;
         private int _fieldCount;
 
+        private List<Sort> _sortFields;
+
         public ReaderSQL(ConnectionSql connection, Table table)
         {
             ReferenceConnection = connection;
@@ -31,6 +33,8 @@ namespace dexih.connections.sql
 
             if (_sqlConnection != null)
                 _sqlConnection.Dispose();
+
+            _isOpen = false;
 
             base.Dispose(disposing);
         }
@@ -54,6 +58,8 @@ namespace dexih.connections.sql
 
             var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, query);
 
+            _sortFields = query?.Sorts;
+
             if (!readerResult.Success)
             {
                 return new ReturnValue(false, "The connection reader for the table " + CacheTable.TableName + " could failed due to the following error: " + readerResult.Message, readerResult.Exception);
@@ -75,6 +81,14 @@ namespace dexih.connections.sql
         public override string Details()
         {
             return "SqlConnection";
+        }
+
+        public override List<Sort> SortFields
+        {
+            get
+            {
+                return _sortFields;
+            }
         }
 
         public override bool InitializeOutputFields()
@@ -125,7 +139,7 @@ namespace dexih.connections.sql
         {
             SelectQuery query = new SelectQuery()
             {
-                Columns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => new SelectColumn(c.ColumnName)).ToList(),
+                Columns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => new SelectColumn(c)).ToList(),
                 Filters = filters,
             };
 

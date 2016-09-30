@@ -22,6 +22,13 @@ namespace dexih.connections.webservice
             ReferenceTransform = referenceTransform;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            _isOpen = false;
+
+            base.Dispose(disposing);
+        }
+
         public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
             AuditKey = auditKey;

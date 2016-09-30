@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using static dexih.functions.DataType;
 
-namespace dexih.transforms
+namespace dexih.functions
 {
     public class UpdateQueries
     {
@@ -20,7 +20,7 @@ namespace dexih.transforms
             Columns = new List<SelectColumn>();
             Filters = new List<Filter>();
             Sorts = new List<Sort>();
-            Groups = new List<string>();
+            Groups = new List<TableColumn>();
             Rows = -1; //-1 means show all rows.
         }
 
@@ -28,7 +28,7 @@ namespace dexih.transforms
         public string Table { get; set; }
         public List<Filter> Filters { get; set; }
         public List<Sort> Sorts { get; set; }
-        public List<string> Groups { get; set; }
+        public List<TableColumn> Groups { get; set; }
         public int Rows { get; set; }
 
      }
@@ -37,17 +37,30 @@ namespace dexih.transforms
     {
         public SelectColumn() { }
 
-        public SelectColumn(string column)
+        public SelectColumn(TableColumn column)
         {
             Column = column;
             Aggregate = EAggregate.None;
         }
 
-        public SelectColumn(string column, EAggregate aggregate)
+        public SelectColumn(TableColumn column, EAggregate aggregate)
         {
             Column = column;
             Aggregate = aggregate;
         }
+
+        public SelectColumn(string columnName)
+        {
+            Column = new TableColumn(columnName);
+            Aggregate = EAggregate.None;
+        }
+
+        public SelectColumn(string columnName, EAggregate aggregate)
+        {
+            Column = new TableColumn(columnName);
+            Aggregate = aggregate;
+        }
+
         public enum EAggregate
         {
             None,
@@ -57,7 +70,7 @@ namespace dexih.transforms
             Max,
             Count
         }
-        public string Column { get; set; }
+        public TableColumn Column { get; set; }
         public EAggregate Aggregate { get; set; }
 
     }
@@ -114,16 +127,20 @@ namespace dexih.transforms
     {
         public QueryColumn() { }
 
-        public QueryColumn(string column, ETypeCode columnType, object value)
+        public QueryColumn(TableColumn column, object value)
         {
             Column = column;
-            ColumnType = columnType;
             Value = value;
         }
 
-        public string Column { get; set; }
+        public QueryColumn(string columnName, object value)
+        {
+            Column = new TableColumn(columnName);
+            Value = value;
+        }
+
+        public TableColumn Column { get; set; }
         public object Value { get; set; }
-        public ETypeCode ColumnType { get; set; }
     }
 
     public class Filter
@@ -164,9 +181,9 @@ namespace dexih.transforms
 
             Filter filter = new Filter();
 
-            filter.Column1 = function.Inputs[0].IsColumn == true ? function.Inputs[0].ColumnName : null;
+            filter.Column1 = function.Inputs[0].IsColumn == true ? function.Inputs[0].Column : null;
             filter.Value1 = function.Inputs[0].IsColumn == false ? function.Inputs[0].Value : null;
-            filter.Column2 = function.Inputs[1].IsColumn == true ? function.Inputs[1].ColumnName : null;
+            filter.Column2 = function.Inputs[1].IsColumn == true ? function.Inputs[1].Column : null;
             filter.Value2 = function.Inputs[1].IsColumn == false ? function.Inputs[1].Value : null;
 
             filter.CompareDataType = function.Inputs[0].IsColumn ? function.Inputs[0].DataType : function.Inputs[1].DataType;
@@ -181,16 +198,33 @@ namespace dexih.transforms
         /// <param name="column1">Column name from incoming data</param>
         /// <param name="operator1">Comparison Operator</param>
         /// <param name="value2">Static value to compare to</param>
-        public Filter(string column1, ECompare operator1, object value2)
+        public Filter(TableColumn column1, ECompare operator1, object value2)
         {
             Column1 = column1;
             Operator = operator1;
             Value2 = value2;
 
-            if(Value2.GetType().IsArray)
+            if (Value2 == null)
+                CompareDataType = ETypeCode.String;
+            else if(Value2.GetType().IsArray)
                 CompareDataType = GetTypeCode(Value2.GetType().GetElementType());
             else
                 CompareDataType = GetTypeCode(Value2.GetType());
+        }
+
+        public Filter(string columnName1, ECompare operator1, object value2)
+        {
+            Operator = operator1;
+            Value2 = value2;
+
+            if (Value2 == null)
+                CompareDataType = ETypeCode.String;
+            else if (Value2.GetType().IsArray)
+                CompareDataType = GetTypeCode(Value2.GetType().GetElementType());
+            else
+                CompareDataType = GetTypeCode(Value2.GetType());
+
+            Column1 = new TableColumn(columnName1, CompareDataType);
         }
 
         /// <summary>
@@ -200,11 +234,19 @@ namespace dexih.transforms
         /// <param name="operator1">Comparison Operator</param>
         /// <param name="column2">Static value to compare to</param>
         /// <param name="dataType">Data type of the column</param>
-        public Filter(string column1, ECompare operator1, string column2, ETypeCode dataType)
+        public Filter(TableColumn column1, ECompare operator1, TableColumn column2, ETypeCode dataType)
         {
             Column1 = column1;
             Operator = operator1;
             Column2 = column2;
+            CompareDataType = dataType;
+        }
+
+        public Filter(string columnName1, ECompare operator1, string columnName2, ETypeCode dataType)
+        {
+            Column1 = new TableColumn(columnName1);
+            Operator = operator1;
+            Column2 = new TableColumn(columnName2);
             CompareDataType = dataType;
         }
 
@@ -224,11 +266,11 @@ namespace dexih.transforms
             And, Or
         }
 
-        public string Column1 { get; set; }
+        public TableColumn Column1 { get; set; }
         public object Value1 { get; set; }
         public ETypeCode CompareDataType { get; set; }
 
-        public string Column2 { get; set; }
+        public TableColumn Column2 { get; set; }
         public object Value2 { get; set; }
 
 
@@ -246,13 +288,18 @@ namespace dexih.transforms
 
         public Sort() { }
 
-        public Sort(string column, EDirection direction = EDirection.Ascending)
+        public Sort(TableColumn column, EDirection direction = EDirection.Ascending)
         {
             Column = column;
             Direction = direction;
         }
 
-        public string Column { get; set; }
+        public Sort(string columnName, EDirection direction = EDirection.Ascending)
+        {
+            Column = new TableColumn(columnName);
+            Direction = direction;
+        }
+        public TableColumn Column { get; set; }
         public EDirection Direction { get; set; }
     }
 }

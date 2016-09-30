@@ -32,6 +32,13 @@ namespace dexih.connections.azure
             CacheTable = table;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            _isOpen = false;
+
+            base.Dispose(disposing);
+        }
+
         public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
             AuditKey = auditKey;
@@ -46,7 +53,7 @@ namespace dexih.connections.azure
             _tableQuery = new TableQuery<DynamicTableEntity>().Take(1000);
 
             if (query?.Columns?.Count > 0)
-                _tableQuery.SelectColumns = query.Columns.Select(c => c.Column).ToArray();
+                _tableQuery.SelectColumns = query.Columns.Select(c => c.Column.ColumnName).ToArray();
             else
                 _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => c.ColumnName).ToArray();
 

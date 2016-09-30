@@ -20,18 +20,22 @@ namespace dexih.transforms
         int _primaryFieldCount;
         int _referenceFieldCount;
 
+        string _referenceTableName;
+
         public TransformLookup() { }
 
-        public TransformLookup(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs)
+        public TransformLookup(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs, string referenceTableAlias)
         {
             JoinPairs = joinPairs;
+            ReferenceTableAlias = referenceTableAlias;
+
             SetInTransform(primaryTransform, joinTransform);
         }
 
         public override bool InitializeOutputFields()
         {
-            if (ReferenceTransform == null || JoinPairs == null || !JoinPairs.Any())
-                throw new Exception("There must be a join reader and at least one join pair specified");
+            if (ReferenceTransform == null)
+                throw new Exception("There must be a lookup table specified");
 
             CacheTable = new Table("Lookup");
 
@@ -44,26 +48,28 @@ namespace dexih.transforms
             foreach (var column in ReferenceTransform.CacheTable.Columns)
             {
                 var newColumn = column.Copy();
+                newColumn.Schema = ReferenceTableAlias;
+                newColumn.IsIncrementalUpdate = false;
 
                 //if a column of the same name exists, append a 1 to the name
-                if (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName) != null)
+                if (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.SchemaColumnName()) != null)
                 {
-                    int append = 1;
-                    while (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName + append.ToString()) != null) //where columns are same in source/target add a "1" to the target.
-                        append++;
-                    newColumn.ColumnName = column.ColumnName + append.ToString();
+                    throw new Exception("The lookup could not be initialized as the column " + column.SchemaColumnName() + " is ambiguous.");
                 }
                 CacheTable.Columns.Add(newColumn);
                 pos++;
             }
 
-            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
+            _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.TableName : ReferenceTransform.ReferenceTableAlias;
 
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 
+            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
+
             return true;
         }
+
 
         public override bool RequiresSort => false;
         public override bool PassThroughColumns => true;
@@ -91,7 +97,7 @@ namespace dexih.transforms
             List<Filter> filters = new List<Filter>();
             for (int i = 0; i < JoinPairs.Count; i++)
             {
-                var value = JoinPairs[i].SourceColumn != "" ? PrimaryTransform[JoinPairs[i].SourceColumn].ToString() : JoinPairs[i].JoinValue;
+                var value = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[JoinPairs[i].SourceColumn];
 
                 filters.Add(new Filter
                 {

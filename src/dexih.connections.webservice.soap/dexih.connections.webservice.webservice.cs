@@ -138,7 +138,7 @@ namespace dexih.connections.webservice
 
                 for (int i = 0; i < filters.Count; i++)
                 {
-                    row[table.GetOrdinal(filters[i].Column1)] = filters[i].Value2;
+                    row[table.GetOrdinal(filters[i].Column1.ColumnName)] = filters[i].Value2;
                     args[i] = filters[i].Value2;
                 }
 

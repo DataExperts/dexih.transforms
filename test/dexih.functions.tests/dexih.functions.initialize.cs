@@ -13,7 +13,7 @@ namespace dexih.functions.tests
         public void FunctionFromDelegate()
         {
             //create a custom function
-            Function function1 = new Function(new Func<int, int, int>((i, j) => i + j), new string[] { "value1", "value2" }, "Add", null);
+            Function function1 = new Function(new Func<int, int, int>((i, j) => i + j), new TableColumn[] { new TableColumn("value1"), new TableColumn("value2") }, new TableColumn("Add"), null);
             Assert.True((Int32)function1.RunFunction(new object[] { 6, 2 }).Value == 8);
         }
 
@@ -21,7 +21,7 @@ namespace dexih.functions.tests
         public void FunctionFromMethod()
         {
             //create a custom function
-            Function function1 = new Function(this, "TestMethod", "", "", null, "", null);
+            Function function1 = new Function(this, "TestMethod", "", "", null, new TableColumn("test"), null);
             Assert.True((Int32)function1.RunFunction(new object[] { 6, 2 }).Value == 8);
         }
 
@@ -29,7 +29,7 @@ namespace dexih.functions.tests
         public void FunctionFromReflection()
         {
             //create a custom function
-            Function function1 = new Function(this, this.GetType().GetMethod("TestMethod"), null, "", null);
+            Function function1 = new Function(this, this.GetType().GetMethod("TestMethod"), null, new TableColumn("test"), null);
             Assert.True((Int32)function1.RunFunction(new object[] { 6, 2 }).Value == 8);
         }
 

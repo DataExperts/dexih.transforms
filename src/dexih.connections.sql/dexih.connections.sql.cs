@@ -307,12 +307,12 @@ namespace dexih.connections.sql
         {
             switch (column.Aggregate)
             {
-                case SelectColumn.EAggregate.None: return AddDelimiter(column.Column);
-                case SelectColumn.EAggregate.Sum: return "sum(" + AddDelimiter(column.Column) + ")";
-                case SelectColumn.EAggregate.Average: return "avg(" + AddDelimiter(column.Column) + ")";
-                case SelectColumn.EAggregate.Min: return "min(" + AddDelimiter(column.Column) + ")";
-                case SelectColumn.EAggregate.Max: return "max(" + AddDelimiter(column.Column) + ")";
-                case SelectColumn.EAggregate.Count: return "count(" + AddDelimiter(column.Column) + ")";
+                case SelectColumn.EAggregate.None: return AddDelimiter(column.Column.ColumnName);
+                case SelectColumn.EAggregate.Sum: return "sum(" + AddDelimiter(column.Column.ColumnName) + ")";
+                case SelectColumn.EAggregate.Average: return "avg(" + AddDelimiter(column.Column.ColumnName) + ")";
+                case SelectColumn.EAggregate.Min: return "min(" + AddDelimiter(column.Column.ColumnName) + ")";
+                case SelectColumn.EAggregate.Max: return "max(" + AddDelimiter(column.Column.ColumnName) + ")";
+                case SelectColumn.EAggregate.Count: return "count(" + AddDelimiter(column.Column.ColumnName) + ")";
             }
 
             return ""; //not possible to get here.
@@ -340,12 +340,12 @@ namespace dexih.connections.sql
             if (query?.Groups?.Count > 0)
             {
                 sql.Append("group by ");
-                sql.Append(String.Join(",", query.Groups.Select(c => AddDelimiter(c)).ToArray()));
+                sql.Append(String.Join(",", query.Groups.Select(c => AddDelimiter(c.ColumnName)).ToArray()));
             }
             if (query?.Sorts?.Count > 0)
             {
                 sql.Append("order by ");
-                sql.Append(String.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column) + " " + (c.Direction == Sort.EDirection.Descending ? " desc" : "")).ToArray()));
+                sql.Append(String.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.ColumnName) + " " + (c.Direction == Sort.EDirection.Descending ? " desc" : "")).ToArray()));
             }
 
             return sql.ToString();
@@ -364,14 +364,14 @@ namespace dexih.connections.sql
                 foreach (var filter in filters)
                 {
                     if (filter.Column1 != null)
-                        sql.Append(" " + AddDelimiter(filter.Column1) + " ");
+                        sql.Append(" " + AddDelimiter(filter.Column1.ColumnName) + " ");
                     else
                         sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value1) + " ");
 
                     sql.Append(GetSqlCompare(filter.Operator));
 
                     if (filter.Column2 != null)
-                        sql.Append(" " + AddDelimiter(filter.Column2) + " ");
+                        sql.Append(" " + AddDelimiter(filter.Column2.ColumnName) + " ");
                     else
                     {
                         if(filter.Value2.GetType().IsArray == true)
@@ -422,7 +422,7 @@ namespace dexih.connections.sql
                         int count = 0;
                         foreach (QueryColumn column in query.UpdateColumns)
                         {
-                            sql.Append(AddDelimiter(column.Column) + " = " + GetSqlFieldValueQuote(column.ColumnType, column.Value) + ",");
+                            sql.Append(AddDelimiter(column.Column.ColumnName) + " = " + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
                             count++;
                         }
                         sql.Remove(sql.Length - 1, 1); //remove last comma

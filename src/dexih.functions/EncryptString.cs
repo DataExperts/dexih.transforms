@@ -18,6 +18,17 @@ namespace dexih.functions
         // This constant determines the number of iterations for the password bytes generation function.
         //private const int DerivationIterations = 1000;
 
+        public static string GenerateRandomKey(int length = 50)
+        {
+            byte[] randomBytes = new byte[length];
+
+            using (var randomNumber = RandomNumberGenerator.Create())
+            {
+                randomNumber.GetBytes(randomBytes);
+            }
+
+            return Convert.ToBase64String(randomBytes);
+        }
 
         /// <summary>
         /// Encrypts the string value using the passPhase as the encryption key.

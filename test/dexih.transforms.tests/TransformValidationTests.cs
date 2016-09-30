@@ -27,7 +27,7 @@ namespace dexih.transforms.tests
             List<Function> Validations = new List<Function>();
             Function Function = StandardFunctions.GetFunctionReference("IsEqual");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, "StringColumn", isArray: true  ),
+                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null, new TableColumn("StringColumn"), isArray: true  ),
                     new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk", isArray: true ) };
             Validations.Add(Function);
 
@@ -52,10 +52,10 @@ namespace dexih.transforms.tests
             //create a simple clean function that set's the max value.
             Function = StandardFunctions.GetFunctionReference("MaxLength");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("value", ETypeCode.String, true, null, "StringColumn" ),
+                    new dexih.functions.Parameter("value", ETypeCode.String, true, null, new TableColumn("StringColumn") ),
                     new dexih.functions.Parameter("maxLength", ETypeCode.Int32, false, 5) };
             Function.Outputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("cleanedValue", ETypeCode.String, true, null, "StringColumn" )
+                    new dexih.functions.Parameter("cleanedValue", ETypeCode.String, true, null, new TableColumn("StringColumn") )
             };
             Function.InvalidAction = Function.EInvalidAction.Clean;
 
@@ -80,10 +80,10 @@ namespace dexih.transforms.tests
             //Run the same valuidation with RejectClean set.
             Function = StandardFunctions.GetFunctionReference("MaxValue");
             Function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("value", ETypeCode.Decimal, true, null, "IntColumn" ),
+                    new dexih.functions.Parameter("value", ETypeCode.Decimal, true, null, new TableColumn("IntColumn") ),
                     new dexih.functions.Parameter("maxLength", ETypeCode.Decimal, false, 5) };
             Function.Outputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("cleanedValue", ETypeCode.Decimal, true, null, "IntColumn" )
+                    new dexih.functions.Parameter("cleanedValue", ETypeCode.Decimal, true, null, new TableColumn("IntColumn") )
             };
             Function.InvalidAction = Function.EInvalidAction.RejectClean;
 

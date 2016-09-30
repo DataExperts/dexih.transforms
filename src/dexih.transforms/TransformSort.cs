@@ -15,20 +15,20 @@ namespace dexih.transforms
         SortedDictionary<object[], object[]> _sortedDictionary;
         SortedDictionary<object[], object[]>.KeyCollection.Enumerator _iterator;
 
+        List<Sort> _sortFields;
+
         public TransformSort() { }
 
         public TransformSort(Transform inTransform, List<Sort> sortFields)
         {
-            SortFields = sortFields;
+            _sortFields = sortFields;
             SetInTransform(inTransform);
         }
 
         public override bool InitializeOutputFields()
         {
             CacheTable = PrimaryTransform.CacheTable.Copy();
-            CacheTable.OutputSortFields = SortFields;
-
-            _alreadySorted = SortFieldsMatch(SortFields, PrimaryTransform.SortFields);
+            CacheTable.OutputSortFields = _sortFields;
 
             _firstRead = true;
             return true;
@@ -48,6 +48,10 @@ namespace dexih.transforms
             query.Sorts = RequiredSortFields();
 
             var returnValue = await PrimaryTransform.Open(auditKey, query);
+
+            //check if the transform has already sorted the data, using sql or a presort.
+            _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);
+
             return returnValue;
         }
 
@@ -69,19 +73,19 @@ namespace dexih.transforms
             }
             if (_firstRead) //load the entire record into a sorted list.
             {
-                _sortedDictionary = new SortedDictionary<object[], object[]>(new SortKeyComparer(SortFields));
+                _sortedDictionary = new SortedDictionary<object[], object[]>(new SortKeyComparer(_sortFields));
 
                 int rowcount = 0;
                 while (await PrimaryTransform.ReadAsync(cancellationToken))
                 {
                     object[] values = new object[PrimaryTransform.FieldCount];
-                    object[] sortFields = new object[SortFields.Count + 1];
+                    object[] sortFields = new object[_sortFields.Count + 1];
 
                     PrimaryTransform.GetValues(values);
 
                     for(int i = 0; i < sortFields.Length-1; i++)
                     {
-                        sortFields[i] = PrimaryTransform[SortFields[i].Column];
+                        sortFields[i] = PrimaryTransform[_sortFields[i].Column];
                     }
                     sortFields[sortFields.Length-1] = rowcount; //add row count as last key field to ensure matching rows remain in original order.
 
@@ -119,17 +123,25 @@ namespace dexih.transforms
 
         public override string Details()
         {
-            return "Sort: "+ String.Join(",", SortFields?.Select(c=> c.Column + " " + c.Direction.ToString()).ToArray());
+            return "Sort: "+ String.Join(",", _sortFields?.Select(c=> c.Column + " " + c.Direction.ToString()).ToArray());
         }
 
         public override List<Sort> RequiredSortFields()
         {
-            return SortFields;
+            return _sortFields;
         }
 
         public override List<Sort> RequiredReferenceSortFields()
         {
             return null;
+        }
+
+        public override List<Sort> SortFields
+        {
+            get
+            {
+                return _sortFields;
+            }
         }
 
     }

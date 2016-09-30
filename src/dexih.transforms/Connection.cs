@@ -221,49 +221,49 @@ namespace dexih.transforms
             //note AuditKey not included in query columns as it is an AutoGenerate type.
             var queryColumns = new List<QueryColumn>
                 {
-                    new QueryColumn("HubKey", ETypeCode.Int64,  writerResult.HubKey),
-                    new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
-                    new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
-                    new QueryColumn("ParentAuditKey", ETypeCode.Int64, writerResult.ParentAuditKey),
-                    new QueryColumn("ReferenceName", ETypeCode.String, writerResult.ReferenceName),
-                    new QueryColumn("SourceTableKey", ETypeCode.Int64, writerResult.SourceTableKey),
-                    new QueryColumn("SourceTableName", ETypeCode.String, writerResult.SourceTableName),
-                    new QueryColumn("TargetTableKey", ETypeCode.Int64, writerResult.TargetTableKey),
-                    new QueryColumn("TargetTableName", ETypeCode.String, writerResult.TargetTableName),
-                    new QueryColumn("RowsTotal", ETypeCode.Int64, writerResult.RowsTotal),
-                    new QueryColumn("RowsCreated", ETypeCode.Int64, writerResult.RowsCreated),
-                    new QueryColumn("RowsUpdated", ETypeCode.Int64, writerResult.RowsUpdated),
-                    new QueryColumn("RowsDeleted", ETypeCode.Int64, writerResult.RowsDeleted),
-                    new QueryColumn("RowsPreserved", ETypeCode.Int64, writerResult.RowsPreserved),
-                    new QueryColumn("RowsIgnored", ETypeCode.Int64, writerResult.RowsIgnored),
-                    new QueryColumn("RowsRejected", ETypeCode.Int64, writerResult.RowsRejected),
-                    new QueryColumn("RowsSorted", ETypeCode.Int64, writerResult.RowsSorted),
-                    new QueryColumn("RowsFiltered", ETypeCode.Int64, writerResult.RowsFiltered),
-                    new QueryColumn("RowsReadPrimary", ETypeCode.Int64, writerResult.RowsReadPrimary),
-                    new QueryColumn("RowsReadReference", ETypeCode.Int64, writerResult.RowsReadReference),
-                    new QueryColumn("ReadTicks", ETypeCode.Int64, writerResult.ReadTicks),
-                    new QueryColumn("WriteTicks", ETypeCode.Int64, writerResult.WriteTicks),
-                    new QueryColumn("ProcessingTicks", ETypeCode.Int64, writerResult.ProcessingTicks),
-                    new QueryColumn("MaxIncrementalValue", ETypeCode.String, writerResult.MaxIncrementalValue),
-                    new QueryColumn("MaxSurrogateKey", ETypeCode.String, writerResult.MaxSurrogateKey),
-                    new QueryColumn("InitializeTime", ETypeCode.DateTime, writerResult.InitializeTime),
-                    new QueryColumn("ScheduledTime", ETypeCode.DateTime, writerResult.ScheduledTime),
-                    new QueryColumn("StartTime", ETypeCode.DateTime, writerResult.StartTime),
-                    new QueryColumn("EndTime", ETypeCode.DateTime, writerResult.EndTime),
-                    new QueryColumn("LastUpdateTime", ETypeCode.DateTime, writerResult.LastUpdateTime),
-                    new QueryColumn("RunStatus", ETypeCode.String, writerResult.RunStatus.ToString()),
-                    new QueryColumn("TriggerMethod", ETypeCode.String, writerResult.TriggerMethod.ToString()),
-                    new QueryColumn("TriggerInfo", ETypeCode.String, writerResult.TriggerInfo),
-                    new QueryColumn("Message", ETypeCode.DateTime, writerResult.Message),
-                    new QueryColumn("IsCurrent", ETypeCode.Boolean, true),
-                    new QueryColumn("IsPrevious", ETypeCode.Boolean, false),
-                    new QueryColumn("IsPreviousSuccess", ETypeCode.Boolean, false)
+                    new QueryColumn(new TableColumn("HubKey", ETypeCode.Int64),  writerResult.HubKey),
+                    new QueryColumn(new TableColumn("AuditType", ETypeCode.String),  writerResult.AuditType),
+                    new QueryColumn(new TableColumn("ReferenceKey", ETypeCode.Int64), writerResult.ReferenceKey),
+                    new QueryColumn(new TableColumn("ParentAuditKey", ETypeCode.Int64), writerResult.ParentAuditKey),
+                    new QueryColumn(new TableColumn("ReferenceName", ETypeCode.String), writerResult.ReferenceName),
+                    new QueryColumn(new TableColumn("SourceTableKey", ETypeCode.Int64), writerResult.SourceTableKey),
+                    new QueryColumn(new TableColumn("SourceTableName", ETypeCode.String), writerResult.SourceTableName),
+                    new QueryColumn(new TableColumn("TargetTableKey", ETypeCode.Int64), writerResult.TargetTableKey),
+                    new QueryColumn(new TableColumn("TargetTableName", ETypeCode.String), writerResult.TargetTableName),
+                    new QueryColumn(new TableColumn("RowsTotal", ETypeCode.Int64), writerResult.RowsTotal),
+                    new QueryColumn(new TableColumn("RowsCreated", ETypeCode.Int64), writerResult.RowsCreated),
+                    new QueryColumn(new TableColumn("RowsUpdated", ETypeCode.Int64), writerResult.RowsUpdated),
+                    new QueryColumn(new TableColumn("RowsDeleted", ETypeCode.Int64), writerResult.RowsDeleted),
+                    new QueryColumn(new TableColumn("RowsPreserved", ETypeCode.Int64), writerResult.RowsPreserved),
+                    new QueryColumn(new TableColumn("RowsIgnored", ETypeCode.Int64), writerResult.RowsIgnored),
+                    new QueryColumn(new TableColumn("RowsRejected", ETypeCode.Int64), writerResult.RowsRejected),
+                    new QueryColumn(new TableColumn("RowsSorted", ETypeCode.Int64), writerResult.RowsSorted),
+                    new QueryColumn(new TableColumn("RowsFiltered", ETypeCode.Int64), writerResult.RowsFiltered),
+                    new QueryColumn(new TableColumn("RowsReadPrimary", ETypeCode.Int64), writerResult.RowsReadPrimary),
+                    new QueryColumn(new TableColumn("RowsReadReference", ETypeCode.Int64), writerResult.RowsReadReference),
+                    new QueryColumn(new TableColumn("ReadTicks", ETypeCode.Int64), writerResult.ReadTicks),
+                    new QueryColumn(new TableColumn("WriteTicks", ETypeCode.Int64), writerResult.WriteTicks),
+                    new QueryColumn(new TableColumn("ProcessingTicks", ETypeCode.Int64), writerResult.ProcessingTicks),
+                    new QueryColumn(new TableColumn("MaxIncrementalValue", ETypeCode.String), writerResult.MaxIncrementalValue),
+                    new QueryColumn(new TableColumn("MaxSurrogateKey", ETypeCode.String), writerResult.MaxSurrogateKey),
+                    new QueryColumn(new TableColumn("InitializeTime", ETypeCode.DateTime), writerResult.InitializeTime),
+                    new QueryColumn(new TableColumn("ScheduledTime", ETypeCode.DateTime), writerResult.ScheduledTime),
+                    new QueryColumn(new TableColumn("StartTime", ETypeCode.DateTime), writerResult.StartTime),
+                    new QueryColumn(new TableColumn("EndTime", ETypeCode.DateTime), writerResult.EndTime),
+                    new QueryColumn(new TableColumn("LastUpdateTime", ETypeCode.DateTime), writerResult.LastUpdateTime),
+                    new QueryColumn(new TableColumn("RunStatus", ETypeCode.String), writerResult.RunStatus.ToString()),
+                    new QueryColumn(new TableColumn("TriggerMethod", ETypeCode.String), writerResult.TriggerMethod.ToString()),
+                    new QueryColumn(new TableColumn("TriggerInfo", ETypeCode.String), writerResult.TriggerInfo),
+                    new QueryColumn(new TableColumn("Message", ETypeCode.DateTime), writerResult.Message),
+                    new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), true),
+                    new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), false),
+                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), false)
 
             };
 
             var partitionKeyOrdinal = auditTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
             if (partitionKeyOrdinal > 0)
-                queryColumns.Add(new QueryColumn(auditTable.Columns[partitionKeyOrdinal].ColumnName, ETypeCode.String, "AuditRow"));
+                queryColumns.Add(new QueryColumn(new TableColumn( auditTable.Columns[partitionKeyOrdinal].ColumnName, ETypeCode.String), "AuditRow"));
 
             var insertQuery = new InsertQuery(auditTable.TableName, queryColumns);
             var insertResult = await ExecuteInsert(auditTable, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
@@ -286,14 +286,14 @@ namespace dexih.transforms
             if (writerResult.RunStatus == TransformWriterResult.ERunStatus.Finished || writerResult.RunStatus == TransformWriterResult.ERunStatus.FinishedErrors)
             {
                 var updateLatestColumn = new List<QueryColumn>() {
-                    new QueryColumn("IsCurrent", ETypeCode.Boolean, false),
-                    new QueryColumn("IsPreviousSuccess", ETypeCode.Boolean, false)
+                    new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), false),
+                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), false)
                 };
 
                 var updateLatestFilters = new List<Filter>() {
-                    new Filter("HubKey", Filter.ECompare.IsEqual, writerResult.HubKey),
-                    new Filter("ReferenceKey", Filter.ECompare.IsEqual, writerResult.ReferenceKey),
-                    new Filter("IsPreviousSuccess", Filter.ECompare.IsEqual, true),
+                    new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.HubKey),
+                    new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.ReferenceKey),
+                    new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
                 };
 
                 var updateIsLatest = new UpdateQuery(AuditTable.TableName, updateLatestColumn, updateLatestFilters);
@@ -306,14 +306,14 @@ namespace dexih.transforms
             if (writerResult.IsFinished)
             {
                 var updateLatestColumn = new List<QueryColumn>() {
-                    new QueryColumn("IsCurrent", ETypeCode.Boolean, false),
-                    new QueryColumn("IsPrevious", ETypeCode.Boolean, false)
+                    new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), false),
+                    new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), false)
                 };
 
                 var updateLatestFilters = new List<Filter>() {
-                    new Filter("HubKey", Filter.ECompare.IsEqual, writerResult.HubKey),
-                    new Filter("ReferenceKey", Filter.ECompare.IsEqual, writerResult.ReferenceKey),
-                    new Filter("IsPrevious", Filter.ECompare.IsEqual, true),
+                    new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.HubKey),
+                    new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.ReferenceKey),
+                    new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
                 };
 
                 var updateIsLatest = new UpdateQuery(AuditTable.TableName, updateLatestColumn, updateLatestFilters);
@@ -326,46 +326,46 @@ namespace dexih.transforms
 
             var updateColumns = new List<QueryColumn>()
             {
-                    new QueryColumn("AuditType", ETypeCode.String,  writerResult.AuditType),
-                    new QueryColumn("HubKey", ETypeCode.Int64,  writerResult.HubKey),
-                    new QueryColumn("ReferenceKey", ETypeCode.Int64, writerResult.ReferenceKey),
-                    new QueryColumn("ParentAuditKey", ETypeCode.Int64, writerResult.ParentAuditKey),
-                    new QueryColumn("ReferenceName", ETypeCode.String, writerResult.ReferenceName),
-                    new QueryColumn("SourceTableKey", ETypeCode.Int64, writerResult.SourceTableKey),
-                    new QueryColumn("SourceTableName", ETypeCode.String, writerResult.SourceTableName),
-                    new QueryColumn("TargetTableKey", ETypeCode.Int64, writerResult.TargetTableKey),
-                    new QueryColumn("TargetTableName", ETypeCode.String, writerResult.TargetTableName),
-                    new QueryColumn("RowsTotal", ETypeCode.Int64, writerResult.RowsTotal),
-                    new QueryColumn("RowsCreated", ETypeCode.Int64, writerResult.RowsCreated),
-                    new QueryColumn("RowsUpdated", ETypeCode.Int64, writerResult.RowsUpdated),
-                    new QueryColumn("RowsDeleted", ETypeCode.Int64, writerResult.RowsDeleted),
-                    new QueryColumn("RowsPreserved", ETypeCode.Int64, writerResult.RowsPreserved),
-                    new QueryColumn("RowsIgnored", ETypeCode.Int64, writerResult.RowsIgnored),
-                    new QueryColumn("RowsRejected", ETypeCode.Int64, writerResult.RowsRejected),
-                    new QueryColumn("RowsSorted", ETypeCode.Int64, writerResult.RowsSorted),
-                    new QueryColumn("RowsFiltered", ETypeCode.Int64, writerResult.RowsFiltered),
-                    new QueryColumn("RowsReadPrimary", ETypeCode.Int64, writerResult.RowsReadPrimary),
-                    new QueryColumn("RowsReadReference", ETypeCode.Int64, writerResult.RowsReadReference),
-                    new QueryColumn("ReadTicks", ETypeCode.Int64, writerResult.ReadTicks),
-                    new QueryColumn("WriteTicks", ETypeCode.Int64, writerResult.WriteTicks),
-                    new QueryColumn("ProcessingTicks", ETypeCode.Int64, writerResult.ProcessingTicks),
-                    new QueryColumn("MaxIncrementalValue", ETypeCode.String, writerResult.MaxIncrementalValue),
-                    new QueryColumn("MaxSurrogateKey", ETypeCode.String, writerResult.MaxSurrogateKey),
-                    new QueryColumn("InitializeTime", ETypeCode.DateTime, writerResult.InitializeTime),
-                    new QueryColumn("ScheduledTime", ETypeCode.DateTime, writerResult.ScheduledTime),
-                    new QueryColumn("StartTime", ETypeCode.DateTime, writerResult.StartTime),
-                    new QueryColumn("EndTime", ETypeCode.DateTime, writerResult.EndTime),
-                    new QueryColumn("LastUpdateTime", ETypeCode.DateTime, writerResult.LastUpdateTime),
-                    new QueryColumn("RunStatus", ETypeCode.String, writerResult.RunStatus.ToString()),
-                    new QueryColumn("TriggerMethod", ETypeCode.String, writerResult.TriggerMethod.ToString()),
-                    new QueryColumn("TriggerInfo", ETypeCode.String, writerResult.TriggerInfo.ToString()),
-                    new QueryColumn("Message", ETypeCode.String, writerResult.Message),
-                    new QueryColumn("IsCurrent", ETypeCode.Boolean, isCurrent),
-                    new QueryColumn("IsPrevious", ETypeCode.Boolean, isPrevious),
-                    new QueryColumn("IsPreviousSuccess", ETypeCode.Boolean, isPreviousSuccess)
+                    new QueryColumn(new TableColumn("AuditType", ETypeCode.String),  writerResult.AuditType),
+                    new QueryColumn(new TableColumn("HubKey", ETypeCode.Int64),  writerResult.HubKey),
+                    new QueryColumn(new TableColumn("ReferenceKey", ETypeCode.Int64), writerResult.ReferenceKey),
+                    new QueryColumn(new TableColumn("ParentAuditKey", ETypeCode.Int64), writerResult.ParentAuditKey),
+                    new QueryColumn(new TableColumn("ReferenceName", ETypeCode.String), writerResult.ReferenceName),
+                    new QueryColumn(new TableColumn("SourceTableKey", ETypeCode.Int64), writerResult.SourceTableKey),
+                    new QueryColumn(new TableColumn("SourceTableName", ETypeCode.String), writerResult.SourceTableName),
+                    new QueryColumn(new TableColumn("TargetTableKey", ETypeCode.Int64), writerResult.TargetTableKey),
+                    new QueryColumn(new TableColumn("TargetTableName", ETypeCode.String), writerResult.TargetTableName),
+                    new QueryColumn(new TableColumn("RowsTotal", ETypeCode.Int64), writerResult.RowsTotal),
+                    new QueryColumn(new TableColumn("RowsCreated", ETypeCode.Int64), writerResult.RowsCreated),
+                    new QueryColumn(new TableColumn("RowsUpdated", ETypeCode.Int64), writerResult.RowsUpdated),
+                    new QueryColumn(new TableColumn("RowsDeleted", ETypeCode.Int64), writerResult.RowsDeleted),
+                    new QueryColumn(new TableColumn("RowsPreserved", ETypeCode.Int64), writerResult.RowsPreserved),
+                    new QueryColumn(new TableColumn("RowsIgnored", ETypeCode.Int64), writerResult.RowsIgnored),
+                    new QueryColumn(new TableColumn("RowsRejected", ETypeCode.Int64), writerResult.RowsRejected),
+                    new QueryColumn(new TableColumn("RowsSorted", ETypeCode.Int64), writerResult.RowsSorted),
+                    new QueryColumn(new TableColumn("RowsFiltered", ETypeCode.Int64), writerResult.RowsFiltered),
+                    new QueryColumn(new TableColumn("RowsReadPrimary", ETypeCode.Int64), writerResult.RowsReadPrimary),
+                    new QueryColumn(new TableColumn("RowsReadReference", ETypeCode.Int64), writerResult.RowsReadReference),
+                    new QueryColumn(new TableColumn("ReadTicks", ETypeCode.Int64), writerResult.ReadTicks),
+                    new QueryColumn(new TableColumn("WriteTicks", ETypeCode.Int64), writerResult.WriteTicks),
+                    new QueryColumn(new TableColumn("ProcessingTicks", ETypeCode.Int64), writerResult.ProcessingTicks),
+                    new QueryColumn(new TableColumn("MaxIncrementalValue", ETypeCode.String), writerResult.MaxIncrementalValue),
+                    new QueryColumn(new TableColumn("MaxSurrogateKey", ETypeCode.String), writerResult.MaxSurrogateKey),
+                    new QueryColumn(new TableColumn("InitializeTime", ETypeCode.DateTime), writerResult.InitializeTime),
+                    new QueryColumn(new TableColumn("ScheduledTime", ETypeCode.DateTime), writerResult.ScheduledTime),
+                    new QueryColumn(new TableColumn("StartTime", ETypeCode.DateTime), writerResult.StartTime),
+                    new QueryColumn(new TableColumn("EndTime", ETypeCode.DateTime), writerResult.EndTime),
+                    new QueryColumn(new TableColumn("LastUpdateTime", ETypeCode.DateTime), writerResult.LastUpdateTime),
+                    new QueryColumn(new TableColumn("RunStatus", ETypeCode.String), writerResult.RunStatus.ToString()),
+                    new QueryColumn(new TableColumn("TriggerMethod", ETypeCode.String), writerResult.TriggerMethod.ToString()),
+                    new QueryColumn(new TableColumn("TriggerInfo", ETypeCode.String), writerResult.TriggerInfo.ToString()),
+                    new QueryColumn(new TableColumn("Message", ETypeCode.String), writerResult.Message),
+                    new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), isCurrent),
+                    new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), isPrevious),
+                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), isPreviousSuccess)
             };
 
-            var updateFilters = new List<Filter>() { new Filter("AuditKey", Filter.ECompare.IsEqual, writerResult.AuditKey) };
+            var updateFilters = new List<Filter>() { new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.AuditKey) };
 
             var updateQuery = new UpdateQuery(AuditTable.TableName, updateColumns, updateFilters);
             var updateResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
@@ -436,17 +436,17 @@ namespace dexih.transforms
                 reader = GetTransformReader(AuditTable);
 
                 var filters = new List<Filter>();
-                if(hubKey != null) filters.Add(new Filter("HubKey", Filter.ECompare.IsEqual, hubKey));
-                if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter("ReferenceKey", Filter.ECompare.IsIn, referenceKeys));
-                if (auditKey != null) filters.Add(new Filter("AuditKey", Filter.ECompare.IsEqual, auditKey));
-                if (runStatus != null) filters.Add(new Filter("RunStatus", Filter.ECompare.IsEqual, runStatus.ToString()));
-                if (startTime != null) filters.Add(new Filter("StartTime", Filter.ECompare.GreaterThanEqual, startTime));
-                if (currentResult) filters.Add(new Filter("IsCurrent", Filter.ECompare.IsEqual, true));
-                if (previousResult) filters.Add(new Filter("IsPrevious", Filter.ECompare.IsEqual, true));
-                if (previousSuccessResult) filters.Add(new Filter("IsPreviousSuccess", Filter.ECompare.IsEqual, true));
-                if (parentAuditKey != null) filters.Add(new Filter("ParentAuditKey", Filter.ECompare.IsEqual, parentAuditKey));
+                if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, hubKey));
+                if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsIn, referenceKeys));
+                if (auditKey != null) filters.Add(new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, auditKey));
+                if (runStatus != null) filters.Add(new Filter(new TableColumn("RunStatus", ETypeCode.String), Filter.ECompare.IsEqual, runStatus.ToString()));
+                if (startTime != null) filters.Add(new Filter(new TableColumn("StartTime", ETypeCode.DateTime), Filter.ECompare.GreaterThanEqual, startTime));
+                if (currentResult) filters.Add(new Filter(new TableColumn("IsCurrent", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
+                if (previousResult) filters.Add(new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
+                if (previousSuccessResult) filters.Add(new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
+                if (parentAuditKey != null) filters.Add(new Filter(new TableColumn("ParentAuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, parentAuditKey));
 
-                var sorts = new List<Sort>() { new Sort("AuditKey", Sort.EDirection.Descending) };
+                var sorts = new List<Sort>() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), Sort.EDirection.Descending) };
                 var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
 
                 //add a sort transform to ensure sort order.
@@ -549,7 +549,7 @@ namespace dexih.transforms
         /// <param name="AuditKey">Included as Azure storage tables use the AuditKey to generate a new surrogate key</param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue<long>> GetIncrementalKey(Table table, string surrogateKeyColumn, CancellationToken cancelToken)
+        public virtual async Task<ReturnValue<long>> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancelToken)
         {
             try
             {

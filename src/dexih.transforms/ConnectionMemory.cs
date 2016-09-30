@@ -125,7 +125,7 @@ namespace dexih.transforms
 
         public override async Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
+            return await Task.Run((Func<ReturnValue<long>>)(() =>
             {
                 var updateTable = Tables[table.TableName];
 
@@ -146,7 +146,7 @@ namespace dexih.transforms
                         count++;
                         foreach (var updateColumn in query.UpdateColumns)
                         {
-                            int ordinal = updateTable.GetOrdinal(updateColumn.Column);
+                            int ordinal = updateTable.GetOrdinal((string)updateColumn.Column.SchemaColumnName());
                             row[ordinal] = updateColumn.Value;
                         }
                     }
@@ -154,7 +154,7 @@ namespace dexih.transforms
 
                 timer.Stop();
                 return new ReturnValue<long>(true, timer.ElapsedTicks);
-            });
+            }));
         }
 
         public override async Task<ReturnValue<List<string>>> GetDatabaseList()

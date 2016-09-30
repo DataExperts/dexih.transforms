@@ -30,11 +30,11 @@ namespace dexih.connections.test
 
                 //insert a single row
                 InsertQuery insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
-                    new QueryColumn("IntColumn", DataType.ETypeCode.Int32, 1),
-                    new QueryColumn("StringColumn", DataType.ETypeCode.String, "value1" ),
-                    new QueryColumn("DateColumn", DataType.ETypeCode.DateTime, "2001-01-21" ),
-                    new QueryColumn("DecimalColumn", DataType.ETypeCode.Decimal, 1.1 ),
-                    new QueryColumn("GuidColumn", DataType.ETypeCode.Guid, Guid.NewGuid() )
+                    new QueryColumn(new TableColumn("IntColumn", DataType.ETypeCode.Int32), 1),
+                    new QueryColumn(new TableColumn("StringColumn", DataType.ETypeCode.String), "value1" ),
+                    new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime), "2001-01-21" ),
+                    new QueryColumn(new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal), 1.1 ),
+                    new QueryColumn(new TableColumn("GuidColumn", DataType.ETypeCode.Guid), Guid.NewGuid() )
             });
 
                 returnValue = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
@@ -42,11 +42,11 @@ namespace dexih.connections.test
 
                 //insert a second row
                 insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
-                    new QueryColumn("IntColumn", DataType.ETypeCode.Int32, 2 ),
-                    new QueryColumn("StringColumn", DataType.ETypeCode.String, "value2" ),
-                    new QueryColumn("DateColumn", DataType.ETypeCode.DateTime, "2001-01-22" ),
-                    new QueryColumn("DecimalColumn", DataType.ETypeCode.Decimal, 1.2 ),
-                    new QueryColumn("GuidColumn", DataType.ETypeCode.Guid, Guid.NewGuid() )
+                    new QueryColumn(new TableColumn("IntColumn", DataType.ETypeCode.Int32), 2 ),
+                    new QueryColumn(new TableColumn("StringColumn", DataType.ETypeCode.String), "value2" ),
+                    new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime), "2001-01-22" ),
+                    new QueryColumn(new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal), 1.2 ),
+                    new QueryColumn(new TableColumn("GuidColumn", DataType.ETypeCode.Guid), Guid.NewGuid() )
             });
 
                 returnValue = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
@@ -69,8 +69,8 @@ namespace dexih.connections.test
                     //run a select query with one row, sorted descending.  
                     selectQuery = new SelectQuery()
                     {
-                        Columns = new List<SelectColumn>() { new SelectColumn("StringColumn", SelectColumn.EAggregate.None) },
-                        Sorts = new List<Sort>() { new Sort { Column = "IntColumn", Direction = Sort.EDirection.Descending } },
+                        Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("StringColumn"), SelectColumn.EAggregate.None) },
+                        Sorts = new List<Sort>() { new Sort { Column = new TableColumn("IntColumn"), Direction = Sort.EDirection.Descending } },
                         Rows = 1,
                         Table = "test_table"
                     };
@@ -85,8 +85,8 @@ namespace dexih.connections.test
                     //run an update query which will change the second date value to 2001-01-21
                     var updateQuery = new UpdateQuery()
                     {
-                        UpdateColumns = new List<QueryColumn>() { new QueryColumn("DateColumn", DataType.ETypeCode.DateTime, "2001-01-21") },
-                        Filters = new List<Filter>() { new Filter() { Column1 = "IntColumn", Operator = Filter.ECompare.IsEqual, Value2 = 2, CompareDataType = DataType.ETypeCode.Int32 } }
+                        UpdateColumns = new List<QueryColumn>() { new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime),"2001-01-21") },
+                        Filters = new List<Filter>() { new Filter() { Column1 = new TableColumn("IntColumn"), Operator = Filter.ECompare.IsEqual, Value2 = 2, CompareDataType = DataType.ETypeCode.Int32 } }
                     };
 
                     var returnUpdate = await connection.ExecuteUpdate(table, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
@@ -95,8 +95,8 @@ namespace dexih.connections.test
                     //run a select query to validate the updated row.
                     selectQuery = new SelectQuery()
                     {
-                        Columns = new List<SelectColumn>() { new SelectColumn("DateColumn") },
-                        Filters = new List<Filter>() { new Filter("IntColumn", Filter.ECompare.IsEqual, 2) },
+                        Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("DateColumn")) },
+                        Filters = new List<Filter>() { new Filter(new TableColumn("IntColumn"), Filter.ECompare.IsEqual, 2) },
                         Rows = 1,
                         Table = "test_table"
                     };
@@ -113,8 +113,8 @@ namespace dexih.connections.test
                         selectQuery = new SelectQuery()
                         {
                             Columns = new List<SelectColumn>() { new SelectColumn("DecimalColumn", SelectColumn.EAggregate.Max) },
-                            Sorts = new List<Sort>() { new Sort { Column = "DateColumn", Direction = Sort.EDirection.Ascending } },
-                            Groups = new List<string>() { "DateColumn" },
+                            Sorts = new List<Sort>() { new Sort("DateColumn") },
+                            Groups = new List<TableColumn>() { new TableColumn("DateColumn") },
                             Rows = 1,
                             Table = "test_table"
                         };

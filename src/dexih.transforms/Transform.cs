@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Linq;
 using System.Globalization;
-using static dexih.transforms.TableColumn;
+using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Text;
@@ -44,11 +44,17 @@ namespace dexih.transforms
             ColumnPairs = new List<ColumnPair>();
             JoinPairs = new List<JoinPair>();
             Functions = new List<Function>();
-            SortFields = new List<Sort>();
             TransformTimer = new Stopwatch();
         }
 
         #region Generic Properties
+
+        public enum EDuplicateResolution
+        {
+            Abend,
+            First,
+            Last
+        }
 
         /// <summary>
         /// The main source of data.
@@ -64,8 +70,18 @@ namespace dexih.transforms
         public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
+        public TableColumn JoinSortField { get; set; } 
+        public EDuplicateResolution JoinDuplicateResoluton { get; set; }
+
         public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
-        public List<Sort> SortFields { get; set; } //indicates fields for the sort transform.
+        public virtual List<Sort> SortFields {
+            get
+            {
+                return PrimaryTransform?.SortFields;
+            }
+        } //indicates fields for the sort transform.
+
+        public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same talbe is joined multiple times.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
 
@@ -148,6 +164,9 @@ namespace dexih.transforms
         /// <returns></returns>
         public virtual bool SetInTransform(Transform primaryTransform, Transform referenceTransform = null)
         {
+            PrimaryTransform = primaryTransform;
+            ReferenceTransform = referenceTransform;
+
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
             {
@@ -218,8 +237,8 @@ namespace dexih.transforms
             if (RequiredSort == null || ActualSort == null)
                 return false;
 
-            string requiredSortFields = String.Join(",", RequiredSort.Select(c => c.Column).ToArray());
-            string actualSortFields = string.Join(",", ActualSort.Select(c => c.Column).ToArray());
+            string requiredSortFields = String.Join(",", RequiredSort.Select(c => c.Column.SchemaColumnName()).ToArray());
+            string actualSortFields = string.Join(",", ActualSort.Select(c => c.Column.SchemaColumnName()).ToArray());
 
             //compare the fields.  if actualsortfields are more, that is ok, as the primary sort condition is still met.
             if (actualSortFields.Length >= requiredSortFields.Length && requiredSortFields == actualSortFields.Substring(0, requiredSortFields.Length))
@@ -480,10 +499,9 @@ namespace dexih.transforms
         public bool IsReaderFinished { get; protected set; }
 
         private bool isResetting = false; //flag to indicate reset is underway.
-        private object[] CurrentRow; //stores data for the current row.
+        public object[] CurrentRow { get; protected set; } //stores data for the current row.
         bool CurrentRowCached;
         protected int CurrentRowNumber = -1; //current row number
-
 
         /// <summary>
         /// Resets the transform and any source transforms.
@@ -497,6 +515,11 @@ namespace dexih.transforms
 
                 ReturnValue returnValue;
 
+                _isFirstRead = true;
+                IsCacheFull = false;
+                IsReaderFinished = false;
+                CurrentRowNumber = -1;
+
                 //reset stats.
                 TransformRowsSorted = 0;
                 TransformRowsFiltered = 0;
@@ -508,21 +531,21 @@ namespace dexih.transforms
 
                 returnValue = ResetTransform();
 
-                if (!returnValue.Success)
-                    return returnValue;
+                //if (!returnValue.Success)
+                //    return returnValue;
 
                 if (PrimaryTransform != null)
                 {
                     returnValue = PrimaryTransform.Reset();
-                    if (!returnValue.Success)
-                        return returnValue;
+                    //if (!returnValue.Success)
+                    //    return returnValue;
                 }
 
                 if (ReferenceTransform != null)
                 {
                     returnValue = ReferenceTransform.Reset();
-                    if (!returnValue.Success)
-                        return returnValue;
+                    //if (!returnValue.Success)
+                    //    return returnValue;
                 }
 
                 IsReaderFinished = false;
@@ -699,6 +722,8 @@ namespace dexih.transforms
 
                 CurrentRow = returnValue.Value;
             }
+            else
+                CurrentRow = null;
 
             if(IsReader && IsPrimaryTransform && IncrementalColumnIndex != -1 && returnValue.Success)
             {
@@ -749,6 +774,14 @@ namespace dexih.transforms
             }
         }
         public override object this[int i] => GetValue(i);
+
+        public object this[TableColumn column]
+        {
+            get
+            {
+                return this[column.SchemaColumnName()];
+            }
+        }
 
         public override int Depth
         {
@@ -860,6 +893,8 @@ namespace dexih.transforms
                     PrimaryTransform.Dispose();
                 if (ReferenceTransform != null)
                     ReferenceTransform.Dispose();
+
+                Reset();
             }
             base.Dispose(disposing);
         }

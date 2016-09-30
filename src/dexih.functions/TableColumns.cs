@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace dexih.transforms
+namespace dexih.functions
 {
     public class TableColumns : IList<TableColumn>
     {
@@ -39,19 +39,35 @@ namespace dexih.transforms
             }
         }
 
-        public TableColumn this[string tableName]
+        public TableColumn this[string columnName]
         {
             get
             {
-                if (_ColumnOrdinals.ContainsKey(tableName))
-                    return _TableColumns[_ColumnOrdinals[tableName]];
+                if (_ColumnOrdinals.ContainsKey(columnName))
+                    return _TableColumns[_ColumnOrdinals[columnName]];
                 else
                     return null;
             }
 
             set
             {
-                _TableColumns[_ColumnOrdinals[tableName]] = value;
+                _TableColumns[_ColumnOrdinals[columnName]] = value;
+            }
+        }
+
+        public TableColumn this[TableColumn column]
+        {
+            get
+            {
+                if (_ColumnOrdinals.ContainsKey(column.SchemaColumnName()))
+                    return _TableColumns[_ColumnOrdinals[column.SchemaColumnName()]];
+                else
+                    return null;
+            }
+
+            set
+            {
+                _TableColumns[_ColumnOrdinals[column.SchemaColumnName()]] = value;
             }
         }
 
@@ -81,9 +97,13 @@ namespace dexih.transforms
 
         public void Add(TableColumn item)
         {
+            _TableColumns.Add(item);
+            if (!_ColumnOrdinals.ContainsKey(item.SchemaColumnName()))
+            {
+                _ColumnOrdinals.Add(item.SchemaColumnName(), _TableColumns.Count - 1);
+            }
             if (!_ColumnOrdinals.ContainsKey(item.ColumnName))
             {
-                _TableColumns.Add(item);
                 _ColumnOrdinals.Add(item.ColumnName, _TableColumns.Count - 1);
             }
         }
@@ -97,6 +117,14 @@ namespace dexih.transforms
         public bool Contains(TableColumn item)
         {
             return _TableColumns.Contains(item);
+        }
+
+        public bool ContainsMatching(TableColumn column)
+        {
+            if (_TableColumns == null)
+                return false;
+
+            return _ColumnOrdinals.ContainsKey(column.SchemaColumnName());
         }
 
         public void CopyTo(TableColumn[] array, int arrayIndex)
@@ -143,7 +171,11 @@ namespace dexih.transforms
             _ColumnOrdinals.Clear();
             for (int i = 0; i < _TableColumns.Count; i++)
             {
-                _ColumnOrdinals.Add(_TableColumns[i].ColumnName, i);
+                _ColumnOrdinals.Add(_TableColumns[i].SchemaColumnName(), i);
+                if (!_ColumnOrdinals.ContainsKey(_TableColumns[i].ColumnName))
+                {
+                    _ColumnOrdinals.Add(_TableColumns[i].ColumnName, i);
+                }
             }
         }
     }

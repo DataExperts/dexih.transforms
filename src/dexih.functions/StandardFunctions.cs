@@ -44,7 +44,7 @@ namespace dexih.functions
             return true;
         }
 
-        public static Function GetFunctionReference(string FunctionName, string[] inputMappings, string targetColumn, string[] outputMappings)
+        public static Function GetFunctionReference(string FunctionName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             return new Function(typeof(StandardFunctions), FunctionName, FunctionName + "Result", "Reset", inputMappings, targetColumn, outputMappings);
         }
@@ -167,6 +167,9 @@ namespace dexih.functions
 
             return true;
         }
+
+        public Boolean IsTrue(Boolean value) => value;
+
 
         public Boolean IsNumber(String value)
         {

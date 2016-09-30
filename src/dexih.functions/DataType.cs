@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace dexih.functions
 {
@@ -612,6 +613,17 @@ namespace dexih.functions
                 return new ReturnValue<object>(false, reason, ex);
             }
 
+        }
+
+        /// <summary>
+        /// Removes all non alphanumeric characters from the string
+        /// </summary>
+        /// <returns></returns>
+        public static string CleanString(string value)
+        {
+            var arr = value.Where(c => (char.IsLetterOrDigit(c))).ToArray();
+            string newValue = new string(arr);
+            return newValue;
         }
     }
 }
