@@ -53,7 +53,8 @@ namespace dexih.transforms
         {
             Abend,
             First,
-            Last
+            Last,
+            All
         }
 
         /// <summary>

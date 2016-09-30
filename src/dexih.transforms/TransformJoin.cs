@@ -34,7 +34,10 @@ namespace dexih.transforms
         SortedDictionary<object[], List<object[]>> _joinHashData; //stores all the reference data grouped by the join keys (used for hashjoin).
 
         object[] _groupFields;
-        List<object[]> _groupData; //stores a join group (used for sorted join).
+        List<object[]> _groupData; 
+        List<object[]> _filterdGroupData; 
+        bool _writeGroup = false; //indicates a group is being written out
+        int _writeGroupPosition; //indicates the position in the group.
         bool _joinReaderOpen;
         bool _groupsOpen;
         int[] _joinKeyOrdinals;
@@ -189,11 +192,43 @@ namespace dexih.transforms
         protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             object[] newRow = null;
+            int pos = 0;
 
+            //this writes out duplicates of the primary reader when a duplicate match occurrs on the join table
+            //i.e. outer join.
+            if (_writeGroup)
+            {
+                //create a new row and write the primary fields out
+                newRow = new object[FieldCount];
+                for (int i = 0; i < _primaryFieldCount; i++)
+                {
+                    newRow[pos] = PrimaryTransform[i];
+                    pos++;
+                }
+
+                var joinRow = _filterdGroupData[_writeGroupPosition];
+
+                for (int i = 0; i < _referenceFieldCount; i++)
+                {
+                    newRow[pos] = joinRow[i];
+                    pos++;
+                }
+
+                _writeGroupPosition++;
+
+                //if last join record, then set the flag=false so the next read will read another primary row record.
+                if (_writeGroupPosition >= _filterdGroupData.Count)
+                    _writeGroup = false;
+
+                return new ReturnValue<object[]>(true, newRow);
+            }
+
+            //read a new row from the primary table.
             if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
             {
                 return new ReturnValue<object[]>(false, null);
             }
+
             //if input is sorted, then run a sortedjoin
             if (JoinAlgorithm == EJoinAlgorithm.Sorted)
             {
@@ -280,49 +315,25 @@ namespace dexih.transforms
                 }
             }
 
+            //create a new row and write the primary fields out
             newRow = new object[FieldCount];
-            int pos = 0;
             for (int i = 0; i < _primaryFieldCount; i++)
             {
                 newRow[pos] = PrimaryTransform[i];
                 pos++;
             }
+
             if (_groupsOpen)
             {
+                //if there are additional join functions, we run them
                 if (joinFilters.Count == 0)
                 {
-                    //before writing the current row, check next row is not a duplicate.
-                    object[] joinRow = null;
-
-                    if (_groupData.Count > 1)
-                    {
-                        switch (JoinDuplicateResoluton)
-                        {
-                            case EDuplicateResolution.Abend:
-                                throw new DuplicateJoinKeyException("The join operation could not complete as the selected columns on the join table " + ReferenceTableAlias + " are not unique.", ReferenceTableAlias, _groupFields);
-                            case EDuplicateResolution.First:
-                                joinRow = _groupData[0];
-                                break;
-                            case EDuplicateResolution.Last:
-                                joinRow = _groupData.Last();
-                                break;
-                            default:
-                                throw new Exception("Join Duplicate Resolution not recognized.");
-                        }
-                    }
-                    else
-                        joinRow = _groupData[0];
-
-                    for (int i = 0; i < _referenceFieldCount; i++)
-                    {
-                        newRow[pos] = joinRow[i];
-                        pos++;
-                    }
+                    _filterdGroupData = _groupData;
                 }
-                else
-                {
-                    object[] matchRecord = null;
+                else {
+                    _filterdGroupData = new List<object[]>();
 
+                    //filter out the current group based on the functions defined.
                     foreach (object[] row in _groupData)
                     {
                         bool matchFound = true;
@@ -356,22 +367,42 @@ namespace dexih.transforms
                         }
 
                         if (matchFound == true)
+                            _filterdGroupData.Add(row);
+                    }
+                }
+
+                object[] joinRow = null;
+
+                if (_filterdGroupData.Count > 0)
+                {
+                    if (_filterdGroupData.Count > 1)
+                    {
+                        switch (JoinDuplicateResoluton)
                         {
-                            if (matchRecord != null)
-                            {
+                            case EDuplicateResolution.Abend:
                                 throw new DuplicateJoinKeyException("The join operation could not complete as the selected columns on the join table " + ReferenceTableAlias + " are not unique.", ReferenceTableAlias, _groupFields);
-                            }
-                            matchRecord = row;
+                            case EDuplicateResolution.First:
+                                joinRow = _groupData[0];
+                                break;
+                            case EDuplicateResolution.Last:
+                                joinRow = _groupData.Last();
+                                break;
+                            case EDuplicateResolution.All:
+                                joinRow = _groupData[0];
+                                _writeGroup = true;
+                                _writeGroupPosition = 1;
+                                break;
+                            default:
+                                throw new Exception("Join Duplicate Resolution not recognized.");
                         }
                     }
+                    else
+                        joinRow = _filterdGroupData[0];
 
-                    if (matchRecord != null)
+                    for (int i = 0; i < _referenceFieldCount; i++)
                     {
-                        for (int i = 0; i < _referenceFieldCount; i++)
-                        {
-                            newRow[pos] = matchRecord[i];
-                            pos++;
-                        }
+                        newRow[pos] = joinRow[i];
+                        pos++;
                     }
                 }
             }
@@ -383,14 +414,20 @@ namespace dexih.transforms
         {
             _groupData = new List<object[]>();
 
-            while(_joinReaderOpen)
-            {
+            if(_joinReaderOpen)
                 _groupData.Add(ReferenceTransform.CurrentRow);
+
+            while (_joinReaderOpen)
+            {
 
                 if (JoinPairs == null)
                 {
                     _joinReaderOpen = await ReferenceTransform.ReadAsync();
                     _groupFields = new object[0];
+                    if (!_joinReaderOpen)
+                        break; 
+
+                    _groupData.Add(ReferenceTransform.CurrentRow);
                 }
                 else
                 {

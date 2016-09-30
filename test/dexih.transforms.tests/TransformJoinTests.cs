@@ -90,6 +90,39 @@ namespace dexih.transforms.tests
         }
 
         /// <summary>
+        /// Run a join with an outer join
+        /// </summary>
+        [Fact]
+        public async void JoinSortedOuterJoin()
+        {
+            ReaderMemory Source = Helpers.CreateSortedTestData();
+            TransformSort sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort>() { new Sort("StringColumn") });
+            TransformJoin transformJoin = new TransformJoin(Source, sortedJoinData, new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateResolution.All, null, "Join");
+            Assert.Equal(9, transformJoin.FieldCount);
+
+            await transformJoin.Open(1, null);
+            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+
+            int pos = 0;
+            while (await transformJoin.ReadAsync() == true)
+            {
+                pos++;
+                if(pos == 4)
+                {
+                    Assert.Equal("lookup4a", transformJoin["LookupValue"]);
+                    await transformJoin.ReadAsync();
+                    Assert.Equal("lookup4", transformJoin["LookupValue"]);
+                }
+                else if (pos < 10)
+                    Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
+                else
+                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+            }
+            Assert.Equal(10, pos);
+        }
+
+
+        /// <summary>
         /// Run a join with a pre-filter.
         /// </summary>
         [Fact]
