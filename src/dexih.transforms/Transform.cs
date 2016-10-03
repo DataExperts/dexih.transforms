@@ -49,7 +49,7 @@ namespace dexih.transforms
 
         #region Generic Properties
 
-        public enum EDuplicateResolution
+        public enum EDuplicateStrategty
         {
             Abend,
             First,
@@ -72,7 +72,7 @@ namespace dexih.transforms
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
         public TableColumn JoinSortField { get; set; } 
-        public EDuplicateResolution JoinDuplicateResoluton { get; set; }
+        public EDuplicateStrategty JoinDuplicateStrategy { get; set; }
 
         public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
         public virtual List<Sort> SortFields {
