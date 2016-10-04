@@ -515,7 +515,7 @@ namespace dexih.transforms
 
                     //the delta always puts a sort against natural key, so duplicates rows will be next to each other.
                     //check the newRow against the previous row in the file to deduplicate any matching natural keys.
-                    if (_primaryOpen && CompareNewRowPrevious(newRow))
+                    if (_preserveRow == null && _primaryOpen && CompareNewRowPrevious(newRow))
                     {
                         //if the row is a match against the tracking keys then just ignore it.
                         if (CompareNewRowPreviousValues(newRow))
@@ -528,7 +528,7 @@ namespace dexih.transforms
                                 TransformRowsPreserved++;
                                 if (IsCurrentOrdinal >= 0)
                                     newRow[IsCurrentOrdinal] = false;
-                                newRow[0] = 'C';
+                                newRow[0] = 'U';
                             }
                             else
                             {

@@ -122,6 +122,10 @@ namespace dexih.transforms
 
         private CancellationTokenSource CancelTokenSource { get; set; }
 
+        public bool TruncateTarget { get; set; } //once off truncate of the target table.  
+        public bool ResetIncremental { get; set; }
+        public object ResetIncrementalValue { get; set; }
+
         [JsonConverter(typeof(StringEnumConverter))]
         public ERunStatus RunStatus { get; set; }
 

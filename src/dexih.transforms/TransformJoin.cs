@@ -19,7 +19,7 @@ namespace dexih.transforms
     {
         public TransformJoin() { }
 
-        public TransformJoin(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs, List<Function> functions, EDuplicateStrategty joinDuplicateResolution, TableColumn joinSortField, string referenceTableAlias)
+        public TransformJoin(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs, List<Function> functions, EDuplicateStrategy joinDuplicateResolution, TableColumn joinSortField, string referenceTableAlias)
         {
             JoinPairs = joinPairs;
             Functions = functions;
@@ -182,7 +182,7 @@ namespace dexih.transforms
                 for (int i = 0; i < JoinPairs.Count; i++)
                 {
                     _joinKeyOrdinals[i] = ReferenceTransform.GetOrdinal(JoinPairs[i].JoinColumn.SchemaColumnName());
-                    _sourceKeyOrdinals[i] = JoinPairs[i].SourceColumn == null ? -1 : ReferenceTransform.GetOrdinal(JoinPairs[i].SourceColumn.SchemaColumnName());
+                    _sourceKeyOrdinals[i] = JoinPairs[i].SourceColumn == null ? -1 : PrimaryTransform.GetOrdinal(JoinPairs[i].SourceColumn.SchemaColumnName());
                 }
             }
 
@@ -379,15 +379,15 @@ namespace dexih.transforms
                     {
                         switch (JoinDuplicateStrategy)
                         {
-                            case EDuplicateStrategty.Abend:
+                            case EDuplicateStrategy.Abend:
                                 throw new DuplicateJoinKeyException("The join operation could not complete as the selected columns on the join table " + ReferenceTableAlias + " are not unique.", ReferenceTableAlias, _groupFields);
-                            case EDuplicateStrategty.First:
+                            case EDuplicateStrategy.First:
                                 joinRow = _groupData[0];
                                 break;
-                            case EDuplicateStrategty.Last:
+                            case EDuplicateStrategy.Last:
                                 joinRow = _groupData.Last();
                                 break;
-                            case EDuplicateStrategty.All:
+                            case EDuplicateStrategy.All:
                                 joinRow = _groupData[0];
                                 _writeGroup = true;
                                 _writeGroupPosition = 1;

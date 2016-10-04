@@ -226,6 +226,14 @@ namespace dexih.transforms
             returnValue = await TargetConnection.CreateTable(TargetTable, false);
             returnValue = await TargetConnection.DataWriterStart(TargetTable);
 
+            //if the truncate table flag is set, then truncate the target table.
+            if (writerResult.TruncateTarget)
+            {
+                var truncateResult = await TargetConnection.TruncateTable(TargetTable, CancelToken);
+                if (!truncateResult.Success)
+                    return truncateResult;
+            }
+
             int columnCount = TargetTable.Columns.Count;
             _fieldOrdinals = new int[columnCount];
             for (int i = 0; i < columnCount; i++)
