@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Data;
 using System.Linq;
 
 namespace dexih.functions
@@ -16,7 +18,8 @@ namespace dexih.functions
             Numeric,
             Date,
             Time,
-            Boolean
+            Boolean,
+            Binary
         }
 
 
@@ -25,6 +28,7 @@ namespace dexih.functions
         /// </summary>
         public enum ETypeCode
         {
+            Binary,
             Byte,
             SByte,
             UInt16,
@@ -80,6 +84,8 @@ namespace dexih.functions
                     return TimeSpan.FromDays(1) - TimeSpan.FromMilliseconds(1);
                 case ETypeCode.Guid:
                     return Guid.Parse("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
+                case ETypeCode.Binary:
+                    return new byte[] { Byte.MaxValue, Byte.MaxValue, Byte.MaxValue };
                 case ETypeCode.Unknown:
                     return "";
                 default:
@@ -156,6 +162,7 @@ namespace dexih.functions
                 case ETypeCode.Boolean: return EBasicType.Boolean;
                 case ETypeCode.DateTime: return EBasicType.Date;
                 case ETypeCode.Time: return EBasicType.Time;
+                case ETypeCode.Binary: return EBasicType.Binary;
                 default: return EBasicType.Unknown;
             }
         }
@@ -199,6 +206,8 @@ namespace dexih.functions
                 return ETypeCode.Time;
             if (dataType == typeof(Guid))
                 return ETypeCode.Guid;
+            if (dataType == typeof(byte[]))
+                return ETypeCode.Binary;
 
             return ETypeCode.Unknown;
         }
@@ -239,8 +248,53 @@ namespace dexih.functions
                     return typeof(TimeSpan);
                 case ETypeCode.Guid:
                     return typeof(Guid);
+                case ETypeCode.Binary:
+                    return typeof(byte[]);
                 default:
                     return typeof(object);
+            }
+        }
+
+        public static DbType GetDbType(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Byte:
+                    return DbType.Byte;
+                case ETypeCode.SByte:
+                    return DbType.SByte;
+                case ETypeCode.UInt16:
+                    return DbType.UInt16;
+                case ETypeCode.UInt32:
+                    return DbType.UInt32;
+                case ETypeCode.UInt64:
+                    return DbType.UInt64;
+                case ETypeCode.Int16:
+                    return DbType.Int16;
+                case ETypeCode.Int32:
+                    return DbType.Int32;
+                case ETypeCode.Int64:
+                    return DbType.Int64;
+                case ETypeCode.Decimal:
+                    return DbType.Decimal;
+                case ETypeCode.Double:
+                    return DbType.Double;
+                case ETypeCode.Single:
+                    return DbType.Single;
+                case ETypeCode.String:
+                    return DbType.String;
+                case ETypeCode.Boolean:
+                    return DbType.Boolean;
+                case ETypeCode.DateTime:
+                    return DbType.DateTime;
+                case ETypeCode.Time:
+                    return DbType.Time;
+                case ETypeCode.Guid:
+                    return DbType.Guid;
+                case ETypeCode.Binary:
+                    return DbType.Binary;
+                default:
+                    return DbType.String;
             }
         }
 
@@ -339,6 +393,8 @@ namespace dexih.functions
                         return new ReturnValue<ECompareResult>(true, (DateTime)inputValue == (DateTime)compareValue ? ECompareResult.Equal : (DateTime)inputValue > (DateTime)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Time:
                         return new ReturnValue<ECompareResult>(true, (TimeSpan)inputValue == (TimeSpan)compareValue ? ECompareResult.Equal : (TimeSpan)inputValue > (TimeSpan)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                    case ETypeCode.Binary:
+                        return new ReturnValue<ECompareResult>(true, StructuralComparisons.StructuralEqualityComparer.Equals(inputValue, compareValue) == true ? ECompareResult.Equal : ECompareResult.Greater);
                     default:
                         return new ReturnValue<ECompareResult>(false, "Unsupported datatype: " + dataType, null);
                 }
@@ -434,6 +490,8 @@ namespace dexih.functions
                         case ETypeCode.Single:
                             result = Convert.ToSingle(inputValue);
                             return new ReturnValue<object>(true, result);
+                        case ETypeCode.Binary:
+                            return new ReturnValue<object>(false, "Cannot convert a binary data type to another type.", null);
                         default:
                             string reason = "Cannot convert value " + inputValue + " from numeric to " + tryDataType;
                             return new ReturnValue<object>(false, reason, null);

@@ -298,6 +298,12 @@ namespace dexih.connections.sql
                 case ETypeCode.Guid:
                     sqlType = "uniqueidentifier";
                     break;
+                case ETypeCode.Binary:
+                    if (length == null)
+                        sqlType = "varbinary(max)";
+                    else
+                        sqlType = "varbinary(" + length.ToString() + ")";
+                    break;
                 //case TypeCode.TimeSpan:
                 //    SQLType = "time(7)";
                 //    break;
@@ -367,7 +373,7 @@ namespace dexih.connections.sql
                         returnValue = "convert(time, '" + AddEscape((string)value) + "')";
                     break;
                 default:
-                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the create table.");
+                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql insert statement.");
             }
 
             return returnValue;
@@ -675,7 +681,7 @@ namespace dexih.connections.sql
             switch (SqlType)
             {
                 case "bigint": return ETypeCode.Int64;
-                case "binary": return ETypeCode.Unknown;
+                case "binary": return ETypeCode.Binary;
                 case "bit": return ETypeCode.Boolean;
                 case "char": return ETypeCode.String;
                 case "date": return ETypeCode.DateTime;
@@ -702,7 +708,7 @@ namespace dexih.connections.sql
                 case "tinyint": return ETypeCode.Byte;
                 case "uniqueidentifier": return ETypeCode.Guid;
                 case "geography": return ETypeCode.Unknown;
-                case "varbinary": return ETypeCode.Unknown;
+                case "varbinary": return ETypeCode.Binary;
                 case "varchar": return ETypeCode.String;
                 case "xml": return ETypeCode.String;
             }

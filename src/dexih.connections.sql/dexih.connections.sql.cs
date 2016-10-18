@@ -422,7 +422,7 @@ namespace dexih.connections.sql
                         int count = 0;
                         foreach (QueryColumn column in query.UpdateColumns)
                         {
-                            sql.Append(AddDelimiter(column.Column.ColumnName) + " = " + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
+                            sql.Append(AddDelimiter(column.Column.ColumnName) + " = @col" + count.ToString() + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
                             count++;
                         }
                         sql.Remove(sql.Length - 1, 1); //remove last comma
@@ -433,6 +433,18 @@ namespace dexih.connections.sql
                         {
                             cmd.Transaction = transaction;
                             cmd.CommandText = sql.ToString();
+
+                            DbParameter[] parameters = new DbParameter[query.UpdateColumns.Count];
+                            for (int i = 0; i < query.UpdateColumns.Count; i++)
+                            {
+                                DbParameter param = cmd.CreateParameter();
+                                param.ParameterName = "@col" + i.ToString();
+                                param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
+                                param.Size = -1;
+                                param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value : query.UpdateColumns[i].Value;
+                                cmd.Parameters.Add(param);
+                                parameters[i] = param;
+                            }
 
                             try
                             {

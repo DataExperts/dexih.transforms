@@ -199,7 +199,7 @@ namespace dexih.transforms
             colUpdateAuditKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.UpdateAuditKey);
             DatabaseOperationOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
             ValidationStatusOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
-            colNatrualKey = PrimaryTransform.CacheTable.Columns.Where(c=>c.DeltaType == TableColumn.EDeltaType.NaturalKey).ToArray();
+            colNatrualKey = CacheTable.Columns.Where(c=>c.DeltaType == TableColumn.EDeltaType.NaturalKey).ToArray();
 
             RejectedReasonOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
             if(CacheTable.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
@@ -330,9 +330,10 @@ namespace dexih.transforms
 
                     //create a filter that will be passed (if supported to the database).  Improves performance.
                     List<Filter> filters = new List<Filter>();
+
                     //first add a where IsCurrentField = true
-                    if(colIsCurrentField != null)
-                        filters.Add(new Filter(colIsCurrentField, Filter.ECompare.IsEqual, true));
+                    //if (colIsCurrentField != null)
+                    //    filters.Add(new Filter(colIsCurrentField, Filter.ECompare.IsEqual, true));
 
                     //second add a where natrual key is greater than the first record key.  (excluding where delete detection is on).
                     if (_primaryOpen && !doDelete)
@@ -415,7 +416,7 @@ namespace dexih.transforms
                     }
                     else
                     {
-                        foreach (TableColumn col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey))
+                        foreach (TableColumn col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey || c.DeltaType == TableColumn.EDeltaType.ValidToDate))
                         {
                             int targetOrdinal = PrimaryTransform.GetOrdinal(col.ColumnName); //ignore any comparisons on columns that do not exist in source.
                             if (targetOrdinal > -1)
@@ -429,6 +430,7 @@ namespace dexih.transforms
                                     break;
                             }
                         }
+
                     }
 
                     //if the primary greater in sort order than the target, then the target row has been deleted.
@@ -528,7 +530,7 @@ namespace dexih.transforms
                                 TransformRowsPreserved++;
                                 if (IsCurrentOrdinal >= 0)
                                     newRow[IsCurrentOrdinal] = false;
-                                newRow[0] = 'U';
+                                newRow[0] = 'C';
                             }
                             else
                             {
@@ -570,26 +572,46 @@ namespace dexih.transforms
                     }
                 }
 
-                if (colIsCurrentField == null)
-                {
-                    return true;
-                }
-                else
-                {
-                    var returnValue = DataType.TryParse(DataType.ETypeCode.Boolean, ReferenceTransform[ReferenceIsValidOrdinal]);
-                    if (!returnValue.Success)
-                        throw new Exception("The column " + colIsCurrentField.ColumnName + " is expected to have a boolean value, however the value " + ReferenceTransform[colIsCurrentField.ColumnName] + " was found.");
+                //if (colIsCurrentField == null)
+                //{
+                return true;
+                //}
+                //else
+                //{
+                //    var returnValue = DataType.TryParse(DataType.ETypeCode.Boolean, ReferenceTransform[ReferenceIsValidOrdinal]);
+                //    if (!returnValue.Success)
+                //        throw new Exception("The column " + colIsCurrentField.ColumnName + " is expected to have a boolean value, however the value " + ReferenceTransform[colIsCurrentField.ColumnName] + " was found.");
 
-                    //IsCurrent = false, continue to next record.
-                    if (!(bool)returnValue.Value)
-                    {
-                        continue;
-                    }
-                    else
-                        return true;
-                }
+                //    //IsCurrent = false, continue to next record.
+                //    if (!(bool)returnValue.Value)
+                //    {
+                //        continue;
+                //    }
+                //    else
+                //        return true;
+                //}
+
             }
             return false;
+        }
+
+        public int MatchingSourceOrdinal(TableColumn col)
+        {
+            int sourceOrdinal = -1;
+            switch (col.DeltaType)
+            {
+                case TableColumn.EDeltaType.ValidToDate:
+                    sourceOrdinal = SourceValidToOrdinal;
+                    break;
+                case TableColumn.EDeltaType.ValidFromDate:
+                    sourceOrdinal = SourceValidFromOrdinal;
+                    break;
+                default:
+                    sourceOrdinal = PrimaryTransform.CacheTable.GetOrdinal(col.ColumnName); //ignore any comparisons on columns that do not exist in source.
+                    break;
+            }
+
+            return sourceOrdinal;
         }
 
 
@@ -598,7 +620,9 @@ namespace dexih.transforms
             //check if the natrual key in the source & target are less/match/greater to determine operation
             foreach (TableColumn col in colNatrualKey)
             {
-                int sourceOrdinal = PrimaryTransform.CacheTable.GetOrdinal(col.ColumnName); //ignore any comparisons on columns that do not exist in source.
+
+                int sourceOrdinal = MatchingSourceOrdinal(col);
+
                 if (sourceOrdinal > -1)
                 {
                     int targetOrdinal = CacheTable.GetOrdinal(col.ColumnName);
@@ -614,9 +638,9 @@ namespace dexih.transforms
         {
             //the final possibility, is the natrual key is a match, check for changed tracking columns
             bool isMatch = true;
-            foreach (TableColumn col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
+            foreach (TableColumn col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField || c.DeltaType == TableColumn.EDeltaType.ValidFromDate || c.DeltaType == TableColumn.EDeltaType.ValidToDate))
             {
-                int sourceOrdinal = PrimaryTransform.GetOrdinal(col.ColumnName); //ignore any comparisons on columns that do not exist in source.
+                int sourceOrdinal = MatchingSourceOrdinal(col);
                 if (sourceOrdinal > -1)
                 {
                     int targetOrdinal = CacheTable.GetOrdinal(col.ColumnName);
@@ -919,6 +943,9 @@ namespace dexih.transforms
                 {
                     fields.Add(new Sort(col));
                 }
+                var validTo = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
+                if (validTo != null)
+                    fields.Add(new Sort(validTo));
             }
 
             return fields;
