@@ -13,6 +13,8 @@ using System.Diagnostics;
 using System.Data.Common;
 using static dexih.functions.DataType;
 using static dexih.transforms.Transform;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.transforms
 {
@@ -31,6 +33,7 @@ namespace dexih.transforms
             Executing = 5
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum ECategory
         {
             SqlDatabase = 0,

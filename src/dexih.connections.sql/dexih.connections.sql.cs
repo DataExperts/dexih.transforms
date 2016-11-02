@@ -351,7 +351,7 @@ namespace dexih.connections.sql
             return sql.ToString();
         }
 
-        private string BuildFiltersString(List<Filter> filters)
+        public virtual string BuildFiltersString(List<Filter> filters)
         {
             if (filters == null || filters.Count == 0)
                 return "";

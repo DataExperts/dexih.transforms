@@ -15,7 +15,6 @@
     "net46" : { },
     "netstandard1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.6.0"
       },
       "imports": [
         "portable-net45+wp80+win8+wpa81+dnxcore50",
@@ -26,7 +25,8 @@
   "dependencies": {
     "dexih.transforms": "0.2.*",
     "dexih.connections.flatfile": "0.2.*",
-    "WindowsAzure.Storage": "7.2.0"
+    "NETStandard.Library": "1.6.1-preview1-24530-04",
+    "WindowsAzure.Storage": "7.2.1"
   }
   //"scripts": {
   //  "postcompile": [

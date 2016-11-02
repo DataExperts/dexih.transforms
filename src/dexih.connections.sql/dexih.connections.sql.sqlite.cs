@@ -232,6 +232,9 @@ namespace dexih.connections.sql
                     else
                         sqlType = "decimal (" + precision.ToString() + "," + scale.ToString() + ")";
                     break;
+                case ETypeCode.Binary:
+                    sqlType = "blob";
+                    break;
                 default:
                     throw new Exception("The datatype " + dataType.ToString() + " is not compatible with the create table.");
             }
@@ -270,7 +273,7 @@ namespace dexih.connections.sql
                     returnValue = AddEscape(value.ToString());
                     break;
                 case ETypeCode.Boolean:
-                    returnValue = (bool)value == true ? "'True'" : "'False'";
+                    returnValue = (bool)value == true ? "1" : "0";
                     break;
                 case ETypeCode.String:
                 case ETypeCode.Guid:

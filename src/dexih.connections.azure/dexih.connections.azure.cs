@@ -676,6 +676,8 @@ namespace dexih.connections.azure
                     return new EntityProperty(value.ToString()); //decimal not supported, so convert to string
                 case ETypeCode.Time:
                     return new EntityProperty(((TimeSpan)value).Ticks); //timespan not supported, so use ticks.
+                case ETypeCode.Binary:
+                    return new EntityProperty((byte[])value);
                 default:
                     throw new Exception("Cannot create new azure entity as the data type: " + typeCode.ToString() + " is not suppored.");
             }

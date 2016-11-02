@@ -843,6 +843,124 @@ namespace dexih.connections.sql
             }
         }
 
+        public static SqlDbType GetSqlDbType(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Byte:
+                    return SqlDbType.VarChar;
+                case ETypeCode.SByte:
+                    return SqlDbType.SmallInt;
+                case ETypeCode.UInt16:
+                    return SqlDbType.Int;
+                case ETypeCode.UInt32:
+                    return SqlDbType.BigInt;
+                case ETypeCode.UInt64:
+                    return SqlDbType.VarChar;
+                case ETypeCode.Int16:
+                    return SqlDbType.SmallInt;
+                case ETypeCode.Int32:
+                    return SqlDbType.Int;
+                case ETypeCode.Int64:
+                    return SqlDbType.BigInt;
+                case ETypeCode.Decimal:
+                    return SqlDbType.Decimal;
+                case ETypeCode.Double:
+                    return SqlDbType.Float;
+                case ETypeCode.Single:
+                    return SqlDbType.Real;
+                case ETypeCode.String:
+                    return SqlDbType.NVarChar;
+                case ETypeCode.Boolean:
+                    return SqlDbType.Bit;
+                case ETypeCode.DateTime:
+                    return SqlDbType.DateTime;
+                case ETypeCode.Time:
+                    return SqlDbType.Time;
+                case ETypeCode.Guid:
+                    return SqlDbType.UniqueIdentifier;
+                case ETypeCode.Binary:
+                    return SqlDbType.Binary;
+                default:
+                    return SqlDbType.VarChar;
+            }
+        }
+
+        public override async Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        {
+            ReturnValue<DbConnection> connectionResult = await NewConnection();
+            if (connectionResult.Success == false)
+            {
+                return new ReturnValue<long>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, -1);
+            }
+
+            using (var connection = (SqlConnection)connectionResult.Value)
+            {
+
+                StringBuilder sql = new StringBuilder();
+
+                int rows = 0;
+
+                var timer = Stopwatch.StartNew();
+
+                using (var transaction = connection.BeginTransaction())
+                {
+                    foreach (var query in queries)
+                    {
+                        sql.Clear();
+
+                        sql.Append("update " + AddDelimiter(table.TableName) + " set ");
+
+                        int count = 0;
+                        foreach (QueryColumn column in query.UpdateColumns)
+                        {
+                            sql.Append(AddDelimiter(column.Column.ColumnName) + " = @col" + count.ToString() + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
+                            count++;
+                        }
+                        sql.Remove(sql.Length - 1, 1); //remove last comma
+                        sql.Append(" " + BuildFiltersString(query.Filters) + ";");
+
+                        //  Retrieving schema for columns from a single table
+                        using (SqlCommand cmd = connection.CreateCommand())
+                        {
+                            cmd.Transaction = transaction;
+                            cmd.CommandText = sql.ToString();
+
+                            SqlParameter[] parameters = new SqlParameter[query.UpdateColumns.Count];
+                            for (int i = 0; i < query.UpdateColumns.Count; i++)
+                            {
+                                SqlParameter param = cmd.CreateParameter();
+                                param.ParameterName = "@col" + i.ToString();
+                                param.SqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType);
+                                param.Size = -1;
+                                param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value : query.UpdateColumns[i].Value;
+                                cmd.Parameters.Add(param);
+                                parameters[i] = param;
+                            }
+
+                            try
+                            {
+                                rows += await cmd.ExecuteNonQueryAsync(cancelToken);
+
+                                if (cancelToken.IsCancellationRequested)
+                                {
+                                    return new ReturnValue<long>(false, "Update rows cancelled.", null, timer.ElapsedTicks);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                return new ReturnValue<long>(false, "The update query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, timer.ElapsedTicks);
+                            }
+                        }
+                    }
+                    transaction.Commit();
+                }
+
+                timer.Stop();
+                return new ReturnValue<long>(true, timer.ElapsedTicks); //sometimes reader returns -1, when we want this to be error condition.
+            }
+        }
+
 
     }
 }

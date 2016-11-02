@@ -572,24 +572,25 @@ namespace dexih.transforms
                     }
                 }
 
-                //if (colIsCurrentField == null)
-                //{
-                return true;
-                //}
-                //else
-                //{
-                //    var returnValue = DataType.TryParse(DataType.ETypeCode.Boolean, ReferenceTransform[ReferenceIsValidOrdinal]);
-                //    if (!returnValue.Success)
-                //        throw new Exception("The column " + colIsCurrentField.ColumnName + " is expected to have a boolean value, however the value " + ReferenceTransform[colIsCurrentField.ColumnName] + " was found.");
+                //TODO: This routine skips records in the source with isucrrent = false, however this causes problem with source file that has invalid records.
+                if (colIsCurrentField == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    var returnValue = DataType.TryParse(DataType.ETypeCode.Boolean, ReferenceTransform[ReferenceIsValidOrdinal]);
+                    if (!returnValue.Success)
+                        throw new Exception("The column " + colIsCurrentField.ColumnName + " is expected to have a boolean value, however the value " + ReferenceTransform[colIsCurrentField.ColumnName] + " was found.");
 
-                //    //IsCurrent = false, continue to next record.
-                //    if (!(bool)returnValue.Value)
-                //    {
-                //        continue;
-                //    }
-                //    else
-                //        return true;
-                //}
+                    //IsCurrent = false, continue to next record.
+                    if (!(bool)returnValue.Value)
+                    {
+                        continue;
+                    }
+                    else
+                        return true;
+                }
 
             }
             return false;

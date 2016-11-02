@@ -10,13 +10,13 @@
     "projectUrl": "https://github.com/dataexperts/dexih.transforms"
   },
   "dependencies": {
-    "dexih.functions": "0.2.*"
+    "dexih.functions": "0.2.*",
+    "NETStandard.Library": "1.6.1-preview1-24530-04"
   },
   "frameworks": {
     // "net451": { },
     "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.0"
       },
       "imports": [
         "portable-net45+wp80+win8+wpa81+dnxcore50",

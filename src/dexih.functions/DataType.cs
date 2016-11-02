@@ -129,6 +129,8 @@ namespace dexih.functions
                     return TimeSpan.FromDays(0);
                 case ETypeCode.Guid:
                     return Guid.Parse("00000000-0000-0000-0000-000000000000");
+                case ETypeCode.Binary:
+                    return new byte[] { Byte.MinValue, Byte.MinValue, Byte.MinValue };
                 case ETypeCode.Unknown:
                     return "";
                 default:

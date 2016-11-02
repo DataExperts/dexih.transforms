@@ -214,8 +214,8 @@ namespace dexih.transforms.tests
                    count++;
                }
 
-                //change 3 rows. (first, middle, last)
-                Target.CacheTable.Data[0][4] = 100;
+               //change 3 rows. (first, middle, last)
+               Target.CacheTable.Data[0][4] = 100;
                Target.CacheTable.Data[5][4] = 200;
                Target.CacheTable.Data[9][4] = 300;
 

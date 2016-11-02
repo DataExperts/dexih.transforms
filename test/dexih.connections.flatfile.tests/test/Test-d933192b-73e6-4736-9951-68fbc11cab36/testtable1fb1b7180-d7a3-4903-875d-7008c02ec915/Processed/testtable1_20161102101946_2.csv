@@ -1,0 +1,11 @@
+StringColumn,IntColumn,DecimalColumn,DateColumn,GuidColumn
+value1,1,1.1,"1/01/2015 12:00:00 AM",33f0843f-6191-4e6f-9b46-95be7c8d22c5
+value2,2,2.1,"2/01/2015 12:00:00 AM",7e5624c2-092e-4161-a9fe-b8901187ae8d
+value3,3,3.1,"3/01/2015 12:00:00 AM",de20ae1e-5290-4968-8a0a-5237ba6484c8
+value4,4,4.1,"4/01/2015 12:00:00 AM",d2dc6679-b6d8-47c4-9613-030a0d61a452
+value5,5,5.1,"5/01/2015 12:00:00 AM",e3e076a1-c9fe-4fdb-a8ff-8a0398f89728
+value6,6,6.1,"6/01/2015 12:00:00 AM",2f1b45cd-abd0-4d5e-8e7e-f4ca6f36af7a
+value7,7,7.1,"7/01/2015 12:00:00 AM",b82f0dff-67d7-4e51-869b-2c5cfa4d16e6
+value8,8,8.1,"8/01/2015 12:00:00 AM",85ec6c52-3a12-4601-8ed9-b94db23017c4
+value9,9,9.1,"9/01/2015 12:00:00 AM",d6218c7f-bd67-4a5a-8444-84f91d3fdb7f
+value10,10,10.1,"10/01/2015 12:00:00 AM",05bcf311-e4ac-44fb-9ef3-65afce5ec4bf

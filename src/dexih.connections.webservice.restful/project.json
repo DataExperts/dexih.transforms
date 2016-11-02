@@ -18,7 +18,6 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.0"
       },
       "imports": [
         "portable-net45+wp80+win8+wpa81+dnxcore50",
@@ -27,7 +26,8 @@
     }
   },
   "dependencies": {
-    "dexih.transforms": "0.2.*"
+    "dexih.transforms": "0.2.*",
+    "NETStandard.Library": "1.6.1-preview1-24530-04"
   }
   //"scripts": {
   //  "postcompile": [

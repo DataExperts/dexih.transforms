@@ -2,23 +2,21 @@
   "dependencies": {
     "dexih.functions": "0.2.*",
     "dexih.transforms": "0.2.*",
-
-    "xunit": "2.1.0",
-    "xunit.runner.visualstudio": "2.1.0",
-    "dotnet-test-xunit": "1.0.0-*"
+    "System.Reflection.TypeExtensions": "4.3.0-preview1-24530-04",
+    "xunit": "2.2.0-beta3-build3402",
+    "xunit.runner.visualstudio": "2.2.0-beta3-build1187",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029"
   },
 
   "testRunner": "xunit",
 
+  "runtimes": {
+    "win10-x64": {}
+  },
+
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0"
-        },
-        "System.Reflection.TypeExtensions": "4.1.0",
-        "System.Diagnostics.TraceSource": "4.0.0"
       },
       "imports": [
         "dnxcore50",
