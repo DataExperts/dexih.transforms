@@ -133,7 +133,7 @@ namespace dexih.functions
             }
             catch(Exception ex)
             {
-                return new ReturnValue<string>(false, "Encryption failed due to: " + ex.Message, ex);
+                return new ReturnValue<string>(false, "Decryption failed due to: " + ex.Message, ex);
             }
         }
 

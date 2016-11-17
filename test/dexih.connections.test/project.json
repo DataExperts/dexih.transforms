@@ -12,11 +12,10 @@
     "Microsoft.Extensions.Configuration.Json": "1.1.0-preview1-final",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-preview1-final",
     "System.Diagnostics.TraceSource": "4.3.0-preview1-24530-04",
-    "System.Reflection.TypeExtensions": "4.3.0-preview1-24530-04",
+    "System.Reflection.TypeExtensions": "4.3.0",
     "xunit": "2.2.0-beta3-build3402",
     "xunit.runner.visualstudio": "2.2.0-beta3-build1187",
     "dotnet-test-xunit": "2.2.0-preview2-build1029"
-
   },
 
   "testRunner": "xunit",

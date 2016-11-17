@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "dexih.transforms": "0.2.*",
-    "NETStandard.Library": "1.6.1-preview1-24530-04"
+    "NETStandard.Library": "1.6.1"
   }
   //"scripts": {
   //  "postcompile": [
