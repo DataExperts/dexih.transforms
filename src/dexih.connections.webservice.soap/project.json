@@ -12,22 +12,24 @@
   },
 
   "frameworks": {
+    "netstandard1.3": {
+      "dependencies": {
+      },
+      "imports": [
+        "portable-net45+wp80+win8+wpa81+dnxcore50",
+        "portable-net451+win8"
+      ]
+    },
     "net46": {
       "frameworkAssemblies": {
         "System.Net.Http": "4.0.0.0",
         "System.Web.Services": "4.0.0.0"
       },
       "dependencies": {
-        //"Oracle.ManagedDataAccess": "12.1.24160419"
       }
     }
   },
   "dependencies": {
     "dexih.transforms": "0.2.*"
   }
-  //"scripts": {
-  //  "postcompile": [
-  //    "dotnet pack --no-build --configuration Debug -o ../../../packages"
-  //  ]
-  //}
 }

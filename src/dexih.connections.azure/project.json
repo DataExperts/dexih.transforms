@@ -12,8 +12,7 @@
   },
 
   "frameworks": {
-    "net46" : { },
-    "netstandard1.5": {
+    "netstandard1.3": {
       "dependencies": {
       },
       "imports": [
@@ -25,12 +24,6 @@
   "dependencies": {
     "dexih.transforms": "0.2.*",
     "dexih.connections.flatfile": "0.2.*",
-    "WindowsAzure.Storage": "7.2.1",
-    "NETStandard.Library": "1.6.1"
+    "WindowsAzure.Storage": "7.2.1"
   }
-  //"scripts": {
-  //  "postcompile": [
-  //    "dotnet pack --no-build --configuration Debug -o ../../../packages"
-  //  ]
-  //}
 }

@@ -21,12 +21,6 @@
     }
   },
   "dependencies": {
-    "dexih.transforms": "0.2.*",
-    "NETStandard.Library": "1.6.1"
+    "dexih.transforms": "0.2.*"
   }
-  //"scripts": {
-  //  "postcompile": [
-  //    "dotnet pack --no-build --configuration Debug -o ../../../packages"
-  //  ]
-  //}
 }
