@@ -1,5 +1,5 @@
 {
-  "version": "0.2.2-*",
+  "version": "0.2.4-*",
   "title": "Data Experts Group - Connections Library - Restful Web Services",
   "description": "This is a support library which enables the transform library to access Restful based web services.",
   "authors": [ "Gary Holland" ],
@@ -22,6 +22,7 @@
     }
   },
   "dependencies": {
-    "dexih.transforms": "0.2.*"
+    "dexih.transforms": "0.2.4-*",
+    "System.Net.Http": "4.3.0"
   }
 }

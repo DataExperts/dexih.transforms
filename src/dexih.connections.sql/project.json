@@ -1,5 +1,5 @@
 {
-  "version": "0.2.2-*",
+  "version": "0.2.4-*",
   "title": "Data Experts Group - Connections - Sql Server & Sqlite",
   "description": "This is a support library which enables the transform library to access SqlServer and Sqlite databases.",
   "authors": [ "Gary Holland" ],
@@ -14,6 +14,7 @@
   "frameworks": {
     "netstandard1.3": {
       "dependencies": {
+        "NETStandard.Library": "1.6.1"
       },
       "imports": [
         "portable-net45+wp80+win8+wpa81+dnxcore50",
@@ -22,7 +23,7 @@
     }
   },
   "dependencies": {
-    "dexih.transforms": "0.2.*",
+    "dexih.transforms": "0.2.4-*",
     "Microsoft.Data.Sqlite": "1.1.0",
     "System.Data.SqlClient": "4.3.0"
   }

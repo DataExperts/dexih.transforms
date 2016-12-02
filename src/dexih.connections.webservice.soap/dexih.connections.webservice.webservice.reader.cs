@@ -5,9 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using static dexih.functions.DataType;
-using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+
+#if NET46
+using System.Net.Http;
+#endif
 
 namespace dexih.connections.webservice
 {

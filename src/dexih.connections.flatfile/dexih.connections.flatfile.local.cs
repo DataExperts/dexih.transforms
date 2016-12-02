@@ -21,7 +21,7 @@ namespace dexih.connections.flatfile
             try
             {
                 List<string> fileShares = new List<string>();
-
+            
                 var directories = await Task.Run(() => Directory.GetDirectories(serverName));
                 foreach (string directoryName in directories)
                 {

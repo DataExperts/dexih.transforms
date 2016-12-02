@@ -1,5 +1,5 @@
 ﻿{
-  "version": "0.2.2-*",
+  "version": "0.2.4-*",
   "title": "Data Experts Group - Connections - Soap WebServices",
   "description": "This is a support library which enables the transform library to access Soap based webservices.",
   "authors": [ "Gary Holland" ],
@@ -30,6 +30,6 @@
     }
   },
   "dependencies": {
-    "dexih.transforms": "0.2.*"
+    "dexih.transforms": "0.2.4-*"
   }
 }

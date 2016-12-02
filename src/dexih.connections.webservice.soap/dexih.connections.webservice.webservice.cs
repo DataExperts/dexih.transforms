@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Data;
-using System.CodeDom;
-using System.CodeDom.Compiler;
 using System.Reflection;
 using dexih.transforms;
 using dexih.functions;
@@ -15,6 +13,8 @@ using static dexih.functions.DataType;
 using System.Threading;
 
 #if NET46
+using System.CodeDom.Compiler;
+using System.CodeDom;
 using System.Web.Services.Description;
 #endif
 
