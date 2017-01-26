@@ -203,7 +203,7 @@ namespace dexih.connections.flatfile
 
         public override async Task<ReturnValue<List<string>>> GetDatabaseList()
         {
-            return await GetFileShares(ServerName, UserName, Password);
+            return await GetFileShares(Server, Username, Password);
         }
 
         public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
@@ -370,7 +370,7 @@ namespace dexih.connections.flatfile
                     if (!returnValue.Success)
                         return new ReturnValue<Tuple<long, long>>(returnValue.Success, returnValue.Message, returnValue.Exception, Tuple.Create(timer.Elapsed.Ticks, (long)0));
 
-                    LastWrittenFile = FileName;
+                    LastWrittenFile = Filename;
 
                     stream.Dispose();
                 }

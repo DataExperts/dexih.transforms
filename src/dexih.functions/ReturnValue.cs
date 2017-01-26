@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace dexih.functions
 {
@@ -67,12 +68,36 @@ namespace dexih.functions
             Message = "";
         }
 
+        public ReturnValue(Exception ex)
+        {
+            var returnValue = new ReturnValue(ex);
+            Success = returnValue.Success;
+            Exception = returnValue.Exception;
+            Message = returnValue.Message;
+        }
+
         public ReturnValue(ReturnValue returnValue)
         {
             Success = returnValue.Success;
             Message = returnValue.Message;
             Exception = returnValue.Exception;
         }
+
+        public ReturnValue(ReturnValue<object> returnValue)
+        {
+            Success = returnValue.Success;
+            Message = returnValue.Message;
+            Exception = returnValue.Exception;
+            Value = (T)returnValue.Value;
+        }
+
+        public ReturnValue<JToken> GetJToken()
+        {
+            var jValue = JToken.FromObject(Value);
+            var result = new ReturnValue<JToken>(Success, Message, Exception, jValue);
+            return result;
+        }
+
 
         public T Value { get; set; }
 
@@ -95,6 +120,30 @@ namespace dexih.functions
             Exception = exception;
         }
 
+        public ReturnValue(Exception exception)
+        {
+            Success = false;
+            Exception = exception;
+
+            StringBuilder message = new StringBuilder();
+
+            if(exception == null)
+            {
+                message.Append( "An error was raised with no exception.");
+            }
+            else
+            {
+                message.Append("The following error occurred: " + exception.Message);
+
+                if(exception.InnerException != null)
+                {
+                    message.AppendLine("An inner exception also occurred: " + exception.InnerException.Message);
+                }
+            }
+
+            Message = message.ToString();
+        }
+
         public bool ContainsError()
         {
             return Exception != null;
@@ -107,60 +156,5 @@ namespace dexih.functions
         public Exception Exception { get; set; }
     }
 
-    public class Message : ReturnValue<string>
-    {
-        public string MessageId { get; set; }
-        public string RemoteToken { get; set; }
-        public string Command { get; set; }
-        public long HubKey { get; set; }
 
-        public Message() { }
-
-        public Message(string remoteToken, string messageId, string command, ReturnValue<string> returnValue)
-        {
-            RemoteToken = remoteToken;
-            MessageId = messageId;
-            Command = command;
-            Success = returnValue.Success;
-            Message = returnValue.Message;
-            Exception = returnValue.Exception;
-            if (returnValue.Value == null)
-                Value = "";
-            else
-                Value = JsonConvert.SerializeObject(returnValue.Value);
-        }
-
-        public Message(string remoteToken, string messageId, string command, object returnValue)
-        {
-            RemoteToken = remoteToken;
-            MessageId = messageId;
-            Command = command;
-            Success = true;
-            Message = "";
-            Exception = null;
-            if (returnValue == null)
-                Value = "";
-            else
-                Value = JsonConvert.SerializeObject(returnValue);
-        }
-
-        public Message(string remoteToken, string messageId, string command, string returnValue)
-        {
-            RemoteToken = remoteToken;
-            MessageId = messageId;
-            Command = command;
-            Success = true;
-            Message = "";
-            Exception = null;
-            Value = returnValue;
-        }
-
-        public Message(bool success, string message, Exception exception)
-        {
-            Success = success;
-            Message = message;
-            Exception = exception;
-        }
-
-    }
 }

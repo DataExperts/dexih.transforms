@@ -22,8 +22,12 @@
     },
     "net46": {
       "frameworkAssemblies": {
+        "System.Web.Services": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Threading.Tasks": "4.0.10.0",
         "System.Net.Http": "4.0.0.0",
-        "System.Web.Services": "4.0.0.0"
+        "System.Collections": "4.0.10.0"
+
       },
       "dependencies": {
       }
@@ -31,5 +35,6 @@
   },
   "dependencies": {
     "dexih.transforms": "0.2.4-*"
+
   }
 }

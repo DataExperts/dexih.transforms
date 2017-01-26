@@ -13,7 +13,7 @@ namespace dexih.connections.flatfile
     {
         public string FilePath()
         {
-            return ServerName + "/" + DefaultDatabase;
+            return Server + "/" + DefaultDatabase;
         }
 
         public override async Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password)
@@ -212,7 +212,7 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                bool exists = await Task.Run(() => new DirectoryInfo(ServerName).Exists);
+                bool exists = await Task.Run(() => new DirectoryInfo(Server).Exists);
                 if (exists)
                     State = EConnectionState.Open;
                 else

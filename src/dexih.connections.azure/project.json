@@ -24,6 +24,6 @@
   "dependencies": {
     "dexih.transforms": "0.2.4-*",
     "dexih.connections.flatfile": "0.2.4-*",
-    "WindowsAzure.Storage": "7.2.1"
+    "WindowsAzure.Storage": "8.0.0"
   }
 }

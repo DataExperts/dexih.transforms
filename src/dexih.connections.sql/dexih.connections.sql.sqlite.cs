@@ -307,8 +307,8 @@ namespace dexih.connections.sql
                     connectionString = ConnectionString;
                 else
                 {
-                    if (ServerName.Substring(ServerName.Length - 1) != "/" || ServerName.Substring(ServerName.Length - 1) != "/") ServerName += "/";
-                    connectionString = "Data Source=" + ServerName + DefaultDatabase + ".sqlite";
+                    if (Server.Substring(Server.Length - 1) != "/" || Server.Substring(Server.Length - 1) != "/") Server += "/";
+                    connectionString = "Data Source=" + Server + DefaultDatabase + ".sqlite";
                 }
 
                 SqliteConnection connection = new SqliteConnection(connectionString);
@@ -339,7 +339,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                string fileName = ServerName + "/" + databaseName + ".sqlite";
+                string fileName = Server + "/" + databaseName + ".sqlite";
 
                 bool fileExists = await Task.Run(() => File.Exists(fileName));
 
@@ -362,13 +362,13 @@ namespace dexih.connections.sql
         {
             try
             {
-                bool directoryExists = await Task.Run(() => Directory.Exists(ServerName));
+                bool directoryExists = await Task.Run(() => Directory.Exists(Server));
                 if (!directoryExists)
-                    return new ReturnValue<List<string>>(false, "The directory " + ServerName + " does not exist.", null);
+                    return new ReturnValue<List<string>>(false, "The directory " + Server + " does not exist.", null);
 
                 var dbList = await Task.Factory.StartNew(() =>
                 {
-                    var files = Directory.GetFiles(ServerName, "*.sqlite");
+                    var files = Directory.GetFiles(Server, "*.sqlite");
 
                     List<string> list = new List<string>();
 

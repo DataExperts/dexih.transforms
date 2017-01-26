@@ -25,10 +25,10 @@ namespace dexih.connections.azure
                 // Retrieve the storage account from the connection string.
                 if(UseConnectionString)
                     storageAccount = CloudStorageAccount.Parse(ConnectionString);
-                else if (string.IsNullOrEmpty(UserName)) //no username, then use the development settings.
+                else if (string.IsNullOrEmpty(Username)) //no username, then use the development settings.
                     storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true");
                 else
-                    storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + UserName + ";AccountKey=" + Password + ";BlobEndpoint=" + ServerName + ";TableEndpoint=" + ServerName + ";QueueEndpoint=" + ServerName + ";FileEndpoint=" + ServerName);
+                    storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + Username + ";AccountKey=" + Password + ";BlobEndpoint=" + Server + ";TableEndpoint=" + Server + ";QueueEndpoint=" + Server + ";FileEndpoint=" + Server);
 
                 // Create the table client.
                 CloudFileClient = storageAccount.CreateCloudFileClient();

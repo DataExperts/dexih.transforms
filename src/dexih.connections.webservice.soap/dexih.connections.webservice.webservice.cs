@@ -44,7 +44,7 @@ namespace dexih.connections.webservice
             try
             {
                 System.Net.WebClient client = new System.Net.WebClient();
-                Stream stream = await client.OpenReadTaskAsync(ServerName);
+                Stream stream = await client.OpenReadTaskAsync(Server);
                 // Get a WSDL file describing a service.
                 ServiceDescription description = await Task.Run(() => ServiceDescription.Read(stream));
 

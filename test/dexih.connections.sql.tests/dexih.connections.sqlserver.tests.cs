@@ -17,10 +17,10 @@ namespace dexih.connections.sql.sqlserver
             return new ConnectionSqlServer()
             {
                 Name = "Test Connection",
-                NtAuthentication = Convert.ToBoolean(Configuration.AppSettings["SqlServer:NTAuthentication"]),
-                UserName = Convert.ToString(Configuration.AppSettings["SqlServer:UserName"]),
+                Ntauth = Convert.ToBoolean(Configuration.AppSettings["SqlServer:NTAuthentication"]),
+                Username = Convert.ToString(Configuration.AppSettings["SqlServer:UserName"]),
                 Password = Convert.ToString(Configuration.AppSettings["SqlServer:Password"]),
-                ServerName = Convert.ToString(Configuration.AppSettings["SqlServer:ServerName"]),
+                Server = Convert.ToString(Configuration.AppSettings["SqlServer:ServerName"]),
             };
         }
 

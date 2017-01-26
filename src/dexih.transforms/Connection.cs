@@ -48,12 +48,12 @@ namespace dexih.transforms
         #region Properties
 
         public string Name { get; set; }
-        public string ServerName { get; set; }
-        public bool NtAuthentication { get; set; }
-        public string UserName { get; set; } = "";
+        public string Server { get; set; }
+        public bool Ntauth { get; set; }
+        public string Username { get; set; } = "";
         public string Password { get; set; } = "";
         public string DefaultDatabase { get; set; }
-        public string FileName { get; set; }
+        public string Filename { get; set; }
         public EConnectionState State { get; set; }
 
         public bool UseConnectionString { get; set; }

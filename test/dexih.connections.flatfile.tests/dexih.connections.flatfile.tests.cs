@@ -18,7 +18,7 @@ namespace dexih.connections.flatfile
             var connection  = new ConnectionFlatFileLocal()
             {
                 Name = "Test Connection",
-                ServerName = ServerName,
+                Server = ServerName,
             };
             return connection;
         }

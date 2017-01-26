@@ -390,10 +390,10 @@ namespace dexih.connections.sql
                     connectionString = ConnectionString;
                 else
                 {
-                    if (NtAuthentication == false)
-                        connectionString = "Data Source=" + ServerName + "; User Id=" + UserName + "; Password=" + Password + ";Initial Catalog=" + DefaultDatabase;
+                    if (Ntauth == false)
+                        connectionString = "Data Source=" + Server + "; User Id=" + Username + "; Password=" + Password + ";Initial Catalog=" + DefaultDatabase;
                     else
-                        connectionString = "Data Source=" + ServerName + "; Trusted_Connection=True;Initial Catalog=" + DefaultDatabase;
+                        connectionString = "Data Source=" + Server + "; Trusted_Connection=True;Initial Catalog=" + DefaultDatabase;
                 }
 
                 connection = new SqlConnection(connectionString);

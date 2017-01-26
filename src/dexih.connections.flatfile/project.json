@@ -12,9 +12,7 @@
 
   "frameworks": {
     "netstandard1.3": {
-      "dependencies": {
-        "NETStandard.Library": "1.6.0"
-      },
+      "dependencies": {      },
       "imports": [
         "portable-net45+wp80+win8+wpa81+dnxcore50",
         "portable-net451+win8"
@@ -22,6 +20,7 @@
     }
   },
   "dependencies": {
-    "dexih.transforms": "0.2.4-*"
+    "dexih.transforms": "0.2.4-*",
+    "NETStandard.Library": "1.6.1"
   }
 }

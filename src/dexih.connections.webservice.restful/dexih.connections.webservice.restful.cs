@@ -235,15 +235,15 @@ namespace dexih.connections.webservice
                 }
 
                 HttpClientHandler handler = null;
-                if (!String.IsNullOrEmpty(UserName))
+                if (!String.IsNullOrEmpty(Username))
                 {
-                    var credentials = new NetworkCredential(UserName, Password);
+                    var credentials = new NetworkCredential(Username, Password);
                     handler = new HttpClientHandler { Credentials = credentials };
                 }
 
                 using (var client = new HttpClient(handler))
                 {
-                    client.BaseAddress = new Uri(ServerName);
+                    client.BaseAddress = new Uri(Server);
                     client.DefaultRequestHeaders.Accept.Clear();
                     //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
