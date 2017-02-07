@@ -65,7 +65,7 @@ namespace dexih.functions
     public static bool IsSimpleType(Type type)
     {
         return
-            type.GetTypeInfo().IsPrimitive ||
+            type.GetTypeInfo().IsPrimitive || type.GetTypeInfo().IsEnum ||
             new Type[] {
                 typeof(Enum),
                 typeof(String),

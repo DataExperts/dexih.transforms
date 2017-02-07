@@ -120,7 +120,7 @@ namespace dexih.connections.sql
                     }
                     else
                     {
-                        createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.DataType, col.MaxLength, col.Scale, col.Precision) + " ");
+                        createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
                         if (col.AllowDbNull == false)
                                 createSql.Append("NOT NULL ");
                             else
@@ -472,8 +472,8 @@ namespace dexih.connections.sql
                             col.IsInput = false;
 
                             string[] dataType = reader["type"].ToString().Split('(', ')');
-                            col.DataType = ConvertSqlToTypeCode(dataType[0]);
-                            if (col.DataType == ETypeCode.Unknown)
+                            col.Datatype = ConvertSqlToTypeCode(dataType[0]);
+                            if (col.Datatype == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -486,12 +486,12 @@ namespace dexih.connections.sql
                                     col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-                            if (col.DataType == ETypeCode.String)
+                            if (col.Datatype == ETypeCode.String)
                             {
                                 if (dataType.Length > 1)
                                     col.MaxLength = Convert.ToInt32(dataType[1]);
                             }
-                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
+                            else if (col.Datatype == ETypeCode.Double || col.Datatype == ETypeCode.Decimal)
                             {
                                 if (dataType.Length > 1)
                                 {

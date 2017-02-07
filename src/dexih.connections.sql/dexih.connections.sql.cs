@@ -244,7 +244,7 @@ namespace dexih.connections.sql
                     {
                         TableColumn col = table.Columns[i];
 
-                        createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.DataType, col.MaxLength, col.Scale, col.Precision) + " ");
+                        createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
                         if (col.AllowDbNull == false)
                             createSql.Append("NOT NULL ");
                         else
@@ -439,7 +439,7 @@ namespace dexih.connections.sql
                             {
                                 DbParameter param = cmd.CreateParameter();
                                 param.ParameterName = "@col" + i.ToString();
-                                param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
+                                param.DbType = GetDbType(query.UpdateColumns[i].Column.Datatype);
                                 param.Size = -1;
                                 param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value : query.UpdateColumns[i].Value;
                                 cmd.Parameters.Add(param);
@@ -546,7 +546,7 @@ namespace dexih.connections.sql
                         if (cancelToken.IsCancellationRequested)
                             return new ReturnValue<object>(false, "Execute scalar cancelled.", null);
 
-                        var returnValue = DataType.TryParse(table.Columns[query.Columns[0].Column].DataType, value);
+                        var returnValue = DataType.TryParse(table.Columns[query.Columns[0].Column].Datatype, value);
                         if (!returnValue.Success)
                             return new ReturnValue<object>(returnValue);
                         return new ReturnValue<object>(true, returnValue.Value);

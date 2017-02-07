@@ -137,7 +137,7 @@ namespace dexih.connections.sql
                 createSql.Append("create table " + AddDelimiter(table.TableName) + " ( ");
                 foreach (TableColumn col in table.Columns)
                 {
-                    createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.DataType, col.MaxLength, col.Scale, col.Precision));
+                    createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision));
                     if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
                         createSql.Append(" IDENTITY(1,1)");
                     if (col.AllowDbNull == false)
@@ -620,8 +620,8 @@ namespace dexih.connections.sql
                             col.ColumnName = reader["ColumnName"].ToString();
                             col.LogicalName = reader["ColumnName"].ToString();
                             col.IsInput = false;
-                            col.DataType = ConvertSqlToTypeCode(reader["DataType"].ToString());
-                            if (col.DataType == ETypeCode.Unknown)
+                            col.Datatype = ConvertSqlToTypeCode(reader["DataType"].ToString());
+                            if (col.Datatype == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -634,9 +634,9 @@ namespace dexih.connections.sql
                                     col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-                            if (col.DataType == ETypeCode.String)
+                            if (col.Datatype == ETypeCode.String)
                                 col.MaxLength = ConvertSqlMaxLength(reader["DataType"].ToString(), Convert.ToInt32(reader["Max_Length"]));
-                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
+                            else if (col.Datatype == ETypeCode.Double || col.Datatype == ETypeCode.Decimal)
                             {
                                 col.Precision = Convert.ToInt32(reader["Precision"]);
                                 if ((string)reader["DataType"] == "money" || (string)reader["DataType"] == "smallmoney") // this is required as bug in sqlschematable query for money types doesn't get proper scale.
@@ -931,7 +931,7 @@ namespace dexih.connections.sql
                             {
                                 SqlParameter param = cmd.CreateParameter();
                                 param.ParameterName = "@col" + i.ToString();
-                                param.SqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType);
+                                param.SqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.Datatype);
                                 param.Size = -1;
                                 param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value : query.UpdateColumns[i].Value;
                                 cmd.Parameters.Add(param);

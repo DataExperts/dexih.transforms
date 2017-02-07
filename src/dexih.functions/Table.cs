@@ -334,7 +334,7 @@ namespace dexih.functions
                 column.SecurityFlag = this.Columns[column.ColumnName].SecurityFlag;
                 if(column.SecurityFlag != TableColumn.ESecurityFlag.None)
                 {
-                    column.DataType = DataType.ETypeCode.String;
+                    column.Datatype = DataType.ETypeCode.String;
                     column.MaxLength = 250;
                 }
             }
@@ -432,7 +432,7 @@ namespace dexih.functions
         {
             return new SelectQuery()
             {
-                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.DataType != DataType.ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
+                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.Datatype != DataType.ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
                 Table = TableName,
                 Rows = rows
             };

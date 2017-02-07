@@ -2,6 +2,8 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace dexih.functions
@@ -93,7 +95,11 @@ namespace dexih.functions
 
         public ReturnValue<JToken> GetJToken()
         {
-            var jValue = JToken.FromObject(Value);
+            JToken jValue = null;
+            if(Value != null)
+            {
+                jValue = JToken.FromObject(Value);
+            }
             var result = new ReturnValue<JToken>(Success, Message, Exception, jValue);
             return result;
         }
@@ -154,6 +160,32 @@ namespace dexih.functions
 
         [JsonIgnore]
         public Exception Exception { get; set; }
+
+        public string ExceptionDetails
+        {
+            get
+            {
+                if (Exception == null)
+                {
+                    return "";
+                }
+                else
+                {
+                    var properties = Exception.GetType().GetProperties();
+                    var fields = properties
+                                     .Select(property => new {
+                                         Name = property.Name,
+                                         Value = property.GetValue(Exception, null)
+                                     })
+                                     .Select(x => String.Format(
+                                         "{0} = {1}",
+                                         x.Name,
+                                         x.Value != null ? x.Value.ToString() : String.Empty
+                                     ));
+                    return String.Join("\n", fields);
+                }
+            }
+        }
     }
 
 

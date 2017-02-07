@@ -679,7 +679,7 @@ namespace dexih.transforms
                     if (incrementalCol.Length == 1)
                     {
                         IncrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].ColumnName);
-                        IncrementalColumnType = incrementalCol[0].DataType;
+                        IncrementalColumnType = incrementalCol[0].Datatype;
                     }
                     else if (incrementalCol.Length > 1)
                     {
@@ -1022,15 +1022,15 @@ namespace dexih.transforms
                     col.ColumnName,
                     ordinal,
                     col.MaxLength > 0 ? col.MaxLength : int.MaxValue,
-                    DataType.GetType(col.DataType),
-                    col.DataType.ToString(),
+                    DataType.GetType(col.Datatype),
+                    col.Datatype.ToString(),
                     false,
                     false,
                     false,
                     false,
                     false,
                     col.DeltaType == EDeltaType.SurrogateKey ? true : false,
-                    col.DataType == DataType.ETypeCode.Int64 ? true : false,
+                    col.Datatype == DataType.ETypeCode.Int64 ? true : false,
                     false,
                     col.DeltaType == EDeltaType.SurrogateKey ? true : false,
                     col.Precision,

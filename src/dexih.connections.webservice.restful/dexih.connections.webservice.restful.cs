@@ -88,7 +88,7 @@ namespace dexih.connections.webservice
                     col.ColumnName = name;
                     col.IsInput = true;
                     col.LogicalName = name;
-                    col.DataType = ETypeCode.String;
+                    col.Datatype = ETypeCode.String;
                     col.DeltaType = TableColumn.EDeltaType.NaturalKey;
                     col.MaxLength = 1024;
 
@@ -114,7 +114,7 @@ namespace dexih.connections.webservice
                     ColumnName = "Response",
                     IsInput = false,
                     LogicalName = "Response",
-                    DataType = ETypeCode.String,
+                    Datatype = ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.TrackingField,
                     MaxLength = null,
                     Description = "Response content from the service",
@@ -128,7 +128,7 @@ namespace dexih.connections.webservice
                     ColumnName = "ResponseStatusCode",
                     IsInput = false,
                     LogicalName = "ResponseStatusCode",
-                    DataType = ETypeCode.String,
+                    Datatype = ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.TrackingField,
                     MaxLength = null,
                     Description = "The status code returned by the service",
@@ -142,7 +142,7 @@ namespace dexih.connections.webservice
                     ColumnName = "ResponseSuccess",
                     IsInput = false,
                     LogicalName = "ResponseSuccess",
-                    DataType = ETypeCode.Boolean,
+                    Datatype = ETypeCode.Boolean,
                     DeltaType = TableColumn.EDeltaType.TrackingField,
                     MaxLength = null,
                     Description = "Is the web service call successful.",
@@ -187,7 +187,7 @@ namespace dexih.connections.webservice
                             col.ColumnName = value.Path;
                             col.IsInput = false;
                             col.LogicalName = value.Path;
-                            col.DataType = ETypeCode.String;
+                            col.Datatype = ETypeCode.String;
                             col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             col.MaxLength = null;
                             col.Description = "Json value of the " + value.Path + " path";

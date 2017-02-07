@@ -207,9 +207,9 @@ namespace dexih.transforms
                                             TableColumn col = CacheTable[output.Column.SchemaColumnName()];
                                             if (ordinal >= 0)
                                             {
-                                                var parseresult = DataType.TryParse(col.DataType, output.Value, col.MaxLength);
+                                                var parseresult = DataType.TryParse(col.Datatype, output.Value, col.MaxLength);
                                                 if (!parseresult.Success)
-                                                    throw new Exception("Error parsing the cleaned value: " + output.Value.ToString() + " as a datatype: " + col.DataType.ToString());
+                                                    throw new Exception("Error parsing the cleaned value: " + output.Value.ToString() + " as a datatype: " + col.Datatype.ToString());
 
                                                 passRow[ordinal] = parseresult.Value;
                                             }
@@ -249,7 +249,7 @@ namespace dexih.transforms
                             }
                             else
                             {
-                                var parseresult = DataType.TryParse(col.DataType, value, col.MaxLength);
+                                var parseresult = DataType.TryParse(col.Datatype, value, col.MaxLength);
                                 if (parseresult.Success == false)
                                 {
                                     if (rejectRow == null)

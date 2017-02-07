@@ -165,7 +165,7 @@ namespace dexih.connections.azure
                     {
                         object value = row[i];
                         if (value == DBNull.Value) value = null;
-                        properties.Add(table.Columns[i].ColumnName, NewEntityProperty(table.Columns[i].DataType, value));
+                        properties.Add(table.Columns[i].ColumnName, NewEntityProperty(table.Columns[i].Datatype, value));
                     }
 
                 var partionKeyValue = partitionKey >= 0 ? row[partitionKey] : "default";
@@ -581,7 +581,7 @@ namespace dexih.connections.azure
                     table.Columns.Add(new TableColumn()
                     {
                         ColumnName = "PartitionKey",
-                        DataType = ETypeCode.String,
+                        Datatype = ETypeCode.String,
                         MaxLength = 0,
                         Precision = 0,
                         AllowDbNull = false,
@@ -600,7 +600,7 @@ namespace dexih.connections.azure
                     table.Columns.Add(new TableColumn()
                     {
                         ColumnName = "RowKey",
-                        DataType = ETypeCode.String,
+                        Datatype = ETypeCode.String,
                         MaxLength = 0,
                         Precision = 0,
                         AllowDbNull = false,
@@ -619,7 +619,7 @@ namespace dexih.connections.azure
                     table.Columns.Add(new TableColumn()
                     {
                         ColumnName = "Timestamp",
-                        DataType = ETypeCode.DateTime,
+                        Datatype = ETypeCode.DateTime,
                         MaxLength = 0,
                         Precision = 0,
                         AllowDbNull = false,
@@ -751,7 +751,7 @@ namespace dexih.connections.azure
                     foreach (var field in query.InsertColumns)
                     {
                         if (!(field.Column.ColumnName == "RowKey" || field.Column.ColumnName == "PartitionKey" || field.Column.ColumnName == "Timestamp"))
-                            properties.Add(field.Column.ColumnName, NewEntityProperty(table.Columns[field.Column].DataType, field.Value));
+                            properties.Add(field.Column.ColumnName, NewEntityProperty(table.Columns[field.Column].Datatype, field.Value));
                     }
 
                     if (autoIncrement != null)
@@ -896,7 +896,7 @@ namespace dexih.connections.azure
                                         entity.PartitionKey = column.Value.ToString();
                                         break;
                                     default:
-                                        entity.Properties[column.Column.ColumnName] = NewEntityProperty(table[column.Column.ColumnName].DataType, column.Value);
+                                        entity.Properties[column.Column.ColumnName] = NewEntityProperty(table[column.Column.ColumnName].Datatype, column.Value);
                                         break;
                                 }
                             }
@@ -1043,7 +1043,7 @@ namespace dexih.connections.azure
                     }
 
                     //convert it back to a .net type.
-                    value = ConvertEntityProperty(table.Columns[query.Columns[0].Column].DataType, value);
+                    value = ConvertEntityProperty(table.Columns[query.Columns[0].Column].Datatype, value);
                     return new ReturnValue<object>(true, value);
 
                 }

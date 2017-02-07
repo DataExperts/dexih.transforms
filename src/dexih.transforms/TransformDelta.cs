@@ -297,7 +297,7 @@ namespace dexih.transforms
                         foreach (TableColumn col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
                         {
                             int targetOrdinal = CacheTable.GetOrdinal(col.ColumnName);
-                            var result = functions.DataType.Compare(col.DataType, ReferenceTransform[col.ColumnName], newRow[targetOrdinal]);
+                            var result = functions.DataType.Compare(col.Datatype, ReferenceTransform[col.ColumnName], newRow[targetOrdinal]);
                             if (result.Success == false)
                                 throw new Exception("Data type comparison error: " + result.Message, result.Exception);
 
@@ -421,7 +421,7 @@ namespace dexih.transforms
                             int targetOrdinal = PrimaryTransform.GetOrdinal(col.ColumnName); //ignore any comparisons on columns that do not exist in source.
                             if (targetOrdinal > -1)
                             {
-                                var result = functions.DataType.Compare(col.DataType, PrimaryTransform[col.ColumnName], ReferenceTransform[col.ColumnName]);
+                                var result = functions.DataType.Compare(col.Datatype, PrimaryTransform[col.ColumnName], ReferenceTransform[col.ColumnName]);
                                 if (result.Success == false)
                                     throw new Exception("Data type comparison error: " + result.Message, result.Exception);
 
@@ -465,7 +465,7 @@ namespace dexih.transforms
                             int targetOrdinal = ReferenceTransform.GetOrdinal(col.ColumnName); //ignore any comparisons on columns that do not exist in source.
                             if (targetOrdinal > -1)
                             {
-                                var result = functions.DataType.Compare(col.DataType, PrimaryTransform[col.ColumnName], ReferenceTransform[col.ColumnName]);
+                                var result = functions.DataType.Compare(col.Datatype, PrimaryTransform[col.ColumnName], ReferenceTransform[col.ColumnName]);
                                 if (result.Success == false)
                                     throw new Exception("Data type comparison error: " + result.Message, result.Exception);
 
@@ -645,7 +645,7 @@ namespace dexih.transforms
                 if (sourceOrdinal > -1)
                 {
                     int targetOrdinal = CacheTable.GetOrdinal(col.ColumnName);
-                    var result = functions.DataType.Compare(col.DataType, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
+                    var result = functions.DataType.Compare(col.Datatype, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
                     if (result.Success == false)
                         throw new Exception("Data type comparison error: " + result.Message, result.Exception);
 
