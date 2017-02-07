@@ -75,6 +75,7 @@ namespace dexih.functions
                 typeof(TimeSpan),
                 typeof(Guid)
             }.Contains(type) ||
+            type.GetTypeInfo().BaseType == typeof(Enum) ||
             Convert.GetTypeCode(type) != TypeCode.Object ||
             (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && IsSimpleType(type.GetGenericArguments()[0]))
             ;
