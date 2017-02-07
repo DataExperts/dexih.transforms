@@ -198,7 +198,7 @@ namespace dexih.transforms
             RejectRows = new TableCache();
 
             //create template queries, with the values set to paramaters (i.e. @param1, @param2)
-            TargetInsertQuery = new InsertQuery(TargetTable.TableName, TargetTable.Columns.Select(c => new QueryColumn(new TableColumn(c.ColumnName, c.DataType), "@param" + TargetTable.GetOrdinal(c.ColumnName).ToString())).ToList());
+            TargetInsertQuery = new InsertQuery(TargetTable.TableName, TargetTable.Columns.Select(c => new QueryColumn(new TableColumn(c.ColumnName, c.Datatype), "@param" + TargetTable.GetOrdinal(c.ColumnName).ToString())).ToList());
 
             TargetUpdateQuery = new UpdateQuery(
                 TargetTable.TableName,

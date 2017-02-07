@@ -73,7 +73,7 @@ namespace dexih.transforms
                 {
                     var column = new TableColumn();
                     column.ColumnName = columnDetail.ColumnName;
-                    column.DataType = DataType.GetTypeCode(columnDetail.DataType);
+                    column.Datatype = DataType.GetTypeCode(columnDetail.DataType);
                     column.MaxLength = columnDetail.ColumnSize;
                     column.Scale = columnDetail.NumericScale;
                     column.Precision = columnDetail.NumericPrecision;

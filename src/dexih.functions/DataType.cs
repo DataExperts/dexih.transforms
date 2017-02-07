@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections;
 using System.Data;
 using System.Linq;
@@ -7,7 +9,7 @@ namespace dexih.functions
 {
     public static class DataType
     {
-
+        [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// A simplified list of primary possible datatypes.
         /// </summary>
@@ -22,7 +24,7 @@ namespace dexih.functions
             Binary
         }
 
-
+        [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// List of supported type codes.  This is a cutdown version of the standard "typecode" enum.
         /// </summary>

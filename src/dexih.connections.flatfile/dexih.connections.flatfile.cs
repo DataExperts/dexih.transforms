@@ -253,7 +253,7 @@ namespace dexih.connections.flatfile
                     col.ColumnName = field;
                     col.LogicalName = field;
                     col.IsInput = false;
-                    col.DataType = ETypeCode.String;
+                    col.Datatype = ETypeCode.String;
                     col.DeltaType = TableColumn.EDeltaType.TrackingField;
                     col.Description = "";
                     col.AllowDbNull = true;
@@ -268,7 +268,7 @@ namespace dexih.connections.flatfile
                 col.ColumnName = "FileName";
                 col.LogicalName = "FileName";
                 col.IsInput = false;
-                col.DataType = ETypeCode.String;
+                col.Datatype = ETypeCode.String;
                 col.DeltaType = TableColumn.EDeltaType.FileName;
                 col.Description = "The name of the file the record was loaded from.";
                 col.AllowDbNull = false;

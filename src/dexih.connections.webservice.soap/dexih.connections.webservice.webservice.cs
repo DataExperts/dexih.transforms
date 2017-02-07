@@ -230,7 +230,7 @@ namespace dexih.connections.webservice
                     if (parameter.ParameterType.IsGenericType)
                         col.ColumnGetType = parameter.ParameterType;
                     else
-                        col.DataType = ETypeCode.String;
+                        col.Datatype = ETypeCode.String;
 
                     col.DeltaType = TableColumn.EDeltaType.NaturalKey;
                     col.MaxLength = 1024;

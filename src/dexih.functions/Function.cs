@@ -6,10 +6,12 @@ using System.Text;
 using System.IO;
 using static dexih.functions.DataType;
 using System.Collections;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.functions
 {
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum EErrorAction
     {
         Abend,
@@ -30,6 +32,7 @@ namespace dexih.functions
 
         object _returnValue;
 
+        [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// Invalid action when a validation function fails.  Order of these is important as determines priority(i.e. abend overrides a clean).
         /// </summary>

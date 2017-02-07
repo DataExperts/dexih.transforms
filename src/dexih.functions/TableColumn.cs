@@ -20,14 +20,14 @@ namespace dexih.functions
         public TableColumn(string columName) :base()
         {
             ColumnName = columName;
-            DataType = ETypeCode.String;
+            Datatype = ETypeCode.String;
             DeltaType = EDeltaType.TrackingField;
         }
 
         public TableColumn(string columName, ETypeCode dataType, string schema = null) : base()
         {
             ColumnName = columName;
-            DataType = dataType;
+            Datatype = dataType;
             DeltaType = EDeltaType.TrackingField;
             Schema = schema;
         }
@@ -35,7 +35,7 @@ namespace dexih.functions
         public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType, string schema = null) : base()
         {
             ColumnName = columName;
-            DataType = dataType;
+            Datatype = dataType;
             DeltaType = deltaType;
             Schema = schema;
         }
@@ -83,7 +83,7 @@ namespace dexih.functions
 
         public string Description { get; set; }
 
-        public ETypeCode DataType
+        public ETypeCode Datatype
         {
             get
             {
@@ -144,11 +144,11 @@ namespace dexih.functions
         {
             get
             {
-                return functions.DataType.GetType(DataType);
+                return functions.DataType.GetType(Datatype);
             }
             set 
             {
-                DataType = GetTypeCode(value);
+                Datatype = GetTypeCode(value);
             }
         }
 
@@ -226,7 +226,7 @@ namespace dexih.functions
                 ColumnName = ColumnName,
                 LogicalName = LogicalName,
                 Description = Description,
-                DataType = DataType,
+                Datatype = Datatype,
                 MaxLength = MaxLength,
                 Precision = Precision,
                 Scale = Scale,
