@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>This library enables advanced data transformation and analytics.  See the project url for more details.</Description>
     <AssemblyTitle>Data Experts Group - Transforms Library</AssemblyTitle>
@@ -19,13 +18,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="1.6.0" />
-  </ItemGroup>
-
 </Project>

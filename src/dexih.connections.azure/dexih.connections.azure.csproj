@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>This is a support library which enables the transform library to access Azure Storage Tables and Azure File Storage.</Description>
     <AssemblyTitle>Data Experts Group - Connections Azure</AssemblyTitle>
@@ -16,15 +15,11 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
     <ProjectReference Include="..\dexih.connections.flatfile\dexih.connections.flatfile.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="1.6.0" />
     <PackageReference Include="WindowsAzure.Storage" Version="8.0.0" />
   </ItemGroup>
-
 </Project>

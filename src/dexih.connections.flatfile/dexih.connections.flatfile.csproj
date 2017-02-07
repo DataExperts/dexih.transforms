@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>This is a support library which enables the transform library to access flat files.</Description>
     <AssemblyTitle>Data Experts Group - FlatFile Connections</AssemblyTitle>
@@ -16,13 +15,7 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="1.6.1" />
-  </ItemGroup>
-
 </Project>

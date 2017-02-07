@@ -50,7 +50,7 @@ namespace dexih.connections.test
             {
                 ColumnName = "StringColumn",
                 Description = "A string column",
-                DataType = DataType.ETypeCode.String,
+                Datatype = DataType.ETypeCode.String,
                 DeltaType = TableColumn.EDeltaType.TrackingField
             });
 
@@ -58,7 +58,7 @@ namespace dexih.connections.test
             {
                 ColumnName = "IntColumn",
                 Description = "An integer column",
-                DataType = DataType.ETypeCode.Int32,
+                Datatype = DataType.ETypeCode.Int32,
                 DeltaType = TableColumn.EDeltaType.NaturalKey
             });
 
@@ -66,7 +66,7 @@ namespace dexih.connections.test
             {
                 ColumnName = "DecimalColumn",
                 Description = "A decimal column",
-                DataType = DataType.ETypeCode.Decimal,
+                Datatype = DataType.ETypeCode.Decimal,
                 DeltaType = TableColumn.EDeltaType.TrackingField,
                 Scale = 2,
                 Precision = 10
@@ -76,7 +76,7 @@ namespace dexih.connections.test
             {
                 ColumnName = "DateColumn",
                 Description = "A date column column",
-                DataType = DataType.ETypeCode.DateTime,
+                Datatype = DataType.ETypeCode.DateTime,
                 DeltaType = TableColumn.EDeltaType.TrackingField
             });
 
@@ -84,7 +84,7 @@ namespace dexih.connections.test
             {
                 ColumnName = "GuidColumn",
                 Description = "A guid column",
-                DataType = DataType.ETypeCode.Guid,
+                Datatype = DataType.ETypeCode.Guid,
                 DeltaType = TableColumn.EDeltaType.TrackingField
             });
 

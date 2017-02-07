@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>This is a support library which enables the transform library to access Soap based webservices.</Description>
     <AssemblyTitle>Data Experts Group - Connections - Soap WebServices</AssemblyTitle>
@@ -16,15 +15,9 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="1.6.0" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Runtime" />
@@ -34,5 +27,4 @@
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-
 </Project>

@@ -36,7 +36,7 @@ namespace dexih.connections.test
 
                 foreach (DataType.ETypeCode typeCode in Enum.GetValues(typeof(DataType.ETypeCode)))
                 {
-                    table.Columns.Add(new TableColumn() { ColumnName = "column" + typeCode.ToString(), DataType = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
+                    table.Columns.Add(new TableColumn() { ColumnName = "column" + typeCode.ToString(), Datatype = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
                 }
 
                 //create the table
@@ -55,11 +55,11 @@ namespace dexih.connections.test
                     //load the rows with random values.
                     for (int j = 2; j < table.Columns.Count; j++)
                     {
-                        Type dataType = DataType.GetType(table.Columns[j].DataType);
+                        Type dataType = DataType.GetType(table.Columns[j].Datatype);
                         if (i % 2 == 0)
-                            row[j] = DataType.GetDataTypeMaxValue(table.Columns[j].DataType);
+                            row[j] = DataType.GetDataTypeMaxValue(table.Columns[j].Datatype);
                         else
-                            row[j] = DataType.GetDataTypeMinValue(table.Columns[j].DataType);
+                            row[j] = DataType.GetDataTypeMinValue(table.Columns[j].Datatype);
                     }
                     table.Data.Add(row);
                     buffer++;
@@ -101,7 +101,7 @@ namespace dexih.connections.test
                     //load the columns with random values.
                     for (int j = 2; j < table.Columns.Count; j++)
                     {
-                        updateColumn = new QueryColumn(table.Columns[j], DataType.GetDataTypeMaxValue(table.Columns[j].DataType));
+                        updateColumn = new QueryColumn(table.Columns[j], DataType.GetDataTypeMaxValue(table.Columns[j].Datatype));
                         updateColumns.Add(updateColumn);
                     }
                     updateQueries.Add(new UpdateQuery()
@@ -188,7 +188,7 @@ namespace dexih.connections.test
 
             foreach (DataType.ETypeCode typeCode in Enum.GetValues(typeof(DataType.ETypeCode)))
             {
-                table.Columns.Add(new TableColumn() { ColumnName = "column" + typeCode.ToString(), DataType = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
+                table.Columns.Add(new TableColumn() { ColumnName = "column" + typeCode.ToString(), Datatype = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
             }
 
             //create the table
@@ -207,11 +207,11 @@ namespace dexih.connections.test
                 //load the rows with random values.
                 for (int j = 2; j < table.Columns.Count; j++)
                 {
-                    Type dataType = DataType.GetType(table.Columns[j].DataType);
+                    Type dataType = DataType.GetType(table.Columns[j].Datatype);
                     if (i % 2 == 0)
-                        row[j] = DataType.GetDataTypeMaxValue(table.Columns[j].DataType);
+                        row[j] = DataType.GetDataTypeMaxValue(table.Columns[j].Datatype);
                     else
-                        row[j] = DataType.GetDataTypeMinValue(table.Columns[j].DataType);
+                        row[j] = DataType.GetDataTypeMinValue(table.Columns[j].Datatype);
                 }
                 table.Data.Add(row);
                 buffer++;

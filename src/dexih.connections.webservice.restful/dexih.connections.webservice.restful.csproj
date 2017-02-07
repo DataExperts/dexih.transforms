@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>This is a support library which enables the transform library to access Restful based web services.</Description>
     <AssemblyTitle>Data Experts Group - Connections Library - Restful Web Services</AssemblyTitle>
@@ -16,14 +15,10 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="1.6.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.0" />
   </ItemGroup>
-
 </Project>
