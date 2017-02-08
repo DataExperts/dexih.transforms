@@ -20,6 +20,6 @@
     <ProjectReference Include="..\dexih.connections.flatfile\dexih.connections.flatfile.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WindowsAzure.Storage" Version="8.0.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="8.0.1" />
   </ItemGroup>
 </Project>
