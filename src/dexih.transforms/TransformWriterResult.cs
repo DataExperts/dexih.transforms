@@ -90,9 +90,9 @@ namespace dexih.transforms
 
         public Int32 RowsPerProgressEvent { get; set; } = 1000;
 
-        public Int64 RowsTotal { get; set; }
-        public Int64 RowsCreated { get; set; }
-        public Int64 RowsUpdated { get; set; }
+        public long RowsTotal { get; set; }
+        public long RowsCreated { get; set; }
+        public long RowsUpdated { get; set; }
         public Int64 RowsDeleted { get; set; }
         public Int64 RowsPreserved { get; set; }
         public Int64 RowsIgnored { get; set; }

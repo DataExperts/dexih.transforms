@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>dexih.connections.azure.tests</AssemblyName>
@@ -12,8 +12,14 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\dexih.connections.azure\dexih.connections.azure.csproj" />
-    <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.azure\dexih.connections.azure.csproj">
+      <Project>{7F9A835E-7AD1-401A-93BC-E9FDE586366F}</Project>
+      <Name>dexih.connections.azure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj">
+      <Project>{1459FE8E-0954-4FD7-BC97-9BDF00835A21}</Project>
+      <Name>dexih.connections.test</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />
