@@ -16,7 +16,7 @@ namespace dexih.functions.tests
         [InlineData(1.1, true)]
         [InlineData(functions.DataType.ETypeCode.Boolean, true)]
         [InlineData(true, true)]
-        [MemberData("OtherFunctions")] 
+        [MemberData("OtherProperties")] 
         public void Test_IsSimpleType(object value, bool expected)
         {
             Assert.Equal(expected, IsSimpleType(value.GetType()));
@@ -31,9 +31,32 @@ namespace dexih.functions.tests
                 return new[]
                 {
                     new object[] { new object[] {1,2,3}, false },
+                    new object[] { new int[] {1,2,3}, false },
+                    new object[] { new string[] { "hi", "there" }, false },
                     new object[] { dateValue, true }
                 };
             }
+        }
+
+        [Fact]
+        public void Test_CopyProperties()
+        {
+            TableColumn column = new TableColumn()
+            {
+                BaseDataType = DataType.ETypeCode.String,
+                DeltaType = TableColumn.EDeltaType.CreateDate,
+                ColumnName = "columnName",
+                AllowDbNull = true,
+                SecurityFlag = TableColumn.ESecurityFlag.OneWayHash
+            };
+
+            TableColumn newColumn = new TableColumn();
+            column.CopyProperties(newColumn, true);
+
+            Assert.Equal(DataType.ETypeCode.String, newColumn.BaseDataType);
+            Assert.Equal(TableColumn.EDeltaType.CreateDate, newColumn.DeltaType);
+            Assert.Equal("columnName", newColumn.ColumnName);
+            Assert.Equal(TableColumn.ESecurityFlag.OneWayHash, newColumn.SecurityFlag);
         }
 
     }
