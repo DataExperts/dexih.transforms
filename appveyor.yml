@@ -6,23 +6,17 @@ platform: Any CPU
 init:
  - ps: $Env:LABEL = "CI" +$Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
 install:
-- ps: Start-FileDownload 'https://download.microsoft.com/download/A/3/8/A38489F3-9777-41DD-83F8-2CBDFAB2520C/packages/DotNetCore.1.0.0-SDK.Preview2-x64.exe'
-- DotNetCore.1.0.0-SDK.Preview2-x64.exe /quiet
+- ps: Start-FileDownload 'https://download.microsoft.com/download/5/F/E/5FEB7E95-C643-48D5-8329-9D2C63676CE8/dotnet-dev-win-x64.1.0.0-rc4-004771.exe'
+- dotnet-dev-win-x64.1.0.0-rc4-004771.exe /quiet
 environment:
   PATH: $(PATH);$(PROGRAMFILES)\dotnet\
 build_script:
 - appveyor-retry dotnet restore -v Minimal
-- dotnet build **\project.json -c %CONFIGURATION%
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.functions\project.json
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.transforms\project.json
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.azure\project.json
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.flatfile\project.json
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.sql\project.json
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.webservice.restful\project.json
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.webservice.soap\project.json
+- dotnet build -c %CONFIGURATION%
+- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts
 test_script:
-- dotnet test .\test\dexih.functions.tests
-- dotnet test .\test\dexih.transforms.tests
+- dotnet test .\test\dexih.functions.tests\dexih.functions.tests.csproj
+- dotnet test .\test\dexih.transforms.tests\dexih.transforms.tests.csproj
 - cd test\dexih.connections.azure.tests
 - '"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start'
 - dotnet test 

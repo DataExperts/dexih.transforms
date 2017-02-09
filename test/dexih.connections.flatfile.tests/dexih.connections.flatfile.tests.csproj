@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>dexih.connections.flatfile.tests</AssemblyName>
@@ -12,8 +12,14 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\dexih.connections.flatfile\dexih.connections.flatfile.csproj" />
-    <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.flatfile\dexih.connections.flatfile.csproj">
+      <Project>{E9470918-7D49-4AD4-B015-60E4F1E02457}</Project>
+      <Name>dexih.connections.flatfile</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj">
+      <Project>{1459FE8E-0954-4FD7-BC97-9BDF00835A21}</Project>
+      <Name>dexih.connections.test</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />

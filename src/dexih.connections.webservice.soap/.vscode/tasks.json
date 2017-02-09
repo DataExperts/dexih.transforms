@@ -6,9 +6,7 @@
     "tasks": [
         {
             "taskName": "build",
-            "args": [
-                ""
-            ],
+            "args": [  "-f", "netcoreapp1.1"],
             "isBuildCommand": true,
             "problemMatcher": "$msCompile"
         }

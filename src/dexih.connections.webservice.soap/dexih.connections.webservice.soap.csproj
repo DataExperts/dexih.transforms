@@ -4,6 +4,7 @@
     <AssemblyTitle>Data Experts Group - Connections - Soap WebServices</AssemblyTitle>
     <VersionPrefix>0.2.4</VersionPrefix>
     <Authors>Gary Holland</Authors>
+    <TargetFramework>net46</TargetFramework>
     <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
     <AssemblyName>dexih.connections.webservice.soap</AssemblyName>
     <PackageId>dexih.connections.webservice.soap</PackageId>
