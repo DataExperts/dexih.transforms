@@ -12,7 +12,7 @@ environment:
   PATH: $(PATH);$(PROGRAMFILES)\dotnet\
 build_script:
 - appveyor-retry dotnet restore -v Minimal
-- dotnet build **\project.json -c %CONFIGURATION%
+- dotnet build -c %CONFIGURATION%
 - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.functions
 - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.transforms
 - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts .\src\dexih.connections.azure
