@@ -272,9 +272,9 @@ namespace dexih.functions
         public String LongMonth(DateTime dateValue) { return CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dateValue.Month); }
         public Int32 Year(DateTime dateValue) { return dateValue.Year; }
         public string ToLongDateString(DateTime dateValue) { return dateValue.ToString("dddd, dd MMMM yyyy"); } // .ToLongDateString(); } 
-        public string ToLongTimeString(DateTime dateValue) { return dateValue.ToString("h:mm:ss tt"); } // .ToLongTimeString(); } 
+        public string ToLongTimeString(DateTime dateValue) { return dateValue.ToString("h:mm:ss tt").ToUpper(); } // .ToLongTimeString(); } 
         public String ToShortDateString(DateTime dateValue) { return dateValue.ToString("d/MM/yyyy"); }// ToShortDateString(); } 
-        public String ToShortTimeString(DateTime dateValue) { return dateValue.ToString("h:mm tt"); } // .ToShortTimeString(); } 
+        public String ToShortTimeString(DateTime dateValue) { return dateValue.ToString("h:mm tt").ToUpper(); } // .ToShortTimeString(); } 
         public String DateToString(DateTime dateValue, String format) { return dateValue.ToString(format); }
         public DateTime DateNow() { return DateTime.Now; }
         public DateTime DateNowUtc() { return DateTime.UtcNow; }
