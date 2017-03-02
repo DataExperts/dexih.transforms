@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using static dexih.functions.DataType;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.functions
 {
@@ -280,6 +282,7 @@ namespace dexih.functions
 
     public class Sort
     {
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum EDirection
         {
             Ascending,
