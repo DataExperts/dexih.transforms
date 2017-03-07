@@ -161,13 +161,16 @@ namespace dexih.functions
         [JsonIgnore]
         public Exception Exception { get; set; }
 
+        private string _exceptionDetails {get;set;} = "";
         public string ExceptionDetails
         {
+            set { _exceptionDetails = value; }
             get
             {
+            
                 if (Exception == null)
                 {
-                    return "";
+                    return _exceptionDetails;
                 }
                 else
                 {
@@ -187,6 +190,7 @@ namespace dexih.functions
             }
         }
     }
+
 
 
 }

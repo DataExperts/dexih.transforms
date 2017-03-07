@@ -75,11 +75,10 @@ namespace dexih.transforms
                 newColumn.Schema = ReferenceTableAlias;
                 newColumn.IsIncrementalUpdate = false;
 
-                //if a column of the same name exists, append a 1 to the name
-                if (CacheTable.GetOrdinal(column.SchemaColumnName()) >= 0)
-                {
-                    throw new Exception("The join could not be initialized as the column " + column.SchemaColumnName() + " is could not be found in the join table.");
-                }
+                // if (CacheTable.GetOrdinal(column.SchemaColumnName()) >= 0)
+                // {
+                //     throw new Exception("The join could not be initialized as the column " + column.SchemaColumnName() + " could not be found in the join table.");
+                // }
                 CacheTable.Columns.Add(newColumn);
                 pos++;
             }
