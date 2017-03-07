@@ -348,8 +348,10 @@ namespace dexih.functions
         /// <returns></returns>
         public Table Copy(bool removeSchema = false)
         {
-            Table table = new Table(TableName);
-            table.Description = Description;
+            Table table = new Table(TableName)
+            {
+                Description = Description
+            };
 
             if (ExtendedProperties != null)
             {
