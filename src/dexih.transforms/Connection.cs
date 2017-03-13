@@ -285,7 +285,7 @@ namespace dexih.transforms
             bool isPrevious = false;
             bool isPreviousSuccess = false;
 
-            //when the runstatuss is finished or finished with errors, the previous success record to false.
+            //when the runstatuss is finished or finished with errors, set the previous success record to false.
             if (writerResult.RunStatus == TransformWriterResult.ERunStatus.Finished || writerResult.RunStatus == TransformWriterResult.ERunStatus.FinishedErrors)
             {
                 var updateLatestColumn = new List<QueryColumn>() {

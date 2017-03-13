@@ -169,15 +169,18 @@ namespace dexih.transforms
                 return (decimal)(RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
             }
         }
-        public async Task<ReturnValue> SetRunStatus(ERunStatus newStatus, string message = null)
+
+        public async Task<ReturnValue> SetRunStatus(ERunStatus newStatus, string message)
+        {
+            return await SetRunStatus(newStatus, new ReturnValue(false, message, null));
+        }
+        
+        public async Task<ReturnValue> SetRunStatus(ERunStatus newStatus, ReturnValue returnValue = null)
         {
             RunStatus = newStatus;
-            if (message != null)
+            if(returnValue != null)
             {
-                if (Message == null)
-                    Message = message;
-                else
-                    Message += Environment.NewLine + message;
+                Message += Environment.NewLine + returnValue.ExceptionDetails;
             }
 
             if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors)

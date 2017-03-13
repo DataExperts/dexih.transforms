@@ -185,7 +185,7 @@ namespace dexih.functions
                                          x.Name,
                                          x.Value != null ? x.Value.ToString() : String.Empty
                                      ));
-                    return String.Join("\n", fields);
+                    return Message + "\n" + String.Join("\n", fields);
                 }
             }
         }

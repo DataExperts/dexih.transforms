@@ -113,7 +113,7 @@ namespace dexih.transforms
 
                 if (returnValue.Success == false)
                 {
-                    await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue.Message);
+                    await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
                     return returnValue;
                 }
 
@@ -135,7 +135,7 @@ namespace dexih.transforms
                         var result = await writeTask;
                         if(!result.Success)
                         {
-                            await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue.Message);
+                            await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
                             return returnValue;
                         }
                     }
@@ -152,7 +152,7 @@ namespace dexih.transforms
                 returnValue = await WriteFinish(WriterResult, inTransform);
                 if (returnValue.Success == false)
                 {
-                    await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue.Message);
+                    await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
                     return new ReturnValue(false, returnValue.Message, null);
                 }
 
@@ -164,7 +164,8 @@ namespace dexih.transforms
                         var profileResult = await ProfileConnection.ExecuteInsertBulk(ProfileTable, profileResults, cancelToken);
                         if (!profileResult.Success)
                         {
-                            await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, "Failed to save profile results with error: " + profileResult.Message);
+                            profileResult.Message = "Failed to save profile results";
+                            await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, profileResult);
                             return profileResult;
                         }
                     }
@@ -290,7 +291,8 @@ namespace dexih.transforms
                     else
                         rejectReason = "No reject reason found.";
 
-                    var setStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.RunningErrors, "A record was rejected, however there is no reject table.  The message was: " + rejectReason);
+                    var returnValue = new ReturnValue(false, "A record was rejected, however there is no reject table.  The message was: " + rejectReason, null);
+                    var setStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.RunningErrors, returnValue );
                     return setStatusResult;
                 }
             }

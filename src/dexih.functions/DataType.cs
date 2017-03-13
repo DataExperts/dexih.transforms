@@ -683,6 +683,9 @@ namespace dexih.functions
         /// <returns></returns>
         public static string CleanString(string value)
         {
+            if(string.IsNullOrEmpty(value))
+                return value;
+                
             var arr = value.Where(c => (char.IsLetterOrDigit(c))).ToArray();
             string newValue = new string(arr);
             return newValue;
