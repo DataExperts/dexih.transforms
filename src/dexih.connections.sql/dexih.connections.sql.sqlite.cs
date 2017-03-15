@@ -434,7 +434,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties = null)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
         {
             try
             {
@@ -447,7 +447,7 @@ namespace dexih.connections.sql
                 using (var connection = connectionResult.Value)
                 {
 
-                    Table table = new Table(tableName);
+                    Table table = new Table(originalTable.TableName);
 
                     table.Description = ""; //sqllite doesn't have table descriptions.
 
@@ -517,7 +517,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "The source sqlserver table + " + tableName + " could not be read due to the following error: " + ex.Message, ex);
+                return new ReturnValue<Table>(false, "The source sqlserver table + " + originalTable.TableName + " could not be read due to the following error: " + ex.Message, ex);
             }
         }
 

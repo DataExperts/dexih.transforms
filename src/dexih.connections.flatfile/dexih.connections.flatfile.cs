@@ -204,17 +204,17 @@ namespace dexih.connections.flatfile
             return await GetFileShares(Server, Username, Password);
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
         {
             try
             {
-                if (Properties == null || !Properties.ContainsKey("FileFormat") || !Properties.ContainsKey("FileSample"))
+                if (originalTable.GetExtendedProperty("FileFormat") == null || originalTable.GetExtendedProperty("FileSample") == null)
                 {
                     return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileStream.", null);
                 }
 
-                FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(Properties["FileFormat"]);
-                string fileSample = Properties["FileSample"];
+                FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(originalTable.GetExtendedProperty("FileFormat"));
+                string fileSample = originalTable.GetExtendedProperty("FileSample");
 
                 MemoryStream stream = new MemoryStream();
                 StreamWriter writer = new StreamWriter(stream);
@@ -235,7 +235,7 @@ namespace dexih.connections.flatfile
                 }
 
                 //The new datatable that will contain the table schema
-                Table table = new Table(tableName);
+                Table table = new Table(originalTable.TableName);
                 table.Columns.Clear();
                 table.LogicalName = table.TableName;
                 table.Description = "";
@@ -245,33 +245,35 @@ namespace dexih.connections.flatfile
 
                 foreach (string field in headers)
                 {
-                    col = new TableColumn();
+                    col = new TableColumn()
+                    {
 
-                    //add the basic properties
-                    col.ColumnName = field;
-                    col.LogicalName = field;
-                    col.IsInput = false;
-                    col.Datatype = ETypeCode.String;
-                    col.DeltaType = TableColumn.EDeltaType.TrackingField;
-                    col.Description = "";
-                    col.AllowDbNull = true;
-                    col.IsUnique = false;
-
+                        //add the basic properties
+                        ColumnName = field,
+                        LogicalName = field,
+                        IsInput = false,
+                        Datatype = ETypeCode.String,
+                        DeltaType = TableColumn.EDeltaType.TrackingField,
+                        Description = "",
+                        AllowDbNull = true,
+                        IsUnique = false
+                    };
                     table.Columns.Add(col);
                 }
 
-                col = new TableColumn();
+                col = new TableColumn()
+                {
 
-                //add the basic properties
-                col.ColumnName = "FileName";
-                col.LogicalName = "FileName";
-                col.IsInput = false;
-                col.Datatype = ETypeCode.String;
-                col.DeltaType = TableColumn.EDeltaType.FileName;
-                col.Description = "The name of the file the record was loaded from.";
-                col.AllowDbNull = false;
-                col.IsUnique = false;
-
+                    //add the basic properties
+                    ColumnName = "FileName",
+                    LogicalName = "FileName",
+                    IsInput = false,
+                    Datatype = ETypeCode.String,
+                    DeltaType = TableColumn.EDeltaType.FileName,
+                    Description = "The name of the file the record was loaded from.",
+                    AllowDbNull = false,
+                    IsUnique = false
+                };
                 table.Columns.Add(col);
 
                 return new ReturnValue<Table>(true, table);

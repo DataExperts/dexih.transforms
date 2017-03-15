@@ -297,7 +297,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties = null)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
         {
             try
             {
@@ -305,11 +305,11 @@ namespace dexih.connections.azure
 
 
                 //The new datatable that will contain the table schema
-                Table table = new Table(tableName);
-                table.LogicalName = tableName;
+                Table table = new Table(originalTable.TableName);
+                table.LogicalName = originalTable.TableName;
                 table.Description = "";
 
-                CloudTable cloudTable = connection.GetTableReference(tableName);
+                CloudTable cloudTable = connection.GetTableReference(table.TableName);
                 var query = new TableQuery().Take(1);
 
                 TableContinuationToken continuationToken = null;

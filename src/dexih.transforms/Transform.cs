@@ -630,17 +630,22 @@ namespace dexih.transforms
 
                     return new ReturnValue<object[]>(false, "Lookup not found.", null);
                 }
-            }
 
-            //if no caching is specified, run a direct lookup.
-            var lookupReturn = await LookupRowDirect(filters);
-            if (lookupReturn.Success)
+                return lookupResult;
+            }
+            else
             {
-                if (EncryptionMethod != EEncryptionMethod.NoEncryption)
-                    EncryptRow(lookupReturn.Value);
+                //if no caching is specified, run a direct lookup.
+                var lookupReturn = await LookupRowDirect(filters);
+                if (lookupReturn.Success)
+                {
+                    if (EncryptionMethod != EEncryptionMethod.NoEncryption)
+                        EncryptRow(lookupReturn.Value);
+                }
+                return lookupReturn;
             }
 
-            return lookupReturn;
+            
         }
 
         public virtual bool CanLookupRowDirect { get; } = false;

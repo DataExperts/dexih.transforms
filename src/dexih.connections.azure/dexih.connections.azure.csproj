@@ -27,6 +27,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WindowsAzure.Storage" Version="8.0.1" />
+    <PackageReference Include="WindowsAzure.Storage" Version="8.1.1" />
   </ItemGroup>
 </Project>

@@ -293,6 +293,8 @@ namespace dexih.functions
         /// <returns></returns>
         public Table GetRejectedTable(string rejectedTableName)
         {
+            if (string.IsNullOrEmpty(rejectedTableName)) return null;
+
             Table table = Copy();
 
             table.TableName = rejectedTableName;
@@ -310,6 +312,8 @@ namespace dexih.functions
         /// <returns></returns>
         public Table GetProfileTable(string profileTableName)
         {
+            if (string.IsNullOrEmpty(profileTableName)) return null;
+
             Table profileResults = new Table(profileTableName);
             profileResults.Columns.Add(new TableColumn("AuditKey", DataType.ETypeCode.Int64, TableColumn.EDeltaType.CreateAuditKey));
             profileResults.Columns.Add(new TableColumn("Profile", DataType.ETypeCode.String));

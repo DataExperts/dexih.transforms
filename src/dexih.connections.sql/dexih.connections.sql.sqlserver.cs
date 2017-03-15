@@ -533,11 +533,11 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties = null)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
         {
             try
             {
-                Table table = new Table(tableName);
+                Table table = new Table(originalTable.TableName);
 
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
@@ -561,7 +561,7 @@ namespace dexih.connections.sql
                     using (DbCommand cmd = CreateCommand(connection, @"select value 'Description' 
                             FROM sys.extended_properties
                             WHERE minor_id = 0 and class = 1 and (name = 'MS_Description' or name = 'Description') and
-                            major_id = OBJECT_ID('" + AddEscape(tableName) + "')"))
+                            major_id = OBJECT_ID('" + AddEscape(table.TableName) + "')"))
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         if (await reader.ReadAsync())
@@ -577,7 +577,7 @@ namespace dexih.connections.sql
                     if (sqlversion >= 13)
                     {
                         //select the temporal type 
-                        using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + tableName + "')"))
+                        using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + table.TableName + "')"))
                         {
                             int temporalType = Convert.ToInt32(cmd.ExecuteScalar());
                         //If the table is a temporarl table, mark it.
@@ -604,7 +604,7 @@ namespace dexih.connections.sql
                         FROM sys.columns c
                         INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
                         LEFT OUTER JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id and (ep.name = 'MS_Description' or ep.name = 'Description') and ep.class = 1 
-                        WHERE c.object_id = OBJECT_ID('" + AddEscape(tableName) + "') "
+                        WHERE c.object_id = OBJECT_ID('" + AddEscape(table.TableName) + "') "
                             ))
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
@@ -672,7 +672,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "The source sqlserver table + " + tableName + " could not be read due to the following error: " + ex.Message, ex);
+                return new ReturnValue<Table>(false, "The source sqlserver table + " + originalTable.TableName + " could not be read due to the following error: " + ex.Message, ex);
             }
         }
 

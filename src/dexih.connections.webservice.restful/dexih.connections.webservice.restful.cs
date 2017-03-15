@@ -52,18 +52,18 @@ namespace dexih.connections.webservice
         /// <param name="tableName">Table Name</param>
         /// <param name="Properties">Mandatory property "RestfulUri".  Additional properties for the default column values.  Use ColumnName=value</param>
         /// <returns></returns>
-         public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
+         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable)
         {
             try
             {
-                if (Properties == null || Properties["RestfulUri"] == null )
+                if (importTable.GetExtendedProperty("RestfulUri") == null )
                 {
-                    return new ReturnValue<Table>(false, "The properties have not been set to Restful Web Service.  Required properties are (string)RestfulUri.", null);
+                    return new ReturnValue<Table>(false, "The table have not been set for Restful Web Service.  Use the syntax table.SetExtendedProperty(\"RestfulUrl\")=<uri> to set the tables webservice uri.", null);
                 }
 
-                string restfulUri = Properties["RestfulUri"];
+                string restfulUri = importTable.GetExtendedProperty("RestfulUri");
 
-                Table table = new Table(tableName);
+                Table table = new Table(importTable.TableName);
                 table.TableName = table.TableName;
 
                 //The new datatable that will contain the table schema
@@ -74,9 +74,11 @@ namespace dexih.connections.webservice
                 table.LogicalName = table.TableName;
 
                 TableColumn col;
+                var inputJoins = new List<JoinPair>();
 
                 //use the regex to extract items in uri between { }.  These will be input columns
                 Match match = Regex.Match(restfulUri, @"\{([^}]+)\}");
+
 
                 while (match.Success)
                 {
@@ -98,9 +100,16 @@ namespace dexih.connections.webservice
                     col.IsUnique = false;
 
                     //Copy the inputvalue from the table input.  This allows the preview table function below to get sample data.
-                    if (Properties.ContainsKey(name))
+                    var originalColumn = importTable.Columns.SingleOrDefault(c => c.ColumnName == col.ColumnName);
+                    if (originalColumn != null)
                     {
-                        col.ExtendedProperties.Add("InputValue", Properties["name"]);
+                        var inputValue = originalColumn.GetExtendedProperty("InputValue");
+                        col.SetExtendedProperty("InputValue", inputValue);
+                        inputJoins.Add(new JoinPair()
+                        {
+                            SourceColumn = col,
+                            JoinValue = inputValue
+                        });
                     }
 
                     table.Columns.Add(col);
@@ -162,7 +171,7 @@ namespace dexih.connections.webservice
                     var ts = new CancellationTokenSource();
                     CancellationToken ct = ts.Token;
 
-                    var data = await GetPreview(table, query, 10000, ct);
+                    var data = await GetPreview(table, query, 10000, ct, null, inputJoins);
                     if(data.Success == false)
                     {
                         return new ReturnValue<Table>(false, data.Message, data.Exception, null);
@@ -230,7 +239,7 @@ namespace dexih.connections.webservice
 
                 foreach (var filter in filters)
                 {
-                    uri = uri.Replace("{" + filter.Column1 + "}", filter.Value2.ToString());
+                    uri = uri.Replace("{" + filter.Column1.ColumnName + "}", filter.Value2.ToString());
                     row[table.GetOrdinal(filter.Column1.SchemaColumnName())] = filter.Value2.ToString();
                 }
 
@@ -239,6 +248,10 @@ namespace dexih.connections.webservice
                 {
                     var credentials = new NetworkCredential(Username, Password);
                     handler = new HttpClientHandler { Credentials = credentials };
+                }
+                else
+                {
+                    handler = new HttpClientHandler();
                 }
 
                 using (var client = new HttpClient(handler))

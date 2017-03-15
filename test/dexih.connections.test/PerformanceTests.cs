@@ -131,15 +131,16 @@ namespace dexih.connections.test
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows / 10, "row count = " + count.ToString());
 
-                List<DeleteQuery> deleteQueries = new List<DeleteQuery>();
+            List<DeleteQuery> deleteQueries = new List<DeleteQuery>
+            {
                 //delete 10,000 rows
-                deleteQueries.Add(new DeleteQuery()
+                new DeleteQuery()
                 {
                     Filters = new List<Filter>() { new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), Filter.ECompare.IsEqual, 1) },
                     Table = table.TableName,
-                });
-
-                var deleteResult = await connection.ExecuteDelete(table, deleteQueries, CancellationToken.None);
+                }
+            };
+            var deleteResult = await connection.ExecuteDelete(table, deleteQueries, CancellationToken.None);
                 Assert.True(deleteResult.Success, "Delete - Message:" + deleteResult.Message);
 
                 selectQuery = new SelectQuery()

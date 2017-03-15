@@ -125,7 +125,7 @@ namespace dexih.transforms
         /// <param name="tableName"></param>
         /// <param name="Properties"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties);
+        public abstract Task<ReturnValue<Table>> GetSourceTableInfo(Table table);
 
         /// <summary>
         /// Adds any database specific mandatory column to the table object.
@@ -630,6 +630,7 @@ namespace dexih.transforms
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
             reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
+            reader.SetEncryptionMethod(Transform.EEncryptionMethod.BlankSecureFields, "", "<hidden field>");
 
             int count = 0;
             while ((count < query.Rows || query.Rows == -1 ) &&
@@ -687,7 +688,7 @@ namespace dexih.transforms
         /// <returns></returns>
         public virtual async Task<ReturnValue> CompareTable(Table table)
         {
-            var physicalTableResult = await GetSourceTableInfo(table.TableName, null);
+            var physicalTableResult = await GetSourceTableInfo(table);
             if (!physicalTableResult.Success)
                 return physicalTableResult;
 

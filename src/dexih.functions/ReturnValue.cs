@@ -78,18 +78,25 @@ namespace dexih.functions
             Message = returnValue.Message;
         }
 
-        public ReturnValue(ReturnValue returnValue)
+        private void setReturnValue(ReturnValue returnValue)
         {
             Success = returnValue.Success;
             Message = returnValue.Message;
             Exception = returnValue.Exception;
+            if (returnValue.Exception == null)
+            {
+                ExceptionDetails = returnValue.ExceptionDetails;
+            }
+        }
+
+        public ReturnValue(ReturnValue returnValue)
+        {
+            setReturnValue(returnValue);
         }
 
         public ReturnValue(ReturnValue<object> returnValue)
         {
-            Success = returnValue.Success;
-            Message = returnValue.Message;
-            Exception = returnValue.Exception;
+            setReturnValue(returnValue);
             Value = (T)returnValue.Value;
         }
 

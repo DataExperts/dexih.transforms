@@ -162,9 +162,9 @@ namespace dexih.transforms
             return await Task.Run(() => new ReturnValue<List<string>>(true, new List<string>() { "" } ));
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
         {
-            return await Task.Run( () => new ReturnValue<Table>(true, Tables[tableName]));
+            return await Task.Run( () => new ReturnValue<Table>(true, Tables[originalTable.TableName]));
         }
 
         public override async Task<ReturnValue<List<string>>> GetTableList()
