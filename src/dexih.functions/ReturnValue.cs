@@ -44,6 +44,128 @@ namespace dexih.functions
 
     }
 
+    public class ReturnValueMultiple<T>: ReturnValue<T[]>
+    {
+        public List<ReturnValue<T>> returnValues = new List<ReturnValue<T>>();
+
+        public ReturnValueMultiple()
+        {
+        }
+
+        public void Add(ReturnValue<T> returnValue)
+        {
+            returnValues.Add(returnValue);
+        }
+
+        public override bool Success {
+            get
+            {
+                // if no returnValues return false
+                if (returnValues.Count == 0) return false;
+
+                // if any returnValue contains false, return false,
+                return !returnValues.Exists(c => c.Success == false);
+            }
+        }
+
+        public override string Message
+        {
+            get
+            {
+                StringBuilder message = new StringBuilder();
+
+                message.AppendLine($"{returnValues.Count(c => c.Success)} successful, {returnValues.Count(c => !c.Success)} failed.");
+
+                foreach(var returnValue in returnValues.Where(c => !c.Success))
+                {
+                    message.AppendLine($"Message: " + returnValue.Message);
+                }
+
+                return message.ToString();
+            }
+        }
+
+        public override string ExceptionDetails
+        {
+            get
+            {
+                StringBuilder exceptionDetails = new StringBuilder();
+                foreach(var returnValue in returnValues.Where(c => c.Exception != null))
+                {
+                    exceptionDetails.AppendLine("Exception Detials: " + returnValue.ExceptionDetails);
+                }
+
+                return exceptionDetails.ToString();
+            }
+        }
+
+        public override T[] Value
+        {
+            get
+            {
+                return returnValues.Select(c => c.Value).ToArray();
+            }
+        }
+    }
+
+    public class ReturnValueMultiple : ReturnValue
+    {
+        public List<ReturnValue> returnValues = new List<ReturnValue>();
+
+        public ReturnValueMultiple()
+        {
+        }
+
+        public void Add(ReturnValue returnValue)
+        {
+            returnValues.Add(returnValue);
+        }
+
+        public override bool Success
+        {
+            get
+            {
+                // if no returnValues return false
+                if (returnValues.Count == 0) return false;
+
+                // if any returnValue contains false, return false,
+                return !returnValues.Exists(c => c.Success == false);
+            }
+        }
+
+        public override string Message
+        {
+            get
+            {
+                StringBuilder message = new StringBuilder();
+
+                message.AppendLine($"{returnValues.Count(c => c.Success)} successful, {returnValues.Count(c => !c.Success)} failed.");
+
+                foreach (var returnValue in returnValues.Where(c => !c.Success))
+                {
+                    message.AppendLine($"Message: " + returnValue.Message);
+                }
+
+                return message.ToString();
+            }
+        }
+
+        public override string ExceptionDetails
+        {
+            get
+            {
+                StringBuilder exceptionDetails = new StringBuilder();
+                foreach (var returnValue in returnValues.Where(c => c.Exception != null))
+                {
+                    exceptionDetails.AppendLine("Exception Detials: " + returnValue.ExceptionDetails);
+                }
+
+                return exceptionDetails.ToString();
+            }
+        }
+
+    }
+
     public class ReturnValue<T> : ReturnValue
     {
         public ReturnValue(){}
@@ -78,7 +200,7 @@ namespace dexih.functions
             Message = returnValue.Message;
         }
 
-        private void setReturnValue(ReturnValue returnValue)
+        private void SetReturnValue(ReturnValue returnValue)
         {
             Success = returnValue.Success;
             Message = returnValue.Message;
@@ -91,12 +213,12 @@ namespace dexih.functions
 
         public ReturnValue(ReturnValue returnValue)
         {
-            setReturnValue(returnValue);
+            SetReturnValue(returnValue);
         }
 
         public ReturnValue(ReturnValue<object> returnValue)
         {
-            setReturnValue(returnValue);
+            SetReturnValue(returnValue);
             Value = (T)returnValue.Value;
         }
 
@@ -112,7 +234,7 @@ namespace dexih.functions
         }
 
 
-        public T Value { get; set; }
+        public virtual T Value { get; set; }
 
     }
 
@@ -162,14 +284,14 @@ namespace dexih.functions
             return Exception != null;
         }
 
-        public bool Success {   get; set; }
-        public string Message { get; set; }
+        public virtual bool Success {   get; set; }
+        public virtual string Message { get; set; }
 
         [JsonIgnore]
         public Exception Exception { get; set; }
 
         private string _exceptionDetails {get;set;} = "";
-        public string ExceptionDetails
+        public virtual string ExceptionDetails
         {
             set { _exceptionDetails = value; }
             get
