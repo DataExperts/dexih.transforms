@@ -63,6 +63,7 @@ namespace dexih.functions
             Aggregate = aggregate;
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum EAggregate
         {
             None,
@@ -252,6 +253,7 @@ namespace dexih.functions
             CompareDataType = dataType;
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum ECompare
         {
             IsEqual,
@@ -263,6 +265,7 @@ namespace dexih.functions
             IsIn
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum EAndOr
         {
             And, Or
