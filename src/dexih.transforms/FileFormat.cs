@@ -3,6 +3,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.transforms
 { 
@@ -43,7 +45,7 @@ namespace dexih.transforms
         public const bool DefaultSupportsMutiline = true;
         public const EValueTrimmingOptions DefaultValueTrimmingOptions = EValueTrimmingOptions.All;
 
-
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum EParseErrorAction
         {
             RaiseEvent = 0,
@@ -51,6 +53,7 @@ namespace dexih.transforms
             ThrowException = 2,
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum EMissingFieldAction
         {
             ParseError = 0,
@@ -58,6 +61,7 @@ namespace dexih.transforms
             ReplaceByNull = 2,
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum EValueTrimmingOptions
         {
             None = 0,

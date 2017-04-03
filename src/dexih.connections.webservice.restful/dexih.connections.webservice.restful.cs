@@ -62,6 +62,7 @@ namespace dexih.connections.webservice
                 }
 
                 string restfulUri = importTable.GetExtendedProperty("RestfulUri");
+                string rowPath = importTable.GetExtendedProperty("RowPath");
 
                 Table table = new Table(importTable.TableName);
                 table.TableName = table.TableName;
@@ -190,6 +191,15 @@ namespace dexih.connections.webservice
 
                     if (content != null)
                     {
+                        IEnumerable<JToken> children;
+                        if(string.IsNullOrEmpty(rowPath)) {
+                            children = content.Children();
+                        } 
+                        else 
+                        {
+                            children = content.SelectTokens(rowPath);
+                        }
+                        
                         foreach (var value in content.Children())
                         {
                             col = new TableColumn();

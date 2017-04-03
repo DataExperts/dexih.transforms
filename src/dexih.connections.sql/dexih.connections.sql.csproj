@@ -18,8 +18,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj">
-      <Project>{DE06ED25-392B-4E85-849F-6E4FD96D5E0C}</Project>
-      <Name>dexih.transforms</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

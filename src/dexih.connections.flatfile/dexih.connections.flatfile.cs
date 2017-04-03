@@ -214,6 +214,11 @@ namespace dexih.connections.flatfile
                 }
 
                 FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(originalTable.GetExtendedProperty("FileFormat"));
+
+                if(fileFormat == null)
+                {
+                    return new ReturnValue<Table>(false, "There was no file format specified.", null);
+                }
                 string fileSample = originalTable.GetExtendedProperty("FileSample");
 
                 MemoryStream stream = new MemoryStream();

@@ -23,32 +23,23 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>-->
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>9.0.1</Version>
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1">
     </PackageReference>
-    <PackageReference Include="System.Collections.NonGeneric">
-      <Version>4.3.0</Version>
+    <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Data.Common">
-      <Version>4.3.0</Version>
+    <PackageReference Include="System.Data.Common" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Net.Security">
-      <Version>4.3.0</Version>
+    <PackageReference Include="System.Net.Security" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Reflection.TypeExtensions">
-      <Version>4.3.0</Version>
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Text.RegularExpressions">
-      <Version>4.3.0</Version>
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Threading.Thread">
-      <Version>4.3.0</Version>
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Xml.XPath">
-      <Version>4.3.0</Version>
+    <PackageReference Include="System.Xml.XPath" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Xml.XPath.XDocument">
-      <Version>4.3.0</Version>
+    <PackageReference Include="System.Xml.XPath.XDocument" Version="4.3.0">
     </PackageReference>
   </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
