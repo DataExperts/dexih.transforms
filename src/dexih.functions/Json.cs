@@ -35,6 +35,17 @@ namespace dexih.functions
             return JsonConvert.DeserializeObject<T>(value, new JsonSerializerSettings { ContractResolver = new EncryptedStringPropertyResolver(encryptionKey) });
         }
 
+		public static T JTokenToObject<T>(JToken value, string encryptionKey)
+		{
+			return DeserializeObject<T>(value.ToString(), encryptionKey);
+			//if (encryptionKey == null)
+			//{
+			//	return value.ToObject<T>(new JsonSerializer { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+			//}
+
+			//return value.ToObject<T>(new JsonSerializer { ContractResolver = new EncryptedStringPropertyResolver(encryptionKey) });
+		}
+
         public static JToken JTokenFromObject(object value, string encryptionKey)
         {
             if(value == null)

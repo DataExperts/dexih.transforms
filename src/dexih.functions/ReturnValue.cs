@@ -227,7 +227,7 @@ namespace dexih.functions
             JToken jValue = null;
             if(Value != null)
             {
-                jValue = JToken.FromObject(Value);
+				jValue = Json.JTokenFromObject(Value, ""); // JToken.FromObject(Value);
             }
             var result = new ReturnValue<JToken>(Success, Message, Exception, jValue);
             return result;
@@ -299,7 +299,13 @@ namespace dexih.functions
             
                 if (Exception == null)
                 {
-                    return _exceptionDetails;
+					if(string.IsNullOrEmpty(_exceptionDetails))
+					{
+						return Message;
+					}
+					else {
+						return _exceptionDetails;
+					}
                 }
                 else
                 {

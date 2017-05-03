@@ -8,24 +8,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace dexih.connections.sql.sqlserver
+namespace dexih.connections.sql.npgsql
 {
-    public class ConnectionSqlTests
+    public class ConnectionNpgsqlTests
     {
-        public ConnectionSql GetConnection()
+        public ConnectionNpgSql GetConnection()
         {
-            return new ConnectionSqlServer()
+            return new ConnectionNpgSql()
             {
                 Name = "Test Connection",
-                Ntauth = Convert.ToBoolean(Configuration.AppSettings["SqlServer:NTAuthentication"]),
-                Username = Convert.ToString(Configuration.AppSettings["SqlServer:UserName"]),
-                Password = Convert.ToString(Configuration.AppSettings["SqlServer:Password"]),
-                Server = Convert.ToString(Configuration.AppSettings["SqlServer:ServerName"]),
+                Ntauth = Convert.ToBoolean(Configuration.AppSettings["Npgsql:NTAuthentication"]),
+                Username = Convert.ToString(Configuration.AppSettings["Npgsql:UserName"]),
+                Password = Convert.ToString(Configuration.AppSettings["Npgsql:Password"]),
+                Server = Convert.ToString(Configuration.AppSettings["Npgsql:ServerName"]),
             };
         }
 
         [Fact]
-        public async Task SqlServer_Basic()
+        public async Task Npgsql_Basic()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -33,7 +33,7 @@ namespace dexih.connections.sql.sqlserver
         }
 
         [Fact]
-        public async Task SqlServer_Performance()
+        public async Task Npgsql_Performance()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -41,7 +41,7 @@ namespace dexih.connections.sql.sqlserver
         }
 
         [Fact]
-        public async Task SqlServer_TransformWriter()
+        public async Task Npgsql_TransformWriter()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -49,7 +49,7 @@ namespace dexih.connections.sql.sqlserver
         }
 
         [Fact]
-        public async Task SqlServer_Transform()
+        public async Task Npgsql_Transform()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -57,7 +57,7 @@ namespace dexih.connections.sql.sqlserver
         }
 
         [Fact]
-        public void TestSqlServer_Specific_Unit()
+        public void Npgsql_Specific_Unit()
         {
             ConnectionSqlServer connection = new ConnectionSqlServer();
 

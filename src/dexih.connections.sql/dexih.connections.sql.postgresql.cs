@@ -16,7 +16,7 @@ using System.Diagnostics;
 
 namespace dexih.connections.sql
 {
-    public class ConnectionNpgSql : ConnectionSql
+    public class ConnectionPostgreSql : ConnectionSql
     {
 
         public override string ServerHelp => "Server:Port Name";
@@ -88,14 +88,18 @@ namespace dexih.connections.sql
                 createSql.Append("create table " + AddDelimiter(table.TableName) + " ( ");
                 foreach (TableColumn col in table.Columns)
                 {
-                    createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision));
-                    //if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
-                        //createSql.Append(" IDENTITY(1,1)"); //TODO autoincrement for postgresql
-                    if (col.AllowDbNull == false)
-                        createSql.Append(" NOT NULL");
-                    else
-                        createSql.Append(" NULL");
-
+					if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+						createSql.Append(AddDelimiter(col.ColumnName) + " SERIAL"); //TODO autoincrement for postgresql
+					else
+					{
+						createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision));
+						if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+							createSql.Append(" IDENTITY(1,1)"); //TODO autoincrement for postgresql
+						if (col.AllowDbNull == false)
+							createSql.Append(" NOT NULL");
+						else
+							createSql.Append(" NULL");
+					}
                     createSql.Append(",");
                 }
 
@@ -107,7 +111,7 @@ namespace dexih.connections.sql
 				}
 
 				if (key != null)
-					createSql.Append("CONSTRAINT \"PK_" + AddEscape(table.TableName) + "\" PRIMARY KEY ([" + AddEscape(key.ColumnName) + "]),");
+					createSql.Append("CONSTRAINT \"PK_" + AddEscape(table.TableName) + "\" PRIMARY KEY (" + AddDelimiter(key.ColumnName) + "),");
 
 
 				//remove the last comma
@@ -256,15 +260,15 @@ namespace dexih.connections.sql
                     break;
                 case ETypeCode.DateTime:
                     if (value is DateTime)
-                        returnValue = "to_timestamp('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "')";
+                        returnValue = "to_timestamp('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
                     else
-                        returnValue = "to_timestamp('"+ AddEscape((string)value) + "')";
+                        returnValue = "to_timestamp('"+ AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
                     break;
                 case ETypeCode.Time:
                     if (value is TimeSpan)
-						returnValue = "to_timestamp('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "')";
+						returnValue = "to_timestamp('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
 					else
-						returnValue = "to_timestamp('" + AddEscape((string)value) + "')";
+						returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
 					break;
                 default:
                     throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql insert statement.");
@@ -295,10 +299,15 @@ namespace dexih.connections.sql
                         port = hostport[1];
                     }
 
-                    if (Ntauth == false)
-                        connectionString = "Host=" + host + "; Port=" + port + "; User Id=" + Username + "; Password=" + Password + "; Database=" + DefaultDatabase;
-                    else
-						connectionString = "Host=" + host + "; Port=" + port + "; Integrated Security=true; Database=" + DefaultDatabase;
+					if (Ntauth == false)
+						connectionString = "Host=" + host + "; Port=" + port + "; User Id=" + Username + "; Password=" + Password + "; ";
+					else
+						connectionString = "Host=" + host + "; Port=" + port + "; Integrated Security=true; ";
+
+					if(!string.IsNullOrEmpty(DefaultDatabase)) 
+					{
+						connectionString += "Database = " + DefaultDatabase;
+					}
                 }
 
                 connection = new NpgsqlConnection(connectionString);
@@ -377,37 +386,41 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList()
         {
             try
             {
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<List<string>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
+                    return new ReturnValue<List<Table>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
                 }
 
-                List<string> tableList = new List<string>();
+                List<Table> tableList = new List<Table>();
 
                 using (var connection = connectionResult.Value)
                 {
 
-                    using (DbCommand cmd = CreateCommand(connection, "select table_catalog, table_name from information_schema.tables where table_schema = 'public'"))
+                    using (DbCommand cmd = CreateCommand(connection, "select table_catalog, table_schema, table_name from information_schema.tables where table_schema not in ('pg_catalog', 'information_schema')"))
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
                         {
-                            string tableName = AddDelimiter(reader["table_catalog"].ToString()) + "." + AddDelimiter(reader["table_name"].ToString());
-                            tableList.Add(tableName);
+							var table = new Table()
+							{
+								TableName = reader["table_name"].ToString(),
+								TableSchema = reader["table_schema"].ToString(),
+							};
+							tableList.Add(table);;
                         }
                     }
 
                 }
-                return new ReturnValue<List<string>>(true, "", null, tableList);
+                return new ReturnValue<List<Table>>(true, tableList);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false, "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
+                return new ReturnValue<List<Table>>(false, "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
             }
         }
 
@@ -415,7 +428,8 @@ namespace dexih.connections.sql
         {
             try
             {
-                Table table = new Table(originalTable.TableName);
+				var schema = string.IsNullOrEmpty(originalTable.TableSchema) ? "public" : originalTable.TableSchema;
+                Table table = new Table(originalTable.TableName, originalTable.TableSchema);
 
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
@@ -431,7 +445,7 @@ namespace dexih.connections.sql
 
                     // The schema table 
                     using (var cmd = CreateCommand(connection, @"
-                         select * from information_schema.columns where table_schema = 'public' and table_name = '" + AddEscape(table.TableName) + "') "
+                         select * from information_schema.columns where table_schema = '" + schema +  "' and table_name = '" + table.TableName + "'"
                             ))
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
@@ -461,13 +475,15 @@ namespace dexih.connections.sql
                                 col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-                            if (col.Datatype == ETypeCode.String)
-                                col.MaxLength = Convert.ToInt32(reader["character_maximum_length"]);
-                            else if (col.Datatype == ETypeCode.Double || col.Datatype == ETypeCode.Decimal)
-                            {
-                                col.Precision = Convert.ToInt32(reader["numeric_precision_radix"]);
-                                col.Scale = Convert.ToInt32(reader["numeric_scale"]);
-                            }
+							if (col.Datatype == ETypeCode.String)
+							{
+								col.MaxLength = ConvertNullableToInt(reader["character_maximum_length"]);
+							}
+							else if (col.Datatype == ETypeCode.Double || col.Datatype == ETypeCode.Decimal)
+							{
+								col.Precision = ConvertNullableToInt(reader["numeric_precision_radix"]);
+								col.Scale = ConvertNullableToInt(reader["numeric_scale"]);
+							}
 
                             //make anything with a large string unlimited.  This will be created as varchar(max)
                             if (col.MaxLength > 4000)
@@ -486,9 +502,30 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "The source sqlserver table + " + originalTable.TableName + " could not be read due to the following error: " + ex.Message, ex);
+                return new ReturnValue<Table>(false, "The source postgreSql table + " + originalTable.TableName + " could not be read due to the following error: " + ex.Message, ex);
             }
         }
+
+		private Int32? ConvertNullableToInt(object value)
+		{
+			if(value == null || value is DBNull)
+			{
+				return null;
+			}
+			else 
+			{
+				var parsed = Int32.TryParse(value.ToString(), out int result);
+				if(parsed) 
+				{
+					return result;
+				}
+				else 
+				{
+					return null;
+				}
+			}
+		}
+
 
         public override ETypeCode ConvertSqlToTypeCode(string SqlType)
         {
@@ -496,6 +533,7 @@ namespace dexih.connections.sql
             {
                 case "bit": return ETypeCode.Binary;
 				case "varbit": return ETypeCode.Binary;
+				case "bytea": return ETypeCode.Binary;
 
 				case "smallint": return ETypeCode.Int16;
 				case "int": return ETypeCode.Int32;
@@ -517,6 +555,10 @@ namespace dexih.connections.sql
 				case "time": return ETypeCode.Time;
 				case "time without time zone": return ETypeCode.Time;
                 case "time with time zone": return ETypeCode.Time;
+				case "character varying": return ETypeCode.String;
+				case "varchar": return ETypeCode.String;
+				case "character": return ETypeCode.String;
+				case "text": return ETypeCode.String;
             }
             return ETypeCode.Unknown;
         }
@@ -568,7 +610,13 @@ namespace dexih.connections.sql
                 return new ReturnValue<Tuple<long, long>>(false, connectionResult.Message, connectionResult.Exception);
             }
 
-            var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null ? "" : "SELECT SCOPE_IDENTITY()";
+			var autoIncrementSql = "";
+			var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+			if(deltaColumn != null) 
+			{
+				autoIncrementSql = "SELECT max(" + AddDelimiter(deltaColumn.ColumnName) + ") from " + AddDelimiter(table.TableName);
+			}
+
             long identityValue = 0;
 
             using (var connection = connectionResult.Value)
@@ -589,7 +637,7 @@ namespace dexih.connections.sql
 
                         for (int i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            insert.Append("[" + query.InsertColumns[i].Column.ColumnName + "],");
+							insert.Append(AddDelimiter( query.InsertColumns[i].Column.ColumnName) + ",");
                             values.Append("@col" + i.ToString() + ",");
                         }
 

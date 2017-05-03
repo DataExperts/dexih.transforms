@@ -224,12 +224,12 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList()
         {
             return await Task.Run(() =>
            {
-               List<string> list = new List<string>();
-               return new ReturnValue<List<string>>(true, "", null, list);
+               List<Table> list = new List<Table>();
+               return new ReturnValue<List<Table>>(true, "", null, list);
            });
         }
 

@@ -44,9 +44,18 @@ namespace dexih.functions
             Data = new TableCache(maxRows);
         }
 
-        public Table(string tableName, int maxRows = 0) 
+		public Table(string tableName, int maxRows = 0)
+		{
+			TableName = tableName;
+			BaseTableName = DataType.CleanString(tableName);
+			Columns = new TableColumns();
+			Data = new TableCache(maxRows);
+		}
+
+        public Table(string tableName, string tableSchema, int maxRows = 0) 
         {
             TableName = tableName;
+			TableSchema = tableSchema;
             BaseTableName = DataType.CleanString(tableName);
             Columns = new TableColumns();
             Data = new TableCache(maxRows);
@@ -60,10 +69,16 @@ namespace dexih.functions
         /// Reference to the phsycal table name.
         /// </summary>
         public string TableName { get; set; }
-        /// <summary>
+
+		/// <summary>
+		/// The table schema or owner.
+		/// </summary>
+		/// <value>The table schema.</value>
+		public string TableSchema { get; set; }
+
+		/// <summary>
         /// A logical name for the table.
         /// </summary>
-
         public string LogicalName { get; set; }
 
         /// <summary>
@@ -94,7 +109,7 @@ namespace dexih.functions
 
         public TableCache Data { get; set; }
 
-        public virtual TableColumns Columns { get; protected set; }
+        public TableColumns Columns { get; protected set; }
 
         public Dictionary<string, string> ExtendedProperties { get; set; }
 
@@ -314,7 +329,7 @@ namespace dexih.functions
         {
             if (string.IsNullOrEmpty(profileTableName)) return null;
 
-            Table profileResults = new Table(profileTableName);
+            Table profileResults = new Table(profileTableName, "");
             profileResults.Columns.Add(new TableColumn("AuditKey", DataType.ETypeCode.Int64, TableColumn.EDeltaType.CreateAuditKey));
             profileResults.Columns.Add(new TableColumn("Profile", DataType.ETypeCode.String));
             profileResults.Columns.Add(new TableColumn("ColumnName", DataType.ETypeCode.String));
@@ -352,7 +367,7 @@ namespace dexih.functions
         /// <returns></returns>
         public Table Copy(bool removeSchema = false)
         {
-            Table table = new Table(TableName)
+            Table table = new Table(TableName, TableSchema)
             {
                 Description = Description
             };

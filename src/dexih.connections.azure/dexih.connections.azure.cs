@@ -274,26 +274,26 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList()
         {
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
                 TableContinuationToken continuationToken = null;
-                List<string> list = new List<string>();
+                List<Table> list = new List<Table>();
                 do
                 {
                     var table = await connection.ListTablesSegmentedAsync(continuationToken);
                     continuationToken = table.ContinuationToken;
-                    list.AddRange(table.Results.Select(c => c.Name));
+					list.AddRange(table.Results.Select(c => new Table(c.Name)));
 
                 } while (continuationToken != null);
 
-                return new ReturnValue<List<string>>(true, list);
+                return new ReturnValue<List<Table>>(true, list);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false, "The following error was encountered when getting a list of Azure tables: " + ex.Message, ex);
+                return new ReturnValue<List<Table>>(false, "The following error was encountered when getting a list of Azure tables: " + ex.Message, ex);
             }
         }
 

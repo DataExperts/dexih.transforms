@@ -117,7 +117,7 @@ namespace dexih.transforms
         //Functions required for datapoint.
         public abstract Task<ReturnValue> CreateDatabase(string DatabaseName);
         public abstract Task<ReturnValue<List<string>>> GetDatabaseList();
-        public abstract Task<ReturnValue<List<string>>> GetTableList();
+        public abstract Task<ReturnValue<List<Table>>> GetTableList();
 
         /// <summary>
         /// Interrogates the underlying data to get the Table structure.
@@ -248,7 +248,7 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("WriteTicks", ETypeCode.Int64), writerResult.WriteTicks),
                     new QueryColumn(new TableColumn("ProcessingTicks", ETypeCode.Int64), writerResult.ProcessingTicks),
                     new QueryColumn(new TableColumn("MaxIncrementalValue", ETypeCode.String), writerResult.MaxIncrementalValue),
-                    new QueryColumn(new TableColumn("MaxSurrogateKey", ETypeCode.String), writerResult.MaxSurrogateKey),
+                    new QueryColumn(new TableColumn("MaxSurrogateKey", ETypeCode.Int64), writerResult.MaxSurrogateKey),
                     new QueryColumn(new TableColumn("InitializeTime", ETypeCode.DateTime), writerResult.InitializeTime),
                     new QueryColumn(new TableColumn("ScheduledTime", ETypeCode.DateTime), writerResult.ScheduledTime),
                     new QueryColumn(new TableColumn("StartTime", ETypeCode.DateTime), writerResult.StartTime),
@@ -353,7 +353,7 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("WriteTicks", ETypeCode.Int64), writerResult.WriteTicks),
                     new QueryColumn(new TableColumn("ProcessingTicks", ETypeCode.Int64), writerResult.ProcessingTicks),
                     new QueryColumn(new TableColumn("MaxIncrementalValue", ETypeCode.String), writerResult.MaxIncrementalValue),
-                    new QueryColumn(new TableColumn("MaxSurrogateKey", ETypeCode.String), writerResult.MaxSurrogateKey),
+                    new QueryColumn(new TableColumn("MaxSurrogateKey", ETypeCode.Int64), writerResult.MaxSurrogateKey),
                     new QueryColumn(new TableColumn("InitializeTime", ETypeCode.DateTime), writerResult.InitializeTime),
                     new QueryColumn(new TableColumn("ScheduledTime", ETypeCode.DateTime), writerResult.ScheduledTime),
                     new QueryColumn(new TableColumn("StartTime", ETypeCode.DateTime), writerResult.StartTime),

@@ -289,7 +289,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<ReturnValue<List<string>>> GetTableList()
+        public override Task<ReturnValue<List<Table>>> GetTableList()
         {
             throw new NotImplementedException();
         }

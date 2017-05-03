@@ -167,11 +167,11 @@ namespace dexih.transforms
             return await Task.Run( () => new ReturnValue<Table>(true, Tables[originalTable.TableName]));
         }
 
-        public override async Task<ReturnValue<List<string>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList()
         {
             return await Task.Run(() =>
             {
-                return new ReturnValue<List<string>>(true, Tables.Keys.ToList());
+				return new ReturnValue<List<Table>>(true, Tables.Values.ToList());
             });
         }
 

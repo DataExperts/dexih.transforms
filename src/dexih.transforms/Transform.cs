@@ -746,8 +746,8 @@ namespace dexih.transforms
 
             if (returnValue.Success == false)
             {
-                if (returnValue.Message != "")
-                    throw new Exception("The following error was enountered read rows: " + returnValue.Message);
+				if (returnValue.Message != "")
+						throw new Exception("The following error was enountered reading rows: " + returnValue.Message, returnValue.Exception);
 
                 IsReaderFinished = true;
             }

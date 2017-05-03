@@ -3,6 +3,7 @@ using dexih.transforms;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Data.Common;
 using dexih.functions;
@@ -185,28 +186,56 @@ namespace dexih.connections.flatfile
             {
                 string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
                 string fileNameExtension = Path.GetExtension(fileName);
-                int version = 0;
 
-                string newFileName = fileName;
-                while (File.Exists(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName))
-                {
-                    version++;
-                    newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
-                }
-                //FileStream newFile = File.Create(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName);
-                FileStream newFile = new FileStream(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName, FileMode.Create, System.IO.FileAccess.Write);
-                //stream.Seek(0, SeekOrigin.Begin);
-                await stream.CopyToAsync(newFile);
-                await stream.FlushAsync();
-                newFile.Dispose();
+				if(fileNameExtension == ".zip") 
+				{
+					using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+	                {
+                        foreach(var entry in archive.Entries)
+                        {
+                            string filePath = fixFileName(table, entry.Name);
+                            entry.ExtractToFile(filePath);
+                        }
 
-                return new ReturnValue(true);
+	                }
+					return new ReturnValue(true);
+				}
+				else 
+				{
+                    string filePath = fixFileName(table, fileName);
+	                FileStream newFile = new FileStream(filePath, FileMode.Create, System.IO.FileAccess.Write);
+	                //stream.Seek(0, SeekOrigin.Begin);
+	                await stream.CopyToAsync(newFile);
+	                await stream.FlushAsync();
+	                newFile.Dispose();
+
+	                return new ReturnValue(true);
+				}
             }
             catch (Exception ex)
             {
                 return new ReturnValue(false, "The following error occurred creating saving file stream: " + ex.Message, ex);
             }
         }
+
+        private string fixFileName(Table table, string fileName)
+        {
+			string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+			string fileNameExtension = Path.GetExtension(fileName);
+
+			int version = 0;
+
+			string newFileName = fileName;
+			while (File.Exists(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName))
+			{
+				version++;
+				newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+			}
+
+			var filePath = FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName;
+
+			return filePath;
+		}
 
         public override async Task<ReturnValue> TestFileConnection()
         {

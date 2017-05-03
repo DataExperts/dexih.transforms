@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>dexih.connections.sql.tests</AssemblyName>
@@ -13,13 +13,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\dexih.connections.sql\dexih.connections.sql.csproj">
-      <Project>{0DF32018-188E-4C28-83B1-D748D3322083}</Project>
-      <Name>dexih.connections.sql</Name>
     </ProjectReference>
     <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj">
-      <Project>{1459FE8E-0954-4FD7-BC97-9BDF00835A21}</Project>
-      <Name>dexih.connections.test</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />
+    <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />

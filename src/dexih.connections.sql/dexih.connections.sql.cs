@@ -109,7 +109,7 @@ namespace dexih.connections.sql
 
                     for (int i = 0; i < fieldCount; i++)
                     {
-                        insert.Append("[" + reader.GetName(i) + "],");
+						insert.Append(AddDelimiter(reader.GetName(i)) + ",");
                         values.Append("@col" + i.ToString() + ",");
                     }
 

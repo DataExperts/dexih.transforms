@@ -472,17 +472,17 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList()
         {
             try
             {
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<List<string>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
+                    return new ReturnValue<List<Table>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
                 }
 
-                List<string> tableList = new List<string>();
+                List<Table> tableList = new List<Table>();
 
                 using (var connection = connectionResult.Value)
                 {
@@ -500,24 +500,28 @@ namespace dexih.connections.sql
                     {
                         while (await reader.ReadAsync())
                         {
-                            string tableName = AddDelimiter(reader["TABLE_SCHEMA"].ToString()) + "." + AddDelimiter(reader["TABLE_NAME"].ToString());
-                            tableList.Add(tableName);
+							var table = new Table()
+							{
+								TableName = reader["TABLE_SCHEMA"].ToString(),
+								TableSchema = reader["TABLE_SCHEMA"].ToString()
+							};
+                            tableList.Add(table);
                         }
                     }
 
                     if (sqlversion >= 13)
                     {
-                        var newTableList = new List<string>();
+                        var newTableList = new List<Table>();
 
-                        foreach (string tableName in tableList)
+                        foreach (var table in tableList)
                         {
                             //select the temporal type 
-                            using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + tableName + "')"))
+                            using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + AddDelimiter(table.TableSchema) + "." + AddDelimiter(table.TableName) + "')"))
                             {
                                 int temporalType = Convert.ToInt32(cmd.ExecuteScalar());
                                 //Exclude history table from the list (temporalType = 1)
                                 if (temporalType != 1)
-                                    newTableList.Add(tableName);
+                                    newTableList.Add(table);
                             }
                         }
 
@@ -525,11 +529,11 @@ namespace dexih.connections.sql
                     }
 
                 }
-                return new ReturnValue<List<string>>(true, "", null, tableList);
+                return new ReturnValue<List<Table>>(true, "", null, tableList);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false, "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
+                return new ReturnValue<List<Table>>(false, "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
             }
         }
 

@@ -388,14 +388,14 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList()
         {
             try
             {
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<List<string>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
+                    return new ReturnValue<List<Table>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
                 }
 
                 using (var connection = connectionResult.Value)
@@ -410,27 +410,27 @@ namespace dexih.connections.sql
                         }
                         catch (Exception ex)
                         {
-                            return new ReturnValue<List<string>>(false, "The sqllite 'get tables' query could not be run due to the following error: " + ex.Message, ex);
+                            return new ReturnValue<List<Table>>(false, "The sqllite 'get tables' query could not be run due to the following error: " + ex.Message, ex);
                         }
 
                         using (reader)
                         {
 
-                            List<string> tableList = new List<string>();
+                            List<Table> tableList = new List<Table>();
 
                             while (await reader.ReadAsync())
                             {
-                                tableList.Add((string)reader["name"]);
+								tableList.Add(new Table((string)reader["name"]));
                             }
 
-                            return new ReturnValue<List<string>>(true, "", null, tableList);
+                            return new ReturnValue<List<Table>>(true, "", null, tableList);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false, "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
+                return new ReturnValue<List<Table>>(false, "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
             }
         }
 
