@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace dexih.connections.test
 {
@@ -22,7 +23,7 @@ namespace dexih.connections.test
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
-                .AddUserSecrets()
+                .AddUserSecrets<Startup>()
                 .AddEnvironmentVariables();
 
             var Configuration = builder.Build();
@@ -119,5 +120,10 @@ namespace dexih.connections.test
 
             return table;
         }
+    }
+
+    public class Startup 
+    {
+        
     }
 }

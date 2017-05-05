@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>dexih.connections.azure.tests</AssemblyName>
@@ -13,12 +13,8 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\dexih.connections.azure\dexih.connections.azure.csproj">
-      <Project>{7F9A835E-7AD1-401A-93BC-E9FDE586366F}</Project>
-      <Name>dexih.connections.azure</Name>
     </ProjectReference>
     <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj">
-      <Project>{1459FE8E-0954-4FD7-BC97-9BDF00835A21}</Project>
-      <Name>dexih.connections.test</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -27,4 +23,12 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.1.1" />
   </ItemGroup>
+
+    <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </Content>
+
+  </ItemGroup>
+
 </Project>

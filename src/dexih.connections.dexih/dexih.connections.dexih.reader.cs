@@ -8,14 +8,21 @@ using static dexih.functions.DataType;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using System.Text;
 
-namespace dexih.connections.webservice
+namespace dexih.connections.dexih
 {
-    public class ReaderRestful : Transform
+    public class ReaderDexih : Transform
     {
         private bool _isOpen = false;
 
-        public ReaderRestful(Connection connection, Table table, Transform referenceTransform)
+		private JEnumerable<JToken> dataset;
+		private int datasetRow;
+		private bool datasetComplete;
+		private string continuationToken;
+
+
+        public ReaderDexih(Connection connection, Table table, Transform referenceTransform)
         {
             ReferenceConnection = connection;
             CacheTable = table;
@@ -40,19 +47,18 @@ namespace dexih.connections.webservice
                     return new ReturnValue(false, "The web service connection is already open.", null);
                 }
 
-                //if no driving table is set, then use the row creator to simulate a single row.
-                if (ReferenceTransform == null)
-                {
-                    ReaderRowCreator rowCreator = new ReaderRowCreator();
-                    rowCreator.InitializeRowCreator(1, 1, 1);
-                    base.ReferenceTransform = rowCreator;
-                }
-                else
-                {
-                    var result = await ReferenceTransform.Open(auditKey, null);
-                    if (!result.Success)
-                        return result;
-                }
+				var message = Json.SerializeObject(new { TableName = CacheTable.TableName, Query = query }, "");
+				var content = new StringContent(message, Encoding.UTF8, "application/json");
+				var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("GetTableData", content);
+
+				if(!response.Success)
+				{
+					return response;
+				}
+				continuationToken = response.Value["continuationToken"].ToString();
+				datasetComplete = (bool)response.Value["datasetComplete"];
+				dataset = response.Value["dataset"].Children();
+				datasetRow = 0;
 
                 //create a dummy inreader to allow fieldcount and other queries to work.
                 return new ReturnValue(true);
@@ -65,7 +71,7 @@ namespace dexih.connections.webservice
 
         public override string Details()
         {
-            return "Restful Service";
+            return "Information Hub Reader";
         }
 
         public override bool InitializeOutputFields()
@@ -82,46 +88,59 @@ namespace dexih.connections.webservice
         {
             try
             {
-                if (await ReferenceTransform.ReadAsync(cancellationToken) == false)
-                    return new ReturnValue<object[]>(false, null);
-                else
-                {
-                    List<Filter> filters = new List<Filter>();
+				if (datasetRow < dataset.Count())
+				{
+					var result = dataset[datasetRow].ToArray<object>();
+					datasetRow++;
+					return new ReturnValue<object[]>(true, result);
+				}
+				else if(datasetComplete)
+				{
+					_isOpen = false;
+					return new ReturnValue<object[]>(false, null);
+				}
+				else
+				{
+					var message = Json.SerializeObject(new { ContinuationToken = continuationToken }, "");
+					var content = new StringContent(message, Encoding.UTF8, "application/json");
+					var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("GetTableData", content);
 
-                    foreach (JoinPair join in JoinPairs)
-                    {
-                        var joinValue = join.JoinColumn == null ? join.JoinValue : ReferenceTransform[join.JoinColumn].ToString();
+					if (!response.Success)
+					{
+						return new ReturnValue<object[]>(response);
+					}
+					continuationToken = response.Value["continuationToken"].ToString();
+					datasetComplete = (bool)response.Value["datasetComplete"];
+					dataset = response.Value["dataset"].Children();
 
-                        filters.Add(new Filter()
-                        {
-                            Column1 = join.SourceColumn,
-                            CompareDataType = ETypeCode.String,
-                            Operator = Filter.ECompare.IsEqual,
-                            Value2 = joinValue
-                        });
-                    }
-
-                    var result = await LookupRow(filters);
-
-                    return result;
-                }
+					if(dataset.Count() == 0){
+						_isOpen = false;
+						return new ReturnValue<object[]>(false, null);
+					}
+					else
+					{
+						var result = dataset[0].ToArray<object>();
+						datasetRow = 1;
+						return new ReturnValue<object[]>(true, result);
+					}
+				}
             }
             catch (Exception ex)
             {
-                throw new Exception("The restful service failed due to the following error: " + ex.Message, ex);
+                throw new Exception("The hub reader service failed due to the following error: " + ex.Message, ex);
             }
         }
 
-        public override bool CanLookupRowDirect { get; } = true;
+		public override bool CanLookupRowDirect { get; } = false;
 
         /// <summary>
         /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
-        {
-            return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters);
-         }
+        //public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        //{
+         //   return await ((ConnectionDexih) ReferenceConnection).LookupRow(CacheTable, filters);
+         //}
     }
 }

@@ -42,6 +42,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.functions", "src\dexi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.webservice.restful.tests", "test\dexih.connections.webservice.restful.tests\dexih.connections.webservice.restful.tests.csproj", "{C7E245DC-2C1C-48B8-9A6B-278194684258}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.excel", "src\dexih.connections.excel\dexih.connections.excel.csproj", "{92870864-65E8-4C33-9235-F269BB21DDE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.dexih", "src\dexih.connections.dexih\dexih.connections.dexih.csproj", "{826C6B11-4385-4DD7-80FD-31139FA0B0CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -220,6 +224,30 @@ Global
 		{C7E245DC-2C1C-48B8-9A6B-278194684258}.Release|x64.Build.0 = Debug|Any CPU
 		{C7E245DC-2C1C-48B8-9A6B-278194684258}.Release|x86.ActiveCfg = Debug|Any CPU
 		{C7E245DC-2C1C-48B8-9A6B-278194684258}.Release|x86.Build.0 = Debug|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Debug|x64.Build.0 = Debug|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Debug|x86.Build.0 = Debug|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Release|x64.ActiveCfg = Release|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Release|x64.Build.0 = Release|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Release|x86.ActiveCfg = Release|Any CPU
+		{92870864-65E8-4C33-9235-F269BB21DDE9}.Release|x86.Build.0 = Release|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Debug|x64.Build.0 = Debug|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Debug|x86.Build.0 = Debug|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|x64.ActiveCfg = Release|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|x64.Build.0 = Release|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|x86.ActiveCfg = Release|Any CPU
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -239,5 +267,7 @@ Global
 		{0DF32018-188E-4C28-83B1-D748D3322083} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 		{4D9DF68E-6365-4F1F-9A0D-92A37A1C8B8A} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 		{C7E245DC-2C1C-48B8-9A6B-278194684258} = {4712A230-9747-4447-B4C5-022006511342}
+		{92870864-65E8-4C33-9235-F269BB21DDE9} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
+		{826C6B11-4385-4DD7-80FD-31139FA0B0CF} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 	EndGlobalSection
 EndGlobal

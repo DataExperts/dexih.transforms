@@ -40,7 +40,7 @@ namespace dexih.transforms
             NoSqlDatabase = 1,
             File = 2,
             WebService = 3,
-            Application = 4
+			Hub = 4
         }
 
         #endregion

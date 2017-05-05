@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>dexih.functions.tests</AssemblyName>
@@ -24,12 +24,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj">
-      <Project>{4D9DF68E-6365-4F1F-9A0D-92A37A1C8B8A}</Project>
-      <Name>dexih.functions</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj">
-      <Project>{DE06ED25-392B-4E85-849F-6E4FD96D5E0C}</Project>
-      <Name>dexih.transforms</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

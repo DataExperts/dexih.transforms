@@ -10,22 +10,22 @@ using Xunit;
 
 namespace dexih.connections.sql.npgsql
 {
-    public class ConnectionNpgsqlTests
+    public class ConnectionPostgreSqlTests
     {
-        public ConnectionNpgSql GetConnection()
+        public ConnectionPostgreSql GetConnection()
         {
-            return new ConnectionNpgSql()
+            return new ConnectionPostgreSql()
             {
                 Name = "Test Connection",
-                Ntauth = Convert.ToBoolean(Configuration.AppSettings["Npgsql:NTAuthentication"]),
-                Username = Convert.ToString(Configuration.AppSettings["Npgsql:UserName"]),
-                Password = Convert.ToString(Configuration.AppSettings["Npgsql:Password"]),
-                Server = Convert.ToString(Configuration.AppSettings["Npgsql:ServerName"]),
+                Ntauth = Convert.ToBoolean(Configuration.AppSettings["PostgreSql:NTAuthentication"]),
+                Username = Convert.ToString(Configuration.AppSettings["PostgreSql:UserName"]),
+                Password = Convert.ToString(Configuration.AppSettings["PostgreSql:Password"]),
+                Server = Convert.ToString(Configuration.AppSettings["PostgreSql:ServerName"]),
             };
         }
 
         [Fact]
-        public async Task Npgsql_Basic()
+        public async Task Postgres_Basic()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -33,7 +33,7 @@ namespace dexih.connections.sql.npgsql
         }
 
         [Fact]
-        public async Task Npgsql_Performance()
+        public async Task Postgres_Performance()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -41,7 +41,7 @@ namespace dexih.connections.sql.npgsql
         }
 
         [Fact]
-        public async Task Npgsql_TransformWriter()
+        public async Task Postgres_TransformWriter()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -49,7 +49,7 @@ namespace dexih.connections.sql.npgsql
         }
 
         [Fact]
-        public async Task Npgsql_Transform()
+        public async Task Postgres_Transform()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -57,9 +57,9 @@ namespace dexih.connections.sql.npgsql
         }
 
         [Fact]
-        public void Npgsql_Specific_Unit()
+        public void Postgres_Specific_Unit()
         {
-            ConnectionSqlServer connection = new ConnectionSqlServer();
+            ConnectionPostgreSql connection = new ConnectionPostgreSql();
 
             //test delimiter
             Assert.Equal("\"table\"", connection.AddDelimiter("table"));

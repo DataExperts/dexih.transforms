@@ -5,17 +5,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using static dexih.functions.DataType;
-using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using OfficeOpenXml;
 
-namespace dexih.connections.webservice
+namespace dexih.connections.excel
 {
-    public class ReaderRestful : Transform
+    public class ReaderExcelDatabase : Transform
     {
         private bool _isOpen = false;
+        private ExcelPackage _excelPackage;
+        private ExcelWorksheet _excelWorkSheet;
+        private int _excelWorkSheetRows;
+		private int _excelWorkSheetColumns;
+        private int _currentRow;
 
-        public ReaderRestful(Connection connection, Table table, Transform referenceTransform)
+        public ReaderExcelDatabase(Connection connection, Table table, Transform referenceTransform)
         {
             ReferenceConnection = connection;
             CacheTable = table;
@@ -25,6 +30,11 @@ namespace dexih.connections.webservice
         protected override void Dispose(bool disposing)
         {
             _isOpen = false;
+
+            if(_excelPackage != null)
+            {
+                _excelPackage.Dispose();
+            }
 
             base.Dispose(disposing);
         }
@@ -37,35 +47,36 @@ namespace dexih.connections.webservice
             {
                 if (_isOpen)
                 {
-                    return new ReturnValue(false, "The web service connection is already open.", null);
+                    return new ReturnValue(false, "The excel file is already open.", null);
                 }
 
-                //if no driving table is set, then use the row creator to simulate a single row.
-                if (ReferenceTransform == null)
+                return await Task.Run(() =>
                 {
-                    ReaderRowCreator rowCreator = new ReaderRowCreator();
-                    rowCreator.InitializeRowCreator(1, 1, 1);
-                    base.ReferenceTransform = rowCreator;
-                }
-                else
-                {
-                    var result = await ReferenceTransform.Open(auditKey, null);
-                    if (!result.Success)
-                        return result;
-                }
+                    _excelPackage = ((ConnectionExcelDatabase)ReferenceConnection).NewConnection();
+                    _currentRow = 1;
 
-                //create a dummy inreader to allow fieldcount and other queries to work.
-                return new ReturnValue(true);
+                    _excelWorkSheet = _excelPackage.Workbook.Worksheets.SingleOrDefault(c => c.Name == CacheTable.TableName);
+                    if (_excelWorkSheet == null)
+                    {
+                        return new ReturnValue<Table>(false, $"The worksheet {query.Table} could not be found in the excel file. ", null);
+                    }
+
+					_isOpen = true;
+                    _excelWorkSheetRows = _excelWorkSheet.Dimension.Rows;
+					_excelWorkSheetColumns = _excelWorkSheet.Dimension.Columns;
+
+                    return new ReturnValue(true);
+                });
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred when starting the web service: " + ex.Message, ex);
+                return new ReturnValue(false, "The following error occurred when opening the excel file: " + ex.Message, ex);
             }
         }
 
         public override string Details()
         {
-            return "Restful Service";
+            return "Excel Database Service";
         }
 
         public override bool InitializeOutputFields()
@@ -82,46 +93,38 @@ namespace dexih.connections.webservice
         {
             try
             {
-                if (await ReferenceTransform.ReadAsync(cancellationToken) == false)
-                    return new ReturnValue<object[]>(false, null);
-                else
+                if(!_isOpen)
                 {
-                    List<Filter> filters = new List<Filter>();
-
-                    foreach (JoinPair join in JoinPairs)
-                    {
-                        var joinValue = join.JoinColumn == null ? join.JoinValue : ReferenceTransform[join.JoinColumn].ToString();
-
-                        filters.Add(new Filter()
-                        {
-                            Column1 = join.SourceColumn,
-                            CompareDataType = ETypeCode.String,
-                            Operator = Filter.ECompare.IsEqual,
-                            Value2 = joinValue
-                        });
-                    }
-
-                    var result = await LookupRow(filters);
-
-                    return result;
+                    return new ReturnValue<object[]>(false, "The read record failed as the excel file is not open.", null);
                 }
+
+                _currentRow++;
+
+                if(_currentRow > _excelWorkSheetRows)
+                {
+                    return new ReturnValue<object[]>(false, null);
+                }
+
+                var row = new object[_excelWorkSheetColumns];
+
+                return await Task.Run(() =>
+				{
+
+				    for (int col = 1; col <= _excelWorkSheetColumns; col++)
+				    {
+				        row[col-1] = _excelWorkSheet.Cells[_currentRow, col].Value.ToString();
+				    }
+
+				    return new ReturnValue<object[]>(true, row);
+				});
+                   
             }
             catch (Exception ex)
             {
-                throw new Exception("The restful service failed due to the following error: " + ex.Message, ex);
+                throw new Exception("The read record failed due to the following error: " + ex.Message, ex);
             }
         }
 
-        public override bool CanLookupRowDirect { get; } = true;
-
-        /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
-        {
-            return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters);
-         }
+        public override bool CanLookupRowDirect { get; } = false;
     }
 }
