@@ -104,9 +104,27 @@ namespace dexih.transforms
         }
 
 
-        public override Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public async override Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+            return await Task.Run(() => {
+                var timer = Stopwatch.StartNew();
+                Table insertTable = Tables[table.TableName];
+
+                foreach (var query in queries)
+                {
+                    object[] row = new object[table.Columns.Count];
+                    foreach(var item in query.InsertColumns)
+                    {
+                        var ordinal = table.Columns.GetOrdinal(item.Column.ColumnName);
+                        row[ordinal] = item.Value;
+                    }
+
+                    insertTable.Data.Add(row);
+                }
+
+                timer.Stop();
+                return new ReturnValue<Tuple<long, long>>(true, Tuple.Create<long, long>(0, timer.ElapsedTicks));
+            });
         }
 
         public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
@@ -191,9 +209,12 @@ namespace dexih.transforms
             return reader;
         }
 
-        public override Task<ReturnValue<bool>> TableExists(Table table)
+        public async override Task<ReturnValue<bool>> TableExists(Table table)
         {
-            throw new NotImplementedException();
+            return await Task.Run(() =>
+            {
+                return new ReturnValue<bool>(true, Tables.ContainsKey(table.TableName));
+            });
         }
     }
 }

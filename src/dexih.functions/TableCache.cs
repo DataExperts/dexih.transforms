@@ -12,6 +12,13 @@ namespace dexih.functions
         private List<object[]> Data;
         private int StartIndex = 0;
 
+        public TableCache()
+        {
+            MaxRows = 0;
+            Data = new List<object[]>();
+            StartIndex = 0;
+        }
+
         public TableCache(int maxRows = 0)
         {
             MaxRows = maxRows;

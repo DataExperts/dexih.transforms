@@ -14,6 +14,8 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using static dexih.functions.DataType;
 using System.Net;
+using System.Diagnostics;
+using System.Text;
 
 namespace dexih.connections.dexih
 {
@@ -32,18 +34,38 @@ namespace dexih.connections.dexih
         public override string DatabaseTypeName => "Dexih Hub";
         public override ECategory DatabaseCategory => ECategory.Hub;
 
-		public async Task<ReturnValue<JObject>> HttpPost(string function, HttpContent content)
-		{
-			var loginResult = await Login();
-			if (!loginResult.Success)
-			{
-				return new ReturnValue<JObject>(loginResult);
-			}
+        private int _rowsPerBufffer = 1000;
+        private string _continuationToken;
 
-			HttpClientHandler handler = new HttpClientHandler()
-			{
-				CookieContainer = loginResult.Value
-			};
+        public void SetContinuationToken(string continuationToken)
+        {
+            _continuationToken = continuationToken; ;
+        }
+
+		public async Task<ReturnValue<JObject>> HttpPost(string function, HttpContent content, bool authenticate)
+		{
+            HttpClientHandler handler;
+            if (authenticate)
+            {
+                var loginResult = await Login();
+                if (!loginResult.Success)
+                {
+                    return new ReturnValue<JObject>(loginResult);
+                }
+
+                handler = new HttpClientHandler()
+                {
+                    CookieContainer = loginResult.Value
+                };
+            }
+            else
+            {
+                CookieContainer cookies = new CookieContainer();
+                handler = new HttpClientHandler()
+                {
+                    CookieContainer = cookies
+                };
+            }
 
 			//Login to the web server to receive an authenicated cookie.
 			using (HttpClient httpClient = new HttpClient(handler))
@@ -115,14 +137,14 @@ namespace dexih.connections.dexih
 			}
 		}
 
-        public override Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
-            throw new NotImplementedException();
+            return await Task.Run(() => new ReturnValue(true));
         }
 
         public override async Task<ReturnValue<List<string>>> GetDatabaseList()
         {
-			var result = await HttpPost("GetHubs", null);
+			var result = await HttpPost("GetHubs", null, true);
 			if(!result.Success)
 			{
 				return new ReturnValue<List<string>>(result);
@@ -141,7 +163,7 @@ namespace dexih.connections.dexih
 				new KeyValuePair<string, string>("HubName", DefaultDatabase)
 			});
 
-			var result = await HttpPost("GetTables", content);
+			var result = await HttpPost("GetTables", content, true);
 			if (!result.Success)
 			{
 				return new ReturnValue<List<Table>>(result);
@@ -160,16 +182,18 @@ namespace dexih.connections.dexih
         /// <param name="Properties">Mandatory property "RestfulUri".  Additional properties for the default column values.  Use ColumnName=value</param>
         /// <returns></returns>
          public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable)
-        {
+         {
 			try
 			{
 				var content = new FormUrlEncodedContent(new[]
 				{
 					new KeyValuePair<string, string>("HubName", DefaultDatabase),
-					new KeyValuePair<string, string>("TableName", importTable.TableName),
+                    new KeyValuePair<string, string>("SourceConnectionName", importTable.SourceConnectionName),
+                    new KeyValuePair<string, string>("TableSchema", importTable.TableSchema),
+                    new KeyValuePair<string, string>("TableName", importTable.TableName),
 				});
 
-				var result = await HttpPost("GetTableInfo", content);
+				var result = await HttpPost("GetTableInfo", content, true);
 				if (!result.Success)
 				{
 					return new ReturnValue<Table>(result);
@@ -199,9 +223,9 @@ namespace dexih.connections.dexih
 			throw new NotImplementedException();
 		}
 
-        public override Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+            return await Task.Run(() => new ReturnValue(true));
         }
 
         public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
@@ -239,9 +263,65 @@ namespace dexih.connections.dexih
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
+        public override async Task<ReturnValue> DataWriterStart(Table table)
         {
-            throw new NotImplementedException();
+            return await Task.Run(() =>
+            {
+                _continuationToken = table.GetExtendedProperty("ContinuationToken");
+                // _rowsPerBufffer = table.GetExtendedProperty("rowsPerBuffer");
+
+                return new ReturnValue(true);
+            });
+        }
+
+        public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Stopwatch timer = Stopwatch.StartNew();
+
+                bool readerOpen = true;
+
+                while (readerOpen)
+                {
+                    var dataSet = new List<object[]>();
+                    int bufferCount = 0;
+
+                    while (bufferCount < _rowsPerBufffer && cancellationToken.IsCancellationRequested == false)
+                    {
+                        readerOpen = await reader.ReadAsync(cancellationToken);
+
+                        var row = new object[reader.FieldCount];
+                        reader.GetValues(row);
+                        dataSet.Add(row);
+
+                        if (!readerOpen) break;
+                        bufferCount++;
+                    }
+
+                    var pushData = new PushData()
+                    {
+                        ContinuationToken = _continuationToken,
+                        IsFinalBuffer = !readerOpen,
+                        DataSet = dataSet
+                    };
+
+                    string message = Json.SerializeObject(pushData, "");
+                    var content = new StringContent(message, Encoding.UTF8, "application/json");
+
+                    var postResult = await HttpPost("PushData", content, false);
+                    if (!postResult.Success)
+                    {
+                        return new ReturnValue<long>(postResult);
+                    }
+                }
+
+                return new ReturnValue<long>(true, timer.ElapsedTicks);
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<long>(false, "The file could not be written to due to the following error: " + ex.Message, ex);
+            }
         }
 
         public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null )
@@ -255,6 +335,22 @@ namespace dexih.connections.dexih
             throw new NotImplementedException();
         }
 
+        public override async Task<ReturnValue> CompareTable(Table table)
+        {
+            return await Task.Run(() =>
+            {
+                return new ReturnValue(true);
+            });
 
+        }
+
+        private class PushData
+        {
+            public string ContinuationToken { get; set; }
+            public bool IsFinalBuffer { get; set; }
+            public List<object[]> DataSet { get; set; }
+        }
     }
+
+    
 }

@@ -15,6 +15,7 @@ using static dexih.functions.DataType;
 using static dexih.transforms.Transform;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Net.Http;
 
 namespace dexih.transforms
 {

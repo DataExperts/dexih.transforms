@@ -16,11 +16,10 @@ namespace dexih.connections.dexih
     {
         private bool _isOpen = false;
 
-		private JEnumerable<JToken> dataset;
-		private int datasetRow;
-		private bool datasetComplete;
-		private string continuationToken;
-
+		private int _datasetRow;
+        private object[][] _dataset;
+        private ERealTimeQueueStatus _datasetStatus;
+		private string _continuationToken;
 
         public ReaderDexih(Connection connection, Table table, Transform referenceTransform)
         {
@@ -44,23 +43,31 @@ namespace dexih.connections.dexih
             {
                 if (_isOpen)
                 {
-                    return new ReturnValue(false, "The web service connection is already open.", null);
+                    return new ReturnValue(false, "The information hub connection is already open.", null);
                 }
 
-				var message = Json.SerializeObject(new { TableName = CacheTable.TableName, Query = query }, "");
+				var message = Json.SerializeObject(new {HubName = ReferenceConnection.DefaultDatabase, SourceConnectionName = CacheTable.SourceConnectionName, TableName = CacheTable.TableName, TableSchema = CacheTable.TableSchema, Query = query }, "");
 				var content = new StringContent(message, Encoding.UTF8, "application/json");
-				var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("GetTableData", content);
+				var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("OpenTableQuery", content, true);
 
 				if(!response.Success)
 				{
 					return response;
 				}
-				continuationToken = response.Value["continuationToken"].ToString();
-				datasetComplete = (bool)response.Value["datasetComplete"];
-				dataset = response.Value["dataset"].Children();
-				datasetRow = 0;
 
-                //create a dummy inreader to allow fieldcount and other queries to work.
+                var returnMessage = Json.JTokenToObject<RemoteMessage>(response.Value, null);
+
+                if(returnMessage.Success == false)
+                {
+                    return new ReturnValue(false, returnMessage.Message, returnMessage.Exception);
+                }
+
+				_continuationToken = response.Value["continuationToken"].ToString();
+                ((ConnectionDexih)ReferenceConnection).SetContinuationToken(_continuationToken);
+                CacheTable.SetExtendedProperty("continuationToken", _continuationToken);
+
+				_datasetRow = 0;
+
                 return new ReturnValue(true);
             }
             catch (Exception ex)
@@ -88,40 +95,50 @@ namespace dexih.connections.dexih
         {
             try
             {
-				if (datasetRow < dataset.Count())
+				if (_dataset != null && _datasetRow < _dataset.Count())
 				{
-					var result = dataset[datasetRow].ToArray<object>();
-					datasetRow++;
-					return new ReturnValue<object[]>(true, result);
+					var row = _dataset[_datasetRow];
+					_datasetRow++;
+					return new ReturnValue<object[]>(true, row);
 				}
-				else if(datasetComplete)
+				else if(!(_datasetStatus == ERealTimeQueueStatus.NotComplete))
 				{
 					_isOpen = false;
 					return new ReturnValue<object[]>(false, null);
 				}
 				else
 				{
-					var message = Json.SerializeObject(new { ContinuationToken = continuationToken }, "");
-					var content = new StringContent(message, Encoding.UTF8, "application/json");
-					var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("GetTableData", content);
+                    //var message = Json.SerializeObject(new { ContinuationToken = _continuationToken }, "");
+                    //var content = new StringContent(message, Encoding.UTF8, "application/json");
+                    var content = new FormUrlEncodedContent(new[]
+                    {
+                        new KeyValuePair<string, string>("ContinuationToken", _continuationToken),
+                    });
+                    var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("PopData", content, false);
 
 					if (!response.Success)
 					{
 						return new ReturnValue<object[]>(response);
 					}
-					continuationToken = response.Value["continuationToken"].ToString();
-					datasetComplete = (bool)response.Value["datasetComplete"];
-					dataset = response.Value["dataset"].Children();
 
-					if(dataset.Count() == 0){
+                    var popData = response.Value.ToObject<ReturnValue<RealTimeQueuePackage<object[][]>>>();
+
+                    if(!popData.Success)
+                    {
+                        return new ReturnValue<object[]>(popData);
+                    }
+                    _datasetStatus = popData.Value.Status;
+                    _dataset = popData.Value.Package;
+
+					if(_dataset == null || _dataset.Count() == 0){
 						_isOpen = false;
 						return new ReturnValue<object[]>(false, null);
 					}
 					else
 					{
-						var result = dataset[0].ToArray<object>();
-						datasetRow = 1;
-						return new ReturnValue<object[]>(true, result);
+						var row = _dataset[0];
+						_datasetRow = 1;
+						return new ReturnValue<object[]>(true, row);
 					}
 				}
             }

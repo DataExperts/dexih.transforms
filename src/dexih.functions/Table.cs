@@ -76,7 +76,13 @@ namespace dexih.functions
 		/// <value>The table schema.</value>
 		public string TableSchema { get; set; }
 
-		/// <summary>
+        /// <summary>
+        /// The name of the source connection when pointing to an another hub
+        /// </summary>
+        /// <value>The table connection.</value>
+        public string SourceConnectionName { get; set; }
+
+        /// <summary>
         /// A logical name for the table.
         /// </summary>
         public string LogicalName { get; set; }
