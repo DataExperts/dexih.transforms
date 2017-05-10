@@ -13,11 +13,6 @@ namespace dexih.functions
             {
                 return null;
             }
-            if(encryptionKey == null)
-            {
-                return JsonConvert.SerializeObject(value, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-            }
-            
             return JsonConvert.SerializeObject(value, new JsonSerializerSettings { ContractResolver = new EncryptedStringPropertyResolver(encryptionKey) });
         }
 
@@ -27,11 +22,6 @@ namespace dexih.functions
             {
                 return default(T);
             }
-            if(encryptionKey == null)
-            {
-                return JsonConvert.DeserializeObject<T>(value, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-            }
-
             return JsonConvert.DeserializeObject<T>(value, new JsonSerializerSettings { ContractResolver = new EncryptedStringPropertyResolver(encryptionKey) });
         }
 
@@ -52,11 +42,6 @@ namespace dexih.functions
             {
                 return null;
             }
-            if(encryptionKey == null)
-            {
-                return JToken.FromObject(value, new JsonSerializer { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-            }
-
             return JToken.FromObject(value, new JsonSerializer { ContractResolver = new EncryptedStringPropertyResolver(encryptionKey) });
         }
         

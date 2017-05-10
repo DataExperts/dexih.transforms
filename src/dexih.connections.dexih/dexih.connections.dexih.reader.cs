@@ -97,8 +97,9 @@ namespace dexih.connections.dexih
             {
 				if (_dataset != null && _datasetRow < _dataset.Count())
 				{
-					var row = _dataset[_datasetRow];
-					_datasetRow++;
+					var row = ConvertRow(_dataset[_datasetRow]);
+                    _datasetRow++;
+
 					return new ReturnValue<object[]>(true, row);
 				}
 				else if(!(_datasetStatus == ERealTimeQueueStatus.NotComplete))
@@ -136,7 +137,7 @@ namespace dexih.connections.dexih
 					}
 					else
 					{
-						var row = _dataset[0];
+						var row = ConvertRow( _dataset[0]);
 						_datasetRow = 1;
 						return new ReturnValue<object[]>(true, row);
 					}
@@ -146,6 +147,27 @@ namespace dexih.connections.dexih
             {
                 throw new Exception("The hub reader service failed due to the following error: " + ex.Message, ex);
             }
+        }
+
+        private object[] ConvertRow(object[] row)
+        {
+            for(int i = 0; i < row.Length; i++)
+            {
+                switch(CacheTable.Columns[i].Datatype)
+                {
+                    case ETypeCode.Guid:
+                        row[i] = Guid.Parse(row[i].ToString());
+                        break;
+                }
+
+                if(row[i] is JToken)
+                {
+                    row[i] = DBNull.Value;
+                }
+            }
+
+            return row;
+
         }
 
 		public override bool CanLookupRowDirect { get; } = false;

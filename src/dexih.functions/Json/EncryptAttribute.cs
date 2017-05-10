@@ -18,9 +18,6 @@ namespace dexih.functions
 
         public EncryptedStringPropertyResolver(string encryptionKey)
         {
-            if (encryptionKey == null)
-                throw new ArgumentNullException("encryptionKey");
-
             _encryptionKey = encryptionKey;
         }
 
@@ -28,15 +25,19 @@ namespace dexih.functions
         {
             IList<JsonProperty> props = base.CreateProperties(type, memberSerialization);
 
-            // Find all string properties that have a [JsonEncrypt] attribute applied
-            // and attach an EncryptedStringValueProvider instance to them
-            foreach (JsonProperty prop in props.Where(p => p.PropertyType == typeof(string)))
+            if (_encryptionKey != null)
             {
-                PropertyInfo pi = type.GetProperty(prop.UnderlyingName);
-                if (pi != null && pi.GetCustomAttribute(typeof(JsonEncryptAttribute), true) != null)
+                // Find all string properties that have a [JsonEncrypt] attribute applied
+                // and attach an EncryptedStringValueProvider instance to them
+                foreach (JsonProperty prop in props.Where(p => p.PropertyType == typeof(string)))
                 {
-                    prop.ValueProvider = 
-                        new EncryptedStringValueProvider(pi, _encryptionKey);
+                    PropertyInfo pi = type.GetProperty(prop.UnderlyingName);
+                    if (pi != null && pi.GetCustomAttribute(typeof(JsonEncryptAttribute), true) != null)
+                    {
+                        prop.ValueProvider =
+                            new EncryptedStringValueProvider(pi, _encryptionKey);
+                    }
+
                 }
             }
 

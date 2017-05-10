@@ -274,6 +274,18 @@ namespace dexih.connections.dexih
             });
         }
 
+        public override async Task<ReturnValue> DataWriterFinish(Table table)
+        {
+            var content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("ContinuationToken", _continuationToken),
+            });
+
+            var result = await HttpPost("PushFinish", content, false);
+
+            return new ReturnValue(true);
+        }
+
         public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
@@ -291,28 +303,39 @@ namespace dexih.connections.dexih
                     {
                         readerOpen = await reader.ReadAsync(cancellationToken);
 
+                        if (!readerOpen)
+                        {
+                            break;
+                        }
+
                         var row = new object[reader.FieldCount];
                         reader.GetValues(row);
                         dataSet.Add(row);
-
-                        if (!readerOpen) break;
                         bufferCount++;
                     }
 
-                    var pushData = new PushData()
+                    if (dataSet.Count > 0)
                     {
-                        ContinuationToken = _continuationToken,
-                        IsFinalBuffer = !readerOpen,
-                        DataSet = dataSet
-                    };
+                        var pushData = new PushData()
+                        {
+                            ContinuationToken = _continuationToken,
+                            IsFinalBuffer = false, // !readerOpen,
+                            DataSet = dataSet
+                        };
 
-                    string message = Json.SerializeObject(pushData, "");
-                    var content = new StringContent(message, Encoding.UTF8, "application/json");
+                        string message = Json.SerializeObject(pushData, "");
+                        var content = new StringContent(message, Encoding.UTF8, "application/json");
 
-                    var postResult = await HttpPost("PushData", content, false);
-                    if (!postResult.Success)
-                    {
-                        return new ReturnValue<long>(postResult);
+                        var postResult = await HttpPost("PushData", content, false);
+                        if (!postResult.Success)
+                        {
+                            return new ReturnValue<long>(postResult);
+                        }
+
+                        if (postResult.Value["success"].ToString() == "false")
+                        {
+                            return new ReturnValue<long>(false, postResult.Value["message"].ToString(), new Exception(postResult.Value["exceptionDetails"].ToString()));
+                        }
                     }
                 }
 
