@@ -1,33 +1,162 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 namespace dexih.functions
 {
-    /// <summary>
-    /// A static class for reflection type functions
-    /// </summary>
-    public static class Reflection
+	[AttributeUsage(AttributeTargets.Property)]
+	public class CollectionKeyAttribute : Attribute
+	{
+	}
+
+	[AttributeUsage(AttributeTargets.Property)]
+	public class IsValidAttribute : Attribute
+	{
+	}
+
+	[AttributeUsage(AttributeTargets.Property)]
+	public class ParentCollectionKeyAttribute : Attribute
+	{
+	}
+
+	/// <summary>
+	/// A static class for reflection type functions
+	/// </summary>
+	public static class Reflection
     {
         /// <summary>
         /// Extension for 'Object' that copies the properties to a destination object.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="destination">The destination.</param>
-        public static void CopyProperties(this object source, object destination, bool onlyPrimaryProperties = false)
+        public static void CopyProperties(this object source, object destination, bool onlyPrimaryProperties = false, object parentKeyValue = null)
         {
-            // If any this null throw an exception
-            if (source == null || destination == null)
-                throw new Exception("Source or/and Destination Objects are null");
-                // Getting the Types of the objects
+			// If any this null throw an exception
+			if (source == null || destination == null)
+			{
+				throw new Exception("Source or/and Destination Objects are null");
+			}
+            
+			// Getting the Types of the objects
             Type typeDest = destination.GetType();
             Type typeSrc = source.GetType();
 
             // Iterate the Properties of the source instance and  
             // populate them from their desination counterparts  
             PropertyInfo[] srcProps = typeSrc.GetProperties();
-            foreach (PropertyInfo srcProp in srcProps)
+
+			// get the collectionKey value first
+			object collectionKeyValue = null;
+			foreach (PropertyInfo srcProp in srcProps)
+			{
+				if (srcProp.GetCustomAttribute(typeof(CollectionKeyAttribute), true) != null)
+				{
+					collectionKeyValue = srcProp.GetValue(destination);
+				}
+			}
+
+			foreach (PropertyInfo srcProp in srcProps)
             {
+				PropertyInfo targetProperty = typeDest.GetProperty(srcProp.Name);
+
+				if (!onlyPrimaryProperties)
+				{
+					// if the item is a collection, then iterate through each property
+				if (srcProp.PropertyType.IsNonStringEnumerable())
+					{
+						var srcCollection = (IEnumerable)srcProp.GetValue(source, null);
+						var targetCollection = (IEnumerable)targetProperty.GetValue(destination, null);
+						var addMethod = targetCollection.GetType().GetMethod("Add");
+
+						var typeCollectionArgument = srcCollection.GetType().GetGenericArguments();
+						if (typeCollectionArgument.Length > 0)
+						{
+							Type typeCollection = typeCollectionArgument[0];
+
+							PropertyInfo[] collectionProps = typeCollection.GetProperties();
+							PropertyInfo keyAttribute = null;
+							PropertyInfo isValidAttribute = null;
+
+							foreach (var prop in collectionProps)
+							{
+								if (prop != null && prop.GetCustomAttribute(typeof(CollectionKeyAttribute), true) != null)
+								{
+									keyAttribute = prop;
+								}
+								if (prop != null && prop.GetCustomAttribute(typeof(IsValidAttribute), true) != null)
+								{
+									isValidAttribute = prop;
+								}
+							}
+
+							// if there is an IsValid attribute, set all target items to isvalid = false.  
+							if (isValidAttribute != null && keyAttribute != null)
+							{
+								foreach (var item in targetCollection)
+								{
+									isValidAttribute.SetValue(item, false);
+								}
+							}
+
+							foreach (var item in srcCollection)
+							{
+								object targetItem = null;
+								object keyvalue = null;
+								if (keyAttribute != null)
+								{
+									keyvalue = keyAttribute.GetValue(item);
+									foreach (var matchItem in targetCollection)
+									{
+										var targetValue = keyAttribute.GetValue(matchItem);
+										if ( Object.Equals(targetValue, keyvalue))
+										{
+											if (targetItem != null)
+											{
+												throw new Exception($"The collections could not be merge due to multiple target key values of {keyvalue.ToString()} in the collection {typeCollection.ToString()}.");
+											}
+											targetItem = matchItem;
+										}
+									}
+								}
+
+								if (targetItem == null)
+								{
+									targetItem = Activator.CreateInstance(typeCollection);
+									item.CopyProperties(targetItem, false, collectionKeyValue);
+									addMethod.Invoke(targetCollection, new object[] { item });
+								}
+								else
+								{
+									item.CopyProperties(targetItem, false, collectionKeyValue);
+								}
+
+							}
+
+
+
+							//reset all the keyvalues < 0 to 0.  Negative numbers are used to maintain links, but need to be zero before saving datasets to repository.
+							if (keyAttribute != null)
+							{
+								foreach (var item in (IEnumerable)targetCollection)
+								{
+									var itemValue = keyAttribute.GetValue(item);
+									var longValue = Convert.ToInt64(itemValue);
+									if (longValue < 0)
+									{
+										keyAttribute.SetValue(item, 0);
+									}
+								}
+							}
+						}
+						else 
+						{
+							targetProperty.SetValue(destination, srcProp.GetValue(source, null), null);
+						}
+					}
+				}
+
                 if(!IsSimpleType(srcProp.PropertyType))
                 {
                     continue;
@@ -36,8 +165,7 @@ namespace dexih.functions
                 {
                     continue;
                 }
-                PropertyInfo targetProperty = typeDest.GetProperty(srcProp.Name);
-                if (targetProperty == null)
+				if (targetProperty == null)
                 {
                     continue;
                 }
@@ -57,8 +185,14 @@ namespace dexih.functions
                 {
                     continue;
                 }
-                // Passed all tests, lets set the value
-                targetProperty.SetValue(destination, srcProp.GetValue(source, null), null);
+				if (targetProperty.GetCustomAttribute(typeof(ParentCollectionKeyAttribute), true) != null && parentKeyValue != null)
+				{
+					targetProperty.SetValue(destination, parentKeyValue);
+					continue;
+				}
+
+				// Passed all tests, lets set the value
+				targetProperty.SetValue(destination, srcProp.GetValue(source, null), null);
             }
         }
 
@@ -80,6 +214,27 @@ namespace dexih.functions
             (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && IsSimpleType(type.GetGenericArguments()[0]))
             ;
     }
+
+	// 
+	// found at http://stackoverflow.com/questions/3569811/how-to-know-if-a-propertyinfo-is-a-collection
+	//
+
+		public static bool IsNonStringEnumerable(this PropertyInfo pi)
+	{
+		return pi != null && pi.PropertyType.IsNonStringEnumerable();
+	}
+
+	public static bool IsNonStringEnumerable(this object instance)
+	{
+		return instance != null && instance.GetType().IsNonStringEnumerable();
+	}
+
+	public static bool IsNonStringEnumerable(this Type type)
+	{
+		if (type == null || type == typeof(string))
+			return false;
+		return typeof(IEnumerable).IsAssignableFrom(type);
+	}
     }
 
 
