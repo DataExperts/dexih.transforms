@@ -1,4 +1,4 @@
-﻿using dexih.functions;
+﻿﻿using dexih.functions;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace dexih.transforms
+namespace dexih.connections.flatfile
 { 
     
     public class FileFormat

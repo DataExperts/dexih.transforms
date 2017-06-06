@@ -157,7 +157,10 @@ namespace dexih.functions
                 StringBuilder exceptionDetails = new StringBuilder();
                 foreach (var returnValue in returnValues.Where(c => c.Exception != null))
                 {
-                    exceptionDetails.AppendLine("Exception Detials: " + returnValue.ExceptionDetails);
+					if (!string.IsNullOrEmpty(returnValue.ExceptionDetails))
+					{
+						exceptionDetails.AppendLine("Exception Detials: " + returnValue.ExceptionDetails);
+					}
                 }
 
                 return exceptionDetails.ToString();
@@ -301,7 +304,7 @@ namespace dexih.functions
                 {
 					if(string.IsNullOrEmpty(_exceptionDetails))
 					{
-						return Message;
+						return null;
 					}
 					else {
 						return _exceptionDetails;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace dexih.functions
 {
-    public class AsyncAutoResetEvent
+    public class AsyncAutoResetEvent : IDisposable
     {
         private readonly static Task s_completed = Task.FromResult(true);
         private readonly Queue<TaskCompletionSource<bool>> m_waits = new Queue<TaskCompletionSource<bool>>();
@@ -43,6 +43,9 @@ namespace dexih.functions
                 toRelease.SetResult(true);
         }
 
+		public void Dispose()
+		{
 
-    }
+		}
+	}
 }

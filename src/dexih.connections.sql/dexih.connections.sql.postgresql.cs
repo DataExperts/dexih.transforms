@@ -26,6 +26,21 @@ namespace dexih.connections.sql
         public override string DatabaseTypeName => "PostgreSQL";
         public override ECategory DatabaseCategory => ECategory.SqlDatabase;
 
+		public override object ConvertParameterType(object value)
+		{
+            switch (value)
+            {
+                case UInt16 uint16:
+                    return (Int32)uint16;
+                case UInt32 uint32:
+                    return (Int64)uint32;
+				case UInt64 uint64:
+					return (Int64)uint64;
+				default:
+                    return value;
+            }
+		}
+
         public override async Task<ReturnValue<bool>> TableExists(Table table)
         {
             ReturnValue<DbConnection> connectionResult = await NewConnection();
@@ -158,16 +173,15 @@ namespace dexih.connections.sql
                 case ETypeCode.UInt16:
                     sqlType = "int";
                     break;
-                case ETypeCode.Byte:
-                    sqlType = "bit(1)";
-                    break;
-                case ETypeCode.Int16:
+				case ETypeCode.Byte:
+				case ETypeCode.Int16:
                 case ETypeCode.SByte:
                     sqlType = "smallint";
                     break;
                 case ETypeCode.Int64:
                 case ETypeCode.UInt32:
-                    sqlType = "bigint";
+				case ETypeCode.UInt64:
+					sqlType = "bigint";
                     break;
                 case ETypeCode.String:
                     if (length == null)
@@ -178,11 +192,8 @@ namespace dexih.connections.sql
                 case ETypeCode.Single:
                     sqlType = "real";
                     break;
-                case ETypeCode.UInt64:
-                    sqlType = "numeric(20,0)";
-                    break;
                 case ETypeCode.Double:
-                    sqlType = "real";
+                    sqlType = "double precision";
                     break;
                 case ETypeCode.Boolean:
                     sqlType = "bool";
@@ -197,10 +208,7 @@ namespace dexih.connections.sql
                     sqlType = "text";
                     break;
                 case ETypeCode.Binary:
-                    if (length == null)
-                        sqlType = "bytea(10485760)";
-                    else
-                        sqlType = "bytea(" + length.ToString() + ")";
+                    sqlType = "bytea";
                     break;
                 //case TypeCode.TimeSpan:
                 //    SQLType = "time(7)";
@@ -531,7 +539,7 @@ namespace dexih.connections.sql
         {
             switch (SqlType)
             {
-                case "bit": return ETypeCode.Binary;
+                case "bit": return ETypeCode.Boolean;
 				case "varbit": return ETypeCode.Binary;
 				case "bytea": return ETypeCode.Binary;
 
@@ -552,6 +560,7 @@ namespace dexih.connections.sql
 				case "timestamp": return ETypeCode.DateTime;
 				case "timestamp without time zone": return ETypeCode.DateTime;
 				case "timestamp with time zone": return ETypeCode.DateTime;
+                case "interval": return ETypeCode.Time;
 				case "time": return ETypeCode.Time;
 				case "time without time zone": return ETypeCode.Time;
                 case "time with time zone": return ETypeCode.Time;
@@ -686,7 +695,7 @@ namespace dexih.connections.sql
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return NpgsqlTypes.NpgsqlDbType.Varchar;
+                    return NpgsqlTypes.NpgsqlDbType.Smallint;
                 case ETypeCode.SByte:
                     return NpgsqlTypes.NpgsqlDbType.Smallint;
                 case ETypeCode.UInt16:
@@ -694,7 +703,7 @@ namespace dexih.connections.sql
                 case ETypeCode.UInt32:
                     return NpgsqlTypes.NpgsqlDbType.Bigint;
                 case ETypeCode.UInt64:
-                    return NpgsqlTypes.NpgsqlDbType.Varchar;
+                    return NpgsqlTypes.NpgsqlDbType.Bigint;
                 case ETypeCode.Int16:
                     return NpgsqlTypes.NpgsqlDbType.Smallint;
                 case ETypeCode.Int32:
@@ -718,7 +727,7 @@ namespace dexih.connections.sql
                 case ETypeCode.Guid:
                     return NpgsqlTypes.NpgsqlDbType.Varchar;
                 case ETypeCode.Binary:
-                    return NpgsqlTypes.NpgsqlDbType.Bit;
+                    return NpgsqlTypes.NpgsqlDbType.Bytea;
                 default:
                     return NpgsqlTypes.NpgsqlDbType.Varchar;
             }

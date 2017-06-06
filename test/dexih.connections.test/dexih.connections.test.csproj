@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj">
     </ProjectReference>
+    <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
 
     <ItemGroup>

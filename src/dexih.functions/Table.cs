@@ -117,7 +117,9 @@ namespace dexih.functions
 
         public TableColumns Columns { get; protected set; }
 
-        public Dictionary<string, string> ExtendedProperties { get; set; }
+		public string ContinuationToken { get; set; }
+
+		// public Dictionary<string, string> ExtendedProperties { get; set; }
 
         public TableColumn this[string columnName]
         {
@@ -127,26 +129,26 @@ namespace dexih.functions
             }
          }
 
-        public string GetExtendedProperty(string name)
-        {
-            if (ExtendedProperties == null)
-                return null;
-            else if (ExtendedProperties.ContainsKey(name))
-                return ExtendedProperties[name];
-            else
-                return null;
-        }
+        //public string GetExtendedProperty(string name)
+        //{
+        //    if (ExtendedProperties == null)
+        //        return null;
+        //    else if (ExtendedProperties.ContainsKey(name))
+        //        return ExtendedProperties[name];
+        //    else
+        //        return null;
+        //}
 
-        public void SetExtendedProperty(string name, string value)
-        {
-            if (ExtendedProperties == null)
-                ExtendedProperties = new Dictionary<string, string>();
+        //public void SetExtendedProperty(string name, string value)
+        //{
+        //    if (ExtendedProperties == null)
+        //        ExtendedProperties = new Dictionary<string, string>();
 
-            if (ExtendedProperties.ContainsKey(name))
-                ExtendedProperties[name] = value;
-            else
-                ExtendedProperties.Add(name, value);
-        }
+        //    if (ExtendedProperties.ContainsKey(name))
+        //        ExtendedProperties[name] = value;
+        //    else
+        //        ExtendedProperties.Add(name, value);
+        //}
 
 
         #endregion
@@ -378,11 +380,11 @@ namespace dexih.functions
                 Description = Description
             };
 
-            if (ExtendedProperties != null)
-            {
-                foreach (var key in ExtendedProperties.Keys)
-                    table.SetExtendedProperty(key, ExtendedProperties[key]);
-            }
+            //if (ExtendedProperties != null)
+            //{
+            //    foreach (var key in ExtendedProperties.Keys)
+            //        table.SetExtendedProperty(key, ExtendedProperties[key]);
+            //}
 
             table.LogicalName = LogicalName;
 

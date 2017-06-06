@@ -3,6 +3,7 @@ using dexih.functions;
 using System;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace dexih.functions
 {
@@ -83,6 +84,17 @@ namespace dexih.functions
 
 			return null;
 
+		}
+
+		public string GetParametersDetails()
+		{
+			if(Parameters == null)
+			{
+				return "";
+			}
+
+			var parameters = string.Join(",", Parameters.Select(c => c.Key + "=" + c.Value));
+			return parameters;
 		}
     }
 

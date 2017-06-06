@@ -154,7 +154,8 @@ namespace dexih.connections.flatfile
             {
                 return await Task.Run(() =>
                 {
-                    Stream reader = File.OpenRead(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + subDirectory + "/" + "/" + fileName);
+					FlatFile flatFile = (FlatFile)table;
+					Stream reader = File.OpenRead(FilePath() + "/" + flatFile.FileRootPath + "/" + subDirectory + "/" + "/" + fileName);
                     return new ReturnValue<Stream>(true, "", null, reader);
                 });
             }
@@ -170,7 +171,8 @@ namespace dexih.connections.flatfile
             {
                 return await Task.Run(() =>
                 {
-                    Stream reader = File.OpenWrite(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + subDirectory + "/" + "/" + fileName);
+					FlatFile flatFile = (FlatFile)table;
+                    Stream reader = File.OpenWrite(FilePath() + "/" + flatFile.FileRootPath + "/" + subDirectory + "/" + "/" + fileName);
                     return new ReturnValue<Stream>(true, "", null, reader);
                 });
             }
@@ -220,19 +222,21 @@ namespace dexih.connections.flatfile
 
         private string fixFileName(Table table, string fileName)
         {
+			FlatFile flatFile = (FlatFile)table;
+
 			string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
 			string fileNameExtension = Path.GetExtension(fileName);
 
 			int version = 0;
 
 			string newFileName = fileName;
-			while (File.Exists(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName))
+			while (File.Exists(FilePath() + "/" + flatFile.FileRootPath + "/" + flatFile.FileIncomingPath + "/" + newFileName))
 			{
 				version++;
 				newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
 			}
 
-			var filePath = FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath") + "/" + (string)table.GetExtendedProperty("FileIncomingPath") + "/" + newFileName;
+			var filePath = FilePath() + "/" + flatFile.FileRootPath + "/" + flatFile.FileIncomingPath + "/" + newFileName;
 
 			return filePath;
 		}
@@ -259,7 +263,9 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                bool exists = await Task.Run(() => new DirectoryInfo(FilePath() + "/" + (string)table.GetExtendedProperty("FileRootPath")).Exists);
+				FlatFile flatFile = (FlatFile)table;
+
+				bool exists = await Task.Run(() => new DirectoryInfo(FilePath() + "/" + flatFile.FileRootPath).Exists);
                 return new ReturnValue<bool>(true, exists);
             }
             catch(Exception ex)

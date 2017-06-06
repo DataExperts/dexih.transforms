@@ -64,7 +64,7 @@ namespace dexih.connections.dexih
 
 				_continuationToken = response.Value["continuationToken"].ToString();
                 ((ConnectionDexih)ReferenceConnection).SetContinuationToken(_continuationToken);
-                CacheTable.SetExtendedProperty("continuationToken", _continuationToken);
+                CacheTable.ContinuationToken = _continuationToken;
 
 				_datasetRow = 0;
 

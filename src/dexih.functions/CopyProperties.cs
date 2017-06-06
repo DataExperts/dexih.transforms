@@ -21,6 +21,11 @@ namespace dexih.functions
 	{
 	}
 
+	[AttributeUsage(AttributeTargets.Property)]
+	public class IgnoreCopyAttribute : Attribute
+	{
+	}
+
 	/// <summary>
 	/// A static class for reflection type functions
 	/// </summary>
@@ -53,7 +58,7 @@ namespace dexih.functions
 			{
 				if (srcProp.GetCustomAttribute(typeof(CollectionKeyAttribute), true) != null)
 				{
-					collectionKeyValue = srcProp.GetValue(destination);
+					collectionKeyValue = srcProp.GetValue(source);
 				}
 			}
 
@@ -61,13 +66,42 @@ namespace dexih.functions
             {
 				PropertyInfo targetProperty = typeDest.GetProperty(srcProp.Name);
 
+				if (targetProperty == null)
+				{
+					continue;
+				}
+				if (!srcProp.CanRead)
+				{
+					continue;
+				}
+				if (!targetProperty.CanWrite)
+				{
+					continue;
+				}
+
+				if(targetProperty.GetCustomAttribute(typeof(IgnoreCopyAttribute), true) != null)
+				{
+					continue;
+				}
+
 				if (!onlyPrimaryProperties)
 				{
 					// if the item is a collection, then iterate through each property
-				if (srcProp.PropertyType.IsNonStringEnumerable())
+				if (srcProp.PropertyType.IsNonStringEnumerable() && srcProp.CanWrite)
 					{
 						var srcCollection = (IEnumerable)srcProp.GetValue(source, null);
-						var targetCollection = (IEnumerable)targetProperty.GetValue(destination, null);
+						object targetCollection = (IEnumerable)targetProperty.GetValue(destination, null);
+						if (srcCollection == null)
+						{
+							targetProperty.SetValue(destination, null);
+							continue;
+						}
+						if(targetCollection == null)
+						{
+							targetCollection = Activator.CreateInstance(targetProperty.PropertyType);
+							targetProperty.SetValue(destination, null);
+
+						}
 						var addMethod = targetCollection.GetType().GetMethod("Add");
 
 						var typeCollectionArgument = srcCollection.GetType().GetGenericArguments();
@@ -94,7 +128,7 @@ namespace dexih.functions
 							// if there is an IsValid attribute, set all target items to isvalid = false.  
 							if (isValidAttribute != null && keyAttribute != null)
 							{
-								foreach (var item in targetCollection)
+								foreach (var item in (IEnumerable)targetCollection)
 								{
 									isValidAttribute.SetValue(item, false);
 								}
@@ -107,7 +141,7 @@ namespace dexih.functions
 								if (keyAttribute != null)
 								{
 									keyvalue = keyAttribute.GetValue(item);
-									foreach (var matchItem in targetCollection)
+									foreach (var matchItem in (IEnumerable)targetCollection)
 									{
 										var targetValue = keyAttribute.GetValue(matchItem);
 										if ( Object.Equals(targetValue, keyvalue))
@@ -161,18 +195,7 @@ namespace dexih.functions
                 {
                     continue;
                 }
-                if (!srcProp.CanRead)
-                {
-                    continue;
-                }
-				if (targetProperty == null)
-                {
-                    continue;
-                }
-                if (!targetProperty.CanWrite)
-                {
-                    continue;
-                }
+ 
                 if (targetProperty.GetSetMethod(true) != null && targetProperty.GetSetMethod(true).IsPrivate)
                 {
                     continue;

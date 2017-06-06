@@ -29,7 +29,7 @@ using System.IO;
 
 using dexih.connections.flatfile.Resources;
 using dexih.transforms;
-using static dexih.transforms.FileFormat;
+using static dexih.connections.flatfile.FileFormat;
 
 namespace dexih.connections.flatfile
 {

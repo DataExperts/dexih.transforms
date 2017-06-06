@@ -12,6 +12,8 @@ using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.transforms
 {
@@ -48,7 +50,7 @@ namespace dexih.transforms
         }
 
         #region Generic Properties
-
+		[JsonConverter(typeof(StringEnumConverter))]
         public enum EDuplicateStrategy
         {
             Abend,

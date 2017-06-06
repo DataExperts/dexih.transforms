@@ -21,4 +21,7 @@
     </ProjectReference>
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="dexih.connections.flatfile.reader %28copy%29.cs" />
+  </ItemGroup>
 </Project>

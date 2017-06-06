@@ -32,7 +32,7 @@ namespace dexih.connections.test
                 InsertQuery insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
                     new QueryColumn(new TableColumn("IntColumn", DataType.ETypeCode.Int32), 1),
                     new QueryColumn(new TableColumn("StringColumn", DataType.ETypeCode.String), "value1" ),
-                    new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime), "2001-01-21" ),
+                new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime), new DateTime(2001, 01, 21) ),
                     new QueryColumn(new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal), 1.1 ),
                     new QueryColumn(new TableColumn("GuidColumn", DataType.ETypeCode.Guid), Guid.NewGuid() )
             });
@@ -44,7 +44,7 @@ namespace dexih.connections.test
                 insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
                     new QueryColumn(new TableColumn("IntColumn", DataType.ETypeCode.Int32), 2 ),
                     new QueryColumn(new TableColumn("StringColumn", DataType.ETypeCode.String), "value2" ),
-                    new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime), "2001-01-22" ),
+                    new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime), new DateTime(2001, 01, 21) ),
                     new QueryColumn(new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal), 1.2 ),
                     new QueryColumn(new TableColumn("GuidColumn", DataType.ETypeCode.Guid), Guid.NewGuid() )
             });
@@ -85,7 +85,7 @@ namespace dexih.connections.test
                     //run an update query which will change the second date value to 2001-01-21
                     var updateQuery = new UpdateQuery()
                     {
-                        UpdateColumns = new List<QueryColumn>() { new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime),"2001-01-21") },
+                        UpdateColumns = new List<QueryColumn>() { new QueryColumn(new TableColumn("DateColumn", DataType.ETypeCode.DateTime),new DateTime(2001, 01, 21)) },
                         Filters = new List<Filter>() { new Filter() { Column1 = new TableColumn("IntColumn"), Operator = Filter.ECompare.IsEqual, Value2 = 2, CompareDataType = DataType.ETypeCode.Int32 } }
                     };
 

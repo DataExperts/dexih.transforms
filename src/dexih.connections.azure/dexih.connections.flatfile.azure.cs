@@ -262,11 +262,12 @@ namespace dexih.connections.azure
         {
             try
             {
+				FlatFile flatFile = (FlatFile)table;
                 var getDatabaseDirectory = await GetDatabaseDirectory();
                 if (!getDatabaseDirectory.Success)
                     return new ReturnValue<Stream>(getDatabaseDirectory);
 
-                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(flatFile.FileRootPath);
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
                 Stream reader2 = await cloudSubDirectory.GetFileReference(fileName).OpenReadAsync();
                 return new ReturnValue<Stream>(true, "", null, reader2);
@@ -282,11 +283,13 @@ namespace dexih.connections.azure
         {
             try
             {
+				FlatFile flatFile = (FlatFile)table;
+
                 var getDatabaseDirectory = await GetDatabaseDirectory();
                 if (!getDatabaseDirectory.Success)
                     return new ReturnValue<Stream>(getDatabaseDirectory);
 
-                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
+				CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(flatFile.FileRootPath);
                 CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(subDirectory);
                 Stream reader2 = await cloudSubDirectory.GetFileReference(fileName).OpenWriteAsync(1000);
                 return new ReturnValue<Stream>(true, "", null, reader2);
@@ -301,7 +304,9 @@ namespace dexih.connections.azure
         {
             try
             {
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+				FlatFile flatFile = (FlatFile)table;
+
+				string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
                 string fileNameExtension = Path.GetExtension(fileName);
                 int version = 0;
                 string newFileName;
@@ -310,8 +315,8 @@ namespace dexih.connections.azure
                 if (!getDatabaseDirectory.Success)
                     return getDatabaseDirectory;
 
-                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference((string)table.GetExtendedProperty("FileIncomingPath"));
+                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(flatFile.FileRootPath);
+				CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(flatFile.FileIncomingPath);
                 CloudFile cloudFile = cloudSubDirectory.GetFileReference(fileName);
 
                 while (await cloudFile.ExistsAsync())
@@ -355,12 +360,13 @@ namespace dexih.connections.azure
         {
             try
             {
-                var getDatabaseDirectory = await GetDatabaseDirectory();
+				FlatFile flatFile = (FlatFile)table;
+
+				var getDatabaseDirectory = await GetDatabaseDirectory();
                 if (!getDatabaseDirectory.Success)
                     return new ReturnValue<bool>(getDatabaseDirectory);
 
-                CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference((string)table.GetExtendedProperty("FileRootPath"));
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference((string)table.GetExtendedProperty("FileIncomingPath"));
+				CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(flatFile.FileRootPath);
 
                 var exists = await cloudFileDirectory.ExistsAsync();
                 return new ReturnValue<bool>(true, exists);

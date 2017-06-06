@@ -56,23 +56,25 @@ namespace dexih.connections.webservice
         {
             try
             {
-                if (importTable.GetExtendedProperty("RestfulUri") == null )
+				RestFunction restFunction = (RestFunction)importTable;
+
+                if (restFunction.RestfulUri == null )
                 {
                     return new ReturnValue<Table>(false, "The table have not been set for Restful Web Service.  Use the syntax table.SetExtendedProperty(\"RestfulUrl\")=<uri> to set the tables webservice uri.", null);
                 }
 
-                string restfulUri = importTable.GetExtendedProperty("RestfulUri");
-                string rowPath = importTable.GetExtendedProperty("RowPath");
+                string restfulUri = restFunction.RestfulUri;
+                string rowPath = restFunction.RowPath;
 
-                Table table = new Table(importTable.TableName);
-                table.TableName = table.TableName;
+                RestFunction newRestFunction = new RestFunction();
+				newRestFunction.TableName = restFunction.TableName;
 
                 //The new datatable that will contain the table schema
-                table.Columns.Clear();
-                table.Description = "";
-                table.SetExtendedProperty("RestfulUri", restfulUri);
+                newRestFunction.Columns.Clear();
+                newRestFunction.Description = "";
+				newRestFunction.RestfulUri = restfulUri;
 
-                table.LogicalName = table.TableName;
+                newRestFunction.LogicalName = newRestFunction.TableName;
 
                 TableColumn col;
                 var inputJoins = new List<JoinPair>();
@@ -113,7 +115,7 @@ namespace dexih.connections.webservice
                         });
                     }
 
-                    table.Columns.Add(col);
+                    newRestFunction.Columns.Add(col);
                     match = match.NextMatch();
                 }
 
@@ -131,7 +133,7 @@ namespace dexih.connections.webservice
                     AllowDbNull = true,
                     IsUnique = false
                 };
-                table.Columns.Add(col);
+                newRestFunction.Columns.Add(col);
 
                 col = new TableColumn()
                 {
@@ -145,7 +147,7 @@ namespace dexih.connections.webservice
                     AllowDbNull = true,
                     IsUnique = false
                 };
-                table.Columns.Add(col);
+                newRestFunction.Columns.Add(col);
 
                 col = new TableColumn()
                 {
@@ -159,20 +161,20 @@ namespace dexih.connections.webservice
                     AllowDbNull = true,
                     IsUnique = false
                 };
-                table.Columns.Add(col);
+                newRestFunction.Columns.Add(col);
 
                 SelectQuery query = new SelectQuery();
                 query.Columns.Add(new SelectColumn(new TableColumn("Response"), SelectColumn.EAggregate.None));
                 query.Columns.Add(new SelectColumn(new TableColumn("ResponseSuccess"), SelectColumn.EAggregate.None));
-                query.Table = table.TableName;
+                query.Table = newRestFunction.TableName;
                 query.Rows = 1;
 
-                if (table.Columns.Count > 0)
+                if (newRestFunction.Columns.Count > 0)
                 {
                     var ts = new CancellationTokenSource();
                     CancellationToken ct = ts.Token;
 
-                    var data = await GetPreview(table, query, 10000, ct, null, inputJoins);
+                    var data = await GetPreview(newRestFunction, query, 10000, ct, null, inputJoins);
                     if(data.Success == false)
                     {
                         return new ReturnValue<Table>(false, data.Message, data.Exception, null);
@@ -182,7 +184,7 @@ namespace dexih.connections.webservice
                     JObject content;
                     try
                     {
-                        content = JObject.Parse(reader[0][table.GetOrdinal("Response")].ToString());
+                        content = JObject.Parse(reader[0][newRestFunction.GetOrdinal("Response")].ToString());
                     }
                     catch (Exception ex)
                     {
@@ -212,11 +214,11 @@ namespace dexih.connections.webservice
                             col.Description = "Json value of the " + value.Path + " path";
                             col.AllowDbNull = true;
                             col.IsUnique = false;
-                            table.Columns.Add(col);
+                            newRestFunction.Columns.Add(col);
                         }
                     }
                 }
-                return new ReturnValue<Table>(true, table);
+                return new ReturnValue<Table>(true, newRestFunction);
             }
             catch (Exception ex)
             {
@@ -243,9 +245,10 @@ namespace dexih.connections.webservice
         {
             try
             {
+				var restFunction = (RestFunction)table;
                 object[] row = new object[table.Columns.Count];
 
-                string uri = (string)table.GetExtendedProperty("RestfulUri");
+                string uri = restFunction.RestfulUri;
 
                 foreach (var filter in filters)
                 {

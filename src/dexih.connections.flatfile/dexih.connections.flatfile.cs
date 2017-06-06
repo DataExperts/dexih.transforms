@@ -16,8 +16,6 @@ namespace dexih.connections.flatfile
 {
     public abstract class ConnectionFlatFile : Connection
     {
-
-
         public abstract Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password);
         public abstract Task<ReturnValue> CreateDirectory(string rootDirectory, string subDirectory);
         public abstract Task<ReturnValue> MoveFile(string rootDirectory, string fromDirectory, string toDirectory, string fileName);
@@ -49,10 +47,11 @@ namespace dexih.connections.flatfile
         public string LastWrittenFile { get; protected set; } = "";
 
 
-        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+		public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
+			var flatFile = (FlatFile)table;
             //create the subdirectories
-            return await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileIncomingPath"));
+            return await CreateDirectory((string)flatFile.FileRootPath, (string)flatFile.FileIncomingPath);
         }
 
         public override async Task<ReturnValue> CreateDatabase(string databaseName)
@@ -64,64 +63,64 @@ namespace dexih.connections.flatfile
             return returnValue;
         }
 
-        public async Task<ReturnValue> CreateFilePaths(Table table)
+        public async Task<ReturnValue> CreateFilePaths(FlatFile flatFile)
         {
             ReturnValue returnValue;
             //create the subdirectories
-            returnValue = await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileIncomingPath"));
+            returnValue = await CreateDirectory(flatFile.FileRootPath, flatFile.FileIncomingPath);
             if (returnValue.Success == false) return returnValue;
-            returnValue = await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileProcessedPath"));
+            returnValue = await CreateDirectory(flatFile.FileRootPath, flatFile.FileProcessedPath);
             if (returnValue.Success == false) return returnValue;
-            returnValue = await CreateDirectory((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileRejectedPath"));
+            returnValue = await CreateDirectory(flatFile.FileRootPath, flatFile.FileRejectedPath);
             return returnValue;
         }
 
         /// <summary>
         /// Adds a guid to the file name and moves it to the Incoming directory.
         /// </summary>
-        /// <param name="table"></param>
+        /// <param name="flatFile"></param>
         /// <param name="fileName"></param>
         /// <param name="fromDirectory"></param>
         /// <param name="toDirectory"></param>
         /// <returns></returns>
-        public async Task<ReturnValue> MoveFile(Table table, string fileName, string fromDirectory, string toDirectory)
+        public async Task<ReturnValue> MoveFile(FlatFile flatFile, string fileName, string fromDirectory, string toDirectory)
         {
-            return await MoveFile((string)table.GetExtendedProperty("FileRootPath"), fromDirectory, toDirectory, fileName);
+            return await MoveFile(flatFile.FileRootPath, fromDirectory, toDirectory, fileName);
         }
 
-        public async Task<ReturnValue> SaveIncomingFile(Table table, string fileName, Stream fileStream)
+        public async Task<ReturnValue> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream)
         {
-            return await SaveFileStream(table, fileName, fileStream);
+            return await SaveFileStream(flatFile, fileName, fileStream);
         }
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetIncomingFiles(Table table)
+        public async Task<ReturnValue<List<DexihFileProperties>>> GetIncomingFiles(FlatFile flatFile)
         {
-            return await GetFileList((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileIncomingPath"));
+            return await GetFileList(flatFile.FileRootPath, flatFile.FileIncomingPath);
         }
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetRejectedFiles(Table table)
+        public async Task<ReturnValue<List<DexihFileProperties>>> GetRejectedFiles(FlatFile flatFile)
         {
-            return await GetFileList((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileRejectedPath"));
+            return await GetFileList(flatFile.FileRootPath, flatFile.FileRejectedPath);
         }
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetProcessedFiles(Table table)
+        public async Task<ReturnValue<List<DexihFileProperties>>> GetProcessedFiles(FlatFile flatFile)
         {
-            return await GetFileList((string)table.GetExtendedProperty("FileRootPath"), (string)table.GetExtendedProperty("FileProcessedPath"));
+            return await GetFileList(flatFile.FileRootPath, flatFile.FileProcessedPath);
         }
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(Table table, string subDirectory)
+        public async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(FlatFile flatFile, string subDirectory)
         {
-            return await GetFileList((string)table.GetExtendedProperty("FileRootPath"), subDirectory);
+            return await GetFileList(flatFile.FileRootPath, subDirectory);
         }
 
-        public async Task<ReturnValue> DeleteFile(Table table, string subDirectory, string fileName)
+        public async Task<ReturnValue> DeleteFile(FlatFile flatFile, string subDirectory, string fileName)
         {
-            return await DeleteFile((string)table.GetExtendedProperty("FileRootPath"), subDirectory, fileName);
+            return await DeleteFile(flatFile.FileRootPath, subDirectory, fileName);
         }
 
-        public async Task<ReturnValue<Stream>> DownloadFile(Table table, string subDirectory, string fileName)
+        public async Task<ReturnValue<Stream>> DownloadFile(FlatFile flatFile, string subDirectory, string fileName)
         {
-            return await GetReadFileStream(table, subDirectory, fileName);
+            return await GetReadFileStream(flatFile, subDirectory, fileName);
         }
 
         public override async Task<ReturnValue> DataWriterStart(Table table)
@@ -208,29 +207,31 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                if (originalTable.GetExtendedProperty("FileFormat") == null || originalTable.GetExtendedProperty("FileSample") == null)
+				var flatFile = (FlatFile)originalTable;
+
+                if (flatFile.FileFormat == null || flatFile.FileSample == null)
                 {
                     return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileStream.", null);
                 }
 
-                FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(originalTable.GetExtendedProperty("FileFormat"));
+                //FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(originalTable.GetExtendedProperty("FileFormat"));
 
-                if(fileFormat == null)
-                {
-                    return new ReturnValue<Table>(false, "There was no file format specified.", null);
-                }
-                string fileSample = originalTable.GetExtendedProperty("FileSample");
+                //if(fileFormat == null)
+                //{
+                //    return new ReturnValue<Table>(false, "There was no file format specified.", null);
+                //}
+                //string fileSample = originalTable.GetExtendedProperty("FileSample");
 
                 MemoryStream stream = new MemoryStream();
                 StreamWriter writer = new StreamWriter(stream);
-                writer.Write(fileSample);
+                writer.Write(flatFile.FileSample);
                 writer.Flush();
                 stream.Position = 0;
 
                 string[] headers;
                 try
                 {
-                    CsvReader csv = await Task.Run(() => new CsvReader(new StreamReader(stream), fileFormat.Headers));
+                    CsvReader csv = await Task.Run(() => new CsvReader(new StreamReader(stream), flatFile.FileFormat.Headers));
                     headers = await Task.Run(() => csv.GetFieldHeaders());
                     stream.Dispose();
                 }
@@ -240,11 +241,12 @@ namespace dexih.connections.flatfile
                 }
 
                 //The new datatable that will contain the table schema
-                Table table = new Table(originalTable.TableName);
-                table.Columns.Clear();
-                table.LogicalName = table.TableName;
-                table.Description = "";
-                table.SetExtendedProperty("FileFormat", JsonConvert.SerializeObject(fileFormat));
+				FlatFile newFlatFile = new FlatFile();
+				flatFile.TableName = originalTable.TableName;
+                newFlatFile.Columns.Clear();
+                newFlatFile.LogicalName = newFlatFile.TableName;
+                newFlatFile.Description = "";
+                newFlatFile.FileFormat = flatFile.FileFormat;
 
                 TableColumn col;
 
@@ -263,7 +265,7 @@ namespace dexih.connections.flatfile
                         AllowDbNull = true,
                         IsUnique = false
                     };
-                    table.Columns.Add(col);
+                    newFlatFile.Columns.Add(col);
                 }
 
                 col = new TableColumn()
@@ -279,9 +281,9 @@ namespace dexih.connections.flatfile
                     AllowDbNull = false,
                     IsUnique = false
                 };
-                table.Columns.Add(col);
+                newFlatFile.Columns.Add(col);
 
-                return new ReturnValue<Table>(true, table);
+                return new ReturnValue<Table>(true, newFlatFile);
             }
             catch(Exception ex)
             {
@@ -301,14 +303,18 @@ namespace dexih.connections.flatfile
 
         public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
         {
-            //create path for the file management.
-            string rootPath = table.TableName + Guid.NewGuid().ToString();
-            table.SetExtendedProperty("FileIncomingPath", "Incoming");
-            table.SetExtendedProperty("FileProcessedPath", "Processed");
-            table.SetExtendedProperty("FileRejectedPath", "Rejected");
-            table.SetExtendedProperty("FileRootPath", rootPath);
+			FlatFile flatFile = (FlatFile)table;
 
-            await CreateFilePaths(table);
+			//create path for the file management.
+			flatFile.UseCustomFilePaths = false;
+
+            //string rootPath = table.TableName + Guid.NewGuid().ToString();
+            //table.SetExtendedProperty("FileIncomingPath", "Incoming");
+            //table.SetExtendedProperty("FileProcessedPath", "Processed");
+            //table.SetExtendedProperty("FileRejectedPath", "Rejected");
+            //table.SetExtendedProperty("FileRootPath", rootPath);
+
+            await CreateFilePaths(flatFile);
 
             return new ReturnValue(true);
         }
@@ -401,7 +407,8 @@ namespace dexih.connections.flatfile
 
         public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null)
         {
-            var reader = new ReaderFlatFile(this, table);
+			FlatFile flatFile = (FlatFile)table;
+            var reader = new ReaderFlatFile(this, flatFile);
             return reader;
         }
 

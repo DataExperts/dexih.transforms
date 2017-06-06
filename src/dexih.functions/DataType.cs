@@ -63,26 +63,26 @@ namespace dexih.functions
                 case ETypeCode.UInt32:
                     return UInt32.MaxValue;
                 case ETypeCode.UInt64:
-                    return UInt64.MaxValue;
+                    return Int64.MaxValue; //use max value of int64 as some databases don't support uint64 (namely postgreSql)
                 case ETypeCode.Int16:
                     return Int16.MaxValue;
-                case ETypeCode.Int32:
+				case ETypeCode.Int32:
                     return Int32.MaxValue;
-                case ETypeCode.Int64:
+				case ETypeCode.Int64:
                     return Int64.MaxValue;
-                case ETypeCode.Decimal:
-                    return 999999999999999999;
-                case ETypeCode.Double:
+				case ETypeCode.Decimal:
+                    return 999999999999999999; //use arbitrary big number as range varies between databases.  
+				case ETypeCode.Double:
                     return Double.MaxValue / 10;
-                case ETypeCode.Single:
-                    return Single.MaxValue/10;
-                case ETypeCode.String:
+				case ETypeCode.Single:
+                    return Single.MaxValue /10;
+				case ETypeCode.String:
                     return new string('A', Length);
                 case ETypeCode.Boolean:
                     return true;
                 case ETypeCode.DateTime:
-                    return DateTime.MaxValue;
-                case ETypeCode.Time:
+                    return DateTime.Now; //DateTime.MaxValue;
+				case ETypeCode.Time:
                     return TimeSpan.FromDays(1) - TimeSpan.FromMilliseconds(1);
                 case ETypeCode.Guid:
                     return Guid.Parse("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
@@ -101,21 +101,21 @@ namespace dexih.functions
             {
                 case ETypeCode.Byte:
                     return Byte.MinValue;
-                case ETypeCode.SByte:
+				case ETypeCode.SByte:
                     return sbyte.MinValue;
-                case ETypeCode.UInt16:
+				case ETypeCode.UInt16:
                     return UInt16.MinValue;
-                case ETypeCode.UInt32:
+				case ETypeCode.UInt32:
                     return UInt32.MinValue;
-                case ETypeCode.UInt64:
+				case ETypeCode.UInt64:
                     return UInt64.MinValue;
-                case ETypeCode.Int16:
+				case ETypeCode.Int16:
                     return Int16.MinValue;
-                case ETypeCode.Int32:
+				case ETypeCode.Int32:
                     return Int32.MinValue;
-                case ETypeCode.Int64:
+				case ETypeCode.Int64:
                     return Int64.MinValue;
-                case ETypeCode.Decimal:
+				case ETypeCode.Decimal:
                     return -999999999999999999;
                 case ETypeCode.Double:
                     return Double.MinValue / 10;

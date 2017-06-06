@@ -22,7 +22,11 @@ namespace dexih.connections.flatfile
 
         ConnectionFlatFile FileConnection;
 
-        public ReaderFlatFile(Connection connection, Table table)
+		public FlatFile CacheFlatFile {
+			get { return (FlatFile)CacheTable; }
+		}
+
+        public ReaderFlatFile(Connection connection, FlatFile table)
         {
             ReferenceConnection = connection;
             FileConnection = (ConnectionFlatFile)connection;
@@ -48,7 +52,7 @@ namespace dexih.connections.flatfile
                 return new ReturnValue(false, "The file reader connection is already open.", null);
             }
 
-            var fileEnumerator = await ((ConnectionFlatFile)ReferenceConnection).GetFileEnumerator((string)CacheTable.GetExtendedProperty("FileRootPath"), (string)CacheTable.GetExtendedProperty("FileIncomingPath"));
+            var fileEnumerator = await ((ConnectionFlatFile)ReferenceConnection).GetFileEnumerator(CacheFlatFile.FileRootPath, CacheFlatFile.FileIncomingPath);
             if (fileEnumerator.Success == false)
                 return fileEnumerator;
 
@@ -56,19 +60,21 @@ namespace dexih.connections.flatfile
 
             if (_files.MoveNext() == false)
             {
-                return new ReturnValue(false, "There were no files in the incomming directory.", null);
+                return new ReturnValue(false, "There are no files in the incomming directory.", null);
             }
 
-            var fileStream = await ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheTable, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), _files.Current.FileName);
+            var fileStream = await ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheFlatFile, CacheFlatFile.FileIncomingPath, _files.Current.FileName);
             if (fileStream.Success == false)
                 return fileStream;
 
-            string fileFormatString = CacheTable.GetExtendedProperty("FileFormat");
+			//string fileFormatString = CacheTable.GetExtendedProperty("FileFormat");
 
-            if (string.IsNullOrEmpty(fileFormatString))
-                _fileFormat = new FileFormat();
-            else
-                _fileFormat = JsonConvert.DeserializeObject<FileFormat>(CacheTable.GetExtendedProperty("FileFormat"));
+			//if (string.IsNullOrEmpty(fileFormatString))
+			//    _fileFormat = new FileFormat();
+			//else
+			//_fileFormat = JsonConvert.DeserializeObject<FileFormat>(CacheTable.GetExtendedProperty("FileFormat"));
+
+			_fileFormat = CacheFlatFile.FileFormat;
 
             _csvReader = new CsvReader(new StreamReader(fileStream.Value), _fileFormat);
 
@@ -77,7 +83,7 @@ namespace dexih.connections.flatfile
 
         public override string Details()
         {
-            return "SqlConnection";
+            return "FlatFile";
         }
 
         public override bool InitializeOutputFields()
@@ -92,7 +98,7 @@ namespace dexih.connections.flatfile
                 return new ReturnValue(true);
             }
             else
-                return new ReturnValue(false, "The sql reader can not be reset", null);
+                return new ReturnValue(false, "The flatfile reader can not be reset", null);
 
         }
 
@@ -112,7 +118,7 @@ namespace dexih.connections.flatfile
             {
                 _csvReader.CloseFile();
 
-                var moveFileResult = await ((ConnectionFlatFile)ReferenceConnection).MoveFile(CacheTable, _files.Current.FileName, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), (string)CacheTable.GetExtendedProperty("FileProcessedPath")); //backup the completed file
+                var moveFileResult = await ((ConnectionFlatFile)ReferenceConnection).MoveFile(CacheFlatFile, _files.Current.FileName, CacheFlatFile.FileIncomingPath, CacheFlatFile.FileProcessedPath); //backup the completed file
                 if (moveFileResult.Success == false)
                 {
                     throw new Exception("The flatfile reader failed with the following message: " + moveFileResult.Message);
@@ -122,7 +128,7 @@ namespace dexih.connections.flatfile
                     _isOpen = false;
                 else
                 {
-                    var fileStream = await ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheTable, (string)CacheTable.GetExtendedProperty("FileIncomingPath"), _files.Current.FileName);
+                    var fileStream = await ((ConnectionFlatFile)ReferenceConnection).GetReadFileStream(CacheFlatFile, CacheFlatFile.FileIncomingPath, _files.Current.FileName);
                     if (fileStream.Success == false)
                         throw new Exception("The flatfile reader failed with the following message: " + fileStream.Message);
 

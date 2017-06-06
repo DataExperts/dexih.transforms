@@ -1,4 +1,4 @@
-﻿using dexih.functions.RealTimeQueue;
+﻿using dexih.functions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -97,7 +97,7 @@ namespace dexih.functions.tests
             Assert.Equal<ERealTimeQueueStatus>(pop.Status, ERealTimeQueueStatus.NotComplete);
 
             // queue should be available now, so allow push task to complete
-            var push = await pushTask;
+            await pushTask;
 
             pop = await queue.Pop();
             Assert.Equal(pop.Package, 2);

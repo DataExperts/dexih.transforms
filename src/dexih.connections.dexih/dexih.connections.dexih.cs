@@ -267,7 +267,7 @@ namespace dexih.connections.dexih
         {
             return await Task.Run(() =>
             {
-                _continuationToken = table.GetExtendedProperty("ContinuationToken");
+				_continuationToken = table.ContinuationToken;
                 // _rowsPerBufffer = table.GetExtendedProperty("rowsPerBuffer");
 
                 return new ReturnValue(true);

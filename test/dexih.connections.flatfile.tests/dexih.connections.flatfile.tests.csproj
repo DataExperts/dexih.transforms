@@ -16,6 +16,9 @@
     </ProjectReference>
     <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj">
     </ProjectReference>
+    <ProjectReference Include="..\dexih.connections.sql.tests\dexih.connections.sql.tests.csproj" />
+    <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />
+    <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
