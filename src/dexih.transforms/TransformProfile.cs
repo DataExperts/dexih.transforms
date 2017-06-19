@@ -20,7 +20,7 @@ namespace dexih.transforms
             SetInTransform(inTransform);
         }
 
-        bool _lastRecord = false;
+        private bool _lastRecord = false;
 
         private List<Function> _profiles;
 

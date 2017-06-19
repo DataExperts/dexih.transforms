@@ -485,7 +485,7 @@ namespace dexih.connections.azure
 
                     string filterString;
 
-                    if (filter.Value2.GetType().IsArray == true)
+                    if (filter.Value2.GetType().IsArray)
                     {
                         List<object> array = new List<object>();
                         foreach (object value in (Array)filter.Value2)

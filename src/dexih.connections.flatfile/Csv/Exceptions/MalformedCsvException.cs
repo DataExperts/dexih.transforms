@@ -1,5 +1,5 @@
 //	dexih_connection.IO.Csv.MalformedCsvException
-//	Copyright (c) 2005 Sébastien Lorion
+//	Copyright (c) 2005 Sï¿½bastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
 //
@@ -37,27 +37,27 @@ namespace dexih.connections.flatfile
 		/// <summary>
 		/// Contains the message that describes the error.
 		/// </summary>
-		private string _message;
+		private readonly string _message;
 
 		/// <summary>
 		/// Contains the raw data when the error occured.
 		/// </summary>
-		private string _rawData;
+		private readonly string _rawData;
 
 		/// <summary>
 		/// Contains the current field index.
 		/// </summary>
-		private int _currentFieldIndex;
+		private readonly int _currentFieldIndex;
 
 		/// <summary>
 		/// Contains the current record index.
 		/// </summary>
-		private long _currentRecordIndex;
+		private readonly long _currentRecordIndex;
 
 		/// <summary>
 		/// Contains the current position in the raw data.
 		/// </summary>
-		private int _currentPosition;
+		private readonly int _currentPosition;
 
 		#endregion
 

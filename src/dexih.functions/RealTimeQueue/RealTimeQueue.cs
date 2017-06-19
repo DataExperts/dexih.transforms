@@ -13,13 +13,13 @@ namespace dexih.functions {
     /// </summary>
 	public class RealTimeQueue<T>
 	{
-		private ConcurrentQueue<T> _realtimeQueue;
-        private int _maxSize = 2;
-        private int _defaulttimeOutMilliseconds = 5000; //default timeout 5seconds
+		private readonly ConcurrentQueue<T> _realtimeQueue;
+        private readonly int _maxSize = 2;
+        private readonly int _defaulttimeOutMilliseconds = 5000; //default timeout 5seconds
 
-        private AsyncAutoResetEvent _popEvent = new AsyncAutoResetEvent();
-        private AsyncAutoResetEvent _pushEvent = new AsyncAutoResetEvent();
-        private AsyncAutoResetEvent _cancelEvent = new AsyncAutoResetEvent();
+        private readonly AsyncAutoResetEvent _popEvent = new AsyncAutoResetEvent();
+        private readonly AsyncAutoResetEvent _pushEvent = new AsyncAutoResetEvent();
+        private readonly AsyncAutoResetEvent _cancelEvent = new AsyncAutoResetEvent();
 
         public bool IsCancelled { get; set; } = false;
         public bool IsFinished { get; set; } = false;

@@ -17,10 +17,10 @@ namespace dexih.transforms
     /// </summary>
     public class TransformLookup : Transform
     {
-        int _primaryFieldCount;
-        int _referenceFieldCount;
+        private int _primaryFieldCount;
+        private int _referenceFieldCount;
 
-        string _referenceTableName;
+        private string _referenceTableName;
 
         public TransformLookup() { }
 

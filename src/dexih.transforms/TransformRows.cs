@@ -22,9 +22,9 @@ namespace dexih.transforms
             SetInTransform(inTransform, null);
         }
 
-        bool _firstRecord;
+        private bool _firstRecord;
 
-        List<string> _passThroughFields;
+        private List<string> _passThroughFields;
 
         //Row generate is used to cache the return value of the row generation functions.  An array is used to allow stacking of row generations.
         private bool[] _rowGenerate;

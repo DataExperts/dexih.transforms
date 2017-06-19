@@ -374,7 +374,7 @@ namespace dexih.connections.sql
                         sql.Append(" " + AddDelimiter(filter.Column2.ColumnName) + " ");
                     else
                     {
-                        if(filter.Value2.GetType().IsArray == true)
+                        if(filter.Value2.GetType().IsArray)
                         {
                             List<string> array = new List<string>();
                             foreach (object value in (Array)filter.Value2)

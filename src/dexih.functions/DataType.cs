@@ -392,13 +392,13 @@ namespace dexih.functions
                         compareResult = String.Compare(inputValue.ToString(), compareValue.ToString());
                         return new ReturnValue<ECompareResult>(true, compareResult == 0 ? ECompareResult.Equal : compareResult < 0 ? ECompareResult.Less : ECompareResult.Greater);
                     case ETypeCode.Boolean:
-                        return new ReturnValue<ECompareResult>(true, (Boolean)inputValue == (Boolean)compareValue ? ECompareResult.Equal : (Boolean)inputValue == true ? ECompareResult.Greater : ECompareResult.Less );
+                        return new ReturnValue<ECompareResult>(true, (Boolean)inputValue == (Boolean)compareValue ? ECompareResult.Equal : (Boolean)inputValue ? ECompareResult.Greater : ECompareResult.Less );
                     case ETypeCode.DateTime:
                         return new ReturnValue<ECompareResult>(true, (DateTime)inputValue == (DateTime)compareValue ? ECompareResult.Equal : (DateTime)inputValue > (DateTime)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Time:
                         return new ReturnValue<ECompareResult>(true, (TimeSpan)inputValue == (TimeSpan)compareValue ? ECompareResult.Equal : (TimeSpan)inputValue > (TimeSpan)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Binary:
-                        return new ReturnValue<ECompareResult>(true, StructuralComparisons.StructuralEqualityComparer.Equals(inputValue, compareValue) == true ? ECompareResult.Equal : ECompareResult.Greater);
+                        return new ReturnValue<ECompareResult>(true, StructuralComparisons.StructuralEqualityComparer.Equals(inputValue, compareValue) ? ECompareResult.Equal : ECompareResult.Greater);
                     default:
                         return new ReturnValue<ECompareResult>(false, "Unsupported datatype: " + dataType, null);
                 }

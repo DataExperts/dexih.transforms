@@ -30,7 +30,7 @@ namespace dexih.connections.sql
         {
             string sql = "";
 
-            if (table.IsVersioned == true)
+            if (table.IsVersioned)
                 sql = "FOR system_time all";
 
             sql = sql + " WITH(NOLOCK) ";
@@ -632,7 +632,7 @@ namespace dexih.connections.sql
                             else
                             {
                                 //add the primary key
-                                if (Convert.ToBoolean(reader["PrimaryKey"]) == true)
+                                if (Convert.ToBoolean(reader["PrimaryKey"]))
                                     col.DeltaType = TableColumn.EDeltaType.NaturalKey;
                                 else
                                     col.DeltaType = TableColumn.EDeltaType.TrackingField;

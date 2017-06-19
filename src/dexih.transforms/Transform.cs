@@ -503,7 +503,7 @@ namespace dexih.transforms
 
         private bool isResetting = false; //flag to indicate reset is underway.
         public object[] CurrentRow { get; protected set; } //stores data for the current row.
-        bool CurrentRowCached;
+        private bool CurrentRowCached;
         protected int CurrentRowNumber = -1; //current row number
 
         /// <summary>
@@ -626,7 +626,7 @@ namespace dexih.transforms
                     while (await ReadAsync())
                     {
                         //does a lookup, using the record count to only check the latest record.
-                        if (lookupResult.Success == true)
+                        if (lookupResult.Success)
                             return lookupResult;
                     }
 
@@ -665,7 +665,7 @@ namespace dexih.transforms
 
         #region DbDataReader Implementation
 
-        bool _isFirstRead = true;
+        private bool _isFirstRead = true;
 
         public override bool Read()
         {
@@ -682,7 +682,7 @@ namespace dexih.transforms
                 if (IsReader && IsPrimaryTransform)
                 {
                     //get the incremental column (if it exists)
-                    var incrementalCol = CacheTable.Columns.Where(c => c.IsIncrementalUpdate == true).ToArray();
+                    var incrementalCol = CacheTable.Columns.Where(c => c.IsIncrementalUpdate).ToArray();
                     if (incrementalCol.Length == 1)
                     {
                         IncrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].ColumnName);
@@ -712,7 +712,7 @@ namespace dexih.transforms
                 }
             }
 
-            if (IsReaderFinished == true)
+            if (IsReaderFinished)
             {
                 CurrentRow = null;
                 TransformTimer.Stop();
@@ -760,7 +760,7 @@ namespace dexih.transforms
             }
 
             //add the row to the cache
-            if (returnValue.Success == true && !CurrentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
+            if (returnValue.Success && !CurrentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
                 CacheTable.Data.Add(CurrentRow);
 
             TransformTimer.Stop();

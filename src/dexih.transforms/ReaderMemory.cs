@@ -25,7 +25,7 @@ namespace dexih.transforms
             }
         }
 
-        List<Sort> _sortFields;
+        private readonly List<Sort> _sortFields;
 
         #region Constructors
         public ReaderMemory(Table dataTable,  List<Sort> sortFields = null)

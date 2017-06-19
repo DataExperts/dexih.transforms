@@ -23,9 +23,9 @@ namespace dexih.transforms
             SetInTransform(inTransform, null);
         }
 
-        List<int> _passThroughFields;
-        List<int> _mapFieldOrdinals; 
-        List<int> _functionInputOrdinals;
+        private List<int> _passThroughFields;
+        private List<int> _mapFieldOrdinals;
+        private List<int> _functionInputOrdinals;
 
         public List<Function> Mappings
         {

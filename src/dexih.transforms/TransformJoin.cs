@@ -30,21 +30,21 @@ namespace dexih.transforms
             SetInTransform(primaryTransform, joinTransform);
         }
 
-        bool _firstRead;
-        SortedDictionary<object[], List<object[]>> _joinHashData; //stores all the reference data grouped by the join keys (used for hashjoin).
+        private bool _firstRead;
+        private SortedDictionary<object[], List<object[]>> _joinHashData; //stores all the reference data grouped by the join keys (used for hashjoin).
 
-        object[] _groupFields;
-        List<object[]> _groupData; 
-        List<object[]> _filterdGroupData; 
-        bool _writeGroup = false; //indicates a group is being written out
-        int _writeGroupPosition; //indicates the position in the group.
-        bool _joinReaderOpen;
-        bool _groupsOpen;
-        int[] _joinKeyOrdinals;
-        int[] _sourceKeyOrdinals;
-        string _referenceTableName;
+        private object[] _groupFields;
+        private List<object[]> _groupData;
+        private List<object[]> _filterdGroupData;
+        private bool _writeGroup = false; //indicates a group is being written out
+        private int _writeGroupPosition; //indicates the position in the group.
+        private bool _joinReaderOpen;
+        private bool _groupsOpen;
+        private int[] _joinKeyOrdinals;
+        private int[] _sourceKeyOrdinals;
+        private string _referenceTableName;
 
-        List<Function> joinFilters = new List<Function>();
+        private readonly List<Function> joinFilters = new List<Function>();
 
 
         public enum EJoinAlgorithm
@@ -53,8 +53,8 @@ namespace dexih.transforms
         }
         public EJoinAlgorithm JoinAlgorithm { get; protected set; }
 
-        int _primaryFieldCount;
-        int _referenceFieldCount;
+        private int _primaryFieldCount;
+        private int _referenceFieldCount;
 
         public override bool InitializeOutputFields()
         {
@@ -365,7 +365,7 @@ namespace dexih.transforms
                             }
                         }
 
-                        if (matchFound == true)
+                        if (matchFound)
                             _filterdGroupData.Add(row);
                     }
                 }
@@ -491,7 +491,7 @@ namespace dexih.transforms
                     if (x[i] is String)
                         greater = String.Compare((String)x[i], (String)y[i]) > 0;
                     if (x[i] is Boolean)
-                        greater = (Boolean)x[i] == false && (Boolean)y[i] == true;
+                        greater = (Boolean)x[i] == false && (Boolean)y[i];
                     if (x[i] is DateTime)
                         greater = (DateTime)x[i] > (DateTime)y[i];
 

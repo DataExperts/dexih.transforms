@@ -8,8 +8,8 @@ namespace dexih.functions
 {
     public class TableColumns : IList<TableColumn>
     {
-        private List<TableColumn> _TableColumns;
-        private Dictionary<string, int> _ColumnOrdinals;
+        private readonly List<TableColumn> _TableColumns;
+        private readonly Dictionary<string, int> _ColumnOrdinals;
 
         public TableColumns()
         {

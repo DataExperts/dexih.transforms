@@ -41,8 +41,8 @@ namespace dexih.connections.flatfile
         public override string DatabaseTypeName => "Flat Files";
         public override ECategory DatabaseCategory => ECategory.File;
 
-        Stream _fileStream;
-        StreamWriter _fileWriter;
+        private Stream _fileStream;
+        private StreamWriter _fileWriter;
 
         public string LastWrittenFile { get; protected set; } = "";
 

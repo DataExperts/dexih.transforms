@@ -184,7 +184,7 @@ namespace dexih.transforms
         public async Task<ReturnValue> WriteStart(Transform inTransform, TransformWriterResult writerResult)
         {
 
-            if (WriteOpen == true)
+            if (WriteOpen)
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
             var returnValue = await InTransform.Open(writerResult.AuditKey, null); 

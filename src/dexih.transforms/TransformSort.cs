@@ -10,12 +10,12 @@ namespace dexih.transforms
 {
     public class TransformSort : Transform
     {
-        bool _alreadySorted;
-        bool _firstRead;
-        SortedDictionary<object[], object[]> _sortedDictionary;
-        SortedDictionary<object[], object[]>.KeyCollection.Enumerator _iterator;
+        private bool _alreadySorted;
+        private bool _firstRead;
+        private SortedDictionary<object[], object[]> _sortedDictionary;
+        private SortedDictionary<object[], object[]>.KeyCollection.Enumerator _iterator;
 
-        List<Sort> _sortFields;
+        private readonly List<Sort> _sortFields;
 
         public TransformSort() { }
 
@@ -193,7 +193,7 @@ namespace dexih.transforms
                 if (x[i] is String)
                     greater = String.Compare((String)x[i], (String)y[i]) > 0;
                 if (x[i] is Boolean)
-                    greater = (Boolean)x[i] == true && (Boolean)y[i] == true;
+                    greater = (Boolean)x[i] && (Boolean)y[i];
                 if (x[i] is DateTime)
                     greater = (DateTime)x[i] > (DateTime)y[i];
 

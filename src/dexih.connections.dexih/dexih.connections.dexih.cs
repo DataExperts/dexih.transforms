@@ -34,7 +34,7 @@ namespace dexih.connections.dexih
         public override string DatabaseTypeName => "Dexih Hub";
         public override ECategory DatabaseCategory => ECategory.Hub;
 
-        private int _rowsPerBufffer = 1000;
+        private readonly int _rowsPerBufffer = 1000;
         private string _continuationToken;
 
         public void SetContinuationToken(string continuationToken)
@@ -126,7 +126,7 @@ namespace dexih.connections.dexih
 
 				var responseString = await response.Content.ReadAsStringAsync();
 				JObject Result = JObject.Parse(responseString);
-				if ((bool)Result["success"] == true)
+				if ((bool)Result["success"])
 				{
 					return new ReturnValue<CookieContainer>(true, handler.CookieContainer);
 				}

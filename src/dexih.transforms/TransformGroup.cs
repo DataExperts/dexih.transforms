@@ -23,8 +23,8 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
 
-        bool _firstRecord;
-        bool _lastRecord;
+        private bool _firstRecord;
+        private bool _lastRecord;
 
         private object[] _groupValues;
 

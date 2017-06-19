@@ -71,7 +71,7 @@ namespace dexih.transforms
             DataJob
         }
 
-        private Connection AuditConnection;
+        private readonly Connection AuditConnection;
 
         public long AuditKey { get; set; }
         public string AuditType { get; set; }

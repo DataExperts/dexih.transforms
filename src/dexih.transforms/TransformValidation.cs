@@ -24,18 +24,18 @@ namespace dexih.transforms
 
         public bool ValidateDataTypes { get; set; }
 
-        object[] savedRejectRow; //used as a temporary store for the pass row when a pass and reject occur.
+        private object[] savedRejectRow; //used as a temporary store for the pass row when a pass and reject occur.
 
-        bool _lastRecord = false;
+        private bool _lastRecord = false;
 
         private string rejectReasonColumnName;
         private int rejectReasonOrdinal;
         private int operationOrdinal;
         private int validationStatusOrdinal;
 
-        List<int> _mapFieldOrdinals;
-        int _primaryFieldCount;
-        int _columnCount;
+        private List<int> _mapFieldOrdinals;
+        private int _primaryFieldCount;
+        private int _columnCount;
 
         public List<Function> Validations
         {

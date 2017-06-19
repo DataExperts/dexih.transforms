@@ -1,5 +1,5 @@
 //	dexih_connection.IO.CSV.ParseErrorEventArgs
-//	Copyright (c) 2006 Sébastien Lorion
+//	Copyright (c) 2006 Sï¿½bastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
 //
@@ -34,7 +34,7 @@ namespace dexih.connections.flatfile
 		/// <summary>
 		/// Contains the error that occured.
 		/// </summary>
-		private MalformedCsvException _error;
+		private readonly MalformedCsvException _error;
 
 		/// <summary>
 		/// Contains the action to take.

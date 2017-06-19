@@ -1,5 +1,5 @@
 //	dexih_connection.IO.CSV.CsvReader
-//	Copyright (c) 2005 Sébastien Lorion
+//	Copyright (c) 2005 Sï¿½bastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
 //
@@ -84,37 +84,37 @@ namespace dexih.connections.flatfile
 		/// <summary>
 		/// Contains the buffer size.
 		/// </summary>
-		private int _bufferSize;
+		private readonly int _bufferSize;
 
 		/// <summary>
 		/// Contains the comment character indicating that a line is commented out.
 		/// </summary>
-		private char _comment;
+		private readonly char _comment;
 
 		/// <summary>
 		/// Contains the escape character letting insert quotation characters inside a quoted field.
 		/// </summary>
-		private char _escape;
+		private readonly char _escape;
 
 		/// <summary>
 		/// Contains the delimiter character separating each field.
 		/// </summary>
-		private char _delimiter;
+		private readonly char _delimiter;
 
 		/// <summary>
 		/// Contains the quotation character wrapping every field.
 		/// </summary>
-		private char _quote;
+		private readonly char _quote;
 
 		/// <summary>
 		/// Determines which values should be trimmed.
 		/// </summary>
-		private EValueTrimmingOptions _trimmingOptions;
+		private readonly EValueTrimmingOptions _trimmingOptions;
 
 		/// <summary>
 		/// Indicates if field names are located on the first non commented line.
 		/// </summary>
-		private bool _hasHeaders;
+		private readonly bool _hasHeaders;
 
 		/// <summary>
 		/// Contains the default action to take when a parsing error has occured.

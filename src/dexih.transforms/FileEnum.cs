@@ -15,11 +15,11 @@ namespace dexih.transforms
 
     public class DexihFiles :IEnumerator
     {
-        DexihFileProperties[] _files;
+        private readonly DexihFileProperties[] _files;
 
         // Enumerators are positioned before the first element 
         // until the first MoveNext() call. 
-        int _position;
+        private int _position;
 
         public DexihFiles(DexihFileProperties[] files)
         {

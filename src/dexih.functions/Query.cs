@@ -184,9 +184,9 @@ namespace dexih.functions
 
             Filter filter = new Filter();
 
-            filter.Column1 = function.Inputs[0].IsColumn == true ? function.Inputs[0].Column : null;
+            filter.Column1 = function.Inputs[0].IsColumn ? function.Inputs[0].Column : null;
             filter.Value1 = function.Inputs[0].IsColumn == false ? function.Inputs[0].Value : null;
-            filter.Column2 = function.Inputs[1].IsColumn == true ? function.Inputs[1].Column : null;
+            filter.Column2 = function.Inputs[1].IsColumn ? function.Inputs[1].Column : null;
             filter.Value2 = function.Inputs[1].IsColumn == false ? function.Inputs[1].Value : null;
 
             filter.CompareDataType = function.Inputs[0].IsColumn ? function.Inputs[0].DataType : function.Inputs[1].DataType;

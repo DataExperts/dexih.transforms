@@ -141,16 +141,23 @@ namespace dexih.functions
 								if (keyAttribute != null)
 								{
 									keyvalue = keyAttribute.GetValue(item);
-									foreach (var matchItem in (IEnumerable)targetCollection)
+									if ((keyvalue is long || keyvalue is int) && (long)keyvalue == 0)
 									{
-										var targetValue = keyAttribute.GetValue(matchItem);
-										if ( Object.Equals(targetValue, keyvalue))
+
+									}
+									else
+									{
+										foreach (var matchItem in (IEnumerable)targetCollection)
 										{
-											if (targetItem != null)
+											var targetValue = keyAttribute.GetValue(matchItem);
+											if (Object.Equals(targetValue, keyvalue))
 											{
-												throw new Exception($"The collections could not be merge due to multiple target key values of {keyvalue.ToString()} in the collection {typeCollection.ToString()}.");
+												if (targetItem != null)
+												{
+													throw new Exception($"The collections could not be merge due to multiple target key values of {keyvalue.ToString()} in the collection {typeCollection.ToString()}.");
+												}
+												targetItem = matchItem;
 											}
-											targetItem = matchItem;
 										}
 									}
 								}

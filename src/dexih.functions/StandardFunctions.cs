@@ -14,20 +14,21 @@ namespace dexih.functions
     public class StandardFunctions
     {
         //The cache parameters are used by the functions to maintain a state during a transform process.
-        int? _cacheInt;
-        double? _cacheDouble;
-        DateTime? _cacheDate;
-        string _cacheString;
-        Dictionary<string, string> _cacheStringDictionary;
-        Dictionary<string, Int32> _cacheIntDictionary;
-        List<object> _cacheList;
-        string[] _cacheArray;
-        List<KeyValuePair<DateTime, double>> _cacheSeriesList;
-        StringBuilder _cacheStringBuilder;
-        XPathNodeIterator _cacheXmlNodeList;
-        JToken[] _cacheJsonTokens;
+        private int? _cacheInt;
 
-        const string NullPlaceHolder = "A096F007-26EE-479E-A9E1-4E12427A5AF0"; //used a a unique string that can be substituted for null
+        private double? _cacheDouble;
+        private DateTime? _cacheDate;
+        private string _cacheString;
+        private Dictionary<string, string> _cacheStringDictionary;
+        private Dictionary<string, Int32> _cacheIntDictionary;
+        private List<object> _cacheList;
+        private string[] _cacheArray;
+        private List<KeyValuePair<DateTime, double>> _cacheSeriesList;
+        private StringBuilder _cacheStringBuilder;
+        private XPathNodeIterator _cacheXmlNodeList;
+        private JToken[] _cacheJsonTokens;
+
+        private const string NullPlaceHolder = "A096F007-26EE-479E-A9E1-4E12427A5AF0"; //used a a unique string that can be substituted for null
 
         public bool Reset()
         {

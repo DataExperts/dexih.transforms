@@ -11,7 +11,7 @@ namespace dexih.transforms
 {
     public class ConnectionMemory : Connection
     {
-        Dictionary<string, Table> Tables = new Dictionary<string, Table>();
+        private readonly Dictionary<string, Table> Tables = new Dictionary<string, Table>();
 
         public override bool AllowNtAuth => false;
 

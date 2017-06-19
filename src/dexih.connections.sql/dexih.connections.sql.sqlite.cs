@@ -273,7 +273,7 @@ namespace dexih.connections.sql
                     returnValue = AddEscape(value.ToString());
                     break;
                 case ETypeCode.Boolean:
-                    returnValue = (bool)value == true ? "1" : "0";
+                    returnValue = (bool)value ? "1" : "0";
                     break;
                 case ETypeCode.String:
                 case ETypeCode.Guid:

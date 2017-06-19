@@ -14,7 +14,7 @@ namespace dexih.functions
 
     public class EncryptedStringPropertyResolver : CamelCasePropertyNamesContractResolver
     {
-        private string _encryptionKey;
+        private readonly string _encryptionKey;
 
         public EncryptedStringPropertyResolver(string encryptionKey)
         {
@@ -44,10 +44,10 @@ namespace dexih.functions
             return props;
         }
 
-        class EncryptedStringValueProvider : IValueProvider
+        private class EncryptedStringValueProvider : IValueProvider
         {
-            PropertyInfo _targetProperty;
-            private string _encryptionKey;
+            private readonly PropertyInfo _targetProperty;
+            private readonly string _encryptionKey;
 
             public EncryptedStringValueProvider(PropertyInfo targetProperty, string encryptionKey)
             {

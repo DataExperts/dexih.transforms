@@ -30,7 +30,7 @@ namespace dexih.functions
         public MethodInfo ResultMethod { get; set; }
         public object ObjectReference { get; set; }
 
-        object _returnValue;
+        private object _returnValue;
 
         [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>

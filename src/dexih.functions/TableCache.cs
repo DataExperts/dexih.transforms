@@ -8,8 +8,8 @@ namespace dexih.functions
 {
     public class TableCache : IList<object[]>
     {
-        private int MaxRows;
-        private List<object[]> Data;
+        private readonly int MaxRows;
+        private readonly List<object[]> Data;
         private int StartIndex = 0;
 
         public TableCache()

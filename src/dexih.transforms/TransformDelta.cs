@@ -44,11 +44,11 @@ namespace dexih.transforms
             AppendUpdateDeletePreserve // inserts new records, updates existing records, (logically) deletes removed records.
         }
 
-        bool _firstRead;
-        bool _truncateComplete;
-        bool _defaultRowAdded;
-        bool _targetOpen;
-        bool _primaryOpen;
+        private bool _firstRead;
+        private bool _truncateComplete;
+        private bool _defaultRowAdded;
+        private bool _targetOpen;
+        private bool _primaryOpen;
 
         private TableColumn colValidFrom;
         private TableColumn colValidTo;
@@ -95,7 +95,7 @@ namespace dexih.transforms
 
         private List<int> _sourceOrdinals;
 
-        DateTime currentDateTime;
+        private DateTime currentDateTime;
 
         public override bool PassThroughColumns => true;
 
@@ -125,10 +125,10 @@ namespace dexih.transforms
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             //do some integrity checks
-            if (doPreserve == true && colSurrogateKey == null)
+            if (doPreserve && colSurrogateKey == null)
                 throw new Exception("The delta transform requires the table to have a single surrogate key field for row preservations to be possible.");
 
-            if (doUpdate == true && CacheTable.Columns.Where(c=>c.DeltaType == TableColumn.EDeltaType.NaturalKey).Count() == 0)
+            if (doUpdate && CacheTable.Columns.Where(c=>c.DeltaType == TableColumn.EDeltaType.NaturalKey).Count() == 0)
                 throw new Exception("The delta transform requires the table to have at least ont natrual key field for updates to be possible.");
 
             //set surrogate key to the key field.  This will indicate that the surrogate key should be used when update/deleting records.
@@ -883,7 +883,7 @@ namespace dexih.transforms
                     if (x[i] is String)
                         greater = String.Compare((String)x[i], (String)y[i]) > 0;
                     if (x[i] is Boolean)
-                        greater = (Boolean)x[i] == false && (Boolean)y[i] == true;
+                        greater = (Boolean)x[i] == false && (Boolean)y[i];
                     if (x[i] is DateTime)
                         greater = (DateTime)x[i] > (DateTime)y[i];
 

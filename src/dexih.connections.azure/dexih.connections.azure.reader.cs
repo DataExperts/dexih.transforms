@@ -21,10 +21,10 @@ namespace dexih.connections.azure
         private TableQuerySegment<DynamicTableEntity> _tableResult;
         private TableQuery<DynamicTableEntity> _tableQuery;
 
-        CloudTable _tableReference;
+        private CloudTable _tableReference;
         private int _currentReadRow;
 
-        private ConnectionAzureTable _connection;
+        private readonly ConnectionAzureTable _connection;
 
         public ReaderAzure(Connection connection, Table table)
         {

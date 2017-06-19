@@ -15,12 +15,12 @@ namespace dexih.connections.flatfile
     {
         private bool _isOpen = false;
 
-        DexihFiles _files;
-        CsvReader _csvReader;
+        private DexihFiles _files;
+        private CsvReader _csvReader;
 
-        FileFormat _fileFormat;
+        private FileFormat _fileFormat;
 
-        ConnectionFlatFile FileConnection;
+        private ConnectionFlatFile FileConnection;
 
 		public FlatFile CacheFlatFile {
 			get { return (FlatFile)CacheTable; }
