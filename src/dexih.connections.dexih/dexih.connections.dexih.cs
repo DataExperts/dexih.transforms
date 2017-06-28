@@ -125,14 +125,14 @@ namespace dexih.connections.dexih
 				}
 
 				var responseString = await response.Content.ReadAsStringAsync();
-				JObject Result = JObject.Parse(responseString);
-				if ((bool)Result["success"])
+				JObject result = JObject.Parse(responseString);
+				if ((bool)result["success"])
 				{
 					return new ReturnValue<CookieContainer>(true, handler.CookieContainer);
 				}
 				else
 				{
-					return new ReturnValue<CookieContainer>(false, $"User authentication failed with message: {Result?["message"].ToString()}.", null);
+					return new ReturnValue<CookieContainer>(false, $"User authentication failed with message: {result?["message"].ToString()}.", null);
 				}
 			}
 		}

@@ -55,7 +55,7 @@ namespace dexih.connections.sql
         public abstract Task<ReturnValue<DbConnection>> NewConnection();
 
         public abstract string GetSqlType(ETypeCode dataType, int? length, int? scale, int? precision);
-        public abstract ETypeCode ConvertSqlToTypeCode(string SqlType);
+        public abstract ETypeCode ConvertSqlToTypeCode(string sqlType);
         public abstract string GetSqlFieldValueQuote(ETypeCode type, object value);
 
 
@@ -627,7 +627,7 @@ namespace dexih.connections.sql
 
         public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null)
         {
-            var reader = new ReaderSQL(this, table);
+            var reader = new ReaderSql(this, table);
             return reader;
         }
 

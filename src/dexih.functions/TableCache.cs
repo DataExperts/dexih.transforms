@@ -8,39 +8,39 @@ namespace dexih.functions
 {
     public class TableCache : IList<object[]>
     {
-        private readonly int MaxRows;
-        private readonly List<object[]> Data;
-        private int StartIndex = 0;
+        private readonly int _maxRows;
+        private readonly List<object[]> _data;
+        private int _startIndex = 0;
 
         public TableCache()
         {
-            MaxRows = 0;
-            Data = new List<object[]>();
-            StartIndex = 0;
+            _maxRows = 0;
+            _data = new List<object[]>();
+            _startIndex = 0;
         }
 
         public TableCache(int maxRows = 0)
         {
-            MaxRows = maxRows;
-            Data = new List<object[]>();
-            StartIndex = 0;
+            _maxRows = maxRows;
+            _data = new List<object[]>();
+            _startIndex = 0;
         }
 
         private int InternalIndex(int index)
         {
-            return MaxRows == 0 ? index : (index + StartIndex) % MaxRows;
+            return _maxRows == 0 ? index : (index + _startIndex) % _maxRows;
         }
 
         public object[] this[int index]
         {
             get
             {
-                return Data[InternalIndex(index)];
+                return _data[InternalIndex(index)];
             }
 
             set
             {
-                Data[InternalIndex(index)] = value;
+                _data[InternalIndex(index)] = value;
             }
         }
 
@@ -48,7 +48,7 @@ namespace dexih.functions
         {
             get
             {
-                return Data.Count;
+                return _data.Count;
             }
         }
 
@@ -64,49 +64,49 @@ namespace dexih.functions
 
         public void Add(object[] item)
         {
-            if (MaxRows == 0 || Data.Count < MaxRows)
+            if (_maxRows == 0 || _data.Count < _maxRows)
             {
-                Data.Add(item);
+                _data.Add(item);
             }
             else
             {
-                Data[StartIndex] = item;
-                StartIndex++;
-                if (StartIndex > MaxRows)
-                    StartIndex = 0;
+                _data[_startIndex] = item;
+                _startIndex++;
+                if (_startIndex > _maxRows)
+                    _startIndex = 0;
             }
         }
 
         public void Clear()
         {
-            Data.Clear();
-            StartIndex = 0;
+            _data.Clear();
+            _startIndex = 0;
         }
 
         public bool Contains(object[] item)
         {
-            return Data.Contains(item);
+            return _data.Contains(item);
         }
 
         public void CopyTo(object[][] array, int arrayIndex)
         {
-            Data.CopyTo(array, InternalIndex(arrayIndex));
+            _data.CopyTo(array, InternalIndex(arrayIndex));
         }
 
         public IEnumerator<object[]> GetEnumerator()
         {
-            return new TableCacheEnumerator(Data, StartIndex);
+            return new TableCacheEnumerator(_data, _startIndex);
         }
 
         public int IndexOf(object[] item)
         {
-            int index = Data.IndexOf(item);
+            int index = _data.IndexOf(item);
 
-            if (index >= 0 && MaxRows > 0)
+            if (index >= 0 && _maxRows > 0)
             {
-                index = index - StartIndex;
+                index = index - _startIndex;
                 if (index < 0)
-                    index = MaxRows + index;
+                    index = _maxRows + index;
             }
 
             return index;
@@ -114,24 +114,24 @@ namespace dexih.functions
 
         public void Insert(int index, object[] item)
         {
-            if (MaxRows == 0)
-                Data.Insert(index, item);
+            if (_maxRows == 0)
+                _data.Insert(index, item);
             else
                 throw new NotImplementedException("Insert is not supported with this collection.");
         }
 
         public bool Remove(object[] item)
         {
-            if (MaxRows == 0)
-                return Data.Remove(item);
+            if (_maxRows == 0)
+                return _data.Remove(item);
             else
                 throw new NotImplementedException("Remove is not supported with this collection.");
         }
 
         public void RemoveAt(int index)
         {
-            if (MaxRows == 0)
-                Data.RemoveAt(index);
+            if (_maxRows == 0)
+                _data.RemoveAt(index);
             else
                 throw new NotImplementedException("RemoveAt is not supported with this collection.");
         }
@@ -145,28 +145,28 @@ namespace dexih.functions
 
     public class TableCacheEnumerator : IEnumerator<object[]>
     {
-        private List<object[]> Data;
-        private int StartIndex = 0;
+        private List<object[]> _data;
+        private int _startIndex = 0;
 
-        private int EnumeratorPosition;
-        private bool IsFirst;
-        private bool IsFinished;
+        private int _enumeratorPosition;
+        private bool _isFirst;
+        private bool _isFinished;
 
 
         public TableCacheEnumerator(List<object[]> data, int startIndex)
         {
-            Data = data;
-            StartIndex = startIndex;
-            IsFirst = true;
-            IsFinished = false;
+            _data = data;
+            _startIndex = startIndex;
+            _isFirst = true;
+            _isFinished = false;
 
         }
         public object[] Current
         {
             get
             {
-                if (!IsFinished)
-                    return Data[EnumeratorPosition];
+                if (!_isFinished)
+                    return _data[_enumeratorPosition];
                 else
                     return null;
             }
@@ -182,29 +182,29 @@ namespace dexih.functions
 
         public void Dispose()
         {
-            Data = null; 
+            _data = null; 
         }
 
         public bool MoveNext()
         {
-            if (Data.Count == 0 || IsFinished)
+            if (_data.Count == 0 || _isFinished)
                 return false;
 
-            if (IsFirst)
+            if (_isFirst)
             {
-                EnumeratorPosition = StartIndex;
-                IsFirst = false;
+                _enumeratorPosition = _startIndex;
+                _isFirst = false;
                 return true;
             }
 
-            EnumeratorPosition++;
+            _enumeratorPosition++;
 
-            if (EnumeratorPosition >= Data.Count)
-                EnumeratorPosition = 0;
+            if (_enumeratorPosition >= _data.Count)
+                _enumeratorPosition = 0;
 
-            if (EnumeratorPosition == StartIndex)
+            if (_enumeratorPosition == _startIndex)
             {
-                IsFinished = true;
+                _isFinished = true;
                 return false;
             }
 
@@ -213,7 +213,7 @@ namespace dexih.functions
 
         public void Reset()
         {
-            StartIndex = EnumeratorPosition;
+            _startIndex = _enumeratorPosition;
         }
     }
 

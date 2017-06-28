@@ -50,7 +50,7 @@ namespace dexih.functions
             Unknown
         }
 
-        public static object GetDataTypeMaxValue(ETypeCode typeCode, int Length = 0)
+        public static object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
@@ -77,7 +77,7 @@ namespace dexih.functions
 				case ETypeCode.Single:
                     return Single.MaxValue /10;
 				case ETypeCode.String:
-                    return new string('A', Length);
+                    return new string('A', length);
                 case ETypeCode.Boolean:
                     return true;
                 case ETypeCode.DateTime:

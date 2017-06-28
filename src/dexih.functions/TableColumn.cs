@@ -73,7 +73,7 @@ namespace dexih.functions
             StrongEncrypt,
             StrongDecrypt,
             OneWayHash,
-            NoPreview
+            Hide
         }
 
         public virtual string Schema { get; set; }

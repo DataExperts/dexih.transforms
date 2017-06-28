@@ -195,7 +195,7 @@ namespace dexih.connections.flatfile
 	                {
                         foreach(var entry in archive.Entries)
                         {
-                            string filePath = fixFileName(table, entry.Name);
+                            string filePath = FixFileName(table, entry.Name);
                             entry.ExtractToFile(filePath);
                         }
 
@@ -204,7 +204,7 @@ namespace dexih.connections.flatfile
 				}
 				else 
 				{
-                    string filePath = fixFileName(table, fileName);
+                    string filePath = FixFileName(table, fileName);
 	                FileStream newFile = new FileStream(filePath, FileMode.Create, System.IO.FileAccess.Write);
 	                //stream.Seek(0, SeekOrigin.Begin);
 	                await stream.CopyToAsync(newFile);
@@ -220,7 +220,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        private string fixFileName(Table table, string fileName)
+        private string FixFileName(Table table, string fileName)
         {
 			FlatFile flatFile = (FlatFile)table;
 

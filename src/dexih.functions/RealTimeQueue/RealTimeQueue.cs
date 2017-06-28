@@ -24,7 +24,7 @@ namespace dexih.functions {
         public bool IsCancelled { get; set; } = false;
         public bool IsFinished { get; set; } = false;
 
-        private bool awaitingPush = false;
+        private bool _awaitingPush = false;
 
         public RealTimeQueue()
         {
@@ -76,9 +76,9 @@ namespace dexih.functions {
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="cancellationToken"></param>
-        /// <param name="TimeOutMilliseconds"></param>
+        /// <param name="timeOutMilliseconds"></param>
         /// <returns></returns>
-        public async Task Push(T buffer, bool isFinalBuffer, CancellationToken cancellationToken, int TimeOutMilliseconds)
+        public async Task Push(T buffer, bool isFinalBuffer, CancellationToken cancellationToken, int timeOutMilliseconds)
         {
             try
             {
@@ -92,21 +92,21 @@ namespace dexih.functions {
                 // if the buffer is full, wait until something is popped
                 while (_realtimeQueue.Count >= _maxSize)
                 {
-                    if(awaitingPush)
+                    if(_awaitingPush)
                     {
                         throw new RealTimeQueuePushExceededException("The push operation failed, as the buffer is at max capacity, and another task is waiting to push a buffer.");
                     }
 
-                    awaitingPush = true;
+                    _awaitingPush = true;
 
                     var popEvent = _popEvent.WaitAsync();
                     var cancelEvent = _cancelEvent.WaitAsync();
-                    var timeoutEvent = Task.Delay(TimeOutMilliseconds);
+                    var timeoutEvent = Task.Delay(timeOutMilliseconds);
 
 
                     var completedTask = await Task.WhenAny(popEvent, cancelEvent, timeoutEvent);
 
-                    awaitingPush = false;
+                    _awaitingPush = false;
 
                     if (completedTask == cancelEvent)
                     {
@@ -115,7 +115,7 @@ namespace dexih.functions {
 
                     if (completedTask == timeoutEvent)
                     {
-                        throw new RealTimeQueueTimeOutException($"The push operation timed out after {TimeOutMilliseconds.ToString()} milliseconds.");
+                        throw new RealTimeQueueTimeOutException($"The push operation timed out after {timeOutMilliseconds.ToString()} milliseconds.");
                     }
                 }
 
@@ -143,7 +143,7 @@ namespace dexih.functions {
             return Pop(cancellationToken, _defaulttimeOutMilliseconds);
         }
 
-        public async Task<RealTimeQueuePackage<T>> Pop(CancellationToken cancellationToken, int TimeOutMilliseconds)
+        public async Task<RealTimeQueuePackage<T>> Pop(CancellationToken cancellationToken, int timeOutMilliseconds)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace dexih.functions {
 
                     var pushEvent = _pushEvent.WaitAsync();
                     var cancelEvent = _cancelEvent.WaitAsync();
-                    var timeoutEvent = Task.Delay(TimeOutMilliseconds);
+                    var timeoutEvent = Task.Delay(timeOutMilliseconds);
 
                     var completedTask = await Task.WhenAny(pushEvent, cancelEvent, timeoutEvent);
 
@@ -169,7 +169,7 @@ namespace dexih.functions {
 
                     if (completedTask == timeoutEvent)
                     {
-                        throw new RealTimeQueueTimeOutException($"The pull operation timed out after {TimeOutMilliseconds.ToString()} milliseconds.");
+                        throw new RealTimeQueueTimeOutException($"The pull operation timed out after {timeOutMilliseconds.ToString()} milliseconds.");
                     }
                 }
 

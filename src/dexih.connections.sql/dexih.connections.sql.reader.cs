@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace dexih.connections.sql
 {
-    public class ReaderSQL : Transform
+    public class ReaderSql : Transform
     {
         private bool _isOpen = false;
         private DbDataReader _sqlReader;
@@ -20,7 +20,7 @@ namespace dexih.connections.sql
 
         private List<Sort> _sortFields;
 
-        public ReaderSQL(ConnectionSql connection, Table table)
+        public ReaderSql(ConnectionSql connection, Table table)
         {
             ReferenceConnection = connection;
             CacheTable = table;

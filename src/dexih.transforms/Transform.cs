@@ -35,7 +35,7 @@ namespace dexih.transforms
         {
             NoEncryption = 0,
             EncryptDecryptSecureFields = 1,
-            BlankSecureFields = 2
+            MaskSecureFields = 2
         }
 
         #endregion
@@ -118,14 +118,14 @@ namespace dexih.transforms
         public Int64 TotalRowsReadPrimary { get { return TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0); } }
         public Int64 TotalRowsReadReference { get { return TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0; } }
 
-        private object MaxIncrementalValue = null;
-        private int IncrementalColumnIndex = -1;
-        private DataType.ETypeCode IncrementalColumnType;
+        private object _maxIncrementalValue = null;
+        private int _incrementalColumnIndex = -1;
+        private DataType.ETypeCode _incrementalColumnType;
 
         public object GetMaxIncrementalValue()
         {
             if (IsReader)
-                return MaxIncrementalValue;
+                return _maxIncrementalValue;
             else
                 return PrimaryTransform.GetMaxIncrementalValue();
         }
@@ -232,16 +232,16 @@ namespace dexih.transforms
         /// <param name="PrimarySort"></param>
         /// <param name="CompareSort"></param>
         /// <returns></returns>
-        public bool SortFieldsMatch(List<Sort> RequiredSort, List<Sort> ActualSort)
+        public bool SortFieldsMatch(List<Sort> requiredSort, List<Sort> actualSort)
         {
-            if (RequiredSort == null && ActualSort == null)
+            if (requiredSort == null && actualSort == null)
                 return true;
 
-            if (RequiredSort == null || ActualSort == null)
+            if (requiredSort == null || actualSort == null)
                 return false;
 
-            string requiredSortFields = String.Join(",", RequiredSort.Select(c => c.Column.SchemaColumnName()).ToArray());
-            string actualSortFields = string.Join(",", ActualSort.Select(c => c.Column.SchemaColumnName()).ToArray());
+            string requiredSortFields = String.Join(",", requiredSort.Select(c => c.Column.SchemaColumnName()).ToArray());
+            string actualSortFields = string.Join(",", actualSort.Select(c => c.Column.SchemaColumnName()).ToArray());
 
             //compare the fields.  if actualsortfields are more, that is ok, as the primary sort condition is still met.
             if (actualSortFields.Length >= requiredSortFields.Length && requiredSortFields == actualSortFields.Substring(0, requiredSortFields.Length))
@@ -319,21 +319,19 @@ namespace dexih.transforms
         /// </summary>
         public EEncryptionMethod EncryptionMethod { get; protected set; }
         private string EncryptionKey { get; set; }
-        private string MaskValue { get; set; }
 
         /// <summary>
         /// Sets the method for the transform to encrypt data.  If encryption method is set to encrypt, then all columns with the SecurityFlag set will be encrypted or hashed as specified.  If encryption method is set to decrypt when columns with the security flag set to encrypt will be decrypted (note: hashed columns are one-way and cannot be decrypted.).
         /// </summary>
         /// <param name="encryptionMethod"></param>
         /// <param name="key"></param>
-        public void SetEncryptionMethod(EEncryptionMethod encryptionMethod, string key, string maskValue = "")
+        public void SetEncryptionMethod(EEncryptionMethod encryptionMethod, string key)
         {
             EncryptionMethod = encryptionMethod;
             EncryptionKey = key;
-            MaskValue = maskValue;
 
-            PrimaryTransform?.SetEncryptionMethod(encryptionMethod, key, maskValue);
-            ReferenceTransform?.SetEncryptionMethod(encryptionMethod, key, maskValue);
+            PrimaryTransform?.SetEncryptionMethod(encryptionMethod, key);
+            ReferenceTransform?.SetEncryptionMethod(encryptionMethod, key);
         }
 
         public void SetColumnSecurityFlag(string columnName, ESecurityFlag securityFlag)
@@ -385,18 +383,24 @@ namespace dexih.transforms
                         }
                     }
                     break;
-                case EEncryptionMethod.BlankSecureFields:
+                case EEncryptionMethod.MaskSecureFields:
                     columnCount = CacheTable.Columns.Count;
                     for (int i = 0; i < columnCount; i++)
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
                             case TableColumn.ESecurityFlag.FastEncrypt:
-                            case TableColumn.ESecurityFlag.StrongEncrypt:
-                            case TableColumn.ESecurityFlag.OneWayHash:
-                            case TableColumn.ESecurityFlag.NoPreview:
-                                row[i] = MaskValue;
-                                break;
+								row[i] = "(Encrypted)";
+								break;
+							case TableColumn.ESecurityFlag.StrongEncrypt:
+								row[i] = "(Encrypted)";
+								break;
+							case TableColumn.ESecurityFlag.OneWayHash:
+								row[i] = "(Hashed)";
+								break;
+							case TableColumn.ESecurityFlag.Hide:
+								row[i] = "(Hidden)";
+								break;
                         }
                     }
                     break;
@@ -501,9 +505,9 @@ namespace dexih.transforms
         /// </summary>
         public bool IsReaderFinished { get; protected set; }
 
-        private bool isResetting = false; //flag to indicate reset is underway.
+        private bool _isResetting = false; //flag to indicate reset is underway.
         public object[] CurrentRow { get; protected set; } //stores data for the current row.
-        private bool CurrentRowCached;
+        private bool _currentRowCached;
         protected int CurrentRowNumber = -1; //current row number
 
         /// <summary>
@@ -512,9 +516,9 @@ namespace dexih.transforms
         /// <returns></returns>
         public ReturnValue Reset()
         {
-            if (!isResetting) //stops recursive looops where intertwinned transforms are resetting each other
+            if (!_isResetting) //stops recursive looops where intertwinned transforms are resetting each other
             {
-                isResetting = true;
+                _isResetting = true;
 
                 ReturnValue returnValue;
 
@@ -553,7 +557,7 @@ namespace dexih.transforms
 
                 IsReaderFinished = false;
 
-                isResetting = false;
+                _isResetting = false;
                 return new ReturnValue(true);
             }
 
@@ -617,7 +621,7 @@ namespace dexih.transforms
                             EncryptRow(lookupResult.Value);
 
                         CacheTable.Data.Add(lookupResult.Value);
-                        CurrentRowCached = true;
+                        _currentRowCached = true;
                     }
                 }
                 else
@@ -685,15 +689,15 @@ namespace dexih.transforms
                     var incrementalCol = CacheTable.Columns.Where(c => c.IsIncrementalUpdate).ToArray();
                     if (incrementalCol.Length == 1)
                     {
-                        IncrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].ColumnName);
-                        IncrementalColumnType = incrementalCol[0].Datatype;
+                        _incrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].ColumnName);
+                        _incrementalColumnType = incrementalCol[0].Datatype;
                     }
                     else if (incrementalCol.Length > 1)
                     {
                         throw new Exception("Cannot run the transform as two columns have been defined with IncrementalUpdate flags.");
                     }
                     else
-                        IncrementalColumnIndex = -1;
+                        _incrementalColumnIndex = -1;
                 }
 
                 _isFirstRead = false;
@@ -719,7 +723,7 @@ namespace dexih.transforms
                 return false;
             }
 
-            CurrentRowCached = false;
+            _currentRowCached = false;
 
             var returnValue = await ReadRecord(cancellationToken);
 
@@ -733,14 +737,14 @@ namespace dexih.transforms
             else
                 CurrentRow = null;
 
-            if(IsReader && IsPrimaryTransform && IncrementalColumnIndex != -1 && returnValue.Success)
+            if(IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && returnValue.Success)
             {
-                var compresult = DataType.Compare(IncrementalColumnType, CurrentRow[IncrementalColumnIndex], MaxIncrementalValue);
+                var compresult = DataType.Compare(_incrementalColumnType, CurrentRow[_incrementalColumnIndex], _maxIncrementalValue);
                 if (!compresult.Success )
                     throw new Exception("There was an error comparing the incremental update column.  ");
 
                 if (compresult.Value == functions.DataType.ECompareResult.Greater)
-                    MaxIncrementalValue = CurrentRow[IncrementalColumnIndex];
+                    _maxIncrementalValue = CurrentRow[_incrementalColumnIndex];
             }
 
             if (IsReader && !IsPrimaryTransform)
@@ -760,7 +764,7 @@ namespace dexih.transforms
             }
 
             //add the row to the cache
-            if (returnValue.Success && !CurrentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
+            if (returnValue.Success && !_currentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
                 CacheTable.Data.Add(CurrentRow);
 
             TransformTimer.Stop();
@@ -1053,7 +1057,7 @@ namespace dexih.transforms
     public class TransformColumn : DbColumn
     {
         public TransformColumn(
-                    bool? allowDBNull,
+                    bool? allowDbNull,
         string baseCatalogName,
         string baseColumnName ,
         string baseSchemaName ,
@@ -1077,7 +1081,7 @@ namespace dexih.transforms
         int? numericScale 
             )
         {
-            AllowDBNull = allowDBNull;
+            AllowDBNull = allowDbNull;
             BaseCatalogName = baseCatalogName;
             BaseColumnName = baseColumnName;
             BaseSchemaName = baseSchemaName;

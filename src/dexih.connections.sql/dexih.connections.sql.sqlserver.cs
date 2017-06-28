@@ -680,9 +680,9 @@ namespace dexih.connections.sql
             }
         }
 
-        public override ETypeCode ConvertSqlToTypeCode(string SqlType)
+        public override ETypeCode ConvertSqlToTypeCode(string sqlType)
         {
-            switch (SqlType)
+            switch (sqlType)
             {
                 case "bigint": return ETypeCode.Int64;
                 case "binary": return ETypeCode.Binary;

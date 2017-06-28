@@ -11,7 +11,7 @@ namespace dexih.transforms
 {
     public class ConnectionMemory : Connection
     {
-        private readonly Dictionary<string, Table> Tables = new Dictionary<string, Table>();
+        private readonly Dictionary<string, Table> _tables = new Dictionary<string, Table>();
 
         public override bool AllowNtAuth => false;
 
@@ -34,22 +34,22 @@ namespace dexih.transforms
 
         public override Task<ReturnValue> AddMandatoryColumns(Table table, int position) => Task.Run(() => new ReturnValue(true));
 
-        public override Task<ReturnValue> CreateDatabase(string DatabaseName) => Task.Run(() => new ReturnValue(true));
+        public override Task<ReturnValue> CreateDatabase(string databaseName) => Task.Run(() => new ReturnValue(true));
 
         public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
             return await Task.Run(() =>
             {
-                if (Tables.ContainsKey(table.TableName))
+                if (_tables.ContainsKey(table.TableName))
                 {
                     if (dropTable)
-                        Tables[table.TableName] = table;
+                        _tables[table.TableName] = table;
                     else
                         return new ReturnValue(false, "The table " + table.TableName + " already exists.", null);
                 }
                 else
                 {
-                    Tables.Add(table.TableName, table);
+                    _tables.Add(table.TableName, table);
                 }
 
                 return new ReturnValue(true);
@@ -60,7 +60,7 @@ namespace dexih.transforms
         {
             return await Task.Run(() =>
             {
-                var deleteTable = Tables[table.TableName];
+                var deleteTable = _tables[table.TableName];
 
                 int count = 0;
                 var timer = Stopwatch.StartNew();
@@ -87,7 +87,7 @@ namespace dexih.transforms
 
         public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
-            Table insertTable = Tables[table.TableName];
+            Table insertTable = _tables[table.TableName];
 
             var timer = Stopwatch.StartNew();
             while(await sourceData.ReadAsync(cancelToken))
@@ -108,7 +108,7 @@ namespace dexih.transforms
         {
             return await Task.Run(() => {
                 var timer = Stopwatch.StartNew();
-                Table insertTable = Tables[table.TableName];
+                Table insertTable = _tables[table.TableName];
 
                 foreach (var query in queries)
                 {
@@ -131,7 +131,7 @@ namespace dexih.transforms
         {
            return await Task.Run(() =>
           {
-              var reader = new ReaderMemory(Tables[table.TableName], null);
+              var reader = new ReaderMemory(_tables[table.TableName], null);
               return new ReturnValue<DbDataReader>(true, reader);
           });
         }
@@ -145,7 +145,7 @@ namespace dexih.transforms
         {
             return await Task.Run((Func<ReturnValue<long>>)(() =>
             {
-                var updateTable = Tables[table.TableName];
+                var updateTable = _tables[table.TableName];
 
                 int count = 0;
                 var timer = Stopwatch.StartNew();
@@ -182,14 +182,14 @@ namespace dexih.transforms
 
         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
         {
-            return await Task.Run( () => new ReturnValue<Table>(true, Tables[originalTable.TableName]));
+            return await Task.Run( () => new ReturnValue<Table>(true, _tables[originalTable.TableName]));
         }
 
         public override async Task<ReturnValue<List<Table>>> GetTableList()
         {
             return await Task.Run(() =>
             {
-				return new ReturnValue<List<Table>>(true, Tables.Values.ToList());
+				return new ReturnValue<List<Table>>(true, _tables.Values.ToList());
             });
         }
 
@@ -197,7 +197,7 @@ namespace dexih.transforms
         {
            return await Task.Run(() =>
            {
-               Tables[table.TableName].Data.Clear();
+               _tables[table.TableName].Data.Clear();
                return new ReturnValue(true);
            });
 
@@ -213,7 +213,7 @@ namespace dexih.transforms
         {
             return await Task.Run(() =>
             {
-                return new ReturnValue<bool>(true, Tables.ContainsKey(table.TableName));
+                return new ReturnValue<bool>(true, _tables.ContainsKey(table.TableName));
             });
         }
     }

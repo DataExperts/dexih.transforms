@@ -34,7 +34,7 @@ namespace dexih.transforms
             SourceTableName = sourceTableName;
             TargetTableKey = targetTableKey;
             TargetTableName = targetTableName;
-            AuditConnection = auditConnection;
+            _auditConnection = auditConnection;
             LastRowTotal = lastSuccessfulResult == null ? 0 : lastSuccessfulResult.RowsTotal;
             LastMaxIncrementalValue = lastSuccessfulResult == null ? null : lastSuccessfulResult.MaxIncrementalValue;
 
@@ -71,7 +71,7 @@ namespace dexih.transforms
             DataJob
         }
 
-        private readonly Connection AuditConnection;
+        private readonly Connection _auditConnection;
 
         public long AuditKey { get; set; }
         public string AuditType { get; set; }
@@ -189,11 +189,11 @@ namespace dexih.transforms
                 OnFinish?.Invoke(this);
             }
 
-            if (AuditConnection != null)
+            if (_auditConnection != null)
             {
                 LastUpdateTime = DateTime.Now;
 
-                var updateResult = await AuditConnection.UpdateAudit(this);
+                var updateResult = await _auditConnection.UpdateAudit(this);
                 if (!updateResult.Success)
                 {
                     RunStatus = ERunStatus.Abended;

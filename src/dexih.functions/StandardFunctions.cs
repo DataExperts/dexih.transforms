@@ -45,16 +45,16 @@ namespace dexih.functions
             return true;
         }
 
-        public static Function GetFunctionReference(string FunctionName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public static Function GetFunctionReference(string functionName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
-            return new Function(typeof(StandardFunctions), FunctionName, FunctionName + "Result", "Reset", inputMappings, targetColumn, outputMappings);
+            return new Function(typeof(StandardFunctions), functionName, functionName + "Result", "Reset", inputMappings, targetColumn, outputMappings);
         }
 
-        public static Function GetFunctionReference(string FunctionName)
+        public static Function GetFunctionReference(string functionName)
         {
-            if (typeof(StandardFunctions).GetMethod(FunctionName) == null)
-                throw new Exception("The method " + FunctionName + " was not found in the standard functions");
-            return new Function(typeof(StandardFunctions), FunctionName, FunctionName + "Result", "Reset", null, null, null);
+            if (typeof(StandardFunctions).GetMethod(functionName) == null)
+                throw new Exception("The method " + functionName + " was not found in the standard functions");
+            return new Function(typeof(StandardFunctions), functionName, functionName + "Result", "Reset", null, null, null);
         }
 
         #region Regular Functions

@@ -255,7 +255,7 @@ namespace dexih.connections.azure
             return storageAccount.CreateCloudTableClient();
         }
 
-        public override async Task<ReturnValue> CreateDatabase(string DatabaseName)
+        public override async Task<ReturnValue> CreateDatabase(string databaseName)
         {
             return await Task.Run(() => new ReturnValue(true));
         }
@@ -499,10 +499,10 @@ namespace dexih.connections.azure
                     }
                     else
                     {
-                        var value2parse = TryParse(filter.CompareDataType, filter.Value2);
-                        if (!value2parse.Success)
+                        var value2Parse = TryParse(filter.CompareDataType, filter.Value2);
+                        if (!value2Parse.Success)
                             throw new Exception("The filter value " + filter.Value2.ToString() + " could not be convered to a " + filter.CompareDataType.ToString());
-                        var value2 = value2parse.Value;
+                        var value2 = value2Parse.Value;
 
                         filterString = GenerateFilterCondition(filter.Column1.ColumnName, filter.Operator, filter.CompareDataType, value2);
                     }

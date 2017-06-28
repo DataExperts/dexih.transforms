@@ -521,9 +521,9 @@ namespace dexih.connections.sql
             }
         }
 
-        public override ETypeCode ConvertSqlToTypeCode(string SqlType)
+        public override ETypeCode ConvertSqlToTypeCode(string sqlType)
         {
-            switch (SqlType)
+            switch (sqlType)
             {
                 case "INT":
                     return ETypeCode.Int32;

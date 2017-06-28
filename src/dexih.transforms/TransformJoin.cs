@@ -44,7 +44,7 @@ namespace dexih.transforms
         private int[] _sourceKeyOrdinals;
         private string _referenceTableName;
 
-        private readonly List<Function> joinFilters = new List<Function>();
+        private readonly List<Function> _joinFilters = new List<Function>();
 
 
         public enum EJoinAlgorithm
@@ -108,7 +108,7 @@ namespace dexih.transforms
                     if (isPrefilter)
                         preFilters.Add(function);
                     else
-                        joinFilters.Add(function);
+                        _joinFilters.Add(function);
                 }
 
                 if (preFilters.Count > 0)
@@ -325,7 +325,7 @@ namespace dexih.transforms
             if (_groupsOpen)
             {
                 //if there are additional join functions, we run them
-                if (joinFilters.Count == 0)
+                if (_joinFilters.Count == 0)
                 {
                     _filterdGroupData = _groupData;
                 }
@@ -336,7 +336,7 @@ namespace dexih.transforms
                     foreach (object[] row in _groupData)
                     {
                         bool matchFound = true;
-                        foreach (Function condition in joinFilters)
+                        foreach (Function condition in _joinFilters)
                         {
                             foreach (Parameter input in condition.Inputs.Where(c => c.IsColumn))
                             {

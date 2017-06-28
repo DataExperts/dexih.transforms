@@ -8,19 +8,19 @@ namespace dexih.functions
 {
     public class TableColumns : IList<TableColumn>
     {
-        private readonly List<TableColumn> _TableColumns;
-        private readonly Dictionary<string, int> _ColumnOrdinals;
+        private readonly List<TableColumn> _tableColumns;
+        private readonly Dictionary<string, int> _columnOrdinals;
 
         public TableColumns()
         {
-            _TableColumns = new List<TableColumn>();
-            _ColumnOrdinals = new Dictionary<string, int>();
+            _tableColumns = new List<TableColumn>();
+            _columnOrdinals = new Dictionary<string, int>();
         }
 
         public TableColumns(IEnumerable<TableColumn> tableColumns)
         {
-            _TableColumns = new List<TableColumn>();
-            _ColumnOrdinals = new Dictionary<string, int>();
+            _tableColumns = new List<TableColumn>();
+            _columnOrdinals = new Dictionary<string, int>();
 
             foreach (var column in tableColumns)
                 Add(column);
@@ -30,12 +30,12 @@ namespace dexih.functions
         {
             get
             {
-                return _TableColumns[index];
+                return _tableColumns[index];
             }
 
             set
             {
-                _TableColumns[index] = value;
+                _tableColumns[index] = value;
             }
         }
 
@@ -43,15 +43,15 @@ namespace dexih.functions
         {
             get
             {
-                if (_ColumnOrdinals.ContainsKey(columnName))
-                    return _TableColumns[_ColumnOrdinals[columnName]];
+                if (_columnOrdinals.ContainsKey(columnName))
+                    return _tableColumns[_columnOrdinals[columnName]];
                 else
                     return null;
             }
 
             set
             {
-                _TableColumns[_ColumnOrdinals[columnName]] = value;
+                _tableColumns[_columnOrdinals[columnName]] = value;
             }
         }
 
@@ -59,22 +59,22 @@ namespace dexih.functions
         {
             get
             {
-                if (_ColumnOrdinals.ContainsKey(column.SchemaColumnName()))
-                    return _TableColumns[_ColumnOrdinals[column.SchemaColumnName()]];
+                if (_columnOrdinals.ContainsKey(column.SchemaColumnName()))
+                    return _tableColumns[_columnOrdinals[column.SchemaColumnName()]];
                 else
                     return null;
             }
 
             set
             {
-                _TableColumns[_ColumnOrdinals[column.SchemaColumnName()]] = value;
+                _tableColumns[_columnOrdinals[column.SchemaColumnName()]] = value;
             }
         }
 
         public int GetOrdinal(string columnName)
         {
-            if (_ColumnOrdinals.ContainsKey(columnName))
-                return _ColumnOrdinals[columnName];
+            if (_columnOrdinals.ContainsKey(columnName))
+                return _columnOrdinals[columnName];
             else
                 return -1;
         }
@@ -83,7 +83,7 @@ namespace dexih.functions
         {
             get
             {
-                return _TableColumns.Count;
+                return _tableColumns.Count;
             }
         }
 
@@ -97,84 +97,84 @@ namespace dexih.functions
 
         public void Add(TableColumn item)
         {
-            _TableColumns.Add(item);
-            if (!_ColumnOrdinals.ContainsKey(item.SchemaColumnName()))
+            _tableColumns.Add(item);
+            if (!_columnOrdinals.ContainsKey(item.SchemaColumnName()))
             {
-                _ColumnOrdinals.Add(item.SchemaColumnName(), _TableColumns.Count - 1);
+                _columnOrdinals.Add(item.SchemaColumnName(), _tableColumns.Count - 1);
             }
-            if (!_ColumnOrdinals.ContainsKey(item.ColumnName))
+            if (!_columnOrdinals.ContainsKey(item.ColumnName))
             {
-                _ColumnOrdinals.Add(item.ColumnName, _TableColumns.Count - 1);
+                _columnOrdinals.Add(item.ColumnName, _tableColumns.Count - 1);
             }
         }
 
         public void Clear()
         {
-            _TableColumns.Clear();
-            _ColumnOrdinals.Clear();
+            _tableColumns.Clear();
+            _columnOrdinals.Clear();
         }
 
         public bool Contains(TableColumn item)
         {
-            return _TableColumns.Contains(item);
+            return _tableColumns.Contains(item);
         }
 
         public bool ContainsMatching(TableColumn column)
         {
-            if (_TableColumns == null)
+            if (_tableColumns == null)
                 return false;
 
-            return _ColumnOrdinals.ContainsKey(column.SchemaColumnName());
+            return _columnOrdinals.ContainsKey(column.SchemaColumnName());
         }
 
         public void CopyTo(TableColumn[] array, int arrayIndex)
         {
-            _TableColumns.CopyTo(array, arrayIndex);
+            _tableColumns.CopyTo(array, arrayIndex);
         }
 
         public IEnumerator<TableColumn> GetEnumerator()
         {
-            return _TableColumns.GetEnumerator();
+            return _tableColumns.GetEnumerator();
         }
 
         public int IndexOf(TableColumn item)
         {
-            return _TableColumns.IndexOf(item);
+            return _tableColumns.IndexOf(item);
         }
 
         public void Insert(int index, TableColumn item)
         {
-            _TableColumns.Insert(index, item);
+            _tableColumns.Insert(index, item);
             RebuildOrdinals();
         }
 
         public bool Remove(TableColumn item)
         {
-            var returnValue = _TableColumns.Remove(item);
+            var returnValue = _tableColumns.Remove(item);
             RebuildOrdinals();
             return returnValue;
         }
 
         public void RemoveAt(int index)
         {
-            _TableColumns.RemoveAt(index);
+            _tableColumns.RemoveAt(index);
             RebuildOrdinals();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _TableColumns.GetEnumerator();
+            return _tableColumns.GetEnumerator();
         }
 
         private void RebuildOrdinals()
         {
-            _ColumnOrdinals.Clear();
-            for (int i = 0; i < _TableColumns.Count; i++)
+            _columnOrdinals.Clear();
+            for (int i = 0; i < _tableColumns.Count; i++)
             {
-                _ColumnOrdinals.Add(_TableColumns[i].SchemaColumnName(), i);
-                if (!_ColumnOrdinals.ContainsKey(_TableColumns[i].ColumnName))
+                _columnOrdinals.Add(_tableColumns[i].SchemaColumnName(), i);
+                if (!_columnOrdinals.ContainsKey(_tableColumns[i].ColumnName))
                 {
-                    _ColumnOrdinals.Add(_TableColumns[i].ColumnName, i);
+                    _columnOrdinals.Add(_tableColumns[i].ColumnName, i);
                 }
             }
         }

@@ -20,7 +20,7 @@ namespace dexih.connections.flatfile
 
         private FileFormat _fileFormat;
 
-        private ConnectionFlatFile FileConnection;
+        private ConnectionFlatFile _fileConnection;
 
 		public FlatFile CacheFlatFile {
 			get { return (FlatFile)CacheTable; }
@@ -29,7 +29,7 @@ namespace dexih.connections.flatfile
         public ReaderFlatFile(Connection connection, FlatFile table)
         {
             ReferenceConnection = connection;
-            FileConnection = (ConnectionFlatFile)connection;
+            _fileConnection = (ConnectionFlatFile)connection;
             CacheTable = table;
         }
 

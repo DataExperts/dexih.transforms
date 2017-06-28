@@ -116,7 +116,7 @@ namespace dexih.transforms
         public abstract Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null);
 
         //Functions required for datapoint.
-        public abstract Task<ReturnValue> CreateDatabase(string DatabaseName);
+        public abstract Task<ReturnValue> CreateDatabase(string databaseName);
         public abstract Task<ReturnValue<List<string>>> GetDatabaseList();
         public abstract Task<ReturnValue<List<Table>>> GetTableList();
 
@@ -631,7 +631,7 @@ namespace dexih.transforms
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
             reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
-            reader.SetEncryptionMethod(Transform.EEncryptionMethod.BlankSecureFields, "", "<hidden field>");
+			reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
 
             int count = 0;
             while ((count < query.Rows || query.Rows == -1 ) &&
@@ -662,7 +662,7 @@ namespace dexih.transforms
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
             reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
-            reader.SetEncryptionMethod(Transform.EEncryptionMethod.BlankSecureFields, "", "<hidden field>");
+				reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
 
             int count = 0;
             while ((count < query.Rows || query.Rows == -1) &&

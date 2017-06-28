@@ -535,9 +535,9 @@ namespace dexih.connections.sql
 		}
 
 
-        public override ETypeCode ConvertSqlToTypeCode(string SqlType)
+        public override ETypeCode ConvertSqlToTypeCode(string sqlType)
         {
-            switch (SqlType)
+            switch (sqlType)
             {
                 case "bit": return ETypeCode.Boolean;
 				case "varbit": return ETypeCode.Binary;

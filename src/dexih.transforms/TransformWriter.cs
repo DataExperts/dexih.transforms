@@ -15,60 +15,60 @@ namespace dexih.transforms
         /// </summary>
         public virtual int CommitSize { get; protected set; } = 10000;
 
-        private TableCache CreateRows;
-        private TableCache UpdateRows;
-        private TableCache DeleteRows;
-        private TableCache RejectRows;
+        private TableCache _createRows;
+        private TableCache _updateRows;
+        private TableCache _deleteRows;
+        private TableCache _rejectRows;
 
 
-        private bool WriteOpen = false;
-        private int OperationColumnIndex; //the index of the operation in the source data.
+        private bool _writeOpen = false;
+        private int _operationColumnIndex; //the index of the operation in the source data.
 
-        private Task<ReturnValue<long>> CreateRecordsTask; //task to allow writes to run async with other processing.
-        private Task<ReturnValue<long>> UpdateRecordsTask; //task to allow writes to run async with other processing.
-        private Task<ReturnValue<long>> DeleteRecordsTask; //task to allow writes to run async with other processing.
-        private Task<ReturnValue<long>> RejectRecordsTask; //task to allow writes to run async with other processing.
+        private Task<ReturnValue<long>> _createRecordsTask; //task to allow writes to run async with other processing.
+        private Task<ReturnValue<long>> _updateRecordsTask; //task to allow writes to run async with other processing.
+        private Task<ReturnValue<long>> _deleteRecordsTask; //task to allow writes to run async with other processing.
+        private Task<ReturnValue<long>> _rejectRecordsTask; //task to allow writes to run async with other processing.
 
-        private Transform InTransform;
-        private Table TargetTable;
-        private Table RejectTable;
-        private Table ProfileTable;
+        private Transform _inTransform;
+        private Table _targetTable;
+        private Table _rejectTable;
+        private Table _profileTable;
 
-        private Connection TargetConnection;
-        private Connection RejectConnection;
-        private Connection ProfileConnection;
+        private Connection _targetConnection;
+        private Connection _rejectConnection;
+        private Connection _profileConnection;
 
-        private CancellationToken CancelToken;
+        private CancellationToken _cancelToken;
 
-        private InsertQuery TargetInsertQuery;
-        private UpdateQuery TargetUpdateQuery;
-        private DeleteQuery TargetDeleteQuery;
-        private InsertQuery RejectInsertQuery;
+        private InsertQuery _targetInsertQuery;
+        private UpdateQuery _targetUpdateQuery;
+        private DeleteQuery _targetDeleteQuery;
+        private InsertQuery _rejectInsertQuery;
 
         public long WriteDataTicks;
 
         private int[] _fieldOrdinals;
         private int[] _rejectFieldOrdinals;
 
-        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult writerResult, Transform inTransform, Table targetTable, Connection targetConnection, CancellationToken cancelToken)
         {
-            return await WriteAllRecords(WriterResult, inTransform, targetTable, targetConnection, null, null, null, null, cancelToken);
+            return await WriteAllRecords(writerResult, inTransform, targetTable, targetConnection, null, null, null, null, cancelToken);
         }
 
-        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult writerResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, CancellationToken cancelToken)
         {
-            return await WriteAllRecords(WriterResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, null, null, cancelToken);
+            return await WriteAllRecords(writerResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, null, null, cancelToken);
         }
 
-        public async Task<ReturnValue> WriteAllRecords( TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Table profileTable, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords( TransformWriterResult writerResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Table profileTable, CancellationToken cancelToken)
         {
-            return await WriteAllRecords(WriterResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, profileTable, targetConnection, cancelToken);
+            return await WriteAllRecords(writerResult, inTransform, targetTable, targetConnection, rejectTable, targetConnection, profileTable, targetConnection, cancelToken);
         }
 
 
-        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult writerResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, CancellationToken cancelToken)
         {
-            return await WriteAllRecords(WriterResult, inTransform, targetTable, targetConnection, rejectTable, rejectConnection, null, null, cancelToken);
+            return await WriteAllRecords(writerResult, inTransform, targetTable, targetConnection, rejectTable, rejectConnection, null, null, cancelToken);
         }
 
         /// <summary>
@@ -82,38 +82,38 @@ namespace dexih.transforms
         /// <param name="profileTableName">Reject table name</param>
         /// <param name="profileConnection">Reject connection (if null will use connection)</param>
         /// <returns></returns>
-        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult WriterResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, Table profileTable, Connection profileConnection, CancellationToken cancelToken)
+        public async Task<ReturnValue> WriteAllRecords(TransformWriterResult writerResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, Table profileTable, Connection profileConnection, CancellationToken cancelToken)
         {
             try
             {
-                CancelToken = cancelToken;
-                TargetConnection = targetConnection;
+                _cancelToken = cancelToken;
+                _targetConnection = targetConnection;
 
                 if (rejectConnection == null)
-                    RejectConnection = targetConnection;
+                    _rejectConnection = targetConnection;
                 else
-                    RejectConnection = rejectConnection;
+                    _rejectConnection = rejectConnection;
 
                 if (profileConnection == null)
-                    ProfileConnection = targetConnection;
+                    _profileConnection = targetConnection;
                 else
-                    ProfileConnection = profileConnection;
+                    _profileConnection = profileConnection;
 
-                var updateResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Started);
+                var updateResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Started);
                 if (!updateResult.Success)
                     return updateResult;
 
-                TargetTable = targetTable;
-                RejectTable = rejectTable;
-                ProfileTable = profileTable;
+                _targetTable = targetTable;
+                _rejectTable = rejectTable;
+                _profileTable = profileTable;
 
-                InTransform = inTransform;
+                _inTransform = inTransform;
 
-                var returnValue = await WriteStart(InTransform, WriterResult);
+                var returnValue = await WriteStart(_inTransform, writerResult);
 
                 if (returnValue.Success == false)
                 {
-                    await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
+                    await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
                     return returnValue;
                 }
 
@@ -124,7 +124,7 @@ namespace dexih.transforms
                 {
                     if (firstRead)
                     {
-                        var runStatusResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Running);
+                        var runStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Running);
                         if (!runStatusResult.Success)
                             return runStatusResult;
                         firstRead = false;
@@ -135,43 +135,43 @@ namespace dexih.transforms
                         var result = await writeTask;
                         if(!result.Success)
                         {
-                            await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
+                            await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
                             return returnValue;
                         }
                     }
 
-                    writeTask = WriteRecord(WriterResult, inTransform);
+                    writeTask = WriteRecord(writerResult, inTransform);
 
                     if (cancelToken.IsCancellationRequested)
                     {
-                        var runStatusResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Cancelled);
+                        var runStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Cancelled);
                         return runStatusResult;
                     }
                 }
 
-                returnValue = await WriteFinish(WriterResult, inTransform);
+                returnValue = await WriteFinish(writerResult, inTransform);
                 if (returnValue.Success == false)
                 {
-                    await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
+                    await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
                     return new ReturnValue(false, returnValue.Message, null);
                 }
 
-                if (ProfileTable != null)
+                if (_profileTable != null)
                 {
                     var profileResults = inTransform.GetProfileResults();
                     if (profileResults != null)
                     {
-                        var profileResult = await ProfileConnection.ExecuteInsertBulk(ProfileTable, profileResults, cancelToken);
+                        var profileResult = await _profileConnection.ExecuteInsertBulk(_profileTable, profileResults, cancelToken);
                         if (!profileResult.Success)
                         {
                             profileResult.Message = "Failed to save profile results";
-                            await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, profileResult);
+                            await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, profileResult);
                             return profileResult;
                         }
                     }
                 }
 
-                var setRunStatusResult = await WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished);
+                var setRunStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished);
 
                 return setRunStatusResult;
             }
@@ -184,95 +184,95 @@ namespace dexih.transforms
         public async Task<ReturnValue> WriteStart(Transform inTransform, TransformWriterResult writerResult)
         {
 
-            if (WriteOpen)
+            if (_writeOpen)
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
-            var returnValue = await InTransform.Open(writerResult.AuditKey, null); 
+            var returnValue = await _inTransform.Open(writerResult.AuditKey, null); 
             if (!returnValue.Success)
                 return returnValue;
 
-            OperationColumnIndex = InTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+            _operationColumnIndex = _inTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
 
-            CreateRows = new TableCache();
-            UpdateRows = new TableCache();
-            DeleteRows = new TableCache();
-            RejectRows = new TableCache();
+            _createRows = new TableCache();
+            _updateRows = new TableCache();
+            _deleteRows = new TableCache();
+            _rejectRows = new TableCache();
 
             //create template queries, with the values set to paramaters (i.e. @param1, @param2)
-            TargetInsertQuery = new InsertQuery(TargetTable.TableName, TargetTable.Columns.Select(c => new QueryColumn(new TableColumn(c.ColumnName, c.Datatype), "@param" + TargetTable.GetOrdinal(c.ColumnName).ToString())).ToList());
+            _targetInsertQuery = new InsertQuery(_targetTable.TableName, _targetTable.Columns.Select(c => new QueryColumn(new TableColumn(c.ColumnName, c.Datatype), "@param" + _targetTable.GetOrdinal(c.ColumnName).ToString())).ToList());
 
-            TargetUpdateQuery = new UpdateQuery(
-                TargetTable.TableName,
-                TargetTable.Columns.Where(c=> c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, "@param" + TargetTable.GetOrdinal(c.ColumnName).ToString())).ToList(),
-                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c=> new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList()
+            _targetUpdateQuery = new UpdateQuery(
+                _targetTable.TableName,
+                _targetTable.Columns.Where(c=> c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, "@param" + _targetTable.GetOrdinal(c.ColumnName).ToString())).ToList(),
+                _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c=> new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList()
                 );
 
-            TargetDeleteQuery = new DeleteQuery(TargetTable.TableName, TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
+            _targetDeleteQuery = new DeleteQuery(_targetTable.TableName, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
-            if (RejectTable != null)
+            if (_rejectTable != null)
             {
-                RejectInsertQuery = new InsertQuery(RejectTable.TableName, RejectTable.Columns.Select(c => new QueryColumn(c, "@param" + RejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
-                returnValue = await RejectConnection.CreateTable(RejectTable, false);
+                _rejectInsertQuery = new InsertQuery(_rejectTable.TableName, _rejectTable.Columns.Select(c => new QueryColumn(c, "@param" + _rejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
+                returnValue = await _rejectConnection.CreateTable(_rejectTable, false);
                 //if (!returnValue.Success)
                 //    return returnValue;
             }
 
             //create the profile results table if it doesn't exist.
-            if (ProfileTable != null)
+            if (_profileTable != null)
             {
-                returnValue = await ProfileConnection.CreateTable(ProfileTable, false);
+                returnValue = await _profileConnection.CreateTable(_profileTable, false);
             }
 
             //if the table doesn't exist, create it.  
-            returnValue = await TargetConnection.CreateTable(TargetTable, false);
-            returnValue = await TargetConnection.DataWriterStart(TargetTable);
+            returnValue = await _targetConnection.CreateTable(_targetTable, false);
+            returnValue = await _targetConnection.DataWriterStart(_targetTable);
 
             //if the truncate table flag is set, then truncate the target table.
             if (writerResult.TruncateTarget)
             {
-                var truncateResult = await TargetConnection.TruncateTable(TargetTable, CancelToken);
+                var truncateResult = await _targetConnection.TruncateTable(_targetTable, _cancelToken);
                 if (!truncateResult.Success)
                     return truncateResult;
             }
 
-            int columnCount = TargetTable.Columns.Count;
+            int columnCount = _targetTable.Columns.Count;
             _fieldOrdinals = new int[columnCount];
             for (int i = 0; i < columnCount; i++)
             {
-                _fieldOrdinals[i] = inTransform.GetOrdinal(TargetTable.Columns[i].ColumnName);
+                _fieldOrdinals[i] = inTransform.GetOrdinal(_targetTable.Columns[i].ColumnName);
             }
 
-            if(RejectTable != null)
+            if(_rejectTable != null)
             {
-                columnCount = RejectTable.Columns.Count;
+                columnCount = _rejectTable.Columns.Count;
                 _rejectFieldOrdinals = new int[columnCount];
                 for (int i = 0; i < columnCount; i++)
                 {
-                    _rejectFieldOrdinals[i] = inTransform.GetOrdinal(RejectTable.Columns[i].ColumnName);
+                    _rejectFieldOrdinals[i] = inTransform.GetOrdinal(_rejectTable.Columns[i].ColumnName);
                 }
             }
 
-            WriteOpen = true;
+            _writeOpen = true;
 
             return new ReturnValue(true);
         }
 
         public async Task<ReturnValue> WriteRecord(TransformWriterResult writerResult, Transform reader)
         {
-            if (WriteOpen == false)
+            if (_writeOpen == false)
                 return new ReturnValue(false, "Cannot write records as the WriteStart has not been called.", null);
 
             //split the operation field (if it exists) and create copy of the row.
             char operation;
 
             //determine the type of operation (create, update, delete, reject)
-            if (OperationColumnIndex == -1)
+            if (_operationColumnIndex == -1)
             {
                 operation = 'C';
             }
             else
             {
-                operation = (char)reader[OperationColumnIndex];
+                operation = (char)reader[_operationColumnIndex];
             }
 
             Table table;
@@ -280,9 +280,9 @@ namespace dexih.transforms
 
             if (operation == 'R')
             {
-                table = RejectTable;
+                table = _rejectTable;
                 ordinals = _rejectFieldOrdinals;
-                if (RejectTable == null)
+                if (_rejectTable == null)
                 {
                     var rejectColumn = reader.GetOrdinal("RejectedReason");
                     string rejectReason = "";
@@ -297,7 +297,7 @@ namespace dexih.transforms
                 }
             }
             else
-                table = TargetTable;
+                table = _targetTable;
 
             int columnCount = table.Columns.Count;
 
@@ -314,30 +314,30 @@ namespace dexih.transforms
             switch (operation)
             {
                 case 'C':
-                    CreateRows.Add(row);
+                    _createRows.Add(row);
                     writerResult.IncrementRowsCreated();
-                    if (CreateRows.Count >= CommitSize)
-                        return await doCreates();
+                    if (_createRows.Count >= CommitSize)
+                        return await DoCreates();
                     break;
                 case 'U':
-                    UpdateRows.Add(row);
+                    _updateRows.Add(row);
                     writerResult.IncrementRowsUpdated();
-                    if (UpdateRows.Count >= CommitSize)
-                        return await doUpdate();
+                    if (_updateRows.Count >= CommitSize)
+                        return await DoUpdate();
                     break;
                 case 'D':
-                    DeleteRows.Add(row);
+                    _deleteRows.Add(row);
                     writerResult.IncrementRowsDeleted();
-                    if (DeleteRows.Count >= CommitSize)
-                        return await doDelete();
+                    if (_deleteRows.Count >= CommitSize)
+                        return await DoDelete();
                     break;
                 case 'R':
-                    RejectRows.Add(row);
-                    if (RejectRows.Count >= CommitSize)
-                        return await doReject();
+                    _rejectRows.Add(row);
+                    if (_rejectRows.Count >= CommitSize)
+                        return await DoReject();
                     break;
                 case 'T':
-                    var truncateResult = await TargetConnection.TruncateTable(TargetTable, CancelToken);
+                    var truncateResult = await _targetConnection.TruncateTable(_targetTable, _cancelToken);
                     if (!truncateResult.Success)
                         return truncateResult;
                     break;
@@ -348,73 +348,73 @@ namespace dexih.transforms
 
         public async Task<ReturnValue> WriteFinish(TransformWriterResult writerResult, Transform reader)
         {
-            WriteOpen = false;
+            _writeOpen = false;
 
             //write out the remaining rows.
-            if (CreateRows.Count > 0)
+            if (_createRows.Count > 0)
             {
-                var returnValue = await doCreates();
+                var returnValue = await DoCreates();
                 if (returnValue.Success == false)
                     return returnValue;
             }
 
-            if (UpdateRows.Count > 0)
+            if (_updateRows.Count > 0)
             {
-                var returnValue = await doUpdate();
+                var returnValue = await DoUpdate();
                 if (returnValue.Success == false)
                     return returnValue;
             }
 
-            if (DeleteRows.Count > 0)
+            if (_deleteRows.Count > 0)
             {
-                var returnValue = await doDelete();
+                var returnValue = await DoDelete();
                 if (returnValue.Success == false)
                     return returnValue;
             }
 
-            if (RejectRows.Count > 0)
+            if (_rejectRows.Count > 0)
             {
-                var returnValue = await doReject();
+                var returnValue = await DoReject();
                 if (returnValue.Success == false)
                     return returnValue;
             }
 
             //wait for any write tasks to finish
-            if (CreateRecordsTask != null)
+            if (_createRecordsTask != null)
             {
-                var result = await CreateRecordsTask;
+                var result = await _createRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            if (CreateRecordsTask != null)
+            if (_createRecordsTask != null)
             {
-                var result = await CreateRecordsTask;
+                var result = await _createRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            if (UpdateRecordsTask != null)
+            if (_updateRecordsTask != null)
             {
-                var result = await UpdateRecordsTask;
+                var result = await _updateRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            if (DeleteRecordsTask != null)
+            if (_deleteRecordsTask != null)
             {
-                var result = await DeleteRecordsTask;
+                var result = await _deleteRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            if (RejectRecordsTask != null)
+            if (_rejectRecordsTask != null)
             {
-                var result = await RejectRecordsTask;
+                var result = await _rejectRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
@@ -447,131 +447,131 @@ namespace dexih.transforms
 
             reader.Dispose();
 
-            var returnValue2 = await TargetConnection.DataWriterFinish(TargetTable);
+            var returnValue2 = await _targetConnection.DataWriterFinish(_targetTable);
 
             return new ReturnValue(true);
         }
-        private async Task<ReturnValue> doCreates()
+        private async Task<ReturnValue> DoCreates()
         {
             //wait for the previous create task to finish before writing next buffer.
-            if (CreateRecordsTask != null)
+            if (_createRecordsTask != null)
             {
-                var result = await CreateRecordsTask;
+                var result = await _createRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            Table createTable = new Table(TargetTable.TableName, TargetTable.Columns, CreateRows);
+            Table createTable = new Table(_targetTable.TableName, _targetTable.Columns, _createRows);
             var createReader = new ReaderMemory(createTable);
 
-            CreateRecordsTask = TargetConnection.ExecuteInsertBulk(TargetTable, createReader, CancelToken);  //this has no await to ensure processing continues.
+            _createRecordsTask = _targetConnection.ExecuteInsertBulk(_targetTable, createReader, _cancelToken);  //this has no await to ensure processing continues.
 
-            CreateRows = new TableCache();
+            _createRows = new TableCache();
             return new ReturnValue(true);
         }
 
-        private async Task<ReturnValue> doUpdate()
+        private async Task<ReturnValue> DoUpdate()
         {
             //update must wait for any inserts to complete (to avoid updates on records that haven't been inserted yet)
-            if (CreateRecordsTask != null)
+            if (_createRecordsTask != null)
             {
-                var result = await CreateRecordsTask;
+                var result = await _createRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            if (UpdateRecordsTask != null)
+            if (_updateRecordsTask != null)
             {
-                var result = await UpdateRecordsTask;
+                var result = await _updateRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
             List<UpdateQuery> updateQueries = new List<UpdateQuery>();
-            foreach(object[] row in UpdateRows)
+            foreach(object[] row in _updateRows)
             {
                 UpdateQuery updateQuery = new UpdateQuery(
-                TargetTable.TableName,
-                TargetTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList(),
-                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList()
+                _targetTable.TableName,
+                _targetTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, row[_targetTable.GetOrdinal(c.ColumnName)])).ToList(),
+                _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[_targetTable.GetOrdinal(c.ColumnName)])).ToList()
                 );
 
                 updateQueries.Add(updateQuery);
             }
 
-            UpdateRecordsTask = TargetConnection.ExecuteUpdate(TargetTable, updateQueries, CancelToken);  //this has no await to ensure processing continues.
+            _updateRecordsTask = _targetConnection.ExecuteUpdate(_targetTable, updateQueries, _cancelToken);  //this has no await to ensure processing continues.
 
-            UpdateRows = new TableCache();
+            _updateRows = new TableCache();
 
             return new ReturnValue(true);
         }
 
-        private async Task<ReturnValue> doDelete()
+        private async Task<ReturnValue> DoDelete()
         {
             //delete must wait for any inserts to complete (to avoid updates on records that haven't been inserted yet)
-            if (CreateRecordsTask != null)
+            if (_createRecordsTask != null)
             {
-                var result = await CreateRecordsTask;
+                var result = await _createRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            if (UpdateRecordsTask != null)
+            if (_updateRecordsTask != null)
             {
-                var result = await UpdateRecordsTask;
+                var result = await _updateRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            if (DeleteRecordsTask != null)
+            if (_deleteRecordsTask != null)
             {
-                var result = await DeleteRecordsTask;
+                var result = await _deleteRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            TargetDeleteQuery = new DeleteQuery(TargetTable.TableName, TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
+            _targetDeleteQuery = new DeleteQuery(_targetTable.TableName, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
             List<DeleteQuery> deleteQueries = new List<DeleteQuery>();
-            foreach (object[] row in DeleteRows)
+            foreach (object[] row in _deleteRows)
             {
                 DeleteQuery deleteQuery = new DeleteQuery(
-                TargetTable.TableName,
-                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.ColumnName)])).ToList()
+                _targetTable.TableName,
+                _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[_targetTable.GetOrdinal(c.ColumnName)])).ToList()
                 );
 
                 deleteQueries.Add(deleteQuery);
             }
 
-            DeleteRecordsTask = TargetConnection.ExecuteDelete(TargetTable, deleteQueries, CancelToken);  //this has no await to ensure processing continues.
+            _deleteRecordsTask = _targetConnection.ExecuteDelete(_targetTable, deleteQueries, _cancelToken);  //this has no await to ensure processing continues.
 
-            DeleteRows = new TableCache();
+            _deleteRows = new TableCache();
 
             return new ReturnValue(true);
         }
 
-        private async Task<ReturnValue> doReject()
+        private async Task<ReturnValue> DoReject()
         {
             //wait for the previous create task to finish before writing next buffer.
-            if (RejectRecordsTask != null)
+            if (_rejectRecordsTask != null)
             {
-                var result = await RejectRecordsTask;
+                var result = await _rejectRecordsTask;
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
             }
 
-            Table createTable = new Table(RejectTable.TableName, RejectTable.Columns, RejectRows);
+            Table createTable = new Table(_rejectTable.TableName, _rejectTable.Columns, _rejectRows);
 
             var createReader = new ReaderMemory(createTable);
 
-            RejectRecordsTask = TargetConnection.ExecuteInsertBulk(createTable, createReader, CancelToken);  //this has no await to ensure processing continues.
+            _rejectRecordsTask = _targetConnection.ExecuteInsertBulk(createTable, createReader, _cancelToken);  //this has no await to ensure processing continues.
 
             return new ReturnValue(true);
         }

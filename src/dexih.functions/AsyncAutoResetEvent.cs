@@ -7,23 +7,23 @@ namespace dexih.functions
 {
     public class AsyncAutoResetEvent : IDisposable
     {
-        private readonly static Task s_completed = Task.FromResult(true);
-        private readonly Queue<TaskCompletionSource<bool>> m_waits = new Queue<TaskCompletionSource<bool>>();
-        private bool m_signaled;
+        private readonly static Task SCompleted = Task.FromResult(true);
+        private readonly Queue<TaskCompletionSource<bool>> _mWaits = new Queue<TaskCompletionSource<bool>>();
+        private bool _mSignaled;
 
         public Task WaitAsync()
         {
-            lock (m_waits)
+            lock (_mWaits)
             {
-                if (m_signaled)
+                if (_mSignaled)
                 {
-                    m_signaled = false;
-                    return s_completed;
+                    _mSignaled = false;
+                    return SCompleted;
                 }
                 else
                 {
                     var tcs = new TaskCompletionSource<bool>();
-                    m_waits.Enqueue(tcs);
+                    _mWaits.Enqueue(tcs);
                     return tcs.Task;
                 }
             }
@@ -32,12 +32,12 @@ namespace dexih.functions
         public void Set()
         {
             TaskCompletionSource<bool> toRelease = null;
-            lock (m_waits)
+            lock (_mWaits)
             {
-                if (m_waits.Count > 0)
-                    toRelease = m_waits.Dequeue();
-                else if (!m_signaled)
-                    m_signaled = true;
+                if (_mWaits.Count > 0)
+                    toRelease = _mWaits.Dequeue();
+                else if (!_mSignaled)
+                    _mSignaled = true;
             }
             if (toRelease != null)
                 toRelease.SetResult(true);

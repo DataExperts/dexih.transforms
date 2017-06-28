@@ -101,65 +101,65 @@ namespace dexih.functions
         /// Creates a new function from a class/method reference.
         /// </summary>
         /// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
-        /// <param name="MethodName">The name of the method to call.</param>
+        /// <param name="methodName">The name of the method to call.</param>
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Type targetType, string MethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public Function(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
-            FunctionName = MethodName;
-            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
+            FunctionName = methodName;
+            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), inputMappings, targetColumn, outputMappings);
         }
 
         /// <summary>
         /// Creates a new function from a class/method reference.
         /// </summary>
         /// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
-        /// <param name="MethodName">The name of the method to call.</param>
+        /// <param name="methodName">The name of the method to call.</param>
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Type targetType, string MethodName, string ResultMethodName, string ResetMethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public Function(Type targetType, string methodName, string resultMethodName, string resetMethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
-            FunctionName = MethodName;
-            ResultMethod = targetType.GetMethod(ResultMethodName);
-            ResetMethod = targetType.GetMethod(ResetMethodName);
+            FunctionName = methodName;
+            ResultMethod = targetType.GetMethod(resultMethodName);
+            ResetMethod = targetType.GetMethod(resetMethodName);
 
-            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
+            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), inputMappings, targetColumn, outputMappings);
         }
 
         /// <summary>
         /// Creates a new function from a class/method reference.
         /// </summary>
-        /// <param name="Target">An instantiated instance of the class containing the method.  Ensure a new instance of Target is created for each function to avoid issues with cached data.</param>
-        /// <param name="MethodName">The name of the method to call.</param>
+        /// <param name="target">An instantiated instance of the class containing the method.  Ensure a new instance of Target is created for each function to avoid issues with cached data.</param>
+        /// <param name="methodName">The name of the method to call.</param>
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(object Target, string MethodName, string ResultMethodName, string ResetMethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public Function(object target, string methodName, string resultMethodName, string resetMethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
             
         {
-            FunctionName = MethodName;
-            ResultMethod = Target.GetType().GetMethod(ResultMethodName);
-            ResetMethod = Target.GetType().GetMethod(ResetMethodName);
+            FunctionName = methodName;
+            ResultMethod = target.GetType().GetMethod(resultMethodName);
+            ResetMethod = target.GetType().GetMethod(resetMethodName);
 
-            Initialize(Target, Target.GetType().GetMethod(MethodName), inputMappings, targetColumn, outputMappings);
+            Initialize(target, target.GetType().GetMethod(methodName), inputMappings, targetColumn, outputMappings);
         }
 
-        public Function(object Target, MethodInfo FunctionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public Function(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
-            Initialize(Target, FunctionMethod, inputMappings, targetColumn, outputMappings);
+            Initialize(target, functionMethod, inputMappings, targetColumn, outputMappings);
         }
 
-        private void Initialize(object Target, MethodInfo FunctionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        private void Initialize(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
-            this.FunctionMethod = FunctionMethod;
-            ObjectReference = Target;
+            this.FunctionMethod = functionMethod;
+            ObjectReference = target;
 
             TargetColumn = targetColumn;
 
             ReturnType = GetTypeCode(this.FunctionMethod.ReturnType);
-            ParameterInfo[] inputParameters = FunctionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
+            ParameterInfo[] inputParameters = functionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
 
             if (inputMappings == null)
                 inputMappings = new TableColumn[inputParameters.Length];
@@ -198,7 +198,7 @@ namespace dexih.functions
             ParameterInfo[] outputParameters;
 
             if (ResultMethod == null)
-                outputParameters = FunctionMethod.GetParameters().Where(c => c.IsOut).ToArray();
+                outputParameters = functionMethod.GetParameters().Where(c => c.IsOut).ToArray();
             else
                 outputParameters = ResultMethod.GetParameters().Where(c => c.IsOut).ToArray();
 
@@ -543,8 +543,8 @@ namespace dexih.functions
 
                         if (Outputs != null && Outputs[i].IsArray)
                         {
-                            object[] Array = (object[])parameters[i + indexAdjust];
-                            result = Outputs[i].SetValue(arrayNumber >= Array.Length ? DBNull.Value : Array[arrayNumber]);
+                            object[] array = (object[])parameters[i + indexAdjust];
+                            result = Outputs[i].SetValue(arrayNumber >= array.Length ? DBNull.Value : array[arrayNumber]);
                             arrayNumber++;
                         }
                         else

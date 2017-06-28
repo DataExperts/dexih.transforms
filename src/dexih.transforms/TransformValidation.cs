@@ -24,14 +24,14 @@ namespace dexih.transforms
 
         public bool ValidateDataTypes { get; set; }
 
-        private object[] savedRejectRow; //used as a temporary store for the pass row when a pass and reject occur.
+        private object[] _savedRejectRow; //used as a temporary store for the pass row when a pass and reject occur.
 
         private bool _lastRecord = false;
 
-        private string rejectReasonColumnName;
-        private int rejectReasonOrdinal;
-        private int operationOrdinal;
-        private int validationStatusOrdinal;
+        private string _rejectReasonColumnName;
+        private int _rejectReasonOrdinal;
+        private int _operationOrdinal;
+        private int _validationStatusOrdinal;
 
         private List<int> _mapFieldOrdinals;
         private int _primaryFieldCount;
@@ -75,12 +75,12 @@ namespace dexih.transforms
             }
 
             //store reject column details to improve performance.
-            rejectReasonOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
-            if (rejectReasonOrdinal >= 0)
-                rejectReasonColumnName = CacheTable.Columns[rejectReasonOrdinal].ColumnName;
+            _rejectReasonOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
+            if (_rejectReasonOrdinal >= 0)
+                _rejectReasonColumnName = CacheTable.Columns[_rejectReasonOrdinal].ColumnName;
 
-            operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
-            validationStatusOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
+            _operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+            _validationStatusOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
 
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _columnCount = CacheTable.Columns.Count;
@@ -108,10 +108,10 @@ namespace dexih.transforms
         protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
             //the saved reject row is when a validation outputs two rows (pass & fail).
-            if (savedRejectRow != null)
+            if (_savedRejectRow != null)
             {
-                var row = savedRejectRow;
-                savedRejectRow = null;
+                var row = _savedRejectRow;
+                _savedRejectRow = null;
                 return new ReturnValue<object[]>(true, row);
             }
 
@@ -130,8 +130,8 @@ namespace dexih.transforms
                     passRow[_mapFieldOrdinals[i]] = PrimaryTransform[i];
                 }
 
-                if (passRow[operationOrdinal] == null)
-                    passRow[operationOrdinal] = 'C';
+                if (passRow[_operationOrdinal] == null)
+                    passRow[_operationOrdinal] = 'C';
 
                 object[] rejectRow = null;
 
@@ -176,16 +176,16 @@ namespace dexih.transforms
                                 {
                                     rejectRow = new object[CacheTable.Columns.Count];
                                     passRow.CopyTo(rejectRow, 0);
-                                    rejectRow[operationOrdinal] = 'R';
+                                    rejectRow[_operationOrdinal] = 'R';
                                     TransformRowsRejected++;
                                 }
 
                                 //add a reject reason if it exists
-                                if (rejectReasonOrdinal >= 0)
+                                if (_rejectReasonOrdinal >= 0)
                                 {
                                     if (validation.Outputs != null)
                                     {
-                                        Parameter param = validation.Outputs.SingleOrDefault(c => c.Column.SchemaColumnName() == rejectReasonColumnName);
+                                        Parameter param = validation.Outputs.SingleOrDefault(c => c.Column.SchemaColumnName() == _rejectReasonColumnName);
                                         if (param != null)
                                         {
                                             rejectReason.Append("  Reason: " + (string)param.Value);
@@ -239,7 +239,7 @@ namespace dexih.transforms
                                     {
                                         rejectRow = new object[_columnCount];
                                         passRow.CopyTo(rejectRow, 0);
-                                        rejectRow[operationOrdinal] = 'R';
+                                        rejectRow[_operationOrdinal] = 'R';
                                         TransformRowsRejected++;
                                     }
                                     rejectReason.AppendLine("Column:" + col.ColumnName + ": Tried to insert null into non-null column.");
@@ -256,7 +256,7 @@ namespace dexih.transforms
                                     {
                                         rejectRow = new object[_columnCount];
                                         passRow.CopyTo(rejectRow, 0);
-                                        rejectRow[operationOrdinal] = 'R';
+                                        rejectRow[_operationOrdinal] = 'R';
                                         TransformRowsRejected++;
                                     }
                                     rejectReason.AppendLine(parseresult.Message);
@@ -274,21 +274,21 @@ namespace dexih.transforms
                 switch(finalInvalidAction)
                 {
                     case Function.EInvalidAction.Pass:
-                        passRow[validationStatusOrdinal] = "passed";
+                        passRow[_validationStatusOrdinal] = "passed";
                         return new ReturnValue<object[]>(true, passRow);
                     case Function.EInvalidAction.Clean:
-                        passRow[validationStatusOrdinal] = "cleaned";
+                        passRow[_validationStatusOrdinal] = "cleaned";
                         return new ReturnValue<object[]>(true, passRow);
                     case Function.EInvalidAction.RejectClean:
-                        passRow[validationStatusOrdinal] = "rejected-cleaned";
-                        rejectRow[validationStatusOrdinal] = "rejected-cleaned";
-                        rejectRow[rejectReasonOrdinal] = rejectReason.ToString();
-                        savedRejectRow = rejectRow;
+                        passRow[_validationStatusOrdinal] = "rejected-cleaned";
+                        rejectRow[_validationStatusOrdinal] = "rejected-cleaned";
+                        rejectRow[_rejectReasonOrdinal] = rejectReason.ToString();
+                        _savedRejectRow = rejectRow;
                         return new ReturnValue<object[]>(true, passRow);
                     case Function.EInvalidAction.Reject:
-                        passRow[validationStatusOrdinal] = "rejected";
-                        rejectRow[validationStatusOrdinal] = "rejected";
-                        rejectRow[rejectReasonOrdinal] = rejectReason.ToString();
+                        passRow[_validationStatusOrdinal] = "rejected";
+                        rejectRow[_validationStatusOrdinal] = "rejected";
+                        rejectRow[_rejectReasonOrdinal] = rejectReason.ToString();
                         return new ReturnValue<object[]>(true, rejectRow);
                 }
 

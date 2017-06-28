@@ -469,7 +469,7 @@ namespace dexih.functions
 
         public string GetCsv()
         {
-            StringBuilder CsvData = new StringBuilder();
+            StringBuilder csvData = new StringBuilder();
 
             string[] columns = Columns.Select(c => c.ColumnName).ToArray();
             //add column headers
@@ -483,7 +483,7 @@ namespace dexih.functions
                 if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
                     s[j] = "\"" + s[j] + "\"";
             }
-            CsvData.AppendLine(string.Join(",", s));
+            csvData.AppendLine(string.Join(",", s));
 
             //add rows
             foreach (var row in Data)
@@ -496,10 +496,10 @@ namespace dexih.functions
                     if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
                         s[j] = "\"" + s[j] + "\"";
                 }
-                CsvData.AppendLine(string.Join(",", s));
+                csvData.AppendLine(string.Join(",", s));
             }
 
-            return CsvData.ToString();
+            return csvData.ToString();
         }
     }
 }

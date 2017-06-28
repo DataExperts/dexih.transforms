@@ -31,12 +31,12 @@ namespace dexih.functions
             Exception = returnValue.Exception;
         }
 
-        public void Add(string Name, string Message)
+        public void Add(string name, string message)
         {
             if (Errors == null)
                 Errors = new List<KeyValuePair<string, string>>();
 
-            Errors.Add(new KeyValuePair<string, string>(Name, Message));
+            Errors.Add(new KeyValuePair<string, string>(name, message));
         }
 
         public List<KeyValuePair<string, string>> Errors { get; set; }
@@ -46,7 +46,7 @@ namespace dexih.functions
 
     public class ReturnValueMultiple<T>: ReturnValue<T[]>
     {
-        public List<ReturnValue<T>> returnValues = new List<ReturnValue<T>>();
+        public List<ReturnValue<T>> ReturnValues = new List<ReturnValue<T>>();
 
         public ReturnValueMultiple()
         {
@@ -54,17 +54,17 @@ namespace dexih.functions
 
         public void Add(ReturnValue<T> returnValue)
         {
-            returnValues.Add(returnValue);
+            ReturnValues.Add(returnValue);
         }
 
         public override bool Success {
             get
             {
                 // if no returnValues return false
-                if (returnValues.Count == 0) return false;
+                if (ReturnValues.Count == 0) return false;
 
                 // if any returnValue contains false, return false,
-                return !returnValues.Exists(c => c.Success == false);
+                return !ReturnValues.Exists(c => c.Success == false);
             }
         }
 
@@ -74,9 +74,9 @@ namespace dexih.functions
             {
                 StringBuilder message = new StringBuilder();
 
-                message.AppendLine($"{returnValues.Count(c => c.Success)} successful, {returnValues.Count(c => !c.Success)} failed.");
+                message.AppendLine($"{ReturnValues.Count(c => c.Success)} successful, {ReturnValues.Count(c => !c.Success)} failed.");
 
-                foreach(var returnValue in returnValues.Where(c => !c.Success))
+                foreach(var returnValue in ReturnValues.Where(c => !c.Success))
                 {
                     message.AppendLine($"Message: " + returnValue.Message);
                 }
@@ -90,7 +90,7 @@ namespace dexih.functions
             get
             {
                 StringBuilder exceptionDetails = new StringBuilder();
-                foreach(var returnValue in returnValues.Where(c => c.Exception != null))
+                foreach(var returnValue in ReturnValues.Where(c => c.Exception != null))
                 {
                     exceptionDetails.AppendLine("Exception Detials: " + returnValue.ExceptionDetails);
                 }
@@ -103,14 +103,14 @@ namespace dexih.functions
         {
             get
             {
-                return returnValues.Select(c => c.Value).ToArray();
+                return ReturnValues.Select(c => c.Value).ToArray();
             }
         }
     }
 
     public class ReturnValueMultiple : ReturnValue
     {
-        public List<ReturnValue> returnValues = new List<ReturnValue>();
+        public List<ReturnValue> ReturnValues = new List<ReturnValue>();
 
         public ReturnValueMultiple()
         {
@@ -118,7 +118,7 @@ namespace dexih.functions
 
         public void Add(ReturnValue returnValue)
         {
-            returnValues.Add(returnValue);
+            ReturnValues.Add(returnValue);
         }
 
         public override bool Success
@@ -126,10 +126,10 @@ namespace dexih.functions
             get
             {
                 // if no returnValues return false
-                if (returnValues.Count == 0) return false;
+                if (ReturnValues.Count == 0) return false;
 
                 // if any returnValue contains false, return false,
-                return !returnValues.Exists(c => c.Success == false);
+                return !ReturnValues.Exists(c => c.Success == false);
             }
         }
 
@@ -139,9 +139,9 @@ namespace dexih.functions
             {
                 StringBuilder message = new StringBuilder();
 
-                message.AppendLine($"{returnValues.Count(c => c.Success)} successful, {returnValues.Count(c => !c.Success)} failed.");
+                message.AppendLine($"{ReturnValues.Count(c => c.Success)} successful, {ReturnValues.Count(c => !c.Success)} failed.");
 
-                foreach (var returnValue in returnValues.Where(c => !c.Success))
+                foreach (var returnValue in ReturnValues.Where(c => !c.Success))
                 {
                     message.AppendLine($"Message: " + returnValue.Message);
                 }
@@ -155,7 +155,7 @@ namespace dexih.functions
             get
             {
                 StringBuilder exceptionDetails = new StringBuilder();
-                foreach (var returnValue in returnValues.Where(c => c.Exception != null))
+                foreach (var returnValue in ReturnValues.Where(c => c.Exception != null))
                 {
 					if (!string.IsNullOrEmpty(returnValue.ExceptionDetails))
 					{
