@@ -26,8 +26,6 @@ namespace dexih.connections.sql
         public override bool CanFilter => true;
         public override bool CanAggregate => true;
 
-
-
         //These properties can be overridden for different databases
         public virtual string SqlDelimiterOpen { get; } = "\"";
         public virtual string SqlDelimiterClose { get; } = "\"";
@@ -46,7 +44,18 @@ namespace dexih.connections.sql
                 newName = newName + SqlDelimiterClose;
 
             return newName;
+        }
 
+        public virtual string SqlTableName(Table table)
+        {
+            if(!string.IsNullOrEmpty(table.TableSchema))
+            {
+                return AddDelimiter(table.TableSchema) + "." + AddDelimiter(table.TableName);
+            }
+            else
+            {
+                return AddDelimiter(table.TableName);
+            }
         }
 
         public string AddEscape(string value) => value.Replace("'", "''");
@@ -104,7 +113,7 @@ namespace dexih.connections.sql
                     StringBuilder insert = new StringBuilder();
                     StringBuilder values = new StringBuilder();
 
-                    insert.Append("INSERT INTO " + AddDelimiter(table.TableName) + " (");
+                    insert.Append("INSERT INTO " + SqlTableName(table) + " (");
                     values.Append("VALUES (");
 
                     for (int i = 0; i < fieldCount; i++)
@@ -175,7 +184,7 @@ namespace dexih.connections.sql
                 using (var connection = connectionResult.Value)
                 using (DbCommand command = connection.CreateCommand())
                 {
-                    command.CommandText = "drop table " + AddDelimiter(table.TableName);
+                    command.CommandText = "drop table " + SqlTableName(table);
 
                     try
                     {
@@ -231,7 +240,7 @@ namespace dexih.connections.sql
                     StringBuilder createSql = new StringBuilder();
 
                     //Create the table
-                    createSql.Append("create table " + AddDelimiter(table.TableName) + " ");
+                    createSql.Append("create table " + SqlTableName(table) + " ");
 
                     //sqlite does not support table/column comments, so add a comment string into the ddl.
                     if (!string.IsNullOrEmpty(table.Description))
@@ -331,7 +340,7 @@ namespace dexih.connections.sql
 
             sql.Append("select ");
             sql.Append(columns + " ");
-            sql.Append("from " + AddDelimiter(table.TableName) + " ");
+            sql.Append("from " + SqlTableName(table) + " ");
             sql.Append(" " + SqlFromAttribute(table) + " ");
 
             if (query?.Filters != null)
@@ -417,7 +426,7 @@ namespace dexih.connections.sql
                     {
                         sql.Clear();
 
-                        sql.Append("update " + AddDelimiter(table.TableName) + " set ");
+                        sql.Append("update " + SqlTableName(table) + " set ");
 
                         int count = 0;
                         foreach (QueryColumn column in query.UpdateColumns)
@@ -489,7 +498,7 @@ namespace dexih.connections.sql
                     foreach (var query in queries)
                     {
                         sql.Clear();
-                        sql.Append("delete from " + AddDelimiter(table.TableName) + " ");
+                        sql.Append("delete from " + SqlTableName(table) + " ");
                         sql.Append(BuildFiltersString(query.Filters));
 
 
@@ -570,7 +579,7 @@ namespace dexih.connections.sql
             using (var connection = connectionResult.Value)
             using (DbCommand cmd = connection.CreateCommand())
             {
-                cmd.CommandText = "delete from " + AddDelimiter(table.TableName);
+                cmd.CommandText = "delete from " + SqlTableName(table);
 
                 try
                 {

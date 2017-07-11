@@ -26,6 +26,7 @@ namespace dexih.transforms
 
         private Table _profileResults;
 
+
         public override Transform GetProfileResults()
         {
             if (_profileResults != null)
@@ -89,7 +90,7 @@ namespace dexih.transforms
             else
             {
 
-                Table profileResults = CacheTable.GetProfileTable("ProfileResults");
+                Table profileResults = GetProfileTable("ProfileResults");
 
                 foreach (Function profile in _profiles)
                 {

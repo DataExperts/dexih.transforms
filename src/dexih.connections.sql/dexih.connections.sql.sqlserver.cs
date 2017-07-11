@@ -55,7 +55,7 @@ namespace dexih.connections.sql
 
                     SqlBulkCopy bulkCopy = new SqlBulkCopy(sqlConnection)
                     {
-                        DestinationTableName = table.TableName
+                        DestinationTableName = SqlTableName(table)
                     };
 
                     bulkCopy.BulkCopyTimeout = 60;
@@ -85,7 +85,7 @@ namespace dexih.connections.sql
             using (DbConnection connection = connectionResult.Value)
             using (DbCommand cmd = CreateCommand(connection, "select name from sys.tables where object_id = OBJECT_ID(@NAME)"))
             {
-                cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
+                cmd.Parameters.Add(CreateParameter(cmd, "@NAME", SqlTableName(table)));
 
                 object tableExists = null;
                 try
@@ -134,7 +134,7 @@ namespace dexih.connections.sql
                 StringBuilder createSql = new StringBuilder();
 
                 //Create the table
-                createSql.Append("create table " + AddDelimiter(table.TableName) + " ( ");
+                createSql.Append("create table " + SqlTableName(table) + " ( ");
                 foreach (TableColumn col in table.Columns)
                 {
                     createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision));
@@ -159,7 +159,7 @@ namespace dexih.connections.sql
                 }
 
                 if (key != null)
-                    createSql.Append("ALTER TABLE " + AddDelimiter(table.TableName) + " ADD CONSTRAINT [PK_" + AddEscape(table.TableName) + "] PRIMARY KEY CLUSTERED ([" + AddEscape(key.ColumnName) + "])");
+                    createSql.Append("ALTER TABLE " + SqlTableName(table) + " ADD CONSTRAINT [PK_" + AddEscape(table.TableName) + "] PRIMARY KEY CLUSTERED ([" + AddEscape(key.ColumnName) + "])");
 
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
@@ -187,7 +187,7 @@ namespace dexih.connections.sql
                     using (var cmd = connection.CreateCommand())
                     {
                         cmd.CommandText = "SELECT s.name SchemaName FROM sys.tables AS t INNER JOIN sys.schemas AS s ON t.[schema_id] = s.[schema_id] where object_id = OBJECT_ID(@NAME)";
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", SqlTableName(table)));
 
                         try
                         {
@@ -214,7 +214,7 @@ namespace dexih.connections.sql
                                 cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename";
                                 cmd.Parameters.Add(CreateParameter(cmd, "@description", table.Description));
                                 cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
-                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.TableName));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", SqlTableName(table)));
                                 await cmd.ExecuteNonQueryAsync();
                             }
                         }
@@ -229,7 +229,7 @@ namespace dexih.connections.sql
                                     cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename, @level2type=N'COLUMN',@level2name=@columnname";
                                     cmd.Parameters.Add(CreateParameter(cmd, "@description", col.Description));
                                     cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.TableName));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", SqlTableName(table)));
                                     cmd.Parameters.Add(CreateParameter(cmd, "@columnname", col.ColumnName));
                                     await cmd.ExecuteNonQueryAsync();
                                 }
@@ -502,7 +502,7 @@ namespace dexih.connections.sql
                         {
 							var table = new Table()
 							{
-								TableName = reader["TABLE_SCHEMA"].ToString(),
+								TableName = reader["TABLE_NAME"].ToString(),
 								TableSchema = reader["TABLE_SCHEMA"].ToString()
 							};
                             tableList.Add(table);
@@ -516,7 +516,7 @@ namespace dexih.connections.sql
                         foreach (var table in tableList)
                         {
                             //select the temporal type 
-                            using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + AddDelimiter(table.TableSchema) + "." + AddDelimiter(table.TableName) + "')"))
+                            using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + SqlTableName(table) + "')"))
                             {
                                 int temporalType = Convert.ToInt32(cmd.ExecuteScalar());
                                 //Exclude history table from the list (temporalType = 1)
@@ -541,7 +541,8 @@ namespace dexih.connections.sql
         {
             try
             {
-                Table table = new Table(originalTable.TableName);
+                Table table = new Table(originalTable.TableName, originalTable.TableSchema);
+                var tableName = SqlTableName(table);
 
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
@@ -565,7 +566,7 @@ namespace dexih.connections.sql
                     using (DbCommand cmd = CreateCommand(connection, @"select value 'Description' 
                             FROM sys.extended_properties
                             WHERE minor_id = 0 and class = 1 and (name = 'MS_Description' or name = 'Description') and
-                            major_id = OBJECT_ID('" + AddEscape(table.TableName) + "')"))
+                            major_id = OBJECT_ID('" + tableName + "')"))
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         if (await reader.ReadAsync())
@@ -581,7 +582,7 @@ namespace dexih.connections.sql
                     if (sqlversion >= 13)
                     {
                         //select the temporal type 
-                        using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + table.TableName + "')"))
+                        using (DbCommand cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + tableName + "')"))
                         {
                             int temporalType = Convert.ToInt32(cmd.ExecuteScalar());
                         //If the table is a temporarl table, mark it.
@@ -608,7 +609,7 @@ namespace dexih.connections.sql
                         FROM sys.columns c
                         INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
                         LEFT OUTER JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id and (ep.name = 'MS_Description' or ep.name = 'Description') and ep.class = 1 
-                        WHERE c.object_id = OBJECT_ID('" + AddEscape(table.TableName) + "') "
+                        WHERE c.object_id = OBJECT_ID('" + tableName + "') "
                             ))
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
@@ -747,7 +748,7 @@ namespace dexih.connections.sql
             using (DbCommand cmd = connection.CreateCommand())
             {
 
-                cmd.CommandText = "truncate table " + AddDelimiter(table.TableName);
+                cmd.CommandText = "truncate table " + SqlTableName(table);
 
                 try
                 {
@@ -757,7 +758,7 @@ namespace dexih.connections.sql
                 }
                 catch (Exception ex)
                 {
-                    cmd.CommandText = "delete from " + AddDelimiter(table.TableName);
+                    cmd.CommandText = "delete from " + SqlTableName(table);
                     try
                     {
                         await cmd.ExecuteNonQueryAsync(cancelToken);
@@ -798,7 +799,7 @@ namespace dexih.connections.sql
                         insert.Clear();
                         values.Clear();
 
-                        insert.Append("INSERT INTO " + AddDelimiter(table.TableName) + " (");
+                        insert.Append("INSERT INTO " + SqlTableName(table) + " (");
                         values.Append("VALUES (");
 
                         for (int i = 0; i < query.InsertColumns.Count; i++)
@@ -913,7 +914,7 @@ namespace dexih.connections.sql
                     {
                         sql.Clear();
 
-                        sql.Append("update " + AddDelimiter(table.TableName) + " set ");
+                        sql.Append("update " + SqlTableName(table) + " set ");
 
                         int count = 0;
                         foreach (QueryColumn column in query.UpdateColumns)

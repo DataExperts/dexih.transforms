@@ -5,7 +5,7 @@
     <VersionPrefix>0.2.4</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>net46</TargetFramework>
-    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net462</TargetFrameworks>
     <AssemblyName>dexih.connections.webservice.soap</AssemblyName>
     <PackageId>dexih.connections.webservice.soap</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;Web Service;Soap</PackageTags>
@@ -19,7 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Runtime" />
     <Reference Include="System.Threading.Tasks" />

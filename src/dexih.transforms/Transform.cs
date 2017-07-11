@@ -138,6 +138,25 @@ namespace dexih.transforms
                 return PrimaryTransform.GetProfileResults();
         }
 
+        /// <summary>
+        /// Create as a profile results table.
+        /// </summary>
+        /// <returns></returns>
+        public Table GetProfileTable(string profileTableName)
+        {
+            if (string.IsNullOrEmpty(profileTableName)) return null;
+
+            Table profileResults = new Table(profileTableName, "");
+            profileResults.Columns.Add(new TableColumn("AuditKey", DataType.ETypeCode.Int64, TableColumn.EDeltaType.CreateAuditKey));
+            profileResults.Columns.Add(new TableColumn("Profile", DataType.ETypeCode.String));
+            profileResults.Columns.Add(new TableColumn("ColumnName", DataType.ETypeCode.String));
+            profileResults.Columns.Add(new TableColumn("IsSummary", DataType.ETypeCode.Boolean));
+            profileResults.Columns.Add(new TableColumn("Value", DataType.ETypeCode.String) { AllowDbNull = true });
+            profileResults.Columns.Add(new TableColumn("Count", DataType.ETypeCode.Int32) { AllowDbNull = true });
+
+            return profileResults;
+        }
+
         #endregion
 
         #region Virtual Properties

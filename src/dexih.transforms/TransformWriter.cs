@@ -109,6 +109,8 @@ namespace dexih.transforms
 
                 _inTransform = inTransform;
 
+                writerResult.RejectTableName = rejectTable.TableName;
+
                 var returnValue = await WriteStart(_inTransform, writerResult);
 
                 if (returnValue.Success == false)
@@ -158,6 +160,8 @@ namespace dexih.transforms
 
                 if (_profileTable != null)
                 {
+                    returnValue = await _profileConnection.CreateTable(_profileTable, false);
+                    writerResult.ProfileTableName = _profileTable.TableName;
                     var profileResults = inTransform.GetProfileResults();
                     if (profileResults != null)
                     {
@@ -215,12 +219,6 @@ namespace dexih.transforms
                 returnValue = await _rejectConnection.CreateTable(_rejectTable, false);
                 //if (!returnValue.Success)
                 //    return returnValue;
-            }
-
-            //create the profile results table if it doesn't exist.
-            if (_profileTable != null)
-            {
-                returnValue = await _profileConnection.CreateTable(_profileTable, false);
             }
 
             //if the table doesn't exist, create it.  

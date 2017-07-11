@@ -12,7 +12,7 @@ using System.Globalization;
 using static dexih.functions.DataType;
 using System.Threading;
 
-#if NET46
+#if NET462
 using System.CodeDom.Compiler;
 using System.CodeDom;
 using System.Web.Services.Description;
@@ -37,7 +37,7 @@ namespace dexih.connections.webservice
         public override ECategory DatabaseCategory => ECategory.WebService;
 
 
-#if NET46
+#if NET462
 
         private async Task<ReturnValue<ServiceDescription>> GetServiceDescription()
         {

@@ -120,6 +120,9 @@ namespace dexih.transforms
         public string TriggerInfo { get; set; }
         public string PerformanceSummary { get; set; }
 
+        public string ProfileTableName { get; set; }
+        public string RejectTableName { get; set; }
+
         private CancellationTokenSource CancelTokenSource { get; set; }
 
         public bool TruncateTarget { get; set; } //once off truncate of the target table.  

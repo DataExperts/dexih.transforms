@@ -8,7 +8,7 @@ using static dexih.functions.DataType;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-#if NET46
+#if NET462
 using System.Net.Http;
 #endif
 

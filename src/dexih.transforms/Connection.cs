@@ -188,6 +188,8 @@ namespace dexih.transforms
                 auditTable.Columns.Add(new TableColumn("IsCurrent", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
                 auditTable.Columns.Add(new TableColumn("IsPrevious", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
                 auditTable.Columns.Add(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
+                auditTable.Columns.Add(new TableColumn("ProfileTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
+                auditTable.Columns.Add(new TableColumn("RejectTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 return auditTable;
             }
         }
@@ -261,7 +263,9 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("Message", ETypeCode.DateTime), writerResult.Message),
                     new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), true),
                     new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), false),
-                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), false)
+                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), false),
+                    new QueryColumn(new TableColumn("ProfileTableName", ETypeCode.String), writerResult.ProfileTableName),
+                    new QueryColumn(new TableColumn("RejectTableName", ETypeCode.String), writerResult.RejectTableName)
 
             };
 
@@ -366,7 +370,9 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("Message", ETypeCode.String), writerResult.Message),
                     new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), isCurrent),
                     new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), isPrevious),
-                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), isPreviousSuccess)
+                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), isPreviousSuccess),
+                    new QueryColumn(new TableColumn("ProfileTableName", ETypeCode.String), writerResult.ProfileTableName),
+                    new QueryColumn(new TableColumn("RejectTableName", ETypeCode.String), writerResult.RejectTableName)
             };
 
             var updateFilters = new List<Filter>() { new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.AuditKey) };
@@ -505,7 +511,9 @@ namespace dexih.transforms
                         EndTime = reader["EndTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["EndTime"]).Value,
                         LastUpdateTime = reader["LastUpdateTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["LastUpdateTime"]).Value,
                         RunStatus = (TransformWriterResult.ERunStatus)Enum.Parse(typeof(TransformWriterResult.ERunStatus), (string)reader["RunStatus"]),
-                        Message = (string)(reader["Message"] is DBNull ? null : reader["Message"])
+                        Message = (string)(reader["Message"] is DBNull ? null : reader["Message"]),
+                        ProfileTableName = (string)(reader["ProfileTableName"] is DBNull ? null : reader["ProfileTableName"]),
+                        RejectTableName = (string)(reader["RejectTableName"] is DBNull ? null : reader["RejectTableName"]),
                     };
 
                     writerResults.Add(result);
