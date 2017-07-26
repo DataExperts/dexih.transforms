@@ -41,7 +41,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueuePushPop()
         {
-            var queue = new RealTimeQueue<int>(2, 100);
+            var queue = new RealTimeQueue<int>(2, 500);
 
             await queue.Push(1);
             await queue.Push(2);
@@ -64,7 +64,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueueWaitWhenEmpty()
         {
-            var queue = new RealTimeQueue<int>(2, 100);
+            var queue = new RealTimeQueue<int>(2, 500);
 
             //queue is empty so this should wait until something enters queue.
             var popTask = queue.Pop();
@@ -82,7 +82,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueueWaitWhenFull()
         {
-            var queue = new RealTimeQueue<int>(2, 100);
+            var queue = new RealTimeQueue<int>(2, 500);
 
             await queue.Push(1);
             await queue.Push(2);
@@ -106,13 +106,12 @@ namespace dexih.functions.tests
             pop = await queue.Pop();
             Assert.Equal(pop.Package, 3);
             Assert.Equal<ERealTimeQueueStatus>(pop.Status, ERealTimeQueueStatus.Complete);
-
         }
 
         [Fact]
         public async Task Test_QueueTimeout()
         {
-            var queue = new RealTimeQueue<int>(2, 100);
+            var queue = new RealTimeQueue<int>(2, 500);
 
             await queue.Push(1);
             await queue.Push(2);
@@ -122,7 +121,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueuePushAfterFinished()
         {
-            var queue = new RealTimeQueue<int>(2, 100);
+            var queue = new RealTimeQueue<int>(2, 500);
 
             await queue.Push(1);
             await queue.Push(2, true);
@@ -132,7 +131,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueuePushExceeded()
         {
-            var queue = new RealTimeQueue<int>(2, 100);
+            var queue = new RealTimeQueue<int>(2, 500);
 
             await queue.Push(1);
             await queue.Push(2);
@@ -146,7 +145,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueuePushCancelled()
         {
-            var queue = new RealTimeQueue<int>(2, 100);
+            var queue = new RealTimeQueue<int>(2, 500);
 
             await queue.Push(1);
             await queue.Push(2);
