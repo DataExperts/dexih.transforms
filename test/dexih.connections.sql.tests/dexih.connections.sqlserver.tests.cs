@@ -55,6 +55,15 @@ namespace dexih.connections.sql.sqlserver
 
             await new TransformTests().Transform(GetConnection(), database);
         }
+        
+        [Fact]
+        public async Task SqlServer_SqlReader()
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new SqlReaderTests().Unit(connection, database);
+        }
 
         [Fact]
         public void TestSqlServer_Specific_Unit()

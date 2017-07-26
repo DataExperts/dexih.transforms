@@ -692,7 +692,7 @@ namespace dexih.transforms
 
         public override bool Read()
         {
-            return Task.Run(ReadAsync).Result;
+            return ReadAsync(CancellationToken.None).Result;
         }
 
         public override async Task<bool> ReadAsync(CancellationToken cancellationToken)

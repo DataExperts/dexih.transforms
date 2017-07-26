@@ -535,6 +535,11 @@ namespace dexih.connections.sql
 
         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
         {
+            if (originalTable.UseQuery)
+            {
+                return await GetQueryTable(originalTable, cancelToken);
+            }
+            
             try
             {
                 Table table = new Table(originalTable.Name, originalTable.Schema);

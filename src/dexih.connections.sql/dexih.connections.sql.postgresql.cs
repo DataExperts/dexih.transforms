@@ -433,6 +433,11 @@ namespace dexih.connections.sql
         {
             try
             {
+                if (originalTable.UseQuery)
+                {
+                    return await GetQueryTable(originalTable, cancelToken);
+                }
+                
 				var schema = string.IsNullOrEmpty(originalTable.Schema) ? "public" : originalTable.Schema;
                 Table table = new Table(originalTable.Name, originalTable.Schema);
 

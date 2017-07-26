@@ -32,12 +32,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
-
-    <ItemGroup>
+  <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </Content>
-
+    </Content>
   </ItemGroup>
-
 </Project>

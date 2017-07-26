@@ -17,10 +17,13 @@ namespace dexih.connections.sql
     {
 
         public override string ServerHelp => "Server Name";
+
         //help text for what the server means for this description
         public override string DefaultDatabaseHelp => "Database";
+
         //help text for what the default database means for this description
         public override bool AllowNtAuth => true;
+
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "SQLite";
 
@@ -28,7 +31,7 @@ namespace dexih.connections.sql
         {
             if (value == null)
                 return DBNull.Value;
-            else if (value.GetType() == typeof(Guid) || value.GetType() == typeof(UInt64))
+            else if (value is Guid || value is ulong)
                 return value.ToString();
             else
                 return value;
@@ -45,7 +48,8 @@ namespace dexih.connections.sql
             using (var connection = connectionResult.Value)
             {
 
-                using (DbCommand cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
+                using (DbCommand cmd = CreateCommand(connection,
+                    "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
 
@@ -56,7 +60,8 @@ namespace dexih.connections.sql
                     }
                     catch (Exception ex)
                     {
-                        return new ReturnValue<bool>(false, "The table exists query could not be run due to the following error: " + ex.Message, ex);
+                        return new ReturnValue<bool>(false,
+                            "The table exists query could not be run due to the following error: " + ex.Message, ex);
                     }
 
                     if (tableExists == null)
@@ -83,7 +88,9 @@ namespace dexih.connections.sql
                 //if table exists, and the dropTable flag is set to false, then error.
                 if (tableExistsResult.Value && dropTable == false)
                 {
-                    return new ReturnValue(false, "The table " + table.Name + " already exists on the underlying database.  Please drop the table first.", null);
+                    return new ReturnValue(false,
+                        "The table " + table.Name +
+                        " already exists on the underlying database.  Please drop the table first.", null);
                 }
 
                 //if table exists, then drop it.
@@ -117,11 +124,12 @@ namespace dexih.connections.sql
                     }
                     else
                     {
-                        createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
+                        createSql.Append(AddDelimiter(col.Name) + " " +
+                                         GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
                         if (col.AllowDbNull == false)
-                                createSql.Append("NOT NULL ");
-                            else
-                                createSql.Append("NULL ");
+                            createSql.Append("NOT NULL ");
+                        else
+                            createSql.Append("NULL ");
 
                         if (col.DeltaType == TableColumn.EDeltaType.SurrogateKey)
                         {
@@ -159,7 +167,9 @@ namespace dexih.connections.sql
                     }
                     catch (Exception ex)
                     {
-                        return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.Name + ".  " + ex.Message, ex);
+                        return new ReturnValue(false,
+                            "The following error occurred when attempting to create the table " + table.Name + ".  " +
+                            ex.Message, ex);
                     }
                 }
 
@@ -167,7 +177,8 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "An error occurred creating the table " + table.Name + ".  " + ex.Message, ex);
+                return new ReturnValue(false, "An error occurred creating the table " + table.Name + ".  " + ex.Message,
+                    ex);
             }
 
         }
@@ -233,7 +244,8 @@ namespace dexih.connections.sql
                     sqlType = "blob";
                     break;
                 default:
-                    throw new Exception("The datatype " + dataType.ToString() + " is not compatible with the create table.");
+                    throw new Exception("The datatype " + dataType.ToString() +
+                                        " is not compatible with the create table.");
             }
 
             return sqlType;
@@ -270,7 +282,7 @@ namespace dexih.connections.sql
                     returnValue = AddEscape(value.ToString());
                     break;
                 case ETypeCode.Boolean:
-                    returnValue = (bool)value ? "1" : "0";
+                    returnValue = (bool) value ? "1" : "0";
                     break;
                 case ETypeCode.String:
                 case ETypeCode.Guid:
@@ -281,14 +293,15 @@ namespace dexih.connections.sql
                 case ETypeCode.Time:
                     //sqlite does not have date fields, so convert to format that will work for greater/less compares
                     if (value is DateTime)
-                        returnValue = "'" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "'";
+                        returnValue = "'" + AddEscape(((DateTime) value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "'";
                     else if (value is TimeSpan)
-                        returnValue = "'" + AddEscape(((TimeSpan)value).ToString()) + "'";
+                        returnValue = "'" + AddEscape(((TimeSpan) value).ToString()) + "'";
                     else
-                        returnValue = "'" + AddEscape((string)value) + "'";
+                        returnValue = "'" + AddEscape((string) value) + "'";
                     break;
                 default:
-                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the create table.");
+                    throw new Exception("The datatype " + type.ToString() +
+                                        " is not compatible with the create table.");
             }
 
             return returnValue;
@@ -304,17 +317,20 @@ namespace dexih.connections.sql
                     connectionString = ConnectionString;
                 else
                 {
-                    if (Server.Substring(Server.Length - 1) != "/" || Server.Substring(Server.Length - 1) != "/") Server += "/";
+                    if (Server.Substring(Server.Length - 1) != "/" || Server.Substring(Server.Length - 1) != "/")
+                        Server += "/";
                     connectionString = "Data Source=" + Server + DefaultDatabase + ".sqlite";
                 }
 
                 SqliteConnection connection = new SqliteConnection(connectionString);
                 await connection.OpenAsync();
-                State = (EConnectionState)connection.State;
+                State = (EConnectionState) connection.State;
 
                 if (connection.State != ConnectionState.Open)
                 {
-                    return new ReturnValue<DbConnection>(false, "The sqlserver connection failed to open with a state of : " + connection.State.ToString(), null, null);
+                    return new ReturnValue<DbConnection>(false,
+                        "The sqlserver connection failed to open with a state of : " + connection.State.ToString(),
+                        null, null);
                 }
 
                 using (var command = new SqliteCommand())
@@ -328,7 +344,8 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<DbConnection>(false, "The sqlserver connection failed with the following message: " + ex.Message, null, null);
+                return new ReturnValue<DbConnection>(false,
+                    "The sqlserver connection failed with the following message: " + ex.Message, null, null);
             }
         }
 
@@ -341,7 +358,9 @@ namespace dexih.connections.sql
                 bool fileExists = await Task.Run(() => File.Exists(fileName), cancelToken);
 
                 if (fileExists)
-                    return new ReturnValue(false, "The file " + fileName + " already exists.  Delete or move this file before attempting to create a new database.", null);
+                    return new ReturnValue(false,
+                        "The file " + fileName +
+                        " already exists.  Delete or move this file before attempting to create a new database.", null);
 
                 var stream = await Task.Run(() => File.Create(fileName), cancelToken);
                 stream.Dispose();
@@ -351,7 +370,8 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false, "Error creating database " + DefaultDatabase + ".   " + ex.Message, ex);
+                return new ReturnValue<List<string>>(false,
+                    "Error creating database " + DefaultDatabase + ".   " + ex.Message, ex);
             }
         }
 
@@ -381,7 +401,8 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false, "The databases could not be listed due to the following error: " + ex.Message, ex, null);
+                return new ReturnValue<List<string>>(false,
+                    "The databases could not be listed due to the following error: " + ex.Message, ex, null);
             }
         }
 
@@ -392,13 +413,15 @@ namespace dexih.connections.sql
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<List<Table>>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
+                    return new ReturnValue<List<Table>>(connectionResult.Success, connectionResult.Message,
+                        connectionResult.Exception, null);
                 }
 
                 using (var connection = connectionResult.Value)
                 {
 
-                    using (DbCommand cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type='table';"))
+                    using (DbCommand cmd = CreateCommand(connection,
+                        "SELECT name FROM sqlite_master WHERE type='table';"))
                     {
                         DbDataReader reader;
                         try
@@ -407,7 +430,9 @@ namespace dexih.connections.sql
                         }
                         catch (Exception ex)
                         {
-                            return new ReturnValue<List<Table>>(false, "The sqllite 'get tables' query could not be run due to the following error: " + ex.Message, ex);
+                            return new ReturnValue<List<Table>>(false,
+                                "The sqllite 'get tables' query could not be run due to the following error: " +
+                                ex.Message, ex);
                         }
 
                         using (reader)
@@ -417,7 +442,7 @@ namespace dexih.connections.sql
 
                             while (await reader.ReadAsync(cancelToken))
                             {
-								tableList.Add(new Table((string)reader["name"]));
+                                tableList.Add(new Table((string) reader["name"]));
                             }
 
                             return new ReturnValue<List<Table>>(true, "", null, tableList);
@@ -427,18 +452,26 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<Table>>(false, "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
+                return new ReturnValue<List<Table>>(false,
+                    "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable,
+            CancellationToken cancelToken)
         {
+            if (originalTable.UseQuery)
+            {
+                return await GetQueryTable(originalTable, cancelToken);
+            }
+
             try
             {
                 ReturnValue<DbConnection> connectionResult = await NewConnection();
                 if (connectionResult.Success == false)
                 {
-                    return new ReturnValue<Table>(connectionResult.Success, connectionResult.Message, connectionResult.Exception, null);
+                    return new ReturnValue<Table>(connectionResult.Success, connectionResult.Message,
+                        connectionResult.Exception, null);
                 }
 
                 using (var connection = connectionResult.Value)
@@ -514,7 +547,9 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "The source sqlserver table + " + originalTable.Name + " could not be read due to the following error: " + ex.Message, ex);
+                return new ReturnValue<Table>(false,
+                    "The source sqlserver table + " + originalTable.Name +
+                    " could not be read due to the following error: " + ex.Message, ex);
             }
         }
 
@@ -584,7 +619,8 @@ namespace dexih.connections.sql
             return ETypeCode.Unknown;
         }
 
-        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries,
+            CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connectionResult = await NewConnection();
             if (connectionResult.Success == false)
@@ -592,7 +628,9 @@ namespace dexih.connections.sql
                 return new ReturnValue<Tuple<long, long>>(false, connectionResult.Message, connectionResult.Exception);
             }
 
-            var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null ? "" : " select last_insert_rowid() from [" + table.Name + "]";
+            var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null
+                ? ""
+                : " select last_insert_rowid() from [" + table.Name + "]";
             long identityValue = 0;
 
             using (var connection = connectionResult.Value)
@@ -618,7 +656,8 @@ namespace dexih.connections.sql
                         }
 
                         string insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
-                            values.Remove(values.Length - 1, 1).ToString() + "); " + autoIncrementSql;
+                                               values.Remove(values.Length - 1, 1).ToString() + "); " +
+                                               autoIncrementSql;
 
                         try
                         {
@@ -629,9 +668,23 @@ namespace dexih.connections.sql
 
                                 for (int i = 0; i < query.InsertColumns.Count; i++)
                                 {
-                                    var param = cmd.CreateParameter();
+                                    var param = new SqliteParameter(); // cmd.CreateParameter();
                                     param.ParameterName = "@col" + i.ToString();
-                                    param.Value = query.InsertColumns[i].Value == null ? DBNull.Value : query.InsertColumns[i].Value;
+                                    
+                                    // sqlite writes guids as binary, so need logic to convert to string first.
+                                    if (query.InsertColumns[i].Column.Datatype == ETypeCode.Guid)
+                                    {
+                                        param.Value = query.InsertColumns[i].Value == null ? (object)DBNull.Value
+                                            : query.InsertColumns[i].Value.ToString();
+
+                                    }
+                                    else
+                                    {
+                                        param.Value = query.InsertColumns[i].Value == null ? DBNull.Value
+                                            : query.InsertColumns[i].Value;
+                                    }
+                                    param.DbType = GetDbType(query.InsertColumns[i].Column.Datatype);
+
                                     cmd.Parameters.Add(param);
                                 }
 
@@ -640,23 +693,29 @@ namespace dexih.connections.sql
 
                                 if (cancelToken.IsCancellationRequested)
                                 {
-                                    return new ReturnValue<Tuple<long, long>>(false, "Insert rows cancelled.", null, Tuple.Create(timer.ElapsedTicks, identityValue));
+                                    return new ReturnValue<Tuple<long, long>>(false, "Insert rows cancelled.", null,
+                                        Tuple.Create(timer.ElapsedTicks, identityValue));
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            return new ReturnValue<Tuple<long, long>>(false, "The insert query for " + table.Name + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, Tuple.Create(timer.ElapsedTicks, (long)0));
+                            return new ReturnValue<Tuple<long, long>>(false,
+                                "The insert query for " + table.Name +
+                                " could not be run due to the following error: " + ex.Message +
+                                ".  The sql command was " + insertCommand?.ToString(), ex,
+                                Tuple.Create(timer.ElapsedTicks, (long) 0));
                         }
                     }
                     transaction.Commit();
                 }
 
                 timer.Stop();
-                return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.ElapsedTicks, identityValue)); //sometimes reader returns -1, when we want this to be error condition.
+                return new ReturnValue<Tuple<long, long>>(true,
+                    Tuple.Create(timer.ElapsedTicks,
+                        identityValue)); //sometimes reader returns -1, when we want this to be error condition.
             }
         }
-
-
     }
+
 }

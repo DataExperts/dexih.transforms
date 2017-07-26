@@ -41,5 +41,14 @@ namespace dexih.connections.sql
         {
             await new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 10000);
         }
+        
+        [Fact]
+        public async Task TestSqlite_SqlReader()
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new SqlReaderTests().Unit(connection, database);
+        }
     }
 }

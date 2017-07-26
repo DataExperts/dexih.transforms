@@ -27,44 +27,49 @@ namespace dexih.connections.sql.npgsql
         [Fact]
         public async Task Postgres_Basic()
         {
-            string database = "Test-" + Guid.NewGuid().ToString();
-
+            var database = "Test-" + Guid.NewGuid().ToString();
             await new UnitTests().Unit(GetConnection(), database);
         }
 
         [Fact]
         public async Task Postgres_Performance()
         {
-            string database = "Test-" + Guid.NewGuid().ToString();
-
+            var database = "Test-" + Guid.NewGuid().ToString();
             await new PerformanceTests().Performance(GetConnection(), database, 100000);
         }
 
         [Fact]
         public async Task Postgres_TransformWriter()
         {
-            string database = "Test-" + Guid.NewGuid().ToString();
-
+            var database = "Test-" + Guid.NewGuid().ToString();
             await new PerformanceTests().PerformanceTransformWriter(GetConnection(), database, 100000);
         }
 
         [Fact]
         public async Task Postgres_Transform()
         {
-            string database = "Test-" + Guid.NewGuid().ToString();
-
+            var database = "Test-" + Guid.NewGuid().ToString();
             await new TransformTests().Transform(GetConnection(), database);
         }
 
         [Fact]
         public void Postgres_Specific_Unit()
         {
-            ConnectionPostgreSql connection = new ConnectionPostgreSql();
+            var connection = new ConnectionPostgreSql();
 
             //test delimiter
             Assert.Equal("\"table\"", connection.AddDelimiter("table"));
             Assert.Equal("\"table\"", connection.AddDelimiter("\"table\""));
             Assert.Equal("\"table\".\"schema\"", connection.AddDelimiter("\"table\".\"schema\""));
+        }
+        
+        [Fact]
+        public async Task Postgres_SqlReader()
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new SqlReaderTests().Unit(connection, database);
         }
 
         //[Fact]

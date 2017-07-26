@@ -51,5 +51,14 @@ namespace dexih.connections.sql
 
             await new PerformanceTests().PerformanceTransformWriter(GetConnection(), database, 100000);
         }
+        
+        [Fact]
+        public async Task TestMySql_SqlReader()
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new SqlReaderTests().Unit(connection, database);
+        }
     }
 }
