@@ -82,7 +82,11 @@ namespace dexih.connections.test
             Assert.Equal((decimal)1.1, reader.GetDecimal(reader.GetOrdinal("DecimalColumn")));
             Assert.Equal(guid.ToString(), reader["GuidColumn"]);
 
-            
+            // test the preview function returns one row.
+            var previewResult = await connection.GetPreview(importTable, null, 100000, CancellationToken.None);
+            Assert.True(previewResult.Success, previewResult.Message);
+            Assert.Equal(1, previewResult.Value.Data.Count);
+
         }
     }
 }

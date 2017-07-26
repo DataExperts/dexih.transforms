@@ -625,63 +625,48 @@ namespace dexih.transforms
 
         public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, int maxMilliseconds, CancellationToken cancellationToken)
         {
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-
-            Transform reader = GetTransformReader(table);
-            ReturnValue returnValue = await reader.Open(0, query, cancellationToken);
-            if (returnValue.Success == false)
-                return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
-
-            reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
-			reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
-
-            int count = 0;
-            while ((count < query.Rows || query.Rows == -1 ) &&
-                cancellationToken.IsCancellationRequested == false && 
-                await reader.ReadAsync(cancellationToken) 
-                )
-            {
-                count++;
-                if (maxMilliseconds > 0 && watch.ElapsedMilliseconds > maxMilliseconds)
-                    break;
-            }
-
-            watch.Stop();
-            reader.Dispose();
-
-            return new ReturnValue<Table>(true, reader.CacheTable);
+            return await GetPreview(table, query, maxMilliseconds, null, null, cancellationToken);
         }
 
-        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, int maxMilliseconds, CancellationToken cancellationToken, Transform referenceTransform, List<JoinPair> referenceJoins)
+        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, int maxMilliseconds, Transform referenceTransform, List<JoinPair> referenceJoins, CancellationToken cancellationToken)
         {
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-
-            Transform reader = GetTransformReader(table, referenceTransform);
-            reader.JoinPairs = referenceJoins;
-            ReturnValue returnValue = await reader.Open(0, query, cancellationToken);
-            if (returnValue.Success == false)
-                return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
-
-            reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
-				reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
-
-            int count = 0;
-            while ((count < query.Rows || query.Rows == -1) &&
-                cancellationToken.IsCancellationRequested == false &&
-                await reader.ReadAsync(cancellationToken)
-                )
+            try
             {
-                count++;
-                if (maxMilliseconds > 0 && watch.ElapsedMilliseconds > maxMilliseconds)
-                    break;
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+
+                var rows = query?.Rows ?? -1;
+
+                Transform reader = GetTransformReader(table, referenceTransform);
+                reader.JoinPairs = referenceJoins;
+                ReturnValue returnValue = await reader.Open(0, query, cancellationToken);
+                if (returnValue.Success == false)
+                    return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception,
+                        null);
+
+                reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
+                reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
+
+                int count = 0;
+                while ((count < rows || rows == -1) &&
+                       cancellationToken.IsCancellationRequested == false &&
+                       await reader.ReadAsync(cancellationToken)
+                )
+                {
+                    count++;
+                    if (maxMilliseconds > 0 && watch.ElapsedMilliseconds > maxMilliseconds)
+                        break;
+                }
+
+                watch.Stop();
+                reader.Dispose();
+
+                return new ReturnValue<Table>(true, reader.CacheTable);
             }
-
-            watch.Stop();
-            reader.Dispose();
-
-            return new ReturnValue<Table>(true, reader.CacheTable);
+            catch (Exception ex)
+            {
+                return new ReturnValue<Table>(false, "GetPreview failed with error: " + ex.Message, ex);
+            }
         }
 
 

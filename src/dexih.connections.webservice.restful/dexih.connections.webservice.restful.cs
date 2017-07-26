@@ -173,7 +173,7 @@ namespace dexih.connections.webservice
                     var ts = new CancellationTokenSource();
                     CancellationToken ct = ts.Token;
 
-                    var data = await GetPreview(newRestFunction, query, 10000, ct, null, inputJoins);
+                    var data = await GetPreview(newRestFunction, query, 10000, null, inputJoins, ct);
                     if(data.Success == false)
                     {
                         return new ReturnValue<Table>(false, data.Message, data.Exception, null);

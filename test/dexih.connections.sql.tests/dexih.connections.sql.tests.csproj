@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\dexih.connections.sql\dexih.connections.sql.csproj">
     </ProjectReference>
+    <ProjectReference Include="..\..\src\dexih.connections.sql\dexih.connections.sql.csproj" />
     <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj">
     </ProjectReference>
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />
@@ -28,7 +29,7 @@
   <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </Content>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
