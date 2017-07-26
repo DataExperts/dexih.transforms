@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Data.Common;
 using dexih.functions;
 
 namespace dexih.connections.flatfile
@@ -259,13 +259,13 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override async Task<ReturnValue<bool>> TableExists(Table table)
+        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             try
             {
 				FlatFile flatFile = (FlatFile)table;
 
-				bool exists = await Task.Run(() => new DirectoryInfo(FilePath() + "/" + flatFile.FileRootPath).Exists);
+				bool exists = await Task.Run(() => new DirectoryInfo(FilePath() + "/" + flatFile.FileRootPath).Exists, cancelToken);
                 return new ReturnValue<bool>(true, exists);
             }
             catch(Exception ex)

@@ -17,7 +17,7 @@ namespace dexih.connections.sql.sqlserver
             return new ConnectionSqlServer()
             {
                 Name = "Test Connection",
-                Ntauth = Convert.ToBoolean(Configuration.AppSettings["SqlServer:NTAuthentication"]),
+                UseWindowsAuth = Convert.ToBoolean(Configuration.AppSettings["SqlServer:NTAuthentication"]),
                 Username = Convert.ToString(Configuration.AppSettings["SqlServer:UserName"]),
                 Password = Convert.ToString(Configuration.AppSettings["SqlServer:Password"]),
                 Server = Convert.ToString(Configuration.AppSettings["SqlServer:ServerName"]),

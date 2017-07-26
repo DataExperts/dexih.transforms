@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System;
-using dexih.functions;
 using System.Text;
 
 namespace dexih.functions
@@ -19,7 +18,7 @@ namespace dexih.functions
 
         public Table(string tableName, TableColumns columns, TableCache data) 
         {
-            TableName = tableName;
+            Name = tableName;
             BaseTableName = DataType.CleanString(tableName);
             Columns = columns;
             Data = data;
@@ -27,7 +26,7 @@ namespace dexih.functions
 
         public Table(string tableName, int maxRows, params TableColumn[] columns) 
         {
-            TableName = tableName;
+            Name = tableName;
             BaseTableName = DataType.CleanString(tableName);
             Columns = new TableColumns();
             foreach (TableColumn column in columns)
@@ -38,7 +37,7 @@ namespace dexih.functions
 
         public Table(string tableName, int maxRows, TableColumns columns)
         {
-            TableName = tableName;
+            Name = tableName;
             BaseTableName = DataType.CleanString(tableName);
             Columns = columns;
             Data = new TableCache(maxRows);
@@ -46,16 +45,16 @@ namespace dexih.functions
 
 		public Table(string tableName, int maxRows = 0)
 		{
-			TableName = tableName;
+		    Name = tableName;
 			BaseTableName = DataType.CleanString(tableName);
 			Columns = new TableColumns();
 			Data = new TableCache(maxRows);
 		}
 
-        public Table(string tableName, string tableSchema, int maxRows = 0) 
+        public Table(string tableName, string schema, int maxRows = 0) 
         {
-            TableName = tableName;
-			TableSchema = tableSchema;
+            Name = tableName;
+			Schema = schema;
             BaseTableName = DataType.CleanString(tableName);
             Columns = new TableColumns();
             Data = new TableCache(maxRows);
@@ -68,13 +67,13 @@ namespace dexih.functions
         /// <summary>
         /// Reference to the phsycal table name.
         /// </summary>
-        public string TableName { get; set; }
+        public string Name { get; set; }
 
 		/// <summary>
 		/// The table schema or owner.
 		/// </summary>
 		/// <value>The table schema.</value>
-		public string TableSchema { get; set; }
+		public string Schema { get; set; }
 
         /// <summary>
         /// The name of the source connection when pointing to an another hub
@@ -96,12 +95,22 @@ namespace dexih.functions
         /// Is the original base table name.
         /// </summary>
         public string BaseTableName { get; set; }
-
+        
         /// <summary>
         /// Indicates if the table contains versions (history) of data change, such as sql temporal tables.
         /// </summary>
         public bool IsVersioned { get; set; }
 
+        /// <summary>
+        /// Indicates if this is a sql (or other) type query.
+        /// </summary>
+        public bool UseQuery { get; set; }
+
+        /// <summary>
+        /// Sql Query string (or query string for other db types)
+        /// </summary>
+        public string QueryString { get; set; }
+     
         /// <summary>
         /// Indicates the output sort fields for the table.
         /// </summary>
@@ -154,10 +163,12 @@ namespace dexih.functions
         #endregion
 
         #region Lookup
+
         /// <summary>
         /// Performs a row scan lookup on the data contained in the table.
         /// </summary>
         /// <param name="filters">Filter for the lookup.  For an index to be used, the filters must be in the same column order as the index.</param>
+        /// <param name="startRow"></param>
         /// <returns></returns>
         public ReturnValue<object[]> LookupSingleRow(List<Filter> filters, int startRow = 0)
         {
@@ -216,14 +227,14 @@ namespace dexih.functions
                     value1 = filter.Value1;
                 else
                 {
-                    value1 = row[GetOrdinal(filter.Column1.ColumnName)];
+                    value1 = row[GetOrdinal(filter.Column1.Name)];
                 }
 
                 if (filter.Value2 != null)
                     value2 = filter.Value2;
                 else
                 {
-                    value2 = row[GetOrdinal(filter.Column2.ColumnName)];
+                    value2 = row[GetOrdinal(filter.Column2.Name)];
                 }
 
                 var compareResult = DataType.Compare(filter.CompareDataType, value1, value2);
@@ -320,7 +331,7 @@ namespace dexih.functions
 
             Table table = Copy();
 
-            table.TableName = rejectedTableName;
+            table.Name = rejectedTableName;
             table.Description = "Rejected table for: " + Description;
 
             if(this.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
@@ -339,7 +350,7 @@ namespace dexih.functions
 
             foreach(var column in table.Columns)
             {
-                column.SecurityFlag = this.Columns[column.ColumnName].SecurityFlag;
+                column.SecurityFlag = this.Columns[column.Name].SecurityFlag;
                 if(column.SecurityFlag != TableColumn.ESecurityFlag.None)
                 {
                     column.Datatype = DataType.ETypeCode.String;
@@ -356,7 +367,7 @@ namespace dexih.functions
         /// <returns></returns>
         public Table Copy(bool removeSchema = false)
         {
-            Table table = new Table(TableName, TableSchema)
+            Table table = new Table(Name, Schema)
             {
                 Description = Description
             };
@@ -385,7 +396,7 @@ namespace dexih.functions
             if (Columns == null)
                 Columns = new TableColumns();
 
-            Columns.Add(new TableColumn(columnName, dataType, TableName));
+            Columns.Add(new TableColumn(columnName, dataType, Name));
         }
 
         public void AddColumn(string columnName, DataType.ETypeCode dataType = DataType.ETypeCode.String, TableColumn.EDeltaType deltaType = TableColumn.EDeltaType.TrackingField)
@@ -393,7 +404,7 @@ namespace dexih.functions
             if (Columns == null)
                 Columns = new TableColumns();
 
-            Columns.Add(new TableColumn(columnName, dataType, deltaType, TableName));
+            Columns.Add(new TableColumn(columnName, dataType, deltaType, Name));
         }
 
         public void AddRow(params object[] values)
@@ -443,7 +454,7 @@ namespace dexih.functions
             return new SelectQuery()
             {
                 Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.Datatype != DataType.ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
-                Table = TableName,
+                Table = Name,
                 Rows = rows
             };
         }
@@ -452,7 +463,7 @@ namespace dexih.functions
         {
             StringBuilder csvData = new StringBuilder();
 
-            string[] columns = Columns.Select(c => c.ColumnName).ToArray();
+            string[] columns = Columns.Select(c => c.Name).ToArray();
             //add column headers
             int columnCount = Columns.Count;
             string[] s = new string[columnCount];

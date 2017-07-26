@@ -45,7 +45,7 @@ namespace dexih.functions.tests
             {
                 BaseDataType = DataType.ETypeCode.String,
                 DeltaType = TableColumn.EDeltaType.CreateDate,
-                ColumnName = "columnName",
+                Name = "columnName",
                 AllowDbNull = true,
                 SecurityFlag = TableColumn.ESecurityFlag.OneWayHash
             };
@@ -55,7 +55,7 @@ namespace dexih.functions.tests
 
             Assert.Equal(DataType.ETypeCode.String, newColumn.BaseDataType);
             Assert.Equal(TableColumn.EDeltaType.CreateDate, newColumn.DeltaType);
-            Assert.Equal("columnName", newColumn.ColumnName);
+            Assert.Equal("columnName", newColumn.Name);
             Assert.Equal(TableColumn.ESecurityFlag.OneWayHash, newColumn.SecurityFlag);
         }
 

@@ -21,7 +21,6 @@
 
 using System;
 using System.Globalization;
-using System.Runtime.Serialization;
 using dexih.connections.flatfile.Resources;
 
 namespace dexih.connections.flatfile

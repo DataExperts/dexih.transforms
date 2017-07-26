@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Threading.Tasks;
 using System.IO;
 using dexih.functions;
@@ -8,8 +7,6 @@ using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
-using Newtonsoft.Json;
-using System.Linq;
 using System.Diagnostics;
 
 namespace dexih.connections.flatfile
@@ -47,14 +44,14 @@ namespace dexih.connections.flatfile
         public string LastWrittenFile { get; protected set; } = "";
 
 
-		public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+		public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
 			var flatFile = (FlatFile)table;
             //create the subdirectories
             return await CreateDirectory((string)flatFile.FileRootPath, (string)flatFile.FileIncomingPath);
         }
 
-        public override async Task<ReturnValue> CreateDatabase(string databaseName)
+        public override async Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             ReturnValue returnValue;
             DefaultDatabase = databaseName;
@@ -134,7 +131,7 @@ namespace dexih.connections.flatfile
                 string[] s = new string[table.Columns.Count];
                 for (Int32 j = 0; j < table.Columns.Count; j++)
                 {
-                    s[j] = table.Columns[j].ColumnName;
+                    s[j] = table.Columns[j].Name;
                     if (s[j].Contains("\"")) //replace " with ""
                         s[j] = s[j].Replace("\"", "\"\"");
                     if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
@@ -152,7 +149,7 @@ namespace dexih.connections.flatfile
 
         public override async Task<ReturnValue> DataWriterFinish(Table table)
         {
-            string archiveFileName = table.TableName + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+            string archiveFileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
 
             _fileWriter.Flush();
             _fileStream.Position = 0;
@@ -198,12 +195,12 @@ namespace dexih.connections.flatfile
         }
 
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList()
+        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
         {
             return await GetFileShares(Server, Username, Password);
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
         {
             try
             {
@@ -242,9 +239,9 @@ namespace dexih.connections.flatfile
 
                 //The new datatable that will contain the table schema
 				FlatFile newFlatFile = new FlatFile();
-				flatFile.TableName = originalTable.TableName;
+				flatFile.Name = originalTable.Name;
                 newFlatFile.Columns.Clear();
-                newFlatFile.LogicalName = newFlatFile.TableName;
+                newFlatFile.LogicalName = newFlatFile.Name;
                 newFlatFile.Description = "";
                 newFlatFile.FileFormat = flatFile.FileFormat;
 
@@ -256,7 +253,7 @@ namespace dexih.connections.flatfile
                     {
 
                         //add the basic properties
-                        ColumnName = field,
+                        Name = field,
                         LogicalName = field,
                         IsInput = false,
                         Datatype = ETypeCode.String,
@@ -272,7 +269,7 @@ namespace dexih.connections.flatfile
                 {
 
                     //add the basic properties
-                    ColumnName = "FileName",
+                    Name = "FileName",
                     LogicalName = "FileName",
                     IsInput = false,
                     Datatype = ETypeCode.String,
@@ -291,7 +288,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<ReturnValue<List<Table>>> GetTableList()
+        public override Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -348,7 +345,7 @@ namespace dexih.connections.flatfile
                     string[] s = new string[table.Columns.Count];
                     for (Int32 j = 0; j < queries[0].InsertColumns.Count; j++)
                     {
-                        s[j] = queries[0].InsertColumns[j].Column.ColumnName;
+                        s[j] = queries[0].InsertColumns[j].Column.Name;
                         if (s[j].Contains("\"")) //replace " with ""
                             s[j] = s[j].Replace("\"", "\"\"");
                         if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
@@ -375,7 +372,7 @@ namespace dexih.connections.flatfile
                     stream.Position = 0;
 
                     //save the file
-                    string fileName = table.TableName + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+                    string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
 
                     ReturnValue returnValue = await SaveFileStream(table, fileName, stream);
                     if (!returnValue.Success)
@@ -400,7 +397,7 @@ namespace dexih.connections.flatfile
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

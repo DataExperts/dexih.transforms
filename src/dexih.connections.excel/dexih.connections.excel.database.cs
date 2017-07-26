@@ -2,15 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Data;
 using dexih.transforms;
 using dexih.functions;
 using System.IO;
 using System.Data.Common;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using System.Net.Http;
-using Newtonsoft.Json.Linq;
 using System.Threading;
 using static dexih.functions.DataType;
 using OfficeOpenXml;
@@ -32,16 +27,16 @@ namespace dexih.connections.excel
         public override string DatabaseTypeName => "Excel Database";
         public override ECategory DatabaseCategory => ECategory.SqlDatabase;
 
-        public override Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+        public override Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-		public override async Task<ReturnValue<List<string>>> GetDatabaseList()
+		public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
 		{
 			try
 			{
-				bool directoryExists = await Task.Run(() => Directory.Exists(Server));
+				bool directoryExists = await Task.Run(() => Directory.Exists(Server), cancelToken);
 				if (!directoryExists)
 					return new ReturnValue<List<string>>(false, "The directory " + Server + " does not exist.", null);
 
@@ -57,7 +52,7 @@ namespace dexih.connections.excel
 					}
 
 					return list;
-				});
+				}, cancelToken);
 
 				return new ReturnValue<List<string>>(true, "", null, dbList);
 			}
@@ -74,14 +69,14 @@ namespace dexih.connections.excel
             return package;
         }
 
-		public override async Task<ReturnValue<List<Table>>> GetTableList()
+		public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
 		{
             try
             {
                 return await Task.Run(() =>
                 {
 
-                    using (ExcelPackage package = NewConnection())
+                    using (var package = NewConnection())
                     {
                         var tableList = new List<Table>();
 
@@ -93,7 +88,7 @@ namespace dexih.connections.excel
 
                         return new ReturnValue<List<Table>>(true, tableList);
                     }
-                });            
+                }, cancelToken);            
             }
             catch(Exception ex)
             {
@@ -107,7 +102,7 @@ namespace dexih.connections.excel
         /// <param name="tableName">Table Name</param>
         /// <param name="Properties">Mandatory property "RestfulUri".  Additional properties for the default column values.  Use ColumnName=value</param>
         /// <returns></returns>
-         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable)
+         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
         {
             try
             {
@@ -116,15 +111,15 @@ namespace dexih.connections.excel
 
 				    using (ExcelPackage package = NewConnection())
 				    {
-				        var worksheet = package.Workbook.Worksheets.SingleOrDefault(c => c.Name == importTable.TableName);
+				        var worksheet = package.Workbook.Worksheets.SingleOrDefault(c => c.Name == importTable.Name);
 				        if (worksheet == null)
 				        {
-				            return new ReturnValue<Table>(false, $"The worksheet {importTable.TableName} could not be found in the excel file. ", null);
+				            return new ReturnValue<Table>(false, $"The worksheet {importTable.Name} could not be found in the excel file. ", null);
 				        }
 
 				        var columns = new TableColumns();
 				        var headerRow = worksheet.Row(1);
-				        for (int col = 1; col <= worksheet.Dimension.Columns; col++)
+				        for (var col = 1; col <= worksheet.Dimension.Columns; col++)
 				        {
 				            var columName = worksheet.Cells[1, col].Value.ToString();
 				            if (string.IsNullOrEmpty(columName)) columName = "Column-" + col.ToString();
@@ -132,10 +127,10 @@ namespace dexih.connections.excel
 				            columns.Add(column);
 				        }
 
-				        var newTable = new Table(importTable.TableName, -1, columns);
+				        var newTable = new Table(importTable.Name, -1, columns);
 				        return new ReturnValue<Table>(true, newTable);
 				    }
-				});
+				}, cancelToken);
 
             }
             catch (Exception ex)
@@ -175,12 +170,12 @@ namespace dexih.connections.excel
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue> CreateDatabase(string databaseName)
+        public override Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -196,7 +191,7 @@ namespace dexih.connections.excel
             return reader;
         }
 
-        public override Task<ReturnValue<bool>> TableExists(Table table)
+        public override Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

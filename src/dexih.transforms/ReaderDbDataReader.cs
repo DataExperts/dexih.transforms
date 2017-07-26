@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Data.Common;
-using System.Data;
 using System.Threading;
 
 namespace dexih.transforms
@@ -67,12 +64,12 @@ namespace dexih.transforms
             else
             {
                 var columnSchema = inReader.GetColumnSchema();
-                CacheTable.TableName = columnSchema[0].BaseTableName;
+                CacheTable.Name = columnSchema[0].BaseTableName;
 
                 foreach(var columnDetail in columnSchema)
                 {
                     var column = new TableColumn();
-                    column.ColumnName = columnDetail.ColumnName;
+                    column.Name = columnDetail.ColumnName;
                     column.Datatype = DataType.GetTypeCode(columnDetail.DataType);
                     column.MaxLength = columnDetail.ColumnSize;
                     column.Scale = columnDetail.NumericScale;

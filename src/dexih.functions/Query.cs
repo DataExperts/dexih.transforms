@@ -1,7 +1,4 @@
-﻿using dexih.functions;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
+﻿using System.Collections.Generic;
 using static dexih.functions.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

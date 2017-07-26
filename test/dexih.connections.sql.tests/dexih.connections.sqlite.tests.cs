@@ -15,7 +15,7 @@ namespace dexih.connections.sql
             return new ConnectionSqlite()
             {
                 Name = "Test Connection",
-                Ntauth = Convert.ToBoolean(Configuration.AppSettings["Sqlite:NTAuthentication"]),
+                UseWindowsAuth = Convert.ToBoolean(Configuration.AppSettings["Sqlite:NTAuthentication"]),
                 Server = Configuration.AppSettings["Sqlite:ServerName"].ToString()
             };
         }

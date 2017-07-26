@@ -52,7 +52,7 @@ namespace dexih.functions
         /// <param name="columnName">Column Name for the parameter to map to.</param>
         public Parameter( ETypeCode parameterType, TableColumn column)
         {
-            Name = column.ColumnName;
+            Name = column.Name;
             DataType = parameterType;
             IsColumn = true;
             Column = column;

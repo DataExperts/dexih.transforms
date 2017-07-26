@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -75,7 +72,7 @@ namespace dexih.transforms
                 {
                     foreach (Parameter input in profile.Inputs.Where(c => c.IsColumn))
                     {
-                        var result = input.SetValue(PrimaryTransform[input.Column.ColumnName]);
+                        var result = input.SetValue(PrimaryTransform[input.Column.Name]);
                         if (result.Success == false)
                             throw new Exception("Error setting mapping values: " + result.Message);
                     }
@@ -101,7 +98,7 @@ namespace dexih.transforms
                     object[] row = new object[6];
                     row[0] = AuditKey;
                     row[1] = profile.FunctionName;
-                    row[2] = profile.Inputs[0].Column.ColumnName;
+                    row[2] = profile.Inputs[0].Column.Name;
                     row[3] = true;
 
                     if (profile.ReturnValue().Success)
@@ -122,7 +119,7 @@ namespace dexih.transforms
                                 row = new object[6];
                                 row[0] = AuditKey;
                                 row[1] = profile.FunctionName;
-                                row[2] = profile.Inputs[0].Column.ColumnName;
+                                row[2] = profile.Inputs[0].Column.Name;
                                 row[3] = false;
                                 row[4] = value;
                                 row[5] = details[value];

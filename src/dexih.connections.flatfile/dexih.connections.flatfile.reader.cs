@@ -1,12 +1,9 @@
 ﻿using dexih.transforms;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
-using System.Data.Common;
 using System.IO;
-using Newtonsoft.Json;
 using System.Threading;
 
 namespace dexih.connections.flatfile
@@ -22,9 +19,7 @@ namespace dexih.connections.flatfile
 
         private ConnectionFlatFile _fileConnection;
 
-		public FlatFile CacheFlatFile {
-			get { return (FlatFile)CacheTable; }
-		}
+		public FlatFile CacheFlatFile => (FlatFile)CacheTable;
 
         public ReaderFlatFile(Connection connection, FlatFile table)
         {
@@ -35,15 +30,14 @@ namespace dexih.connections.flatfile
 
         protected override void Dispose(bool disposing)
         {
-            if (_csvReader != null)
-                _csvReader.Dispose();
+            _csvReader?.Dispose();
 
             _isOpen = false;
 
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -164,7 +158,7 @@ namespace dexih.connections.flatfile
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        public override Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
             throw new NotSupportedException("Lookup not supported with flat files.");
         }

@@ -3,6 +3,7 @@ using dexih.functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using dexih.transforms.Exceptions;
@@ -19,7 +20,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateSortedJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(8, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
 
             int pos = 0;
@@ -43,7 +44,7 @@ namespace dexih.transforms.tests
 
             Assert.Equal(8, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
 
             int pos = 0;
@@ -69,7 +70,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateDuplicatesJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             await Assert.ThrowsAsync<DuplicateJoinKeyException>(async () => { while (await transformJoin.ReadAsync() == true) ; });
 
         }
@@ -85,7 +86,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, sortedJoinData, new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             await Assert.ThrowsAsync<DuplicateJoinKeyException>(async () => { while (await transformJoin.ReadAsync() == true) ; });
         }
 
@@ -100,7 +101,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, sortedJoinData, new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.All, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
 
             int pos = 0;
@@ -137,7 +138,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, sortedJoinData, new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
 
             int pos = 0;
@@ -163,7 +164,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, sortedJoinData, new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.First, new TableColumn("LookupValue", DataType.ETypeCode.String, "Join"), "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
 
             int pos = 0;
@@ -189,7 +190,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, sortedJoinData, new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.Last, new TableColumn("LookupValue", DataType.ETypeCode.String, "Join"), "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
 
             int pos = 0;
@@ -221,7 +222,7 @@ namespace dexih.transforms.tests
             }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
 
             int pos = 0;
@@ -250,7 +251,7 @@ namespace dexih.transforms.tests
             }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
 
             int pos = 0;
@@ -279,7 +280,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateDuplicatesJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
 
             int pos = 0;
@@ -310,7 +311,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateSortedJoinData(), null, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(8, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
 
             int pos = 0;
@@ -342,7 +343,7 @@ namespace dexih.transforms.tests
             TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateUnSortedJoinData(), null, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(8, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null);
+            await transformJoin.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
 
             int pos = 0;

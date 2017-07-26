@@ -1,8 +1,6 @@
 ﻿using dexih.functions;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,7 +57,7 @@ namespace dexih.transforms
 
         public override string Details()
         {
-            return "Source Table " + CacheTable.TableName;
+            return "Source Table " + CacheTable.Name;
         }
 
         public override ReturnValue ResetTransform()
@@ -70,15 +68,17 @@ namespace dexih.transforms
 
         protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
         {
-            return await Task.Run(() => new ReturnValue<object[]>(false, null));
-            //position++;
-            //if (position < CacheTable.Data.Count)
-            //{
-            //    var row = CacheTable.Data[position];
-            //    return new ReturnValue<object[]>(true, row);
-            //}
-            //else
-            //    return new ReturnValue<object[]>(false, null);
+            //return await Task.Run(() => new ReturnValue<object[]>(false, null));
+            return await Task.Run(() =>
+            {
+                CurrentRowNumber++;
+                if (CurrentRowNumber < CacheTable.Data.Count)
+                {
+                    var row = CacheTable.Data[CurrentRowNumber];
+                    return new ReturnValue<object[]>(true, row);
+                }
+                return new ReturnValue<object[]>(false, null);
+            }, cancellationToken);
         }
     }
 }

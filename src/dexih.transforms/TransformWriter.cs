@@ -1,7 +1,6 @@
 ﻿using dexih.functions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ namespace dexih.transforms
         private TableCache _rejectRows;
 
 
-        private bool _writeOpen = false;
+        private bool _writeOpen;
         private int _operationColumnIndex; //the index of the operation in the source data.
 
         private Task<ReturnValue<long>> _createRecordsTask; //task to allow writes to run async with other processing.
@@ -39,11 +38,6 @@ namespace dexih.transforms
         private Connection _profileConnection;
 
         private CancellationToken _cancelToken;
-
-        private InsertQuery _targetInsertQuery;
-        private UpdateQuery _targetUpdateQuery;
-        private DeleteQuery _targetDeleteQuery;
-        private InsertQuery _rejectInsertQuery;
 
         public long WriteDataTicks;
 
@@ -74,13 +68,15 @@ namespace dexih.transforms
         /// <summary>
         /// Writes all record from the inTransform to the target table and reject table.
         /// </summary>
+        /// <param name="writerResult"></param>
         /// <param name="inTransform">Transform to read data from</param>
-        /// <param name="tableName">Target table name</param>
-        /// <param name="connection">Target to write data to</param>
-        /// <param name="rejecteTableName">Reject table name</param>
+        /// <param name="targetConnection"></param>
+        /// <param name="rejectTable"></param>
         /// <param name="rejectConnection">Reject connection (if null will use connection)</param>
-        /// <param name="profileTableName">Reject table name</param>
+        /// <param name="profileTable"></param>
         /// <param name="profileConnection">Reject connection (if null will use connection)</param>
+        /// <param name="targetTable"></param>
+        /// <param name="cancelToken"></param>
         /// <returns></returns>
         public async Task<ReturnValue> WriteAllRecords(TransformWriterResult writerResult, Transform inTransform, Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection, Table profileTable, Connection profileConnection, CancellationToken cancelToken)
         {
@@ -109,9 +105,9 @@ namespace dexih.transforms
 
                 _inTransform = inTransform;
 
-                writerResult.RejectTableName = rejectTable.TableName;
+                writerResult.RejectTableName = rejectTable?.Name;
 
-                var returnValue = await WriteStart(_inTransform, writerResult);
+                var returnValue = await WriteStart(_inTransform, writerResult, cancelToken);
 
                 if (returnValue.Success == false)
                 {
@@ -160,8 +156,8 @@ namespace dexih.transforms
 
                 if (_profileTable != null)
                 {
-                    returnValue = await _profileConnection.CreateTable(_profileTable, false);
-                    writerResult.ProfileTableName = _profileTable.TableName;
+                    returnValue = await _profileConnection.CreateTable(_profileTable, false, cancelToken);
+                    writerResult.ProfileTableName = _profileTable.Name;
                     var profileResults = inTransform.GetProfileResults();
                     if (profileResults != null)
                     {
@@ -185,13 +181,13 @@ namespace dexih.transforms
             }
         }
 
-        public async Task<ReturnValue> WriteStart(Transform inTransform, TransformWriterResult writerResult)
+        public async Task<ReturnValue> WriteStart(Transform inTransform, TransformWriterResult writerResult, CancellationToken cancelToken)
         {
 
             if (_writeOpen)
                 return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
 
-            var returnValue = await _inTransform.Open(writerResult.AuditKey, null); 
+            var returnValue = await _inTransform.Open(writerResult.AuditKey, null, cancelToken); 
             if (!returnValue.Success)
                 return returnValue;
 
@@ -203,26 +199,26 @@ namespace dexih.transforms
             _rejectRows = new TableCache();
 
             //create template queries, with the values set to paramaters (i.e. @param1, @param2)
-            _targetInsertQuery = new InsertQuery(_targetTable.TableName, _targetTable.Columns.Select(c => new QueryColumn(new TableColumn(c.ColumnName, c.Datatype), "@param" + _targetTable.GetOrdinal(c.ColumnName).ToString())).ToList());
+            new InsertQuery(_targetTable.Name, _targetTable.Columns.Select(c => new QueryColumn(new TableColumn(c.Name, c.Datatype), "@param" + _targetTable.GetOrdinal(c.Name).ToString())).ToList());
 
-            _targetUpdateQuery = new UpdateQuery(
-                _targetTable.TableName,
-                _targetTable.Columns.Where(c=> c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, "@param" + _targetTable.GetOrdinal(c.ColumnName).ToString())).ToList(),
+            new UpdateQuery(
+                _targetTable.Name,
+                _targetTable.Columns.Where(c=> c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, "@param" + _targetTable.GetOrdinal(c.Name).ToString())).ToList(),
                 _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c=> new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList()
-                );
+            );
 
-            _targetDeleteQuery = new DeleteQuery(_targetTable.TableName, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
+            new DeleteQuery(_targetTable.Name, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
             if (_rejectTable != null)
             {
-                _rejectInsertQuery = new InsertQuery(_rejectTable.TableName, _rejectTable.Columns.Select(c => new QueryColumn(c, "@param" + _rejectTable.GetOrdinal(c.ColumnName).ToString())).ToList());
-                returnValue = await _rejectConnection.CreateTable(_rejectTable, false);
+                new InsertQuery(_rejectTable.Name, _rejectTable.Columns.Select(c => new QueryColumn(c, "@param" + _rejectTable.GetOrdinal(c.Name).ToString())).ToList());
+                returnValue = await _rejectConnection.CreateTable(_rejectTable, false, cancelToken);
                 //if (!returnValue.Success)
                 //    return returnValue;
             }
 
             //if the table doesn't exist, create it.  
-            returnValue = await _targetConnection.CreateTable(_targetTable, false);
+            returnValue = await _targetConnection.CreateTable(_targetTable, false, cancelToken);
             returnValue = await _targetConnection.DataWriterStart(_targetTable);
 
             //if the truncate table flag is set, then truncate the target table.
@@ -237,7 +233,7 @@ namespace dexih.transforms
             _fieldOrdinals = new int[columnCount];
             for (int i = 0; i < columnCount; i++)
             {
-                _fieldOrdinals[i] = inTransform.GetOrdinal(_targetTable.Columns[i].ColumnName);
+                _fieldOrdinals[i] = inTransform.GetOrdinal(_targetTable.Columns[i].Name);
             }
 
             if(_rejectTable != null)
@@ -246,7 +242,7 @@ namespace dexih.transforms
                 _rejectFieldOrdinals = new int[columnCount];
                 for (int i = 0; i < columnCount; i++)
                 {
-                    _rejectFieldOrdinals[i] = inTransform.GetOrdinal(_rejectTable.Columns[i].ColumnName);
+                    _rejectFieldOrdinals[i] = inTransform.GetOrdinal(_rejectTable.Columns[i].Name);
                 }
             }
 
@@ -460,7 +456,7 @@ namespace dexih.transforms
                     return result;
             }
 
-            Table createTable = new Table(_targetTable.TableName, _targetTable.Columns, _createRows);
+            Table createTable = new Table(_targetTable.Name, _targetTable.Columns, _createRows);
             var createReader = new ReaderMemory(createTable);
 
             _createRecordsTask = _targetConnection.ExecuteInsertBulk(_targetTable, createReader, _cancelToken);  //this has no await to ensure processing continues.
@@ -492,9 +488,9 @@ namespace dexih.transforms
             foreach(object[] row in _updateRows)
             {
                 UpdateQuery updateQuery = new UpdateQuery(
-                _targetTable.TableName,
-                _targetTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, row[_targetTable.GetOrdinal(c.ColumnName)])).ToList(),
-                _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[_targetTable.GetOrdinal(c.ColumnName)])).ToList()
+                _targetTable.Name,
+                _targetTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, row[_targetTable.GetOrdinal(c.Name)])).ToList(),
+                _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[_targetTable.GetOrdinal(c.Name)])).ToList()
                 );
 
                 updateQueries.Add(updateQuery);
@@ -534,14 +530,14 @@ namespace dexih.transforms
                     return result;
             }
 
-            _targetDeleteQuery = new DeleteQuery(_targetTable.TableName, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
+            new DeleteQuery(_targetTable.Name, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
             List<DeleteQuery> deleteQueries = new List<DeleteQuery>();
             foreach (object[] row in _deleteRows)
             {
                 DeleteQuery deleteQuery = new DeleteQuery(
-                _targetTable.TableName,
-                _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[_targetTable.GetOrdinal(c.ColumnName)])).ToList()
+                _targetTable.Name,
+                _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[_targetTable.GetOrdinal(c.Name)])).ToList()
                 );
 
                 deleteQueries.Add(deleteQuery);
@@ -565,7 +561,7 @@ namespace dexih.transforms
                     return result;
             }
 
-            Table createTable = new Table(_rejectTable.TableName, _rejectTable.Columns, _rejectRows);
+            Table createTable = new Table(_rejectTable.Name, _rejectTable.Columns, _rejectRows);
 
             var createReader = new ReaderMemory(createTable);
 

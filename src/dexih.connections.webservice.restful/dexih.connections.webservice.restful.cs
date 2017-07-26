@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Data;
 using dexih.transforms;
 using dexih.functions;
-using System.IO;
 using System.Data.Common;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
@@ -32,18 +29,18 @@ namespace dexih.connections.webservice
         public override string DatabaseTypeName => "Restful Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;
 
-        public override Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+        public override Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList()
+        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
                 List<string> list = new List<string>();
                 return new ReturnValue<List<string>>(true, "", null, list);
-            });
+            }, cancelToken);
         }
 
         /// <summary>
@@ -51,8 +48,10 @@ namespace dexih.connections.webservice
         /// </summary>
         /// <param name="tableName">Table Name</param>
         /// <param name="Properties">Mandatory property "RestfulUri".  Additional properties for the default column values.  Use ColumnName=value</param>
+        /// <param name="importTable"></param>
+        /// <param name="cancelToken"></param>
         /// <returns></returns>
-         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
         {
             try
             {
@@ -67,14 +66,14 @@ namespace dexih.connections.webservice
                 string rowPath = restFunction.RowPath;
 
                 RestFunction newRestFunction = new RestFunction();
-				newRestFunction.TableName = restFunction.TableName;
+				newRestFunction.Name = restFunction.Name;
 
                 //The new datatable that will contain the table schema
                 newRestFunction.Columns.Clear();
                 newRestFunction.Description = "";
 				newRestFunction.RestfulUri = restfulUri;
 
-                newRestFunction.LogicalName = newRestFunction.TableName;
+                newRestFunction.LogicalName = newRestFunction.Name;
 
                 TableColumn col;
                 var inputJoins = new List<JoinPair>();
@@ -90,7 +89,7 @@ namespace dexih.connections.webservice
                     col = new TableColumn();
 
                     //add the basic properties
-                    col.ColumnName = name;
+                    col.Name = name;
                     col.IsInput = true;
                     col.LogicalName = name;
                     col.Datatype = ETypeCode.String;
@@ -103,7 +102,7 @@ namespace dexih.connections.webservice
                     col.IsUnique = false;
 
                     //Copy the inputvalue from the table input.  This allows the preview table function below to get sample data.
-                    var originalColumn = importTable.Columns.SingleOrDefault(c => c.ColumnName == col.ColumnName);
+                    var originalColumn = importTable.Columns.SingleOrDefault(c => c.Name == col.Name);
                     if (originalColumn != null)
                     {
                         var inputValue = originalColumn.GetExtendedProperty("InputValue");
@@ -123,7 +122,7 @@ namespace dexih.connections.webservice
                 //This column is use to capture the entire response from the web services call.
                 col = new TableColumn()
                 {
-                    ColumnName = "Response",
+                    Name = "Response",
                     IsInput = false,
                     LogicalName = "Response",
                     Datatype = ETypeCode.String,
@@ -137,7 +136,7 @@ namespace dexih.connections.webservice
 
                 col = new TableColumn()
                 {
-                    ColumnName = "ResponseStatusCode",
+                    Name = "ResponseStatusCode",
                     IsInput = false,
                     LogicalName = "ResponseStatusCode",
                     Datatype = ETypeCode.String,
@@ -151,7 +150,7 @@ namespace dexih.connections.webservice
 
                 col = new TableColumn()
                 {
-                    ColumnName = "ResponseSuccess",
+                    Name = "ResponseSuccess",
                     IsInput = false,
                     LogicalName = "ResponseSuccess",
                     Datatype = ETypeCode.Boolean,
@@ -166,7 +165,7 @@ namespace dexih.connections.webservice
                 SelectQuery query = new SelectQuery();
                 query.Columns.Add(new SelectColumn(new TableColumn("Response"), SelectColumn.EAggregate.None));
                 query.Columns.Add(new SelectColumn(new TableColumn("ResponseSuccess"), SelectColumn.EAggregate.None));
-                query.Table = newRestFunction.TableName;
+                query.Table = newRestFunction.Name;
                 query.Rows = 1;
 
                 if (newRestFunction.Columns.Count > 0)
@@ -205,7 +204,7 @@ namespace dexih.connections.webservice
                         foreach (var value in content.Children())
                         {
                             col = new TableColumn();
-                            col.ColumnName = value.Path;
+                            col.Name = value.Path;
                             col.IsInput = false;
                             col.LogicalName = value.Path;
                             col.Datatype = ETypeCode.String;
@@ -226,22 +225,23 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override async Task<ReturnValue<List<Table>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
         {
             return await Task.Run(() =>
            {
                List<Table> list = new List<Table>();
                return new ReturnValue<List<Table>>(true, "", null, list);
-           });
+           }, cancelToken);
         }
 
 
         /// <summary>
         /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
         /// </summary>
+        /// <param name="table"></param>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public async Task<ReturnValue<object[]>> LookupRow(Table table, List<Filter> filters)
+        public async Task<ReturnValue<object[]>> LookupRow(Table table, List<Filter> filters, CancellationToken cancelToken)
         {
             try
             {
@@ -252,7 +252,7 @@ namespace dexih.connections.webservice
 
                 foreach (var filter in filters)
                 {
-                    uri = uri.Replace("{" + filter.Column1.ColumnName + "}", filter.Value2.ToString());
+                    uri = uri.Replace("{" + filter.Column1.Name + "}", filter.Value2.ToString());
                     row[table.GetOrdinal(filter.Column1.SchemaColumnName())] = filter.Value2.ToString();
                 }
 
@@ -273,7 +273,7 @@ namespace dexih.connections.webservice
                     client.DefaultRequestHeaders.Accept.Clear();
                     //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    HttpResponseMessage response = await client.GetAsync(uri);
+                    HttpResponseMessage response = await client.GetAsync(uri, cancelToken);
 
                     row[table.GetOrdinal("ResponseStatusCode")] = response.StatusCode.ToString();
                     row[table.GetOrdinal("ResponseSuccess")] = response.IsSuccessStatusCode;
@@ -285,7 +285,7 @@ namespace dexih.connections.webservice
 
                         for (int i = 3 + filters.Count; i < table.Columns.Count; i++)
                         {
-                            row[i] = data.SelectToken(table.Columns[i].ColumnName);
+                            row[i] = data.SelectToken(table.Columns[i].Name);
                         }
                     }
                 }
@@ -325,7 +325,7 @@ namespace dexih.connections.webservice
 
         public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
-            var lookupResult = await LookupRow(table, query.Filters);
+            var lookupResult = await LookupRow(table, query.Filters, cancelToken);
             if (!lookupResult.Success)
                 return new ReturnValue<object>(lookupResult);
 
@@ -334,12 +334,12 @@ namespace dexih.connections.webservice
             return new ReturnValue<object>(true, value);
         }
 
-        public override Task<ReturnValue> CreateDatabase(string databaseName)
+        public override Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -355,7 +355,7 @@ namespace dexih.connections.webservice
             return reader;
         }
 
-        public override Task<ReturnValue<bool>> TableExists(Table table)
+        public override Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

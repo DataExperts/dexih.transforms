@@ -3,17 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data;
-using Microsoft.Data.Sqlite;
 using dexih.functions;
-using Newtonsoft.Json;
-using System.IO;
 using System.Data.Common;
 using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
-using static dexih.transforms.Transform;
 
 namespace dexih.connections.sql
 {
@@ -48,13 +43,13 @@ namespace dexih.connections.sql
 
         public virtual string SqlTableName(Table table)
         {
-            if(!string.IsNullOrEmpty(table.TableSchema))
+            if(!string.IsNullOrEmpty(table.Schema))
             {
-                return AddDelimiter(table.TableSchema) + "." + AddDelimiter(table.TableName);
+                return AddDelimiter(table.Schema) + "." + AddDelimiter(table.Name);
             }
             else
             {
-                return AddDelimiter(table.TableName);
+                return AddDelimiter(table.Name);
             }
         }
 
@@ -64,7 +59,6 @@ namespace dexih.connections.sql
         public abstract Task<ReturnValue<DbConnection>> NewConnection();
 
         public abstract string GetSqlType(ETypeCode dataType, int? length, int? scale, int? precision);
-        public abstract ETypeCode ConvertSqlToTypeCode(string sqlType);
         public abstract string GetSqlFieldValueQuote(ETypeCode type, object value);
 
 
@@ -141,7 +135,6 @@ namespace dexih.connections.sql
                                 cmd.Parameters.Add(param);
                                 parameters[i] = param;
                             }
-                            //cmd.Prepare();
 
                             while (await reader.ReadAsync(cancelToken))
                             {
@@ -192,7 +185,7 @@ namespace dexih.connections.sql
                     }
                     catch (Exception ex)
                     {
-                        return new ReturnValue(false, "The following error occurred when attempting to drop the table " + table.TableName + ".  " + ex.Message, ex);
+                        return new ReturnValue(false, "The following error occurred when attempting to drop the table " + table.Name + ".  " + ex.Message, ex);
                     }
 
                     return new ReturnValue(true);
@@ -200,7 +193,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred when attempting to drop the table " + table.TableName + ".  " + ex.Message, ex);
+                return new ReturnValue(false, "The following error occurred when attempting to drop the table " + table.Name + ".  " + ex.Message, ex);
             }
         }
 
@@ -208,7 +201,7 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             try
             {
@@ -219,14 +212,14 @@ namespace dexih.connections.sql
                 }
                 using (var connection = connectionResult.Value)
                 {
-                    var tableExistsResult = await TableExists(table);
+                    var tableExistsResult = await TableExists(table, cancelToken);
                     if (!tableExistsResult.Success)
                         return tableExistsResult;
 
                     //if table exists, and the dropTable flag is set to false, then error.
                     if (tableExistsResult.Value && dropTable == false)
                     {
-                        return new ReturnValue(false, "The table " + table.TableName + " already exists on the underlying database.  Please drop the table first.", null);
+                        return new ReturnValue(false, "The table " + table.Name + " already exists on the underlying database.  Please drop the table first.", null);
                     }
 
                     //if table exists, then drop it.
@@ -253,7 +246,7 @@ namespace dexih.connections.sql
                     {
                         TableColumn col = table.Columns[i];
 
-                        createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
+                        createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
                         if (col.AllowDbNull == false)
                             createSql.Append("NOT NULL ");
                         else
@@ -282,7 +275,7 @@ namespace dexih.connections.sql
                         }
                         catch (Exception ex)
                         {
-                            return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
+                            return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.Name + ".  " + ex.Message, ex);
                         }
                     }
 
@@ -291,7 +284,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "An error occurred creating the table " + table.TableName + ".  " + ex.Message, ex);
+                return new ReturnValue(false, "An error occurred creating the table " + table.Name + ".  " + ex.Message, ex);
             }
         }
 
@@ -316,12 +309,12 @@ namespace dexih.connections.sql
         {
             switch (column.Aggregate)
             {
-                case SelectColumn.EAggregate.None: return AddDelimiter(column.Column.ColumnName);
-                case SelectColumn.EAggregate.Sum: return "sum(" + AddDelimiter(column.Column.ColumnName) + ")";
-                case SelectColumn.EAggregate.Average: return "avg(" + AddDelimiter(column.Column.ColumnName) + ")";
-                case SelectColumn.EAggregate.Min: return "min(" + AddDelimiter(column.Column.ColumnName) + ")";
-                case SelectColumn.EAggregate.Max: return "max(" + AddDelimiter(column.Column.ColumnName) + ")";
-                case SelectColumn.EAggregate.Count: return "count(" + AddDelimiter(column.Column.ColumnName) + ")";
+                case SelectColumn.EAggregate.None: return AddDelimiter(column.Column.Name);
+                case SelectColumn.EAggregate.Sum: return "sum(" + AddDelimiter(column.Column.Name) + ")";
+                case SelectColumn.EAggregate.Average: return "avg(" + AddDelimiter(column.Column.Name) + ")";
+                case SelectColumn.EAggregate.Min: return "min(" + AddDelimiter(column.Column.Name) + ")";
+                case SelectColumn.EAggregate.Max: return "max(" + AddDelimiter(column.Column.Name) + ")";
+                case SelectColumn.EAggregate.Count: return "count(" + AddDelimiter(column.Column.Name) + ")";
             }
 
             return ""; //not possible to get here.
@@ -336,7 +329,7 @@ namespace dexih.connections.sql
             if (query?.Columns?.Count > 0)
                 columns = String.Join(",", query.Columns.Select(c => AggregateFunction(c)).ToArray());
             else
-                columns = string.Join(",", table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => AddDelimiter(c.ColumnName)).ToArray());
+                columns = string.Join(",", table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => AddDelimiter(c.Name)).ToArray());
 
             sql.Append("select ");
             sql.Append(columns + " ");
@@ -349,12 +342,12 @@ namespace dexih.connections.sql
             if (query?.Groups?.Count > 0)
             {
                 sql.Append("group by ");
-                sql.Append(String.Join(",", query.Groups.Select(c => AddDelimiter(c.ColumnName)).ToArray()));
+                sql.Append(String.Join(",", query.Groups.Select(c => AddDelimiter(c.Name)).ToArray()));
             }
             if (query?.Sorts?.Count > 0)
             {
                 sql.Append("order by ");
-                sql.Append(String.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.ColumnName) + " " + (c.Direction == Sort.EDirection.Descending ? " desc" : "")).ToArray()));
+                sql.Append(String.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.Direction == Sort.EDirection.Descending ? " desc" : "")).ToArray()));
             }
 
             return sql.ToString();
@@ -373,14 +366,14 @@ namespace dexih.connections.sql
                 foreach (var filter in filters)
                 {
                     if (filter.Column1 != null)
-                        sql.Append(" " + AddDelimiter(filter.Column1.ColumnName) + " ");
+                        sql.Append(" " + AddDelimiter(filter.Column1.Name) + " ");
                     else
                         sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value1) + " ");
 
                     sql.Append(GetSqlCompare(filter.Operator));
 
                     if (filter.Column2 != null)
-                        sql.Append(" " + AddDelimiter(filter.Column2.ColumnName) + " ");
+                        sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");
                     else
                     {
                         if(filter.Value2.GetType().IsArray)
@@ -431,7 +424,7 @@ namespace dexih.connections.sql
                         int count = 0;
                         foreach (QueryColumn column in query.UpdateColumns)
                         {
-                            sql.Append(AddDelimiter(column.Column.ColumnName) + " = @col" + count.ToString() + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
+                            sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count.ToString() + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
                             count++;
                         }
                         sql.Remove(sql.Length - 1, 1); //remove last comma
@@ -466,7 +459,7 @@ namespace dexih.connections.sql
                             }
                             catch (Exception ex)
                             {
-                                return new ReturnValue<long>(false, "The update query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, timer.ElapsedTicks);
+                                return new ReturnValue<long>(false, "The update query for " + table.Name + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, timer.ElapsedTicks);
                             }
                         }
                     }
@@ -518,7 +511,7 @@ namespace dexih.connections.sql
                             }
                             catch (Exception ex)
                             {
-                                return new ReturnValue<long>(false, "The delete query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, timer.ElapsedTicks);
+                                return new ReturnValue<long>(false, "The delete query for " + table.Name + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + sql.ToString(), ex, timer.ElapsedTicks);
                             }
                         }
                     }
@@ -562,7 +555,7 @@ namespace dexih.connections.sql
                     }
                     catch (Exception ex)
                     {
-                        return new ReturnValue<object>(false, "The select query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  Sql command was: " + sql, ex, null);
+                        return new ReturnValue<object>(false, "The select query for " + table.Name + " could not be run due to the following error: " + ex.Message + ".  Sql command was: " + sql, ex, null);
                     }
                 }
             }
@@ -590,7 +583,7 @@ namespace dexih.connections.sql
                 }
                 catch (Exception ex)
                 {
-                    return new ReturnValue(false, "The truncate table query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex);
+                    return new ReturnValue(false, "The truncate table query for " + table.Name + " could not be run due to the following error: " + ex.Message, ex);
                 }
             }
 
@@ -602,35 +595,74 @@ namespace dexih.connections.sql
             return await Task.Run(() => new ReturnValue(true));
         }
 
-        public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
+        public async Task<ReturnValue<Table>> GetQueryTable(string query, CancellationToken cancelToken)
         {
-            try
+            ReturnValue<DbConnection> connectionResult = await NewConnection();
+            if (connectionResult.Success == false)
             {
-                DbCommand cmd = connection.CreateCommand();
-                cmd.CommandText = BuildSelectQuery(table, query);
-                DbDataReader reader;
+                return new ReturnValue<Table>(connectionResult);
+            }
+            
+            using (var connection = connectionResult.Value)
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = query;
 
                 try
                 {
-                    reader = await cmd.ExecuteReaderAsync();
+                    var table = new Table();
+                    var reader = await cmd.ExecuteReaderAsync(cancelToken);
+
+                    for (var i = 0; i < reader.FieldCount; i++)
+                    {
+                        var col = new TableColumn()
+                        {
+                            Name = reader.GetName(i),
+                            LogicalName = reader.GetName(i),
+                            Datatype = GetTypeCode(reader.GetType()),
+                            DeltaType = TableColumn.EDeltaType.TrackingField,
+                        };
+                        table.Columns.Add(col);
+                    }
+                    
+                    return  new ReturnValue<Table>(true, table);
+                }
+                
+                catch (Exception ex)
+                {
+                    return new ReturnValue<Table>(false, "The query " + query + " could not be run due to the following error: " + ex.Message, ex);
+                }
+            }
+        }
+
+        public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        {
+            try
+            {
+                var cmd = connection.CreateCommand();
+
+                cmd.CommandText = table.UseQuery ? table.QueryString : BuildSelectQuery(table, query);
+                
+                DbDataReader reader;
+                try
+                {
+                    reader = await cmd.ExecuteReaderAsync(cancelToken);
                 }
                 catch (Exception ex)
                 {
-                    return new ReturnValue<DbDataReader>(false, "The connection reader for the sqlserver table " + table.TableName + " could failed due to the following error: " + ex.Message + ".  The sql command was: " + cmd.CommandText, ex);
+                    return new ReturnValue<DbDataReader>(false, "The connection reader for the table " + table.Name + " failed due to the following error: " + ex.Message + ".  The sql command was: " + cmd.CommandText, ex);
                 }
 
                 if (reader == null)
                 {
-                    return new ReturnValue<DbDataReader>(false, "The connection reader for the sqlserver table " + table.TableName + " return null for an unknown reason.", null);
+                    return new ReturnValue<DbDataReader>(false, "The connection reader for the table " + table.Name + " return null for an unknown reason.  The sql command was: " + cmd.CommandText, null);
                 }
-                else
-                {
-                    return new ReturnValue<DbDataReader>(true, reader);
-                }
+                
+                return new ReturnValue<DbDataReader>(true, reader);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<DbDataReader>(false, "The following error was encountered starting the connection reader for the sqlserver table " + table.TableName + ": " + ex.Message, ex);
+                return new ReturnValue<DbDataReader>(false, "The following error was encountered starting the connection reader for the table " + table.Name + ": " + ex.Message, ex);
             }
         }
 
@@ -639,7 +671,5 @@ namespace dexih.connections.sql
             var reader = new ReaderSql(this, table);
             return reader;
         }
-
-
     }
 }

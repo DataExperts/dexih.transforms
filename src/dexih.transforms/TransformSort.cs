@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -17,7 +16,10 @@ namespace dexih.transforms
 
         private readonly List<Sort> _sortFields;
 
-        public TransformSort() { }
+        public TransformSort() 
+		{
+			_sortFields = new List<Sort>();
+		}
 
         public TransformSort(Transform inTransform, List<Sort> sortFields)
         {
@@ -38,7 +40,7 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -47,7 +49,7 @@ namespace dexih.transforms
 
             query.Sorts = RequiredSortFields();
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
 
             //check if the transform has already sorted the data, using sql or a presort.
             _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);
@@ -191,7 +193,7 @@ namespace dexih.transforms
                 if (x[i] is Double)
                     greater = (Double)x[i] > (Double)y[i];
                 if (x[i] is String)
-                    greater = String.Compare((String)x[i], (String)y[i]) > 0;
+                    greater = String.CompareOrdinal((String)x[i], (String)y[i]) > 0;
                 if (x[i] is Boolean)
                     greater = (Boolean)x[i] && (Boolean)y[i];
                 if (x[i] is DateTime)

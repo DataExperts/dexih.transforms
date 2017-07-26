@@ -1,21 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Data;
-using System.IO;
 using System.Threading;
-using dexih.transforms;
 using dexih.functions;
-using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Data.Common;
 using static dexih.functions.DataType;
-using static dexih.transforms.Transform;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.Net.Http;
 
 namespace dexih.transforms
 {
@@ -50,7 +43,7 @@ namespace dexih.transforms
 
         public string Name { get; set; }
         public string Server { get; set; }
-        public bool Ntauth { get; set; }
+        public bool UseWindowsAuth { get; set; }
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
         public string DefaultDatabase { get; set; }
@@ -80,7 +73,7 @@ namespace dexih.transforms
         public abstract bool CanAggregate { get; }
 
         //Functions required for managed connection
-        public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable = false);
+        public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken);
         //public abstract Task<ReturnValue> TestConnection();
         public abstract Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
         public abstract Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
@@ -105,28 +98,30 @@ namespace dexih.transforms
         public abstract Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken);
         public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null);
         public abstract Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<bool>> TableExists(Table table);
+        public abstract Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken);
 
         /// <summary>
         /// If database connection supports direct DbDataReader.
         /// </summary>
         /// <param name="table"></param>
+        /// <param name="connection"></param>
         /// <param name="query"></param>
+        /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null);
+        public abstract Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken);
 
         //Functions required for datapoint.
-        public abstract Task<ReturnValue> CreateDatabase(string databaseName);
-        public abstract Task<ReturnValue<List<string>>> GetDatabaseList();
-        public abstract Task<ReturnValue<List<Table>>> GetTableList();
+        public abstract Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken);
+        public abstract Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken);
+        public abstract Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken);
 
         /// <summary>
         /// Interrogates the underlying data to get the Table structure.
         /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="Properties"></param>
+        /// <param name="table"></param>
+        /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue<Table>> GetSourceTableInfo(Table table);
+        public abstract Task<ReturnValue<Table>> GetSourceTableInfo(Table table, CancellationToken cancelToken);
 
         /// <summary>
         /// Adds any database specific mandatory column to the table object.
@@ -194,11 +189,11 @@ namespace dexih.transforms
             }
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, Int64 parentAuditKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo)
+        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, Int64 parentAuditKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancelToken)
         {
             var auditTable = AuditTable;
 
-            var tableExistsResult = await TableExists(auditTable);
+            var tableExistsResult = await TableExists(auditTable, cancelToken);
 
             TransformWriterResult previousResult = null;
 
@@ -209,7 +204,7 @@ namespace dexih.transforms
             if (tableExistsResult.Value == false)
             {
                 //create the table if is doesn't already exist.
-                var createAuditResult = await CreateTable(auditTable, false);
+                var createAuditResult = await CreateTable(auditTable, false, cancelToken);
                 if (!createAuditResult.Success)
                     return new ReturnValue<TransformWriterResult>(createAuditResult);
             }
@@ -271,9 +266,9 @@ namespace dexih.transforms
 
             var partitionKeyOrdinal = auditTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
             if (partitionKeyOrdinal > 0)
-                queryColumns.Add(new QueryColumn(new TableColumn( auditTable.Columns[partitionKeyOrdinal].ColumnName, ETypeCode.String), "AuditRow"));
+                queryColumns.Add(new QueryColumn(new TableColumn( auditTable.Columns[partitionKeyOrdinal].Name, ETypeCode.String), "AuditRow"));
 
-            var insertQuery = new InsertQuery(auditTable.TableName, queryColumns);
+            var insertQuery = new InsertQuery(auditTable.Name, queryColumns);
             var insertResult = await ExecuteInsert(auditTable, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
 
             writerResult.AuditKey = insertResult.Value.Item2;
@@ -304,7 +299,7 @@ namespace dexih.transforms
                     new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
                 };
 
-                var updateIsLatest = new UpdateQuery(AuditTable.TableName, updateLatestColumn, updateLatestFilters);
+                var updateIsLatest = new UpdateQuery(AuditTable.Name, updateLatestColumn, updateLatestFilters);
                 var updateLatestResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
 
                 isPreviousSuccess = true;
@@ -324,7 +319,7 @@ namespace dexih.transforms
                     new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
                 };
 
-                var updateIsLatest = new UpdateQuery(AuditTable.TableName, updateLatestColumn, updateLatestFilters);
+                var updateIsLatest = new UpdateQuery(AuditTable.Name, updateLatestColumn, updateLatestFilters);
                 var updateLatestResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
 
                 isCurrent = false;
@@ -377,7 +372,7 @@ namespace dexih.transforms
 
             var updateFilters = new List<Filter>() { new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.AuditKey) };
 
-            var updateQuery = new UpdateQuery(AuditTable.TableName, updateColumns, updateFilters);
+            var updateQuery = new UpdateQuery(AuditTable.Name, updateColumns, updateFilters);
             var updateResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
 
             return updateResult;
@@ -462,7 +457,7 @@ namespace dexih.transforms
                 //add a sort transform to ensure sort order.
                 reader = new TransformSort(reader, sorts);
 
-                ReturnValue returnValue = await reader.Open(0, query);
+                ReturnValue returnValue = await reader.Open(0, query, cancellationToken);
                 if (returnValue.Success == false)
                     return new ReturnValue<List<TransformWriterResult>>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
@@ -568,7 +563,7 @@ namespace dexih.transforms
                 var query = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn(surrogateKeyColumn, SelectColumn.EAggregate.Max) },
-                    Table = table.TableName
+                    Table = table.Name
                 };
 
                 long surrogateKeyValue;
@@ -634,7 +629,7 @@ namespace dexih.transforms
             watch.Start();
 
             Transform reader = GetTransformReader(table);
-            ReturnValue returnValue = await reader.Open(0, query);
+            ReturnValue returnValue = await reader.Open(0, query, cancellationToken);
             if (returnValue.Success == false)
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
@@ -665,7 +660,7 @@ namespace dexih.transforms
 
             Transform reader = GetTransformReader(table, referenceTransform);
             reader.JoinPairs = referenceJoins;
-            ReturnValue returnValue = await reader.Open(0, query);
+            ReturnValue returnValue = await reader.Open(0, query, cancellationToken);
             if (returnValue.Success == false)
                 return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
@@ -694,10 +689,11 @@ namespace dexih.transforms
         /// This compares the physical table with the table structure to ensure that it can be used.
         /// </summary>
         /// <param name="table"></param>
+        /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> CompareTable(Table table)
+        public virtual async Task<ReturnValue> CompareTable(Table table, CancellationToken cancelToken)
         {
-            var physicalTableResult = await GetSourceTableInfo(table);
+            var physicalTableResult = await GetSourceTableInfo(table, cancelToken);
             if (!physicalTableResult.Success)
                 return physicalTableResult;
 
@@ -705,10 +701,10 @@ namespace dexih.transforms
 
             foreach(var col in table.Columns)
             {
-                var compareCol = physicalTable.Columns.SingleOrDefault(c => c.ColumnName == col.ColumnName);
+                var compareCol = physicalTable.Columns.SingleOrDefault(c => c.Name == col.Name);
 
                 if (compareCol == null)
-                    return new ReturnValue(false, "The physical table " + table.TableName + " does contain the column " + col.ColumnName + ".  Reimport the table or recreate the table to fix.", null);
+                    return new ReturnValue(false, "The physical table " + table.Name + " does contain the column " + col.Name + ".  Reimport the table or recreate the table to fix.", null);
 
             }
 

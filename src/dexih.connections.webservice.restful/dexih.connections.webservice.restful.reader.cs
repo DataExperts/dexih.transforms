@@ -1,12 +1,9 @@
 ﻿using dexih.transforms;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using static dexih.functions.DataType;
-using System.Net.Http;
-using Newtonsoft.Json.Linq;
 using System.Threading;
 
 namespace dexih.connections.webservice
@@ -29,7 +26,7 @@ namespace dexih.connections.webservice
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -49,7 +46,7 @@ namespace dexih.connections.webservice
                 }
                 else
                 {
-                    var result = await ReferenceTransform.Open(auditKey, null);
+                    var result = await ReferenceTransform.Open(auditKey, null, cancelToken);
                     if (!result.Success)
                         return result;
                 }
@@ -101,7 +98,7 @@ namespace dexih.connections.webservice
                         });
                     }
 
-                    var result = await LookupRow(filters);
+                    var result = await LookupRow(filters, cancellationToken);
 
                     return result;
                 }
@@ -119,9 +116,9 @@ namespace dexih.connections.webservice
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
-            return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters);
+            return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters, cancelToken);
          }
     }
 }

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -85,7 +82,7 @@ namespace dexih.transforms
 
             List<Function> preFilters = new List<Function>();
 
-            _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.TableName : ReferenceTransform.ReferenceTableAlias;
+            _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.Name : ReferenceTransform.ReferenceTableAlias;
 
             //seperate out the filers that only use the reference table and add them to prefilters from the ones required for joining.
             if (Functions != null)
@@ -142,7 +139,7 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             if (query == null)
@@ -152,7 +149,7 @@ namespace dexih.transforms
             if(query.Sorts == null)
                 query.Sorts = RequiredSortFields();
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
             if (!returnValue.Success)
                 return returnValue;
 
@@ -160,7 +157,7 @@ namespace dexih.transforms
             {
                 Sorts = RequiredReferenceSortFields()
             };
-            returnValue = await ReferenceTransform.Open(auditKey, referenceQuery);
+            returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancelToken);
 
             //check if the primary and reference transform are sorted in the join
             if (SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) && SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))

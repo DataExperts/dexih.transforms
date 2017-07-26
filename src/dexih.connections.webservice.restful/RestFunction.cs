@@ -1,5 +1,4 @@
-﻿using System;
-using dexih.functions;
+﻿using dexih.functions;
 
 namespace dexih.connections.webservice
 {

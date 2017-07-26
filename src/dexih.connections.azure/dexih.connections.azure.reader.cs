@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
-using System.Data.Common;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage;
-using System.Net.Http;
 using System.Threading;
 
 namespace dexih.connections.azure
@@ -39,7 +37,7 @@ namespace dexih.connections.azure
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             if (_isOpen)
@@ -48,14 +46,14 @@ namespace dexih.connections.azure
             }
 
             CloudTableClient tableClient = _connection.GetCloudTableClient();
-            _tableReference = tableClient.GetTableReference(CacheTable.TableName);
+            _tableReference = tableClient.GetTableReference(CacheTable.Name);
 
             _tableQuery = new TableQuery<DynamicTableEntity>().Take(1000);
 
             if (query?.Columns?.Count > 0)
-                _tableQuery.SelectColumns = query.Columns.Select(c => c.Column.ColumnName).ToArray();
+                _tableQuery.SelectColumns = query.Columns.Select(c => c.Column.Name).ToArray();
             else
-                _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => c.ColumnName).ToArray();
+                _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => c.Name).ToArray();
 
             if (query?.Filters != null)
                 _tableQuery.FilterString = _connection.BuildFilterString(query.Filters);
@@ -69,7 +67,7 @@ namespace dexih.connections.azure
             }
             catch (StorageException ex)
             {
-                string message = "Error reading Azure Storage table: " + CacheTable.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation?.ExtendedErrorInformation?.ErrorMessage + ".";
+                string message = "Error reading Azure Storage table: " + CacheTable.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation?.ExtendedErrorInformation?.ErrorMessage + ".";
                 return new ReturnValue(false, message, ex);
             }
 
@@ -173,16 +171,16 @@ namespace dexih.connections.azure
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
             try
             {
                 CloudTableClient tableClient = _connection.GetCloudTableClient();
-                CloudTable cTable = tableClient.GetTableReference(CacheTable.TableName);
+                CloudTable cTable = tableClient.GetTableReference(CacheTable.Name);
 
                 //Read the key fields from the table
                 TableQuery tableQuery = new TableQuery();
-                tableQuery.SelectColumns = CacheTable.Columns.Select(c=>c.ColumnName).ToArray();
+                tableQuery.SelectColumns = CacheTable.Columns.Select(c=>c.Name).ToArray();
                 tableQuery.FilterString = _connection.BuildFilterString(filters);
                 tableQuery.Take(1);
 

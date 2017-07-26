@@ -1,5 +1,4 @@
-﻿using System;
-using dexih.functions;
+﻿using dexih.functions;
 
 namespace dexih.connections.flatfile
 {
@@ -16,7 +15,7 @@ namespace dexih.connections.flatfile
 		public string FileRootPath {
 			get 
 			{
-				return UseCustomFilePaths ? TableName : _fileRootPath;
+				return UseCustomFilePaths ? Name : _fileRootPath;
 			}
 			set 
 			{

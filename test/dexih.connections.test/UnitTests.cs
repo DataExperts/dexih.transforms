@@ -17,7 +17,7 @@ namespace dexih.connections.test
         {
                 ReturnValue returnValue;
 
-                returnValue = await connection.CreateDatabase(databaseName);
+                returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
                 Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
 
                 Table table = DataSets.CreateTable();
@@ -25,7 +25,7 @@ namespace dexih.connections.test
                 await connection.AddMandatoryColumns(table, 1000);
 
                 //create the table
-                returnValue = await connection.CreateTable(table, true);
+                returnValue = await connection.CreateTable(table, true, CancellationToken.None);
                 Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
 
                 //insert a single row
@@ -57,7 +57,7 @@ namespace dexih.connections.test
                     //check the table loaded 10 rows successully
                     Transform fileReader = connection.GetTransformReader(table, null);
                     int rowCount = 0;
-                    var filereaderResult = await fileReader.Open(0);
+                    var filereaderResult = await fileReader.Open(0, null, CancellationToken.None);
                     Assert.True(filereaderResult.Success, "Open Reader:" + filereaderResult.Message);
                     while (await fileReader.ReadAsync()) rowCount++;
                     Assert.True(rowCount == 2, "Select count - value :" + rowCount);
@@ -204,7 +204,7 @@ namespace dexih.connections.test
                 //check the table loaded 10 rows successully
                 Transform reader = connection.GetTransformReader(table, null);
                 int count = 0;
-                var openResult = await reader.Open(0);
+                var openResult = await reader.Open(0, null, CancellationToken.None);
                 Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == 10, "Select count - value :" + count);
@@ -216,19 +216,19 @@ namespace dexih.connections.test
 
                     //should return value5
                     reader = connection.GetTransformReader(table, null);
-                    openResult = await reader.Open(0);
+                    openResult = await reader.Open(0, null, CancellationToken.None);
                     Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
 
-                    var returnLookup = await reader.LookupRow(filters);
+                    var returnLookup = await reader.LookupRow(filters, CancellationToken.None);
                     Assert.True(returnLookup.Success, "Lookup - Message:" + returnLookup.Message);
                     Assert.True(Convert.ToString(returnLookup.Value[0]) == "value5", "LookupValue :" + returnLookup.Value[0]);
 
                     //run lookup again with caching set.
                     reader = connection.GetTransformReader(table, null);
-                    openResult = await reader.Open(0);
+                    openResult = await reader.Open(0, null, CancellationToken.None);
                     Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
                     reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
-                    returnLookup = await reader.LookupRow(filters);
+                    returnLookup = await reader.LookupRow(filters, CancellationToken.None);
                     Assert.True(returnLookup.Success, "Lookup - Message:" + returnLookup.Message);
                     Assert.True(Convert.ToString(returnLookup.Value[0]) == "value5", "Select count - value :" + returnLookup.Value);
                 }

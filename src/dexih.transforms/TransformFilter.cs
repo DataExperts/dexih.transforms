@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using Newtonsoft.Json.Serialization;
 
 namespace dexih.transforms
 {
@@ -33,7 +33,7 @@ namespace dexih.transforms
         public override bool InitializeOutputFields()
         {
             CacheTable = PrimaryTransform.CacheTable.Copy();
-            CacheTable.TableName = "Filter";
+            CacheTable.Name = "Filter";
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             return true;
@@ -42,7 +42,7 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
         public override bool PassThroughColumns => true;
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -62,7 +62,7 @@ namespace dexih.transforms
                     query.Filters.Add(filter.Value);
                 }
             }
-            var returnValue = await PrimaryTransform.Open(auditKey, query);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
             return returnValue;
         }
 

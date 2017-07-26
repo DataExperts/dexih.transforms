@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Linq;
-using System.Globalization;
 using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
 using System.Threading;
@@ -268,14 +266,14 @@ namespace dexih.transforms
             else
                 return false;
         }
-
+        
         /// <summary>
         /// Opens underlying connections passing sort and filter requests through.
         /// </summary>
         /// <param name="filters">Requested filters for underlying transform to execute.</param>
         /// <param name="sorts">Requested sort for underlying transform to execute.</param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> Open(long auditKey, SelectQuery query = null)
+        public virtual async Task<ReturnValue> Open(long auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -283,13 +281,13 @@ namespace dexih.transforms
 
             if (PrimaryTransform != null)
             {
-                result = await PrimaryTransform.Open(auditKey, query);
+                result = await PrimaryTransform.Open(auditKey, query, cancelToken);
                 if (!result.Success)
                     return result;
             }
 
             if (ReferenceTransform != null)
-                result = await ReferenceTransform.Open(auditKey, null);
+                result = await ReferenceTransform.Open(auditKey, null, cancelToken);
 
             if (result == null)
                 result = new ReturnValue(true);
@@ -607,18 +605,20 @@ namespace dexih.transforms
         #endregion
 
         #region Lookup
+
         /// <summary>
         /// Performs a row lookup based on the filters.  For mutliple rows, only the first will be returned.
         /// The lookup will first attempt to retrieve a value from the cache (if cachemethod is set to PreLoad cache or OnDemandCache), and then a direct lookup if the transform supports it.
         /// </summary>
         /// <param name="filters"></param>
+        /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue<object[]>> LookupRow(List<Filter> filters)
+        public virtual async Task<ReturnValue<object[]>> LookupRow(List<Filter> filters, CancellationToken cancelToken)
         {
             if (CacheMethod == ECacheMethod.PreLoadCache)
             {
                 //preload all records.
-                while (await ReadAsync()) ;
+                while (await ReadAsync(cancelToken)) ;
 
                 return CacheTable.LookupSingleRow(filters);
             }
@@ -632,7 +632,7 @@ namespace dexih.transforms
                 if (CanLookupRowDirect)
                 {
                     //not found in the cache, attempt a direct lookup.
-                    lookupResult = await LookupRowDirect(filters);
+                    lookupResult = await LookupRowDirect(filters, cancelToken);
 
                     if (lookupResult.Success)
                     {
@@ -646,7 +646,7 @@ namespace dexih.transforms
                 else
                 {
                     //not found in the cache, keep reading until it's found.
-                    while (await ReadAsync())
+                    while (await ReadAsync(cancelToken))
                     {
                         //does a lookup, using the record count to only check the latest record.
                         if (lookupResult.Success)
@@ -661,7 +661,7 @@ namespace dexih.transforms
             else
             {
                 //if no caching is specified, run a direct lookup.
-                var lookupReturn = await LookupRowDirect(filters);
+                var lookupReturn = await LookupRowDirect(filters, cancelToken);
                 if (lookupReturn.Success)
                 {
                     if (EncryptionMethod != EEncryptionMethod.NoEncryption)
@@ -680,7 +680,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        public virtual async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
             return await Task.Run(() => new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null));
         }
@@ -692,7 +692,7 @@ namespace dexih.transforms
 
         public override bool Read()
         {
-            return Task.Run(() => ReadAsync()).Result;
+            return Task.Run(ReadAsync).Result;
         }
 
         public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
@@ -708,7 +708,7 @@ namespace dexih.transforms
                     var incrementalCol = CacheTable.Columns.Where(c => c.IsIncrementalUpdate).ToArray();
                     if (incrementalCol.Length == 1)
                     {
-                        _incrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].ColumnName);
+                        _incrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].Name);
                         _incrementalColumnType = incrementalCol[0].Datatype;
                     }
                     else if (incrementalCol.Length > 1)
@@ -792,7 +792,7 @@ namespace dexih.transforms
 
         public override int FieldCount => CacheTable.Columns.Count;
         public override int GetOrdinal(string columnName) => CacheTable.GetOrdinal(columnName);
-        public override string GetName(int i) => CacheTable.Columns[i].ColumnName;
+        public override string GetName(int i) => CacheTable.Columns[i].Name;
         public override object this[string name]
         {
             get
@@ -1045,11 +1045,11 @@ namespace dexih.transforms
                 var column = new TransformColumn(
                     col.AllowDbNull,
                     "",
-                    col.ColumnName,
+                    col.Name,
                     "",
                     "",
-                    transform.CacheTable.TableName,
-                    col.ColumnName,
+                    transform.CacheTable.Name,
+                    col.Name,
                     ordinal,
                     col.MaxLength > 0 ? col.MaxLength : int.MaxValue,
                     DataType.GetType(col.Datatype),

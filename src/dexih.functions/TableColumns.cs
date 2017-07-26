@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace dexih.functions
 {
@@ -102,9 +99,9 @@ namespace dexih.functions
             {
                 _columnOrdinals.Add(item.SchemaColumnName(), _tableColumns.Count - 1);
             }
-            if (!_columnOrdinals.ContainsKey(item.ColumnName))
+            if (!_columnOrdinals.ContainsKey(item.Name))
             {
-                _columnOrdinals.Add(item.ColumnName, _tableColumns.Count - 1);
+                _columnOrdinals.Add(item.Name, _tableColumns.Count - 1);
             }
         }
 
@@ -172,9 +169,9 @@ namespace dexih.functions
             for (int i = 0; i < _tableColumns.Count; i++)
             {
                 _columnOrdinals.Add(_tableColumns[i].SchemaColumnName(), i);
-                if (!_columnOrdinals.ContainsKey(_tableColumns[i].ColumnName))
+                if (!_columnOrdinals.ContainsKey(_tableColumns[i].Name))
                 {
-                    _columnOrdinals.Add(_tableColumns[i].ColumnName, i);
+                    _columnOrdinals.Add(_tableColumns[i].Name, i);
                 }
             }
         }

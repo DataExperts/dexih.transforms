@@ -17,7 +17,7 @@ namespace dexih.connections.sql.npgsql
             return new ConnectionPostgreSql()
             {
                 Name = "Test Connection",
-                Ntauth = Convert.ToBoolean(Configuration.AppSettings["PostgreSql:NTAuthentication"]),
+                UseWindowsAuth = Convert.ToBoolean(Configuration.AppSettings["PostgreSql:NTAuthentication"]),
                 Username = Convert.ToString(Configuration.AppSettings["PostgreSql:UserName"]),
                 Password = Convert.ToString(Configuration.AppSettings["PostgreSql:Password"]),
                 Server = Convert.ToString(Configuration.AppSettings["PostgreSql:ServerName"]),

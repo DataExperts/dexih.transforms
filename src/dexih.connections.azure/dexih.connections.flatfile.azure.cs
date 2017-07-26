@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using dexih.functions;
-using Microsoft.WindowsAzure.Storage.Table;
 using dexih.transforms;
 using System.Data.Common;
+using System.Threading;
 using dexih.connections.flatfile;
 
 namespace dexih.connections.azure
@@ -351,12 +351,12 @@ namespace dexih.connections.azure
             }
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<bool>> TableExists(Table table)
+        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             try
             {

@@ -1,5 +1,5 @@
 //	dexih_connection.IO.Csv.MissingFieldCsvException
-//	Copyright (c) 2005 Sébastien Lorion
+//	Copyright (c) 2005 Sï¿½bastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
 //
@@ -20,7 +20,6 @@
 //	ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Runtime.Serialization;
 
 namespace dexih.connections.flatfile
 {

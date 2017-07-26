@@ -19,16 +19,16 @@ namespace dexih.connections.test
             Table table = DataSets.CreateTable();
 
             ReturnValue returnValue;
-            returnValue = await connection.CreateDatabase(databaseName);
+            returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
             Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
 
             //create a new table and write some data to it.  
             Transform reader = DataSets.CreateTestData();
-            returnValue = await connection.CreateTable(table, true);
+            returnValue = await connection.CreateTable(table, true, CancellationToken.None);
             Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
             TransformWriter writer = new TransformWriter();
 
-            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test");
+            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
             Assert.True(auditResult.Success);
             TransformWriterResult writerResult = auditResult.Value;
 
@@ -45,7 +45,7 @@ namespace dexih.connections.test
                 {
                     Sorts = new List<Sort>() { new Sort("IntColumn", Sort.EDirection.Descending) }
                 };
-                await reader.Open(0, query);
+                await reader.Open(0, query, CancellationToken.None);
 
 
                 int sortValue = 10;
@@ -67,7 +67,7 @@ namespace dexih.connections.test
                 {
                     Filters = new List<Filter>() { new Filter("IntColumn", Filter.ECompare.LessThanEqual, 5) }
                 };
-                await reader.Open(0, query);
+                await reader.Open(0, query, CancellationToken.None);
 
 
                 int count = 0;
@@ -81,14 +81,14 @@ namespace dexih.connections.test
 
             Table deltaTable = DataSets.CreateTable();
             deltaTable.AddAuditColumns();
-            deltaTable.TableName = "DeltaTable";
-            returnValue = await connection.CreateTable(deltaTable, true);
+            deltaTable.Name = "DeltaTable";
+            returnValue = await connection.CreateTable(deltaTable, true, CancellationToken.None);
 
             Transform targetReader = connection.GetTransformReader(deltaTable);
             reader = connection.GetTransformReader(table);
             TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
 
-            auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test");
+            auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
             Assert.True(auditResult.Success);
             writerResult = auditResult.Value;
 

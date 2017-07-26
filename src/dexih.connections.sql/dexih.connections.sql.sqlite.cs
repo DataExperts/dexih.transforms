@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using Microsoft.Data.Sqlite;
 using dexih.functions;
-using Newtonsoft.Json;
 using System.IO;
 using System.Data.Common;
 using static dexih.functions.DataType;
-using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
 
@@ -37,7 +34,7 @@ namespace dexih.connections.sql
                 return value;
         }
 
-        public override async Task<ReturnValue<bool>> TableExists(Table table)
+        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connectionResult = await NewConnection();
             if (connectionResult.Success == false)
@@ -50,7 +47,7 @@ namespace dexih.connections.sql
 
                 using (DbCommand cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.TableName));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
 
                     object tableExists = null;
                     try
@@ -74,19 +71,19 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             try
             {
 
-                var tableExistsResult = await TableExists(table);
+                var tableExistsResult = await TableExists(table, cancelToken);
                 if (!tableExistsResult.Success)
                     return tableExistsResult;
 
                 //if table exists, and the dropTable flag is set to false, then error.
                 if (tableExistsResult.Value && dropTable == false)
                 {
-                    return new ReturnValue(false, "The table " + table.TableName + " already exists on the underlying database.  Please drop the table first.", null);
+                    return new ReturnValue(false, "The table " + table.Name + " already exists on the underlying database.  Please drop the table first.", null);
                 }
 
                 //if table exists, then drop it.
@@ -100,7 +97,7 @@ namespace dexih.connections.sql
                 StringBuilder createSql = new StringBuilder();
 
                 //Create the table
-                createSql.Append("create table " + AddDelimiter(table.TableName) + " ");
+                createSql.Append("create table " + AddDelimiter(table.Name) + " ");
 
                 //sqlite does not support table/column comments, so add a comment string into the ddl.
                 if (!string.IsNullOrEmpty(table.Description))
@@ -116,11 +113,11 @@ namespace dexih.connections.sql
                     //ignore datatypes for autoincrement and create a primary key.
                     if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
                     {
-                        createSql.Append(AddDelimiter(col.ColumnName) + " INTEGER PRIMARY KEY ");
+                        createSql.Append(AddDelimiter(col.Name) + " INTEGER PRIMARY KEY ");
                     }
                     else
                     {
-                        createSql.Append(AddDelimiter(col.ColumnName) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
+                        createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
                         if (col.AllowDbNull == false)
                                 createSql.Append("NOT NULL ");
                             else
@@ -158,11 +155,11 @@ namespace dexih.connections.sql
                     command.CommandText = createSql.ToString();
                     try
                     {
-                        await command.ExecuteNonQueryAsync();
+                        await command.ExecuteNonQueryAsync(cancelToken);
                     }
                     catch (Exception ex)
                     {
-                        return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.TableName + ".  " + ex.Message, ex);
+                        return new ReturnValue(false, "The following error occurred when attempting to create the table " + table.Name + ".  " + ex.Message, ex);
                     }
                 }
 
@@ -170,7 +167,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "An error occurred creating the table " + table.TableName + ".  " + ex.Message, ex);
+                return new ReturnValue(false, "An error occurred creating the table " + table.Name + ".  " + ex.Message, ex);
             }
 
         }
@@ -335,18 +332,18 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue> CreateDatabase(string databaseName)
+        public override async Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             try
             {
                 string fileName = Server + "/" + databaseName + ".sqlite";
 
-                bool fileExists = await Task.Run(() => File.Exists(fileName));
+                bool fileExists = await Task.Run(() => File.Exists(fileName), cancelToken);
 
                 if (fileExists)
                     return new ReturnValue(false, "The file " + fileName + " already exists.  Delete or move this file before attempting to create a new database.", null);
 
-                var stream = await Task.Run(() => File.Create(fileName));
+                var stream = await Task.Run(() => File.Create(fileName), cancelToken);
                 stream.Dispose();
                 DefaultDatabase = databaseName;
 
@@ -358,7 +355,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList()
+        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
         {
             try
             {
@@ -378,7 +375,7 @@ namespace dexih.connections.sql
                     }
 
                     return list;
-                });
+                }, cancelToken);
 
                 return new ReturnValue<List<string>>(true, "", null, dbList);
             }
@@ -388,7 +385,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<List<Table>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
         {
             try
             {
@@ -406,7 +403,7 @@ namespace dexih.connections.sql
                         DbDataReader reader;
                         try
                         {
-                            reader = await cmd.ExecuteReaderAsync();
+                            reader = await cmd.ExecuteReaderAsync(cancelToken);
                         }
                         catch (Exception ex)
                         {
@@ -418,7 +415,7 @@ namespace dexih.connections.sql
 
                             List<Table> tableList = new List<Table>();
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync(cancelToken))
                             {
 								tableList.Add(new Table((string)reader["name"]));
                             }
@@ -434,7 +431,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
         {
             try
             {
@@ -447,7 +444,7 @@ namespace dexih.connections.sql
                 using (var connection = connectionResult.Value)
                 {
 
-                    Table table = new Table(originalTable.TableName);
+                    Table table = new Table(originalTable.Name);
 
                     table.Description = ""; //sqllite doesn't have table descriptions.
 
@@ -455,19 +452,19 @@ namespace dexih.connections.sql
                     table.Columns.Clear();
 
                     // The schema table 
-                    using (var cmd = CreateCommand(connection, @"PRAGMA table_info('" + table.TableName + "')"))
-                    using (DbDataReader reader = await cmd.ExecuteReaderAsync())
+                    using (var cmd = CreateCommand(connection, @"PRAGMA table_info('" + table.Name + "')"))
+                    using (DbDataReader reader = await cmd.ExecuteReaderAsync(cancelToken))
                     {
 
                         //for the logical, just trim out any "
-                        table.LogicalName = table.TableName.Replace("\"", "");
+                        table.LogicalName = table.Name.Replace("\"", "");
 
-                        while (await reader.ReadAsync())
+                        while (await reader.ReadAsync(cancelToken))
                         {
                             TableColumn col = new TableColumn();
 
                             //add the basic properties
-                            col.ColumnName = reader["name"].ToString();
+                            col.Name = reader["name"].ToString();
                             col.LogicalName = reader["name"].ToString();
                             col.IsInput = false;
 
@@ -480,7 +477,7 @@ namespace dexih.connections.sql
                             else
                             {
                                 //add the primary key
-                                if (Convert.ToInt32(reader["pk"]) == 1)
+                                if (Convert.ToInt32(reader["pk"]) >= 1)
                                     col.DeltaType = TableColumn.EDeltaType.NaturalKey;
                                 else
                                     col.DeltaType = TableColumn.EDeltaType.TrackingField;
@@ -517,11 +514,11 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "The source sqlserver table + " + originalTable.TableName + " could not be read due to the following error: " + ex.Message, ex);
+                return new ReturnValue<Table>(false, "The source sqlserver table + " + originalTable.Name + " could not be read due to the following error: " + ex.Message, ex);
             }
         }
 
-        public override ETypeCode ConvertSqlToTypeCode(string sqlType)
+        public ETypeCode ConvertSqlToTypeCode(string sqlType)
         {
             switch (sqlType)
             {
@@ -595,7 +592,7 @@ namespace dexih.connections.sql
                 return new ReturnValue<Tuple<long, long>>(false, connectionResult.Message, connectionResult.Exception);
             }
 
-            var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null ? "" : " select last_insert_rowid() from [" + table.TableName + "]";
+            var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null ? "" : " select last_insert_rowid() from [" + table.Name + "]";
             long identityValue = 0;
 
             using (var connection = connectionResult.Value)
@@ -611,12 +608,12 @@ namespace dexih.connections.sql
                         insert.Clear();
                         values.Clear();
 
-                        insert.Append("INSERT INTO " + AddDelimiter(table.TableName) + " (");
+                        insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
                         values.Append("VALUES (");
 
                         for (int i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            insert.Append("[" + query.InsertColumns[i].Column.ColumnName + "],");
+                            insert.Append("[" + query.InsertColumns[i].Column.Name + "],");
                             values.Append("@col" + i.ToString() + ",");
                         }
 
@@ -649,7 +646,7 @@ namespace dexih.connections.sql
                         }
                         catch (Exception ex)
                         {
-                            return new ReturnValue<Tuple<long, long>>(false, "The insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, Tuple.Create(timer.ElapsedTicks, (long)0));
+                            return new ReturnValue<Tuple<long, long>>(false, "The insert query for " + table.Name + " could not be run due to the following error: " + ex.Message + ".  The sql command was " + insertCommand?.ToString(), ex, Tuple.Create(timer.ElapsedTicks, (long)0));
                         }
                     }
                     transaction.Commit();

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
-using dexih.functions;
 using static dexih.functions.DataType;
 using System.Collections.Generic;
-using System.Collections;
 using Newtonsoft.Json;
 
 namespace dexih.functions
@@ -19,14 +15,14 @@ namespace dexih.functions
 
         public TableColumn(string columName) :base()
         {
-            ColumnName = columName;
+            Name = columName;
             Datatype = ETypeCode.String;
             DeltaType = EDeltaType.TrackingField;
         }
 
         public TableColumn(string columName, ETypeCode dataType, string schema = null) : base()
         {
-            ColumnName = columName;
+            Name = columName;
             Datatype = dataType;
             DeltaType = EDeltaType.TrackingField;
             Schema = schema;
@@ -34,7 +30,7 @@ namespace dexih.functions
 
         public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType, string schema = null) : base()
         {
-            ColumnName = columName;
+            Name = columName;
             Datatype = dataType;
             DeltaType = deltaType;
             Schema = schema;
@@ -77,7 +73,7 @@ namespace dexih.functions
         }
 
         public virtual string Schema { get; set; }
-        public string ColumnName { get; set; }
+        public string Name { get; set; }
 
         public string LogicalName { get; set; }
 
@@ -158,7 +154,7 @@ namespace dexih.functions
         /// <returns></returns>
         public string SchemaColumnName()
         {
-            string columnName = string.IsNullOrEmpty(Schema) ? ColumnName : Schema + "." + ColumnName;
+            string columnName = string.IsNullOrEmpty(Schema) ? Name : Schema + "." + Name;
             return columnName;
         }
 
@@ -244,7 +240,7 @@ namespace dexih.functions
             var newColumn = new TableColumn()
             {
                 Schema = Schema,
-                ColumnName = ColumnName,
+                Name = Name,
                 LogicalName = LogicalName,
                 Description = Description,
                 Datatype = Datatype,

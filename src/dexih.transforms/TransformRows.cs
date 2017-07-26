@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -65,9 +62,9 @@ namespace dexih.transforms
 
                 foreach (ColumnPair groupField in GroupFields)
                 {
-                    var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn];
+                    var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn].Copy();
                     column.Schema = "";
-                    column.ColumnName = groupField.TargetColumn.ColumnName;
+                    column.Name = groupField.TargetColumn.Name;
                     CacheTable.Columns.Add(column);
                     i++;
                 }
@@ -85,7 +82,7 @@ namespace dexih.transforms
                 {
                     foreach (Parameter param in rowFunction.Outputs)
                     {
-                        var column = new TableColumn(param.Column.ColumnName, param.DataType);
+                        var column = new TableColumn(param.Column.Name, param.DataType);
                         CacheTable.Columns.Add(column);
                         i++;
                     }
@@ -98,10 +95,10 @@ namespace dexih.transforms
 
                 foreach (var column in PrimaryTransform.CacheTable.Columns)
                 {
-                    if (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName) == null)
+                    if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.Name) == null)
                     {
                         CacheTable.Columns.Add(column.Copy());
-                        _passThroughFields.Add(column.ColumnName);
+                        _passThroughFields.Add(column.Name);
                     }
                 }
             }
@@ -114,7 +111,7 @@ namespace dexih.transforms
         }
 
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             if (query == null)
@@ -135,7 +132,7 @@ namespace dexih.transforms
 
             query.Sorts = requiredSorts;
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
             return returnValue;
         }
 

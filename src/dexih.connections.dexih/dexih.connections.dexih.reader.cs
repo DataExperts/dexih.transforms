@@ -35,7 +35,7 @@ namespace dexih.connections.dexih
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -46,7 +46,7 @@ namespace dexih.connections.dexih
                     return new ReturnValue(false, "The information hub connection is already open.", null);
                 }
 
-				var message = Json.SerializeObject(new {HubName = ReferenceConnection.DefaultDatabase, SourceConnectionName = CacheTable.SourceConnectionName, TableName = CacheTable.TableName, TableSchema = CacheTable.TableSchema, Query = query }, "");
+				var message = Json.SerializeObject(new {HubName = ReferenceConnection.DefaultDatabase, SourceConnectionName = CacheTable.SourceConnectionName, TableName = CacheTable.Name, TableSchema = CacheTable.Schema, Query = query }, "");
 				var content = new StringContent(message, Encoding.UTF8, "application/json");
 				var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("OpenTableQuery", content, true);
 

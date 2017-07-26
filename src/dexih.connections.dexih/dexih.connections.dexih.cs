@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Data;
 using dexih.transforms;
 using dexih.functions;
-using System.IO;
 using System.Data.Common;
-using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
-using static dexih.functions.DataType;
 using System.Net;
 using System.Diagnostics;
 using System.Text;
@@ -137,12 +131,12 @@ namespace dexih.connections.dexih
 			}
 		}
 
-        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return await Task.Run(() => new ReturnValue(true), cancelToken);
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList()
+        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
         {
 			var result = await HttpPost("GetHubs", null, true);
 			if(!result.Success)
@@ -156,7 +150,7 @@ namespace dexih.connections.dexih
 			return new ReturnValue<List<string>>(true, hubList);
         }
 
-		public override async Task<ReturnValue<List<Table>>> GetTableList()
+		public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
 		{
 			var content = new FormUrlEncodedContent(new[]
 			{
@@ -181,7 +175,7 @@ namespace dexih.connections.dexih
         /// <param name="tableName">Table Name</param>
         /// <param name="Properties">Mandatory property "RestfulUri".  Additional properties for the default column values.  Use ColumnName=value</param>
         /// <returns></returns>
-         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable)
+         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
          {
 			try
 			{
@@ -189,8 +183,8 @@ namespace dexih.connections.dexih
 				{
 					new KeyValuePair<string, string>("HubName", DefaultDatabase),
                     new KeyValuePair<string, string>("SourceConnectionName", importTable.SourceConnectionName),
-                    new KeyValuePair<string, string>("TableSchema", importTable.TableSchema),
-                    new KeyValuePair<string, string>("TableName", importTable.TableName),
+                    new KeyValuePair<string, string>("TableSchema", importTable.Schema),
+                    new KeyValuePair<string, string>("TableName", importTable.Name),
 				});
 
 				var result = await HttpPost("GetTableInfo", content, true);
@@ -213,19 +207,20 @@ namespace dexih.connections.dexih
             }
         }
 
-        /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <returns></returns>
-        public ReturnValue<object[]> LookupRow(Table table, List<Filter> filters)
+	    /// <summary>
+	    /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
+	    /// </summary>
+	    /// <param name="table"></param>
+	    /// <param name="filters"></param>
+	    /// <returns></returns>
+	    public ReturnValue<object[]> LookupRow(Table table, List<Filter> filters, CancellationToken cancelToken)
         {
 			throw new NotImplementedException();
 		}
 
         public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return await Task.Run(() => new ReturnValue(true), cancelToken);
         }
 
         public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
@@ -253,12 +248,12 @@ namespace dexih.connections.dexih
 			throw new NotImplementedException();
 		}
 
-        public override Task<ReturnValue> CreateDatabase(string databaseName)
+        public override Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -353,18 +348,14 @@ namespace dexih.connections.dexih
             return reader;
         }
 
-        public override Task<ReturnValue<bool>> TableExists(Table table)
+        public override Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue> CompareTable(Table table)
+        public override async Task<ReturnValue> CompareTable(Table table, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
-            {
-                return new ReturnValue(true);
-            });
-
+            return await Task.Run(() => new ReturnValue(true), cancelToken);
         }
 
         private class PushData

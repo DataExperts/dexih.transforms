@@ -3,6 +3,7 @@ using dexih.functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using dexih.transforms.Exceptions;
@@ -20,7 +21,7 @@ namespace dexih.transforms.tests
 
             Assert.Equal(8, transformLookup.FieldCount);
 
-            await transformLookup.Open(1, null);
+            await transformLookup.Open(1, null, CancellationToken.None);
 
             int pos = 0;
             while (await transformLookup.ReadAsync() == true)

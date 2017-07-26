@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -52,7 +49,7 @@ namespace dexih.transforms
                 newColumn.IsIncrementalUpdate = false;
 
                 //if a column of the same name exists, append a 1 to the name
-                if (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.SchemaColumnName()) != null)
+                if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.SchemaColumnName()) != null)
                 {
                     throw new Exception("The lookup could not be initialized as the column " + column.SchemaColumnName() + " is ambiguous.");
                 }
@@ -60,7 +57,7 @@ namespace dexih.transforms
                 pos++;
             }
 
-            _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.TableName : ReferenceTransform.ReferenceTableAlias;
+            _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.Name : ReferenceTransform.ReferenceTableAlias;
 
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
@@ -108,7 +105,7 @@ namespace dexih.transforms
                 });
             }
 
-            var lookup = await ReferenceTransform.LookupRow(filters);
+            var lookup = await ReferenceTransform.LookupRow(filters, cancellationToken);
             if (lookup.Success)
             {
                 for (int i = 0; i < _referenceFieldCount; i++)

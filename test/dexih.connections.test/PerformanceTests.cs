@@ -23,7 +23,7 @@ namespace dexih.connections.test
         {
                 ReturnValue returnValue;
 
-                returnValue = await connection.CreateDatabase(databaseName);
+                returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
                 Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
 
                 Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
@@ -36,11 +36,11 @@ namespace dexih.connections.test
 
                 foreach (DataType.ETypeCode typeCode in Enum.GetValues(typeof(DataType.ETypeCode)))
                 {
-                    table.Columns.Add(new TableColumn() { ColumnName = "column" + typeCode.ToString(), Datatype = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
+                    table.Columns.Add(new TableColumn() { Name = "column" + typeCode.ToString(), Datatype = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
                 }
 
                 //create the table
-                returnValue = await connection.CreateTable(table, true);
+                returnValue = await connection.CreateTable(table, true, CancellationToken.None);
                 Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
 
                 //add rows.
@@ -57,7 +57,7 @@ namespace dexih.connections.test
                     {
                         Type dataType = DataType.GetType(table.Columns[j].Datatype);
                         if (i % 2 == 0)
-                            row[j] = DataType.GetDataTypeMaxValue(table.Columns[j].Datatype);
+                            row[j] = DataType.GetDataTypeMaxValue(table.Columns[j].Datatype, 20);
                         else
                             row[j] = DataType.GetDataTypeMinValue(table.Columns[j].Datatype);
                     }
@@ -81,7 +81,7 @@ namespace dexih.connections.test
                 //count rows using reader
                 int count = 0;
                 var reader = connection.GetTransformReader(table);
-                await reader.Open(0);
+                await reader.Open(0, null, CancellationToken.None);
 
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows, "row count = " + count.ToString());
@@ -101,13 +101,14 @@ namespace dexih.connections.test
                     //load the columns with random values.
                     for (int j = 2; j < table.Columns.Count; j++)
                     {
-                        updateColumn = new QueryColumn(table.Columns[j], DataType.GetDataTypeMaxValue(table.Columns[j].Datatype));
+                        updateColumn = new QueryColumn(table.Columns[j],
+                            DataType.GetDataTypeMaxValue(table.Columns[j].Datatype));
                         updateColumns.Add(updateColumn);
                     }
                     updateQueries.Add(new UpdateQuery()
                     {
                         Filters = new List<Filter>() { new Filter("SurrogateKey", Filter.ECompare.IsEqual, i) },
-                        Table = table.TableName,
+                        Table = table.Name,
                         UpdateColumns = updateColumns
                     });
                 }
@@ -121,13 +122,13 @@ namespace dexih.connections.test
                     Columns = new List<SelectColumn>() { new SelectColumn("UpdateTest") },
                     Filters = new List<Filter>() { new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), Filter.ECompare.IsEqual, 1) },
                     Rows = -1,
-                    Table = table.TableName
+                    Table = table.Name
                 };
 
                 //count rows using reader
                 count = 0;
                 reader = connection.GetTransformReader(table);
-                await reader.Open(0, selectQuery);
+                await reader.Open(0, selectQuery, CancellationToken.None);
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows / 10, "row count = " + count.ToString());
 
@@ -137,7 +138,7 @@ namespace dexih.connections.test
                 new DeleteQuery()
                 {
                     Filters = new List<Filter>() { new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), Filter.ECompare.IsEqual, 1) },
-                    Table = table.TableName,
+                    Table = table.Name,
                 }
             };
             var deleteResult = await connection.ExecuteDelete(table, deleteQueries, CancellationToken.None);
@@ -148,13 +149,13 @@ namespace dexih.connections.test
                     Columns = new List<SelectColumn>() { new SelectColumn("SurrogateKey") },
                     //                Filters = new List<Filter>() { new Filter() { Column1 = "column1", CompareDataType = DataType.ETypeCode.String, Operator = Filter.ECompare.NotEqual, Value2 = "updated" } },
                     Rows = -1,
-                    Table = table.TableName
+                    Table = table.Name
                 };
 
                 //count rows using reader
                 count = 0;
                 reader = connection.GetTransformReader(table);
-                await reader.Open(0);
+                await reader.Open(0, null, CancellationToken.None);
                 while (await reader.ReadAsync()) count++;
                 Assert.True(count == rows - rows / 10, "row count = " + count.ToString());
 
@@ -176,7 +177,7 @@ namespace dexih.connections.test
         {
             ReturnValue returnValue;
 
-            returnValue = await connection.CreateDatabase(databaseName);
+            returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
             Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
 
             Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
@@ -189,11 +190,11 @@ namespace dexih.connections.test
 
             foreach (DataType.ETypeCode typeCode in Enum.GetValues(typeof(DataType.ETypeCode)))
             {
-                table.Columns.Add(new TableColumn() { ColumnName = "column" + typeCode.ToString(), Datatype = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
+                table.Columns.Add(new TableColumn() { Name = "column" + typeCode.ToString(), Datatype = typeCode, MaxLength = 50, DeltaType = TableColumn.EDeltaType.TrackingField });
             }
 
             //create the table
-            returnValue = await connection.CreateTable(table, true);
+            returnValue = await connection.CreateTable(table, true, CancellationToken.None);
             Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
 
             //add rows.
@@ -232,8 +233,8 @@ namespace dexih.connections.test
 
             var targetTable = table.Copy();
             targetTable.AddAuditColumns();
-            targetTable.TableName = "TargetTable";
-            await connection.CreateTable(targetTable);
+            targetTable.Name = "TargetTable";
+            await connection.CreateTable(targetTable, false, CancellationToken.None);
 
             Transform targetTransform = connection.GetTransformReader(targetTable);
 
@@ -244,7 +245,7 @@ namespace dexih.connections.test
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, false);
 
             TransformWriter writer = new TransformWriter();
-            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test");
+            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
             Assert.True(auditResult.Success);
             TransformWriterResult writerResult = auditResult.Value;
             var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, null, null, CancellationToken.None);

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -51,7 +48,7 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             List<Filter> newFilters = null;
@@ -85,7 +82,7 @@ namespace dexih.transforms
                     newFilter.Operator = filter.Operator;
                     newFilter.Value1 = filter.Value1;
                     newFilter.Value2 = filter.Value2;
-                    newFilter.CompareDataType = newFilter.CompareDataType;
+                    newFilter.CompareDataType = filter.CompareDataType;
 
                     newFilters.Add(newFilter);
                 }
@@ -117,7 +114,7 @@ namespace dexih.transforms
                 query.Sorts = newSorts;
             }
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
             return returnValue;
         }
 
@@ -156,12 +153,13 @@ namespace dexih.transforms
 
                 foreach (ColumnPair mapField in MapFields)
                 {
-                    var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn];
+                    var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn].Copy();
+
                     if(column == null)
                     {
                         throw new Exception("The mapping " + mapField.SourceColumn + " to " + mapField.TargetColumn + " could not be completed, as the source field was missing.");
                     }
-                    column.ColumnName = mapField.TargetColumn.ColumnName;
+                    column.Name = mapField.TargetColumn.Name;
                     CacheTable.Columns.Add(column);
                     //store an mapFieldOrdinal to improve performance.
                     _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn.SchemaColumnName()));
@@ -187,7 +185,7 @@ namespace dexih.transforms
                     }
                     if (mapping.TargetColumn != null)
                     {
-                        var column = new TableColumn(mapping.TargetColumn.ColumnName, mapping.ReturnType);
+                        var column = new TableColumn(mapping.TargetColumn.Name, mapping.ReturnType);
                         CacheTable.Columns.Add(column);
 
                         i++;
@@ -199,7 +197,7 @@ namespace dexih.transforms
                         {
                             if (param.Column != null)
                             {
-                                var column = new TableColumn(param.Column.ColumnName, param.DataType);
+                                var column = new TableColumn(param.Column.Name, param.DataType);
                                 CacheTable.Columns.Add(column);
                                 i++;
                             }
@@ -216,7 +214,7 @@ namespace dexih.transforms
                 for(int j = 0; j< PrimaryTransform.CacheTable.Columns.Count; j++)
                 {
                     var column = PrimaryTransform.CacheTable.Columns[j];
-                    if (CacheTable.Columns.SingleOrDefault(c => c.ColumnName == column.ColumnName) == null)
+                    if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.Name) == null)
                     {
                         CacheTable.Columns.Add(column.Copy());
                         _passThroughFields.Add(j);
@@ -235,7 +233,7 @@ namespace dexih.transforms
                     if (mapping == null)
                     {
                         //if passthrough column is on, and none of the function mappings override the target field then it is included.
-                        if (PassThroughColumns && !Functions.Any(c => c.TargetColumn == t.Column || c.Inputs.Any(d => d.Column.ColumnName == t.Column.ColumnName)))
+                        if (PassThroughColumns && !Functions.Any(c => c.TargetColumn?.Name == t.Column.Name || c.Inputs.Any(d => d.Column?.Name == t.Column.Name)))
                         {
                             fields.Add(t);
                         }

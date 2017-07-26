@@ -1,11 +1,8 @@
 ﻿using dexih.transforms;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
-using static dexih.functions.DataType;
-using Newtonsoft.Json.Linq;
 using System.Threading;
 using OfficeOpenXml;
 
@@ -31,15 +28,12 @@ namespace dexih.connections.excel
         {
             _isOpen = false;
 
-            if(_excelPackage != null)
-            {
-                _excelPackage.Dispose();
-            }
+            _excelPackage?.Dispose();
 
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -55,7 +49,7 @@ namespace dexih.connections.excel
                     _excelPackage = ((ConnectionExcelDatabase)ReferenceConnection).NewConnection();
                     _currentRow = 1;
 
-                    _excelWorkSheet = _excelPackage.Workbook.Worksheets.SingleOrDefault(c => c.Name == CacheTable.TableName);
+                    _excelWorkSheet = _excelPackage.Workbook.Worksheets.SingleOrDefault(c => c.Name == CacheTable.Name);
                     if (_excelWorkSheet == null)
                     {
                         return new ReturnValue<Table>(false, $"The worksheet {query.Table} could not be found in the excel file. ", null);
@@ -66,7 +60,7 @@ namespace dexih.connections.excel
 					_excelWorkSheetColumns = _excelWorkSheet.Dimension.Columns;
 
                     return new ReturnValue(true);
-                });
+                }, cancelToken);
             }
             catch (Exception ex)
             {

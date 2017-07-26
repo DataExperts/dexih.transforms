@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -77,7 +74,7 @@ namespace dexih.transforms
             //store reject column details to improve performance.
             _rejectReasonOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
             if (_rejectReasonOrdinal >= 0)
-                _rejectReasonColumnName = CacheTable.Columns[_rejectReasonOrdinal].ColumnName;
+                _rejectReasonColumnName = CacheTable.Columns[_rejectReasonOrdinal].Name;
 
             _operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
             _validationStatusOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
@@ -242,7 +239,7 @@ namespace dexih.transforms
                                         rejectRow[_operationOrdinal] = 'R';
                                         TransformRowsRejected++;
                                     }
-                                    rejectReason.AppendLine("Column:" + col.ColumnName + ": Tried to insert null into non-null column.");
+                                    rejectReason.AppendLine("Column:" + col.Name + ": Tried to insert null into non-null column.");
                                     finalInvalidAction = Function.EInvalidAction.Reject;
                                 }
                                 passRow[i] = DBNull.Value;

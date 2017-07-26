@@ -34,22 +34,22 @@ namespace dexih.transforms
 
         public override Task<ReturnValue> AddMandatoryColumns(Table table, int position) => Task.Run(() => new ReturnValue(true));
 
-        public override Task<ReturnValue> CreateDatabase(string databaseName) => Task.Run(() => new ReturnValue(true));
+        public override Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken) => Task.Run(() => new ReturnValue(true));
 
-        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
-                if (_tables.ContainsKey(table.TableName))
+                if (_tables.ContainsKey(table.Name))
                 {
                     if (dropTable)
-                        _tables[table.TableName] = table;
+                        _tables[table.Name] = table;
                     else
-                        return new ReturnValue(false, "The table " + table.TableName + " already exists.", null);
+                        return new ReturnValue(false, "The table " + table.Name + " already exists.", null);
                 }
                 else
                 {
-                    _tables.Add(table.TableName, table);
+                    _tables.Add(table.Name, table);
                 }
 
                 return new ReturnValue(true);
@@ -60,12 +60,11 @@ namespace dexih.transforms
         {
             return await Task.Run(() =>
             {
-                var deleteTable = _tables[table.TableName];
+                var deleteTable = _tables[table.Name];
 
-                int count = 0;
                 var timer = Stopwatch.StartNew();
 
-                foreach (DeleteQuery query in deleteQueries)
+                foreach (var query in deleteQueries)
                 {
                     if (cancelToken.IsCancellationRequested)
                         return new ReturnValue<long>(false, "Insert rows cancelled.", null);
@@ -74,20 +73,19 @@ namespace dexih.transforms
                     if (lookupResult.Success == false)
                         return new ReturnValue<long>(lookupResult);
 
-                    foreach (object[] row in lookupResult.Value)
+                    foreach (var row in lookupResult.Value)
                     {
-                        count++;
                         deleteTable.Data.Remove(row);
                     }
                 }
                 timer.Stop();
                 return new ReturnValue<long>(true, timer.ElapsedTicks);
-            });
+            }, cancelToken);
         }
 
         public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
-            Table insertTable = _tables[table.TableName];
+            var insertTable = _tables[table.Name];
 
             var timer = Stopwatch.StartNew();
             while(await sourceData.ReadAsync(cancelToken))
@@ -95,7 +93,7 @@ namespace dexih.transforms
                 if (cancelToken.IsCancellationRequested)
                     return new ReturnValue<long>(false, "Insert rows cancelled.", null);
 
-                object[] row = new object[sourceData.FieldCount];
+                var row = new object[sourceData.FieldCount];
                 sourceData.GetValues(row);
                 insertTable.Data.Add(row);
             }
@@ -104,18 +102,18 @@ namespace dexih.transforms
         }
 
 
-        public async override Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             return await Task.Run(() => {
                 var timer = Stopwatch.StartNew();
-                Table insertTable = _tables[table.TableName];
+                var insertTable = _tables[table.Name];
 
                 foreach (var query in queries)
                 {
-                    object[] row = new object[table.Columns.Count];
+                    var row = new object[table.Columns.Count];
                     foreach(var item in query.InsertColumns)
                     {
-                        var ordinal = table.Columns.GetOrdinal(item.Column.ColumnName);
+                        var ordinal = table.Columns.GetOrdinal(item.Column.Name);
                         row[ordinal] = item.Value;
                     }
 
@@ -124,16 +122,16 @@ namespace dexih.transforms
 
                 timer.Stop();
                 return new ReturnValue<Tuple<long, long>>(true, Tuple.Create<long, long>(0, timer.ElapsedTicks));
-            });
+            }, cancelToken);
         }
 
-        public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
+        public override async Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
            return await Task.Run(() =>
           {
-              var reader = new ReaderMemory(_tables[table.TableName], null);
+              var reader = new ReaderMemory(_tables[table.Name], null);
               return new ReturnValue<DbDataReader>(true, reader);
-          });
+          }, cancelToken);
         }
 
         public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
@@ -143,14 +141,13 @@ namespace dexih.transforms
 
         public override async Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, CancellationToken cancelToken)
         {
-            return await Task.Run((Func<ReturnValue<long>>)(() =>
+            return await Task.Run(() =>
             {
-                var updateTable = _tables[table.TableName];
+                var updateTable = _tables[table.Name];
 
-                int count = 0;
                 var timer = Stopwatch.StartNew();
 
-                foreach (UpdateQuery query in updateQueries)
+                foreach (var query in updateQueries)
                 {
                     if (cancelToken.IsCancellationRequested)
                         return new ReturnValue<long>(false, "Update cancelled", null);
@@ -159,12 +156,11 @@ namespace dexih.transforms
                     if (lookupResult.Success == false)
                         return new ReturnValue<long>(lookupResult);
 
-                    foreach (object[] row in lookupResult.Value)
+                    foreach (var row in lookupResult.Value)
                     {
-                        count++;
                         foreach (var updateColumn in query.UpdateColumns)
                         {
-                            int ordinal = updateTable.GetOrdinal((string)updateColumn.Column.SchemaColumnName());
+                            var ordinal = updateTable.GetOrdinal(updateColumn.Column.SchemaColumnName());
                             row[ordinal] = updateColumn.Value;
                         }
                     }
@@ -172,34 +168,31 @@ namespace dexih.transforms
 
                 timer.Stop();
                 return new ReturnValue<long>(true, timer.ElapsedTicks);
-            }));
+            }, cancelToken);
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList()
+        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
         {
-            return await Task.Run(() => new ReturnValue<List<string>>(true, new List<string>() { "" } ));
+            return await Task.Run(() => new ReturnValue<List<string>>(true, new List<string>() { "" } ), cancelToken);
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
         {
-            return await Task.Run( () => new ReturnValue<Table>(true, _tables[originalTable.TableName]));
+            return await Task.Run( () => new ReturnValue<Table>(true, _tables[originalTable.Name]), cancelToken);
         }
 
-        public override async Task<ReturnValue<List<Table>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
-            {
-				return new ReturnValue<List<Table>>(true, _tables.Values.ToList());
-            });
+            return await Task.Run(() => new ReturnValue<List<Table>>(true, _tables.Values.ToList()), cancelToken);
         }
 
         public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
            return await Task.Run(() =>
            {
-               _tables[table.TableName].Data.Clear();
+               _tables[table.Name].Data.Clear();
                return new ReturnValue(true);
-           });
+           }, cancelToken);
 
         }
 
@@ -209,12 +202,9 @@ namespace dexih.transforms
             return reader;
         }
 
-        public async override Task<ReturnValue<bool>> TableExists(Table table)
+        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
-            {
-                return new ReturnValue<bool>(true, _tables.ContainsKey(table.TableName));
-            });
+            return await Task.Run(() => new ReturnValue<bool>(true, _tables.ContainsKey(table.Name)), cancelToken);
         }
     }
 }

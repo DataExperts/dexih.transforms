@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Data;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using dexih.functions;
-using System.IO;
-using System.Net;
 using System.Data.Common;
 using dexih.transforms;
 using static dexih.functions.DataType;
@@ -50,14 +47,14 @@ namespace dexih.connections.azure
             return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,254}$");
         }
 
-        public override async Task<ReturnValue<bool>> TableExists(Table table)
+        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.TableName);
+                CloudTable cTable = connection.GetTableReference(table.Name);
 
-                var exists = await cTable.ExistsAsync();
+                var exists = await cTable.ExistsAsync(null, null, cancelToken);
 
                 return new ReturnValue<bool>(true, exists);
             }
@@ -72,7 +69,7 @@ namespace dexih.connections.azure
         {
             try
             {
-                string targetTableName = table.TableName;
+                string targetTableName = table.Name;
                 var timer = Stopwatch.StartNew();
 
                 List<Task> tasks = new List<Task>();
@@ -112,7 +109,7 @@ namespace dexih.connections.azure
                             else if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AzureRowKey)
                             {
                                 if (sk != null)
-                                    row[i] = reader[sk.ColumnName];
+                                    row[i] = reader[sk.Name];
                                 else
                                     row[i] = Guid.NewGuid().ToString();
                             }
@@ -135,12 +132,12 @@ namespace dexih.connections.azure
             }
             catch (StorageException ex)
             {
-                string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
+                string message = "Error writing to Azure Storage table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
                 return new ReturnValue<long>(false, message, ex);
             }
             catch (Exception ex)
             {
-                string message = "Error writing to Azure Storage table: " + table.TableName + ".  Error Message: " + ex.Message;
+                string message = "Error writing to Azure Storage table: " + table.Name + ".  Error Message: " + ex.Message;
                 return new ReturnValue<long>(false, message, ex);
             }
         }
@@ -165,7 +162,7 @@ namespace dexih.connections.azure
                     {
                         object value = row[i];
                         if (value == DBNull.Value) value = null;
-                        properties.Add(table.Columns[i].ColumnName, NewEntityProperty(table.Columns[i].Datatype, value));
+                        properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].Datatype, value));
                     }
 
                 var partionKeyValue = partitionKey >= 0 ? row[partitionKey] : "default";
@@ -185,21 +182,21 @@ namespace dexih.connections.azure
         /// <param name="table"></param>
         /// <param name="dropTable"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
+        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             try
             {
-                if (!IsValidTableName(table.TableName))
-                    return new ReturnValue(false, "The table " + table.TableName + " could not be created as it does not meet Azure table naming standards.", null);
+                if (!IsValidTableName(table.Name))
+                    return new ReturnValue(false, "The table " + table.Name + " could not be created as it does not meet Azure table naming standards.", null);
 
                 foreach (var col in table.Columns)
                 {
-                    if (!IsValidColumnName(col.ColumnName))
-                        return new ReturnValue(false, "The table " + table.TableName + " could not be created as the column " + col.ColumnName + " does not meet Azure table naming standards.", null);
+                    if (!IsValidColumnName(col.Name))
+                        return new ReturnValue(false, "The table " + table.Name + " could not be created as the column " + col.Name + " does not meet Azure table naming standards.", null);
                 }
 
                 CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.TableName);
+                CloudTable cTable = connection.GetTableReference(table.Name);
                 if (dropTable)
                     await cTable.DeleteIfExistsAsync();
 
@@ -214,14 +211,14 @@ namespace dexih.connections.azure
                 {
                     try
                     {
-                        isCreated = await GetCloudTableClient().GetTableReference(table.TableName).CreateIfNotExistsAsync();
+                        isCreated = await GetCloudTableClient().GetTableReference(table.Name).CreateIfNotExistsAsync();
                         if (isCreated)
                             break;
-                        await Task.Delay(5000);
+                        await Task.Delay(5000, cancelToken);
                     }
                     catch
                     {
-                        await Task.Delay(5000);
+                        await Task.Delay(5000, cancelToken);
                         continue;
                     }
                 }
@@ -255,12 +252,12 @@ namespace dexih.connections.azure
             return storageAccount.CreateCloudTableClient();
         }
 
-        public override async Task<ReturnValue> CreateDatabase(string databaseName)
+        public override async Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             return await Task.Run(() => new ReturnValue(true));
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList()
+        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
         {
             try
             {
@@ -274,13 +271,13 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<ReturnValue<List<Table>>> GetTableList()
+        public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
+                var connection = GetCloudTableClient();
                 TableContinuationToken continuationToken = null;
-                List<Table> list = new List<Table>();
+                var list = new List<Table>();
                 do
                 {
                     var table = await connection.ListTablesSegmentedAsync(continuationToken);
@@ -297,7 +294,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
         {
             try
             {
@@ -305,11 +302,11 @@ namespace dexih.connections.azure
 
 
                 //The new datatable that will contain the table schema
-                Table table = new Table(originalTable.TableName);
-                table.LogicalName = originalTable.TableName;
+                Table table = new Table(originalTable.Name);
+                table.LogicalName = originalTable.Name;
                 table.Description = "";
 
-                CloudTable cloudTable = connection.GetTableReference(table.TableName);
+                CloudTable cloudTable = connection.GetTableReference(table.Name);
                 var query = new TableQuery().Take(1);
 
                 TableContinuationToken continuationToken = null;
@@ -330,7 +327,7 @@ namespace dexih.connections.azure
                         //add the basic properties                            
                         TableColumn col = new TableColumn()
                         {
-                            ColumnName = property.Key,
+                            Name = property.Key,
                             LogicalName = property.Key,
                             IsInput = false,
                             ColumnGetType = property.Value.GetType(),
@@ -355,9 +352,9 @@ namespace dexih.connections.azure
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue> CompareTable(Table table)
+        public override async Task<ReturnValue> CompareTable(Table table, CancellationToken cancelToken)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return await Task.Run(() => new ReturnValue(true), cancelToken);
         }
 
         /// <summary>
@@ -383,15 +380,14 @@ namespace dexih.connections.azure
                 }
 
                 DynamicTableEntity entity = null;
-                TableResult tableResult;
 
                 do
                 {
                     //get the last key value if it exists.
-                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.TableName, surrogateKeyColumn.ColumnName, new List<string>() { "IncrementalValue", "LockGuid" }));
+                    var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { "IncrementalValue", "LockGuid" }));
                     if (tableResult.Result == null)
                     {
-                        entity = new DynamicTableEntity(table.TableName, surrogateKeyColumn.ColumnName);
+                        entity = new DynamicTableEntity(table.Name, surrogateKeyColumn.Name);
                         entity.Properties.Add("IncrementalValue", new EntityProperty((long)1));
                         entity.Properties.Add("LockGuid", new EntityProperty(lockGuid));
                         incrementalKey = 1;
@@ -408,7 +404,7 @@ namespace dexih.connections.azure
                     //update the record with the new incrementalvalue and the guid.
                     await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
 
-                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.TableName, surrogateKeyColumn.ColumnName, new List<string>() { "IncrementalValue", "LockGuid" }));
+                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { "IncrementalValue", "LockGuid" }));
                     entity = tableResult.Result as DynamicTableEntity;
 
                 } while (entity.Properties["LockGuid"].GuidValue.Value != lockGuid);
@@ -434,7 +430,7 @@ namespace dexih.connections.azure
                 }
 
                 DynamicTableEntity entity = null;
-                entity = new DynamicTableEntity(table.TableName, surrogateKeyColumn);
+                entity = new DynamicTableEntity(table.Name, surrogateKeyColumn);
                 entity.Properties.Add("IncrementalValue", new EntityProperty(value));
                 entity.Properties.Add("LockGuid", new EntityProperty(Guid.NewGuid()));
 
@@ -495,7 +491,7 @@ namespace dexih.connections.azure
                                 throw new Exception("The filter value " + value.ToString() + " could not be convered to a " + filter.CompareDataType.ToString());
                             array.Add(valueparse.Value);
                         }
-                        filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1.ColumnName, Filter.ECompare.IsEqual, filter.CompareDataType, c))) + ")";
+                        filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1.Name, Filter.ECompare.IsEqual, filter.CompareDataType, c))) + ")";
                     }
                     else
                     {
@@ -504,7 +500,7 @@ namespace dexih.connections.azure
                             throw new Exception("The filter value " + filter.Value2.ToString() + " could not be convered to a " + filter.CompareDataType.ToString());
                         var value2 = value2Parse.Value;
 
-                        filterString = GenerateFilterCondition(filter.Column1.ColumnName, filter.Operator, filter.CompareDataType, value2);
+                        filterString = GenerateFilterCondition(filter.Column1.Name, filter.Operator, filter.CompareDataType, value2);
                     }
 
                     if (combinedFilterString == "")
@@ -562,7 +558,7 @@ namespace dexih.connections.azure
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
-                return await CreateTable(table, true);
+                return await CreateTable(table, true, cancelToken);
             }
             catch (Exception ex)
             {
@@ -575,17 +571,17 @@ namespace dexih.connections.azure
         {
             await Task.Run(() =>
             {
-                if (table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.AzurePartitionKey).Count() == 0)
+                if (!table.Columns.Any(c => c.DeltaType == TableColumn.EDeltaType.AzurePartitionKey))
                 {
                     //partion key uses the AuditKey which allows bulk load, and can be used as an incremental checker.
                     table.Columns.Add(new TableColumn()
                     {
-                        ColumnName = "PartitionKey",
+                        Name = "PartitionKey",
                         Datatype = ETypeCode.String,
                         MaxLength = 0,
                         Precision = 0,
                         AllowDbNull = false,
-                        LogicalName = table.TableName + " partition key.",
+                        LogicalName = table.Name + " partition key.",
                         Description = "The Azure partition key and UpdateAuditKey for this table.",
                         IsUnique = true,
                         DeltaType = TableColumn.EDeltaType.AzurePartitionKey,
@@ -594,17 +590,17 @@ namespace dexih.connections.azure
                     });
                 }
 
-                if (table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.AzureRowKey).Count() == 0)
+                if (!table.Columns.Any(c => c.DeltaType == TableColumn.EDeltaType.AzureRowKey))
                 {
                     //add the special columns for managed tables.
                     table.Columns.Add(new TableColumn()
                     {
-                        ColumnName = "RowKey",
+                        Name = "RowKey",
                         Datatype = ETypeCode.String,
                         MaxLength = 0,
                         Precision = 0,
                         AllowDbNull = false,
-                        LogicalName = table.TableName + " surrogate key",
+                        LogicalName = table.Name + " surrogate key",
                         Description = "The azure rowKey and the natural key for this table.",
                         IsUnique = true,
                         DeltaType = TableColumn.EDeltaType.AzureRowKey,
@@ -612,18 +608,18 @@ namespace dexih.connections.azure
                     });
                 }
 
-                if (table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TimeStamp).Count() == 0)
+                if (!table.Columns.Any(c => c.DeltaType == TableColumn.EDeltaType.TimeStamp))
                 {
 
                     //add the special columns for managed tables.
                     table.Columns.Add(new TableColumn()
                     {
-                        ColumnName = "Timestamp",
+                        Name = "Timestamp",
                         Datatype = ETypeCode.DateTime,
                         MaxLength = 0,
                         Precision = 0,
                         AllowDbNull = false,
-                        LogicalName = table.TableName + " timestamp.",
+                        LogicalName = table.Name + " timestamp.",
                         Description = "The Azure Timestamp for the managed table.",
                         IsUnique = true,
                         DeltaType = TableColumn.EDeltaType.TimeStamp,
@@ -723,7 +719,7 @@ namespace dexih.connections.azure
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.TableName);
+                CloudTable cTable = connection.GetTableReference(table.Name);
 
                 int rowsInserted = 0;
                 int rowcount = 0;
@@ -750,8 +746,8 @@ namespace dexih.connections.azure
                     Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
                     foreach (var field in query.InsertColumns)
                     {
-                        if (!(field.Column.ColumnName == "RowKey" || field.Column.ColumnName == "PartitionKey" || field.Column.ColumnName == "Timestamp"))
-                            properties.Add(field.Column.ColumnName, NewEntityProperty(table.Columns[field.Column].Datatype, field.Value));
+                        if (!(field.Column.Name == "RowKey" || field.Column.Name == "PartitionKey" || field.Column.Name == "Timestamp"))
+                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column].Datatype, field.Value));
                     }
 
                     if (autoIncrement != null)
@@ -759,22 +755,22 @@ namespace dexih.connections.azure
                         var autoIncrementResult = await GetIncrementalKey(table, autoIncrement, CancellationToken.None);
                         lastAutoIncrement = autoIncrementResult.Value;
 
-                        properties.Add(autoIncrement.ColumnName, NewEntityProperty(ETypeCode.Int64, lastAutoIncrement));
+                        properties.Add(autoIncrement.Name, NewEntityProperty(ETypeCode.Int64, lastAutoIncrement));
                     }
 
                     string partitionKeyValue = null;
                     if (partitionKey != null)
-                        partitionKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column.ColumnName == partitionKey.ColumnName)?.Value.ToString();
+                        partitionKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column.Name == partitionKey.Name)?.Value.ToString();
 
                     if (string.IsNullOrEmpty(partitionKeyValue)) partitionKeyValue = "default";
 
                     string rowKeyValue = null;
                     if (rowKey != null)
-                        rowKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column.ColumnName == rowKey.ColumnName)?.Value.ToString();
+                        rowKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column.Name == rowKey.Name)?.Value.ToString();
 
                     if (string.IsNullOrEmpty(rowKeyValue))
                     {
-                        var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey)?.ColumnName;
+                        var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey)?.Name;
 
                         if (sk == null)
                             if (autoIncrement == null)
@@ -782,7 +778,7 @@ namespace dexih.connections.azure
                             else
                                 rowKeyValue = lastAutoIncrement.ToString("D20");
                         else
-                            rowKeyValue = ((long)query.InsertColumns.Single(c => c.Column.ColumnName == sk).Value).ToString("D20");
+                            rowKeyValue = ((long)query.InsertColumns.Single(c => c.Column.Name == sk).Value).ToString("D20");
                     }
 
                     DynamicTableEntity entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
@@ -815,7 +811,7 @@ namespace dexih.connections.azure
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Tuple<long, long>>(false, "The Azure insert query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex);
+                return new ReturnValue<Tuple<long, long>>(false, "The Azure insert query for " + table.Name + " could not be run due to the following error: " + ex.Message, ex);
             }
         }
 
@@ -824,7 +820,7 @@ namespace dexih.connections.azure
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.TableName);
+                CloudTable cTable = connection.GetTableReference(table.Name);
 
                 int rowsUpdated = 0;
                 int rowcount = 0;
@@ -844,7 +840,7 @@ namespace dexih.connections.azure
                     TableQuery tableQuery = new TableQuery();
 
                     //select all columns
-                    tableQuery.SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.ColumnName != "PartitionKey" && c.ColumnName != "RowKey").Select(c => c.ColumnName)).ToList());
+                    tableQuery.SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.Name != "PartitionKey" && c.Name != "RowKey").Select(c => c.Name)).ToList());
 
                     //the rowkey is the same as the surrogate key, so add this to the filter string if the surrogate key is used.
                     if (surrogateKeyColumn != null)
@@ -852,7 +848,7 @@ namespace dexih.connections.azure
                         int filtercount = query.Filters.Count;
                         for (int i = 0; i < filtercount; i++)
                         {
-                            if (query.Filters[i].Column1.ColumnName == surrogateKeyColumn.ColumnName)
+                            if (query.Filters[i].Column1.Name == surrogateKeyColumn.Name)
                             {
                                 var rowKeyValue = ((long)query.Filters[i].Value2).ToString("D20");
 
@@ -887,7 +883,7 @@ namespace dexih.connections.azure
 
                             foreach (var column in query.UpdateColumns)
                             {
-                                switch (column.Column.ColumnName)
+                                switch (column.Column.Name)
                                 {
                                     case "RowKey":
                                         entity.RowKey = column.Value.ToString();
@@ -896,7 +892,7 @@ namespace dexih.connections.azure
                                         entity.PartitionKey = column.Value.ToString();
                                         break;
                                     default:
-                                        entity.Properties[column.Column.ColumnName] = NewEntityProperty(table[column.Column.ColumnName].Datatype, column.Value);
+                                        entity.Properties[column.Column.Name] = NewEntityProperty(table[column.Column.Name].Datatype, column.Value);
                                         break;
                                 }
                             }
@@ -929,7 +925,7 @@ namespace dexih.connections.azure
             }
             catch (Exception ex)
             {
-                return new ReturnValue<long>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+                return new ReturnValue<long>(false, "The Azure update query for " + table.Name + " could not be run due to the following error: " + ex.Message, ex, -1);
             }
         }
 
@@ -938,7 +934,7 @@ namespace dexih.connections.azure
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.TableName);
+                CloudTable cTable = connection.GetTableReference(table.Name);
 
                 Stopwatch timer = Stopwatch.StartNew();
                 int rowsDeleted = 0;
@@ -995,7 +991,7 @@ namespace dexih.connections.azure
             }
             catch (Exception ex)
             {
-                return new ReturnValue<long>(false, "The Azure update query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+                return new ReturnValue<long>(false, "The Azure update query for " + table.Name + " could not be run due to the following error: " + ex.Message, ex, -1);
             }
         }
 
@@ -1004,11 +1000,11 @@ namespace dexih.connections.azure
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.TableName);
+                CloudTable cTable = connection.GetTableReference(table.Name);
 
                 //Read the key fields from the table
                 TableQuery tableQuery = new TableQuery();
-                tableQuery.SelectColumns = query.Columns.Select(c => c.Column.ColumnName).ToArray();
+                tableQuery.SelectColumns = query.Columns.Select(c => c.Column.Name).ToArray();
                 tableQuery.FilterString = BuildFilterString(query.Filters);
                 tableQuery.Take(1);
 
@@ -1028,7 +1024,7 @@ namespace dexih.connections.azure
                         value = null;
                     else
                     {
-                        switch (query.Columns[0].Column.ColumnName)
+                        switch (query.Columns[0].Column.Name)
                         {
                             case "RowKey":
                                 value = result.Results[0].RowKey;
@@ -1037,7 +1033,7 @@ namespace dexih.connections.azure
                                 value = result.Results[0].PartitionKey;
                                 break;
                             default:
-                                value = result.Results[0].Properties[query.Columns[0].Column.ColumnName].PropertyAsObject;
+                                value = result.Results[0].Properties[query.Columns[0].Column.Name].PropertyAsObject;
                                 break;
                         }
                     }
@@ -1049,7 +1045,7 @@ namespace dexih.connections.azure
                 }
                 catch (StorageException ex)
                 {
-                    string message = "Error running a command against table: " + table.TableName + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
+                    string message = "Error running a command against table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
                     return new ReturnValue<object>(false, message, ex);
                 }
 
@@ -1057,11 +1053,11 @@ namespace dexih.connections.azure
             }
             catch (Exception ex)
             {
-                return new ReturnValue<object>(false, "The Azure select query for " + table.TableName + " could not be run due to the following error: " + ex.Message, ex, -1);
+                return new ReturnValue<object>(false, "The Azure select query for " + table.Name + " could not be run due to the following error: " + ex.Message, ex, -1);
             }
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException("The execute reader is not available for Azure table connections.");
         }
