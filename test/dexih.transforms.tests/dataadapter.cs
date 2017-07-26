@@ -16,7 +16,7 @@ namespace dexih.transforms.tests
         [Fact]
         public void TestDataAdapter()
         {
-            ReaderMemory tableAdapter = Helpers.CreateLargeTable(10000);
+            ReaderMemory tableAdapter = Helpers.CreateLargeTable(100000);
 
             int count = 0;
             while(tableAdapter.Read())
@@ -28,7 +28,7 @@ namespace dexih.transforms.tests
                 count++;
             }
 
-            Assert.True(count == 10000);
+            Assert.True(count == 1000000);
         }
     }
 }

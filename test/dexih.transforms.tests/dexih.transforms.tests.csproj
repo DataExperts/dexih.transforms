@@ -29,8 +29,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj">
     </ProjectReference>
+    <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />
     <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj">
     </ProjectReference>
+    <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
