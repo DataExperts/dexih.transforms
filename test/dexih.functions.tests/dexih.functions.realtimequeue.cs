@@ -10,38 +10,10 @@ namespace dexih.functions.tests
 {
     public class RealTimeQueueTests
     {
-        //    [Theory]
-        //    [InlineData("hi", true)]
-        //    [InlineData(1, true)]
-        //    [InlineData(1.1, true)]
-        //    [InlineData(functions.DataType.ETypeCode.Boolean, true)]
-        //    [InlineData(true, true)]
-        //    [MemberData("OtherProperties")]
-        //    public void Test_IsSimpleType(object value, bool expected)
-        //    {
-        //        Assert.Equal(expected, IsSimpleType(value.GetType()));
-        //    }
-
-        //    public static IEnumerable<object[]> OtherProperties
-        //    {
-        //        get
-        //        {
-        //            var dateValue = DateTime.Parse("2001-01-01");
-
-        //            return new[]
-        //            {
-        //                new object[] { new object[] {1,2,3}, false },
-        //                new object[] { new int[] {1,2,3}, false },
-        //                new object[] { new string[] { "hi", "there" }, false },
-        //                new object[] { dateValue, true }
-        //            };
-        //        }
-        //    }
-
         [Fact]
         public async Task Test_QueuePushPop()
         {
-            var queue = new RealTimeQueue<int>(2, 500);
+            var queue = new RealTimeQueue<int>(2, 5000);
 
             await queue.Push(1);
             await queue.Push(2);
@@ -64,7 +36,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueueWaitWhenEmpty()
         {
-            var queue = new RealTimeQueue<int>(2, 500);
+            var queue = new RealTimeQueue<int>(2, 5000);
 
             //queue is empty so this should wait until something enters queue.
             var popTask = queue.Pop();
@@ -82,14 +54,14 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueueWaitWhenFull()
         {
-            var queue = new RealTimeQueue<int>(2, 500);
+            var queue = new RealTimeQueue<int>(2, 5000);
 
             await queue.Push(1);
             await queue.Push(2);
 
             // queue is full, so should wait until queue becomes less than max.
             var pushTask = queue.Push(3, true);
-            await Task.Delay(50);
+            await Task.Delay(50); //short simulated delay
             Assert.Equal<TaskStatus>(pushTask.Status, TaskStatus.WaitingForActivation);
 
             var pop = await queue.Pop();
@@ -111,7 +83,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueueTimeout()
         {
-            var queue = new RealTimeQueue<int>(2, 500);
+            var queue = new RealTimeQueue<int>(2, 5000);
 
             await queue.Push(1);
             await queue.Push(2);
@@ -121,7 +93,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueuePushAfterFinished()
         {
-            var queue = new RealTimeQueue<int>(2, 500);
+            var queue = new RealTimeQueue<int>(2, 5000);
 
             await queue.Push(1);
             await queue.Push(2, true);
@@ -131,7 +103,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueuePushExceeded()
         {
-            var queue = new RealTimeQueue<int>(2, 500);
+            var queue = new RealTimeQueue<int>(2, 5000);
 
             await queue.Push(1);
             await queue.Push(2);
@@ -145,7 +117,7 @@ namespace dexih.functions.tests
         [Fact]
         public async Task Test_QueuePushCancelled()
         {
-            var queue = new RealTimeQueue<int>(2, 500);
+            var queue = new RealTimeQueue<int>(2, 5000);
 
             await queue.Push(1);
             await queue.Push(2);

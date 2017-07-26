@@ -92,7 +92,6 @@ namespace dexih.functions {
                     var popEvent = _popEvent.WaitAsync();
                     var timeoutEvent = Task.Delay(timeOutMilliseconds, cancellationToken);
 
-
                     var completedTask = await Task.WhenAny(popEvent, timeoutEvent);
 
                     _awaitingPush = false;
