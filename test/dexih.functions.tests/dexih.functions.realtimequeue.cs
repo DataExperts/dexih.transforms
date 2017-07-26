@@ -149,8 +149,10 @@ namespace dexih.functions.tests
 
             await queue.Push(1);
             await queue.Push(2);
-            var pushTask = queue.Push(3);
-            queue.Cancel();
+            
+            var cancelToken = new CancellationTokenSource();
+            var pushTask = queue.Push(3, cancelToken.Token);
+            cancelToken.Cancel();
 
             Assert.True(pushTask.Exception.InnerException is RealTimeQueueCancelledException);
         }

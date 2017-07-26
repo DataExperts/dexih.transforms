@@ -18,7 +18,7 @@ namespace dexih.functions {
 
         private readonly AsyncAutoResetEvent _popEvent = new AsyncAutoResetEvent();
         private readonly AsyncAutoResetEvent _pushEvent = new AsyncAutoResetEvent();
-        private readonly AsyncAutoResetEvent _cancelEvent = new AsyncAutoResetEvent();
+        // private readonly AsyncAutoResetEvent _cancelEvent = new AsyncAutoResetEvent();
 
         public bool IsCancelled { get; set; } = false;
         public bool IsFinished { get; set; } = false;
@@ -41,14 +41,6 @@ namespace dexih.functions {
             _maxSize = maxSize;
             _defaulttimeOutMilliseconds = defaultTimeOutMilliseconds;
         }
-        /// <summary>
-        /// Issues  a cancel event that will stop any push/pull operations.
-        /// </summary>
-        public void Cancel()
-        {
-            IsCancelled = true;
-            _cancelEvent.Set();
-        }
 
         public Task Push(T buffer)
         {
@@ -70,19 +62,18 @@ namespace dexih.functions {
             return Push(buffer, isFinalBuffer, cancellationToken, _defaulttimeOutMilliseconds);
         }
 
-        /// <summary>
-        /// Push data to the buffer.  If the buffer queue is great than the max buffers the function will wait until a buffer has been cleared before acepting the new buffer.
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="cancellationToken"></param>
-        /// <param name="timeOutMilliseconds"></param>
-        /// <returns></returns>
-        public async Task Push(T buffer, bool isFinalBuffer, CancellationToken cancellationToken, int timeOutMilliseconds)
+	    /// <summary>
+	    /// Push data to the buffer.  If the buffer queue is great than the max buffers the function will wait until a buffer has been cleared before acepting the new buffer.
+	    /// </summary>
+	    /// <param name="buffer"></param>
+	    /// <param name="isFinalBuffer"></param>
+	    /// <param name="cancellationToken"></param>
+	    /// <param name="timeOutMilliseconds"></param>
+	    /// <returns></returns>
+	    public async Task Push(T buffer, bool isFinalBuffer, CancellationToken cancellationToken, int timeOutMilliseconds)
         {
             try
             {
-                cancellationToken.Register(() => Cancel());
-
                 if(IsFinished)
                 {
                     throw new RealTimeQueueFinishedException("The push operation was attempted after the queue was marked as finished.");
@@ -99,15 +90,14 @@ namespace dexih.functions {
                     _awaitingPush = true;
 
                     var popEvent = _popEvent.WaitAsync();
-                    var cancelEvent = _cancelEvent.WaitAsync();
-                    var timeoutEvent = Task.Delay(timeOutMilliseconds);
+                    var timeoutEvent = Task.Delay(timeOutMilliseconds, cancellationToken);
 
 
-                    var completedTask = await Task.WhenAny(popEvent, cancelEvent, timeoutEvent);
+                    var completedTask = await Task.WhenAny(popEvent, timeoutEvent);
 
                     _awaitingPush = false;
 
-                    if (completedTask == cancelEvent)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         throw new RealTimeQueueCancelledException("The push operation was cancelled");
                     }
@@ -146,8 +136,6 @@ namespace dexih.functions {
         {
             try
             {
-                cancellationToken.Register(() => Cancel());
-
                 while (_realtimeQueue.Count == 0)
                 {
                     if (IsFinished)
@@ -156,12 +144,11 @@ namespace dexih.functions {
                     }
 
                     var pushEvent = _pushEvent.WaitAsync();
-                    var cancelEvent = _cancelEvent.WaitAsync();
-                    var timeoutEvent = Task.Delay(timeOutMilliseconds);
+                    var timeoutEvent = Task.Delay(timeOutMilliseconds, cancellationToken);
 
-                    var completedTask = await Task.WhenAny(pushEvent, cancelEvent, timeoutEvent);
+                    var completedTask = await Task.WhenAny(pushEvent, timeoutEvent);
 
-                    if (completedTask == cancelEvent)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         return new RealTimeQueuePackage<T>(ERealTimeQueueStatus.Cancalled);
                     }
@@ -190,7 +177,7 @@ namespace dexih.functions {
                         _popEvent.Set();
                         return package;
                     }
-                    await Task.Delay(100);
+                    await Task.Delay(100, cancellationToken);
                 }
             } catch(Exception ex)
             when (!(ex is RealTimeQueueCancelledException || ex is RealTimeQueueFinishedException || ex is RealTimeQueueTimeOutException))
