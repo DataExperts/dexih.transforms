@@ -67,7 +67,7 @@ namespace dexih.connections.test
 //            Assert.Equal("DecimalColumn", importTable.Columns["DecimalColumn"].Name);
 //            Assert.Equal(DataType.ETypeCode.Decimal, importTable.Columns["DecimalColumn"].Datatype);
             Assert.Equal("GuidColumn", importTable.Columns["GuidColumn"].Name);
-            Assert.Equal(DataType.ETypeCode.String, importTable.Columns["GuidColumn"].Datatype);
+            Assert.True(DataType.ETypeCode.String == importTable.Columns["GuidColumn"].Datatype || DataType.ETypeCode.Guid == importTable.Columns["GuidColumn"].Datatype);
 
             // check rows can be read.
             var reader = connection.GetTransformReader(importTable);
@@ -80,13 +80,12 @@ namespace dexih.connections.test
             Assert.Equal("value1", reader["StringColumn"]);
             Assert.Equal(new DateTime(2001, 01, 21), DateTime.Parse(reader["DateColumn"].ToString()));
             Assert.Equal((decimal)1.1, reader.GetDecimal(reader.GetOrdinal("DecimalColumn")));
-            Assert.Equal(guid.ToString(), reader["GuidColumn"]);
+            Assert.Equal(guid.ToString(), reader["GuidColumn"].ToString());
 
             // test the preview function returns one row.
             var previewResult = await connection.GetPreview(importTable, null, 100000, CancellationToken.None);
             Assert.True(previewResult.Success, previewResult.Message);
             Assert.Equal(1, previewResult.Value.Data.Count);
-
         }
     }
 }

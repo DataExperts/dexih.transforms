@@ -210,13 +210,13 @@ namespace dexih.connections.sql
                                 cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename";
                                 cmd.Parameters.Add(CreateParameter(cmd, "@description", table.Description));
                                 cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
-                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", SqlTableName(table)));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.Name));
                                 await cmd.ExecuteNonQueryAsync(cancelToken);
                             }
                         }
 
                         //Add the column descriptions
-                        foreach (TableColumn col in table.Columns)
+                        foreach (var col in table.Columns)
                         {
                             if (!string.IsNullOrEmpty(col.Description))
                             {
@@ -225,7 +225,7 @@ namespace dexih.connections.sql
                                     cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename, @level2type=N'COLUMN',@level2name=@columnname";
                                     cmd.Parameters.Add(CreateParameter(cmd, "@description", col.Description));
                                     cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", SqlTableName(table)));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.Name));
                                     cmd.Parameters.Add(CreateParameter(cmd, "@columnname", col.Name));
                                     await cmd.ExecuteNonQueryAsync(cancelToken);
                                 }
