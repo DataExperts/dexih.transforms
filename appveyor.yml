@@ -32,6 +32,8 @@ artifacts:
   - path: artifacts\*.nupkg
 services:
   - mssql2014
+  - mysql
+  - postgresql
   
 deploy:
  - provider: NuGet
