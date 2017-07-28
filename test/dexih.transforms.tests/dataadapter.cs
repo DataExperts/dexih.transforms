@@ -14,21 +14,21 @@ namespace dexih.transforms.tests
         /// This test should take about 450ms
         /// </summary>
         [Fact]
-        public void TestDataAdapter()
+        public async Task TestDataAdapter()
         {
-            ReaderMemory tableAdapter = Helpers.CreateLargeTable(100000);
+            var tableAdapter = Helpers.CreateLargeTable(100000);
 
-            int count = 0;
-            while(tableAdapter.Read())
+            var count = 0;
+            while(await tableAdapter.ReadAsync())
             {
-                for (int j = 0; j < 10; j++)
+                for (var j = 0; j < 10; j++)
                 {
-                    Assert.True((int)tableAdapter.GetValue(j) == j);
+                    Assert.Equal( j, tableAdapter.GetValue(j));
                 }
                 count++;
             }
 
-            Assert.True(count == 1000000);
+            Assert.Equal(100000, count);
         }
     }
 }
