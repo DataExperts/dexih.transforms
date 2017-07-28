@@ -14,7 +14,7 @@ namespace dexih.transforms.tests
     {
 
         [Fact]
-        public async void JoinSorted()
+        public async Task JoinSorted()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateSortedJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -37,7 +37,7 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public async void JoinHash()
+        public async Task JoinHash()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateUnSortedJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -64,7 +64,7 @@ namespace dexih.transforms.tests
         /// Checks the join transform correctly raises an exception when a duplicate join key exists.
         /// </summary>
         [Fact]
-        public async void JoinHashDuplicate()
+        public async Task JoinHashDuplicate()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformJoin transformJoin = new TransformJoin(Source, Helpers.CreateDuplicatesJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -79,7 +79,7 @@ namespace dexih.transforms.tests
         /// Checks the join transform correctly raises an exception when a duplicate join key exists.  The data is sorted to test the sortedjoin algorithm.
         /// </summary>
         [Fact]
-        public async void JoinSortedDuplicate()
+        public async Task JoinSortedDuplicate()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformSort sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort>() { new Sort("StringColumn") });
@@ -94,7 +94,7 @@ namespace dexih.transforms.tests
         /// Run a join with an outer join
         /// </summary>
         [Fact]
-        public async void JoinSortedOuterJoin()
+        public async Task JoinSortedOuterJoin()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformSort sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort>() { new Sort("StringColumn") });
@@ -127,7 +127,7 @@ namespace dexih.transforms.tests
         /// Run a join with a pre-filter.
         /// </summary>
         [Fact]
-        public async void JoinSortedPreFilter()
+        public async Task JoinSortedPreFilter()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformSort sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort>() { new Sort("StringColumn") });
@@ -157,7 +157,7 @@ namespace dexih.transforms.tests
         /// Run a join with a sort to resolve the duplicate record.
         /// </summary>
         [Fact]
-        public async void JoinPreSortFirstFilter()
+        public async Task JoinPreSortFirstFilter()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformSort sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort>() { new Sort("StringColumn") });
@@ -183,7 +183,7 @@ namespace dexih.transforms.tests
         /// Run a join with a sort to resolve the duplicate record.
         /// </summary>
         [Fact]
-        public async void JoinPreSortLastFilter()
+        public async Task JoinPreSortLastFilter()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformSort sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort>() { new Sort("StringColumn") });
@@ -211,7 +211,7 @@ namespace dexih.transforms.tests
         /// Run a join with a static value as one of the join conditions.
         /// </summary>
         [Fact]
-        public async void JoinSortedStaticValue()
+        public async Task JoinSortedStaticValue()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformSort sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort>() { new Sort("StringColumn") });
@@ -241,7 +241,7 @@ namespace dexih.transforms.tests
         /// Run a join with a static value as one of the join conditions.
         /// </summary>
         [Fact]
-        public async void JoinHashStaticValue()
+        public async Task JoinHashStaticValue()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
 
@@ -270,7 +270,7 @@ namespace dexih.transforms.tests
         /// Run a join with a pre-filter.
         /// </summary>
         [Fact]
-        public async void JoinHashPreFilter()
+        public async Task JoinHashPreFilter()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             var conditions = new List<Function>();
@@ -297,7 +297,7 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public async void JoinSortedFunctionFilter()
+        public async Task JoinSortedFunctionFilter()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
 
@@ -329,7 +329,7 @@ namespace dexih.transforms.tests
 
 
         [Fact]
-        public async void JoinHashFunctionFilter()
+        public async Task JoinHashFunctionFilter()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
 

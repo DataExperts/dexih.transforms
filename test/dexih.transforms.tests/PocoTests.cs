@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -52,7 +53,7 @@ namespace dexih.transforms.tests
         }
         
         [Fact]
-        public async void PocoTest_ToListAsync()
+        public async Task PocoTest_ToListAsync()
         {
             var reader = Helpers.CreateSortedTestData();
             var poco = new PocoLoader<SamplePocoClass>();
@@ -72,7 +73,7 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public async void PocoTest_Reader()
+        public async Task PocoTest_Reader()
         {
             var items = new List<SamplePocoClass>
             {

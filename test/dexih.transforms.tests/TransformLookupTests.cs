@@ -14,7 +14,7 @@ namespace dexih.transforms.tests
     {
 
         [Fact]
-        public async void Lookup()
+        public async Task Lookup()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformLookup transformLookup = new TransformLookup(Source, Helpers.CreateUnSortedJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, "Lookup");

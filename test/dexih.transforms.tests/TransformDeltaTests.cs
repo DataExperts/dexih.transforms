@@ -364,7 +364,7 @@ namespace dexih.transforms.tests
         [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve)]
         [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdatePreserve)]
         [InlineData(100000, TransformDelta.EUpdateStrategy.Reload)]
-        public async void TransformDeltaPerformance(int rows, TransformDelta.EUpdateStrategy updateStrategy)
+        public async Task TransformDeltaPerformance(int rows, TransformDelta.EUpdateStrategy updateStrategy)
         {
             var source = Helpers.CreateLargeTable(rows);
 
