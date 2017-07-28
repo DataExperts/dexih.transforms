@@ -8,22 +8,22 @@ namespace dexih.functions
     public class StandardProfiles
     {
         private readonly Dictionary<string, int> _dictionary = new Dictionary<string, int>();
-        private int _intValue = 0;
-        private object _objectValue = null;
+        private int _intValue;
+        private object _objectValue;
 
-        private int _recordCount = 0;
+        private int _recordCount;
         public bool DetailedResults { get; set; }
 
         public static Function GetProfileReference(bool detailedResults, string profileName, TableColumn inputColumn)
         {
-            StandardProfiles newProfile = new StandardProfiles(detailedResults);
-            return new Function(newProfile, profileName, profileName + "Result", "Reset", new TableColumn[] { inputColumn }, new TableColumn("Result"), new TableColumn[] { new TableColumn("Distribution") });
+            var newProfile = new StandardProfiles(detailedResults);
+            return new Function(newProfile, profileName, profileName + "Result", "Reset", new[] { inputColumn }, new TableColumn("Result"), new[] { new TableColumn("Distribution") });
         }
 
         public static Function GetProfileReference(bool detailedResults, string profileName, string inputColumnName)
         {
-            StandardProfiles newProfile = new StandardProfiles(detailedResults);
-            return new Function(newProfile, profileName, profileName + "Result", "Reset", new TableColumn[] { new TableColumn(inputColumnName) }, new TableColumn("Result"), new TableColumn[] { new TableColumn("Distribution") });
+            var newProfile = new StandardProfiles(detailedResults);
+            return new Function(newProfile, profileName, profileName + "Result", "Reset", new[] { new TableColumn(inputColumnName) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") });
         }
 
         public void Reset()
@@ -49,7 +49,7 @@ namespace dexih.functions
             _recordCount++;
 
             //only makes recommendations on string types, otherwise uses the type of the field.
-            string sValue = value as string;
+            var sValue = value;
             if (string.IsNullOrEmpty(sValue))
             {
                 if (_dictionary.ContainsKey("Null"))
@@ -60,7 +60,7 @@ namespace dexih.functions
             }
 
             long valueInt64;
-            if (Int64.TryParse(sValue, out valueInt64))
+            if (long.TryParse(sValue, out valueInt64))
             {
                 if (_dictionary.ContainsKey("Int64"))
                     _dictionary["Int64"]++;
@@ -70,7 +70,7 @@ namespace dexih.functions
             }
 
             double valueDouble;
-            if (Double.TryParse(sValue, out valueDouble))
+            if (double.TryParse(sValue, out valueDouble))
             {
                 if (_dictionary.ContainsKey("Double"))
                     _dictionary["Double"]++;
@@ -107,34 +107,31 @@ namespace dexih.functions
         }
         public string BestDataTypeResult(out Dictionary<string, int> distribution)
         {
-            string result = "";
+            var result = "";
 
             if (_recordCount == 0)
             {
                 distribution = null;
                 return "N/A";
             }
-            else
-            {
-                int count = _dictionary.Count();
-                if (count == 0)
-                    result = "N/A";
-                if (count == 1 && _dictionary.ContainsKey("DateTime"))
-                    result = "DateTime";
-                if (count == 1 && _dictionary.ContainsKey("Int64"))
-                    result = "Integer";
-                if ((count == 1 && _dictionary.ContainsKey("Double")) || (count == 2 && _dictionary.ContainsKey("Double") && _dictionary.ContainsKey("Int64")))
-                    result = "Double";
-                if (_dictionary.ContainsKey("Float") && _dictionary.ContainsKey("String") == false && _dictionary.ContainsKey("DateTime") == false)
-                    result = "Float";
-                if (result == "")
-                    result = "String";
+            var count = _dictionary.Count();
+            if (count == 0)
+                result = "N/A";
+            if (count == 1 && _dictionary.ContainsKey("DateTime"))
+                result = "DateTime";
+            if (count == 1 && _dictionary.ContainsKey("Int64"))
+                result = "Integer";
+            if ((count == 1 && _dictionary.ContainsKey("Double")) || (count == 2 && _dictionary.ContainsKey("Double") && _dictionary.ContainsKey("Int64")))
+                result = "Double";
+            if (_dictionary.ContainsKey("Float") && _dictionary.ContainsKey("String") == false && _dictionary.ContainsKey("DateTime") == false)
+                result = "Float";
+            if (result == "")
+                result = "String";
 
-                if (DetailedResults)
-                    distribution = _dictionary;
-                else
-                    distribution = null;
-            }
+            if (DetailedResults)
+                distribution = _dictionary;
+            else
+                distribution = null;
             return result;
         }
 
@@ -159,7 +156,7 @@ namespace dexih.functions
 
         public void Blanks(string value)
         {
-            if (value==null || value.ToString() == "") _intValue++;
+            if (value==null || value == "") _intValue++;
             _recordCount++;
         }
 
@@ -179,7 +176,7 @@ namespace dexih.functions
         public void Zeros(string value)
         {
             decimal number;
-            if (value != null && Decimal.TryParse(value.ToString(), out number))
+            if (value != null && decimal.TryParse(value, out number))
                 if (number == 0) _intValue++;
             _recordCount++;
         }
@@ -197,14 +194,13 @@ namespace dexih.functions
 
             if (_recordCount == 0)
                 return "N/A";
-            else
-                return ((float)_intValue / _recordCount).ToString("P");
+            return ((float)_intValue / _recordCount).ToString("P");
         }
 
         public void MaxLength(string value)
         {
             _recordCount++;
-            int length = value == null ? 0 : value.ToString().Length;
+            var length = value == null ? 0 : value.Length;
             if (length > _intValue)
             {
                 _intValue = length;
@@ -215,7 +211,6 @@ namespace dexih.functions
                     _dictionary[length.ToString()]++;
                 else
                     _dictionary.Add(length.ToString(), 1);
-                return;
             }
         }
 
@@ -230,8 +225,7 @@ namespace dexih.functions
 
             if (_recordCount == 0)
                 return "N/A";
-            else
-                return _intValue.ToString();
+            return _intValue.ToString();
         }
 
         public void MaxValue(string value)
@@ -239,7 +233,7 @@ namespace dexih.functions
             double number;
             _recordCount++;
 
-            if (value != null &&  Double.TryParse(value.ToString(), out number))
+            if (value != null &&  double.TryParse(value, out number))
             {
                 if (_objectValue == null || Convert.ToDouble(_objectValue) < number)
                 {
@@ -252,7 +246,6 @@ namespace dexih.functions
                         _dictionary[_objectValue.ToString()]++;
                     else
                         _dictionary.Add(_objectValue.ToString(), 1);
-                    return;
                 }
             }
             else
@@ -263,7 +256,6 @@ namespace dexih.functions
                         _dictionary["Non Numeric"]++;
                     else
                         _dictionary.Add("Non Numeric", 1);
-                    return;
                 }
             }
         }
@@ -279,8 +271,7 @@ namespace dexih.functions
 
             if (_recordCount == 0 || _objectValue == null)
                 return "N/A";
-            else
-                return _objectValue.ToString();
+            return _objectValue.ToString();
         }
 
         public void DistinctValues(string value)
@@ -290,10 +281,10 @@ namespace dexih.functions
             if (value == null )
                 value = "Null";
 
-            if (_dictionary.ContainsKey(value.ToString()) == false)
-                _dictionary.Add(value.ToString(), 1);
+            if (_dictionary.ContainsKey(value) == false)
+                _dictionary.Add(value, 1);
             else
-                _dictionary[value.ToString()]++;
+                _dictionary[value]++;
         }
 
         public string DistinctValuesResult(out Dictionary<string, int> distribution)
@@ -307,13 +298,9 @@ namespace dexih.functions
 
             if (_recordCount == 0)
                 return "N/A";
-            else
-            {
-                if (_dictionary.Count() == _recordCount)
-                    return "Unique";
-                else
-                    return _dictionary.Count().ToString();
-            }
+            if (_dictionary.Count() == _recordCount)
+                return "Unique";
+            return _dictionary.Count().ToString();
         }
 
         public void Patterns(string value)
@@ -322,7 +309,7 @@ namespace dexih.functions
 
             if (value != null)
             {
-                string pattern = value.ToString();
+                var pattern = value;
                 if (pattern.Length < 50)
                 {
                     pattern = Regex.Replace(pattern, "[A-Z]", "A");
@@ -349,17 +336,11 @@ namespace dexih.functions
 
             if (_recordCount == 0 || !_dictionary.Any())
                 return "N/A";
-            else
-            {
-                KeyValuePair<string, int> pattern = _dictionary.OrderByDescending(c => c.Value).First();
+            var pattern = _dictionary.OrderByDescending(c => c.Value).First();
 
-                if (_dictionary.Count == 1)
-                    return "Unique: " + pattern.Key;
-                else
-                {
-                    return "Pattern Count=" + _dictionary.Count.ToString() + ", Most common(" + ((float)pattern.Value / _recordCount).ToString("P") + "): " + pattern.Key;
-                }
-            }
+            if (_dictionary.Count == 1)
+                return "Unique: " + pattern.Key;
+            return "Pattern Count=" + _dictionary.Count + ", Most common(" + ((float)pattern.Value / _recordCount).ToString("P") + "): " + pattern.Key;
         }
 
     }

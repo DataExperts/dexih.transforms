@@ -21,9 +21,9 @@ namespace dexih.functions {
         // private readonly AsyncAutoResetEvent _cancelEvent = new AsyncAutoResetEvent();
 
         public bool IsCancelled { get; set; } = false;
-        public bool IsFinished { get; set; } = false;
+        public bool IsFinished { get; set; }
 
-        private bool _awaitingPush = false;
+        private bool _awaitingPush;
 
         public RealTimeQueue()
         {
@@ -103,7 +103,7 @@ namespace dexih.functions {
 
                     if (completedTask == timeoutEvent)
                     {
-                        throw new RealTimeQueueTimeOutException($"The push operation timed out after {timeOutMilliseconds.ToString()} milliseconds.");
+                        throw new RealTimeQueueTimeOutException($"The push operation timed out after {timeOutMilliseconds} milliseconds.");
                     }
                 }
 
@@ -111,8 +111,6 @@ namespace dexih.functions {
                 IsFinished = isFinalBuffer;
 
                 _pushEvent.Set();
-
-                return;
             }
             catch (Exception ex)
             when(!(ex is RealTimeQueueCancelledException || ex is RealTimeQueueFinishedException || ex is RealTimeQueueTimeOutException || ex is RealTimeQueuePushExceededException))
@@ -154,7 +152,7 @@ namespace dexih.functions {
 
                     if (completedTask == timeoutEvent)
                     {
-                        throw new RealTimeQueueTimeOutException($"The pull operation timed out after {timeOutMilliseconds.ToString()} milliseconds.");
+                        throw new RealTimeQueueTimeOutException($"The pull operation timed out after {timeOutMilliseconds} milliseconds.");
                     }
                 }
 

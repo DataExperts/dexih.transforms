@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.XPath;
 using Newtonsoft.Json.Linq;
-using System.Reflection;
 
 namespace dexih.functions
 {
@@ -20,7 +20,7 @@ namespace dexih.functions
         private DateTime? _cacheDate;
         private string _cacheString;
         private Dictionary<string, string> _cacheStringDictionary;
-        private Dictionary<string, Int32> _cacheIntDictionary;
+        private Dictionary<string, int> _cacheIntDictionary;
         private List<object> _cacheList;
         private string[] _cacheArray;
         private List<KeyValuePair<DateTime, double>> _cacheSeriesList;
@@ -58,20 +58,20 @@ namespace dexih.functions
         }
 
         #region Regular Functions
-        public String Concat(String[] values) { return String.Concat(values); }
-        public Int32 IndexOf(String value, String search) { return value.IndexOf(search, StringComparison.Ordinal); }
-        public String Insert(String value, Int32 startIndex, String insertString) { return value.Insert(startIndex, insertString); }
-        public String Join(String separator, String[] values) { return String.Join(separator, values); }
-        public String PadLeft(String value, Int32 width, String paddingChar) { return value.PadLeft(width, paddingChar[0]); }
-        public String PadRight(String value, Int32 width, String paddingChar) { return value.PadRight(width, paddingChar[0]); }
-        public String Remove(String value, Int32 startIndex, Int32 count) { return value.Remove(startIndex, count); }
+        public string Concat(string[] values) { return string.Concat(values); }
+        public int IndexOf(string value, string search) { return value.IndexOf(search, StringComparison.Ordinal); }
+        public string Insert(string value, int startIndex, string insertString) { return value.Insert(startIndex, insertString); }
+        public string Join(string separator, string[] values) { return string.Join(separator, values); }
+        public string PadLeft(string value, int width, string paddingChar) { return value.PadLeft(width, paddingChar[0]); }
+        public string PadRight(string value, int width, string paddingChar) { return value.PadRight(width, paddingChar[0]); }
+        public string Remove(string value, int startIndex, int count) { return value.Remove(startIndex, count); }
 
-        public String Replace(String value, String oldValue, String newValue)
+        public string Replace(string value, string oldValue, string newValue)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
                 return null;
 
-            if (String.IsNullOrEmpty(oldValue))
+            if (string.IsNullOrEmpty(oldValue))
                 return value;
 
             if (newValue == null)
@@ -80,9 +80,9 @@ namespace dexih.functions
             return value.Replace(oldValue, newValue);
         }
 
-        public Int32 Split(String value, String separator, Int32 count, out string[] result)
+        public int Split(string value, string separator, int count, out string[] result)
         {
-            if(String.IsNullOrEmpty(value))
+            if(string.IsNullOrEmpty(value))
             {
                 result = null;
                 return 0;
@@ -90,37 +90,37 @@ namespace dexih.functions
             result = value.Split(separator.ToCharArray(), count);
             return result.Length;
         }
-        public String Substring(String stringValue, Int32 start, Int32 length)
+        public string Substring(string stringValue, int start, int length)
         {
-            int stringLength = stringValue.Length;
+            var stringLength = stringValue.Length;
             if (start > stringLength) return "";
             if (start + length > stringLength) return stringValue.Substring(start);
             return stringValue.Substring(start, length);
         }
-        public String ToLower(String value) { return value.ToLower(); }
-        public String ToUpper(String value) { return value.ToUpper(); }
-        public String Trim(String value) { return value.Trim(); }
-        public String TrimEnd(String value) { return value.TrimEnd(); }
-        public String TrimStart(String value) { return value.TrimStart(); }
-        public Int32 Length(String value) { return value.Length; }
-        public Int32 WordCount(String value)
+        public string ToLower(string value) { return value.ToLower(); }
+        public string ToUpper(string value) { return value.ToUpper(); }
+        public string Trim(string value) { return value.Trim(); }
+        public string TrimEnd(string value) { return value.TrimEnd(); }
+        public string TrimStart(string value) { return value.TrimStart(); }
+        public int Length(string value) { return value.Length; }
+        public int WordCount(string value)
         {
             if (string.IsNullOrEmpty(value))
                 return 0;
 
-            int c = 0;
-            for (int i = 1; i < value.Length; i++)
+            var c = 0;
+            for (var i = 1; i < value.Length; i++)
                 if (char.IsWhiteSpace(value[i - 1]))
                     if (char.IsLetterOrDigit(value[i]) || char.IsPunctuation(value[i])) c++;
             if (value.Length > 2) c++;
             return c;
         }
-        public String WordExtract(String value, Int32 wordNumber)
+        public string WordExtract(string value, int wordNumber)
         {
             if (string.IsNullOrEmpty(value))
                 return null;
 
-            int start = 0; int c = 0; int i;
+            var start = 0; var c = 0; int i;
             for (i = 1; i < value.Length; i++)
                 if (char.IsWhiteSpace(value[i - 1]))
                     if (char.IsLetterOrDigit(value[i]) || char.IsPunctuation(value[i]))
@@ -128,40 +128,40 @@ namespace dexih.functions
             if (value.Length > 2) c++;
             return c == 0 || c <= wordNumber ? "" : value.Substring(start, i - start);
         }
-        public Boolean LessThan(Double value, Double compare) { return value < compare; }
-        public Boolean LessThanEqual(Double value, Double compare) { return value <= compare; }
-        public Boolean GreaterThan(Double value, Double compare) { return value > compare; }
-        public Boolean GreaterThanEqual(Double value, Double compare) { return value >= compare; }
-        public Boolean IsEqual(String[] values)
+        public bool LessThan(double value, double compare) { return value < compare; }
+        public bool LessThanEqual(double value, double compare) { return value <= compare; }
+        public bool GreaterThan(double value, double compare) { return value > compare; }
+        public bool GreaterThanEqual(double value, double compare) { return value >= compare; }
+        public bool IsEqual(string[] values)
         {
-            for(int i = 1; i< values.Length; i++)
+            for(var i = 1; i< values.Length; i++)
             {
                 if (values[0] != values[i]) return false;
             }
 
             return true;
         }
-        public Boolean IsNumericEqual(Decimal[] values)
+        public bool IsNumericEqual(decimal[] values)
         {
-            for (int i = 1; i < values.Length; i++)
+            for (var i = 1; i < values.Length; i++)
             {
                 if (values[0] != values[i]) return false;
             }
 
             return true;
         }
-        public Boolean IsDateTimeEqual(DateTime[] values)
+        public bool IsDateTimeEqual(DateTime[] values)
         {
-            for (int i = 1; i < values.Length; i++)
+            for (var i = 1; i < values.Length; i++)
             {
                 if (values[0] != values[i]) return false;
             }
 
             return true;
         }
-        public Boolean IsBooleanEqual(Boolean[] values)
+        public bool IsBooleanEqual(bool[] values)
         {
-            for (int i = 1; i < values.Length; i++)
+            for (var i = 1; i < values.Length; i++)
             {
                 if (values[0] != values[i]) return false;
             }
@@ -169,15 +169,15 @@ namespace dexih.functions
             return true;
         }
 
-        public Boolean IsTrue(Boolean value) => value;
+        public bool IsTrue(bool value) => value;
 
 
-        public Boolean IsNumber(String value)
+        public bool IsNumber(string value)
         {
-            Decimal result;
-            return Decimal.TryParse(value, out result);
+            decimal result;
+            return decimal.TryParse(value, out result);
         }
-        public Boolean ToDate(String value, out DateTime result)
+        public bool ToDate(string value, out DateTime result)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -186,144 +186,144 @@ namespace dexih.functions
             }
             return DateTime.TryParse(value, out result);
         }
-        public Boolean IsNull(String value) { return value == null;  }
-        public Boolean IsBetween(Double value, Double lowRange, Double highRange) { return value > lowRange && value < highRange; }
-        public Boolean IsBetweenInclusive(Double value, Double lowRange, Double highRange) { return value >= lowRange && value <= highRange; }
-        public Boolean RegexMatch(String input, String pattern) { return Regex.Match(input, pattern).Success; }
-        public Boolean Contains(String value, String contains) { return value.Contains(contains); }
-        public Boolean EndsWith(String value, String endsWith) { return value.EndsWith(endsWith); }
-        public Boolean StartsWith(String value, String startsWith) { return value.StartsWith(startsWith); }
-        public Boolean IsUpper(String value, Boolean skipNonAlpha)
+        public bool IsNull(string value) { return value == null;  }
+        public bool IsBetween(double value, double lowRange, double highRange) { return value > lowRange && value < highRange; }
+        public bool IsBetweenInclusive(double value, double lowRange, double highRange) { return value >= lowRange && value <= highRange; }
+        public bool RegexMatch(string input, string pattern) { return Regex.Match(input, pattern).Success; }
+        public bool Contains(string value, string contains) { return value.Contains(contains); }
+        public bool EndsWith(string value, string endsWith) { return value.EndsWith(endsWith); }
+        public bool StartsWith(string value, string startsWith) { return value.StartsWith(startsWith); }
+        public bool IsUpper(string value, bool skipNonAlpha)
         {
-            foreach (char t in value)
+            foreach (var t in value)
             {
-                if ((skipNonAlpha && Char.IsLetter(t) && !Char.IsUpper(t)) || (skipNonAlpha == false && !Char.IsUpper(t)))
+                if ((skipNonAlpha && char.IsLetter(t) && !char.IsUpper(t)) || (skipNonAlpha == false && !char.IsUpper(t)))
                     return false;
             }
             return true;
         }
 
-        public Boolean IsLower(String value, Boolean skipNonAlpha)
+        public bool IsLower(string value, bool skipNonAlpha)
         {
-            foreach (char t in value)
+            foreach (var t in value)
             {
-                if ((skipNonAlpha && Char.IsLetter(t) && !Char.IsLower(t)) || (skipNonAlpha == false && !Char.IsLower(t)))
+                if ((skipNonAlpha && char.IsLetter(t) && !char.IsLower(t)) || (skipNonAlpha == false && !char.IsLower(t)))
                     return false;
             }
             return true;
         }
 
-        public Boolean IsAlpha(String value)
+        public bool IsAlpha(string value)
         {
-            foreach (char t in value)
+            foreach (var t in value)
             {
-                if (!Char.IsLetter(t))
+                if (!char.IsLetter(t))
                     return false;
             }
             return true;
         }
 
-        public Boolean IsAlphaNumeric(String value)
+        public bool IsAlphaNumeric(string value)
         {
-            foreach (char t in value)
+            foreach (var t in value)
             {
-                if (!Char.IsLetter(t) && !Char.IsNumber(t))
+                if (!char.IsLetter(t) && !char.IsNumber(t))
                     return false;
             }
             return true;
         }
 
-        public Boolean IsPattern(String value, String pattern)
+        public bool IsPattern(string value, string pattern)
         {
             if (value.Length != pattern.Length) return false;
-            for (int i = 0; i < pattern.Length; i++)
+            for (var i = 0; i < pattern.Length; i++)
             {
-                if ((pattern[i] == '9' && !Char.IsNumber(value[i])) ||
-                   (pattern[i] == 'A' && !Char.IsUpper(value[i])) ||
-                   (pattern[i] == 'a' && !Char.IsLower(value[i])) ||
-                   (pattern[i] == 'Z' && !Char.IsLetter(value[i])))
+                if ((pattern[i] == '9' && !char.IsNumber(value[i])) ||
+                   (pattern[i] == 'A' && !char.IsUpper(value[i])) ||
+                   (pattern[i] == 'a' && !char.IsLower(value[i])) ||
+                   (pattern[i] == 'Z' && !char.IsLetter(value[i])))
                     return false;
             }
             return true;
         }
-        public DateTime AddDays(DateTime dateValue, Double addValue) { return dateValue.AddDays(addValue); }
-        public DateTime AddHours(DateTime dateValue, Double addValue) { return dateValue.AddHours(addValue); }
-        public DateTime AddMilliseconds(DateTime dateValue, Double addValue) { return dateValue.AddMilliseconds(addValue); }
-        public DateTime AddMinutes(DateTime dateValue, Double addValue) { return dateValue.AddMinutes(addValue); }
-        public DateTime AddMonths(DateTime dateValue, Int32 addValue) { return dateValue.AddMonths(addValue); }
-        public DateTime AddSeconds(DateTime dateValue, Double addValue) { return dateValue.AddSeconds(addValue); }
-        public DateTime AddYears(DateTime dateValue, Int32 addValue) { return dateValue.AddYears(addValue); }
-        public Int32 DaysInMonth(DateTime dateValue) { return DateTime.DaysInMonth(dateValue.Year, dateValue.Month); }
-        public Boolean IsDaylightSavingTime(DateTime dateValue) { return TimeZoneInfo.Local.IsDaylightSavingTime(dateValue); }
-        public Boolean IsLeapYear(DateTime dateValue) { return DateTime.IsLeapYear(dateValue.Year); }
-        public Boolean IsWeekend(DateTime dateValue) { return dateValue.DayOfWeek == DayOfWeek.Saturday || dateValue.DayOfWeek == DayOfWeek.Sunday; }
-        public Boolean IsWeekDay(DateTime dateValue) { return !(dateValue.DayOfWeek == DayOfWeek.Saturday || dateValue.DayOfWeek == DayOfWeek.Sunday); }
-        public Int32 DayOfMonth(DateTime dateValue) { return dateValue.Day; }
-        public String DayOfWeekName(DateTime dateValue) { return dateValue.DayOfWeek.ToString(); }
-        public Int32 DayOfWeekNumber(DateTime dateValue) { return (int)dateValue.DayOfWeek; }
-        public Int32 WeekOfYear(DateTime dateValue)
+        public DateTime AddDays(DateTime dateValue, double addValue) { return dateValue.AddDays(addValue); }
+        public DateTime AddHours(DateTime dateValue, double addValue) { return dateValue.AddHours(addValue); }
+        public DateTime AddMilliseconds(DateTime dateValue, double addValue) { return dateValue.AddMilliseconds(addValue); }
+        public DateTime AddMinutes(DateTime dateValue, double addValue) { return dateValue.AddMinutes(addValue); }
+        public DateTime AddMonths(DateTime dateValue, int addValue) { return dateValue.AddMonths(addValue); }
+        public DateTime AddSeconds(DateTime dateValue, double addValue) { return dateValue.AddSeconds(addValue); }
+        public DateTime AddYears(DateTime dateValue, int addValue) { return dateValue.AddYears(addValue); }
+        public int DaysInMonth(DateTime dateValue) { return DateTime.DaysInMonth(dateValue.Year, dateValue.Month); }
+        public bool IsDaylightSavingTime(DateTime dateValue) { return TimeZoneInfo.Local.IsDaylightSavingTime(dateValue); }
+        public bool IsLeapYear(DateTime dateValue) { return DateTime.IsLeapYear(dateValue.Year); }
+        public bool IsWeekend(DateTime dateValue) { return dateValue.DayOfWeek == DayOfWeek.Saturday || dateValue.DayOfWeek == DayOfWeek.Sunday; }
+        public bool IsWeekDay(DateTime dateValue) { return !(dateValue.DayOfWeek == DayOfWeek.Saturday || dateValue.DayOfWeek == DayOfWeek.Sunday); }
+        public int DayOfMonth(DateTime dateValue) { return dateValue.Day; }
+        public string DayOfWeekName(DateTime dateValue) { return dateValue.DayOfWeek.ToString(); }
+        public int DayOfWeekNumber(DateTime dateValue) { return (int)dateValue.DayOfWeek; }
+        public int WeekOfYear(DateTime dateValue)
         {
-            DateTimeFormatInfo dfi = DateTimeFormatInfo.CurrentInfo;
-            Calendar cal = dfi.Calendar;
+            var dfi = DateTimeFormatInfo.CurrentInfo;
+            var cal = dfi.Calendar;
             return cal.GetWeekOfYear(dateValue, dfi.CalendarWeekRule, dfi.FirstDayOfWeek);
         }
-        public Int32 DayOfYear(DateTime dateValue) { return dateValue.DayOfYear; }
-        public Int32 Month(DateTime dateValue) { return dateValue.Month; }
-        public String ShortMonth(DateTime dateValue) { return CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(dateValue.Month); }
-        public String LongMonth(DateTime dateValue) { return CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dateValue.Month); }
-        public Int32 Year(DateTime dateValue) { return dateValue.Year; }
+        public int DayOfYear(DateTime dateValue) { return dateValue.DayOfYear; }
+        public int Month(DateTime dateValue) { return dateValue.Month; }
+        public string ShortMonth(DateTime dateValue) { return CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(dateValue.Month); }
+        public string LongMonth(DateTime dateValue) { return CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dateValue.Month); }
+        public int Year(DateTime dateValue) { return dateValue.Year; }
         public string ToLongDateString(DateTime dateValue) { return dateValue.ToString("dddd, dd MMMM yyyy"); } // .ToLongDateString(); } 
         public string ToLongTimeString(DateTime dateValue) { return dateValue.ToString("h:mm:ss tt").ToUpper(); } // .ToLongTimeString(); } 
-        public String ToShortDateString(DateTime dateValue) { return dateValue.ToString("d/MM/yyyy"); }// ToShortDateString(); } 
-        public String ToShortTimeString(DateTime dateValue) { return dateValue.ToString("h:mm tt").ToUpper(); } // .ToShortTimeString(); } 
-        public String DateToString(DateTime dateValue, String format) { return dateValue.ToString(format); }
+        public string ToShortDateString(DateTime dateValue) { return dateValue.ToString("d/MM/yyyy"); }// ToShortDateString(); } 
+        public string ToShortTimeString(DateTime dateValue) { return dateValue.ToString("h:mm tt").ToUpper(); } // .ToShortTimeString(); } 
+        public string DateToString(DateTime dateValue, string format) { return dateValue.ToString(format); }
         public DateTime DateNow() { return DateTime.Now; }
         public DateTime DateNowUtc() { return DateTime.UtcNow; }
-        public String Encrypt(String value, String key) { return EncryptString.Encrypt(value, key, 1000).Value; }
-        public String Decrypt(String value, String key) { return EncryptString.Decrypt(value, key, 1000).Value; }
-        public String CreateSaltedHash(String value) { return HashString.CreateHash(value); }
-        public Boolean ValidateSaltedHash(String value, String hash) { return HashString.ValidateHash(value, hash); }
+        public string Encrypt(string value, string key) { return EncryptString.Encrypt(value, key, 1000).Value; }
+        public string Decrypt(string value, string key) { return EncryptString.Decrypt(value, key, 1000).Value; }
+        public string CreateSaltedHash(string value) { return HashString.CreateHash(value); }
+        public bool ValidateSaltedHash(string value, string hash) { return HashString.ValidateHash(value, hash); }
 
-        public Double Abs(Double value) { return Math.Abs(value); }
-        public Double Acos(Double value) { return Math.Acos(value); }
-        public Double Asin(Double value) { return Math.Asin(value); }
-        public Double Atan(Double value) { return Math.Atan(value); }
-        public Double Atan2(Double x, Double y) { return Math.Atan2(x, y); }
-        public Double Cos(Double value) { return Math.Cos(value); }
-        public Double Cosh(Double value) { return Math.Cosh(value); }
+        public double Abs(double value) { return Math.Abs(value); }
+        public double Acos(double value) { return Math.Acos(value); }
+        public double Asin(double value) { return Math.Asin(value); }
+        public double Atan(double value) { return Math.Atan(value); }
+        public double Atan2(double x, double y) { return Math.Atan2(x, y); }
+        public double Cos(double value) { return Math.Cos(value); }
+        public double Cosh(double value) { return Math.Cosh(value); }
 
-        public Int32 DivRem(Int32 dividend, Int32 divisor, out int remainder)
+        public int DivRem(int dividend, int divisor, out int remainder)
         {
             //return Math.DivRem(dividend, divisor, out remainder); Not working in DNX50
-            int quotient = dividend / divisor;
+            var quotient = dividend / divisor;
             remainder = dividend - (divisor * quotient);
             return quotient;
         }
-        public Double Exp(Double value) { return Math.Exp(value); }
-        public Double IeeeRemainder(Double x, Double y) { return Math.IEEERemainder(x, y); }
-        public Double Log(Double value) { return Math.Log(value); }
-        public Double Log10(Double value) { return Math.Log10(value); }
-        public Double Pow(Double x, Double y) { return Math.Pow(x, y); }
-        public Double Round(Double value) { return Math.Round(value); }
-        public Double Sign(Double value) { return Math.Sign(value); }
-        public Double Sin(Double value) { return Math.Sin(value); }
-        public Double Sinh(Double value) { return Math.Sinh(value); }
-        public Double Sqrt(Double value) { return Math.Sqrt(value); }
-        public Double Tan(Double value) { return Math.Tan(value); }
-        public Double Tanh(Double value) { return Math.Tanh(value); }
-        public Double Truncate(Double value) { return Math.Truncate(value); }
-        public Decimal Add(Decimal value1, Decimal value2) { return value1 + value2; }
-        public Decimal Ceiling(Decimal value) { return Decimal.Ceiling(value); }
-        public Decimal Divide(Decimal value1, Decimal value2) { return value1 / value2; }
-        public Decimal Floor(Decimal value) { return Decimal.Floor(value); }
-        public Decimal Multiply(Decimal value1, Decimal value2) { return value1 * value2; }
-        public Decimal Negate(Decimal value) { return value * -1; }
-        public Decimal Remainder(Decimal value1, Decimal value2) { return Decimal.Remainder(value1, value2); }
-        public Decimal Subtract(Decimal value1, Decimal value2) { return value1 - value2; }
-        public Boolean IsIn(String value, String[] compareTo)
+        public double Exp(double value) { return Math.Exp(value); }
+        public double IeeeRemainder(double x, double y) { return Math.IEEERemainder(x, y); }
+        public double Log(double value) { return Math.Log(value); }
+        public double Log10(double value) { return Math.Log10(value); }
+        public double Pow(double x, double y) { return Math.Pow(x, y); }
+        public double Round(double value) { return Math.Round(value); }
+        public double Sign(double value) { return Math.Sign(value); }
+        public double Sin(double value) { return Math.Sin(value); }
+        public double Sinh(double value) { return Math.Sinh(value); }
+        public double Sqrt(double value) { return Math.Sqrt(value); }
+        public double Tan(double value) { return Math.Tan(value); }
+        public double Tanh(double value) { return Math.Tanh(value); }
+        public double Truncate(double value) { return Math.Truncate(value); }
+        public decimal Add(decimal value1, decimal value2) { return value1 + value2; }
+        public decimal Ceiling(decimal value) { return decimal.Ceiling(value); }
+        public decimal Divide(decimal value1, decimal value2) { return value1 / value2; }
+        public decimal Floor(decimal value) { return decimal.Floor(value); }
+        public decimal Multiply(decimal value1, decimal value2) { return value1 * value2; }
+        public decimal Negate(decimal value) { return value * -1; }
+        public decimal Remainder(decimal value1, decimal value2) { return decimal.Remainder(value1, value2); }
+        public decimal Subtract(decimal value1, decimal value2) { return value1 - value2; }
+        public bool IsIn(string value, string[] compareTo)
         {
-            bool returnValue = false;
-            foreach (string t in compareTo)
+            var returnValue = false;
+            foreach (var t in compareTo)
                 returnValue = returnValue | value == t;
             return returnValue;
         }
@@ -332,11 +332,11 @@ namespace dexih.functions
         #region Geographical
         public double GetDistanceTo(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
         {
-            double rlat1 = Math.PI * fromLatitude / 180;
-            double rlat2 = Math.PI * toLatitude / 180;
-            double theta = fromLongitude - toLongitude;
-            double rtheta = Math.PI * theta / 180;
-            double dist =
+            var rlat1 = Math.PI * fromLatitude / 180;
+            var rlat2 = Math.PI * toLatitude / 180;
+            var theta = fromLongitude - toLongitude;
+            var rtheta = Math.PI * theta / 180;
+            var dist =
                 Math.Sin(rlat1) * Math.Sin(rlat2) + Math.Cos(rlat1) *
                 Math.Cos(rlat2) * Math.Cos(rtheta);
             dist = Math.Acos(dist);
@@ -351,7 +351,7 @@ namespace dexih.functions
         #region Parsing Functions
         public bool XPathValues(string xml, string[] xPaths, out string[] values)
         {
-            bool returnValue = true;
+            var returnValue = true;
 
             try
             {
@@ -359,12 +359,12 @@ namespace dexih.functions
                 //xmlDoc.LoadXml(xml);
 
                 var stream = new StringReader(xml);
-                XPathDocument xPathDocument = new XPathDocument(stream);
-                XPathNavigator xPathNavigator = xPathDocument.CreateNavigator();
+                var xPathDocument = new XPathDocument(stream);
+                var xPathNavigator = xPathDocument.CreateNavigator();
 
                 values = new string[xPaths.Length];
 
-                for (int i = 0; i < xPaths.Length; i++)
+                for (var i = 0; i < xPaths.Length; i++)
                 {
                     //XmlNode xmlNode = xmlDoc.SelectSingleNode(xPaths[i]);
                     var xmlNode = xPathNavigator.SelectSingleNode(xPaths[i]);
@@ -395,15 +395,15 @@ namespace dexih.functions
         {
             try
             {
-                bool returnValue = true;
+                var returnValue = true;
 
                 var results = JObject.Parse(json);
 
                 values = new string[jsonPaths.Length];
 
-                for (int i = 0; i < jsonPaths.Length; i++)
+                for (var i = 0; i < jsonPaths.Length; i++)
                 {
-                    JToken token = results.SelectToken(jsonPaths[i]);
+                    var token = results.SelectToken(jsonPaths[i]);
                     if (token == null)
                     {
                         returnValue = false;
@@ -432,45 +432,45 @@ namespace dexih.functions
             _cacheDouble = _cacheDouble + value;
         }
 
-        public Double SumResult(int index)
+        public double SumResult(int index)
         {
             if (_cacheDouble == null)
                 return 0;
 
-            return (Double)_cacheDouble;
+            return (double)_cacheDouble;
         }
-        public void Average(Double value)
+        public void Average(double value)
         {
             if (_cacheInt == null) _cacheInt = 0;
             if (_cacheDouble == null) _cacheDouble = 0;
             _cacheDouble = _cacheDouble + value;
             _cacheInt = _cacheInt + 1;
         }
-        public Double AverageResult(int index)
+        public double AverageResult(int index)
         {
             if (_cacheDouble == null || _cacheInt == null || _cacheInt == 0)
                 return 0;
 
-            return (Double)_cacheDouble / (Double)_cacheInt;
+            return (double)_cacheDouble / (double)_cacheInt;
         }
 
-        public void Median(Double value)
+        public void Median(double value)
         {
             if (_cacheList == null) _cacheList = new List<object>();
             _cacheList.Add(value);
         }
-        public Double MedianResult(int index)
+        public double MedianResult(int index)
         {
             if (_cacheList == null)
                 return 0;
-            object[] sorted = _cacheList.OrderBy(c => (Double)c).ToArray();
-            int count = sorted.Length;
+            var sorted = _cacheList.OrderBy(c => (double)c).ToArray();
+            var count = sorted.Length;
 
             if (count % 2 == 0)
             {
                 // count is even, average two middle elements
-                Double a = (double)sorted[count / 2 - 1];
-                Double b = (double)sorted[count / 2];
+                var a = (double)sorted[count / 2 - 1];
+                var b = (double)sorted[count / 2];
                 return (a + b) / 2;
             }
             // count is odd, return the middle element
@@ -478,7 +478,7 @@ namespace dexih.functions
         }
 
         //variance and stdev share same input formula
-        public void Variance(Double value)
+        public void Variance(double value)
         {
             if (_cacheList == null) _cacheList = new List<object>();
             if (_cacheInt == null) _cacheInt = 0;
@@ -489,46 +489,46 @@ namespace dexih.functions
             _cacheDouble += value;
         }
 
-        public Double VarianceResult(int index)
+        public double VarianceResult(int index)
         {
             if (_cacheList == null || _cacheInt == null || _cacheInt == 0 || _cacheDouble == null || _cacheDouble == 0 )
                 return 0;
 
-            double average = (Double)_cacheDouble / (Double)_cacheInt;
-            double sumOfSquaresOfDifferences = _cacheList.Select(val => ((double)val - average) * ((Double)val - average)).Sum();
-            double sd = sumOfSquaresOfDifferences / (Double)_cacheInt;
+            var average = (double)_cacheDouble / (double)_cacheInt;
+            var sumOfSquaresOfDifferences = _cacheList.Select(val => ((double)val - average) * ((double)val - average)).Sum();
+            var sd = sumOfSquaresOfDifferences / (double)_cacheInt;
 
             return sd;
         }
 
-        public void StdDev(Double value)
+        public void StdDev(double value)
         {
             Variance(value);
         }
 
-        public Double StdDevResult(int index)
+        public double StdDevResult(int index)
         {
-            double sd = Math.Sqrt(VarianceResult(index));
+            var sd = Math.Sqrt(VarianceResult(index));
             return sd;
         }
 
-        public void Min(Double value)
+        public void Min(double value)
         {
             if (_cacheDouble == null) _cacheDouble = value;
             else if (value < _cacheDouble) _cacheDouble = value;
         }
 
-        public Double? MinResult(int index)
+        public double? MinResult(int index)
         {
             return _cacheDouble;
         }
 
-        public void Max(Double value)
+        public void Max(double value)
         {
             if (_cacheDouble == null) _cacheDouble = value;
             else if (value > _cacheDouble) _cacheDouble = value;
         }
-        public Double? MaxResult(int index)
+        public double? MaxResult(int index)
         {
             return _cacheDouble;
         }
@@ -554,21 +554,21 @@ namespace dexih.functions
             return _cacheDate;
         }
 
-        public void First(String value)
+        public void First(string value)
         {
             if (_cacheString == null) _cacheString = value;
         }
 
-        public String FirstResult(int index)
+        public string FirstResult(int index)
         {
             return _cacheString;
         }
 
-        public void Last(String value)
+        public void Last(string value)
         {
             _cacheString = value;
         }
-        public String LastResult(int index)
+        public string LastResult(int index)
         {
             return _cacheString;
         }
@@ -579,7 +579,7 @@ namespace dexih.functions
             else _cacheInt = _cacheInt + 1;
         }
 
-        public Int32 CountResult(int index)
+        public int CountResult(int index)
         {
             if (_cacheInt == null)
                 return 0;
@@ -587,18 +587,18 @@ namespace dexih.functions
             return (int)_cacheInt;
         }
 
-        public void CountDistinct(String value)
+        public void CountDistinct(string value)
         {
             if (_cacheStringDictionary == null) _cacheStringDictionary = new Dictionary<string, string>();
             if (value == null) value = NullPlaceHolder; //dictionary can't use nulls, so substitute null values.
             if (_cacheStringDictionary.ContainsKey(value) == false)
                 _cacheStringDictionary.Add(value, null);
         }
-        public Int32 CountDistinctResult(int index)
+        public int CountDistinctResult(int index)
         {
             return _cacheStringDictionary.Keys.Count;
         }
-        public void ConcatAgg(String value, String delimiter)
+        public void ConcatAgg(string value, string delimiter)
         {
             if (_cacheStringBuilder == null)
             {
@@ -608,29 +608,29 @@ namespace dexih.functions
             else
                 _cacheStringBuilder.Append(delimiter + value);
         }
-        public String ConcatAggResult(int index)
+        public string ConcatAggResult(int index)
         {
             return _cacheStringBuilder.ToString();
         }
 
-        public void FirstWhen(String condition, String conditionValue, String resultValue)
+        public void FirstWhen(string condition, string conditionValue, string resultValue)
         {
             if (condition == conditionValue && _cacheString == null)
                 _cacheString = resultValue;
         }
 
-        public String FirstWhenResult(int index)
+        public string FirstWhenResult(int index)
         {
             return _cacheString;
         }
 
-        public void LastWhen(String condition, String conditionValue, String resultValue)
+        public void LastWhen(string condition, string conditionValue, string resultValue)
         {
             if (condition == conditionValue)
                 _cacheString = resultValue;
         }
 
-        public String LastWhenResult(int index)
+        public string LastWhenResult(int index)
         {
             return _cacheString;
         }
@@ -638,7 +638,7 @@ namespace dexih.functions
         #endregion
 
         #region Series Functions
-        public void MovingAverage(DateTime series, Double value, int preCount, int postCount)
+        public void MovingAverage(DateTime series, double value, int preCount, int postCount)
         {
             if (_cacheSeriesList == null)
             {
@@ -648,17 +648,17 @@ namespace dexih.functions
             _cacheSeriesList.Add(new KeyValuePair<DateTime, double>(series, value));
         }
 
-        public Double MovingAverageResult(int index)
+        public double MovingAverageResult(int index)
         {
-            DateTime lowDate = _cacheSeriesList[index].Key.AddDays(-_cacheIntDictionary["PreCount"]);
-            DateTime highDate = _cacheSeriesList[index].Key.AddDays(_cacheIntDictionary["PostCount"]);
-            int valueCount = _cacheSeriesList.Count;
+            var lowDate = _cacheSeriesList[index].Key.AddDays(-_cacheIntDictionary["PreCount"]);
+            var highDate = _cacheSeriesList[index].Key.AddDays(_cacheIntDictionary["PostCount"]);
+            var valueCount = _cacheSeriesList.Count;
 
             double sum = 0;
-            int denominator = 0;
+            var denominator = 0;
 
             //loop backwards from the index to sum the before items.
-            for (int i = index; i >= 0; i--)
+            for (var i = index; i >= 0; i--)
             {
                 if (_cacheSeriesList[i].Key < lowDate)
                     break;
@@ -667,7 +667,7 @@ namespace dexih.functions
             }
 
             //loop forwards from the index+1 to sum the after items.
-            for (int i = index + 1; i < valueCount; i++)
+            for (var i = index + 1; i < valueCount; i++)
             {
                 if (_cacheSeriesList[i].Key > highDate)
                     break;
@@ -681,7 +681,7 @@ namespace dexih.functions
             return sum / denominator;
         }
 
-        public void HighestSince(DateTime series, Double value)
+        public void HighestSince(DateTime series, double value)
         {
             if (_cacheSeriesList == null)
             {
@@ -690,10 +690,10 @@ namespace dexih.functions
             _cacheSeriesList.Add(new KeyValuePair<DateTime, double>(series, value));
         }
 
-        public DateTime HighestSinceResult(int index, out Double value)
+        public DateTime HighestSinceResult(int index, out double value)
         {
-            int i = index - 1;
-            Double currentValue = _cacheSeriesList[index].Value;
+            var i = index - 1;
+            var currentValue = _cacheSeriesList[index].Value;
             while (i > 0)
             {
                 if (_cacheSeriesList[i].Value > currentValue)
@@ -764,7 +764,7 @@ namespace dexih.functions
                 //_cacheXmlNodeList = xmlDoc.SelectNodes(xPath);
 
                 var stream = new StringReader(xml);
-                XPathDocument xPathDocument = new XPathDocument(stream);
+                var xPathDocument = new XPathDocument(stream);
 
                 _cacheXmlNodeList = xPathDocument.CreateNavigator().Select(xPath);
                 _cacheInt = 0;
@@ -811,11 +811,8 @@ namespace dexih.functions
                 trimmedValue = value.Substring(0, maxLength);
                 return false;
             }
-            else
-            {
-                trimmedValue = null;
-                return true;
-            }
+            trimmedValue = null;
+            return true;
         }
 
         public bool MaxValue(decimal value, decimal maxValue, out decimal adjustedValue)
@@ -825,11 +822,8 @@ namespace dexih.functions
                 adjustedValue = maxValue;
                 return false;
             }
-            else
-            {
-                adjustedValue = value;
-                return true;
-            }
+            adjustedValue = value;
+            return true;
         }
 
         public bool DefaultNullString(string value, string defaultValue, out string adjustedValue)
@@ -839,25 +833,19 @@ namespace dexih.functions
                 adjustedValue = defaultValue;
                 return false;
             }
-            else
-            {
-                adjustedValue = value;
-                return true;
-            }
+            adjustedValue = value;
+            return true;
         }
 
         public bool DefaultBlankString(string value, string defaultValue, out string adjustedValue)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
                 adjustedValue = defaultValue;
                 return false;
             }
-            else
-            {
-                adjustedValue = value;
-                return true;
-            }
+            adjustedValue = value;
+            return true;
         }
 
         public bool DefaultNullNumber(decimal? value, decimal defaultValue, out decimal adjustedValue)
@@ -867,11 +855,8 @@ namespace dexih.functions
                 adjustedValue = defaultValue;
                 return false;
             }
-            else
-            {
-                adjustedValue = (decimal)value;
-                return true;
-            }
+            adjustedValue = (decimal)value;
+            return true;
         }
 
         #endregion

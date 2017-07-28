@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections;
 using System.Data;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.functions
 {
@@ -55,27 +55,27 @@ namespace dexih.functions
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return Byte.MaxValue;
+                    return byte.MaxValue;
                 case ETypeCode.SByte:
                     return sbyte.MaxValue;
                 case ETypeCode.UInt16:
-                    return UInt16.MaxValue;
+                    return ushort.MaxValue;
                 case ETypeCode.UInt32:
-                    return UInt32.MaxValue;
+                    return uint.MaxValue;
                 case ETypeCode.UInt64:
-                    return Int64.MaxValue; //use max value of int64 as some databases don't support uint64 (namely postgreSql)
+                    return long.MaxValue; //use max value of int64 as some databases don't support uint64 (namely postgreSql)
                 case ETypeCode.Int16:
-                    return Int16.MaxValue;
+                    return short.MaxValue;
 				case ETypeCode.Int32:
-                    return Int32.MaxValue;
+                    return int.MaxValue;
 				case ETypeCode.Int64:
-                    return Int64.MaxValue;
+                    return long.MaxValue;
 				case ETypeCode.Decimal:
                     return 999999999999999999; //use arbitrary big number as range varies between databases.  
 				case ETypeCode.Double:
-                    return Double.MaxValue / 10;
+                    return double.MaxValue / 10;
 				case ETypeCode.Single:
-                    return Single.MaxValue /10;
+                    return float.MaxValue /10;
 				case ETypeCode.String:
                     return new string('A', length);
                 case ETypeCode.Boolean:
@@ -87,7 +87,7 @@ namespace dexih.functions
                 case ETypeCode.Guid:
                     return Guid.Parse("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
                 case ETypeCode.Binary:
-                    return new byte[] { Byte.MaxValue, Byte.MaxValue, Byte.MaxValue };
+                    return new[] { byte.MaxValue, byte.MaxValue, byte.MaxValue };
                 case ETypeCode.Unknown:
                     return "";
                 default:
@@ -100,27 +100,27 @@ namespace dexih.functions
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return Byte.MinValue;
+                    return byte.MinValue;
 				case ETypeCode.SByte:
                     return sbyte.MinValue;
 				case ETypeCode.UInt16:
-                    return UInt16.MinValue;
+                    return ushort.MinValue;
 				case ETypeCode.UInt32:
-                    return UInt32.MinValue;
+                    return uint.MinValue;
 				case ETypeCode.UInt64:
-                    return UInt64.MinValue;
+                    return ulong.MinValue;
 				case ETypeCode.Int16:
-                    return Int16.MinValue;
+                    return short.MinValue;
 				case ETypeCode.Int32:
-                    return Int32.MinValue;
+                    return int.MinValue;
 				case ETypeCode.Int64:
-                    return Int64.MinValue;
+                    return long.MinValue;
 				case ETypeCode.Decimal:
                     return -999999999999999999;
                 case ETypeCode.Double:
-                    return Double.MinValue / 10;
+                    return double.MinValue / 10;
                 case ETypeCode.Single:
-                    return Single.MinValue / 10;
+                    return float.MinValue / 10;
                 case ETypeCode.String:
                     return "";
                 case ETypeCode.Boolean:
@@ -132,7 +132,7 @@ namespace dexih.functions
                 case ETypeCode.Guid:
                     return Guid.Parse("00000000-0000-0000-0000-000000000000");
                 case ETypeCode.Binary:
-                    return new byte[] { Byte.MinValue, Byte.MinValue, Byte.MinValue };
+                    return new[] { byte.MinValue, byte.MinValue, byte.MinValue };
                 case ETypeCode.Unknown:
                     return "";
                 default:
@@ -178,31 +178,31 @@ namespace dexih.functions
         /// <returns>ETypeCode</returns>
         public static ETypeCode GetTypeCode(Type dataType)
         {
-            if(dataType == typeof(Byte))
+            if(dataType == typeof(byte))
                 return ETypeCode.Byte;
-            if (dataType == typeof(SByte))
+            if (dataType == typeof(sbyte))
                 return ETypeCode.SByte;
-            if (dataType == typeof(UInt16))
+            if (dataType == typeof(ushort))
                 return ETypeCode.UInt16;
-            if (dataType == typeof(UInt32))
+            if (dataType == typeof(uint))
                 return ETypeCode.UInt32;
-            if (dataType == typeof(UInt64))
+            if (dataType == typeof(ulong))
                 return ETypeCode.UInt64;
-            if (dataType == typeof(Int16))
+            if (dataType == typeof(short))
                 return ETypeCode.Int16;
-            if (dataType == typeof(Int32))
+            if (dataType == typeof(int))
                 return ETypeCode.Int32;
-            if (dataType == typeof(Int64))
+            if (dataType == typeof(long))
                 return ETypeCode.Int64;
-            if (dataType == typeof(Decimal))
+            if (dataType == typeof(decimal))
                 return ETypeCode.Decimal;
-            if (dataType == typeof(Double))
+            if (dataType == typeof(double))
                 return ETypeCode.Double;
-            if (dataType == typeof(Single))
+            if (dataType == typeof(float))
                 return ETypeCode.Single;
-            if (dataType == typeof(String))
+            if (dataType == typeof(string))
                 return ETypeCode.String;
-            if (dataType == typeof(Boolean))
+            if (dataType == typeof(bool))
                 return ETypeCode.Boolean;
             if (dataType == typeof(DateTime))
                 return ETypeCode.DateTime;
@@ -221,31 +221,31 @@ namespace dexih.functions
             switch(typeCode)
             {
                 case ETypeCode.Byte:
-                    return typeof(Byte);
+                    return typeof(byte);
                 case ETypeCode.SByte:
-                    return typeof(SByte);
+                    return typeof(sbyte);
                 case ETypeCode.UInt16:
-                    return typeof(UInt16);
+                    return typeof(ushort);
                 case ETypeCode.UInt32:
-                    return typeof(UInt32);
+                    return typeof(uint);
                 case ETypeCode.UInt64:
-                    return typeof(UInt64);
+                    return typeof(ulong);
                 case ETypeCode.Int16:
-                    return typeof(Int16);
+                    return typeof(short);
                 case ETypeCode.Int32:
-                    return typeof(Int32);
+                    return typeof(int);
                 case ETypeCode.Int64:
-                    return typeof(Int64);
+                    return typeof(long);
                 case ETypeCode.Decimal:
-                    return typeof(Decimal);
+                    return typeof(decimal);
                 case ETypeCode.Double:
-                    return typeof(Double);
+                    return typeof(double);
                 case ETypeCode.Single: 
-                    return typeof(Single);
+                    return typeof(float);
                 case ETypeCode.String: 
-                    return typeof(String);
+                    return typeof(string);
                 case ETypeCode.Boolean: 
-                    return typeof(Boolean);
+                    return typeof(bool);
                 case ETypeCode.DateTime: 
                     return typeof(DateTime);
                 case ETypeCode.Time: 
@@ -342,7 +342,7 @@ namespace dexih.functions
                 if (inputValue == null || inputValue is DBNull || compareValue == null || compareValue is DBNull)
                     return new ReturnValue<ECompareResult>(true, (inputValue == null || inputValue is DBNull) ? ECompareResult.Less : ECompareResult.Greater);
 
-                Type type = GetType(dataType);
+                var type = GetType(dataType);
 
                 if (inputValue.GetType() != type)
                 {
@@ -364,35 +364,35 @@ namespace dexih.functions
                 switch (dataType)
                 {
                     case ETypeCode.Byte:
-                        return new ReturnValue<ECompareResult>(true, (Byte)inputValue == (Byte)compareValue ? ECompareResult.Equal : (Byte)inputValue > (Byte)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (byte)inputValue == (byte)compareValue ? ECompareResult.Equal : (byte)inputValue > (byte)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.SByte:
-                        return new ReturnValue<ECompareResult>(true, (SByte)inputValue == (SByte)compareValue ? ECompareResult.Equal : (SByte)inputValue > (SByte)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (sbyte)inputValue == (sbyte)compareValue ? ECompareResult.Equal : (sbyte)inputValue > (sbyte)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.UInt16:
-                        return new ReturnValue<ECompareResult>(true, (UInt16)inputValue == (UInt16)compareValue ? ECompareResult.Equal : (UInt16)inputValue > (UInt16)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (ushort)inputValue == (ushort)compareValue ? ECompareResult.Equal : (ushort)inputValue > (ushort)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.UInt32:
-                        return new ReturnValue<ECompareResult>(true, (UInt32)inputValue == (UInt32)compareValue ? ECompareResult.Equal : (UInt32)inputValue > (UInt32)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (uint)inputValue == (uint)compareValue ? ECompareResult.Equal : (uint)inputValue > (uint)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.UInt64:
-                        return new ReturnValue<ECompareResult>(true, (UInt64)inputValue == (UInt64)compareValue ? ECompareResult.Equal : (UInt64)inputValue > (UInt64)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (ulong)inputValue == (ulong)compareValue ? ECompareResult.Equal : (ulong)inputValue > (ulong)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Int16:
-                        return new ReturnValue<ECompareResult>(true, (Int16)inputValue == (Int16)compareValue ? ECompareResult.Equal : (Int16)inputValue > (Int16)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (short)inputValue == (short)compareValue ? ECompareResult.Equal : (short)inputValue > (short)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Int32:
-                        return new ReturnValue<ECompareResult>(true, (Int32)inputValue == (Int32)compareValue ? ECompareResult.Equal : (Int32)inputValue > (Int32)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (int)inputValue == (int)compareValue ? ECompareResult.Equal : (int)inputValue > (int)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Int64:
-                        return new ReturnValue<ECompareResult>(true, (Int64)inputValue == (Int64)compareValue ? ECompareResult.Equal : (Int64)inputValue > (Int64)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (long)inputValue == (long)compareValue ? ECompareResult.Equal : (long)inputValue > (long)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Decimal:
-                        return new ReturnValue<ECompareResult>(true, (Decimal)inputValue == (Decimal)compareValue ? ECompareResult.Equal : (Decimal)inputValue > (Decimal)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, (decimal)inputValue == (decimal)compareValue ? ECompareResult.Equal : (decimal)inputValue > (decimal)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Double:
-                        return new ReturnValue<ECompareResult>(true, Math.Abs((Double)inputValue - (Double)compareValue) < 0.0001 ? ECompareResult.Equal : (Double)inputValue > (Double)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, Math.Abs((double)inputValue - (double)compareValue) < 0.0001 ? ECompareResult.Equal : (double)inputValue > (double)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Single:
-                        return new ReturnValue<ECompareResult>(true, Math.Abs((Single)inputValue - (Single)compareValue) < 0.0001 ? ECompareResult.Equal : (Single)inputValue > (Single)compareValue ? ECompareResult.Greater : ECompareResult.Less);
+                        return new ReturnValue<ECompareResult>(true, Math.Abs((float)inputValue - (float)compareValue) < 0.0001 ? ECompareResult.Equal : (float)inputValue > (float)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.String:
-                        int compareResult = String.Compare((String)inputValue, (String)compareValue);
+                        var compareResult = string.Compare((string)inputValue, (string)compareValue);
                         return new ReturnValue<ECompareResult>(true, compareResult == 0 ? ECompareResult.Equal : compareResult < 0 ? ECompareResult.Less : ECompareResult.Greater);
                     case ETypeCode.Guid:
-                        compareResult = String.Compare(inputValue.ToString(), compareValue.ToString());
+                        compareResult = string.Compare(inputValue.ToString(), compareValue.ToString());
                         return new ReturnValue<ECompareResult>(true, compareResult == 0 ? ECompareResult.Equal : compareResult < 0 ? ECompareResult.Less : ECompareResult.Greater);
                     case ETypeCode.Boolean:
-                        return new ReturnValue<ECompareResult>(true, (Boolean)inputValue == (Boolean)compareValue ? ECompareResult.Equal : (Boolean)inputValue ? ECompareResult.Greater : ECompareResult.Less );
+                        return new ReturnValue<ECompareResult>(true, (bool)inputValue == (bool)compareValue ? ECompareResult.Equal : (bool)inputValue ? ECompareResult.Greater : ECompareResult.Less );
                     case ETypeCode.DateTime:
                         return new ReturnValue<ECompareResult>(true, (DateTime)inputValue == (DateTime)compareValue ? ECompareResult.Equal : (DateTime)inputValue > (DateTime)compareValue ? ECompareResult.Greater : ECompareResult.Less);
                     case ETypeCode.Time:
@@ -405,7 +405,7 @@ namespace dexih.functions
             }
             catch(Exception ex)
             {
-                return new ReturnValue<ECompareResult>(false, "The compare of " + (inputValue??"Null").ToString() + " to " + (compareValue ?? "Null").ToString() + " failed with the following errror: " + ex.Message, ex);
+                return new ReturnValue<ECompareResult>(false, "The compare of " + (inputValue??"Null") + " to " + (compareValue ?? "Null") + " failed with the following errror: " + ex.Message, ex);
             }
         }
 
@@ -418,7 +418,7 @@ namespace dexih.functions
         /// <returns>True and the converted value for success, false and a message for conversion fail.</returns>
         public static ReturnValue<object> TryParse(ETypeCode tryDataType, object inputValue, int? maxLength = null)
         {
-            Object result = null;
+            object result = null;
             try
             {
                 if (inputValue == null)
@@ -430,9 +430,8 @@ namespace dexih.functions
                 {
                     result = inputValue is DBNull ? null : inputValue.ToString();
                     if(maxLength != null && result != null && ((string)result).Length > maxLength)
-                        return new ReturnValue<object>(false, "The string " + inputValue + " exceeds the maximum length of " + maxLength.ToString());
-                    else
-                        return new ReturnValue<object>(true, result);
+                        return new ReturnValue<object>(false, "The string " + inputValue + " exceeds the maximum length of " + maxLength);
+                    return new ReturnValue<object>(true, result);
                 }
 
                 if (tryDataType == ETypeCode.Unknown)
@@ -446,7 +445,7 @@ namespace dexih.functions
                     return new ReturnValue<object>(true, result);
                 }
 
-                ETypeCode inputType = GetTypeCode(inputValue.GetType());
+                var inputType = GetTypeCode(inputValue.GetType());
 
                 if (tryDataType == inputType )
                 {
@@ -454,8 +453,8 @@ namespace dexih.functions
                     return new ReturnValue<object>(true, result);
                 }
 
-                EBasicType tryBasicType = GetBasicType(tryDataType);
-                EBasicType inputBasicType = GetBasicType(inputType);
+                var tryBasicType = GetBasicType(tryDataType);
+                var inputBasicType = GetBasicType(inputType);
 
                 if(tryBasicType == EBasicType.Numeric && (inputBasicType == EBasicType.Numeric))
                 {
@@ -497,7 +496,7 @@ namespace dexih.functions
                         case ETypeCode.Binary:
                             return new ReturnValue<object>(false, "Cannot convert a binary data type to another type.", null);
                         default:
-                            string reason = "Cannot convert value " + inputValue + " from numeric to " + tryDataType;
+                            var reason = "Cannot convert value " + inputValue + " from numeric to " + tryDataType;
                             return new ReturnValue<object>(false, reason, null);
                     }
                 }
@@ -519,7 +518,7 @@ namespace dexih.functions
 
                 if (tryBasicType == EBasicType.Date && inputBasicType != EBasicType.String)
                 {
-                    string reason = "Cannot convert value " + inputValue + " to " + tryDataType;
+                    var reason = "Cannot convert value " + inputValue + " to " + tryDataType;
                     return new ReturnValue<object>(false, reason, null);
                 }
 
@@ -537,77 +536,77 @@ namespace dexih.functions
                     {
                         case ETypeCode.Byte:
                             byte byteResult;
-                            returnValue = Byte.TryParse(value, out byteResult);
+                            returnValue = byte.TryParse(value, out byteResult);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a byte.", null);
                             result = byteResult;
                             break;
                         case ETypeCode.Int16:
-                            Int16 int16Result;
-                            returnValue = Int16.TryParse(value, out int16Result);
+                            short int16Result;
+                            returnValue = short.TryParse(value, out int16Result);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Int16.", null);
                             result = int16Result;
                             break;
                         case ETypeCode.Int32:
-                            Int32 int32Result;
-                            returnValue = Int32.TryParse(value, out int32Result);
+                            int int32Result;
+                            returnValue = int.TryParse(value, out int32Result);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Int32.", null);
                             result = int32Result;
                             break;
                         case ETypeCode.Int64:
-                            Int64 int64Result;
-                            returnValue = Int64.TryParse(value, out int64Result);
+                            long int64Result;
+                            returnValue = long.TryParse(value, out int64Result);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Int64.", null);
                             result = int64Result;
                             break;
                         case ETypeCode.UInt16:
-                            UInt16 uint16Result;
-                            returnValue = UInt16.TryParse(value, out uint16Result);
+                            ushort uint16Result;
+                            returnValue = ushort.TryParse(value, out uint16Result);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a UInt16.", null);
                             result = uint16Result;
                             break;
                         case ETypeCode.UInt32:
-                            UInt32 uint32Result;
-                            returnValue = UInt32.TryParse(value, out uint32Result);
+                            uint uint32Result;
+                            returnValue = uint.TryParse(value, out uint32Result);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a UInt32.", null);
                             result = uint32Result;
                             break;
                         case ETypeCode.UInt64:
-                            UInt64 uint64Result;
-                            returnValue = UInt64.TryParse(value, out uint64Result);
+                            ulong uint64Result;
+                            returnValue = ulong.TryParse(value, out uint64Result);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Int64.", null);
                             result = uint64Result;
                             break;
                         case ETypeCode.Double:
-                            Double doubleResult;
-                            returnValue = Double.TryParse(value, out doubleResult);
+                            double doubleResult;
+                            returnValue = double.TryParse(value, out doubleResult);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Double.", null);
                             result = doubleResult;
                             break;
                         case ETypeCode.Decimal:
-                            Decimal decimalResult;
-                            returnValue = Decimal.TryParse(value, out decimalResult);
+                            decimal decimalResult;
+                            returnValue = decimal.TryParse(value, out decimalResult);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Decimal.", null);
                             result = decimalResult;
                             break;
                         case ETypeCode.Single:
-                            Single singleResult;
-                            returnValue = Single.TryParse(value, out singleResult);
+                            float singleResult;
+                            returnValue = float.TryParse(value, out singleResult);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a Single.", null);
                             result = singleResult;
                             break;
                         case ETypeCode.SByte:
-                            SByte sbyteResult;
-                            returnValue = SByte.TryParse(value, out sbyteResult);
+                            sbyte sbyteResult;
+                            returnValue = sbyte.TryParse(value, out sbyteResult);
                             if (returnValue == false)
                                 return new ReturnValue<object>(false, "The value " + value + " could not be converted to a SByte.", null);
                             result = sbyteResult;
@@ -623,11 +622,11 @@ namespace dexih.functions
                             result = guidResult;
                             break;
                         case ETypeCode.Boolean:
-                            Boolean booleanResult;
-                            returnValue = Boolean.TryParse(value, out booleanResult);
+                            bool booleanResult;
+                            returnValue = bool.TryParse(value, out booleanResult);
                             if (returnValue == false)
                             {
-                                returnValue = Int16.TryParse(value, out int16Result);
+                                returnValue = short.TryParse(value, out int16Result);
                                 if (returnValue == false)
                                 {
                                     return new ReturnValue<object>(false, "The value " + value + " could not be converted to a boolean.", null);
@@ -671,7 +670,7 @@ namespace dexih.functions
             }
             catch (Exception ex)
             {
-                string reason = "Cannot convert value " + (inputValue?.ToString() ?? "null") + " to type: " + tryDataType + ". The following error was returned:" +ex.Message;
+                var reason = "Cannot convert value " + (inputValue?.ToString() ?? "null") + " to type: " + tryDataType + ". The following error was returned:" +ex.Message;
                 return new ReturnValue<object>(false, reason, ex);
             }
 
@@ -687,7 +686,7 @@ namespace dexih.functions
                 return value;
                 
             var arr = value.Where(c => (char.IsLetterOrDigit(c))).ToArray();
-            string newValue = new string(arr);
+            var newValue = new string(arr);
             return newValue;
         }
     }

@@ -58,11 +58,11 @@ namespace dexih.functions
             // Generate a random salt
             //RNGCryptoServiceProvider csprng = new RNGCryptoServiceProvider(); not working in DNX50
             var csprng = RandomNumberGenerator.Create();
-            byte[] salt = new byte[SaltByteSize];
+            var salt = new byte[SaltByteSize];
             csprng.GetBytes(salt);
 
             // Hash the password and encode the parameters
-            byte[] hash = Pbkdf2(password, salt, Pbkdf2Iterations, HashByteSize);
+            var hash = Pbkdf2(password, salt, Pbkdf2Iterations, HashByteSize);
             return Pbkdf2Iterations + ":" +
                 Convert.ToBase64String(salt) + ":" +
                 Convert.ToBase64String(hash);
@@ -78,12 +78,12 @@ namespace dexih.functions
         {
             // Extract the parameters from the hash
             char[] delimiter = { ':' };
-            string[] split = correctHash.Split(delimiter);
-            int iterations = Int32.Parse(split[IterationIndex]);
-            byte[] salt = Convert.FromBase64String(split[SaltIndex]);
-            byte[] hash = Convert.FromBase64String(split[Pbkdf2Index]);
+            var split = correctHash.Split(delimiter);
+            var iterations = int.Parse(split[IterationIndex]);
+            var salt = Convert.FromBase64String(split[SaltIndex]);
+            var hash = Convert.FromBase64String(split[Pbkdf2Index]);
 
-            byte[] testHash = Pbkdf2(password, salt, iterations, hash.Length);
+            var testHash = Pbkdf2(password, salt, iterations, hash.Length);
             return SlowEquals(hash, testHash);
         }
 
@@ -97,8 +97,8 @@ namespace dexih.functions
         /// <returns>True if both byte arrays are equal. False otherwise.</returns>
         private static bool SlowEquals(byte[] a, byte[] b)
         {
-            uint diff = (uint)a.Length ^ (uint)b.Length;
-            for (int i = 0; i < a.Length && i < b.Length; i++)
+            var diff = (uint)a.Length ^ (uint)b.Length;
+            for (var i = 0; i < a.Length && i < b.Length; i++)
                 diff |= (uint)(a[i] ^ b[i]);
             return diff == 0;
         }
@@ -113,7 +113,7 @@ namespace dexih.functions
         /// <returns>A hash of the password.</returns>
         private static byte[] Pbkdf2(string password, byte[] salt, int iterations, int outputBytes)
         {
-            Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt) {IterationCount = iterations};
+            var pbkdf2 = new Rfc2898DeriveBytes(password, salt) {IterationCount = iterations};
             return pbkdf2.GetBytes(outputBytes);
         }
     }

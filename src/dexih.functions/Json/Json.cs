@@ -17,7 +17,7 @@ namespace dexih.functions
 
         public static T DeserializeObject<T>(string value, string encryptionKey)
         {
-            if(String.IsNullOrEmpty(value))
+            if(string.IsNullOrEmpty(value))
             {
                 return default(T);
             }

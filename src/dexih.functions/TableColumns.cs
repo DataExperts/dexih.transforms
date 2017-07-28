@@ -42,8 +42,7 @@ namespace dexih.functions
             {
                 if (_columnOrdinals.ContainsKey(columnName))
                     return _tableColumns[_columnOrdinals[columnName]];
-                else
-                    return null;
+                return null;
             }
 
             set
@@ -58,8 +57,7 @@ namespace dexih.functions
             {
                 if (_columnOrdinals.ContainsKey(column.SchemaColumnName()))
                     return _tableColumns[_columnOrdinals[column.SchemaColumnName()]];
-                else
-                    return null;
+                return null;
             }
 
             set
@@ -72,8 +70,7 @@ namespace dexih.functions
         {
             if (_columnOrdinals.ContainsKey(columnName))
                 return _columnOrdinals[columnName];
-            else
-                return -1;
+            return -1;
         }
 
         public int Count
@@ -166,7 +163,7 @@ namespace dexih.functions
         private void RebuildOrdinals()
         {
             _columnOrdinals.Clear();
-            for (int i = 0; i < _tableColumns.Count; i++)
+            for (var i = 0; i < _tableColumns.Count; i++)
             {
                 _columnOrdinals.Add(_tableColumns[i].SchemaColumnName(), i);
                 if (!_columnOrdinals.ContainsKey(_tableColumns[i].Name))

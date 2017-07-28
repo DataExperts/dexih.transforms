@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using static dexih.functions.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using static dexih.functions.DataType;
 
 namespace dexih.functions
 {
@@ -179,7 +179,7 @@ namespace dexih.functions
                     return new ReturnValue<Filter>(false, "The function " + function.FunctionName + " was not converted.", null);
             }
 
-            Filter filter = new Filter();
+            var filter = new Filter();
 
             filter.Column1 = function.Inputs[0].IsColumn ? function.Inputs[0].Column : null;
             filter.Value1 = function.Inputs[0].IsColumn == false ? function.Inputs[0].Value : null;

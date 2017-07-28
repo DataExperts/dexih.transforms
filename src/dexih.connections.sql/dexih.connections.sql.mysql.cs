@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MySql;
 using System.Data;
 using dexih.functions;
 using System.Data.Common;
@@ -11,7 +9,6 @@ using static dexih.functions.DataType;
 using System.Threading;
 using System.Diagnostics;
 using MySql.Data.MySqlClient;
-using Pomelo.EntityFrameworkCore.MySql;
 
 namespace dexih.connections.sql
 {
@@ -59,7 +56,7 @@ namespace dexih.connections.sql
                 object tableExists = null;
                 try
                 {
-                    tableExists = await cmd.ExecuteScalarAsync();
+                    tableExists = await cmd.ExecuteScalarAsync(cancelToken);
                 }
                 catch (Exception ex)
                 {

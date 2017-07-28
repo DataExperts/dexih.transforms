@@ -44,16 +44,16 @@ namespace dexih.functions
 			}
             
 			// Getting the Types of the objects
-            Type typeDest = destination.GetType();
-            Type typeSrc = source.GetType();
+            var typeDest = destination.GetType();
+            var typeSrc = source.GetType();
 
             // Iterate the Properties of the source instance and  
             // populate them from their desination counterparts  
-            PropertyInfo[] srcProps = typeSrc.GetProperties();
+            var srcProps = typeSrc.GetProperties();
 
 			// get the collectionKey value first
 			object collectionKeyValue = null;
-			foreach (PropertyInfo srcProp in srcProps)
+			foreach (var srcProp in srcProps)
 			{
 				if (srcProp.GetCustomAttribute(typeof(CollectionKeyAttribute), true) != null)
 				{
@@ -61,9 +61,9 @@ namespace dexih.functions
 				}
 			}
 
-			foreach (PropertyInfo srcProp in srcProps)
+			foreach (var srcProp in srcProps)
             {
-				PropertyInfo targetProperty = typeDest.GetProperty(srcProp.Name);
+				var targetProperty = typeDest.GetProperty(srcProp.Name);
 
 				if (targetProperty == null)
 				{
@@ -106,9 +106,9 @@ namespace dexih.functions
 						var typeCollectionArgument = srcCollection.GetType().GetGenericArguments();
 						if (typeCollectionArgument.Length > 0)
 						{
-							Type typeCollection = typeCollectionArgument[0];
+							var typeCollection = typeCollectionArgument[0];
 
-							PropertyInfo[] collectionProps = typeCollection.GetProperties();
+							var collectionProps = typeCollection.GetProperties();
 							PropertyInfo keyAttribute = null;
 							PropertyInfo isValidAttribute = null;
 
@@ -149,11 +149,11 @@ namespace dexih.functions
 										foreach (var matchItem in (IEnumerable)targetCollection)
 										{
 											var targetValue = keyAttribute.GetValue(matchItem);
-											if (Object.Equals(targetValue, keyvalue))
+											if (Equals(targetValue, keyvalue))
 											{
 												if (targetItem != null)
 												{
-													throw new Exception($"The collections could not be merge due to multiple target key values of {keyvalue.ToString()} in the collection {typeCollection.ToString()}.");
+													throw new Exception($"The collections could not be merge due to multiple target key values of {keyvalue} in the collection {typeCollection}.");
 												}
 												targetItem = matchItem;
 											}
@@ -165,7 +165,7 @@ namespace dexih.functions
 								{
 									targetItem = Activator.CreateInstance(typeCollection);
 									item.CopyProperties(targetItem, false, collectionKeyValue);
-									addMethod.Invoke(targetCollection, new object[] { item });
+									addMethod.Invoke(targetCollection, new[] { item });
 								}
 								else
 								{
@@ -229,10 +229,10 @@ namespace dexih.functions
     {
         return
             type.GetTypeInfo().IsPrimitive || type.GetTypeInfo().IsEnum ||
-            new Type[] {
+            new[] {
                 typeof(Enum),
-                typeof(String),
-                typeof(Decimal),
+                typeof(string),
+                typeof(decimal),
                 typeof(DateTime),
                 typeof(DateTimeOffset),
                 typeof(TimeSpan),

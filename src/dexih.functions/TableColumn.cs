@@ -1,7 +1,7 @@
 ﻿using System;
-using static dexih.functions.DataType;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using static dexih.functions.DataType;
 
 namespace dexih.functions
 {
@@ -13,14 +13,14 @@ namespace dexih.functions
             ExtendedProperties = new Dictionary<string, string>();
         }
 
-        public TableColumn(string columName) :base()
+        public TableColumn(string columName)
         {
             Name = columName;
             Datatype = ETypeCode.String;
             DeltaType = EDeltaType.TrackingField;
         }
 
-        public TableColumn(string columName, ETypeCode dataType, string schema = null) : base()
+        public TableColumn(string columName, ETypeCode dataType, string schema = null)
         {
             Name = columName;
             Datatype = dataType;
@@ -28,7 +28,7 @@ namespace dexih.functions
             Schema = schema;
         }
 
-        public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType, string schema = null) : base()
+        public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType, string schema = null)
         {
             Name = columName;
             Datatype = dataType;
@@ -85,8 +85,7 @@ namespace dexih.functions
             {
                 if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.FastDecrypt || SecurityFlag == ESecurityFlag.StrongDecrypt)
                     return BaseDataType;
-                else
-                    return ETypeCode.String;
+                return ETypeCode.String;
             }
             set
             {
@@ -100,8 +99,7 @@ namespace dexih.functions
             {
                 if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.FastDecrypt || SecurityFlag == ESecurityFlag.StrongDecrypt)
                     return BaseMaxLength;
-                else
-                    return 250;
+                return 250;
             }
             set
             {
@@ -126,7 +124,7 @@ namespace dexih.functions
 
         public bool IsUnique { get; set; }
 
-        public bool IsMandatory { get; set; } = false;
+        public bool IsMandatory { get; set; }
 
         public ESecurityFlag SecurityFlag { get; set; } = ESecurityFlag.None;
 
@@ -140,7 +138,7 @@ namespace dexih.functions
         {
             get
             {
-                return functions.DataType.GetType(Datatype);
+                return DataType.GetType(Datatype);
             }
             set 
             {
@@ -154,7 +152,7 @@ namespace dexih.functions
         /// <returns></returns>
         public string SchemaColumnName()
         {
-            string columnName = string.IsNullOrEmpty(Schema) ? Name : Schema + "." + Name;
+            var columnName = string.IsNullOrEmpty(Schema) ? Name : Schema + "." + Name;
             return columnName;
         }
 
@@ -213,10 +211,9 @@ namespace dexih.functions
         {
             if (ExtendedProperties == null)
                 return null;
-            else if (ExtendedProperties.ContainsKey(name))
+            if (ExtendedProperties.ContainsKey(name))
                 return ExtendedProperties[name];
-            else
-                return null;
+            return null;
         }
 
         public void SetExtendedProperty(string name, string value)
@@ -237,7 +234,7 @@ namespace dexih.functions
         /// <returns></returns>
         public TableColumn Copy()
         {
-            var newColumn = new TableColumn()
+            var newColumn = new TableColumn
             {
                 Schema = Schema,
                 Name = Name,

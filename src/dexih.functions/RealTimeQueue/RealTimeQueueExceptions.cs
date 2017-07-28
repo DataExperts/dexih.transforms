@@ -4,7 +4,7 @@ namespace dexih.functions
 {
     public class RealTimeQueueException : Exception
     {
-        public RealTimeQueueException() : base()
+        public RealTimeQueueException()
         {
         }
         public RealTimeQueueException(string message) : base(message)

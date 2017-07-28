@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System;
 using System.Text;
 
 namespace dexih.functions
@@ -29,7 +29,7 @@ namespace dexih.functions
             Name = tableName;
             BaseTableName = DataType.CleanString(tableName);
             Columns = new TableColumns();
-            foreach (TableColumn column in columns)
+            foreach (var column in columns)
                 Columns.Add(column);
 
             Data = new TableCache(maxRows);
@@ -176,7 +176,7 @@ namespace dexih.functions
             {
                 //scan the data for a matching row.  
                 //TODO add indexing to lookup process.
-                for (int i = startRow; i < Data.Count(); i++)
+                for (var i = startRow; i < Data.Count(); i++)
                 {
                     if (RowMatch(filters, Data[i]))
                         return new ReturnValue<object[]>(true, Data[i]);
@@ -198,7 +198,7 @@ namespace dexih.functions
 
                 //scan the data for a matching row.  
                 //TODO add indexing to lookup process.
-                for (int i = startRow; i < Data.Count(); i++)
+                for (var i = startRow; i < Data.Count(); i++)
                 {
                     if (RowMatch(filters, Data[i]))
                         rows.Add(Data[i]);
@@ -216,7 +216,7 @@ namespace dexih.functions
 
         public bool RowMatch(List<Filter> filters, object[] row)
         {
-            bool isMatch = true;
+            var isMatch = true;
 
             foreach (var filter in filters)
             {
@@ -278,46 +278,46 @@ namespace dexih.functions
 
             //add the audit columns if they don't exist
             //get some of the key fields to save looking up for each row.
-            var colValidFrom = this.GetDeltaColumn(TableColumn.EDeltaType.ValidFromDate);
-            var colValidTo = this.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
-            var colCreateDate = this.GetDeltaColumn(TableColumn.EDeltaType.CreateDate);
-            var colUpdateDate = this.GetDeltaColumn(TableColumn.EDeltaType.UpdateDate);
-            var colSurrogateKey = this.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
-            var colIsCurrentField = this.GetDeltaColumn(TableColumn.EDeltaType.IsCurrentField);
-            var colSourceSurrogateKey = this.GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
-            var colCreateAuditKey = this.GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
-            var colUpdateAuditKey = this.GetDeltaColumn(TableColumn.EDeltaType.UpdateAuditKey);
-            var colRejectedReason = this.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason);
+            var colValidFrom = GetDeltaColumn(TableColumn.EDeltaType.ValidFromDate);
+            var colValidTo = GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
+            var colCreateDate = GetDeltaColumn(TableColumn.EDeltaType.CreateDate);
+            var colUpdateDate = GetDeltaColumn(TableColumn.EDeltaType.UpdateDate);
+            var colSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+            var colIsCurrentField = GetDeltaColumn(TableColumn.EDeltaType.IsCurrentField);
+            var colSourceSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
+            var colCreateAuditKey = GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
+            var colUpdateAuditKey = GetDeltaColumn(TableColumn.EDeltaType.UpdateAuditKey);
+            var colRejectedReason = GetDeltaColumn(TableColumn.EDeltaType.RejectedReason);
 
             if (colValidFrom == null)
             {
                 colValidFrom = new TableColumn("ValidFromDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidFromDate };
-                this.Columns.Add(colValidFrom);
+                Columns.Add(colValidFrom);
             }
             if (colValidTo == null)
             {
                 colValidTo = new TableColumn("ValidToDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidToDate };
-                this.Columns.Add(colValidTo);
+                Columns.Add(colValidTo);
             }
             if (colCreateDate == null)
             {
                 colCreateDate = new TableColumn("CreateDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.CreateDate };
-                this.Columns.Add(colCreateDate);
+                Columns.Add(colCreateDate);
             }
             if (colUpdateDate == null)
             {
                 colUpdateDate = new TableColumn("UpdateDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.UpdateDate };
-                this.Columns.Add(colUpdateDate);
+                Columns.Add(colUpdateDate);
             }
             if (colSurrogateKey == null)
             {
                 colSurrogateKey = new TableColumn("SurrogateKey", DataType.ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.SurrogateKey };
-                this.Columns.Add(colSurrogateKey);
+                Columns.Add(colSurrogateKey);
             }
             if (colIsCurrentField == null)
             {
                 colIsCurrentField = new TableColumn("IsCurrent", DataType.ETypeCode.Boolean) { DeltaType = TableColumn.EDeltaType.IsCurrentField };
-                this.Columns.Add(colIsCurrentField);
+                Columns.Add(colIsCurrentField);
             }
         }
 
@@ -329,12 +329,12 @@ namespace dexih.functions
         {
             if (string.IsNullOrEmpty(rejectedTableName)) return null;
 
-            Table table = Copy();
+            var table = Copy();
 
             table.Name = rejectedTableName;
             table.Description = "Rejected table for: " + Description;
 
-            if(this.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
+            if(GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
                 table.Columns.Add(new TableColumn("RejectedReason", DataType.ETypeCode.String, TableColumn.EDeltaType.RejectedReason));
 
             return table;
@@ -350,7 +350,7 @@ namespace dexih.functions
 
             foreach(var column in table.Columns)
             {
-                column.SecurityFlag = this.Columns[column.Name].SecurityFlag;
+                column.SecurityFlag = Columns[column.Name].SecurityFlag;
                 if(column.SecurityFlag != TableColumn.ESecurityFlag.None)
                 {
                     column.Datatype = DataType.ETypeCode.String;
@@ -367,7 +367,7 @@ namespace dexih.functions
         /// <returns></returns>
         public Table Copy(bool removeSchema = false)
         {
-            Table table = new Table(Name, Schema)
+            var table = new Table(Name, Schema)
             {
                 Description = Description
             };
@@ -410,9 +410,9 @@ namespace dexih.functions
         public void AddRow(params object[] values)
         {
             if (values.Length != Columns.Count())
-                throw new Exception("The number of parameters must match the number of columns (" + Columns.Count.ToString() + ") precicely.");
+                throw new Exception("The number of parameters must match the number of columns (" + Columns.Count + ") precicely.");
 
-            object[] row = new object[Columns.Count];
+            var row = new object[Columns.Count];
             values.CopyTo(row, 0);
 
             Data.Add(values);
@@ -430,7 +430,7 @@ namespace dexih.functions
 
         public int GetDeltaColumnOrdinal(TableColumn.EDeltaType deltaType)
         {
-            for (int i = 0; i < Columns.Count; i++)
+            for (var i = 0; i < Columns.Count; i++)
                 if (Columns[i].DeltaType == deltaType)
                     return i;
 
@@ -439,7 +439,7 @@ namespace dexih.functions
 
         public TableColumn[] GetColumnsByDeltaType(TableColumn.EDeltaType deltaType)
         {
-            TableColumn[] columns = (from s in Columns where s.DeltaType == deltaType select s).ToArray();
+            var columns = (from s in Columns where s.DeltaType == deltaType select s).ToArray();
             return columns;
         }
         
@@ -451,7 +451,7 @@ namespace dexih.functions
         //creates a simple select query with all fields and no sorts, filters
         public SelectQuery DefaultSelectQuery(int rows = -1)
         {
-            return new SelectQuery()
+            return new SelectQuery
             {
                 Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.Datatype != DataType.ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
                 Table = Name,
@@ -461,13 +461,13 @@ namespace dexih.functions
 
         public string GetCsv()
         {
-            StringBuilder csvData = new StringBuilder();
+            var csvData = new StringBuilder();
 
-            string[] columns = Columns.Select(c => c.Name).ToArray();
+            var columns = Columns.Select(c => c.Name).ToArray();
             //add column headers
-            int columnCount = Columns.Count;
-            string[] s = new string[columnCount];
-            for (Int32 j = 0; j < columnCount; j++)
+            var columnCount = Columns.Count;
+            var s = new string[columnCount];
+            for (var j = 0; j < columnCount; j++)
             {
                 s[j] = columns[j];
                 if (s[j].Contains("\"")) //replace " with ""
@@ -480,7 +480,7 @@ namespace dexih.functions
             //add rows
             foreach (var row in Data)
             {
-                for (int j = 0; j < columnCount; j++)
+                for (var j = 0; j < columnCount; j++)
                 {
                     s[j] = row[j] == null ? "" : row[j].ToString();
                     if (s[j].Contains("\"")) //replace " with ""

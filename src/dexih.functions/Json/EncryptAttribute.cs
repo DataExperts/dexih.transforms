@@ -23,15 +23,15 @@ namespace dexih.functions
 
         protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
         {
-            IList<JsonProperty> props = base.CreateProperties(type, memberSerialization);
+            var props = base.CreateProperties(type, memberSerialization);
 
             if (_encryptionKey != null)
             {
                 // Find all string properties that have a [JsonEncrypt] attribute applied
                 // and attach an EncryptedStringValueProvider instance to them
-                foreach (JsonProperty prop in props.Where(p => p.PropertyType == typeof(string)))
+                foreach (var prop in props.Where(p => p.PropertyType == typeof(string)))
                 {
-                    PropertyInfo pi = type.GetProperty(prop.UnderlyingName);
+                    var pi = type.GetProperty(prop.UnderlyingName);
                     if (pi != null && pi.GetCustomAttribute(typeof(JsonEncryptAttribute), true) != null)
                     {
                         prop.ValueProvider =
@@ -60,8 +60,8 @@ namespace dexih.functions
             // the return value is an encrypted string that gets written to the JSON
             public object GetValue(object target)
             {
-                string value = (string)_targetProperty.GetValue(target);
-                if(String.IsNullOrEmpty((string)value))
+                var value = (string)_targetProperty.GetValue(target);
+                if(string.IsNullOrEmpty(value))
                 {
                     return null;
                 }
@@ -81,7 +81,7 @@ namespace dexih.functions
             // target is the object on which to set the decrypted value.
             public void SetValue(object target, object value)
             {
-                if(String.IsNullOrEmpty((string)value))
+                if(string.IsNullOrEmpty((string)value))
                 {
                     _targetProperty.SetValue(target, null);
                 }

@@ -20,7 +20,7 @@ namespace dexih.functions
 
         public static string GenerateRandomKey(int length = 50)
         {
-            byte[] randomBytes = new byte[length];
+            var randomBytes = new byte[length];
 
             using (var randomNumber = RandomNumberGenerator.Create())
             {

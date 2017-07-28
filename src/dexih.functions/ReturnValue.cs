@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace dexih.functions
 {
@@ -48,10 +48,6 @@ namespace dexih.functions
     {
         public List<ReturnValue<T>> ReturnValues = new List<ReturnValue<T>>();
 
-        public ReturnValueMultiple()
-        {
-        }
-
         public void Add(ReturnValue<T> returnValue)
         {
             ReturnValues.Add(returnValue);
@@ -72,7 +68,7 @@ namespace dexih.functions
         {
             get
             {
-                StringBuilder message = new StringBuilder();
+                var message = new StringBuilder();
 
                 message.AppendLine($"{ReturnValues.Count(c => c.Success)} successful, {ReturnValues.Count(c => !c.Success)} failed.");
 
@@ -89,7 +85,7 @@ namespace dexih.functions
         {
             get
             {
-                StringBuilder exceptionDetails = new StringBuilder();
+                var exceptionDetails = new StringBuilder();
                 foreach(var returnValue in ReturnValues.Where(c => c.Exception != null))
                 {
                     exceptionDetails.AppendLine("Exception Detials: " + returnValue.ExceptionDetails);
@@ -112,10 +108,6 @@ namespace dexih.functions
     {
         public List<ReturnValue> ReturnValues = new List<ReturnValue>();
 
-        public ReturnValueMultiple()
-        {
-        }
-
         public void Add(ReturnValue returnValue)
         {
             ReturnValues.Add(returnValue);
@@ -137,7 +129,7 @@ namespace dexih.functions
         {
             get
             {
-                StringBuilder message = new StringBuilder();
+                var message = new StringBuilder();
 
                 message.AppendLine($"{ReturnValues.Count(c => c.Success)} successful, {ReturnValues.Count(c => !c.Success)} failed.");
 
@@ -154,7 +146,7 @@ namespace dexih.functions
         {
             get
             {
-                StringBuilder exceptionDetails = new StringBuilder();
+                var exceptionDetails = new StringBuilder();
                 foreach (var returnValue in ReturnValues.Where(c => c.Exception != null))
                 {
 					if (!string.IsNullOrEmpty(returnValue.ExceptionDetails))
@@ -263,7 +255,7 @@ namespace dexih.functions
             Success = false;
             Exception = exception;
 
-            StringBuilder message = new StringBuilder();
+            var message = new StringBuilder();
 
             if(exception == null)
             {
@@ -302,29 +294,24 @@ namespace dexih.functions
             
                 if (Exception == null)
                 {
-					if(string.IsNullOrEmpty(_exceptionDetails))
+                    if(string.IsNullOrEmpty(_exceptionDetails))
 					{
 						return null;
 					}
-					else {
-						return _exceptionDetails;
-					}
+                    return _exceptionDetails;
                 }
-                else
-                {
-                    var properties = Exception.GetType().GetProperties();
-                    var fields = properties
-                                     .Select(property => new {
-                                         Name = property.Name,
-                                         Value = property.GetValue(Exception, null)
-                                     })
-                                     .Select(x => String.Format(
-                                         "{0} = {1}",
-                                         x.Name,
-                                         x.Value != null ? x.Value.ToString() : String.Empty
-                                     ));
-                    return Message + "\n" + String.Join("\n", fields);
-                }
+                var properties = Exception.GetType().GetProperties();
+                var fields = properties
+                    .Select(property => new {
+                        property.Name,
+                        Value = property.GetValue(Exception, null)
+                    })
+                    .Select(x => string.Format(
+                        "{0} = {1}",
+                        x.Name,
+                        x.Value != null ? x.Value.ToString() : string.Empty
+                    ));
+                return Message + "\n" + string.Join("\n", fields);
             }
         }
     }

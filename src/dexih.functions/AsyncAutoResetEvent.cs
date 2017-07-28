@@ -19,12 +19,9 @@ namespace dexih.functions
                     _mSignaled = false;
                     return SCompleted;
                 }
-                else
-                {
-                    var tcs = new TaskCompletionSource<bool>();
-                    _mWaits.Enqueue(tcs);
-                    return tcs.Task;
-                }
+                var tcs = new TaskCompletionSource<bool>();
+                _mWaits.Enqueue(tcs);
+                return tcs.Task;
             }
         }
 

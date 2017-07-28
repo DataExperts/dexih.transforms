@@ -13,17 +13,9 @@ namespace dexih.transforms
     {
         public override ECacheMethod CacheMethod
         {
-            get
-            {
-                return ECacheMethod.PreLoadCache;
-            }
-            protected set
-            {
-                throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
-            }
+            get => ECacheMethod.PreLoadCache;
+            protected set => throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
         }
-
-        private readonly List<Sort> _sortFields;
 
         #region Constructors
         public ReaderMemory(Table dataTable,  List<Sort> sortFields = null)
@@ -32,16 +24,10 @@ namespace dexih.transforms
             CacheTable.OutputSortFields = sortFields;
             Reset();
 
-            _sortFields = sortFields;
+            SortFields = sortFields;
         }
 
-        public override List<Sort> SortFields
-        {
-            get
-            {
-                return _sortFields;
-            }
-        }
+        public override List<Sort> SortFields { get; }
 
         public void Add(object[] values)
         {

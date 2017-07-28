@@ -8,7 +8,7 @@ namespace dexih.functions
     {
         private readonly int _maxRows;
         private readonly List<object[]> _data;
-        private int _startIndex = 0;
+        private int _startIndex;
 
         public TableCache()
         {
@@ -98,7 +98,7 @@ namespace dexih.functions
 
         public int IndexOf(object[] item)
         {
-            int index = _data.IndexOf(item);
+            var index = _data.IndexOf(item);
 
             if (index >= 0 && _maxRows > 0)
             {
@@ -122,8 +122,7 @@ namespace dexih.functions
         {
             if (_maxRows == 0)
                 return _data.Remove(item);
-            else
-                throw new NotImplementedException("Remove is not supported with this collection.");
+            throw new NotImplementedException("Remove is not supported with this collection.");
         }
 
         public void RemoveAt(int index)
@@ -144,7 +143,7 @@ namespace dexih.functions
     public class TableCacheEnumerator : IEnumerator<object[]>
     {
         private List<object[]> _data;
-        private int _startIndex = 0;
+        private int _startIndex;
 
         private int _enumeratorPosition;
         private bool _isFirst;
@@ -165,8 +164,7 @@ namespace dexih.functions
             {
                 if (!_isFinished)
                     return _data[_enumeratorPosition];
-                else
-                    return null;
+                return null;
             }
         }
 
