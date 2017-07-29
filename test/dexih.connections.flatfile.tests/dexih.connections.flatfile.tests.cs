@@ -23,13 +23,13 @@ namespace dexih.connections.flatfile
             return connection;
         }
 
-        [Fact]
-        public async Task FlatFileLocal_Basic()
-        {
-            string database = "Test-" + Guid.NewGuid().ToString();
-
-            await new UnitTests().Unit(GetLocalConnection(), database);
-        }
+//        [Fact]
+//        public async Task FlatFileLocal_Basic()
+//        {
+//            string database = "Test-" + Guid.NewGuid().ToString();
+//
+//            await new UnitTests().Unit(GetLocalConnection(), database);
+//        }
 
     }
 }

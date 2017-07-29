@@ -11,14 +11,25 @@ namespace FunctionExamples
     {
         public static void Main(string[] args)
         {
-            Parameter parameter = new dexih.functions.Parameter("test", ETypeCode.Boolean);
-            parameter.SetValue("true");
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("1. Create a reader. ");
+                Console.WriteLine("q. Quit. ");
 
-            Console.WriteLine(parameter.Value);
+                var key = Console.ReadKey();
 
-            Console.WriteLine("1. Create a reader. ");
+                switch (key.KeyChar)
+                {
+                    case '1':
+                        var poco = new CreatePocoReader();
+                        poco.Create();
+                        break;
+                    case 'q':
+                        return;
 
-            Console.Read();
+                }
+            }
         }
     }
 }
