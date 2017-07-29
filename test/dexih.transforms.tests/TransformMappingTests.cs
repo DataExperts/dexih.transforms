@@ -19,7 +19,7 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public void Mappings()
+        public async Task Mappings()
         {
             ReaderMemory Source = Helpers.CreateSortedTestData();
             TransformMapping transformMapping = new TransformMapping();
@@ -54,7 +54,7 @@ namespace dexih.transforms.tests
             Assert.Equal(3, transformMapping.FieldCount);
 
             int count = 0;
-            while (transformMapping.Read() == true)
+            while (await transformMapping.ReadAsync() == true)
             {
                 count = count + 1;
                 Assert.Equal("value" + count.ToString().PadLeft(2, '0') + "123", transformMapping["CustomFunction"]);

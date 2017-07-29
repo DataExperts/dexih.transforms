@@ -8,7 +8,7 @@ using static dexih.functions.DataType;
 
 namespace dexih.transforms.tests
 {
-    public class dataadapter
+    public class Dataadapter
     {
         /// <summary>
         /// This test should take about 450ms

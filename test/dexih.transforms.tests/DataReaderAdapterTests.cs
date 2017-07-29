@@ -9,14 +9,14 @@ namespace dexih.transforms.tests
     public class DataReaderAdapterTests
     {
         [Fact]
-        public void DataReaderAdapterAdapter_Tests()
+        public async Task DataReaderAdapterAdapter_Tests()
         {
             ReaderMemory Table = Helpers.CreateSortedTestData();
 
             Assert.Equal(Table.FieldCount, 5);
 
             int count = 0;
-            while (Table.Read() == true)
+            while (await Table.ReadAsync() == true)
             {
                 count = count + 1;
                 Assert.Equal(Table[1], count);

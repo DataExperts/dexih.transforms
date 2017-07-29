@@ -19,7 +19,7 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public void Filters()
+        public async Task Filters()
         {
             ReaderMemory Table = Helpers.CreateSortedTestData();
 
@@ -36,7 +36,7 @@ namespace dexih.transforms.tests
             Assert.Equal(5, TransformFilter.FieldCount);
 
             int count = 0;
-            while (TransformFilter.Read() == true)
+            while (await TransformFilter.ReadAsync() == true)
             {
                 count = count + 1;
             }
@@ -54,7 +54,7 @@ namespace dexih.transforms.tests
             TransformFilter.Reset();
 
             count = 0;
-            while (TransformFilter.Read() == true)
+            while (await TransformFilter.ReadAsync() == true)
             {
                 count = count + 1;
                 if (count == 1)
@@ -77,7 +77,7 @@ namespace dexih.transforms.tests
             TransformFilter.SetInTransform(Table);
 
             count = 0;
-            while (TransformFilter.Read() == true)
+            while (await TransformFilter.ReadAsync() == true)
             {
                 count = count + 1;
             }
@@ -106,7 +106,7 @@ namespace dexih.transforms.tests
             TransformFilter.SetInTransform(TransformMapping);
 
             count = 0;
-            while (TransformFilter.Read() == true)
+            while (await TransformFilter.ReadAsync() == true)
             {
                 count = count + 1;
             }

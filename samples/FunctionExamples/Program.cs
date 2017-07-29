@@ -16,6 +16,8 @@ namespace FunctionExamples
 
             Console.WriteLine(parameter.Value);
 
+            Console.WriteLine("1. Create a reader. ");
+
             Console.Read();
         }
     }

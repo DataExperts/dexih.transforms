@@ -10,7 +10,7 @@ namespace dexih.transforms.tests
     public class TestSoureDbReader
     {
         [Fact]
-        public void sourceDbReader_UnitTest()
+        public async Task sourceDbReader_UnitTest()
         {
             SqliteConnection connection = new SqliteConnection("Data Source=:memory:;");
             connection.Open();
@@ -38,7 +38,7 @@ namespace dexih.transforms.tests
             Assert.Equal("DateColumn", dbReader.GetName(2));
 
             int count = 0;
-            while(dbReader.Read())
+            while(await dbReader.ReadAsync())
             {
                 Assert.Equal("value" + count.ToString().PadLeft(2, '0'), dbReader["StringColumn"]);
                 Assert.Equal(count, Convert.ToInt32(dbReader["IntColumn"]));
@@ -59,7 +59,7 @@ namespace dexih.transforms.tests
             Assert.Equal("DateColumn", dbReader.GetName(2));
 
             count = 0;
-            while (dbReader.Read())
+            while (await dbReader.ReadAsync())
             {
                 Assert.Equal("value" + count.ToString().PadLeft(2, '0'), dbReader["StringColumn"]);
                 Assert.Equal(count, Convert.ToInt32(dbReader["IntColumn"]));
@@ -72,7 +72,7 @@ namespace dexih.transforms.tests
             //reset the reader and re-test using the cache.
             dbReader.SetRowNumber(0);
             count = 0;
-            while (dbReader.Read())
+            while (await dbReader.ReadAsync())
             {
                 Assert.Equal("value" + count.ToString().PadLeft(2, '0'), dbReader["StringColumn"]);
                 Assert.Equal(count, Convert.ToInt32(dbReader["IntColumn"]));

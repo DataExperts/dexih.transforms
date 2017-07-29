@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>This library enables advanced data transformation and analytics.  See the project url for more details.</Description>
+    <Description>Data transformation and analytics library.  See the project url for more details.</Description>
     <AssemblyTitle>Data Experts Group - Transforms Library</AssemblyTitle>
-    <VersionPrefix>0.2.4</VersionPrefix>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.transforms</AssemblyName>
     <PackageId>dexih.transforms</PackageId>
-    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;</PackageTags>
-    <PackageReleaseNotes>Note: This project is still under devlopement with regular breaking changes.</PackageReleaseNotes>
+    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Poco;Data Processing;</PackageTags>
+    <PackageReleaseNotes>Note: This project is still in a beta stage.  There will may be future breaking changes as new versions are released.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+wp80+win8+wpa81+dnxcore50;portable-net451+win8</PackageTargetFallback>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>

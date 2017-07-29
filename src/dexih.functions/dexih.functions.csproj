@@ -1,21 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>This is a support library containing helpers and functions for the transforms packages.</Description>
-    <AssemblyTitle>Data Experts Group - Functions Library</AssemblyTitle>
-    <VersionPrefix>0.2.2</VersionPrefix>
+    <Description>Data transformation and analytics library - supporting functions.  See the project url for more details.</Description>
+    <AssemblyTitle>Data Experts Group - Supporting FUnctions</AssemblyTitle>
+    <VersionPrefix>0.3.0</VersionPrefix>
+    <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.functions</AssemblyName>
-    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;</PackageTags>
-    <PackageReleaseNotes>Note: This project is still under devlopement with regular breaking changes.</PackageReleaseNotes>
+    <PackageId>dexih.functions</PackageId>
+    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Poco;Data Processing;</PackageTags>
+    <PackageReleaseNotes>Note: This project is still in a beta stage.  There will may be future breaking changes as new versions are released.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+wp80+win8+wpa81+dnxcore50;portable-net451+win8</PackageTargetFallback>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <OutputTypeEx>library</OutputTypeEx>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+
   </PropertyGroup>
   <!--<ItemGroup>
     <Compile Include="**\*.cs" />

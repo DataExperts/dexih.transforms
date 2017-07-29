@@ -8,48 +8,54 @@ namespace dexih.transforms.tests
     public class PocoTests
     {
         [Fact]
-        public void PocoTest_Open()
+        public async Task PocoTest_Open()
         {
-            var reader = Helpers.CreateSortedTestData();
-            var poco = new PocoLoader<SamplePocoClass>();
-            poco.Open(reader);
-
-            var count = 0;
-            foreach (var item in poco)
+            await Task.Run(() =>
             {
-                count++;
-                Assert.Equal("value" + count.ToString().PadLeft(2, '0'), item.StringColumn);
-                Assert.Equal(count, item.IntColumn);
-                Assert.Equal((DateTime)Convert.ToDateTime("2015-01-" + count.ToString()), item.TheDate);
-            }
-            
-            Assert.Equal(10, count);
 
+                var reader = Helpers.CreateSortedTestData();
+                var poco = new PocoLoader<SamplePocoClass>();
+                poco.Open(reader);
+
+                var count = 0;
+                foreach (var item in poco)
+                {
+                    count++;
+                    Assert.Equal("value" + count.ToString().PadLeft(2, '0'), item.StringColumn);
+                    Assert.Equal(count, item.IntColumn);
+                    Assert.Equal((DateTime) Convert.ToDateTime("2015-01-" + count.ToString()), item.TheDate);
+                }
+
+                Assert.Equal(10, count);
+            });
         }
         
         [Fact]
-        public void PocoTest_OpenCached()
+        public async Task PocoTest_OpenCached()
         {
-            var reader = Helpers.CreateSortedTestData();
-            var poco = new PocoLoader<SamplePocoClass>();
-            poco.OpenCached(reader);
-
-            var count = 0;
-            foreach (var item in poco)
+            await Task.Run(() =>
             {
-                count++;
-                Assert.Equal("value" + count.ToString().PadLeft(2, '0'), item.StringColumn);
-                Assert.Equal(count, item.IntColumn);
-                Assert.Equal((DateTime)Convert.ToDateTime("2015-01-" + count.ToString()), item.TheDate);
-            }
-            
-            Assert.Equal(10, count);
 
-            var oldItem = poco[5];
-            Assert.Equal("value06", oldItem.StringColumn);
-            
-            Assert.Equal(10, poco.Count);
-            
+                var reader = Helpers.CreateSortedTestData();
+                var poco = new PocoLoader<SamplePocoClass>();
+                poco.OpenCached(reader);
+
+                var count = 0;
+                foreach (var item in poco)
+                {
+                    count++;
+                    Assert.Equal("value" + count.ToString().PadLeft(2, '0'), item.StringColumn);
+                    Assert.Equal(count, item.IntColumn);
+                    Assert.Equal((DateTime) Convert.ToDateTime("2015-01-" + count.ToString()), item.TheDate);
+                }
+
+                Assert.Equal(10, count);
+
+                var oldItem = poco[5];
+                Assert.Equal("value06", oldItem.StringColumn);
+
+                Assert.Equal(10, poco.Count);
+            });
         }
         
         [Fact]

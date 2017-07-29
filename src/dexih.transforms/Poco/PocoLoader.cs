@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace dexih.transforms
 
         public async Task ReadToEndAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested && _enumerator.MoveNext())
+            while (!cancellationToken.IsCancellationRequested && await _enumerator.MoveNextAsync(cancellationToken))
             {
             }
         }

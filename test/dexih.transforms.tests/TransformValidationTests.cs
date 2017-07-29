@@ -19,7 +19,7 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public void Validations_unit()
+        public async Task Validations_unit()
         {
             ReaderMemory Table = Helpers.CreateValidationTestData();
 
@@ -36,7 +36,7 @@ namespace dexih.transforms.tests
             Assert.Equal(8, transformValidation.FieldCount);
 
             int count = 0;
-            while (transformValidation.Read() == true)
+            while (await transformValidation.ReadAsync() == true)
             {
                 count = count + 1;
                 Assert.Equal('R', transformValidation["Operation"]);
@@ -68,7 +68,7 @@ namespace dexih.transforms.tests
 
             int passCount = 0;
             int rejectCount = 0;
-            while (transformValidation.Read() == true)
+            while (await transformValidation.ReadAsync() == true)
             {
                 Assert.Equal('C', transformValidation["Operation"]);
                 Assert.True((string)transformValidation["StringColumn"] == "value");
@@ -96,7 +96,7 @@ namespace dexih.transforms.tests
 
             passCount = 0;
             rejectCount = 0;
-            while (transformValidation.Read() == true)
+            while (await transformValidation.ReadAsync() == true)
             {
                 if ((char)transformValidation["Operation"] == 'C')
                 {

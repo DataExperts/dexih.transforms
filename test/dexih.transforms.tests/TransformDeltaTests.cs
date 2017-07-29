@@ -13,7 +13,7 @@ namespace dexih.transforms.tests
     {
 
         [Fact]
-        public void RunDeltaTest_reload()
+        public async Task RunDeltaTest_reload()
         {
             var source = Helpers.CreateSortedTestData();
 
@@ -24,11 +24,11 @@ namespace dexih.transforms.tests
 
             //run a reload.  
             var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.Reload, 0, false);
-            transformDelta.Read();
+            await transformDelta.ReadAsync();
             Assert.True((char)transformDelta["Operation"] == 'T');
 
             var count = 0;
-            while (transformDelta.Read()) {
+            while (await transformDelta.ReadAsync()) {
                 Assert.True((char)transformDelta["Operation"] == 'C');
                 Assert.True((Int64)transformDelta["SurrogateKey"] == count+1);
                 Assert.True((Int32)transformDelta["IntColumn"] == count + 1);
@@ -43,7 +43,7 @@ namespace dexih.transforms.tests
             transformDelta.Reset();
 
             count = 0;
-            while (transformDelta.Read())
+            while (await transformDelta.ReadAsync())
             {
                 Assert.True((char)transformDelta["Operation"] == 'C');
                 Assert.True((Int64)transformDelta["SurrogateKey"] == count + 1);
@@ -100,7 +100,7 @@ namespace dexih.transforms.tests
                 transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
 
                 count = 0;
-                while (transformDelta.Read())
+                while (await transformDelta.ReadAsync())
                 {
                     count++;
                 }
@@ -121,7 +121,7 @@ namespace dexih.transforms.tests
                 transformDelta.Reset();
 
                 count = 0;
-                while (transformDelta.Read())
+                while (await transformDelta.ReadAsync())
                 {
                     count++;
                     Assert.True((char)transformDelta["Operation"] == 'U');
@@ -138,7 +138,7 @@ namespace dexih.transforms.tests
                 count = 0;
                 var rowsCreated = 0;
                 var rowsUpdated = 0;
-                while (transformDelta.Read())
+                while (await transformDelta.ReadAsync())
                 {
                     rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
                     rowsUpdated += (char)transformDelta["Operation"] == 'U' ? 1 : 0;
@@ -158,7 +158,7 @@ namespace dexih.transforms.tests
                 count = 0;
                 rowsCreated = 0;
                 rowsUpdated = 0;
-                while (transformDelta.Read())
+                while (await transformDelta.ReadAsync())
                 {
                     rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
                     rowsUpdated += (char)transformDelta["Operation"] == 'U' ? 1 : 0;
@@ -187,7 +187,7 @@ namespace dexih.transforms.tests
                transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
                var count = 0;
-               while (transformDelta.Read())
+               while (await transformDelta.ReadAsync())
                {
                    Assert.True((char)transformDelta["Operation"] == 'C');
                    Assert.True((Int64)transformDelta["SurrogateKey"] == count + 1);
@@ -211,7 +211,7 @@ namespace dexih.transforms.tests
                 transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
 
                count = 0;
-               while (transformDelta.Read())
+               while (await transformDelta.ReadAsync())
                {
                    count++;
                }
@@ -231,7 +231,7 @@ namespace dexih.transforms.tests
 
                count = 0;
                var rowsCreated = 0;
-               while (transformDelta.Read())
+               while (await transformDelta.ReadAsync())
                {
                    rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
                    count++;
@@ -249,7 +249,7 @@ namespace dexih.transforms.tests
                transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
 
                count = 0;
-               while (transformDelta.Read())
+               while (await transformDelta.ReadAsync())
                {
                    count++;
                }
@@ -261,7 +261,7 @@ namespace dexih.transforms.tests
 
 
         //[Fact]
-        //public void RunDeltaTest_updatePreserveDelete()
+        //public async Task RunDeltaTest_updatePreserveDelete()
         //{
         //    ReaderMemory Source = Helpers.CreateUnSortedTestData();
 
@@ -276,7 +276,7 @@ namespace dexih.transforms.tests
         //    transformDelta.SetInTransform(Source, Target);
 
         //    int count = 0;
-        //    while (transformDelta.Read())
+        //    while (await transformDelta.ReadAsync())
         //    {
         //        Assert.True((char)transformDelta["Operation"] == 'C');
         //        Assert.True((Int64)transformDelta["SurrogateKey"] == count + 1);
@@ -295,7 +295,7 @@ namespace dexih.transforms.tests
         //    transformDelta.Reset();
 
         //    count = 0;
-        //    while (transformDelta.Read())
+        //    while (await transformDelta.ReadAsync())
         //    {
         //        count++;
         //    }
@@ -314,7 +314,7 @@ namespace dexih.transforms.tests
         //    transformDelta.Reset();
 
         //    count = 0;
-        //    while (transformDelta.Read())
+        //    while (await transformDelta.ReadAsync())
         //    {
         //        count++;
         //    }
@@ -330,7 +330,7 @@ namespace dexih.transforms.tests
         //    transformDelta.Reset();
 
         //    count = 0;
-        //    while (transformDelta.Read())
+        //    while (await transformDelta.ReadAsync())
         //    {
         //        count++;
         //    }
@@ -346,7 +346,7 @@ namespace dexih.transforms.tests
         //    transformDelta.Reset();
 
         //    count = 0;
-        //    while (transformDelta.Read())
+        //    while (await transformDelta.ReadAsync())
         //    {
         //        count++;
         //    }

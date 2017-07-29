@@ -46,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.excel", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.dexih", "src\dexih.connections.dexih\dexih.connections.dexih.csproj", "{826C6B11-4385-4DD7-80FD-31139FA0B0CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.excel.tests", "test\dexih.connections.excel.tests\dexih.connections.excel.tests.csproj", "{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -248,6 +250,18 @@ Global
 		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|x64.Build.0 = Release|Any CPU
 		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|x86.ActiveCfg = Release|Any CPU
 		{826C6B11-4385-4DD7-80FD-31139FA0B0CF}.Release|x86.Build.0 = Release|Any CPU
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Debug|x64.ActiveCfg = Debug|x64
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Debug|x64.Build.0 = Debug|x64
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Debug|x86.ActiveCfg = Debug|x86
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Debug|x86.Build.0 = Debug|x86
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|x64.ActiveCfg = Release|x64
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|x64.Build.0 = Release|x64
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|x86.ActiveCfg = Release|x86
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -269,5 +283,6 @@ Global
 		{C7E245DC-2C1C-48B8-9A6B-278194684258} = {4712A230-9747-4447-B4C5-022006511342}
 		{92870864-65E8-4C33-9235-F269BB21DDE9} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 		{826C6B11-4385-4DD7-80FD-31139FA0B0CF} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
+		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E} = {4712A230-9747-4447-B4C5-022006511342}
 	EndGlobalSection
 EndGlobal

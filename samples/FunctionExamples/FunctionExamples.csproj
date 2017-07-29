@@ -14,5 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj">
     </ProjectReference>
+    <ProjectReference Include="..\..\test\dexih.functions.tests\dexih.functions.tests.csproj" />
+    <ProjectReference Include="..\..\test\dexih.transforms.tests\dexih.transforms.tests.csproj" />
   </ItemGroup>
 </Project>

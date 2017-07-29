@@ -42,7 +42,7 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public void ProfileTest()
+        public async Task ProfileTest()
         {
             ReaderMemory Table = CreateProfileTestData();
 
@@ -64,7 +64,7 @@ namespace dexih.transforms.tests
 
             //read all records in the tranform profile
             int count = 0;
-            while(transformProfile.Read())
+            while(await transformProfile.ReadAsync())
             {
                 count++;
             }
@@ -74,7 +74,7 @@ namespace dexih.transforms.tests
             Transform profileResults = transformProfile.GetProfileResults();
             count = 0;
             int detailCount = 0;
-            while(profileResults.Read())
+            while(await profileResults.ReadAsync())
             {
                 if ((bool)profileResults["IsSummary"] == true)
                 {

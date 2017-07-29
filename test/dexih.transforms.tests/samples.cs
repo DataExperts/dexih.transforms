@@ -4,11 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 public class samples
 {
 
-    public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetConnection)
+    public async Task FirstTransform(SqlConnection sourceConnection, SqlConnection targetConnection)
     {
         // Retrieve the data from the database
         SqlCommand cmd = new SqlCommand("select * from Sales.SalesOrderHeader ", sourceConnection);
@@ -47,7 +48,7 @@ public class samples
         using (var bulkCopy = new SqlBulkCopy(targetConnection))
         {
             bulkCopy.DestinationTableName = "SalesOrderDaily";
-            bulkCopy.WriteToServer(transformGroup);
+            await bulkCopy.WriteToServerAsync(transformGroup);
         }
     }
 }

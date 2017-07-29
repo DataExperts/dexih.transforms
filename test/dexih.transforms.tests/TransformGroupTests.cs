@@ -12,7 +12,7 @@ namespace dexih.transforms.tests
     {
 
         [Fact]
-        public void Group_Aggregates()
+        public async Task Group_Aggregates()
         {
             ReaderMemory Source = Helpers.CreateUnSortedTestData();
 
@@ -56,7 +56,7 @@ namespace dexih.transforms.tests
             Assert.Equal(7, transformGroup.FieldCount);
 
             int counter = 0;
-            while (transformGroup.Read() == true)
+            while (await transformGroup.ReadAsync() == true)
             {
                 counter = counter + 1;
                 Assert.Equal((Double)55, transformGroup["Sum"]);
@@ -76,7 +76,7 @@ namespace dexih.transforms.tests
             transformGroup = new TransformGroup(Source, GroupColumns, Aggregates, false);
 
             counter = 0;
-            while (transformGroup.Read() == true)
+            while (await transformGroup.ReadAsync() == true)
             {
                 counter = counter + 1;
                 if (counter < 10)
@@ -103,7 +103,7 @@ namespace dexih.transforms.tests
         }
 
         [Fact]
-        public void Group_SeriesTests()
+        public async Task Group_SeriesTests()
         {
             dexih.transforms.ReaderMemory Source = Helpers.CreateSortedTestData();
 
@@ -143,7 +143,7 @@ namespace dexih.transforms.tests
             int counter = 0;
             Double[] MAvgExpectedValues = { 2.5, 3, 3.5, 4, 5, 6, 7, 7.14, 7.5, 7.8, 8 };
             String[] HighestExpectedValues = { "2015/01/01", "2015/01/02", "2015/01/03", "2015/01/04", "2015/01/05", "2015/01/06", "2015/01/07", "2015/01/08", "2015/01/09", "2015/01/10", "2015/01/10" };
-            while (transformGroup.Read() == true)
+            while (await transformGroup.ReadAsync() == true)
             {
                 Assert.Equal((Double)MAvgExpectedValues[counter], Math.Round((Double)transformGroup["MAvg"], 2));
                 Assert.Equal(HighestExpectedValues[counter], ((DateTime)transformGroup["Highest"]).ToString("yyyy/MM/dd"));

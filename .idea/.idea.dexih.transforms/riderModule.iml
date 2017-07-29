@@ -22,6 +22,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.functions" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.transforms" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.azure.tests" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.excel.tests" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.flatfile.tests" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.sql.tests" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.test" isTestSource="false" />
@@ -49,6 +50,8 @@
       <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.transforms/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.azure.tests/bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.azure.tests/obj" />
+      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.excel.tests/bin" />
+      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.excel.tests/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.flatfile.tests/bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.flatfile.tests/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.sql.tests/bin" />
