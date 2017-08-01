@@ -9,6 +9,7 @@ using static dexih.functions.DataType;
 using System.Threading;
 using System.Diagnostics;
 using MySql.Data.MySqlClient;
+using System.Linq;
 
 namespace dexih.connections.sql
 {
@@ -318,10 +319,22 @@ namespace dexih.connections.sql
                     connectionString = ConnectionString;
                 else
                 {
-					if (UseWindowsAuth == false)
-						connectionString = "Server=" + Server + "; uid=" + Username + "; pwd=" + Password + "; ";
+                    var hostport = Server.Split(':');
+                    string port;
+                    var host = hostport[0];
+                    if (hostport.Count() == 1)
+                    {
+                        port = "";
+                    }
+                    else
+                    {
+                        port = ";port=" + hostport[1];
+                    }
+
+                    if (UseWindowsAuth == false)
+						connectionString = "Server=" + hostport[0] + port + "; uid=" + Username + "; pwd=" + Password + "; ";
 					else
-						connectionString = "Server=" + Server + "; IntegratedSecurity=yes; Uid=auth_windows;";
+						connectionString = "Server=" + hostport[0] + port + "; IntegratedSecurity=yes; Uid=auth_windows;";
 
 					if(!string.IsNullOrEmpty(DefaultDatabase)) 
 					{
