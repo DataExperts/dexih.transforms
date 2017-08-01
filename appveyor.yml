@@ -16,7 +16,7 @@ build_script:
 - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o artifacts
 test_script:
 - dotnet test .\test\dexih.functions.tests\dexih.functions.tests.csproj
-- dotnet test .\test\dexih.transforms.tests\dexih.transforms.tests.csproj
+- dotnet test .\test\dexih.functions.tests.async\dexih.functions.tests.async.csproj
 - cd test\dexih.connections.azure.tests
 - '"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start'
 - dotnet test 
