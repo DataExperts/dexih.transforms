@@ -33,6 +33,28 @@ namespace dexih.connections.azure
         public override bool CanUseBinary => true;
         public override bool CanUseSql => false;
 
+        public override object GetDataTypeMinValue(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.DateTime:
+                    return new DateTime(1800, 01, 02, 0, 0, 0, 0);
+                default:
+                    return DataType.GetDataTypeMinValue(typeCode);
+            }
+
+        }
+
+        public override object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.UInt64:
+                    return (ulong)long.MaxValue;
+                default:
+                    return DataType.GetDataTypeMaxValue(typeCode, length);
+            }
+        }
 
         public override bool IsValidDatabaseName(string name)
         {
@@ -650,7 +672,7 @@ namespace dexih.connections.azure
                 case ETypeCode.UInt32:
                     return new EntityProperty((UInt32?)returnValue.Value);
                 case ETypeCode.UInt64:
-                    return new EntityProperty((UInt64?)returnValue.Value);
+                    return new EntityProperty(Convert.ToInt64(returnValue.Value));
                 case ETypeCode.Int16:
                     return new EntityProperty((Int16?)returnValue.Value);
                 case ETypeCode.Int32:
@@ -690,15 +712,25 @@ namespace dexih.connections.azure
             switch (typeCode)
             {
                 case ETypeCode.Byte:
+                    return Convert.ToByte(value);
                 case ETypeCode.SByte:
+                    return Convert.ToSByte(value);
                 case ETypeCode.UInt16:
+                    return Convert.ToUInt16(value);
                 case ETypeCode.UInt32:
+                    return Convert.ToUInt32(value);
                 case ETypeCode.UInt64:
+                    return Convert.ToUInt64(value);
                 case ETypeCode.Int16:
+                    return Convert.ToInt16(value);
                 case ETypeCode.Int32:
+                    return Convert.ToInt32(value);
                 case ETypeCode.Int64:
+                    return Convert.ToInt64(value);
                 case ETypeCode.Double:
+                    return Convert.ToDouble(value);
                 case ETypeCode.Single:
+                    return Convert.ToSingle(value);
                 case ETypeCode.String:
                 case ETypeCode.Boolean:
                 case ETypeCode.DateTime:
