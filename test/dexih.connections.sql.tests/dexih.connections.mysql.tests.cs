@@ -8,6 +8,7 @@ using Xunit;
 
 namespace dexih.connections.sql
 {
+    [Collection("SqlTest")]
     public class ConnectionMySqlTests
     {
         public ConnectionMySql GetConnection()

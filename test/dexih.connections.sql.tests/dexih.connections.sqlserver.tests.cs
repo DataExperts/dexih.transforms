@@ -10,6 +10,7 @@ using Xunit;
 
 namespace dexih.connections.sql.sqlserver
 {
+    [Collection("SqlTest")]
     public class ConnectionSqlTests
     {
         public ConnectionSql GetConnection()

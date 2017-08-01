@@ -10,6 +10,7 @@ using Xunit;
 
 namespace dexih.connections.sql.npgsql
 {
+    [Collection("SqlTest")]
     public class ConnectionPostgreSqlTests
     {
         public ConnectionPostgreSql GetConnection()
