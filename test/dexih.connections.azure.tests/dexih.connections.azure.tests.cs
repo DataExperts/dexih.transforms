@@ -43,7 +43,6 @@ namespace dexih.connections.azure
         [Fact]
         public async Task Azure_Performance()
         {
-
             await new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 100);
         }
 
