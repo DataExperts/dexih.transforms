@@ -24,9 +24,9 @@ test_script:
 - dotnet test 
 - cd ..\dexih.connections.sql.tests
 - dotnet test 
-- cd ..\dexih.connections.webservice.restful.tests
+- cd ..\dexih.connections.excel.tests
 - dotnet test 
-- cd ..\dexih.connections.webservice.soap.tests
+- cd ..\dexih.connections.webservice.restful.tests
 - dotnet test 
 artifacts:
   - path: artifacts\*.nupkg
