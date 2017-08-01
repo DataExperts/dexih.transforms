@@ -63,7 +63,7 @@ namespace dexih.functions
                 case ETypeCode.UInt32:
                     return uint.MaxValue;
                 case ETypeCode.UInt64:
-                    return long.MaxValue; //use max value of int64 as some databases don't support uint64 (namely postgreSql)
+                    return ulong.MaxValue; 
                 case ETypeCode.Int16:
                     return short.MaxValue;
 				case ETypeCode.Int32:
@@ -71,17 +71,17 @@ namespace dexih.functions
 				case ETypeCode.Int64:
                     return long.MaxValue;
 				case ETypeCode.Decimal:
-                    return 999999999999999999; //use arbitrary big number as range varies between databases.  
+                    return (decimal) 9999999999999999999;   
 				case ETypeCode.Double:
-                    return double.MaxValue / 10;
+                    return double.MaxValue;
 				case ETypeCode.Single:
-                    return float.MaxValue /10;
+                    return float.MaxValue;
 				case ETypeCode.String:
                     return new string('A', length);
                 case ETypeCode.Boolean:
                     return true;
                 case ETypeCode.DateTime:
-                    return DateTime.Now; //DateTime.MaxValue;
+                    return DateTime.MaxValue;
 				case ETypeCode.Time:
                     return TimeSpan.FromDays(1) - TimeSpan.FromMilliseconds(1);
                 case ETypeCode.Guid:
@@ -116,17 +116,17 @@ namespace dexih.functions
 				case ETypeCode.Int64:
                     return long.MinValue;
 				case ETypeCode.Decimal:
-                    return -999999999999999999;
+                    return (decimal) -999999999999999999;
                 case ETypeCode.Double:
-                    return double.MinValue / 10;
+                    return double.MinValue;
                 case ETypeCode.Single:
-                    return float.MinValue / 10;
+                    return float.MinValue;
                 case ETypeCode.String:
                     return "";
                 case ETypeCode.Boolean:
                     return false;
                 case ETypeCode.DateTime:
-                    return new DateTime(1753,01,01);
+                    return new DateTime(0001, 01, 01); // new DateTime(1753,01,01);
                 case ETypeCode.Time:
                     return TimeSpan.FromDays(0);
                 case ETypeCode.Guid:
@@ -516,7 +516,7 @@ namespace dexih.functions
                     result = new DateTime(Convert.ToInt64(inputValue));
                 }
 
-                if (tryBasicType == EBasicType.Date && inputBasicType != EBasicType.String)
+                if (result == null && tryBasicType == EBasicType.Date && inputBasicType != EBasicType.String)
                 {
                     var reason = "Cannot convert value " + inputValue + " to " + tryDataType;
                     return new ReturnValue<object>(false, reason, null);

@@ -39,6 +39,32 @@ namespace dexih.connections.sql
 //                    return value;
 //            }
 //		}
+        
+        public override object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.DateTime:
+                    return new DateTime(9999,12,31);
+                case ETypeCode.Time:
+                    return TimeSpan.FromDays(1) - TimeSpan.FromSeconds(1); //mysql doesn't support milliseconds
+
+                default:
+                    return DataType.GetDataTypeMaxValue(typeCode, length);
+            }
+        }
+	    
+        public override object GetDataTypeMinValue(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.DateTime:
+                    return new DateTime(1000,1,1);
+                default:
+                    return DataType.GetDataTypeMinValue(typeCode);
+            }
+		    
+        }
 
         public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {

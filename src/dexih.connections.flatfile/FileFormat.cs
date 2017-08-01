@@ -37,7 +37,7 @@ namespace dexih.connections.flatfile
         public const EParseErrorAction DefaultParseErrorAction = EParseErrorAction.ThrowException;
         public const char DefaultQuote = '\"';
         public const bool DefaultSkipEmptyLines = true;
-        public const bool DefaultSupportsMutiline = true;
+        public const bool DefaultSupportsMutiline = false;
         public const EValueTrimmingOptions DefaultValueTrimmingOptions = EValueTrimmingOptions.All;
 
         [JsonConverter(typeof(StringEnumConverter))]

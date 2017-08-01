@@ -23,21 +23,35 @@ namespace dexih.connections.sql
         public override string DatabaseTypeName => "PostgreSQL";
         public override ECategory DatabaseCategory => ECategory.SqlDatabase;
 
+        // postgre doesn't have unsigned values, so convert the unsigned to signed 
 		public override object ConvertParameterType(object value)
 		{
             switch (value)
             {
-                case UInt16 uint16:
-                    return (Int32)uint16;
-                case UInt32 uint32:
-                    return (Int64)uint32;
-				case UInt64 uint64:
-					return (Int64)uint64;
+                case ushort uint16:
+                    return (int)uint16;
+                case uint uint32:
+                    return (long)uint32;
+				case ulong uint64:
+					return (long)uint64;
 				default:
                     return value;
             }
 		}
-
+        
+        public override object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.UInt64:
+                    return (ulong)long.MaxValue;
+                case ETypeCode.DateTime:
+                    return new DateTime(9999, 12, 31, 23, 59,59,999);
+                default:
+                    return DataType.GetDataTypeMaxValue(typeCode, length);
+            }
+        }
+	    
         public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             ReturnValue<DbConnection> connectionResult = await NewConnection();
@@ -516,7 +530,7 @@ namespace dexih.connections.sql
             }
         }
 
-		private Int32? ConvertNullableToInt(object value)
+		private int? ConvertNullableToInt(object value)
 		{
 			if(value == null || value is DBNull)
 			{
@@ -524,7 +538,7 @@ namespace dexih.connections.sql
 			}
 			else 
 			{
-				var parsed = Int32.TryParse(value.ToString(), out int result);
+				var parsed = int.TryParse(value.ToString(), out int result);
 				if(parsed) 
 				{
 					return result;

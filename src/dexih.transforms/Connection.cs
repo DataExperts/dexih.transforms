@@ -71,7 +71,9 @@ namespace dexih.transforms
         public abstract bool CanSort { get; }
         public abstract bool CanFilter { get; }
         public abstract bool CanAggregate { get; }
-
+        public abstract bool CanUseBinary { get; }
+        public abstract bool CanUseSql { get; }
+        
         //Functions required for managed connection
         public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken);
         //public abstract Task<ReturnValue> TestConnection();
@@ -124,16 +126,30 @@ namespace dexih.transforms
         public abstract Task<ReturnValue<Table>> GetSourceTableInfo(Table table, CancellationToken cancelToken);
 
         /// <summary>
-        /// Adds any database specific mandatory column to the table object.
+        /// Adds any database specific mandatory columns to the table object and returns the initialized version.
         /// </summary>
         /// <param name="table"></param>
         /// <param name="position"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue> AddMandatoryColumns(Table table, int position);
+        public abstract Task<ReturnValue<Table>> InitializeTable(Table table, int position);
 
         public Stopwatch WriteDataTimer = new Stopwatch();
 
+        #endregion
+        
+        #region DataType ranges
 
+        public virtual object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
+        {
+            return DataType.GetDataTypeMaxValue(typeCode, length);
+        }
+
+        public virtual object GetDataTypeMinValue(ETypeCode typeCode)
+        {
+            return DataType.GetDataTypeMinValue(typeCode);
+        }
+
+        
         #endregion
 
         #region Audit
@@ -142,8 +158,9 @@ namespace dexih.transforms
         {
             get
             {
-                Table auditTable = new Table("DexihHistory");
-                AddMandatoryColumns(auditTable, 0).Wait();
+                var newTable = new Table("DexihHistory");
+                var auditTableResult = InitializeTable(newTable, 0).Result;
+                var auditTable = auditTableResult.Value;
 
                 auditTable.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, TableColumn.EDeltaType.AutoIncrement));
                 auditTable.Columns.Add(new TableColumn("HubKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
@@ -189,7 +206,7 @@ namespace dexih.transforms
             }
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, Int64 referenceKey, Int64 parentAuditKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancelToken)
+        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancelToken)
         {
             var auditTable = AuditTable;
 
@@ -281,9 +298,9 @@ namespace dexih.transforms
 
         public virtual async Task<ReturnValue> UpdateAudit(TransformWriterResult writerResult)
         {
-            bool isCurrent = true;
-            bool isPrevious = false;
-            bool isPreviousSuccess = false;
+            var isCurrent = true;
+            var isPrevious = false;
+            var isPreviousSuccess = false;
 
             //when the runstatuss is finished or finished with errors, set the previous success record to false.
             if (writerResult.RunStatus == TransformWriterResult.ERunStatus.Finished || writerResult.RunStatus == TransformWriterResult.ERunStatus.FinishedErrors)
@@ -435,7 +452,7 @@ namespace dexih.transforms
             Transform reader = null;
             try
             {
-                Stopwatch watch = new Stopwatch();
+                var watch = new Stopwatch();
                 watch.Start();
 
                 reader = GetTransformReader(AuditTable);
@@ -457,19 +474,19 @@ namespace dexih.transforms
                 //add a sort transform to ensure sort order.
                 reader = new TransformSort(reader, sorts);
 
-                ReturnValue returnValue = await reader.Open(0, query, cancellationToken);
+                var returnValue = await reader.Open(0, query, cancellationToken);
                 if (returnValue.Success == false)
                     return new ReturnValue<List<TransformWriterResult>>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
                 var writerResults = new List<TransformWriterResult>();
-                int count = 0;
+                var count = 0;
 
                 while ((count < query.Rows || query.Rows == -1) &&
                     cancellationToken.IsCancellationRequested == false &&
                     await reader.ReadAsync(cancellationToken)
                     )
                 {
-                    TransformWriterResult result = new TransformWriterResult(
+                    var result = new TransformWriterResult(
                         (long)TryParse(ETypeCode.Int64, reader["HubKey"]).Value,
                         (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value,
                         (string)reader["AuditType"],
@@ -623,23 +640,23 @@ namespace dexih.transforms
             return await Task.Run(() => new ReturnValue(true));
         }
 
-        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, int maxMilliseconds, CancellationToken cancellationToken)
+        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
-            return await GetPreview(table, query, maxMilliseconds, null, null, cancellationToken);
+            return await GetPreview(table, query, null, null, cancellationToken);
         }
 
-        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, int maxMilliseconds, Transform referenceTransform, List<JoinPair> referenceJoins, CancellationToken cancellationToken)
+        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, Transform referenceTransform, List<JoinPair> referenceJoins, CancellationToken cancellationToken)
         {
             try
             {
-                Stopwatch watch = new Stopwatch();
+                var watch = new Stopwatch();
                 watch.Start();
 
                 var rows = query?.Rows ?? -1;
 
-                Transform reader = GetTransformReader(table, referenceTransform);
+                var reader = GetTransformReader(table, referenceTransform);
                 reader.JoinPairs = referenceJoins;
-                ReturnValue returnValue = await reader.Open(0, query, cancellationToken);
+                var returnValue = await reader.Open(0, query, cancellationToken);
                 if (returnValue.Success == false)
                     return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception,
                         null);
@@ -647,15 +664,14 @@ namespace dexih.transforms
                 reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
                 reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
 
-                int count = 0;
-                while ((count < rows || rows == -1) &&
+                var count = 0;
+                while (
+                    (count < rows || rows < 0) &&
                        cancellationToken.IsCancellationRequested == false &&
                        await reader.ReadAsync(cancellationToken)
                 )
                 {
                     count++;
-                    if (maxMilliseconds > 0 && watch.ElapsedMilliseconds > maxMilliseconds)
-                        break;
                 }
 
                 watch.Stop();

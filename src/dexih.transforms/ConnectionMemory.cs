@@ -31,8 +31,10 @@ namespace dexih.transforms
 
         public override bool CanFilter => false;
         public override bool CanAggregate => false;
+        public override bool CanUseBinary => true;
+        public override bool CanUseSql => false;
 
-        public override Task<ReturnValue> AddMandatoryColumns(Table table, int position) => Task.Run(() => new ReturnValue(true));
+        public override Task<ReturnValue<Table>> InitializeTable(Table table, int position) => Task.Run(() => new ReturnValue<Table>(true, table));
 
         public override Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken) => Task.Run(() => new ReturnValue(true));
 

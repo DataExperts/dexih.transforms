@@ -62,7 +62,7 @@ namespace dexih.functions
 
         public void Add(object[] item)
         {
-            if (_maxRows == 0 || _data.Count < _maxRows)
+            if (_maxRows <= 0 || _data.Count < _maxRows)
             {
                 _data.Add(item);
             }

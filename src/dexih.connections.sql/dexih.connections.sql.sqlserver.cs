@@ -33,6 +33,29 @@ namespace dexih.connections.sql
 
             return sql;
         }
+        
+        public override object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.DateTime:
+                    return new DateTime(9999,12,31);
+                default:
+                    return DataType.GetDataTypeMaxValue(typeCode, length);
+            }
+        }
+	    
+        public override object GetDataTypeMinValue(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.DateTime:
+                    return new DateTime(1753,1,1);
+                default:
+                    return DataType.GetDataTypeMinValue(typeCode);
+            }
+		    
+        }
 
         public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {

@@ -30,6 +30,8 @@ namespace dexih.connections.azure
 
         public override bool CanFilter => true;
         public override bool CanAggregate => false;
+        public override bool CanUseBinary => true;
+        public override bool CanUseSql => false;
 
 
         public override bool IsValidDatabaseName(string name)
@@ -567,7 +569,7 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
+        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
         {
             await Task.Run(() =>
             {
@@ -628,7 +630,7 @@ namespace dexih.connections.azure
                 }
             });
 
-            return new ReturnValue(true, "", null);
+            return new ReturnValue<Table>(true, table);
         }
 
         private EntityProperty NewEntityProperty(ETypeCode typeCode, object value)

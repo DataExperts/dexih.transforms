@@ -25,6 +25,8 @@ namespace dexih.connections.webservice
         public override bool CanSort => false;
         public override bool CanFilter => false;
         public override bool CanAggregate => false;
+        public override bool CanUseBinary => false;
+        public override bool CanUseSql => false;
 
         public override string DatabaseTypeName => "Restful Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;
@@ -173,7 +175,7 @@ namespace dexih.connections.webservice
                     var ts = new CancellationTokenSource();
                     CancellationToken ct = ts.Token;
 
-                    var data = await GetPreview(newRestFunction, query, 10000, null, inputJoins, ct);
+                    var data = await GetPreview(newRestFunction, query, null, inputJoins, ct);
                     if(data.Success == false)
                     {
                         return new ReturnValue<Table>(false, data.Message, data.Exception, null);
@@ -303,9 +305,9 @@ namespace dexih.connections.webservice
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
+        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return await Task.Run(() => new ReturnValue<Table>(true, table));
         }
 
         public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)

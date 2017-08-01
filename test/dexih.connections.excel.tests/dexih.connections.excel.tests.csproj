@@ -1,6 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-  </PropertyGroup>
+    <AssemblyName>dexih.connections.excel.tests</AssemblyName>
+    <PackageId>dexih.connections.excel.tests</PackageId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <UserSecretsId>dexih.connections.test.44fc05ee-e883-4070-8840-c1d8b479a4fe</UserSecretsId>
+    <RuntimeIdentifiers>win7-x64;ubuntu.14.04-x64;osx.10.10-x64</RuntimeIdentifiers>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50;portable-net451+win8</PackageTargetFallback>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\dexih.connections.excel\dexih.connections.excel.csproj" />
+    <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj" />
+    <ProjectReference Include="..\dexih.functions.tests\dexih.functions.tests.csproj" />
+    <ProjectReference Include="..\dexih.transforms.tests\dexih.transforms.tests.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.1.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

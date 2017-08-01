@@ -122,13 +122,13 @@ namespace dexih.connections.sql
 
             for (int i = 0; i < _fieldCount; i++)
             {
-                //int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
-                //var returnValue = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].DataType, _sqlReader[i]);
-                //if (!returnValue.Success)
-                //    return new ReturnValue<object[]>(returnValue);
+                int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
+                var returnValue = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].Datatype, _sqlReader[i]);
+                if (!returnValue.Success)
+                    return new ReturnValue<object[]>(returnValue);
 
-                //row[_fieldOrdinals[i]] = returnValue.Value;
-                row[_fieldOrdinals[i]] = _sqlReader[i];
+                row[_fieldOrdinals[i]] = returnValue.Value;
+                // row[_fieldOrdinals[i]] = _sqlReader[i];
                
             }
             return new ReturnValue<object[]>(true, row);

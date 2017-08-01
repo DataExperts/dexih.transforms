@@ -36,6 +36,18 @@ namespace dexih.connections.sql
             else
                 return value;
         }
+        
+        public override object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
+        {
+            switch (typeCode)
+            {
+               case ETypeCode.Decimal:
+                   return (decimal) 999999999999999999;
+                default:
+                    return DataType.GetDataTypeMaxValue(typeCode, length);
+            }
+        }
+
 
         public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
@@ -56,7 +68,7 @@ namespace dexih.connections.sql
                     object tableExists = null;
                     try
                     {
-                        tableExists = await cmd.ExecuteScalarAsync();
+                        tableExists = await cmd.ExecuteScalarAsync(cancelToken);
                     }
                     catch (Exception ex)
                     {

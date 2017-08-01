@@ -20,9 +20,11 @@ namespace dexih.connections.test
             returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
             Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
 
-            var table = DataSets.CreateTable();
+            var newTable = DataSets.CreateTable();
 
-            await connection.AddMandatoryColumns(table, 1000);
+            var initTableResult = await connection.InitializeTable(newTable, 1000);
+            Assert.True(initTableResult.Success, initTableResult.Message);
+            var table = initTableResult.Value;
 
             //create the table
             returnValue = await connection.CreateTable(table, true, CancellationToken.None);
@@ -42,12 +44,20 @@ namespace dexih.connections.test
             returnValue = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
             Assert.True(returnValue.Success, "InsertQuery - Message:" + returnValue.Message);
 
-            // create a simple table with a sql query.
-            var sqlTable = new Table("SqlTest")
+            Table sqlTable;
+            if (connection.CanUseSql)
             {
-                UseQuery = true,
-                QueryString = $"select * from {table.Name}"
-            };
+                // create a simple table with a sql query.
+                sqlTable = new Table("SqlTest")
+                {
+                    UseQuery = true,
+                    QueryString = $"select * from {table.Name}"
+                };
+            }
+            else
+            {
+                sqlTable = table;
+            }
 
             // check the columns can be imported.
             var importTableResult = await connection.GetSourceTableInfo(sqlTable, CancellationToken.None);
@@ -83,7 +93,7 @@ namespace dexih.connections.test
             Assert.Equal(guid.ToString(), reader["GuidColumn"].ToString());
 
             // test the preview function returns one row.
-            var previewResult = await connection.GetPreview(importTable, null, 100000, CancellationToken.None);
+            var previewResult = await connection.GetPreview(importTable, null, CancellationToken.None);
             Assert.True(previewResult.Success, previewResult.Message);
             Assert.Equal(1, previewResult.Value.Data.Count);
         }

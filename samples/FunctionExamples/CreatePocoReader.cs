@@ -10,6 +10,14 @@ namespace FunctionExamples
 {
     public class CreatePocoReader
     {
+        public void Create()
+        {
+            var books = CreatBooksData();
+            var reader = new ReaderPoco<BookClass>(books);
+
+            DisplayReader(reader);
+        }
+        
         public List<BookClass> CreatBooksData()
         {
             var books = new List<BookClass>();
@@ -19,14 +27,6 @@ namespace FunctionExamples
             books.Add(new BookClass() {Code = "003", Name = "A Game of Thrones", Cost = 16, Published = new DateTime(1996, 07,01)});
 
             return books;
-        }
-
-        public void Create()
-        {
-            var books = CreatBooksData();
-            var reader = new ReaderPoco<BookClass>(books);
-
-            DisplayReader(reader);
         }
 
         public void DisplayReader(DbDataReader reader)

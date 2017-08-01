@@ -24,6 +24,8 @@ namespace dexih.connections.dexih
         public override bool CanSort => false;
         public override bool CanFilter => false;
         public override bool CanAggregate => false;
+	    public override bool CanUseBinary => true;
+	    public override bool CanUseSql => false;
 
         public override string DatabaseTypeName => "Dexih Hub";
         public override ECategory DatabaseCategory => ECategory.Hub;
@@ -223,9 +225,9 @@ namespace dexih.connections.dexih
             return await Task.Run(() => new ReturnValue(true), cancelToken);
         }
 
-        public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
+        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return await Task.Run(() => new ReturnValue<Table>(true, table));
         }
 
         public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)

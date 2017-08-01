@@ -8,6 +8,7 @@ using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
+using System.Linq;
 
 namespace dexih.connections.flatfile
 {
@@ -34,6 +35,8 @@ namespace dexih.connections.flatfile
 
         public override bool CanFilter => false;
         public override bool CanAggregate => false;
+        public override bool CanUseBinary => false;
+        public override bool CanUseSql => false;
 
         public override string DatabaseTypeName => "Flat Files";
         public override ECategory DatabaseCategory => ECategory.File;
@@ -298,22 +301,17 @@ namespace dexih.connections.flatfile
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
+        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
         {
-			FlatFile flatFile = (FlatFile)table;
-
-			//create path for the file management.
+			var flatFile = new FlatFile();
+            table.CopyProperties(flatFile, false);
+            
+			//use the default paths.
 			flatFile.UseCustomFilePaths = false;
-
-            //string rootPath = table.TableName + Guid.NewGuid().ToString();
-            //table.SetExtendedProperty("FileIncomingPath", "Incoming");
-            //table.SetExtendedProperty("FileProcessedPath", "Processed");
-            //table.SetExtendedProperty("FileRejectedPath", "Rejected");
-            //table.SetExtendedProperty("FileRootPath", rootPath);
-
+            
             await CreateFilePaths(flatFile);
-
-            return new ReturnValue(true);
+            
+            return new ReturnValue<Table>(true, flatFile);
         }
 
         public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)

@@ -21,6 +21,8 @@ namespace dexih.connections.sql
         public override bool CanSort => true;
         public override bool CanFilter => true;
         public override bool CanAggregate => true;
+        public override bool CanUseBinary => true;
+        public override bool CanUseSql => true;
 
         //These properties can be overridden for different databases
         public virtual string SqlDelimiterOpen { get; } = "\"";
@@ -602,9 +604,9 @@ namespace dexih.connections.sql
             return new ReturnValue(true, "", null);
         }
 
-        public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
+        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return await Task.Run(() => new ReturnValue<Table>(true, table));
         }
 
         public async Task<ReturnValue<Table>> GetQueryTable(Table table, CancellationToken cancelToken)
