@@ -1,6 +1,7 @@
 ﻿using dexih.connections.test;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -14,6 +15,11 @@ namespace dexih.connections.excel
             var serverName = Convert.ToString(Configuration.AppSettings["Excel:ServerName"]);
             if (serverName == "")
                 return null;
+
+            if (!Directory.Exists(serverName))
+            {
+                Directory.CreateDirectory(serverName);
+            }
 
             var connection  = new ConnectionExcel()
             {
