@@ -52,16 +52,16 @@ namespace dexih.connections.sql.npgsql
             await new TransformTests().Transform(GetConnection(), database);
         }
 
-        [Fact]
-        public void Postgres_Specific_Unit()
-        {
-            var connection = new ConnectionPostgreSql();
+        //[Fact]
+        //public void Postgres_Specific_Unit()
+        //{
+        //    var connection = new ConnectionPostgreSql();
 
-            //test delimiter
-            Assert.Equal("\"table\"", connection.AddDelimiter("table"));
-            Assert.Equal("\"table\"", connection.AddDelimiter("\"table\""));
-            Assert.Equal("\"table\".\"schema\"", connection.AddDelimiter("\"table\".\"schema\""));
-        }
+        //    //test delimiter
+        //    Assert.Equal("\"table\"", connection.AddDelimiter("table"));
+        //    Assert.Equal("\"table\"", connection.AddDelimiter("\"table\""));
+        //    Assert.Equal("\"table\".\"schema\"", connection.AddDelimiter("\"table\".\"schema\""));
+        //}
         
         [Fact]
         public async Task Postgres_SqlReader()

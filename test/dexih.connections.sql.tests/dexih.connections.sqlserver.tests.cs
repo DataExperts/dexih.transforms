@@ -65,16 +65,16 @@ namespace dexih.connections.sql.sqlserver
             await new SqlReaderTests().Unit(connection, database);
         }
 
-        [Fact]
-        public void TestSqlServer_Specific_Unit()
-        {
-            ConnectionSqlServer connection = new ConnectionSqlServer();
+        //[Fact]
+        //public void TestSqlServer_Specific_Unit()
+        //{
+        //    ConnectionSqlServer connection = new ConnectionSqlServer();
 
-            //test delimiter
-            Assert.Equal("\"table\"", connection.AddDelimiter("table"));
-            Assert.Equal("\"table\"", connection.AddDelimiter("\"table\""));
-            Assert.Equal("\"table\".\"schema\"", connection.AddDelimiter("\"table\".\"schema\""));
-        }
+        //    //test delimiter
+        //    Assert.Equal("\"table\"", connection.AddDelimiter("table"));
+        //    Assert.Equal("\"table\"", connection.AddDelimiter("\"table\""));
+        //    Assert.Equal("\"table\".\"schema\"", connection.AddDelimiter("\"table\".\"schema\""));
+        //}
 
         //[Fact]
         //public async Task SalesDetail()

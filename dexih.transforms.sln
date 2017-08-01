@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}"
 EndProject
@@ -47,6 +47,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.dexih", "src\dexih.connections.dexih\dexih.connections.dexih.csproj", "{826C6B11-4385-4DD7-80FD-31139FA0B0CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.excel.tests", "test\dexih.connections.excel.tests\dexih.connections.excel.tests.csproj", "{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.functions.tests.async", "test\dexih.functions.tests.async\dexih.functions.tests.async.csproj", "{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.transforms.tests.async", "test\dexih.transforms.tests.async\dexih.transforms.tests.async.csproj", "{8B299A01-25C7-42E2-B0DC-6B346F8448C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -262,6 +266,30 @@ Global
 		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|x64.Build.0 = Release|Any CPU
 		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|x86.ActiveCfg = Release|Any CPU
 		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}.Release|x86.Build.0 = Release|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Debug|x64.Build.0 = Debug|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Debug|x86.Build.0 = Debug|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Release|x64.ActiveCfg = Release|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Release|x64.Build.0 = Release|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Release|x86.ActiveCfg = Release|Any CPU
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}.Release|x86.Build.0 = Release|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Debug|x64.Build.0 = Debug|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Debug|x86.Build.0 = Debug|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x64.ActiveCfg = Release|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x64.Build.0 = Release|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x86.ActiveCfg = Release|Any CPU
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -284,5 +312,7 @@ Global
 		{92870864-65E8-4C33-9235-F269BB21DDE9} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 		{826C6B11-4385-4DD7-80FD-31139FA0B0CF} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E} = {4712A230-9747-4447-B4C5-022006511342}
+		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC} = {4712A230-9747-4447-B4C5-022006511342}
+		{8B299A01-25C7-42E2-B0DC-6B346F8448C4} = {4712A230-9747-4447-B4C5-022006511342}
 	EndGlobalSection
 EndGlobal
