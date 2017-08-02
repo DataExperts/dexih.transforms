@@ -125,6 +125,17 @@ namespace dexih.transforms
         /// <returns></returns>
         public abstract Task<ReturnValue<Table>> GetSourceTableInfo(Table table, CancellationToken cancelToken);
 
+        public async Task<ReturnValue<Table>> GetSourceTableInfo(string TableName, CancellationToken cancelToken)
+        {
+            var table = new Table(TableName);
+            var initResult = await InitializeTable(table, 0);
+            if(!initResult.Success)
+            {
+                return initResult;
+            }
+            return await GetSourceTableInfo(initResult.Value, cancelToken);
+        }
+
         /// <summary>
         /// Adds any database specific mandatory columns to the table object and returns the initialized version.
         /// </summary>

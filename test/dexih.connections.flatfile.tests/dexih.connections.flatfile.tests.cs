@@ -30,6 +30,5 @@ namespace dexih.connections.flatfile
 
             await new UnitTests().Unit(GetLocalConnection(), database);
         }
-
     }
 }

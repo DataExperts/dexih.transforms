@@ -10,7 +10,7 @@ namespace dexih.functions
     {
         public TableColumn()
         {
-            ExtendedProperties = new Dictionary<string, string>();
+//            ExtendedProperties = new Dictionary<string, string>();
         }
 
         public TableColumn(string columName)
@@ -131,7 +131,7 @@ namespace dexih.functions
         public bool IsInput { get; set; }
 
         public bool IsIncrementalUpdate { get; set; }
-        public Dictionary<string, string> ExtendedProperties { get; set; }
+        // public Dictionary<string, string> ExtendedProperties { get; set; }
 
         [JsonIgnore]
         public Type ColumnGetType
@@ -207,25 +207,25 @@ namespace dexih.functions
             return false;
         }
 
-        public string GetExtendedProperty(string name)
-        {
-            if (ExtendedProperties == null)
-                return null;
-            if (ExtendedProperties.ContainsKey(name))
-                return ExtendedProperties[name];
-            return null;
-        }
+        //public string GetExtendedProperty(string name)
+        //{
+        //    if (ExtendedProperties == null)
+        //        return null;
+        //    if (ExtendedProperties.ContainsKey(name))
+        //        return ExtendedProperties[name];
+        //    return null;
+        //}
 
-        public void SetExtendedProperty(string name, string value)
-        {
-            if (ExtendedProperties == null)
-                ExtendedProperties = new Dictionary<string, string>();
+        //public void SetExtendedProperty(string name, string value)
+        //{
+        //    if (ExtendedProperties == null)
+        //        ExtendedProperties = new Dictionary<string, string>();
 
-            if (ExtendedProperties.ContainsKey(name))
-                ExtendedProperties[name] = value;
-            else
-                ExtendedProperties.Add(name, value);
-        }
+        //    if (ExtendedProperties.ContainsKey(name))
+        //        ExtendedProperties[name] = value;
+        //    else
+        //        ExtendedProperties.Add(name, value);
+        //}
 
 
         /// <summary>

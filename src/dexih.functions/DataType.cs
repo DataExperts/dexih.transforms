@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 
 namespace dexih.functions
 {
@@ -214,6 +215,42 @@ namespace dexih.functions
                 return ETypeCode.Binary;
 
             return ETypeCode.Unknown;
+        }
+
+        public static ETypeCode GetTypeCode(JTokenType jsonType)
+        {
+            switch (jsonType)
+            {
+                case JTokenType.None:
+                case JTokenType.Object:
+                case JTokenType.Array:
+                case JTokenType.Constructor:
+                case JTokenType.Property:
+                case JTokenType.Comment:
+                case JTokenType.Null:
+                case JTokenType.Undefined:
+                case JTokenType.Raw:
+                case JTokenType.Uri:
+                case JTokenType.String:
+                    return ETypeCode.String;
+                case JTokenType.Integer:
+                    return ETypeCode.Int32;
+                case JTokenType.Float:
+                    return ETypeCode.Double;
+                case JTokenType.Boolean:
+                    return ETypeCode.Boolean;
+                case JTokenType.Date:
+                    return ETypeCode.DateTime;
+                case JTokenType.Bytes:
+                    return ETypeCode.Binary;
+                case JTokenType.Guid:
+                    return ETypeCode.Guid;
+                case JTokenType.TimeSpan:
+                    return ETypeCode.Time;
+                default:
+                    return ETypeCode.String;
+            }
+
         }
 
         public static Type GetType(ETypeCode typeCode)

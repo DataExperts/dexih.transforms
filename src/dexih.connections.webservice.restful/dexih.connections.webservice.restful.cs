@@ -61,7 +61,7 @@ namespace dexih.connections.webservice
 
                 if (restFunction.RestfulUri == null )
                 {
-                    return new ReturnValue<Table>(false, "The table have not been set for Restful Web Service.  Use the syntax table.SetExtendedProperty(\"RestfulUrl\")=<uri> to set the tables webservice uri.", null);
+                    return new ReturnValue<Table>(false, "The RestfulUrl for the webservice has not been set.", null);
                 }
 
                 string restfulUri = restFunction.RestfulUri;
@@ -107,8 +107,8 @@ namespace dexih.connections.webservice
                     var originalColumn = importTable.Columns.SingleOrDefault(c => c.Name == col.Name);
                     if (originalColumn != null)
                     {
-                        var inputValue = originalColumn.GetExtendedProperty("InputValue");
-                        col.SetExtendedProperty("InputValue", inputValue);
+                        var inputValue = originalColumn.DefaultValue;
+                        col.DefaultValue = inputValue;
                         inputJoins.Add(new JoinPair()
                         {
                             SourceColumn = col,
@@ -172,20 +172,18 @@ namespace dexih.connections.webservice
 
                 if (newRestFunction.Columns.Count > 0)
                 {
-                    var ts = new CancellationTokenSource();
-                    CancellationToken ct = ts.Token;
 
-                    var data = await GetPreview(newRestFunction, query, null, inputJoins, ct);
+                    var data = await GetPreview(newRestFunction, query, null, inputJoins, cancelToken);
                     if(data.Success == false)
                     {
                         return new ReturnValue<Table>(false, data.Message, data.Exception, null);
                     }
 
                     TableCache reader = data.Value.Data;
-                    JObject content;
+                    JToken content;
                     try
                     {
-                        content = JObject.Parse(reader[0][newRestFunction.GetOrdinal("Response")].ToString());
+                        content = JToken.Parse(reader[0][newRestFunction.GetOrdinal("Response")].ToString());
                     }
                     catch (Exception ex)
                     {
@@ -202,20 +200,30 @@ namespace dexih.connections.webservice
                         {
                             children = content.SelectTokens(rowPath);
                         }
-                        
-                        foreach (var value in content.Children())
+
+                        if(content.Type == JTokenType.Array)
                         {
-                            col = new TableColumn();
-                            col.Name = value.Path;
-                            col.IsInput = false;
-                            col.LogicalName = value.Path;
-                            col.Datatype = ETypeCode.String;
-                            col.DeltaType = TableColumn.EDeltaType.TrackingField;
-                            col.MaxLength = null;
-                            col.Description = "Json value of the " + value.Path + " path";
-                            col.AllowDbNull = true;
-                            col.IsUnique = false;
-                            newRestFunction.Columns.Add(col);
+                            content = content.First();
+                        }
+                        
+                        foreach (var child in content.Children())
+                        {
+
+                            if (child.Type == JTokenType.Property)
+                            {
+                                JProperty value = (JProperty)child;
+                                col = new TableColumn();
+                                col.Name = value.Name;
+                                col.IsInput = false;
+                                col.LogicalName = value.Path;
+                                col.Datatype = DataType.GetTypeCode(value.Value.Type);
+                                col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                col.MaxLength = null;
+                                col.Description = "Json value of the " + value.Path + " path";
+                                col.AllowDbNull = true;
+                                col.IsUnique = false;
+                                newRestFunction.Columns.Add(col);
+                            }
                         }
                     }
                 }
@@ -258,11 +266,22 @@ namespace dexih.connections.webservice
                     row[table.GetOrdinal(filter.Column1.SchemaColumnName())] = filter.Value2.ToString();
                 }
 
+                foreach (var column in table.Columns.Where(c => c.IsInput))
+                {
+                    if(column.DefaultValue != null)
+                    {
+                        uri = uri.Replace("{" + column.Name + "}", column.DefaultValue);
+                    }
+                }
+
                 HttpClientHandler handler = null;
                 if (!String.IsNullOrEmpty(Username))
                 {
                     var credentials = new NetworkCredential(Username, Password);
-                    handler = new HttpClientHandler { Credentials = credentials };
+                    var creds = new CredentialCache();
+                    creds.Add(new Uri(Server), "basic", credentials);
+                    creds.Add(new Uri(Server), "digest", credentials);
+                    handler = new HttpClientHandler { Credentials = creds };
                 }
                 else
                 {
@@ -283,11 +302,20 @@ namespace dexih.connections.webservice
 
                     if (table.Columns.Count > 3 + filters.Count)
                     {
-                        JObject data = JObject.Parse(row[table.GetOrdinal("Response")].ToString());
+                        JToken data = JToken.Parse(row[table.GetOrdinal("Response")].ToString());
+
+                        if(data.Type == JTokenType.Array)
+                        {
+                            return new ReturnValue<object[]>(false, "Cannot perform a lookup as the result returned an array of values.", null);
+                        }
 
                         for (int i = 3 + filters.Count; i < table.Columns.Count; i++)
                         {
-                            row[i] = data.SelectToken(table.Columns[i].Name);
+                            var returnValue = DataType.TryParse(table.Columns[i].Datatype, data.SelectToken(table.Columns[i].Name));
+                            if (!returnValue.Success)
+                                return new ReturnValue<object[]>(returnValue);
+
+                            row[i] = returnValue.Value;
                         }
                     }
                 }
@@ -307,7 +335,13 @@ namespace dexih.connections.webservice
 
         public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
         {
-            return await Task.Run(() => new ReturnValue<Table>(true, table));
+            return await Task.Run(() =>
+            {
+                var restFunction = new RestFunction();
+                table.CopyProperties(restFunction, false);
+                restFunction.RestfulUri = restFunction.Name;
+                return new ReturnValue<Table>(true, restFunction);
+            });
         }
 
         public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)

@@ -5,12 +5,19 @@ using System.Threading.Tasks;
 using dexih.functions;
 using static dexih.functions.DataType;
 using System.Threading;
+using System.Linq;
+using System.Net.Http;
+using System.Net;
+using Newtonsoft.Json.Linq;
 
 namespace dexih.connections.webservice
 {
     public class ReaderRestful : Transform
     {
         private bool _isOpen = false;
+
+        private int _cachedRow = 0;
+        private JArray _cachedJson = null;
 
         public ReaderRestful(Connection connection, Table table, Transform referenceTransform)
         {
@@ -51,6 +58,8 @@ namespace dexih.connections.webservice
                         return result;
                 }
 
+                _isOpen = true;
+
                 //create a dummy inreader to allow fieldcount and other queries to work.
                 return new ReturnValue(true);
             }
@@ -62,7 +71,7 @@ namespace dexih.connections.webservice
 
         public override string Details()
         {
-            return "Restful Service";
+            return "Restful WebService";
         }
 
         public override bool InitializeOutputFields()
@@ -79,28 +88,122 @@ namespace dexih.connections.webservice
         {
             try
             {
-                if (await ReferenceTransform.ReadAsync(cancellationToken) == false)
+                if(!_isOpen)
+                {
+                    return new ReturnValue<object[]>(false, "The read record failed as the reader has not been opened.", null);
+                }
+
+
+                if (_cachedJson == null && await ReferenceTransform.ReadAsync(cancellationToken) == false)
                     return new ReturnValue<object[]>(false, null);
                 else
                 {
-                    List<Filter> filters = new List<Filter>();
+                    var restFunction = (RestFunction)CacheTable;
+                    object[] row = new object[CacheTable.Columns.Count];
 
-                    foreach (JoinPair join in JoinPairs)
+                    string uri = restFunction.RestfulUri;
+
+                    foreach (var join in JoinPairs)
                     {
                         var joinValue = join.JoinColumn == null ? join.JoinValue : ReferenceTransform[join.JoinColumn].ToString();
 
-                        filters.Add(new Filter()
-                        {
-                            Column1 = join.SourceColumn,
-                            CompareDataType = ETypeCode.String,
-                            Operator = Filter.ECompare.IsEqual,
-                            Value2 = joinValue
-                        });
+                        uri = uri.Replace("{" + join.SourceColumn.Name + "}", joinValue.ToString());
+                        row[CacheTable.GetOrdinal(join.SourceColumn.SchemaColumnName())] = joinValue.ToString();
                     }
 
-                    var result = await LookupRow(filters, cancellationToken);
+                    if (_cachedJson != null)
+                    {
+                        var data = _cachedJson[_cachedRow];
+                        for (int i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
+                        {
+                            var returnValue = DataType.TryParse(CacheTable.Columns[i].Datatype, data.SelectToken(CacheTable.Columns[i].Name));
+                            if (!returnValue.Success)
+                                return new ReturnValue<object[]>(returnValue);
 
-                    return result;
+                            row[i] = returnValue.Value;
+                        }
+                        _cachedRow++;
+                        if(_cachedRow >= _cachedJson.Count)
+                        {
+                            _cachedJson = null;
+                        }
+                    }
+                    else
+                    {
+
+                        foreach (var column in CacheTable.Columns.Where(c => c.IsInput))
+                        {
+                            if (column.DefaultValue != null)
+                            {
+                                uri = uri.Replace("{" + column.Name + "}", column.DefaultValue);
+                            }
+                        }
+
+                        HttpClientHandler handler = null;
+                        if (!String.IsNullOrEmpty(ReferenceConnection.Username))
+                        {
+                            var credentials = new NetworkCredential(ReferenceConnection.Username, ReferenceConnection.Password);
+                            var creds = new CredentialCache();
+                            creds.Add(new Uri(ReferenceConnection.Server), "basic", credentials);
+                            creds.Add(new Uri(ReferenceConnection.Server), "digest", credentials);
+
+                            handler = new HttpClientHandler { Credentials = creds };
+
+                            handler = new HttpClientHandler { Credentials = credentials };
+                        }
+                        else
+                        {
+                            handler = new HttpClientHandler();
+                        }
+
+                        using (var client = new HttpClient(handler))
+                        {
+                            client.BaseAddress = new Uri(ReferenceConnection.Server);
+                            client.DefaultRequestHeaders.Accept.Clear();
+                            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                            HttpResponseMessage response = await client.GetAsync(uri, cancellationToken);
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                return new ReturnValue<object[]>(false, "Reader was cancelled", null);
+                            }
+                            if (!response.IsSuccessStatusCode)
+                            {
+                                return new ReturnValue<object[]>(false, "Webservice called failed with status: " + response.StatusCode.ToString(), null);
+                            }
+
+                            row[CacheTable.GetOrdinal("ResponseStatusCode")] = response.StatusCode.ToString();
+                            row[CacheTable.GetOrdinal("ResponseSuccess")] = response.IsSuccessStatusCode;
+                            row[CacheTable.GetOrdinal("Response")] = await response.Content.ReadAsStringAsync();
+
+                            if (CacheTable.Columns.Count > 3 + JoinPairs.Count)
+                            {
+                                JToken data = JToken.Parse(row[CacheTable.GetOrdinal("Response")].ToString());
+
+                                if (data.Type == JTokenType.Array)
+                                {
+                                    _cachedJson = (JArray)data;
+                                    data = _cachedJson[0];
+                                    _cachedRow = 1;
+                                    if(_cachedJson.Count <= 1)
+                                    {
+                                        _cachedJson = null;
+                                    }
+                                }
+
+                                for (int i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
+                                {
+                                    var returnValue = DataType.TryParse(CacheTable.Columns[i].Datatype, data.SelectToken(CacheTable.Columns[i].Name));
+                                    if (!returnValue.Success)
+                                        return new ReturnValue<object[]>(returnValue);
+
+                                    row[i] = returnValue.Value;
+                                }
+
+                            }
+                        }
+                    }
+                    return new ReturnValue<object[]>(true, row);
                 }
             }
             catch (Exception ex)
