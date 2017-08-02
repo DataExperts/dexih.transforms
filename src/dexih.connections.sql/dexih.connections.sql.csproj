@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>This is a support library which enables the transform library to access SqlServer and Sqlite databases.</Description>
-    <AssemblyTitle>Data Experts Group - Connections - Sql Server &amp; Sqlite</AssemblyTitle>
-    <VersionPrefix>0.2.4</VersionPrefix>
+    <Description>Data transformation and anaytics library - Sql Connections and readers for Sql Server, Sqlite, PostgreSql &amp; MySql</Description>
+    <AssemblyTitle>Data Experts Group - Sql Connections</AssemblyTitle>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.connections.sql</AssemblyName>

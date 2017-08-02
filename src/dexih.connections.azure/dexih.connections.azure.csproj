@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>This is a support library which enables the transform library to access Azure Storage Tables and Azure File Storage.</Description>
-    <AssemblyTitle>Data Experts Group - Connections Azure</AssemblyTitle>
-    <VersionPrefix>0.2.4</VersionPrefix>
+    <Description>Data transformation and anaytics library - Azure Storage Table and FlatFile Storage</Description>
+    <AssemblyTitle>Data Experts Group - Azure Connections</AssemblyTitle>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.connections.azure</AssemblyName>
     <PackageId>dexih.connections.azure</PackageId>
-    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;Azure;Table Storage;File Storage</PackageTags>
+    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql</PackageTags>
     <PackageReleaseNotes>Note: This project is still under devlopement with regular breaking changes.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+wp80+win8+wpa81+dnxcore50;portable-net451+win8</PackageTargetFallback>

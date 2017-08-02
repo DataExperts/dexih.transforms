@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>This is a support library which enables the transform library to access Restful based web services.</Description>
+    <Description>Data transformation and anaytics library - Connection and Reader for Restful WebServices</Description>
     <AssemblyTitle>Data Experts Group - Connections Library - Restful Web Services</AssemblyTitle>
-    <VersionPrefix>0.2.4</VersionPrefix>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.connections.webservice.restful</AssemblyName>

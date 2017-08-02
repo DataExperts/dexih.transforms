@@ -22,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.transforms.tests", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.test", "test\dexih.connections.test\dexih.connections.test.csproj", "{1459FE8E-0954-4FD7-BC97-9BDF00835A21}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionExamples", "samples\FunctionExamples\FunctionExamples.csproj", "{1DA0D318-64EB-4151-AD0B-4062B7A862A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReaderExamples", "samples\FunctionExamples\ReaderExamples.csproj", "{1DA0D318-64EB-4151-AD0B-4062B7A862A6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.azure", "src\dexih.connections.azure\dexih.connections.azure.csproj", "{7F9A835E-7AD1-401A-93BC-E9FDE586366F}"
 EndProject

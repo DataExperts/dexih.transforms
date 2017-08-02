@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Data transformation and analytics library - supporting functions.  See the project url for more details.</Description>
-    <AssemblyTitle>Data Experts Group - Supporting FUnctions</AssemblyTitle>
+    <AssemblyTitle>Data Experts Group - Supporting Functions</AssemblyTitle>
     <VersionPrefix>0.3.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>

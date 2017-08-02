@@ -2,14 +2,15 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>dexih.connections.excel.tests</AssemblyName>
-    <PackageId>dexih.connections.excel.tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <UserSecretsId>dexih.connections.test.44fc05ee-e883-4070-8840-c1d8b479a4fe</UserSecretsId>
     <RuntimeIdentifiers>win7-x64;ubuntu.14.04-x64;osx.10.10-x64</RuntimeIdentifiers>
     <PackageTargetFallback>$(PackageTargetFallback);dnxcore50;portable-net451+win8</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>  </PropertyGroup>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\dexih.connections.excel\dexih.connections.excel.csproj" />
     <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj" />

@@ -3,8 +3,8 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>FunctionExamples</AssemblyName>
     <OutputType>Exe</OutputType>
-    <PackageId>FunctionExamples</PackageId>
-    <UserSecretsId>aspnet-FunctionExamples-20161206114756</UserSecretsId>
+    <PackageId>ReaderExamples</PackageId>
+    <UserSecretsId>aspnet-ReaderExamples-20161206114756</UserSecretsId>
     <RuntimeIdentifiers>win7-x64;ubuntu.14.04-x64;osx.10.10-x64</RuntimeIdentifiers>
     <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>

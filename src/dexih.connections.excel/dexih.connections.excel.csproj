@@ -1,7 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Description>Data transformation and anaytics library - Excel Connection and reader.</Description>
+    <AssemblyTitle>Data Experts Group - Excel Connection</AssemblyTitle>
+    <VersionPrefix>0.3.0</VersionPrefix>
+    <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
+    <AssemblyName>dexih.connections.excel</AssemblyName>
+    <PackageId>dexih.connections.excel</PackageId>
+    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql</PackageTags>
+    <PackageReleaseNotes>Note: This project is still under devlopement with regular breaking changes.</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+wp80+win8+wpa81+dnxcore50;portable-net451+win8</PackageTargetFallback>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
