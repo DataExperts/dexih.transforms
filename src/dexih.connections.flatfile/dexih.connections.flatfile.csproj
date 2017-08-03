@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Flat File Connections &amp; Readers</Description>
     <AssemblyTitle>Data Experts Group - Flat File Connections</AssemblyTitle>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.connections.flatfile</AssemblyName>

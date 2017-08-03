@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Sql Connections and readers for Sql Server, Sqlite, PostgreSql &amp; MySql</Description>
     <AssemblyTitle>Data Experts Group - Sql Connections</AssemblyTitle>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.connections.sql</AssemblyName>
