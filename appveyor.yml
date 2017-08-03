@@ -2,6 +2,10 @@ version: '0.2.{build}'
 configuration:
 - Debug
 - Release
+branches:
+  only:
+    - master
+    - test
 platform: Any CPU
 init:
  - ps: $Env:LABEL = "CI" +$Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
