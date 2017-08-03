@@ -15,11 +15,11 @@ namespace dexih.connections.webservice.restful.tests
     /// </summary>
     public class ConnectionWebServiceTests
     {
-        private readonly ITestOutputHelper output;
+        private readonly ITestOutputHelper _output;
 
         public ConnectionWebServiceTests(ITestOutputHelper output)
         {
-            this.output = output;
+            this._output = output;
         }
 
         [Fact]
@@ -34,6 +34,8 @@ namespace dexih.connections.webservice.restful.tests
 
             var sourceTableResult = await connection.GetSourceTableInfo("get", CancellationToken.None);
             Assert.True(sourceTableResult.Success, "GetSourceTableInfo failed: " + sourceTableResult.Message);
+
+            _output.WriteLine("GetSourceTableInfo completed");
 
             var table = sourceTableResult.Value;
             Assert.True(table.Columns.GetOrdinal("args") >= 0);
