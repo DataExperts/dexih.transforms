@@ -6,6 +6,7 @@ branches:
   only:
     - master
     - test
+    - /dev-.*/
 platform: Any CPU
 init:
  - ps: $Env:LABEL = "CI" +$Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
@@ -14,9 +15,6 @@ install:
 - dotnet-dev-win-x64.1.0.0-rc4-004771.exe /quiet
 environment:
   PATH: $(PATH);$(PROGRAMFILES)\dotnet\
-build_script:
-- appveyor-retry dotnet restore -v Minimal
-- dotnet build -c %CONFIGURATION%
 test_script:
 - dotnet test .\test\dexih.functions.tests\dexih.functions.tests.csproj
 - dotnet test .\test\dexih.functions.tests.async\dexih.functions.tests.async.csproj
@@ -53,10 +51,10 @@ deploy:
      - master
      - test
      
-# here we are going to override common configuration
 for:
 
 # override settings for `master` branch
+
 -
   branches:
     only:
@@ -64,7 +62,9 @@ for:
 
   configuration: Release
   build_script:
-    - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
+  - appveyor-retry dotnet restore -v Minimal
+  - dotnet build -c %CONFIGURATION%
+  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
 
 # test branch produces a nuget package with the version suffix added.
 -
@@ -72,6 +72,19 @@ for:
     only:
       - test
 
-  configuration: Release
+  configuration: Debug
   build_script:
-    - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - appveyor-retry dotnet restore -v Minimal
+  - dotnet build -c %CONFIGURATION%
+  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+
+# dev branch runs test only.
+-
+ branches:
+    only:
+      - /dev-.*/
+  configuration: Debug
+  build_script:
+  - appveyor-retry dotnet restore -v Minimal
+  - dotnet build -c %CONFIGURATION%
+  
