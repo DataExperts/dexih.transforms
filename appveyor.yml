@@ -68,19 +68,19 @@ for:
   - dotnet build -c %CONFIGURATION%
   - cd src\dexih.functions
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\src\dexih.transforms
+  - cd ..\dexih.transforms
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\src\dexih.connections.azure
+  - cd ..\dexih.connections.azure
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\src\dexih.connections.dexih
+  - cd ..\dexih.connections.dexih
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\src\dexih.connections.excel
+  - cd ..\dexih.connections.excel
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\src\dexih.connections.flatfile
+  - cd ..\dexih.connections.flatfile
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\src\dexih.connections.sql
+  - cd ..\dexih.connections.sql
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\src\dexih.connections.webservice.restful
+  - cd ..\dexih.connections.webservice.restful
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
   
 # test branch produces a nuget package with the version suffix added.
@@ -95,19 +95,19 @@ for:
   - dotnet build -c %CONFIGURATION%
   - cd src\dexih.functions
     - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\src\dexih.transforms
+  - cd ..\dexih.transforms
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\src\dexih.connections.azure
+  - cd ..\dexih.connections.azure
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\src\dexih.connections.dexih
+  - cd ..\dexih.connections.dexih
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\src\dexih.connections.excel
+  - cd ..\dexih.connections.excel
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\src\dexih.connections.flatfile
+  - cd ..\dexih.connections.flatfile
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\src\dexih.connections.sql
+  - cd ..\dexih.connections.sql
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\src\dexih.connections.webservice.restful
+  - cd ..\dexih.connections.webservice.restful
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
   
 # master and dev branchs runs test only, no publishing packages
