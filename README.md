@@ -37,33 +37,122 @@
 
 ## What is this?
 
-This is a cross-platform library that provides capabilities to transform, analyze and process data.  
+This library provides .net developers the ability to implement read, transform, analyze and data delivery capabilities within their applications.
 
 The key features are:
-* Group, Sort, Pivot and Join data sets from heterogeneous data sources on the fly.
-* Track and manage changing data and preserve change history (i.e. slowly changing dimensions).
-* Leverage an extensive library of built-in analytical functions, or create custom functions.
-* Column level validation and rejection rules.
-* Build in data profiling and column distribution analysis.
-* Optimized data connectors load from databases, flat files & web services.  
+* Built in .net core, and cross-platform tested on Windows, OSX and Linux platforms.
+* Support for reading/writing to mutliple data points:
+    * Sql Databases - Sql Server, MySql, PostrgreSql & Sqlite
+    * NoSql Databases - Azure Storage Tables.
+    * Rest based web services.
+    * Text files of varying formats.
+    * Excel files.
+    * Directly from in memory POCO (Plain Old CLR Objects).
+* Data functions that enable on the fly field encryption, json/xml parsing, text parsing, and geographical calculations.
+* Analytical functions allowing standard deviation, moving averages and other functions operating across multiple data rows.
+* Transforms which can be chained together to enable complex data shaping.  These include capabilities such as group, sort, row pivot and lookups.
+* CDC (change data capture) capabilities that can:
+    * Detect updates, deletes in target data and apply changes.
+    * Preserve change history by maintaining row versions on target tables.
+* Apply data validation/rejejection though column level validation and rejection rules.
+* Auto capture data profiling statistics and column distribution analysis.
 
-This library can be used as a foundation for applications the process data such as:
+This library can be used as a foundation for applications that need process small or high volumes of data such as:
 * Business Intelligence and reporting.
-* Batch processing, Data Integration or Extract Transform Load (ETL) processing.
-* Real-time analysis and alerting.
-
-## Coming soon
-
-In the next few months we will be integrating the following capabilities into the transform libraries:
-
-* Logging and resilience.
-* More documentation!
-* Additional transforms - hierarchy scan, pivot rows to columns.
-* Planned additional data sources - PostgresSQL, Oracle, MySql, Microsoft Access & Excel.  
+* Data Integration and Batch Processing.
+* Real-time analytics and alerting.
 
 ## How does it work?
 
-The transformation engine works by chaining `transform` objects together and then reading data from the  end of the chain as a `DbDataReader` object.  
+There are three key aspects involved in building a transforms.  These are:
+
+* Reader
+* Tranforms
+* Writer
+
+The transforms work by chaining `transform` objects together and then reading data from the end of the chain as a `DbDataReader` object.  Using the DbDataReader means that these can be used in conjuction with any databases (or other libraries) that send or receive `DbDataReader`. 
+
+## Using the Readers
+
+The readers are used to start the data chain, and implement the `transform` class.  The `transform` objects can be used to feed data into subsequent transforms, or used independently as a DbDataReader.
+
+### Reading from a class (POCO Reader)
+
+The following statement will convert a populated class and convert this to a streamable reader.
+```csharp
+var reader = new ReaderPoco<BookClass>(books);
+```
+
+Here is a full sample that loads and displays the books class.  Noting the `Field` attribute can be used to define properties such as an alternate name and the delta type (such as natural key, tracking field ect.)
+```csharp
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var poco = new CreatePocoReader();
+        poco.Create();
+    }
+}
+
+public class BookClass
+{
+    [Field("code", DeltaType = TableColumn.EDeltaType.NaturalKey)]
+    public string Code { get; set; }
+
+    [Field("name")]
+    public string Name { get; set; }
+
+    [Field("name")]
+    public int Cost { get; set; }
+
+    [Field("date_published")]
+    public DateTime Published { get; set; }
+
+}
+
+public class CreatePocoReader
+{
+    public void Create()
+    {
+        var books = CreatBooksData();
+        var reader = new ReaderPoco<BookClass>(books);
+
+        DisplayReader(reader);
+    }
+    
+    public List<BookClass> CreatBooksData()
+    {
+        var books = new List<BookClass>();
+        
+        books.Add(new BookClass() {Code = "001", Name = "Lord of the rings", Cost = 15, Published = new DateTime(1954, 07,29)});
+        books.Add(new BookClass() {Code = "002", Name = "Harry Potter and the Philosopher's Stone", Cost = 12, Published = new DateTime(1997, 06,26)});
+        books.Add(new BookClass() {Code = "003", Name = "A Game of Thrones", Cost = 16, Published = new DateTime(1996, 07,01)});
+
+        return books;
+    }
+
+    public void DisplayReader(DbDataReader reader)
+    {
+        while (reader.Read())
+        {
+            for (var i = 0; i < reader.FieldCount; i++)
+            {
+                Console.Write(reader.GetName(i) + ":" + reader[i].ToString() + (i < reader.FieldCount-1 ? ", " : ""));
+            }
+            Console.WriteLine();
+        }
+    }
+}
+```
+
+### Reading from an existing DbDataReader
+
+If you've already have a DbDataReader object, then the following will translate this into a transform object:
+
+```csharp
+var reader = new ReaderDbDataReader(sourceReader);
+```
 
 Here is an example that reads data from a sqlserver table, applies a filter, performs some analytics, and then writes the data to a sql server table.
 
@@ -71,14 +160,14 @@ Here is an example that reads data from a sqlserver table, applies a filter, per
 public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetConnection)
 {
     // Retrieve the data from the database
-    SqlCommand cmd = new SqlCommand("select * from Sales.SalesOrderHeader ", sourceConnection);
-    DbDataReader sourceReader = cmd.ExecuteReader();
+    var cmd = new SqlCommand("select * from Sales.SalesOrderHeader ", sourceConnection);
+    var sourceReader = cmd.ExecuteReader();
 
     // Load the reader into transform source, which will start the transform chain.
-    ReaderDbDataReader transformSource = new ReaderDbDataReader(sourceReader);
+    var transformSource = new ReaderDbDataReader(sourceReader);
 
     // Create a custom filter that removes records where PurchaseOrderNumber is null
-    TransformFilter transformFilter = new TransformFilter(
+    var transformFilter = new TransformFilter(
         transformSource,
         new List<Function>()
         {
@@ -90,7 +179,7 @@ public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetC
     );
 
     // Add median, and sum calculation
-    TransformGroup transformGroup = new TransformGroup(
+    var transformGroup = new TransformGroup(
         transformFilter,
         new List<ColumnPair>() //The fields to groupby
         {
@@ -111,7 +200,8 @@ public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetC
     }
 }
 ```
-## Why not just use SQL?
+
+## Why not just use SQL / Linq and Entity Framework?
 
 The transformations in this library generally work best when used in conjunction with optimised SQL queries, however Sql has limits in many areas of data processing.  The transform library can provide the following benefits:
 
