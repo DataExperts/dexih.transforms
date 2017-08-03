@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Connections to a Data Experts Integration Hub</Description>
     <AssemblyTitle>Data Experts Group - Integration Hub Connection</AssemblyTitle>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.connections.dexih</AssemblyName>
