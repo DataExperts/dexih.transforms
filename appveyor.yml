@@ -13,7 +13,6 @@ environment:
 build_script:
 - appveyor-retry dotnet restore -v Minimal
 - dotnet build -c %CONFIGURATION%
-- dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
 test_script:
 - dotnet test .\test\dexih.functions.tests\dexih.functions.tests.csproj
 - dotnet test .\test\dexih.functions.tests.async\dexih.functions.tests.async.csproj
@@ -34,7 +33,10 @@ services:
   - mssql2014
   - mysql
   - postgresql
-  
+
+cache:
+ - '%USERPROFILE%\.nuget\packages'
+
 deploy:
  - provider: NuGet
    server: https://www.nuget.org/api/v2/package
@@ -42,7 +44,30 @@ deploy:
      secure: D2Fu0l/iyBVmVqt/yUztGOFPy3FhYdt9DdnYTgr5KvYYSvb+mRstFwoLeEpmZTUN
    skip_symbols: false
    symbol_server: https://www.nuget.org/api/v2/package
-   on:
-      configuration: Release
-cache:
- - '%USERPROFILE%\.nuget\packages'
+   on: 
+    branch: 
+     - master
+     - test
+     
+# here we are going to override common configuration
+for:
+
+# override settings for `master` branch
+-
+  branches:
+    only:
+      - master
+
+  configuration: Release
+  build_script:
+    - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
+
+# test branch produces a nuget package with the version suffix added.
+-
+  branches:
+    only:
+      - test
+
+  configuration: Release
+  build_script:
+    - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
