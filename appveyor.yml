@@ -69,7 +69,6 @@ for:
   - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
   - del .\artifacts\*test*
   - del .\artifacts\*Example*
-  - cd .\src\dexih.functions
   
 # test branch produces a nuget package with the version suffix added.
 -
