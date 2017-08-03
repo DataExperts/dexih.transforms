@@ -12,8 +12,9 @@
 |Connections Sql - Connections for Sql Server and Sqlite.|[![][nuget-connections-sql-img]][nuget-connections-sql]|
 |Connections FlatFile - Connections for various types of delimited flat files.|[![][nuget-connections-flatfile-img]][nuget-connections-flatfile]|
 |Connections Azure - Connections Azure Table Storage and Azure File Storage.|[![][nuget-connections-azure-img]][nuget-connections-azure]|
-|Connections Restful - Connection to source data form Rest based web services.|[![][nuget-connections-restful-img]][nuget-connections-restful]|
-|Connections Soap - Connection to source data form Soap based web services.|[![][nuget-connections-soap-img]][nuget-connections-soap]|
+|Connections Restful - Connection to source data from Rest based web services.|[![][nuget-connections-restful-img]][nuget-connections-restful]|
+|Connections Excel - Connection to source data from Excel files.|[![][nuget-connections-excel-img]][nuget-connections-excel]|
+|Connections Integration Hub - Connection to source data form hubs in the Dex Integration Hub.|[![][nuget-connections-dexih-img]][nuget-connections-dexih]|
 ---
 
 [build]:     https://ci.appveyor.com/project/dataexperts/dexih-transforms
@@ -30,8 +31,10 @@
 [nuget-connections-azure-img]: https://badge.fury.io/nu/dexih.connections.azure.svg
 [nuget-connections-restful]:     https://www.nuget.org/packages/dexih.connections.webservice.restful/
 [nuget-connections-restful-img]: https://badge.fury.io/nu/dexih.connections.webservice.restful.svg
-[nuget-connections-soap]:     https://www.nuget.org/packages/dexih.connections.webservice.soap/
-[nuget-connections-soap-img]: https://badge.fury.io/nu/dexih.connections.webservice.soap.svg
+[nuget-connections-excel]:     https://www.nuget.org/packages/dexih.connections.excel/
+[nuget-connections-excel-img]: https://badge.fury.io/nu/dexih.connections.excel.svg
+[nuget-connections-dexih]:     https://www.nuget.org/packages/dexih.connections.dexih/
+[nuget-connections-dexih-img]: https://badge.fury.io/nu/dexih.connections.dexih.svg
 [dex-img]: http://dataexpertsgroup.com/img/dex_web_logo.png
 [dex]: https://dataexpertsgroup.com
 
