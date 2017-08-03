@@ -63,18 +63,15 @@ for:
 
   configuration: Release
   build_script:
-  - appveyor-retry dotnet restore -v Minimal
-  - dotnet build -c %CONFIGURATION%
-  - dotnet pack ./src/dexih.functions -c %CONFIGURATION% --no-build -o ../../artifacts
-  - dotnet pack ./src/dexih.transforms -c %CONFIGURATION% --no-build ../../artifacts
-  - dotnet pack ./src/dexih.connections.azure -c %CONFIGURATION% --no-build -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.dexih -c %CONFIGURATION% --no-build -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.excel -c %CONFIGURATION% --no-build -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.flatfile -c %CONFIGURATION% --no-build -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.sql -c %CONFIGURATION% --no-build -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.webservice.restful -c %CONFIGURATION% --no-build -o ../../artifacts
-
-
+  - dotnet pack .\src\dexih.functions -c %CONFIGURATION% --no-build -o ../../artifacts
+  - dotnet pack .\src\dexih.transforms -c %CONFIGURATION% --no-build ../../artifacts
+  - dotnet pack .\src\dexih.connections.azure -c %CONFIGURATION% --no-build -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.dexih -c %CONFIGURATION% --no-build -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.excel -c %CONFIGURATION% --no-build -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.flatfile -c %CONFIGURATION% --no-build -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.sql -c %CONFIGURATION% --no-build -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.webservice.restful -c %CONFIGURATION% --no-build -o ../../artifacts
+  
 # test branch produces a nuget package with the version suffix added.
 -
   branches:
@@ -85,15 +82,16 @@ for:
   build_script:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
-  - dotnet pack ./src/dexih.functions -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - dotnet pack ./src/dexih.transforms -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.azure -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.dexih -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.excel -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.flatfile -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.sql -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - dotnet pack ./src/dexih.connections.webservice.restful -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - dotnet pack .\src\dexih.functions -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - dotnet pack .\src\dexih.transforms -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.azure -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.dexih -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.excel -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.flatfile -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.sql -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - dotnet pack .\src\dexih.connections.webservice.restful -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
 
+  
 # master and dev branchs runs test only, no publishing packages
 -
   branches:
