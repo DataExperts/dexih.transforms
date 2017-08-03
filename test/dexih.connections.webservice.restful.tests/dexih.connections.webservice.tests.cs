@@ -10,6 +10,7 @@ namespace dexih.connections.webservice.restful.tests
 {
     /// <summary>
     /// web services test.  These tests use the online web services hosted at https://httpbin.org
+    /// and https://jsonplaceholder.typicode.com
     /// </summary>
     public class ConnectionWebServiceTests
     {
