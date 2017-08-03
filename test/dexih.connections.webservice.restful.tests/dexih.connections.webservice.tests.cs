@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.webservice.restful.tests
 {
@@ -14,10 +15,17 @@ namespace dexih.connections.webservice.restful.tests
     /// </summary>
     public class ConnectionWebServiceTests
     {
+        private readonly ITestOutputHelper output;
+
+        public ConnectionWebServiceTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
 
         [Fact]
         public async Task WebService_Basic()
         {
+
             var connection = new ConnectionRestful()
             {
                 Server = "https://httpbin.org",
