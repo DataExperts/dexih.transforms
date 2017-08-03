@@ -42,19 +42,20 @@ namespace dexih.functions.tests
 
             //decypt with modified key.  should fail.
             var DecryptString2 = EncryptString.Decrypt(EncryptString1.Value, Key + " ", 1000);
-            Assert.False(DecryptString2.Success);
             Assert.NotEqual(TestValue, DecryptString2.Value);
 
             output.WriteLine("Decrypt2 success.");
         }
 
         [Theory]
-        [InlineData("123123123", "abc", 100000)]
-        public void EncryptPerformance(string TestValue, string Key, int Iterations)
+        [InlineData(2000)]
+        public void EncryptPerformance(int Iterations)
         {
             for(int i = 0; i< Iterations; i++)
             {
-                var EncryptString1 = EncryptString.Encrypt(TestValue, Key, 5);
+                var value = EncryptString.GenerateRandomKey(200);
+                var key = EncryptString.GenerateRandomKey(50);
+                EncryptDecrypt(value, key);
             }
         }
     }
