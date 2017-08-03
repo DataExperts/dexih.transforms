@@ -82,7 +82,8 @@ for:
 -
  branches:
     only:
-      - /dev-.*/
+      - dev-.*
+
   configuration: Debug
   build_script:
   - appveyor-retry dotnet restore -v Minimal
