@@ -66,22 +66,10 @@ for:
   build_script:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
+  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
+  - del .\artifacts\*test*
+  - del .\artifacts\*Example*
   - cd .\src\dexih.functions
-  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\dexih.transforms
-  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\dexih.connections.azure
-  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\dexih.connections.dexih
-  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\dexih.connections.excel
-  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\dexih.connections.flatfile
-  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\dexih.connections.sql
-  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - cd ..\dexih.connections.webservice.restful
-  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
   
 # test branch produces a nuget package with the version suffix added.
 -
@@ -93,22 +81,9 @@ for:
   build_script:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
-  - cd .\src\dexih.functions
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\dexih.transforms
-  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\dexih.connections.azure
-  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\dexih.connections.dexih
-  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\dexih.connections.excel
-  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\dexih.connections.flatfile
-  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\dexih.connections.sql
-  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - cd ..\dexih.connections.webservice.restful
-  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - del .\artifacts\*test*
+  - del .\artifacts\*Example*
   
 # master and dev branchs runs test only, no publishing packages
 -
