@@ -23,6 +23,5 @@
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Class1.cs" />
   </ItemGroup>
 </Project>
