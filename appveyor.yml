@@ -54,7 +54,6 @@ deploy:
 for:
 
 # override settings for `master` branch
-
 -
   branches:
     only:
@@ -80,12 +79,14 @@ for:
 
 # dev branch runs test only.
 -
- branches:
+  branches:
     only:
-      - dev-.*
+      - /dev-.*/
 
   configuration: Debug
   build_script:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
+  
+  
   
