@@ -52,8 +52,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.functions.tests.async
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.transforms.tests.async", "test\dexih.transforms.tests.async\dexih.transforms.tests.async.csproj", "{8B299A01-25C7-42E2-B0DC-6B346F8448C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.webservice.soap", "src\dexih.connections.webservice.soap\dexih.connections.webservice.soap.csproj", "{9F59C26E-97D3-4811-8850-BEEBF356B401}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -292,18 +290,6 @@ Global
 		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x64.Build.0 = Release|Any CPU
 		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x86.ActiveCfg = Release|Any CPU
 		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x86.Build.0 = Release|Any CPU
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Debug|x64.ActiveCfg = Debug|x64
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Debug|x64.Build.0 = Debug|x64
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Debug|x86.ActiveCfg = Debug|x86
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Debug|x86.Build.0 = Debug|x86
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Release|x64.ActiveCfg = Release|x64
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Release|x64.Build.0 = Release|x64
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Release|x86.ActiveCfg = Release|x86
-		{9F59C26E-97D3-4811-8850-BEEBF356B401}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -328,6 +314,5 @@ Global
 		{1270FA43-9CB5-48EB-A3FD-3F0C5396863E} = {4712A230-9747-4447-B4C5-022006511342}
 		{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC} = {4712A230-9747-4447-B4C5-022006511342}
 		{8B299A01-25C7-42E2-B0DC-6B346F8448C4} = {4712A230-9747-4447-B4C5-022006511342}
-		{9F59C26E-97D3-4811-8850-BEEBF356B401} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 	EndGlobalSection
 EndGlobal
