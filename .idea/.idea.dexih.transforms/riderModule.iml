@@ -19,6 +19,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.flatfile" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.sql" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.restful" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.soap" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.functions" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.transforms" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.azure.tests" isTestSource="false" />
@@ -28,7 +29,9 @@
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.test" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.webservice.restful.tests" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests.async" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests.async" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/../../packages" />
       <excludeFolder url="file://$MODULE_DIR$/../../samples/FunctionExamples/bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../samples/FunctionExamples/obj" />
@@ -44,6 +47,8 @@
       <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.sql/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.restful/bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.restful/obj" />
+      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.soap/bin" />
+      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.soap/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.functions/bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.functions/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.transforms/bin" />
@@ -60,8 +65,12 @@
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.test/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.webservice.restful.tests/bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.webservice.restful.tests/obj" />
+      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests.async/bin" />
+      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests.async/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests/bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests/obj" />
+      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests.async/bin" />
+      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests.async/obj" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests/bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests/obj" />
     </content>
