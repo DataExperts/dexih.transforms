@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixing soap project to compile.">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -92,7 +92,7 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="Program.cs" pinned="false" current-in-tab="false">
+          <file leaf-file-name="Program.cs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/samples/FunctionExamples/Program.cs">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="390">
@@ -104,72 +104,6 @@
                     <marker date="1501293856000" expanded="true" signature="266:825" ph="{...}" />
                     <marker date="1501293856000" expanded="true" signature="301:815" ph="{...}" />
                     <marker date="1501293856000" expanded="true" signature="543:801" ph="{...}" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="dexih.connections.webservice.webservice.cs" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.cs">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2835">
-                  <caret line="201" column="0" lean-forward="false" selection-start-line="201" selection-start-column="0" selection-end-line="201" selection-end-column="0" />
-                  <folding>
-                    <marker date="1501808004000" expanded="false" signature="6:321" ph="..." />
-                    <marker date="1501808004000" expanded="true" signature="472:18219" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="524:18217" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="2622:2704" ph="/* Initialize a service description importer. ... */" />
-                    <marker date="1501808004000" expanded="true" signature="3545:3660" ph="/* Import the service into the Code-DOM tree. This creates proxy code ... */" />
-                    <marker date="1501808004000" expanded="true" signature="14957:15026" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="15130:15199" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="15299:15368" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="15487:15556" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="15691:15760" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="15883:15952" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="16053:16122" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="16221:16318" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="16450:16519" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="16651:16720" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="16865:16934" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="17062:17131" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="17243:17312" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="17476:17545" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="17681:17750" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="17892:18035" ph="{...}" />
-                    <marker date="1501808004000" expanded="true" signature="18140:18209" ph="{...}" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="dexih.connections.webservice.webservice.reader.cs" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.reader.cs">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="495">
-                  <caret line="33" column="28" lean-forward="true" selection-start-line="33" selection-start-column="28" selection-end-line="33" selection-end-column="28" />
-                  <folding>
-                    <marker date="1501808376000" expanded="true" signature="6:234" ph="..." />
-                    <marker date="1501808376000" expanded="true" signature="316:4783" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="364:4781" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="619:810" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="867:954" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="1075:2561" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="1134:2362" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="1177:1317" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="1757:1982" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="2003:2212" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="2395:2551" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="2603:2661" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="2716:2761" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="2815:2877" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="2987:4179" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="3013:3995" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="3199:3981" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="3338:3849" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="3566:3825" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="4028:4169" ph="{...}" />
-                    <marker date="1501808376000" expanded="true" signature="4255:4497" ph="/// This performns a lookup directly against the underlying data source, returns the result, and adds the result  ... " />
-                    <marker date="1501808376000" expanded="true" signature="4624:4775" ph="{...}" />
                   </folding>
                 </state>
               </provider>
@@ -529,13 +463,11 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connection.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/project.lock.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.reader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriter.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transform.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.flatfile/Csv/CsvReader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoLoader.cs" root0="FORCE_HIGHLIGHTING" />
@@ -695,7 +627,7 @@
               <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="dexih.transforms (20 projects)" />
+              <option name="myItemId" value="dexih.transforms (19 projects)" />
               <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerNodeRider" />
             </PATH_ELEMENT>
           </PATH>
@@ -705,7 +637,7 @@
               <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="dexih.transforms (20 projects)" />
+              <option name="myItemId" value="dexih.transforms (19 projects)" />
               <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerNodeRider" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -719,25 +651,7 @@
               <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="dexih.transforms (20 projects)" />
-              <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerNodeRider" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerNodeRider" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="dexih.connections.webservice.soap" />
-              <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerNodeRider" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" />
-              <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="dexih.transforms (20 projects)" />
+              <option name="myItemId" value="dexih.transforms (19 projects)" />
               <option name="myItemType" value="com.jetbrains.rider.projectView.solutionExplorer.SolutionExplorerNodeRider" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -952,7 +866,7 @@
       <workItem from="1501559587925" duration="2134000" />
       <workItem from="1501715433566" duration="7000" />
       <workItem from="1501807107328" duration="5000" />
-      <workItem from="1501807145928" duration="1253000" />
+      <workItem from="1501807145928" duration="1702000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1080,11 +994,18 @@
       <option name="project" value="LOCAL" />
       <updated>1501808482120</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="fixing soap project to compile.">
+      <created>1501808925968</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1501808925968</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="131578000" />
+    <option name="totallyTimeSpent" value="132027000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1097,7 +1018,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32809225" sideWeight="0.489011" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Errors In Solution" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -2148,21 +2068,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/samples/FunctionExamples/Program.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="31" column="13" lean-forward="false" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
-          <folding>
-            <marker date="1501293856000" expanded="false" signature="6:158" ph="..." />
-            <marker date="1501293856000" expanded="true" signature="186:833" ph="{...}" />
-            <marker date="1501293856000" expanded="true" signature="213:831" ph="{...}" />
-            <marker date="1501293856000" expanded="true" signature="266:825" ph="{...}" />
-            <marker date="1501293856000" expanded="true" signature="301:815" ph="{...}" />
-            <marker date="1501293856000" expanded="true" signature="543:801" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
@@ -2214,37 +2119,6 @@
         <state relative-caret-position="90">
           <caret line="6" column="35" lean-forward="false" selection-start-line="6" selection-start-column="35" selection-end-line="6" selection-end-column="35" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2835">
-          <caret line="201" column="0" lean-forward="false" selection-start-line="201" selection-start-column="0" selection-end-line="201" selection-end-column="0" />
-          <folding>
-            <marker date="1501808004000" expanded="false" signature="6:321" ph="..." />
-            <marker date="1501808004000" expanded="true" signature="472:18219" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="524:18217" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="2622:2704" ph="/* Initialize a service description importer. ... */" />
-            <marker date="1501808004000" expanded="true" signature="3545:3660" ph="/* Import the service into the Code-DOM tree. This creates proxy code ... */" />
-            <marker date="1501808004000" expanded="true" signature="14957:15026" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="15130:15199" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="15299:15368" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="15487:15556" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="15691:15760" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="15883:15952" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="16053:16122" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="16221:16318" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="16450:16519" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="16651:16720" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="16865:16934" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="17062:17131" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="17243:17312" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="17476:17545" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="17681:17750" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="17892:18035" ph="{...}" />
-            <marker date="1501808004000" expanded="true" signature="18140:18209" ph="{...}" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -2384,29 +2258,29 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="495">
           <caret line="33" column="28" lean-forward="true" selection-start-line="33" selection-start-column="28" selection-end-line="33" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2835">
+          <caret line="201" column="0" lean-forward="false" selection-start-line="201" selection-start-column="0" selection-end-line="201" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/samples/FunctionExamples/Program.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="31" column="13" lean-forward="false" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
           <folding>
-            <marker date="1501808376000" expanded="true" signature="6:234" ph="..." />
-            <marker date="1501808376000" expanded="true" signature="316:4783" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="364:4781" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="619:810" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="867:954" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="1075:2561" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="1134:2362" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="1177:1317" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="1757:1982" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="2003:2212" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="2395:2551" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="2603:2661" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="2716:2761" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="2815:2877" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="2987:4179" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="3013:3995" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="3199:3981" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="3338:3849" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="3566:3825" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="4028:4169" ph="{...}" />
-            <marker date="1501808376000" expanded="true" signature="4255:4497" ph="/// This performns a lookup directly against the underlying data source, returns the result, and adds the result  ... " />
-            <marker date="1501808376000" expanded="true" signature="4624:4775" ph="{...}" />
+            <marker date="1501293856000" expanded="false" signature="6:158" ph="..." />
+            <marker date="1501293856000" expanded="true" signature="186:833" ph="{...}" />
+            <marker date="1501293856000" expanded="true" signature="213:831" ph="{...}" />
+            <marker date="1501293856000" expanded="true" signature="266:825" ph="{...}" />
+            <marker date="1501293856000" expanded="true" signature="301:815" ph="{...}" />
+            <marker date="1501293856000" expanded="true" signature="543:801" ph="{...}" />
           </folding>
         </state>
       </provider>
