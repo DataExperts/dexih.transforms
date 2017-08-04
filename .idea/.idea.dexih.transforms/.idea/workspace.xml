@@ -3,11 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/riderModule.iml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/riderModule.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dexih.transforms.sln" afterPath="$PROJECT_DIR$/dexih.transforms.sln" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.soap.csproj" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.soap.csproj" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.cs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.reader.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.soap/dexih.connections.webservice.webservice.reader.cs" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -528,6 +523,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connection.cs" root0="FORCE_HIGHLIGHTING" />
@@ -956,7 +952,7 @@
       <workItem from="1501559587925" duration="2134000" />
       <workItem from="1501715433566" duration="7000" />
       <workItem from="1501807107328" duration="5000" />
-      <workItem from="1501807145928" duration="1207000" />
+      <workItem from="1501807145928" duration="1253000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1077,11 +1073,18 @@
       <option name="project" value="LOCAL" />
       <updated>1501561936639</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="fixing soap project to compile.">
+      <created>1501808482120</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1501808482120</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="131532000" />
+    <option name="totallyTimeSpent" value="131578000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1136,7 +1139,8 @@
     <MESSAGE value="Fix some tests with SqlServer on Linux" />
     <MESSAGE value="Fixing deadlocking issues with tests" />
     <MESSAGE value="Grouping async tests to avoid deadlocks." />
-    <option name="LAST_COMMIT_MESSAGE" value="Grouping async tests to avoid deadlocks." />
+    <MESSAGE value="fixing soap project to compile." />
+    <option name="LAST_COMMIT_MESSAGE" value="fixing soap project to compile." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
