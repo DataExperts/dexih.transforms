@@ -168,7 +168,6 @@ namespace dexih.functions
                     return compareResult.Value == DataType.ECompareResult.Equal;
                 case ECompare.IsIn:
                     throw new Exception("The IsIn is not currently supported in the query evaluation.");
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
