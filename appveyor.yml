@@ -12,8 +12,8 @@ platform: Any CPU
 init:
  - ps: $Env:LABEL = "CI" +$Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
 install:
-- ps: Start-FileDownload 'https://download.microsoft.com/download/5/F/E/5FEB7E95-C643-48D5-8329-9D2C63676CE8/dotnet-dev-win-x64.1.0.0-rc4-004771.exe'
-- dotnet-dev-win-x64.1.0.0-rc4-004771.exe /quiet
+# - ps: Start-FileDownload 'https://download.microsoft.com/download/5/F/E/5FEB7E95-C643-48D5-8329-9D2C63676CE8/dotnet-dev-win-x64.1.0.0-rc4-004771.exe'
+# - dotnet-dev-win-x64.1.0.0-rc4-004771.exe /quiet
 environment:
   PATH: $(PATH);$(PROGRAMFILES)\dotnet\
 test_script:

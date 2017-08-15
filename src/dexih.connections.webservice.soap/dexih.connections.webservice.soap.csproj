@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>This is a support library which enables the transform library to access Soap based webservices.</Description>
+    <AssemblyTitle>Data Experts Group - Connections - Soap WebServices</AssemblyTitle>
+    <VersionPrefix>0.2.4</VersionPrefix>
+    <Authors>Gary Holland</Authors>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>dexih.connections.webservice.soap</AssemblyName>
+    <PackageId>dexih.connections.webservice.soap</PackageId>
+    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;Web Service;Soap</PackageTags>
+    <PackageReleaseNotes>Note: This project is still under devlopement with regular breaking changes.</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
+  </ItemGroup>
+</Project>
