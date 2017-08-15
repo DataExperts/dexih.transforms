@@ -13,7 +13,7 @@ using System.Net.Http;
 #endif
 
 namespace dexih.connections.webservice
-{
+{ 
     public class ReaderWebService : Transform
     {
         private bool _isOpen = false;
