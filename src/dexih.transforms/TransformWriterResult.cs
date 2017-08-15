@@ -248,29 +248,22 @@ namespace dexih.transforms
         {
             try
             {
-                RunStatus = newStatus;
-                if (!string.IsNullOrEmpty(message))
+                if (string.IsNullOrEmpty(Message))
                 {
-                    Message = message;
+                    Message = returnValue.Message;
                 }
+                var exception = returnValue.ExceptionDetails;
+                if (string.IsNullOrEmpty(exception))
+                {
+                    Message += Environment.NewLine + exception;
+                }
+            }
 
-                if (exception != null)
-                {
-                    // pull out the full details of the exception.
-                    var properties = exception.GetType().GetProperties();
-                    var fields = properties
-                        .Select(property => new
-                        {
-                            property.Name,
-                            Value = property.GetValue(exception, null)
-                        })
-                        .Select(x => string.Format(
-                            "{0} = {1}",
-                            x.Name,
-                            x.Value != null ? x.Value.ToString() : string.Empty
-                        ));
-                    ExceptionDetails = string.Join("\n", fields);
-                }
+            if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
+            {
+                EndTime = DateTime.Now;
+                OnFinish?.Invoke(this);
+            }
 
                 if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
                 {
