@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Data transformation and analytics library.  See the project url for more details.</Description>
     <AssemblyTitle>Data Experts Group - Transforms Library</AssemblyTitle>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.transforms</AssemblyName>

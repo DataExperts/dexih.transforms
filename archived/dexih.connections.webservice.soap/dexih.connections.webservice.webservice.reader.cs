@@ -37,7 +37,7 @@ namespace dexih.connections.webservice
         }
 
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             try
@@ -63,7 +63,7 @@ namespace dexih.connections.webservice
                 }
                 else
                 {
-                    var result = await ReferenceTransform.Open(auditKey, null);
+                    var result = await ReferenceTransform.Open(auditKey, null, cancelToken);
                     if (!result.Success)
                         return result;
                 }
@@ -115,7 +115,7 @@ namespace dexih.connections.webservice
                         });
                     }
 
-                    var result = await LookupRow(filters);
+                    var result = await LookupRow(filters, cancellationToken);
                     return result;
                 }
             }
@@ -132,7 +132,7 @@ namespace dexih.connections.webservice
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
+        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
             return await ((ConnectionSoap)ReferenceConnection).LookupRow(CacheTable, filters, _webServiceType, _webServiceObject);
         }

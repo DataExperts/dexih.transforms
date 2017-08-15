@@ -14,7 +14,7 @@ namespace dexih.connections.flatfile
     {
         public string FilePath()
         {
-            return Server + "/" + DefaultDatabase;
+            return Path.Combine(Server ,DefaultDatabase ?? "");
         }
 
         public override async Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password)
@@ -26,7 +26,7 @@ namespace dexih.connections.flatfile
                 var directories = await Task.Run(() => Directory.GetDirectories(serverName));
                 foreach (string directoryName in directories)
                 {
-                    string[] directoryComponents = directoryName.Split('/');
+                    string[] directoryComponents = directoryName.Split(Path.DirectorySeparatorChar);
                     fileShares.Add(directoryComponents[directoryComponents.Length - 1]);
                 }
 
@@ -44,9 +44,16 @@ namespace dexih.connections.flatfile
             {
                 return await Task.Run(() =>
                 {
-                    if (Directory.Exists(FilePath() + "/" + rootDirectory) == false)
-                        Directory.CreateDirectory(FilePath() + "/" + rootDirectory);
-                    Directory.CreateDirectory(FilePath() + "/" + rootDirectory + "/" + subDirectory);
+                    var fullBaseDirectory = Path.Combine(FilePath(), rootDirectory ?? "");
+                    if (!Directory.Exists(fullBaseDirectory))
+                    {
+                        Directory.CreateDirectory(fullBaseDirectory);
+                    }
+                    var fullSubDirectory = Path.Combine(fullBaseDirectory, subDirectory ?? "");
+                    if(!Directory.Exists(fullSubDirectory))
+                    {
+                        Directory.CreateDirectory(fullSubDirectory);
+                    }
                     return new ReturnValue(true);
                 });
             }
@@ -68,12 +75,17 @@ namespace dexih.connections.flatfile
                     string newFileName;
 
                     newFileName = fileName;
-                    while (File.Exists(FilePath() + "/" + rootDirectory + "/" + toDirectory + "/" + newFileName))
+                    var fullToDirectory = Path.Combine(FilePath(), rootDirectory ?? "", toDirectory ?? "");
+                    var fullFromDirectory = Path.Combine(FilePath(), rootDirectory ?? "", fromDirectory ?? "");
+
+                    // if there is already a file with the same name on the target directory, add a version number until a unique name is found.
+                    while (File.Exists(Path.Combine(fullToDirectory, newFileName)))
                     {
                         version++;
                         newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
                     }
-                    File.Move(FilePath() + "/" + rootDirectory + "/" + fromDirectory + "/" + fileName, FilePath() + "/" + rootDirectory + "/" + toDirectory + "/" + newFileName);
+
+                    File.Move(Path.Combine(fullFromDirectory, fileName), Path.Combine(fullToDirectory, newFileName));
                     return new ReturnValue(true);
                 });
 
@@ -90,7 +102,8 @@ namespace dexih.connections.flatfile
             {
                 return await Task.Run(() =>
                 {
-                    File.Delete(FilePath() + "/" + rootDirectory + "/" + subDirectory + "/" + fileName);
+                    var fullDirectory = Path.Combine(FilePath(), rootDirectory ?? "", subDirectory ?? "");
+                    File.Delete(Path.Combine(fullDirectory, fileName));
                     return new ReturnValue(true);
                 });
             }
@@ -100,7 +113,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override async Task<ReturnValue<DexihFiles>> GetFileEnumerator(string mainDirectory, string subDirectory)
+        public override async Task<ReturnValue<DexihFiles>> GetFileEnumerator(string rootDirectory, string subDirectory, string searchPattern)
         {
             try
             {
@@ -108,7 +121,9 @@ namespace dexih.connections.flatfile
                 {
                     List<DexihFileProperties> files = new List<DexihFileProperties>();
 
-                    foreach (var file in Directory.GetFiles(FilePath() + "/" + mainDirectory + "/" + subDirectory))
+                    var fullDirectory = Path.Combine(FilePath(), rootDirectory??"", subDirectory??"");
+                    var filenames = string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern);
+                    foreach (var file in filenames)
                     {
                         FileInfo fileInfo = new FileInfo(file);
                         files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length });
@@ -124,7 +139,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string mainDirectory, string subDirectory)
+        public override async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string rootDirectory, string subDirectory)
         {
             try
             {
@@ -132,10 +147,11 @@ namespace dexih.connections.flatfile
                 {
                     List<DexihFileProperties> files = new List<DexihFileProperties>();
 
-                    foreach (var file in Directory.GetFiles(FilePath() + "/" + mainDirectory + "/" + subDirectory))
+                    var fullDirectory = Path.Combine(FilePath(), rootDirectory??"", subDirectory ?? "");
+                    foreach (var file in Directory.GetFiles(fullDirectory))
                     {
                         FileInfo fileInfo = new FileInfo(file);
-                        string contentType = ""; //MimeMapping.GetMimeMapping(FilePath + "/" + MainDirectory + "/" + SubDirectory + "/" + File); //TODO add MimeMapping
+                        string contentType = ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
                         files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length, ContentType = contentType });
                     }
 
@@ -155,7 +171,8 @@ namespace dexih.connections.flatfile
                 return await Task.Run(() =>
                 {
 					FlatFile flatFile = (FlatFile)table;
-					Stream reader = File.OpenRead(FilePath() + "/" + flatFile.FileRootPath + "/" + subDirectory + "/" + "/" + fileName);
+                    var fullDirectory = Path.Combine(FilePath(), flatFile.FileRootPath ?? "", subDirectory ?? "");
+                    Stream reader = File.OpenRead(Path.Combine(fullDirectory, fileName));
                     return new ReturnValue<Stream>(true, "", null, reader);
                 });
             }
@@ -172,7 +189,8 @@ namespace dexih.connections.flatfile
                 return await Task.Run(() =>
                 {
 					FlatFile flatFile = (FlatFile)table;
-                    Stream reader = File.OpenWrite(FilePath() + "/" + flatFile.FileRootPath + "/" + subDirectory + "/" + "/" + fileName);
+                    var fullDirectory = Path.Combine(FilePath(), flatFile.FileRootPath ?? "", subDirectory ?? "");
+                    Stream reader = File.OpenWrite(Path.Combine(fullDirectory, fileName));
                     return new ReturnValue<Stream>(true, "", null, reader);
                 });
             }
@@ -229,14 +247,17 @@ namespace dexih.connections.flatfile
 
 			int version = 0;
 
-			string newFileName = fileName;
-			while (File.Exists(FilePath() + "/" + flatFile.FileRootPath + "/" + flatFile.FileIncomingPath + "/" + newFileName))
+            string fullPath = Path.Combine(FilePath(), flatFile.FileRootPath ?? "", flatFile.FileIncomingPath ?? "");
+
+
+            string newFileName = fileName;
+			while (File.Exists(Path.Combine(fullPath, newFileName)))
 			{
 				version++;
 				newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
 			}
 
-			var filePath = FilePath() + "/" + flatFile.FileRootPath + "/" + flatFile.FileIncomingPath + "/" + newFileName;
+			var filePath = Path.Combine(fullPath, newFileName);
 
 			return filePath;
 		}
@@ -264,8 +285,9 @@ namespace dexih.connections.flatfile
             try
             {
 				FlatFile flatFile = (FlatFile)table;
+                string fullPath = Path.Combine(FilePath(), flatFile.FileRootPath ?? "");
 
-				bool exists = await Task.Run(() => new DirectoryInfo(FilePath() + "/" + flatFile.FileRootPath).Exists, cancelToken);
+                bool exists = await Task.Run(() => new DirectoryInfo(fullPath).Exists, cancelToken);
                 return new ReturnValue<bool>(true, exists);
             }
             catch(Exception ex)

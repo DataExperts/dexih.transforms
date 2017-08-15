@@ -6,6 +6,8 @@ branches:
   only:
     - master
     - test
+    - release
+    - /dev-.*/
 platform: Any CPU
 init:
  - ps: $Env:LABEL = "CI" +$Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
@@ -14,9 +16,6 @@ install:
 - dotnet-dev-win-x64.1.0.0-rc4-004771.exe /quiet
 environment:
   PATH: $(PATH);$(PROGRAMFILES)\dotnet\
-build_script:
-- appveyor-retry dotnet restore -v Minimal
-- dotnet build -c %CONFIGURATION%
 test_script:
 - dotnet test .\test\dexih.functions.tests\dexih.functions.tests.csproj
 - dotnet test .\test\dexih.functions.tests.async\dexih.functions.tests.async.csproj
@@ -31,6 +30,7 @@ test_script:
 - dotnet test 
 - cd ..\dexih.connections.webservice.restful.tests
 - dotnet test 
+- cd ..\..
 artifacts:
   - path: artifacts\*.nupkg
 services:
@@ -52,26 +52,49 @@ deploy:
     branch: 
      - master
      - test
+     - release
      
-# here we are going to override common configuration
 for:
 
-# override settings for `master` branch
+# The release branch publishes without the version suffix, making an official release.
 -
   branches:
     only:
-      - master
+      - release
 
   configuration: Release
   build_script:
-    - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-
+  - appveyor-retry dotnet restore -v Minimal
+  - dotnet build -c %CONFIGURATION%
+  - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
+  - del .\artifacts\*test*
+  - del .\artifacts\*Example*
+  
 # test branch produces a nuget package with the version suffix added.
 -
   branches:
     only:
       - test
 
-  configuration: Release
+  configuration: Debug
   build_script:
-    - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - appveyor-retry dotnet restore -v Minimal
+  - dotnet build -c %CONFIGURATION%
+  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
+  - del .\artifacts\*test*
+  - del .\artifacts\*Example*
+  
+# master and dev branchs runs test only, no publishing packages
+-
+  branches:
+    only:
+      - master
+      - /dev-.*/
+
+  configuration: Debug
+  build_script:
+  - appveyor-retry dotnet restore -v Minimal
+  - dotnet build -c %CONFIGURATION%
+  
+  
+  

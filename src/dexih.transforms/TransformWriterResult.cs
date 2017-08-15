@@ -66,7 +66,7 @@ namespace dexih.transforms
             Schedule,
             FileWatcher,
             External,
-            DataJob
+            Datajob
         }
 
         private readonly Connection _auditConnection;
@@ -181,10 +181,18 @@ namespace dexih.transforms
             RunStatus = newStatus;
             if(returnValue != null)
             {
-                Message += Environment.NewLine + returnValue.ExceptionDetails;
+                if (string.IsNullOrEmpty(Message))
+                {
+                    Message = returnValue.Message;
+                }
+                var exception = returnValue.ExceptionDetails;
+                if (string.IsNullOrEmpty(exception))
+                {
+                    Message += Environment.NewLine + exception;
+                }
             }
 
-            if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors)
+            if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
             {
                 EndTime = DateTime.Now;
                 OnFinish?.Invoke(this);

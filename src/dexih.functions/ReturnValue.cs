@@ -291,7 +291,6 @@ namespace dexih.functions
             set { _exceptionDetails = value; }
             get
             {
-            
                 if (Exception == null)
                 {
                     if(string.IsNullOrEmpty(_exceptionDetails))

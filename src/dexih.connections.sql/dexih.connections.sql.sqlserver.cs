@@ -392,7 +392,7 @@ namespace dexih.connections.sql
                         returnValue = "convert(time, '" + AddEscape((string)value) + "')";
                     break;
                 default:
-                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql insert statement.");
+                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql statement.");
             }
 
             return returnValue;
