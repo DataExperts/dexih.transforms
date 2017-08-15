@@ -10,7 +10,9 @@ namespace dexih.connections.flatfile
 		private string _fileRejectedPath = "rejected";
 		private string _fileMatchPattern;
 
-		public bool UseCustomFilePaths { get; set; }
+        public bool AutoManageFiles { get; set; }
+
+        public bool UseCustomFilePaths { get; set; }
 
 		public string FileRootPath {
 			get => UseCustomFilePaths ? Name : _fileRootPath;
@@ -19,19 +21,19 @@ namespace dexih.connections.flatfile
 
 		public string FileIncomingPath
 		{
-			get => UseCustomFilePaths ? "Incoming" : _fileIncomingPath;
+			get => UseCustomFilePaths ? "incoming" : _fileIncomingPath;
 			set => _fileIncomingPath = value;
 		}
 
 		public string FileProcessedPath
 		{
-			get => UseCustomFilePaths ? "Processed" : _fileProcessedPath;
+			get => UseCustomFilePaths ? "processed" : _fileProcessedPath;
 			set => _fileProcessedPath = value;
 		}
 
 		public string FileRejectedPath
 		{
-			get => UseCustomFilePaths ? "Rejected" : _fileRejectedPath;
+			get => UseCustomFilePaths ? "rejected" : _fileRejectedPath;
 			set => _fileRejectedPath = value;
 		}
 

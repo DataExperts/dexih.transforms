@@ -42,9 +42,20 @@ namespace dexih.connections.sql
             switch (typeCode)
             {
                case ETypeCode.Decimal:
-                   return (decimal) 999999999999999999;
+                   return (decimal) 999999999999999;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
+            }
+        }
+
+        public override object GetDataTypeMinValue(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Decimal:
+                    return (decimal)-999999999999999;
+                default:
+                    return DataType.GetDataTypeMinValue(typeCode);
             }
         }
 
