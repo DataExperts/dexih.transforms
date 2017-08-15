@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Data transformation and analytics library - supporting functions.  See the project url for more details.</Description>
     <AssemblyTitle>Data Experts Group - Supporting Functions</AssemblyTitle>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.functions</AssemblyName>
@@ -25,21 +25,21 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>-->
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1">
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3">
     </PackageReference>
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="System.Data.Common" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Net.Security" Version="4.3.0">
+    <PackageReference Include="System.Net.Security" Version="4.3.1">
     </PackageReference>
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0">
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0">
     </PackageReference>
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="System.Threading.Thread" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
     <PackageReference Include="System.Xml.XPath" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="System.Xml.XPath.XDocument" Version="4.3.0">

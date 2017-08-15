@@ -35,6 +35,7 @@ namespace dexih.transforms
 
         private Connection _targetConnection;
         private Connection _rejectConnection;
+        private bool rejectTableCreated = false;
         private Connection _profileConnection;
 
         private CancellationToken _cancelToken;
@@ -43,6 +44,7 @@ namespace dexih.transforms
 
         private int[] _fieldOrdinals;
         private int[] _rejectFieldOrdinals;
+
 
         public async Task<ReturnValue> WriteAllRecords(TransformWriterResult writerResult, Transform inTransform, Table targetTable, Connection targetConnection, CancellationToken cancelToken)
         {
@@ -181,11 +183,40 @@ namespace dexih.transforms
             }
         }
 
+        /// <summary>
+        /// This updates the transformWriter record when an attempt is made to return.
+        /// </summary>
+        /// <param name="returnValue"></param>
+        /// <param name="writerResult"></param>
+        /// <param name="cancelToken"></param>
+        /// <returns></returns>
+        private async Task<ReturnValue> returnUpdate(ReturnValue returnValue, TransformWriterResult writerResult, CancellationToken cancelToken)
+        {
+            var newReturn = new ReturnValue(returnValue.Success, returnValue.Message, returnValue.Exception);
+            if(cancelToken.IsCancellationRequested)
+            {
+                newReturn.Success = false;
+                newReturn.Message = "Job was cancelled";
+                await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Cancelled, newReturn);
+            }
+            else
+            {
+                if(!returnValue.Success)
+                {
+                    await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, newReturn);
+                }
+            }
+
+            return newReturn;
+        }
+
         public async Task<ReturnValue> WriteStart(Transform inTransform, TransformWriterResult writerResult, CancellationToken cancelToken)
         {
 
             if (_writeOpen)
-                return new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null);
+            {
+                return await returnUpdate(new ReturnValue(false, "Write cannot start, as a previous operation is still running.  Run the WriteFinish command to reset.", null), writerResult, cancelToken);
+            }
 
             var returnValue = await _inTransform.Open(writerResult.AuditKey, null, cancelToken); 
             if (!returnValue.Success)
@@ -209,24 +240,36 @@ namespace dexih.transforms
 
             new DeleteQuery(_targetTable.Name, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
-            if (_rejectTable != null)
+            //if the table doesn't exist, create it.  
+            var tableExistsResult = await _targetConnection.TableExists(_targetTable, cancelToken);
+            if (!tableExistsResult.Success)
             {
-                new InsertQuery(_rejectTable.Name, _rejectTable.Columns.Select(c => new QueryColumn(c, "@param" + _rejectTable.GetOrdinal(c.Name).ToString())).ToList());
-                returnValue = await _rejectConnection.CreateTable(_rejectTable, false, cancelToken);
-                //if (!returnValue.Success)
-                //    return returnValue;
+                return await returnUpdate(tableExistsResult, writerResult, cancelToken);
             }
 
-            //if the table doesn't exist, create it.  
-            returnValue = await _targetConnection.CreateTable(_targetTable, false, cancelToken);
+            if (!tableExistsResult.Value)
+            {
+                returnValue = await _targetConnection.CreateTable(_targetTable, false, cancelToken);
+                if (!returnValue.Success)
+                {
+                    return await returnUpdate(returnValue, writerResult, cancelToken);
+                }
+            }
+
             returnValue = await _targetConnection.DataWriterStart(_targetTable);
+            if (!returnValue.Success)
+            {
+                return await returnUpdate(returnValue, writerResult, cancelToken);
+            }
 
             //if the truncate table flag is set, then truncate the target table.
             if (writerResult.TruncateTarget)
             {
-                var truncateResult = await _targetConnection.TruncateTable(_targetTable, _cancelToken);
+                var truncateResult = await _targetConnection.TruncateTable(_targetTable, cancelToken);
                 if (!truncateResult.Success)
-                    return truncateResult;
+                {
+                    return await returnUpdate(returnValue, writerResult, cancelToken);
+                }
             }
 
             int columnCount = _targetTable.Columns.Count;
@@ -254,7 +297,10 @@ namespace dexih.transforms
         public async Task<ReturnValue> WriteRecord(TransformWriterResult writerResult, Transform reader)
         {
             if (_writeOpen == false)
-                return new ReturnValue(false, "Cannot write records as the WriteStart has not been called.", null);
+            {
+                return await returnUpdate(new ReturnValue(false, "Cannot write records as the WriteStart has not been called.", null), writerResult, _cancelToken);
+
+            }
 
             //split the operation field (if it exists) and create copy of the row.
             char operation;
@@ -349,69 +395,69 @@ namespace dexih.transforms
             {
                 var returnValue = await DoCreates();
                 if (returnValue.Success == false)
-                    return returnValue;
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             if (_updateRows.Count > 0)
             {
                 var returnValue = await DoUpdate();
                 if (returnValue.Success == false)
-                    return returnValue;
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             if (_deleteRows.Count > 0)
             {
                 var returnValue = await DoDelete();
                 if (returnValue.Success == false)
-                    return returnValue;
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             if (_rejectRows.Count > 0)
             {
                 var returnValue = await DoReject();
                 if (returnValue.Success == false)
-                    return returnValue;
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             //wait for any write tasks to finish
             if (_createRecordsTask != null)
             {
-                var result = await _createRecordsTask;
-                WriteDataTicks += result.Value;
-                if (!result.Success)
-                    return result;
+                var returnValue = await _createRecordsTask;
+                WriteDataTicks += returnValue.Value;
+                if (!returnValue.Success)
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             if (_createRecordsTask != null)
             {
-                var result = await _createRecordsTask;
-                WriteDataTicks += result.Value;
-                if (!result.Success)
-                    return result;
+                var returnValue = await _createRecordsTask;
+                WriteDataTicks += returnValue.Value;
+                if (!returnValue.Success)
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             if (_updateRecordsTask != null)
             {
-                var result = await _updateRecordsTask;
-                WriteDataTicks += result.Value;
-                if (!result.Success)
-                    return result;
+                var returnValue = await _updateRecordsTask;
+                WriteDataTicks += returnValue.Value;
+                if (!returnValue.Success)
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             if (_deleteRecordsTask != null)
             {
-                var result = await _deleteRecordsTask;
-                WriteDataTicks += result.Value;
-                if (!result.Success)
-                    return result;
+                var returnValue = await _deleteRecordsTask;
+                WriteDataTicks += returnValue.Value;
+                if (!returnValue.Success)
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             if (_rejectRecordsTask != null)
             {
-                var result = await _rejectRecordsTask;
-                WriteDataTicks += result.Value;
-                if (!result.Success)
-                    return result;
+                var returnValue = await _rejectRecordsTask;
+                WriteDataTicks += returnValue.Value;
+                if (!returnValue.Success)
+                    return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
             //update the statistics.
@@ -442,6 +488,10 @@ namespace dexih.transforms
             reader.Dispose();
 
             var returnValue2 = await _targetConnection.DataWriterFinish(_targetTable);
+            if(!returnValue2.Success)
+            {
+                return await returnUpdate(returnValue2, writerResult, _cancelToken);
+            }
 
             return new ReturnValue(true);
         }
@@ -559,6 +609,40 @@ namespace dexih.transforms
                 WriteDataTicks += result.Value;
                 if (!result.Success)
                     return result;
+            }
+
+            // create a reject table if reject records have occurred.
+            if(!rejectTableCreated)
+            {
+                if (_rejectTable != null)
+                {
+                    var rejectExistsResult = await _rejectConnection.TableExists(_rejectTable, _cancelToken);
+                    if (!rejectExistsResult.Success)
+                    {
+                        return rejectExistsResult;
+                    }
+
+                    if (!rejectExistsResult.Value)
+                    {
+                        var returnValue = await _rejectConnection.CreateTable(_rejectTable, false, _cancelToken);
+                        if (!returnValue.Success)
+                        {
+                            return returnValue;
+                        }
+                    }
+                    // compare target table to ensure all columns exist.
+                    var compareTableResult = await _rejectConnection.CompareTable(_rejectTable, _cancelToken);
+                    if (!compareTableResult.Success)
+                    {
+                        return compareTableResult;
+                    }
+
+                    rejectTableCreated = true;
+                }
+                else
+                {
+                    return new ReturnValue(false, "There were rejected records, and no reject table name specified on the target table.", null);
+                }
             }
 
             Table createTable = new Table(_rejectTable.Name, _rejectTable.Columns, _rejectRows);

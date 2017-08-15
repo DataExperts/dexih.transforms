@@ -18,7 +18,7 @@ namespace dexih.connections.flatfile
         public abstract Task<ReturnValue> CreateDirectory(string rootDirectory, string subDirectory);
         public abstract Task<ReturnValue> MoveFile(string rootDirectory, string fromDirectory, string toDirectory, string fileName);
         public abstract Task<ReturnValue> DeleteFile(string rootDirectory, string subDirectory, string fileName);
-        public abstract Task<ReturnValue<DexihFiles>> GetFileEnumerator(string mainDirectory, string subDirectory);
+        public abstract Task<ReturnValue<DexihFiles>> GetFileEnumerator(string mainDirectory, string subDirectory, string searchPattern);
         public abstract Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string mainDirectory, string subDirectory);
         public abstract Task<ReturnValue<Stream>> GetReadFileStream(Table table, string subDirectory, string fileName);
         public abstract Task<ReturnValue<Stream>> GetWriteFileStream(Table table, string subDirectory, string fileName);
@@ -211,16 +211,8 @@ namespace dexih.connections.flatfile
 
                 if (flatFile.FileFormat == null || flatFile.FileSample == null)
                 {
-                    return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileStream.", null);
+                    return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.", null);
                 }
-
-                //FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(originalTable.GetExtendedProperty("FileFormat"));
-
-                //if(fileFormat == null)
-                //{
-                //    return new ReturnValue<Table>(false, "There was no file format specified.", null);
-                //}
-                //string fileSample = originalTable.GetExtendedProperty("FileSample");
 
                 MemoryStream stream = new MemoryStream();
                 StreamWriter writer = new StreamWriter(stream);
@@ -278,6 +270,21 @@ namespace dexih.connections.flatfile
                     Datatype = ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.FileName,
                     Description = "The name of the file the record was loaded from.",
+                    AllowDbNull = false,
+                    IsUnique = false
+                };
+                newFlatFile.Columns.Add(col);
+
+                col = new TableColumn()
+                {
+
+                    //add the basic properties
+                    Name = "FileRow",
+                    LogicalName = "FileRow",
+                    IsInput = false,
+                    Datatype = ETypeCode.Int32,
+                    DeltaType = TableColumn.EDeltaType.FileRowNumber,
+                    Description = "The file row number the record came from.",
                     AllowDbNull = false,
                     IsUnique = false
                 };

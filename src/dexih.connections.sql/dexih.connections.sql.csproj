@@ -2,19 +2,17 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Sql Connections and readers for Sql Server, Sqlite, PostgreSql &amp; MySql</Description>
     <AssemblyTitle>Data Experts Group - Sql Connections</AssemblyTitle>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.connections.sql</AssemblyName>
     <PackageId>dexih.connections.sql</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql</PackageTags>
     <PackageReleaseNotes>Note: This project is still under devlopement with regular breaking changes.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+wp80+win8+wpa81+dnxcore50;portable-net451+win8</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj">
@@ -22,9 +20,9 @@
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.0" />
-    <PackageReference Include="MySqlConnector" Version="0.23.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
-    <PackageReference Include="Npgsql" Version="3.2.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
+    <PackageReference Include="MySqlConnector" Version="0.25.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+    <PackageReference Include="Npgsql" Version="3.2.5" />
   </ItemGroup>
 </Project>

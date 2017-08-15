@@ -121,10 +121,15 @@ namespace dexih.functions
                                 using (var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
                                 {
                                     var plainTextBytes = new byte[cipherTextBytes.Length];
-                                    var decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
-                                    memoryStream.Dispose();
-                                    cryptoStream.Dispose();
-                                    return new ReturnValue<string>(true, Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount));
+                                    try
+                                    {
+                                        var decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
+                                        return new ReturnValue<string>(true, Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount));
+                                    }
+                                    catch (CryptographicException ex)
+                                    {
+                                        return new ReturnValue<string>(false, "String could not be decrypted.", ex, "");
+                                    }
                                 }
                             }
                         }

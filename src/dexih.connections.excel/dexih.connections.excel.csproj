@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Excel Connection and reader.</Description>
     <AssemblyTitle>Data Experts Group - Excel Connection</AssemblyTitle>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.connections.excel</AssemblyName>
@@ -23,7 +23,7 @@
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EPPlus.Core" Version="1.3.2" />
+    <PackageReference Include="EPPlus.Core" Version="1.5.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Class1.cs" />
