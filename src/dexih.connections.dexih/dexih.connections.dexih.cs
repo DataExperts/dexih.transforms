@@ -344,7 +344,7 @@ namespace dexih.connections.dexih
             }
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null )
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
         {
             var reader = new ReaderDexih(this, table, referenceTransform);
             return reader;

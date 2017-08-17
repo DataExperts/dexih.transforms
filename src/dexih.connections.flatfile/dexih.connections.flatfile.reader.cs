@@ -24,14 +24,17 @@ namespace dexih.connections.flatfile
 
         private int _currentFileRowNumber;
 
+        private bool _previewMode;
+
 		public FlatFile CacheFlatFile => (FlatFile)CacheTable;
 
-        public ReaderFlatFile(Connection connection, FlatFile table)
+        public ReaderFlatFile(Connection connection, FlatFile table, bool previewMode)
         {
             ReferenceConnection = connection;
             _fileConnection = (ConnectionFlatFile)connection;
             CacheTable = table;
 
+            _previewMode = previewMode;
             _fileNameOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileName);
             _fileRowNumberOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileRowNumber);
         }
@@ -54,7 +57,7 @@ namespace dexih.connections.flatfile
                 return new ReturnValue(false, "The file reader connection is already open.", null);
             }
 
-            var fileEnumerator = await _fileConnection.GetFileEnumerator(CacheFlatFile.FileRootPath, CacheFlatFile.AutoManageFiles ? CacheFlatFile.FileIncomingPath : "", CacheFlatFile.FileMatchPattern);
+            var fileEnumerator = await _fileConnection.GetFileEnumerator(CacheFlatFile, FlatFile.EFlatFilePath.incoming, CacheFlatFile.FileMatchPattern);
             if (fileEnumerator.Success == false)
                 return fileEnumerator;
 
@@ -66,7 +69,7 @@ namespace dexih.connections.flatfile
                 return new ReturnValue(false, $"There are no matching files in the incoming directory.", null);
             }
 
-            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, CacheFlatFile.AutoManageFiles ? CacheFlatFile.FileIncomingPath : "", _files.Current.FileName);
+            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, FlatFile.EFlatFilePath.incoming, _files.Current.FileName);
             if (fileStream.Success == false)
             {
                 return fileStream;
@@ -117,9 +120,10 @@ namespace dexih.connections.flatfile
                 _csvReader.CloseFile();
 
                 // If we are managing files, then move the file after the read is finished.
-                if (CacheFlatFile.AutoManageFiles)
+                // if this is preview mode, don't move files.
+                if (CacheFlatFile.AutoManageFiles && _previewMode == false)
                 {
-                    var moveFileResult = await _fileConnection.MoveFile(CacheFlatFile, _files.Current.FileName, CacheFlatFile.FileIncomingPath, CacheFlatFile.FileProcessedPath); //backup the completed file
+                    var moveFileResult = await _fileConnection.MoveFile(CacheFlatFile, FlatFile.EFlatFilePath.incoming, FlatFile.EFlatFilePath.processed, _files.Current.FileName); //backup the completed file
 
                     if (!moveFileResult.Success)
                     {
@@ -131,7 +135,7 @@ namespace dexih.connections.flatfile
                     _isOpen = false;
                 else
                 {
-                    var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, CacheFlatFile.AutoManageFiles ? CacheFlatFile.FileIncomingPath : "", _files.Current.FileName);
+                    var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, FlatFile.EFlatFilePath.incoming, _files.Current.FileName);
                     if (!fileStream.Success)
                     {
                         return new ReturnValue<object[]>(fileStream);

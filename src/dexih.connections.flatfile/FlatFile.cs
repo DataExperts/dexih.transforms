@@ -4,6 +4,11 @@ namespace dexih.connections.flatfile
 {
 	public class FlatFile : Table
 	{
+        public enum EFlatFilePath
+        {
+            incoming, processed, rejected, none
+        }
+
 		private string _fileRootPath;
 		private string _fileIncomingPath = "incoming";
 		private string _fileProcessedPath = "processed";
@@ -21,20 +26,20 @@ namespace dexih.connections.flatfile
 
 		public string FileIncomingPath
 		{
-			get => UseCustomFilePaths ? "incoming" : _fileIncomingPath;
+			get => AutoManageFiles ? ( UseCustomFilePaths ? _fileIncomingPath: "incoming") : "";
 			set => _fileIncomingPath = value;
 		}
 
 		public string FileProcessedPath
 		{
-			get => UseCustomFilePaths ? "processed" : _fileProcessedPath;
-			set => _fileProcessedPath = value;
+			get => AutoManageFiles ? (UseCustomFilePaths ? _fileIncomingPath : "processed") : "";
+            set => _fileProcessedPath = value;
 		}
 
 		public string FileRejectedPath
 		{
-			get => UseCustomFilePaths ? "rejected" : _fileRejectedPath;
-			set => _fileRejectedPath = value;
+			get => AutoManageFiles ? (UseCustomFilePaths ? _fileIncomingPath : "rejected") : "";
+            set => _fileRejectedPath = value;
 		}
 
 		public string FileMatchPattern
@@ -49,5 +54,22 @@ namespace dexih.connections.flatfile
 		public FlatFile()
 		{
 		}
+
+        public string GetPath(EFlatFilePath path)
+        {
+            switch(path)
+            {
+                case EFlatFilePath.incoming:
+                    return FileIncomingPath;
+                case EFlatFilePath.processed:
+                    return FileProcessedPath;
+                case EFlatFilePath.rejected:
+                    return FileRejectedPath;
+                case EFlatFilePath.none:
+                    return "";
+            }
+
+            return "";
+        }
 	}
 }

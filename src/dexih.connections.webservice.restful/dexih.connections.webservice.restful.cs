@@ -385,7 +385,7 @@ namespace dexih.connections.webservice
             throw new NotImplementedException();
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null )
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
         {
             var reader = new ReaderRestful(this, table, referenceTransform);
             return reader;
