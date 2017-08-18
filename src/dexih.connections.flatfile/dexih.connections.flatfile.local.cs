@@ -99,6 +99,11 @@ namespace dexih.connections.flatfile
                     var fullToDirectory = GetFullPath(file, toDirectory);
                     var fullFromDirectory = GetFullPath(file, fromDirectory);
 
+                    if(!Directory.Exists(fullToDirectory))
+                    {
+                        Directory.CreateDirectory(fullToDirectory);
+                    }
+
                     // if there is already a file with the same name on the target directory, add a version number until a unique name is found.
                     while (File.Exists(Path.Combine(fullToDirectory, newFileName)))
                     {

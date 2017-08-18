@@ -10,6 +10,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Linq;
 using static dexih.connections.flatfile.FlatFile;
+using System.IO.Compression;
 
 namespace dexih.connections.flatfile
 {
@@ -99,9 +100,44 @@ namespace dexih.connections.flatfile
             return await GetFileList(flatFile, path);
         }
 
-        public async Task<ReturnValue<Stream>> DownloadFile(FlatFile flatFile, EFlatFilePath path, string fileName)
+        public async Task<ReturnValue<Stream>> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles = false)
         {
-            return await GetReadFileStream(flatFile, path, fileName);
+            if (zipFiles)
+            {
+                MemoryStream memoryStream = new MemoryStream();
+
+                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Update, true))
+                {
+                    foreach (var fileName in fileNames)
+                    {
+                        var fileStreamResult = await GetReadFileStream(flatFile, path, fileName);
+                        if (!fileStreamResult.Success)
+                        {
+                            return new ReturnValue<Stream>(fileStreamResult);
+                        }
+                        ZipArchiveEntry fileEntry = archive.CreateEntry(fileName);
+
+                        using (var fileEntryStream = fileEntry.Open())
+                        {
+                            fileStreamResult.Value.CopyTo(fileEntryStream);
+                        }
+                    }
+                }
+
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return new ReturnValue<Stream>(true, memoryStream);
+            } 
+            else
+            {
+                if(fileNames.Length == 1)
+                {
+                    return await GetReadFileStream(flatFile, path, fileNames[0]);
+                }
+                else
+                {
+                    return new ReturnValue<Stream>(false, "When downloading more than one file, the zip option must be set.", null);
+                }
+            }
         }
 
         public override async Task<ReturnValue> DataWriterStart(Table table)

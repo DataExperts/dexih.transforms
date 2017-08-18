@@ -822,7 +822,7 @@ namespace dexih.transforms
             }
         }
 
-        public override bool IsClosed => PrimaryTransform.IsClosed;
+        public override bool IsClosed => PrimaryTransform?.IsClosed??!IsReaderFinished;
 
         public override int RecordsAffected
         {
@@ -896,7 +896,7 @@ namespace dexih.transforms
 
         public override string GetString(int i)
         {
-            return GetValue(i).ToString();
+            return GetValue(i)?.ToString()??"";
         }
         public override object GetValue(int i)
         {
@@ -940,7 +940,7 @@ namespace dexih.transforms
             throw new NotImplementedException("This feature is not currently implemented.");
         }
 
-        public override bool HasRows => PrimaryTransform.HasRows;
+        public override bool HasRows => PrimaryTransform?.HasRows??IsReaderFinished;
 
 #if NET46
         public override DataTable GetSchemaTable()
