@@ -31,7 +31,10 @@ namespace dexih.connections.sql
         public virtual string SqlValueClose { get; } = "'";
         public virtual string SqlFromAttribute(Table table) => "";
 
-        public string AddDelimiter(string name)
+		public long MaxSqlSize { get; set; } = 4000000; // the largest size the sql command can be (default 4mb)
+
+
+		public string AddDelimiter(string name)
         {
             var newName = AddEscape(name);
 

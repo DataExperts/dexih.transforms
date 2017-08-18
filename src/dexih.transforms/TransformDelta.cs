@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace dexih.transforms
 {
-    public class TransformDelta : Transform
+    public sealed class TransformDelta : Transform
     {
         public TransformDelta(Transform inReader, Transform targetTransform, EUpdateStrategy deltaType, long surrogateKey, bool addDefaultRow)
         {
@@ -82,7 +82,7 @@ namespace dexih.transforms
         private TableColumn[] _colNatrualKey;
 
         private EUpdateStrategy DeltaType { get; set; }
-        public long SurrogateKey { get; protected set; }
+        public long SurrogateKey { get; set; }
         public bool AddDefaultRow { get; set; }
         
 
@@ -930,9 +930,16 @@ namespace dexih.transforms
             }
             else
             {
-                foreach (var col in ReferenceTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
+                // sure sort columns are same order or primary transform
+                
+                foreach (var col in PrimaryTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
                 {
-                    fields.Add(new Sort(col));
+                    var referenceColumn = ReferenceTransform.CacheTable.Columns[col.Name];
+                    if (referenceColumn == null)
+                    {
+                        throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
+                    }
+                    fields.Add(new Sort(referenceColumn));
                 }
                 var validTo = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
                 if (validTo != null)

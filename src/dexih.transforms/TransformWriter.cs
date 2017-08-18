@@ -135,8 +135,8 @@ namespace dexih.transforms
                         var result = await writeTask;
                         if(!result.Success)
                         {
-                            await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
-                            return returnValue;
+                            await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, result);
+                            return result;
                         }
                     }
 

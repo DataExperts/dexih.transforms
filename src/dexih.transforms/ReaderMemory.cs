@@ -14,11 +14,13 @@ namespace dexih.transforms
         public override ECacheMethod CacheMethod
         {
             get => ECacheMethod.PreLoadCache;
-            protected set => throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
+            protected set =>
+                throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
         }
 
         #region Constructors
-        public ReaderMemory(Table dataTable,  List<Sort> sortFields = null)
+
+        public ReaderMemory(Table dataTable, List<Sort> sortFields = null)
         {
             CacheTable = dataTable;
             CacheTable.OutputSortFields = sortFields;
@@ -66,5 +68,7 @@ namespace dexih.transforms
                 return new ReturnValue<object[]>(false, null);
             }, cancellationToken);
         }
+
+        public override bool IsClosed => CurrentRowNumber >= CacheTable.Data.Count;
     }
 }

@@ -67,6 +67,96 @@ namespace dexih.connections.sql
 		    
         }
 
+        public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        {
+            try
+            {
+                var connectionResult = await NewConnection();
+                if (connectionResult.Success == false)
+                {
+                    return new ReturnValue<long>(connectionResult);
+                }
+
+                using (var connection = connectionResult.Value)
+                {
+                    var fieldCount = reader.FieldCount;
+                    var row = new StringBuilder();
+                    var timer = new Stopwatch();
+
+                    while (!reader.IsClosed || row.Length > 0)
+                    {
+                        var insert = new StringBuilder();
+
+                        // build an sql command that looks like
+                        // INSERT INTO User (FirstName, LastName) VALUES ('gary','holland'),('jack','doe'),... ;
+                        insert.Append("INSERT INTO " + SqlTableName(table) + " (");
+
+                        for (var i = 0; i < fieldCount; i++)
+                        {
+                            insert.Append(AddDelimiter(reader.GetName(i)) + (i < fieldCount - 1 ? "," : ")"));
+                        }
+
+                        insert.Append(" values ");
+
+                        var isFirstRow = true;
+                        
+                        // if there is a cached row from previous loop, add it to the sql.
+                        if (row.Length > 0)
+                        {
+                            insert.Append(row);
+                            row.Clear();
+                            isFirstRow = false;
+                        }
+
+                        while (await reader.ReadAsync(cancelToken))
+                        {
+                            row.Append("(");
+
+                            for (var i = 0; i < fieldCount; i++)
+                            {
+                                row.Append(GetSqlFieldValueQuote(table.Columns[i].Datatype, reader[i]) +
+                                           (i < fieldCount - 1 ? "," : ")"));
+                            }
+
+                            // if the maximum sql size will be exceeded with this value, then break, so the command can be executed.
+                            if (insert.Length + row.Length + 2 > MaxSqlSize)
+                                break;
+
+                            if(!isFirstRow) insert.Append(",");
+                            insert.Append(row);
+                            row.Clear();
+                            isFirstRow = false;
+                        }
+
+                        if (!isFirstRow)
+                        {
+                            // sql statement is going to be too large to handle, so exit.
+                            if (insert.Length > MaxSqlSize)
+                            {
+                                return new ReturnValue<long>(false,
+                                    $"The data could not be loaded as the sql size was {(insert.Length + row.Length)} bytes and the maximum supported by the MySql database is {MaxSqlSize} bytes.  To fix this, either reduce the fields being used or increase the `max_allow_packet` variable in the MySql database.",
+                                    null);
+                            }
+
+                            timer.Start();
+                            using (var cmd = connection.CreateCommand())
+                            {
+                                cmd.CommandText = insert.ToString();
+                                cmd.ExecuteNonQuery();
+                            }
+                            timer.Stop();
+                        }
+                    }
+
+                    return new ReturnValue<long>(true, timer.ElapsedTicks);
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ReturnValue<long>(false, "The following error occurred in the bulkload processing: " + ex.Message, ex);
+            }
+        }
+        
         public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             var connectionResult = await NewConnection();
@@ -351,6 +441,17 @@ namespace dexih.connections.sql
                     connection.Dispose();
                     return new ReturnValue<DbConnection>(false, "The MySql connection failed to open with a state of : " + connection.State.ToString(), null, null);
                 }
+
+				// update the maximum packet size supported by this mysql database.
+				using (var cmd = CreateCommand(connection, @" SELECT @@max_allowed_packet"))
+				{
+					var result = cmd.ExecuteScalar();
+					if(result != DBNull.Value && result != null)
+					{
+						MaxSqlSize = Convert.ToInt64(result);	
+					}
+				}
+
                 return new ReturnValue<DbConnection>(true, "", null, connection);
             }
             catch (Exception ex)
