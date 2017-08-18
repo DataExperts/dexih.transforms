@@ -4,7 +4,6 @@
     <AssemblyName>dexih.functions.tests</AssemblyName>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <RuntimeIdentifiers>win7-x64;ubuntu.14.04-x64;osx.10.10-x64</RuntimeIdentifiers>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50;portable-net451+win8</PackageTargetFallback>
     <UserSecretsId>dexih.connections.test.44fc05ee-e883-4070-8840-c1d8b479a4fe</UserSecretsId>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>

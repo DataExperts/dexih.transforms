@@ -10,7 +10,6 @@
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Poco;Data Processing;</PackageTags>
     <PackageReleaseNotes>Note: This project is still in a beta stage.  There will may be future breaking changes as new versions are released.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+wp80+win8+wpa81+dnxcore50;portable-net451+win8</PackageTargetFallback>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>

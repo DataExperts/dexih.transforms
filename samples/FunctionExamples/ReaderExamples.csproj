@@ -6,7 +6,6 @@
     <PackageId>ReaderExamples</PackageId>
     <UserSecretsId>aspnet-ReaderExamples-20161206114756</UserSecretsId>
     <RuntimeIdentifiers>win7-x64;ubuntu.14.04-x64;osx.10.10-x64</RuntimeIdentifiers>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
