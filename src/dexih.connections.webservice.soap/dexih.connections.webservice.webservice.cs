@@ -16,7 +16,7 @@ using System.Threading;
 using System.CodeDom.Compiler;
 using System.CodeDom;
 using System.Web.Services.Description;
-#endif 
+#endif
 
 namespace dexih.connections.webservice
 {
@@ -31,8 +31,7 @@ namespace dexih.connections.webservice
         public override bool CanSort => false;
         public override bool CanFilter => false;
         public override bool CanAggregate => false;
-        public override bool CanUseBinary => true;
-        public override bool CanUseSql => false;
+
 
         public override string DatabaseTypeName => "SOAP/Xml Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;
@@ -40,7 +39,7 @@ namespace dexih.connections.webservice
 
 #if NET462
 
-        private async Task<ReturnValue<ServiceDescription>> GetServiceDescription(CancellationToken cancelToken)
+        private async Task<ReturnValue<ServiceDescription>> GetServiceDescription()
         {
             try
             {
@@ -57,7 +56,7 @@ namespace dexih.connections.webservice
             }
         }
 
-        public async Task<ReturnValue<object>> GetWebService(CancellationToken cancelToken)
+        public async Task<ReturnValue<object>> GetWebService()
         {
             var serviceDescription = await GetServiceDescription();
             if(serviceDescription.Success == false)
@@ -129,7 +128,7 @@ namespace dexih.connections.webservice
             });
         }
 
-        public async Task<ReturnValue<object[]>> LookupRow(Table table, List<Filter> filters, Type webServiceType, object webServiceObject,CancellationToken cancelToken)
+        public async Task<ReturnValue<object[]>> LookupRow(Table table, List<Filter> filters, Type webServiceType, object webServiceObject)
         {
             try
             {
@@ -176,7 +175,7 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
+        public override async Task<ReturnValue<List<string>>> GetDatabaseList()
         {
             try
             {
@@ -199,7 +198,7 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, CancellationToken cancelToken)
+        public override async Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
         {
             try
             {
@@ -320,7 +319,7 @@ namespace dexih.connections.webservice
             }
     }
 
-        public override async Task<ReturnValue<List<string>>> GetTableList(CancellationToken cancelToken)
+        public override async Task<ReturnValue<List<string>>> GetTableList()
         {
             try
             {
@@ -352,17 +351,17 @@ namespace dexih.connections.webservice
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
+        public override Task<ReturnValue<List<string>>> GetDatabaseList()
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
+        public override Task<ReturnValue<List<string>>> GetTableList()
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
+        public override Task<ReturnValue<Table>> GetSourceTableInfo(string tableName, Dictionary<string, string> Properties)
         {
             throw new NotImplementedException();
         }
@@ -374,7 +373,7 @@ namespace dexih.connections.webservice
 
 #endif
 
-        public override Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override Task<ReturnValue> CreateTable(Table table, bool dropTable = false)
         {
             throw new NotImplementedException();
         }
@@ -384,9 +383,9 @@ namespace dexih.connections.webservice
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
+        public override async Task<ReturnValue> AddMandatoryColumns(Table table, int position)
         {
-            return await Task.Run(() => new ReturnValue<Table>(true, null));
+            return await Task.Run(() => new ReturnValue(true));
         }
 
         public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
@@ -410,12 +409,12 @@ namespace dexih.connections.webservice
         }
 
 
-        public override Task<ReturnValue> CreateDatabase(string databaseName,  CancellationToken cancelToken)
+        public override Task<ReturnValue> CreateDatabase(string databaseName)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query,  CancellationToken cancelToken)
+        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query = null)
         {
             throw new NotImplementedException();
         }
@@ -431,7 +430,7 @@ namespace dexih.connections.webservice
             return reader;
         }
 
-        public override Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
+        public override Task<ReturnValue<bool>> TableExists(Table table)
         {
             throw new NotImplementedException();
         }

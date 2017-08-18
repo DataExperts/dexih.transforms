@@ -9,20 +9,22 @@ using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
 using System.Linq;
+using static dexih.connections.flatfile.FlatFile;
+using System.IO.Compression;
 
 namespace dexih.connections.flatfile
 {
     public abstract class ConnectionFlatFile : Connection
     {
         public abstract Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password);
-        public abstract Task<ReturnValue> CreateDirectory(string rootDirectory, string subDirectory);
-        public abstract Task<ReturnValue> MoveFile(string rootDirectory, string fromDirectory, string toDirectory, string fileName);
-        public abstract Task<ReturnValue> DeleteFile(string rootDirectory, string subDirectory, string fileName);
-        public abstract Task<ReturnValue<DexihFiles>> GetFileEnumerator(string mainDirectory, string subDirectory);
-        public abstract Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string mainDirectory, string subDirectory);
-        public abstract Task<ReturnValue<Stream>> GetReadFileStream(Table table, string subDirectory, string fileName);
-        public abstract Task<ReturnValue<Stream>> GetWriteFileStream(Table table, string subDirectory, string fileName);
-        public abstract Task<ReturnValue> SaveFileStream(Table table, string fileName, Stream fileStream);
+        public abstract Task<ReturnValue> CreateDirectory(FlatFile file, EFlatFilePath path);
+        public abstract Task<ReturnValue> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName);
+        public abstract Task<ReturnValue> DeleteFile(FlatFile file, EFlatFilePath path, string fileName);
+        public abstract Task<ReturnValue<DexihFiles>> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern);
+        public abstract Task<ReturnValue<List<DexihFileProperties>>> GetFileList(FlatFile file, EFlatFilePath path);
+        public abstract Task<ReturnValue<Stream>> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName);
+        public abstract Task<ReturnValue<Stream>> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName);
+        public abstract Task<ReturnValue> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream);
         public abstract Task<ReturnValue> TestFileConnection();
 
 
@@ -51,7 +53,7 @@ namespace dexih.connections.flatfile
         {
 			var flatFile = (FlatFile)table;
             //create the subdirectories
-            return await CreateDirectory((string)flatFile.FileRootPath, (string)flatFile.FileIncomingPath);
+            return await CreateDirectory(flatFile, EFlatFilePath.incoming);
         }
 
         public override async Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
@@ -59,7 +61,7 @@ namespace dexih.connections.flatfile
             ReturnValue returnValue;
             DefaultDatabase = databaseName;
             //create the subdirectories
-            returnValue = await CreateDirectory("", "");
+            returnValue = await CreateDirectory(null, EFlatFilePath.none);
             return returnValue;
         }
 
@@ -67,11 +69,11 @@ namespace dexih.connections.flatfile
         {
             ReturnValue returnValue;
             //create the subdirectories
-            returnValue = await CreateDirectory(flatFile.FileRootPath, flatFile.FileIncomingPath);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.incoming);
             if (returnValue.Success == false) return returnValue;
-            returnValue = await CreateDirectory(flatFile.FileRootPath, flatFile.FileProcessedPath);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.processed);
             if (returnValue.Success == false) return returnValue;
-            returnValue = await CreateDirectory(flatFile.FileRootPath, flatFile.FileRejectedPath);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.rejected);
             return returnValue;
         }
 
@@ -83,44 +85,59 @@ namespace dexih.connections.flatfile
         /// <param name="fromDirectory"></param>
         /// <param name="toDirectory"></param>
         /// <returns></returns>
-        public async Task<ReturnValue> MoveFile(FlatFile flatFile, string fileName, string fromDirectory, string toDirectory)
+        public async Task<ReturnValue> MoveFile(FlatFile flatFile, string fileName, EFlatFilePath fromDirectory, EFlatFilePath toDirectory)
         {
-            return await MoveFile(flatFile.FileRootPath, fromDirectory, toDirectory, fileName);
+            return await MoveFile(flatFile, fromDirectory, toDirectory, fileName);
         }
 
         public async Task<ReturnValue> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream)
         {
-            return await SaveFileStream(flatFile, fileName, fileStream);
+            return await SaveFileStream(flatFile, EFlatFilePath.incoming, fileName, fileStream);
         }
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetIncomingFiles(FlatFile flatFile)
+        public async Task<ReturnValue<List<DexihFileProperties>>> GetFiles(FlatFile flatFile, EFlatFilePath path)
         {
-            return await GetFileList(flatFile.FileRootPath, flatFile.FileIncomingPath);
+            return await GetFileList(flatFile, path);
         }
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetRejectedFiles(FlatFile flatFile)
+        public async Task<ReturnValue<Stream>> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles = false)
         {
-            return await GetFileList(flatFile.FileRootPath, flatFile.FileRejectedPath);
-        }
+            if (zipFiles)
+            {
+                MemoryStream memoryStream = new MemoryStream();
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetProcessedFiles(FlatFile flatFile)
-        {
-            return await GetFileList(flatFile.FileRootPath, flatFile.FileProcessedPath);
-        }
+                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Update, true))
+                {
+                    foreach (var fileName in fileNames)
+                    {
+                        var fileStreamResult = await GetReadFileStream(flatFile, path, fileName);
+                        if (!fileStreamResult.Success)
+                        {
+                            return new ReturnValue<Stream>(fileStreamResult);
+                        }
+                        ZipArchiveEntry fileEntry = archive.CreateEntry(fileName);
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(FlatFile flatFile, string subDirectory)
-        {
-            return await GetFileList(flatFile.FileRootPath, subDirectory);
-        }
+                        using (var fileEntryStream = fileEntry.Open())
+                        {
+                            fileStreamResult.Value.CopyTo(fileEntryStream);
+                        }
+                    }
+                }
 
-        public async Task<ReturnValue> DeleteFile(FlatFile flatFile, string subDirectory, string fileName)
-        {
-            return await DeleteFile(flatFile.FileRootPath, subDirectory, fileName);
-        }
-
-        public async Task<ReturnValue<Stream>> DownloadFile(FlatFile flatFile, string subDirectory, string fileName)
-        {
-            return await GetReadFileStream(flatFile, subDirectory, fileName);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return new ReturnValue<Stream>(true, memoryStream);
+            } 
+            else
+            {
+                if(fileNames.Length == 1)
+                {
+                    return await GetReadFileStream(flatFile, path, fileNames[0]);
+                }
+                else
+                {
+                    return new ReturnValue<Stream>(false, "When downloading more than one file, the zip option must be set.", null);
+                }
+            }
         }
 
         public override async Task<ReturnValue> DataWriterStart(Table table)
@@ -157,7 +174,8 @@ namespace dexih.connections.flatfile
             _fileWriter.Flush();
             _fileStream.Position = 0;
 
-            ReturnValue returnValue = await SaveFileStream(table, archiveFileName, _fileStream);
+            var flatFile = (FlatFile)table;
+            ReturnValue returnValue = await SaveFileStream(flatFile, EFlatFilePath.incoming, archiveFileName, _fileStream);
 
             _fileWriter.Dispose();
             _fileStream.Dispose();
@@ -211,16 +229,8 @@ namespace dexih.connections.flatfile
 
                 if (flatFile.FileFormat == null || flatFile.FileSample == null)
                 {
-                    return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileStream.", null);
+                    return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.", null);
                 }
-
-                //FileFormat fileFormat = JsonConvert.DeserializeObject<FileFormat>(originalTable.GetExtendedProperty("FileFormat"));
-
-                //if(fileFormat == null)
-                //{
-                //    return new ReturnValue<Table>(false, "There was no file format specified.", null);
-                //}
-                //string fileSample = originalTable.GetExtendedProperty("FileSample");
 
                 MemoryStream stream = new MemoryStream();
                 StreamWriter writer = new StreamWriter(stream);
@@ -278,6 +288,21 @@ namespace dexih.connections.flatfile
                     Datatype = ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.FileName,
                     Description = "The name of the file the record was loaded from.",
+                    AllowDbNull = false,
+                    IsUnique = false
+                };
+                newFlatFile.Columns.Add(col);
+
+                col = new TableColumn()
+                {
+
+                    //add the basic properties
+                    Name = "FileRow",
+                    LogicalName = "FileRow",
+                    IsInput = false,
+                    Datatype = ETypeCode.Int32,
+                    DeltaType = TableColumn.EDeltaType.FileRowNumber,
+                    Description = "The file row number the record came from.",
                     AllowDbNull = false,
                     IsUnique = false
                 };
@@ -372,7 +397,8 @@ namespace dexih.connections.flatfile
                     //save the file
                     string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
 
-                    ReturnValue returnValue = await SaveFileStream(table, fileName, stream);
+                    var flatFile = (FlatFile)table;
+                    ReturnValue returnValue = await SaveFileStream(flatFile, EFlatFilePath.incoming, fileName, stream);
                     if (!returnValue.Success)
                         return new ReturnValue<Tuple<long, long>>(returnValue.Success, returnValue.Message, returnValue.Exception, Tuple.Create(timer.Elapsed.Ticks, (long)0));
 
@@ -400,10 +426,10 @@ namespace dexih.connections.flatfile
             throw new NotImplementedException();
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null)
+        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
         {
 			FlatFile flatFile = (FlatFile)table;
-            var reader = new ReaderFlatFile(this, flatFile);
+            var reader = new ReaderFlatFile(this, flatFile, previewMode);
             return reader;
         }
 

@@ -13,7 +13,7 @@ using System.Net.Http;
 #endif
 
 namespace dexih.connections.webservice
-{ 
+{
     public class ReaderWebService : Transform
     {
         private bool _isOpen = false;
@@ -37,7 +37,7 @@ namespace dexih.connections.webservice
         }
 
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query)
         {
             AuditKey = auditKey;
             try
@@ -63,7 +63,7 @@ namespace dexih.connections.webservice
                 }
                 else
                 {
-                    var result = await ReferenceTransform.Open(auditKey, null, cancelToken);
+                    var result = await ReferenceTransform.Open(auditKey, null);
                     if (!result.Success)
                         return result;
                 }
@@ -115,7 +115,7 @@ namespace dexih.connections.webservice
                         });
                     }
 
-                    var result = await LookupRow(filters, cancellationToken);
+                    var result = await LookupRow(filters);
                     return result;
                 }
             }
@@ -132,7 +132,7 @@ namespace dexih.connections.webservice
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
         {
             return await ((ConnectionSoap)ReferenceConnection).LookupRow(CacheTable, filters, _webServiceType, _webServiceObject);
         }
