@@ -70,7 +70,7 @@ namespace dexih.functions.tests
         [InlineData("IsAlphaNumeric", new object[] { "test123" }, true)]
         [InlineData("IsPattern", new object[] { "Hello12", "Aaaaa99" }, true)]
         [InlineData("DaysInMonth", new object[] { "2015-09-24" }, 30)]
-        [InlineData("IsDaylightSavingTime", new object[] { "2015-09-24 GMT" }, false)]
+        [InlineData("IsDaylightSavingTime", new object[] { "2015-09-24T21:22:48.2698750Z" }, false)]
         [InlineData("IsLeapYear", new object[] { "2015-09-24" }, false)]
         [InlineData("IsWeekend", new object[] { "2015-09-24" }, false)]
         [InlineData("IsWeekDay", new object[] { "2015-09-24" }, true)]
