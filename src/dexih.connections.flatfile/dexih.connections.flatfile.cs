@@ -333,6 +333,7 @@ namespace dexih.connections.flatfile
             
 			//use the default paths.
 			flatFile.UseCustomFilePaths = false;
+            flatFile.AutoManageFiles = true;
             
             await CreateFilePaths(flatFile);
             
