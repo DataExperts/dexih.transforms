@@ -57,7 +57,7 @@ namespace dexih.connections.flatfile
                         Directory.CreateDirectory(directory);
                     }
 
-                    if(file != null && string.IsNullOrEmpty(file.FileRootPath))
+                    if(file != null && !string.IsNullOrEmpty(file.FileRootPath))
                     {
                         directory = Path.Combine(FilePath(), file.FileRootPath);
                         if (!Directory.Exists(directory))
