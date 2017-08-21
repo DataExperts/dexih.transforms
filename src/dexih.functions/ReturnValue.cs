@@ -288,7 +288,7 @@ namespace dexih.functions
         private string _exceptionDetails {get;set;} = "";
         public virtual string ExceptionDetails
         {
-            set { _exceptionDetails = value; }
+            set => _exceptionDetails = value;
             get
             {
                 if (Exception == null)

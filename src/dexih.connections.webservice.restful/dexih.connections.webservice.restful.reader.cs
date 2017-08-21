@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
-using static dexih.functions.DataType;
 using System.Threading;
 using System.Linq;
 using System.Net.Http;

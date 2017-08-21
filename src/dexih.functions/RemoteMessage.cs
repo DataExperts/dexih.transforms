@@ -62,7 +62,7 @@ namespace dexih.functions
 		public KeyValuePair[] Parameters { get; set; }
         public long HubKey { get; set; }
         public string RemoteAgentId { get; set; }
-		public long? TimeOut { get; set; }
+		public int? TimeOut { get; set; }
 
 		public string GetParameter(string key)
 		{

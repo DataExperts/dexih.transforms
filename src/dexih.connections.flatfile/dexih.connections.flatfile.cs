@@ -8,7 +8,6 @@ using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
-using System.Linq;
 using static dexih.connections.flatfile.FlatFile;
 using System.IO.Compression;
 
@@ -333,6 +332,7 @@ namespace dexih.connections.flatfile
             
 			//use the default paths.
 			flatFile.UseCustomFilePaths = false;
+            flatFile.AutoManageFiles = true;
             
             await CreateFilePaths(flatFile);
             

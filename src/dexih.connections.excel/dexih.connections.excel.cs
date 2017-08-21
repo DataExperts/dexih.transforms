@@ -7,14 +7,10 @@ using dexih.functions;
 using System.IO;
 using System.Data.Common;
 using System.Diagnostics;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using static dexih.functions.DataType;
 using OfficeOpenXml;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using OfficeOpenXml.FormulaParsing.Utilities;
-using OfficeOpenXml.Packaging.Ionic.Zip;
 
 namespace dexih.connections.excel
 {
