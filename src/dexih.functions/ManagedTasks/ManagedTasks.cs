@@ -13,25 +13,33 @@ namespace dexih.functions
     /// </summary>
     public class ManagedTasks : IEnumerable<ManagedTask>
     {
-        public delegate void Completed(ManagedTask managedTask);
-        public event Completed OnCompleted;
+        private readonly int MaxConcurrent;
 
-		public delegate void Progress(ManagedTask managedTask);
-		public event Progress OnProgress;
+        public event EventHandler OnCompleted;
+        public event EventHandler OnProgress;
+        public event EventHandler OnCancelled;
 
-		private readonly ConcurrentDictionary<string, ManagedTask> _managedTasks;
+        private readonly ConcurrentDictionary<string, ManagedTask> _runningTasks;
+        private readonly ConcurrentQueue<ManagedTask> _queuedTasks;
 
         private AsyncAutoResetEvent _resetWhenNoTasks; //event handler that triggers when all tasks completed.
+        private object _updateTasksLock = 1; // used to lock when updaging task queues.
+        private Exception _exitException; //used to push exceptions to the WhenAny function.
 
-        public ManagedTasks()
+        public long TasksCount {get;set;}
+
+        public ManagedTasks(int maxConcurrent = 10)
         {
-            _managedTasks = new ConcurrentDictionary<string, ManagedTask>();
+            MaxConcurrent = maxConcurrent;
+
+            _runningTasks = new ConcurrentDictionary<string, ManagedTask>();
+            _queuedTasks = new ConcurrentQueue<ManagedTask>();
             _resetWhenNoTasks = new AsyncAutoResetEvent();
         }
     
         public IEnumerator<ManagedTask> GetEnumerator()
         {
-            return _managedTasks.Values.GetEnumerator();
+            return _runningTasks.Values.Concat(_queuedTasks).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -46,46 +54,113 @@ namespace dexih.functions
         /// <param name="title">Short description of the task.</param>
         /// <param name="action">The action </param>
         /// <returns></returns>
-        public string Add(string originatorId, string title, Action<IProgress<int>, CancellationToken> action)
+        public ManagedTask Add(string originatorId, string title, Func<IProgress<int>, CancellationToken, Task> action)
         {
-            
-            var reference = Guid.NewGuid().ToString();
+
+            var reference = (TasksCount++).ToString();
 
             var managedTask = new ManagedTask()
             {
                 Reference = reference,
                 OriginatorId = originatorId,
                 Title =  title,
-                Action = action,
-                LastUpdate = DateTime.Now
+                Action = action
             };
-            
-            managedTask.OnCompleted += ManagedTaskCompleted;
-            managedTask.Start();
 
-            _managedTasks.TryAdd(reference, managedTask);
+            lock (_updateTasksLock)
+            {
+                if (_runningTasks.Count < MaxConcurrent)
+                {
+                    _runningTasks.TryAdd(reference, managedTask);
 
-            return reference;
+                    managedTask.OnCompleted += ManagedTaskCompleted;
+                    managedTask.OnProgress += ManagedTaskProgress;
+                    managedTask.OnCancelled += ManagedTaskCancelled;
+                    managedTask.Start();
+                }
+                else
+                {
+                    _queuedTasks.Enqueue(managedTask);
+                }
+            }
+
+            return managedTask;
         }
 
-        public void ManagedTaskCompleted(string reference)
+        public void ManagedTaskCompleted(object sender, EventArgs e)
         {
-            ManagedTask managedTask;
-            _managedTasks.TryRemove(reference, out managedTask);
-            managedTask.Dispose();
-            OnCompleted?.Invoke(managedTask);
+            try
+            {
+                var currentTask = (ManagedTask)sender;
+
+                lock (_updateTasksLock)
+                {
+                    ManagedTask finishedTask;
+                    if (!_runningTasks.TryRemove(currentTask.Reference, out finishedTask))
+                    {
+                        _exitException = new Exception("Error, failed to remove running task.");
+                        _resetWhenNoTasks.Set();
+                        return;
+                    }
+                    OnCompleted?.Invoke(finishedTask, EventArgs.Empty);
+                    finishedTask.Dispose();
+
+                    while (_runningTasks.Count < MaxConcurrent && _queuedTasks.Count > 0)
+                    {
+                        ManagedTask managedTask;
+
+                        if (!_queuedTasks.TryDequeue(out managedTask))
+                        {
+                            _exitException = new Exception("Error, failed to remove queued task.");
+                            _resetWhenNoTasks.Set();
+                            return;
+                        }
+
+                        if(managedTask.Status == EManagedTaskStatus.Canceled)
+                        {
+                            ManagedTaskCancelled(managedTask, EventArgs.Empty);
+                            continue;
+                        }
+
+                        _runningTasks.TryAdd(managedTask.Reference, managedTask);
+                        managedTask.OnCompleted += ManagedTaskCompleted;
+                        managedTask.OnProgress += ManagedTaskProgress;
+                        managedTask.OnCancelled += ManagedTaskCancelled;
+                        managedTask.Start();
+                    }
+                    if (_runningTasks.Count == 0)
+                    {
+                        _resetWhenNoTasks.Set();
+                    }
+                }
+            } catch(Exception ex)
+            {
+                _exitException = ex;
+                _resetWhenNoTasks.Set();
+            }
         }
 
-        public void ManagedTaskProgress(ManagedTask managedTask)
+        public void ManagedTaskProgress(object sender, EventArgs e)
         {
-            OnProgress?.Invoke(managedTask);
+            var managedTask = (ManagedTask)sender;
+            OnProgress?.Invoke(managedTask, EventArgs.Empty);
+        }
+
+        public void ManagedTaskCancelled(object sender, EventArgs e)
+        {
+            OnCancelled?.Invoke(sender, e);
         }
 
         public async Task WhenAll()
         {
-            if (_managedTasks.Count > 0)
+            if (_runningTasks.Count > 0 || _queuedTasks.Count > 0 )
             {
                 await _resetWhenNoTasks.WaitAsync();
+
+                if(_exitException != null)
+                {
+                    throw _exitException;
+                }
             }
         }
     }

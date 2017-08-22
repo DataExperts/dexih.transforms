@@ -7,18 +7,17 @@ using Newtonsoft.Json.Serialization;
 
 namespace dexih.functions
 {
-    public enum EManagedTask
+    public enum EManagedTaskStatus
     {
-        Initialized, Started, Running, Success, Error
+        Initialized, Started, Running, Success, Error, Canceled
     }
     
     public class ManagedTask: ReturnValue, IDisposable
     {
-        public delegate void Completed(string reference);
-        public event Completed OnCompleted;
-
-        public delegate void Progress(ManagedTask managedTask);
-        public event Progress OnProgress;
+        public event EventHandler OnStarted;
+        public event EventHandler OnCompleted;
+        public event EventHandler OnProgress;
+        public event EventHandler OnCancelled;
 
         /// <summary>
         /// Unique key used to reference the task
@@ -40,13 +39,15 @@ namespace dexih.functions
         /// </summary>
         public DateTime LastUpdate { get; set; }
 
+        public EManagedTaskStatus Status { get; protected set; }
+
         public int Percentage { get; set; }
 
         /// <summary>
         /// Action that will be started and executed with the task.
         /// </summary>
         [JsonIgnore]
-        public Action<IProgress<int>, CancellationToken> Action { get; set; }
+        public Func<IProgress<int>, CancellationToken, Task> Action { get; set; }
 
         private CancellationTokenSource _cancellationTokenSource;
         
@@ -56,10 +57,14 @@ namespace dexih.functions
 
         public ManagedTask()
         {
+            LastUpdate = DateTime.Now;
+            Status = EManagedTaskStatus.Initialized;
+            _cancellationTokenSource = new CancellationTokenSource();
+
             var progressHandler = new Progress<int>(value =>
             {
                 Percentage = value;
-                OnProgress?.Invoke(this);
+                OnProgress?.Invoke(this, EventArgs.Empty);
             });
 
             _progress = progressHandler;
@@ -67,51 +72,68 @@ namespace dexih.functions
 
         public void Start()
         {
-            _cancellationTokenSource = new CancellationTokenSource();
+            if (_cancellationTokenSource.IsCancellationRequested)
+            {
+                Status = EManagedTaskStatus.Canceled;
+                Success = false;
+                Message = "The task was cancelled.";
+                Percentage = 100;
+                OnCompleted?.Invoke(this, EventArgs.Empty);
+            }
 
-            _task = Task.Run(() => Action.Invoke(_progress, _cancellationTokenSource.Token), _cancellationTokenSource.Token);
+            Status = EManagedTaskStatus.Started;
 
-            // when task finishes, raise an oncompleted event.
-            _task.ContinueWith((task) => {
-                switch (task.Status)
+            _task = Task.Run(async () =>
+            {
+                try
                 {
-                    case TaskStatus.Canceled:
+                    OnStarted?.Invoke(this, EventArgs.Empty);
+                    await Action(_progress, _cancellationTokenSource.Token);
+                    
+                    if(_cancellationTokenSource.IsCancellationRequested)
+                    {
+                        Status = EManagedTaskStatus.Canceled;
                         Success = false;
                         Message = "The task was cancelled.";
-                        return;
-                    case TaskStatus.Created:
-                        break;
-                    case TaskStatus.Faulted:
-                        Success = false;
-                        Message = task.Exception?.Message;
-                        Exception = task.Exception;
-                        return;
-                    case TaskStatus.RanToCompletion:
+                    }
+                    else
+                    {
+                        Status = EManagedTaskStatus.Success;
                         Success = true;
                         Message = "The task completed successfully.";
-                        return;
-                    case TaskStatus.Running:
-                    case TaskStatus.WaitingForActivation:
-                    case TaskStatus.WaitingForChildrenToComplete:
-                    case TaskStatus.WaitingToRun:
-                        Success = false;
-                        Message = "Unexpected task status when should be completed: " + task.Status.ToString();
-                        return;
+                    }
+
+                    Percentage = 100;
+                    OnCompleted?.Invoke(this, EventArgs.Empty);
+                } catch (Exception ex)
+                {
+                    Status = EManagedTaskStatus.Error;
+                    Message = ex.Message;
+                    Exception = ex;
+                    Success = false;
+                    Percentage = 100;
+                    OnCompleted?.Invoke(this, EventArgs.Empty);
                 }
-                OnCompleted?.Invoke(Reference);
-                this.Percentage = 100;
-                OnProgress?.Invoke(this);
             });
+
+
+            Status = EManagedTaskStatus.Running;
         }
 
         public  void Cancel()
         {
+            Status = EManagedTaskStatus.Canceled;
+            Success = false;
+            Message = "The task was cancelled.";
+
             _cancellationTokenSource.Cancel();
+            OnCancelled?.Invoke(this, EventArgs.Empty);
         }
 
         public void Dispose()
         {
             OnCompleted = null;
+            OnStarted = null;
             _cancellationTokenSource.Dispose();
         }
     }
