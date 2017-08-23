@@ -23,7 +23,7 @@ namespace dexih.functions.Tasks
         private object _updateTasksLock = 1; // used to lock when updaging task queues.
         private Exception _exitException; //used to push exceptions to the WhenAny function.
 
-        public ManagedTaskHandler(int maxConcurrent = 500)
+        public ManagedTaskHandler(int maxConcurrent = 100)
         {
             MaxConcurrent = maxConcurrent;
 
