@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dexih.functions.Tasks;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ namespace dexih.functions.tests
 
         int progressCounter = 0;
         int completedCounter = 0;
-        int startedCounter = 0;
 
         public dexih_functions_managedTasks(ITestOutputHelper output)
         {
@@ -28,7 +28,7 @@ namespace dexih.functions.tests
             // add a series of tasks with various delays to ensure the task manager is running.
             async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
             {
-                for (var i = 0; i < 5; i++)
+                for (var i = 0; i <= 5; i++)
                 {
                     await Task.Delay(20, cancellationToken);
                     progress.Report(i * 20);
@@ -36,32 +36,40 @@ namespace dexih.functions.tests
             }
 
             progressCounter = 0;
-            var task1 = managedTasks.Add("123", "task3", Action);
-
             managedTasks.OnProgress += Progress;
-            await managedTasks.WhenAll();
+            var task1 = managedTasks.Add("123", "task", "test", "object", Action, null, null);
+
+            //check properties are set correctly.
+            Assert.Equal("123", task1.OriginatorId);
+            Assert.Equal("task", task1.Name);
+            Assert.Equal("test", task1.Category);
+            Assert.Equal("object", task1.Data);
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
 
             // ensure the progress was called at least once. 
             // This doesn't get called for every progress event as when they stack up they get dropped
             // which is expected bahaviour.
             Assert.True(progressCounter > 0);
-
         }
 
-        void Progress(Object sender, EventArgs args)
+        void Progress(Object sender, int percentage)
         {
             var task = (ManagedTask)sender;
-            Assert.Equal(progressCounter, task.Percentage);
-            Assert.Equal(EManagedTaskStatus.Running, task.Status);
-            progressCounter += 20;
+            Assert.True(percentage > progressCounter);
+            //Assert.Equal(EManagedTaskStatus.Running, task.Status);
+            progressCounter = percentage;
         }
 
         [Theory]
         [InlineData(500)]
         public async Task Test_MultipleManagedTasks(int TaskCount)
         {
-            var managedTasks = new ManagedTasks();
-            managedTasks.OnCompleted += CompletedCounter;
+            var handler = new ManagedTaskHandler();
+            var managedTasks = new ManagedTasks(handler);
+            managedTasks.OnStatus += CompletedCounter;
 
             // simple task reports progress 10 times.
             async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
@@ -78,41 +86,40 @@ namespace dexih.functions.tests
             // add the simple task 100 times.
             for (int i = 0; i < TaskCount; i++)
             {
-                var task1 = managedTasks.Add("123", "task3", Action);
-                task1.OnStarted += StartedCounter;
+                var task1 = managedTasks.Add("123", "task3", "test", null, Action, null, null);
             }
 
-            await managedTasks.WhenAll();
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
 
             // counter should eqaul the number of tasks
             Assert.Equal(TaskCount, completedCounter);
             Assert.Equal(0, managedTasks.Count());
-        }
 
-        object startedLock = 1;
-
-        void StartedCounter(object sender, EventArgs args)
-        {
-            lock(startedLock)
+            // check the changes history
+            var changes = handler.GetTaskChanges();
+            Assert.Equal(TaskCount, changes.Count());
+            foreach(var change in changes)
             {
-                startedCounter++;
+                Assert.Equal(EManagedTaskStatus.Completed, change.Status);
             }
         }
 
         object completedLock = 1;
 
-        void CompletedCounter(Object sender, EventArgs args)
+        void CompletedCounter(Object sender, EManagedTaskStatus status)
         {
             var task = (ManagedTask)sender;
             //if (task.Status == EManagedTaskStatus.Success)
             lock (completedLock)
             {
-                completedCounter++;
-
+                if (status == EManagedTaskStatus.Completed)
+                {
+                    completedCounter++;
+                }
             }
 
-            //else
-            //    throw new Exception("should be success");
         }
 
         int errorCounter = 0;
@@ -129,24 +136,26 @@ namespace dexih.functions.tests
 
             // add the simple task 500 times.
             errorCounter = 0;
-            managedTasks.OnCompleted += ErrorResult;
+            managedTasks.OnStatus += ErrorResult;
 
             for (int i = 0; i < 500; i++)
             {
-                var task1 = managedTasks.Add("123", "task3", Action);
+                var task1 = managedTasks.Add("123", "task3", "test", null, Action, null, null);
             }
 
-            await managedTasks.WhenAll();
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
+
 
             // counter should eqaul the number of tasks
             Assert.Equal(500, errorCounter);
             Assert.Equal(0, managedTasks.Count());
         }
 
-        void ErrorResult(Object sender, EventArgs args)
+        void ErrorResult(Object sender, EManagedTaskStatus status)
         {
-            var task = (ManagedTask)sender;
-            if (task.Status == EManagedTaskStatus.Error)
+            if (status == EManagedTaskStatus.Error)
                 errorCounter++;
         }
 
@@ -160,37 +169,155 @@ namespace dexih.functions.tests
             // simple task that can be cancelled
             async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
             {
-                await Task.Delay(100000, cancellationToken);
+                try
+                {
+                    await Task.Delay(10000, cancellationToken);
+                } catch(Exception ex)
+                {
+                    output.WriteLine(ex.Message);
+                }
                 output.WriteLine("cancelled");
             }
 
             // add the simple task 500 times.
             cancelCounter = 0;
-            managedTasks.OnCancelled += CancelResult;
+            managedTasks.OnStatus += CancelResult;
 
-            var tasks = new ManagedTask[500];
-            for (int i = 0; i < 500; i++)
+            var tasks = new ManagedTask[100];
+            for (int i = 0; i < 100; i++)
             {
-                tasks[i] = managedTasks.Add("123", "task3", Action);
+                tasks[i] = managedTasks.Add("123", "task3", "test", null, Action, null, null);
             }
 
-            for (int i = 0; i < 500; i++)
+            for (int i = 0; i < 100; i++)
             {
                 tasks[i].Cancel();
             }
 
-            await managedTasks.WhenAll();
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
+
 
             // counter should eqaul the number of tasks
-            Assert.Equal(500, cancelCounter);
+            Assert.Equal(100, cancelCounter);
             Assert.Equal(0, managedTasks.Count());
         }
 
-       void CancelResult(Object sender, EventArgs args)
+       void CancelResult(Object sender, EManagedTaskStatus status)
         {
-            var task = (ManagedTask)sender;
-            if(task.Status == EManagedTaskStatus.Canceled)
+            if(status == EManagedTaskStatus.Cancelled)
                 cancelCounter++;
+        }
+
+        [Fact]
+        public async Task Test_ManagedTask_Dependencies_Chain()
+        {
+            var managedTasks = new ManagedTasks();
+
+            // simple task that takes 5 seconds
+            async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
+            {
+                await Task.Delay(5000, cancellationToken);
+            }
+
+            var startDate = DateTime.Now;
+
+            // run task1, then task2, then task 3 
+            var task1 = managedTasks.Add("123", "task1", "test", null, Action, null, null);
+            var task2 = managedTasks.Add("123", "task2", "test", null, Action, null, new string[] { task1.Reference });
+            var task3 = managedTasks.Add("123", "task3", "test", null, Action, null, new string[] { task2.Reference });
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
+            
+            // job should take 15 seconds.
+            Assert.True(startDate.AddSeconds(15) < DateTime.Now && startDate.AddSeconds(16) > DateTime.Now);
+        }
+
+        [Fact]
+        public async Task Test_ManagedTask_Dependencies_Parallel()
+        {
+            var managedTasks = new ManagedTasks();
+
+            // simple task that takes 5 seconds
+            async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
+            {
+                await Task.Delay(5000, cancellationToken);
+            }
+
+            var startDate = DateTime.Now;
+
+            // run task1 & task2 parallel, then task 3 when both finish
+            var task1 = managedTasks.Add("123", "task1", "test", null, Action, null, null);
+            var task2 = managedTasks.Add("123", "task2", "test", null, Action, null, null);
+            var task3 = managedTasks.Add("123", "task3", "test", null, Action, null, new string[] { task1.Reference, task2.Reference });
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
+
+
+            // job should take 10 seconds.
+            Assert.True(startDate.AddSeconds(10) < DateTime.Now && startDate.AddSeconds(11) > DateTime.Now);
+        }
+
+        [Fact]
+        public async Task Test_ManagedTask_Schedule()
+        {
+            var managedTasks = new ManagedTasks();
+
+            // simple task that takes 5 seconds to run
+            async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
+            {
+                await Task.Delay(5000, cancellationToken);
+            }
+
+            // set a trigger 5 seconds in the future
+            var trigger = new ManagedTaskTrigger()
+            {
+                StartDate = DateTime.Now.AddSeconds(5)
+            };
+
+            var task1 = managedTasks.Add("123", "task3", "test", null, Action, new ManagedTaskTrigger[] { trigger }, null);
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
+
+            // time should be startdate + 5 second for the job to run.
+            Assert.True(trigger.StartDate.Value.AddSeconds(5) < DateTime.Now);
+        }
+
+        [Fact]
+        public async Task Test_ManagedTask_Schedule_Recurring()
+        {
+            var managedTasks = new ManagedTasks();
+
+            // simple task that takes 1 second to run
+            async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
+            {
+                await Task.Delay(1000, cancellationToken);
+            }
+
+            // starts in 1 second, then runs 1 second job
+            var trigger = new ManagedTaskTrigger()
+            {
+                StartDate = DateTime.Now,
+                StartTime = DateTime.Now.AddSeconds(1).TimeOfDay,
+                IntervalTime = TimeSpan.FromSeconds(2),
+                MaxRecurrs = 5
+            };
+
+            var task1 = managedTasks.Add("123", "task3", "test", null, Action, new ManagedTaskTrigger[] { trigger }, null);
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
+
+            // 12 seconds = Initial 1 + 2 *5 recurrs + 1 final job
+            Assert.True(trigger.StartDate.Value.AddSeconds(12) < DateTime.Now);
         }
     }
 }
