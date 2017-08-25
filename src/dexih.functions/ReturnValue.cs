@@ -56,8 +56,8 @@ namespace dexih.functions
         public override bool Success {
             get
             {
-                // if no returnValues return false
-                if (ReturnValues.Count == 0) return false;
+                // if no returnValues return true
+                if (ReturnValues.Count == 0) return true;
 
                 // if any returnValue contains false, return false,
                 return !ReturnValues.Exists(c => c.Success == false);

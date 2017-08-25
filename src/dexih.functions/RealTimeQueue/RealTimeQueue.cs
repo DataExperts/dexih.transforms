@@ -16,8 +16,8 @@ namespace dexih.functions {
         private readonly int _maxSize = 2;
         private readonly int _defaulttimeOutMilliseconds = 5000; //default timeout 5seconds
 
-        private readonly AsyncAutoResetEvent _popEvent = new AsyncAutoResetEvent();
-        private readonly AsyncAutoResetEvent _pushEvent = new AsyncAutoResetEvent();
+        private readonly AutoResetEventAsync _popEvent = new AutoResetEventAsync();
+        private readonly AutoResetEventAsync _pushEvent = new AutoResetEventAsync();
         // private readonly AsyncAutoResetEvent _cancelEvent = new AsyncAutoResetEvent();
 
         public bool IsCancelled { get; set; } = false;

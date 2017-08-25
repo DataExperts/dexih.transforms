@@ -409,7 +409,7 @@ namespace dexih.transforms
 
         public virtual async Task<ReturnValue<TransformWriterResult>> GetPreviousResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] {referenceKey } , null, null, true, false, false, null, -1, 0, null, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, true, false, false, null, -1, null, false, cancellationToken);
             if (!results.Success)
                 return new ReturnValue<TransformWriterResult>(results);
 
@@ -421,7 +421,7 @@ namespace dexih.transforms
 
         public virtual async Task<ReturnValue<TransformWriterResult>> GetPreviousSuccessResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, true, false, null, -1, 0, null, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, true, false, null, -1, null, false, cancellationToken);
             if (!results.Success)
                 return new ReturnValue<TransformWriterResult>(results);
 
@@ -433,7 +433,7 @@ namespace dexih.transforms
 
         public virtual async Task<ReturnValue<TransformWriterResult>> GetCurrentResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, false, true, null, -1, 0, null, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, false, true, null, -1, null, false, cancellationToken);
             if (!results.Success)
                 return new ReturnValue<TransformWriterResult>(results);
 
@@ -445,20 +445,20 @@ namespace dexih.transforms
 
         public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetPreviousResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, true, false, false, null, -1, 0, null, cancellationToken);
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, true, false, false, null, -1, null, false, cancellationToken);
         }
 
         public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetPreviousSuccessResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, true, false, null, -1, 0, null, cancellationToken);
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, true, false, null, -1, null, false, cancellationToken);
         }
 
         public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetCurrentResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, false, true, null, -1, 0, null, cancellationToken);
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, false, true, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, int maxMilliseconds, long? parentAuditKey, CancellationToken cancellationToken)
+        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken)
         {
             Transform reader = null;
             try
@@ -489,60 +489,73 @@ namespace dexih.transforms
                 if (returnValue.Success == false)
                     return new ReturnValue<List<TransformWriterResult>>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
 
-                var writerResults = new List<TransformWriterResult>();
-                var count = 0;
+                var pocoReader = new PocoLoader<TransformWriterResult>();
+                var writerResults = await pocoReader.ToListAsync(reader, cancellationToken);
 
-                while ((count < query.Rows || query.Rows == -1) &&
-                    cancellationToken.IsCancellationRequested == false &&
-                    await reader.ReadAsync(cancellationToken)
-                    )
-                {
-                    var result = new TransformWriterResult(
-                        (long)TryParse(ETypeCode.Int64, reader["HubKey"]).Value,
-                        (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value,
-                        (string)reader["AuditType"],
-                        (long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value,
-                        (long)TryParse(ETypeCode.Int64, reader["ParentAuditKey"]).Value,
-                        (string)reader["ReferenceName"],
-                        (long)TryParse(ETypeCode.Int64, reader["SourceTableKey"]).Value,
-                        (string)reader["SourceTableName"],
-                        (long)TryParse(ETypeCode.Int64, reader["TargetTableKey"]).Value,
-                        (string)reader["TargetTableName"], null, null,
-                        (TransformWriterResult.ETriggerMethod)Enum.Parse(typeof(TransformWriterResult.ETriggerMethod), (string)reader["TriggerMethod"]),
-                        (string)(reader["TriggerInfo"] is DBNull ? null : reader["TriggerInfo"])
-                        )
+                //var writerResults = new List<TransformWriterResult>();
+                //var count = 0;
+
+
+                //while ((count < query.Rows || query.Rows == -1) &&
+                //    cancellationToken.IsCancellationRequested == false &&
+                //    await reader.ReadAsync(cancellationToken)
+                //    )
+                //{
+                //    var result = new TransformWriterResult(
+                //        (long)TryParse(ETypeCode.Int64, reader["HubKey"]).Value,
+                //        (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value,
+                //        (string)reader["AuditType"],
+                //        (long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value,
+                //        (long)TryParse(ETypeCode.Int64, reader["ParentAuditKey"]).Value,
+                //        (string)reader["ReferenceName"],
+                //        (long)TryParse(ETypeCode.Int64, reader["SourceTableKey"]).Value,
+                //        (string)reader["SourceTableName"],
+                //        (long)TryParse(ETypeCode.Int64, reader["TargetTableKey"]).Value,
+                //        (string)reader["TargetTableName"], null, null,
+                //        (TransformWriterResult.ETriggerMethod)Enum.Parse(typeof(TransformWriterResult.ETriggerMethod), (string)reader["TriggerMethod"]),
+                //        (string)(reader["TriggerInfo"] is DBNull ? null : reader["TriggerInfo"])
+                //        )
+                //    {
+                //        RowsTotal = (long)TryParse(ETypeCode.Int64, reader["RowsTotal"]).Value,
+                //        RowsCreated = (long)TryParse(ETypeCode.Int64, reader["RowsCreated"]).Value,
+                //        RowsUpdated = (long)TryParse(ETypeCode.Int64, reader["RowsUpdated"]).Value,
+                //        RowsDeleted = (long)TryParse(ETypeCode.Int64, reader["RowsDeleted"]).Value,
+                //        RowsPreserved = (long)TryParse(ETypeCode.Int64, reader["RowsPreserved"]).Value,
+                //        RowsIgnored = (long)TryParse(ETypeCode.Int64, reader["RowsIgnored"]).Value,
+                //        RowsRejected = (long)TryParse(ETypeCode.Int64, reader["RowsRejected"]).Value,
+                //        RowsFiltered = (long)TryParse(ETypeCode.Int64, reader["RowsFiltered"]).Value,
+                //        RowsSorted = (long)TryParse(ETypeCode.Int64, reader["RowsSorted"]).Value,
+                //        RowsReadPrimary = (long)TryParse(ETypeCode.Int64, reader["RowsReadPrimary"]).Value,
+                //        RowsReadReference = (long)TryParse(ETypeCode.Int64, reader["RowsReadReference"]).Value,
+                //        ReadTicks = (long)TryParse(ETypeCode.Int64, reader["ReadTicks"]).Value,
+                //        WriteTicks = (long)TryParse(ETypeCode.Int64, reader["WriteTicks"]).Value,
+                //        ProcessingTicks = (long)TryParse(ETypeCode.Int64, reader["ProcessingTicks"]).Value,
+                //        MaxIncrementalValue = reader["MaxIncrementalValue"],
+                //        MaxSurrogateKey = (long)TryParse(ETypeCode.Int64, reader["MaxSurrogateKey"]).Value,
+                //        InitializeTime = (DateTime)TryParse(ETypeCode.DateTime, reader["InitializeTime"]).Value,
+                //        ScheduledTime = reader["ScheduledTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["ScheduledTime"]).Value,
+                //        StartTime = reader["StartTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["StartTime"]).Value,
+                //        EndTime = reader["EndTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["EndTime"]).Value,
+                //        LastUpdateTime = reader["LastUpdateTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["LastUpdateTime"]).Value,
+                //        RunStatus = (TransformWriterResult.ERunStatus)Enum.Parse(typeof(TransformWriterResult.ERunStatus), (string)reader["RunStatus"]),
+                //        Message = (string)(reader["Message"] is DBNull ? null : reader["Message"]),
+                //        ProfileTableName = (string)(reader["ProfileTableName"] is DBNull ? null : reader["ProfileTableName"]),
+                //        RejectTableName = (string)(reader["RejectTableName"] is DBNull ? null : reader["RejectTableName"]),
+                //    };
+
+                foreach(var result in writerResults)
+                { 
+                    if(childItems)
                     {
-                        RowsTotal = (long)TryParse(ETypeCode.Int64, reader["RowsTotal"]).Value,
-                        RowsCreated = (long)TryParse(ETypeCode.Int64, reader["RowsCreated"]).Value,
-                        RowsUpdated = (long)TryParse(ETypeCode.Int64, reader["RowsUpdated"]).Value,
-                        RowsDeleted = (long)TryParse(ETypeCode.Int64, reader["RowsDeleted"]).Value,
-                        RowsPreserved = (long)TryParse(ETypeCode.Int64, reader["RowsPreserved"]).Value,
-                        RowsIgnored = (long)TryParse(ETypeCode.Int64, reader["RowsIgnored"]).Value,
-                        RowsRejected = (long)TryParse(ETypeCode.Int64, reader["RowsRejected"]).Value,
-                        RowsFiltered = (long)TryParse(ETypeCode.Int64, reader["RowsFiltered"]).Value,
-                        RowsSorted = (long)TryParse(ETypeCode.Int64, reader["RowsSorted"]).Value,
-                        RowsReadPrimary = (long)TryParse(ETypeCode.Int64, reader["RowsReadPrimary"]).Value,
-                        RowsReadReference = (long)TryParse(ETypeCode.Int64, reader["RowsReadReference"]).Value,
-                        ReadTicks = (long)TryParse(ETypeCode.Int64, reader["ReadTicks"]).Value,
-                        WriteTicks = (long)TryParse(ETypeCode.Int64, reader["WriteTicks"]).Value,
-                        ProcessingTicks = (long)TryParse(ETypeCode.Int64, reader["ProcessingTicks"]).Value,
-                        MaxIncrementalValue = reader["MaxIncrementalValue"],
-                        MaxSurrogateKey = (long)TryParse(ETypeCode.Int64, reader["MaxSurrogateKey"]).Value,
-                        InitializeTime = (DateTime)TryParse(ETypeCode.DateTime, reader["InitializeTime"]).Value,
-                        ScheduledTime = reader["ScheduledTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["ScheduledTime"]).Value,
-                        StartTime = reader["StartTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["StartTime"]).Value,
-                        EndTime = reader["EndTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["EndTime"]).Value,
-                        LastUpdateTime = reader["LastUpdateTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["LastUpdateTime"]).Value,
-                        RunStatus = (TransformWriterResult.ERunStatus)Enum.Parse(typeof(TransformWriterResult.ERunStatus), (string)reader["RunStatus"]),
-                        Message = (string)(reader["Message"] is DBNull ? null : reader["Message"]),
-                        ProfileTableName = (string)(reader["ProfileTableName"] is DBNull ? null : reader["ProfileTableName"]),
-                        RejectTableName = (string)(reader["RejectTableName"] is DBNull ? null : reader["RejectTableName"]),
-                    };
+                        var childResults = await GetTransformWriterResults(hubKey, null, null, null, previousResult, previousSuccessResult, currentResult, null, 0, result.AuditKey, false, cancellationToken);
+                        if (!childResults.Success)
+                        {
+                            return childResults;
+                        }
+                        result.ChildResults = childResults.Value;
+                    }
 
-                    writerResults.Add(result);
-
-                    count++;
-                    if (maxMilliseconds > 0 && watch.ElapsedMilliseconds > maxMilliseconds)
+                    if (cancellationToken.IsCancellationRequested)
                         break;
                 }
 

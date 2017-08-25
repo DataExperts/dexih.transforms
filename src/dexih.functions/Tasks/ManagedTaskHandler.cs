@@ -19,7 +19,7 @@ namespace dexih.functions.Tasks
 
         private readonly ConcurrentDictionary<string, ManagedTask> _taskChangeHistory;
 
-        private AsyncAutoResetEvent _resetWhenNoTasks; //event handler that triggers when all tasks completed.
+        private AutoResetEventAsync _resetWhenNoTasks; //event handler that triggers when all tasks completed.
         private object _updateTasksLock = 1; // used to lock when updaging task queues.
         private Exception _exitException; //used to push exceptions to the WhenAny function.
 
@@ -29,7 +29,7 @@ namespace dexih.functions.Tasks
 
             _runningTasks = new ConcurrentDictionary<string, ManagedTask>();
             _queuedTasks = new ConcurrentQueue<ManagedTask>();
-            _resetWhenNoTasks = new AsyncAutoResetEvent();
+            _resetWhenNoTasks = new AutoResetEventAsync();
             _taskChangeHistory = new ConcurrentDictionary<string, ManagedTask>();
         }
 

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,6 +20,11 @@ namespace dexih.transforms
         public event Finish OnFinish;
 
         #endregion
+
+        public TransformWriterResult()
+        {
+
+        }
 
         public TransformWriterResult(Int64 hubKey, Int64 auditKey, string auditType, Int64 referenceKey, Int64 parentAuditKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, Connection auditConnection, TransformWriterResult lastSuccessfulResult, ETriggerMethod triggerMethod, string triggerInfo)
         {
@@ -126,6 +132,8 @@ namespace dexih.transforms
         public bool TruncateTarget { get; set; } //once off truncate of the target table.  
         public bool ResetIncremental { get; set; }
         public object ResetIncrementalValue { get; set; }
+
+        public IEnumerable<TransformWriterResult> ChildResults { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public ERunStatus RunStatus { get; set; }

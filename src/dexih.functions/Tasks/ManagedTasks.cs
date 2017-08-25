@@ -20,7 +20,7 @@ namespace dexih.functions.Tasks
 
         private object _updateTasksLock = 1; // used to lock when updaging task queues.
         private Exception _exitException; //used to push exceptions to the WhenAny function.
-        private AsyncAutoResetEvent _resetWhenNoTasks; //event handler that triggers when all tasks completed.
+        private AutoResetEventAsync _resetWhenNoTasks; //event handler that triggers when all tasks completed.
         private ManagedTaskHandler _taskHandler;
 
         public ManagedTasks(ManagedTaskHandler taskHandler = null)
@@ -35,7 +35,7 @@ namespace dexih.functions.Tasks
             }
 
             _activeTasks = new ConcurrentDictionary<string, ManagedTask>();
-            _resetWhenNoTasks = new AsyncAutoResetEvent();
+            _resetWhenNoTasks = new AutoResetEventAsync();
         }
     
         public ManagedTask Add(ManagedTask managedTask)

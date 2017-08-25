@@ -11,7 +11,7 @@ namespace dexih.functions.Tasks
     [JsonConverter(typeof(StringEnumConverter))]
     public enum EManagedTaskStatus
     {
-        Created, Scheduled, Queued, Running, Cancelled, Error, Completed
+        Created, Paused, Scheduled, Queued, Running, Cancelled, Error, Completed
     }
     
     public class ManagedTask: ReturnValue, IDisposable
