@@ -5,6 +5,7 @@ using dexih.functions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
+using System.Collections.Generic;
 
 namespace dexih.functions.Tasks
 {
@@ -48,11 +49,14 @@ namespace dexih.functions.Tasks
         public EManagedTaskStatus Status { get; set; }
 
         public Object Data { get; set; }
+
         public string Category { get; set; }
+		public long CatagoryKey { get; set; }
+		public long HubKey { get; set; }
 
         public int Percentage { get; set; }
 
-        public ManagedTaskTrigger[] Triggers { get; set; }
+        public IEnumerable<ManagedTaskTrigger> Triggers { get; set; }
 
         public DateTime? NextTriggerTime { get; protected set; }
 
@@ -261,7 +265,8 @@ namespace dexih.functions.Tasks
             Success = false;
             Message = "The task was cancelled.";
             SetStatus(EManagedTaskStatus.Cancelled);
-        }
+			if (_timer != null) _timer.Dispose();
+		}
 
         public void Error(string message, Exception ex)
         {
