@@ -295,7 +295,7 @@ namespace dexih.connections.test
 
             //check the audit table loaded correctly.
             var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true,
-                false, false, null, 1, 0, 2, CancellationToken.None);
+                false, false, null, 1, 0, false, CancellationToken.None);
             Assert.Equal(writerResult.RowsCreated, auditTable.Value[0].RowsCreated);
             Assert.Equal(rows - 1, Convert.ToInt64(auditTable.Value[0].MaxIncrementalValue));
         }

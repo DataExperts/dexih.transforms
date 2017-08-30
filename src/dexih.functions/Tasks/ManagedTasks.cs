@@ -20,7 +20,6 @@ namespace dexih.functions.Tasks
 		private readonly ConcurrentDictionary<(string category, long categoryKey), ManagedTask> _activeCategoryTasks;
 		private readonly ConcurrentDictionary<(string category, long categoryKey), ManagedTask> _completedTasks;
 
-
 		private object _updateTasksLock = 1; // used to lock when updaging task queues.
 		private Exception _exitException; //used to push exceptions to the WhenAny function.
 		private AutoResetEventAsync _resetWhenNoTasks; //event handler that triggers when all tasks completed.
@@ -48,7 +47,7 @@ namespace dexih.functions.Tasks
 			managedTask.OnStatus += StatusChange;
 			managedTask.OnProgress += ProgressChange;
 
-			if(string.IsNullOrEmpty(managedTask.Category) && managedTask.CatagoryKey >= 0 && _activeCategoryTasks.ContainsKey((managedTask.Category, managedTask.CatagoryKey)))
+			if(!string.IsNullOrEmpty(managedTask.Category) && managedTask.CatagoryKey >= 0 && _activeCategoryTasks.ContainsKey((managedTask.Category, managedTask.CatagoryKey)))
 			{
 				throw new ManagedTaskException(managedTask, $"The {managedTask.Category} - {managedTask.Name} with key {managedTask.CatagoryKey} is alredy active and cannot be run at the same time.");
 			}
@@ -81,20 +80,50 @@ namespace dexih.functions.Tasks
 			return managedTask;
 		}
 
-		public ManagedTask Add(string originatorId, string name, string category, long hubKey, long categoryKey, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers, string[] dependentReferences)
+        public ManagedTask Add(string originatorId, string name, string category, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers, string[] dependentReferences)
+        {
+            return Add(originatorId, name, category, 0, 0, data, action, triggers, dependentReferences);
+        }
+
+        public ManagedTask Add(string originatorId, string name, string category, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers)
+        {
+            return Add(originatorId, name, category, 0, 0, data, action, triggers, null);
+        }
+
+        public ManagedTask Add(string originatorId, string name, string category, object data, Func<IProgress<int>, CancellationToken, Task> action)
+        {
+            return Add(originatorId, name, category, 0, 0, data, action, null, null);
+        }
+
+        public ManagedTask Add(string originatorId, string name, string category, long hubKey, long categoryKey, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers, string[] dependentReferences)
 		{
 			var reference = Guid.NewGuid().ToString();
 			return Add(reference, originatorId, name, category, categoryKey, hubKey, data, action, triggers, dependentReferences);
 		}
 
-		/// <summary>
-		/// Creates & starts a new managed task.
-		/// </summary>
-		/// <param name="originatorId">Id that can be used to referernce where the task was started from.</param>
-		/// <param name="title">Short description of the task.</param>
-		/// <param name="action">The action </param>
-		/// <returns></returns>
-		public ManagedTask Add(string reference, string originatorId, string name, string category, long hubKey, long categoryKey, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers, string[] dependentReferences)
+        public ManagedTask Add(string reference, string originatorId, string name, string category, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers, string[] dependentReferences)
+        {
+            return Add(reference, originatorId, name, category, 0, 0, data, action, triggers, dependentReferences);
+        }
+
+        public ManagedTask Add(string reference, string originatorId, string name, string category, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers)
+        {
+            return Add(reference, originatorId, name, category, 0, 0, data, action, triggers, null);
+        }
+
+        public ManagedTask Add(string reference, string originatorId, string name, string category, object data, Func<IProgress<int>, CancellationToken, Task> action)
+        {
+            return Add(reference, originatorId, name, category, 0, 0, data, action, null, null);
+        }
+
+        /// <summary>
+        /// Creates & starts a new managed task.
+        /// </summary>
+        /// <param name="originatorId">Id that can be used to referernce where the task was started from.</param>
+        /// <param name="title">Short description of the task.</param>
+        /// <param name="action">The action </param>
+        /// <returns></returns>
+        public ManagedTask Add(string reference, string originatorId, string name, string category, long hubKey, long categoryKey, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers, string[] dependentReferences)
 		{
 			var managedTask = new ManagedTask()
 			{
@@ -243,15 +272,29 @@ namespace dexih.functions.Tasks
 			return _activeTasks.ContainsKey(reference) ? _activeTasks[reference] : null;
 		}
 
-		public IEnumerable<ManagedTask> GetActiveTasks(string category)
+		public IEnumerable<ManagedTask> GetActiveTasks(string category = null)
 		{
-			return _activeTasks.Values.Where(c => c.Category == category);
-		}
+            if(string.IsNullOrEmpty(category))
+            {
+                return _activeTasks.Values;
+            }
+            else
+            {
+                return _activeTasks.Values.Where(c => c.Category == category);
+            }
+        }
 
-		public IEnumerable<ManagedTask> GetCompletedTasks(string category)
+		public IEnumerable<ManagedTask> GetCompletedTasks(string category = null)
 		{
-			return _completedTasks.Values.Where(c => c.Category == category);
-		}
+            if (string.IsNullOrEmpty(category))
+            {
+                return _completedTasks.Values;
+            }
+            else
+            {
+                return _completedTasks.Values.Where(c => c.Category == category);
+            }
+        }
 
 		public void Cancel(string[] references)
 		{

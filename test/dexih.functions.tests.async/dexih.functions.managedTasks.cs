@@ -49,10 +49,45 @@ namespace dexih.functions.tests
             cts.CancelAfter(30000);
             await managedTasks.WhenAll(cts.Token);
 
+            Assert.Equal(1, managedTasks.GetCompletedTasks().Count());
+
             // ensure the progress was called at least once. 
             // This doesn't get called for every progress event as when they stack up they get dropped
             // which is expected bahaviour.
             Assert.True(progressCounter > 0);
+        }
+
+        [Fact]
+        public async Task Test_ManagedTasks_WithKeys()
+        {
+            var managedTasks = new ManagedTasks();
+
+            // add a series of tasks with various delays to ensure the task manager is running.
+            async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
+            {
+                for (var i = 0; i <= 5; i++)
+                {
+                    await Task.Delay(20, cancellationToken);
+                    progress.Report(i * 20);
+                }
+            }
+
+            var task1 = managedTasks.Add("123", "task", "test","category", 1, 1, "object", Action, null, null);
+
+            //adding the same task when runnning should result in error.
+            Assert.Throws(typeof(ManagedTaskException), () =>
+            {
+                var task2 = managedTasks.Add("123", "task", "test", "category", 1, 1, "object", Action, null, null);
+            });
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(30000);
+            await managedTasks.WhenAll(cts.Token);
+
+            // add the same task again now the previous one has finished.
+            var task3 = managedTasks.Add("123", "task", "test", "category", 1, 1, "object", Action, null, null);
+
+            Assert.Equal(1, managedTasks.GetCompletedTasks().Count());
         }
 
         void Progress(Object sender, int percentage)
@@ -93,6 +128,8 @@ namespace dexih.functions.tests
             cts.CancelAfter(30000);
             await managedTasks.WhenAll(cts.Token);
 
+            Assert.Equal(TaskCount, managedTasks.GetCompletedTasks().Count());
+
             // counter should eqaul the number of tasks
             Assert.Equal(TaskCount, completedCounter);
             Assert.Equal(0, managedTasks.Count());
@@ -131,7 +168,7 @@ namespace dexih.functions.tests
             // simple task reports progress 10 times.
             async Task Action(IProgress<int> progress, CancellationToken cancellationToken)
             {
-                throw new Exception("An error");
+                await Task.Run(() => throw new Exception("An error"));
             }
 
             // add the simple task 500 times.
