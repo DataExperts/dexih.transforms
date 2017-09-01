@@ -98,7 +98,7 @@ namespace dexih.functions.Tasks
         public ManagedTask Add(string originatorId, string name, string category, long hubKey, long categoryKey, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers, string[] dependentReferences)
 		{
 			var reference = Guid.NewGuid().ToString();
-			return Add(reference, originatorId, name, category, categoryKey, hubKey, data, action, triggers, dependentReferences);
+			return Add(reference, originatorId, name, category, hubKey, categoryKey, data, action, triggers, dependentReferences);
 		}
 
         public ManagedTask Add(string reference, string originatorId, string name, string category, object data, Func<IProgress<int>, CancellationToken, Task> action, IEnumerable<ManagedTaskTrigger> triggers, string[] dependentReferences)

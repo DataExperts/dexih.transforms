@@ -121,12 +121,13 @@ namespace dexih.functions.tests
             // add the simple task 100 times.
             for (int i = 0; i < TaskCount; i++)
             {
-                var task1 = managedTasks.Add("123", "task3", "test", null, Action, null, null);
+                var task1 = managedTasks.Add("123", "task3", "test", 0 , i, null, Action, null, null);
             }
 
             var cts = new CancellationTokenSource();
             cts.CancelAfter(30000);
             await managedTasks.WhenAll(cts.Token);
+
 
             Assert.Equal(TaskCount, managedTasks.GetCompletedTasks().Count());
 
