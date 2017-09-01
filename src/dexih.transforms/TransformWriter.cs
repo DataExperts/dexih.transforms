@@ -114,6 +114,7 @@ namespace dexih.transforms
                 if (returnValue.Success == false)
                 {
                     await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
+                    await _targetConnection.DataWriterError(returnValue.Message, returnValue.Exception);
                     return returnValue;
                 }
 
@@ -136,6 +137,7 @@ namespace dexih.transforms
                         if(!result.Success)
                         {
                             await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, result);
+                            await _targetConnection.DataWriterError(result.Message, result.Exception);
                             return result;
                         }
                     }
@@ -153,6 +155,7 @@ namespace dexih.transforms
                 if (returnValue.Success == false)
                 {
                     await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, returnValue);
+                    await _targetConnection.DataWriterError(returnValue.Message, returnValue.Exception);
                     return new ReturnValue(false, returnValue.Message, null);
                 }
 
@@ -168,6 +171,7 @@ namespace dexih.transforms
                         {
                             profileResult.Message = "Failed to save profile results";
                             await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, profileResult);
+                            await _targetConnection.DataWriterError(returnValue.Message, returnValue.Exception);
                             return profileResult;
                         }
                     }
@@ -204,6 +208,8 @@ namespace dexih.transforms
                 if(!returnValue.Success)
                 {
                     await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, newReturn);
+                    await _targetConnection.DataWriterError(returnValue.Message, returnValue.Exception);
+
                 }
             }
 

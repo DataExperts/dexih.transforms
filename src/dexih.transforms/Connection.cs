@@ -664,6 +664,11 @@ namespace dexih.transforms
             return await Task.Run(() => new ReturnValue(true));
         }
 
+        public virtual async Task<ReturnValue> DataWriterError(string message, Exception exception)
+        {
+            return await Task.Run(() => new ReturnValue(true));
+        }
+
         public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
             return await GetPreview(table, query, null, null, cancellationToken);
@@ -682,8 +687,9 @@ namespace dexih.transforms
                 reader.JoinPairs = referenceJoins;
                 var returnValue = await reader.Open(0, query, cancellationToken);
                 if (returnValue.Success == false)
-                    return new ReturnValue<Table>(returnValue.Success, returnValue.Message, returnValue.Exception,
-                        null);
+                {
+                    return new ReturnValue<Table>(returnValue);
+                }
 
                 reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
                 reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");

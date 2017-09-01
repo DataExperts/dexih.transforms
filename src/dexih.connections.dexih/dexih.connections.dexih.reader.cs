@@ -46,7 +46,14 @@ namespace dexih.connections.dexih
                     return new ReturnValue(false, "The information hub connection is already open.", null);
                 }
 
-				var message = Json.SerializeObject(new {HubName = ReferenceConnection.DefaultDatabase, SourceConnectionName = CacheTable.SourceConnectionName, TableName = CacheTable.Name, TableSchema = CacheTable.Schema, Query = query }, "");
+                var message = Json.SerializeObject(new
+                {
+                    HubName = ReferenceConnection.DefaultDatabase,
+                    SourceConnectionName = CacheTable.SourceConnectionName,
+                    TableName = CacheTable.Name,
+                    TableSchema = CacheTable.Schema,
+                    Query = query,
+                }, "");
 				var content = new StringContent(message, Encoding.UTF8, "application/json");
 				var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("OpenTableQuery", content, true);
 
@@ -59,10 +66,10 @@ namespace dexih.connections.dexih
 
                 if(returnMessage.Success == false)
                 {
-                    return new ReturnValue(false, returnMessage.Message, returnMessage.Exception);
+                    return returnMessage; 
                 }
 
-				_continuationToken = response.Value["continuationToken"].ToString();
+				_continuationToken = response.Value["value"].ToString();
                 ((ConnectionDexih)ReferenceConnection).SetContinuationToken(_continuationToken);
                 CacheTable.ContinuationToken = _continuationToken;
 

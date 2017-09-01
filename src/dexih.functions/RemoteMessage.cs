@@ -16,6 +16,10 @@ namespace dexih.functions
             Message = returnMessage.Message;
             Value = returnMessage.Value;
             Exception = returnMessage.Exception;
+            if(Exception == null)
+            {
+                ExceptionDetails = returnMessage.ExceptionDetails;
+            }
         }
     }
 	public class RemoteMessage : ReturnValue<JToken>

@@ -9,6 +9,7 @@ namespace dexih.transforms
 {
     public class TransformFilter : Transform
     {
+
         public TransformFilter() { }
 
         public TransformFilter(Transform inReader, List<Function> conditions)

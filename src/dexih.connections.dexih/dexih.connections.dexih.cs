@@ -146,7 +146,7 @@ namespace dexih.connections.dexih
 				return new ReturnValue<List<string>>(result);
 			}
 
-			var hubs = result.Value["hubs"];
+			var hubs = result.Value["value"];
 			var hubList = hubs.ToObject<List<string>>();
 
 			return new ReturnValue<List<string>>(true, hubList);
@@ -165,7 +165,7 @@ namespace dexih.connections.dexih
 				return new ReturnValue<List<Table>>(result);
 			}
 
-			var tables = result.Value["tables"];
+			var tables = result.Value["value"];
 			var tableList = tables.ToObject<List<Table>>();
 
 			return new ReturnValue<List<Table>>(true, tableList);
@@ -200,7 +200,7 @@ namespace dexih.connections.dexih
 					return new ReturnValue<Table>(false, result.Value["message"].ToString(), null);
 				}
 
-				var table = result.Value["table"].ToObject<Table>();
+				var table = result.Value["value"].ToObject<Table>();
                 return new ReturnValue<Table>(true, table);
             }
             catch (Exception ex)
@@ -283,6 +283,20 @@ namespace dexih.connections.dexih
             return new ReturnValue(true);
         }
 
+        public override async Task<ReturnValue> DataWriterError(string message, Exception exception )
+        {
+            var content = new FormUrlEncodedContent(new[]
+{
+                new KeyValuePair<string, string>("ContinuationToken", _continuationToken),
+                new KeyValuePair<string, string>("Message", message),
+                new KeyValuePair<string, string>("Exception", Json.SerializeObject(exception, ""))
+            });
+
+            var result = await HttpPost("SetError", content, false);
+
+            return new ReturnValue(true);
+        }
+
         public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
@@ -340,7 +354,7 @@ namespace dexih.connections.dexih
             }
             catch (Exception ex)
             {
-                return new ReturnValue<long>(false, "The file could not be written to due to the following error: " + ex.Message, ex);
+                return new ReturnValue<long>(false, "The data could not be written to due to the following error: " + ex.Message, ex);
             }
         }
 
@@ -350,9 +364,9 @@ namespace dexih.connections.dexih
             return reader;
         }
 
-        public override Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
+        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+            return await Task.Run(() => new ReturnValue<bool>(true, true), cancelToken);
         }
 
         public override async Task<ReturnValue> CompareTable(Table table, CancellationToken cancelToken)

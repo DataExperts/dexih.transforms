@@ -21,7 +21,11 @@ namespace dexih.functions {
         // private readonly AsyncAutoResetEvent _cancelEvent = new AsyncAutoResetEvent();
 
         public bool IsCancelled { get; set; } = false;
+        public bool IsFailed { get; set; } = false;
         public bool IsFinished { get; set; }
+
+        public string Message { get; set; }
+        public Exception Exception { get; set; }
 
         private bool _awaitingPush;
 
@@ -119,6 +123,24 @@ namespace dexih.functions {
             }
         }
 
+        public void SetError(string message, Exception exception)
+        {
+            IsFailed = true;
+            IsFinished = true;
+            Message = message;
+
+            if (exception == null)
+            {
+                Exception = new RealTimeQueueException(message);
+            }
+            else
+            {
+                Exception = exception;
+            }
+
+            if (_pushEvent != null) _pushEvent.Set();
+        }
+
         public Task<RealTimeQueuePackage<T>> Pop()
         {
             return Pop(CancellationToken.None, _defaulttimeOutMilliseconds);
@@ -141,6 +163,12 @@ namespace dexih.functions {
                     }
 
                     var pushEvent = _pushEvent.WaitAsync();
+
+                    if(IsFailed)
+                    {
+                        throw Exception;
+                    }
+
                     var timeoutEvent = Task.Delay(timeOutMilliseconds, cancellationToken);
 
                     var completedTask = await Task.WhenAny(pushEvent, timeoutEvent);
@@ -158,6 +186,11 @@ namespace dexih.functions {
 
                 while (true)
                 {
+                    if (IsFailed)
+                    {
+                        throw Exception;
+                    }
+
                     var canDequeue = _realtimeQueue.TryDequeue(out T result);
                     if (canDequeue)
                     {
