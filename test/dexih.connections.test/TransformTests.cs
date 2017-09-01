@@ -97,7 +97,7 @@ namespace dexih.connections.test
             Assert.Equal(10, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, false, false, null, 1, 0, false, CancellationToken.None);
+            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, false, false, null, 1, null, false, CancellationToken.None);
             Assert.Equal((long)10, auditTable.Value[0].RowsCreated);
 
         }
