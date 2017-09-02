@@ -20,7 +20,7 @@ namespace dexih.functions.Tasks
 		private readonly ConcurrentDictionary<(string category, long categoryKey), ManagedTask> _activeCategoryTasks;
 		private readonly ConcurrentDictionary<(string category, long categoryKey), ManagedTask> _completedTasks;
 
-		private object _updateTasksLock = 1; // used to lock when updaging task queues.
+        private object _updateTasksLock = 1; // used to lock when updaging task queues.
 		private Exception _exitException; //used to push exceptions to the WhenAny function.
 		private AutoResetEventAsync _resetWhenNoTasks; //event handler that triggers when all tasks completed.
 		private ManagedTaskHandler _taskHandler;
@@ -189,6 +189,11 @@ namespace dexih.functions.Tasks
 			}
 			else
 			{
+                if(!_activeTasks.ContainsKey(managedTask.Reference))
+                {
+                    return;
+                }
+
 				if (!_activeTasks.TryRemove(managedTask.Reference, out ManagedTask activeTask))
 				{
 					_exitException = new ManagedTaskException(managedTask, "Failed to add the task to the active tasks list.");

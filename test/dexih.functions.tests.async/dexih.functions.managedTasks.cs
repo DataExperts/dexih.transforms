@@ -99,6 +99,7 @@ namespace dexih.functions.tests
         }
 
         [Theory]
+        [InlineData(50)]
         [InlineData(500)]
         public async Task Test_MultipleManagedTasks(int TaskCount)
         {
@@ -156,13 +157,19 @@ namespace dexih.functions.tests
                 {
                     completedCounter++;
                 }
+                else
+                {
+                    ManagedTask t = (ManagedTask)sender;
+                    output.WriteLine("Incorrect status: " + status.ToString() +". Error: " + t?.Exception?.Message);
+                }
             }
 
         }
 
         int errorCounter = 0;
-        [Fact]
-        public async Task Test_ManagedTask_Error()
+        [Theory]
+        [InlineData(500)]
+        public async Task Test_ManagedTask_Error(int TaskCount)
         {
             var managedTasks = new ManagedTasks();
 
@@ -176,7 +183,7 @@ namespace dexih.functions.tests
             errorCounter = 0;
             managedTasks.OnStatus += ErrorResult;
 
-            for (int i = 0; i < 500; i++)
+            for (int i = 0; i < TaskCount; i++)
             {
                 var task1 = managedTasks.Add("123", "task3", "test", null, Action, null, null);
             }
@@ -187,7 +194,7 @@ namespace dexih.functions.tests
 
 
             // counter should eqaul the number of tasks
-            Assert.Equal(500, errorCounter);
+            Assert.Equal(TaskCount, errorCounter);
             Assert.Equal(0, managedTasks.Count());
         }
 
@@ -195,6 +202,11 @@ namespace dexih.functions.tests
         {
             if (status == EManagedTaskStatus.Error)
                 errorCounter++;
+            else
+            {
+                ManagedTask t = (ManagedTask)sender;
+                output.WriteLine("Incorrect status: " + status.ToString() + ". Error: " + t?.Exception?.Message);
+            }
         }
 
 
@@ -246,6 +258,11 @@ namespace dexih.functions.tests
         {
             if(status == EManagedTaskStatus.Cancelled)
                 cancelCounter++;
+            else
+            {
+                ManagedTask t = (ManagedTask)sender;
+                output.WriteLine("Incorrect status: " + status.ToString() + ". Error: " + t?.Exception?.Message);
+            }
         }
 
         [Fact]

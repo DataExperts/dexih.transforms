@@ -101,7 +101,6 @@ namespace dexih.functions.Tasks
 
         private void ResetCompletedTask(ManagedTask managedTask)
         {
-            Console.WriteLine($"Running tasks {_runningTasks.Count}, Queued: {_queuedTasks.Count}");
             lock (_updateTasksLock)
             {
                 ManagedTask finishedTask;

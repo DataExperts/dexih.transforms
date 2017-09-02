@@ -86,14 +86,19 @@ namespace dexih.functions.Tasks
         
         private Task _task;
         private readonly IProgress<int> _progress;
+        private Task _progressInvoke;
+        private bool _anotherProgressInvoke = false;
+
         private Timer _timer;
+
+        private Task _eventManager;
 
         private void SetStatus(EManagedTaskStatus newStatus)
         {
             if(newStatus > Status)
             {
                 Status = newStatus;
-                OnStatus?.Invoke(this, Status);
+                 OnStatus?.Invoke(this, Status);
             }
         }
 
@@ -102,17 +107,28 @@ namespace dexih.functions.Tasks
             LastUpdate = DateTime.Now;
             Status = EManagedTaskStatus.Created;
             _cancellationTokenSource = new CancellationTokenSource();
-
-            var progressHandler = new Progress<int>(value =>
+            _progress = new Progress<int>(value =>
             {
                 if (Percentage != value)
                 {
                     Percentage = value;
-                    OnProgress?.Invoke(this, Percentage);
+                    if (_progressInvoke == null || _progressInvoke.IsCompleted)
+                    {
+                        _progressInvoke = Task.Run(() =>
+                        {
+                            do
+                            {
+                                _anotherProgressInvoke = false;
+                                OnProgress?.Invoke(this, Percentage);
+                            } while (_anotherProgressInvoke);
+                        });
+                    }
+                    else
+                    {
+                        _anotherProgressInvoke = true;
+                    }
                 }
             });
-
-            _progress = progressHandler;
         }
 
         /// <summary>
