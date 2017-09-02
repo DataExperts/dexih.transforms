@@ -157,10 +157,10 @@ namespace dexih.functions.tests
                 {
                     completedCounter++;
                 }
-                else
+                if(status == EManagedTaskStatus.Error)
                 {
                     ManagedTask t = (ManagedTask)sender;
-                    output.WriteLine("Incorrect status: " + status.ToString() +". Error: " + t?.Exception?.Message);
+                    output.WriteLine("Error status: " + status.ToString() +". Error: " + t?.Exception?.Message);
                 }
             }
 
@@ -202,11 +202,6 @@ namespace dexih.functions.tests
         {
             if (status == EManagedTaskStatus.Error)
                 errorCounter++;
-            else
-            {
-                ManagedTask t = (ManagedTask)sender;
-                output.WriteLine("Incorrect status: " + status.ToString() + ". Error: " + t?.Exception?.Message);
-            }
         }
 
 
@@ -256,12 +251,14 @@ namespace dexih.functions.tests
 
        void CancelResult(Object sender, EManagedTaskStatus status)
         {
-            if(status == EManagedTaskStatus.Cancelled)
+            if (status == EManagedTaskStatus.Cancelled)
+            {
                 cancelCounter++;
-            else
+            }
+            if (status == EManagedTaskStatus.Error)
             {
                 ManagedTask t = (ManagedTask)sender;
-                output.WriteLine("Incorrect status: " + status.ToString() + ". Error: " + t?.Exception?.Message);
+                output.WriteLine("Error status: " + status.ToString() + ". Error: " + t?.Exception?.Message);
             }
         }
 

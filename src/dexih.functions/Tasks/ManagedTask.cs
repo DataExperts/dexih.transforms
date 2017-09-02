@@ -98,6 +98,7 @@ namespace dexih.functions.Tasks
             if(newStatus > Status)
             {
                 Status = newStatus;
+                if (Status == EManagedTaskStatus.Completed) Console.WriteLine("Task Completed");
                  OnStatus?.Invoke(this, Status);
             }
         }
@@ -107,15 +108,21 @@ namespace dexih.functions.Tasks
             LastUpdate = DateTime.Now;
             Status = EManagedTaskStatus.Created;
             _cancellationTokenSource = new CancellationTokenSource();
+
+            // progress routine which calls the progress event async 
             _progress = new Progress<int>(value =>
             {
                 if (Percentage != value)
                 {
                     Percentage = value;
+                    // if the previous progress has finished?
                     if (_progressInvoke == null || _progressInvoke.IsCompleted)
                     {
                         _progressInvoke = Task.Run(() =>
                         {
+                            // keep creating a new progress event until the flag is not set.
+                            // this allows code to keep running whilst a progress event runs in the background.
+                            // if also ensures progress events are only send one at a time.
                             do
                             {
                                 _anotherProgressInvoke = false;
