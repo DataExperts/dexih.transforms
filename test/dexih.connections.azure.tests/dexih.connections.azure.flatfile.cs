@@ -12,7 +12,7 @@ namespace dexih.connections.azure.tests
         public ConnectionFlatFileAzureFile GetAzureConnection()
         {
             var ConnectionString = Convert.ToString(Configuration.AppSettings["FlatFileAzure:ConnectionString"]);
-            if (ConnectionString == "")
+            if (string.IsNullOrEmpty(ConnectionString))
             {
                 var connection2 = new ConnectionFlatFileAzureFile()
                 {
