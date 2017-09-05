@@ -279,8 +279,27 @@ namespace dexih.functions
             return Exception != null;
         }
 
-        public virtual bool Success {   get; set; }
+#if DEBUG
+        private string _stackTrace;
+#endif
+
+        private bool _success;
+        public virtual bool Success {
+            get => _success;
+            set
+            {
+                _success = value;
+#if DEBUG
+                if(value == false)
+                {
+                     _stackTrace = Environment.StackTrace.ToString();
+                }
+#endif
+            }
+        }
         public virtual string Message { get; set; }
+
+        
 
         [JsonIgnore]
         public Exception Exception { get; set; }
@@ -295,8 +314,12 @@ namespace dexih.functions
                 {
                     if(string.IsNullOrEmpty(_exceptionDetails))
 					{
-						return null;
-					}
+#if DEBUG
+                        return _stackTrace;
+#else
+                        return null;
+#endif
+                    }
                     return _exceptionDetails;
                 }
                 var properties = Exception.GetType().GetProperties();

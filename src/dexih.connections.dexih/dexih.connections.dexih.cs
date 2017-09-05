@@ -28,6 +28,8 @@ namespace dexih.connections.dexih
         public override bool CanAggregate => false;
 	    public override bool CanUseBinary => true;
 	    public override bool CanUseSql => false;
+        public override bool DynamicTableCreation => false;
+
 
         public override string DatabaseTypeName => "Dexih Hub";
         public override ECategory DatabaseCategory => ECategory.Hub;

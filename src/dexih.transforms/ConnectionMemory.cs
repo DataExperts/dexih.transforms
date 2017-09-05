@@ -35,6 +35,7 @@ namespace dexih.transforms
         public override bool CanAggregate => false;
         public override bool CanUseBinary => true;
         public override bool CanUseSql => false;
+        public override bool DynamicTableCreation => false;
 
         public override Task<ReturnValue<Table>> InitializeTable(Table table, int position) => Task.Run(() => new ReturnValue<Table>(true, table));
 

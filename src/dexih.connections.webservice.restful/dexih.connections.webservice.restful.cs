@@ -29,6 +29,8 @@ namespace dexih.connections.webservice
         public override bool CanAggregate => false;
         public override bool CanUseBinary => false;
         public override bool CanUseSql => false;
+        public override bool DynamicTableCreation => false;
+
 
         public override string DatabaseTypeName => "Restful Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;

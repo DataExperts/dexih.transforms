@@ -24,6 +24,8 @@ namespace dexih.connections.sql
         public override bool CanAggregate => true;
         public override bool CanUseBinary => true;
         public override bool CanUseSql => true;
+        public override bool DynamicTableCreation => false;
+
 
         //These properties can be overridden for different databases
         public virtual string SqlDelimiterOpen { get; } = "\"";

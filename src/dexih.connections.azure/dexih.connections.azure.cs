@@ -34,6 +34,8 @@ namespace dexih.connections.azure
         public override bool CanAggregate => false;
         public override bool CanUseBinary => true;
         public override bool CanUseSql => false;
+        public override bool DynamicTableCreation => true;
+
 
         public override object GetDataTypeMinValue(ETypeCode typeCode)
         {

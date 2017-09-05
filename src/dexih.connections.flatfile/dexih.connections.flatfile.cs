@@ -42,6 +42,8 @@ namespace dexih.connections.flatfile
         public override bool CanAggregate => false;
         public override bool CanUseBinary => false;
         public override bool CanUseSql => false;
+        public override bool DynamicTableCreation => true;
+
 
         public override string DatabaseTypeName => "Flat Files";
         public override ECategory DatabaseCategory => ECategory.File;
@@ -51,7 +53,6 @@ namespace dexih.connections.flatfile
         private CsvWriter _csvWriter;
 
         public string LastWrittenFile { get; protected set; } = "";
-
 
 		public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
@@ -148,12 +149,20 @@ namespace dexih.connections.flatfile
         {
             try
             {
+                var flatFile = (FlatFile)table;
+                string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName);
+
+                if(!writerResult.Success)
+                {
+                    return writerResult;
+                }
+
                 //open a new filestream and write a headerrow
-                _fileStream = new MemoryStream();
+                _fileStream = writerResult.Value;
                 _fileWriter = new StreamWriter(_fileStream);
                 _csvWriter = new CsvWriter(_fileWriter);
 
-                var flatFile = (FlatFile)table;
 
                 if (flatFile.FileFormat.HasHeaderRecord)
                 {
@@ -165,6 +174,8 @@ namespace dexih.connections.flatfile
                     _csvWriter.NextRecord();
                 }
 
+                LastWrittenFile = fileName;
+
                 return new ReturnValue(true, "", null);
             }
             catch(Exception ex)
@@ -175,21 +186,14 @@ namespace dexih.connections.flatfile
 
         public override async Task<ReturnValue> DataWriterFinish(Table table)
         {
-            string archiveFileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+            return await Task.Run(() =>
+            {
+                _fileWriter.Dispose();
+                _fileStream.Dispose();
+                _csvWriter.Dispose();
 
-            _fileWriter.Flush();
-            _fileStream.Position = 0;
-
-            var flatFile = (FlatFile)table;
-            ReturnValue returnValue = await SaveFileStream(flatFile, EFlatFilePath.incoming, archiveFileName, _fileStream);
-
-            _fileWriter.Dispose();
-            _fileStream.Dispose();
-            _csvWriter.Dispose();
-
-            LastWrittenFile = archiveFileName;
-
-            return returnValue;
+                return new ReturnValue(true);
+            });
         }
 
         public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
@@ -398,7 +402,7 @@ namespace dexih.connections.flatfile
                 string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
                 var flatFile = (FlatFile)table;
 
-                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.incoming, fileName);
+                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName);
 
                 //open a new filestream 
                 using (var writer = writerResult.Value)

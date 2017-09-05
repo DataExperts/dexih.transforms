@@ -35,6 +35,8 @@ namespace dexih.connections.excel
         public override bool CanAggregate => false;
 	    public override bool CanUseBinary => true;
 	    public override bool CanUseSql => false;
+        public override bool DynamicTableCreation => false;
+
 
         public override string DatabaseTypeName => "Excel Database";
         public override ECategory DatabaseCategory => ECategory.SqlDatabase;

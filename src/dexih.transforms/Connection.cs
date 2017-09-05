@@ -75,6 +75,7 @@ namespace dexih.transforms
         public abstract bool CanAggregate { get; }
         public abstract bool CanUseBinary { get; }
         public abstract bool CanUseSql { get; }
+        public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
         
         //Functions required for managed connection
         public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken);
@@ -210,6 +211,7 @@ namespace dexih.transforms
                 auditTable.Columns.Add(new TableColumn("TriggerMethod", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
                 auditTable.Columns.Add(new TableColumn("TriggerInfo", ETypeCode.String, TableColumn.EDeltaType.TrackingField) );
                 auditTable.Columns.Add(new TableColumn("Message", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
+                auditTable.Columns.Add(new TableColumn("ExceptionDetails", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("IsCurrent", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
                 auditTable.Columns.Add(new TableColumn("IsPrevious", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
                 auditTable.Columns.Add(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
@@ -285,7 +287,8 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("RunStatus", ETypeCode.String), writerResult.RunStatus.ToString()),
                     new QueryColumn(new TableColumn("TriggerMethod", ETypeCode.String), writerResult.TriggerMethod.ToString()),
                     new QueryColumn(new TableColumn("TriggerInfo", ETypeCode.String), writerResult.TriggerInfo),
-                    new QueryColumn(new TableColumn("Message", ETypeCode.DateTime), writerResult.Message),
+                    new QueryColumn(new TableColumn("Message", ETypeCode.String), writerResult.Message),
+                    new QueryColumn(new TableColumn("ExceptionDetails", ETypeCode.String), writerResult.ExceptionDetails),
                     new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), true),
                     new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), false),
                     new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), false),
@@ -393,6 +396,7 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("TriggerMethod", ETypeCode.String), writerResult.TriggerMethod.ToString()),
                     new QueryColumn(new TableColumn("TriggerInfo", ETypeCode.String), writerResult.TriggerInfo.ToString()),
                     new QueryColumn(new TableColumn("Message", ETypeCode.String), writerResult.Message),
+                    new QueryColumn(new TableColumn("ExceptionDetails", ETypeCode.String), writerResult.ExceptionDetails),
                     new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), isCurrent),
                     new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), isPrevious),
                     new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), isPreviousSuccess),
@@ -603,6 +607,10 @@ namespace dexih.transforms
         {
             try
             {
+                if(DynamicTableCreation)
+                {
+                    return new ReturnValue<long>(true, 0);
+                }
                 var query = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn(surrogateKeyColumn, SelectColumn.EAggregate.Max) },
@@ -737,7 +745,7 @@ namespace dexih.transforms
                 var compareCol = physicalTable.Columns.SingleOrDefault(c => c.Name == col.Name);
 
                 if (compareCol == null)
-                    return new ReturnValue(false, "The physical table " + table.Name + " does contain the column " + col.Name + ".  Reimport the table or recreate the table to fix.", null);
+                    return new ReturnValue(false, "The physical table " + table.Name + " does not contain the column " + col.Name + ".  Reimport the table or recreate the table to fix.", null);
 
             }
 

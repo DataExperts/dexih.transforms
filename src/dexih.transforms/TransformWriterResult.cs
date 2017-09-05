@@ -115,6 +115,7 @@ namespace dexih.transforms
 
 
         public string Message { get; set; }
+        public string ExceptionDetails { get; set; }
         public DateTime InitializeTime { get; set; }
         public DateTime? ScheduledTime { get; set; } 
         public DateTime? StartTime { get; set; } 
@@ -189,14 +190,14 @@ namespace dexih.transforms
             RunStatus = newStatus;
             if(returnValue != null)
             {
-                if (string.IsNullOrEmpty(Message))
+                if (!string.IsNullOrEmpty(returnValue.Message))
                 {
                     Message = returnValue.Message;
                 }
-                var exception = returnValue.ExceptionDetails;
-                if (string.IsNullOrEmpty(exception))
+                var exceptionDetails = returnValue.ExceptionDetails;
+                if (!string.IsNullOrEmpty(exceptionDetails))
                 {
-                    Message += Environment.NewLine + exception;
+                    ExceptionDetails = exceptionDetails;
                 }
             }
 

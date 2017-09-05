@@ -161,11 +161,12 @@ namespace dexih.transforms
 
                 if (_profileTable != null)
                 {
-                    returnValue = await _profileConnection.CreateTable(_profileTable, false, cancelToken);
-                    writerResult.ProfileTableName = _profileTable.Name;
                     var profileResults = inTransform.GetProfileResults();
                     if (profileResults != null)
                     {
+                        returnValue = await _profileConnection.CreateTable(_profileTable, false, cancelToken);
+                        writerResult.ProfileTableName = _profileTable.Name;
+
                         var profileResult = await _profileConnection.ExecuteInsertBulk(_profileTable, profileResults, cancelToken);
                         if (!profileResult.Success)
                         {
@@ -383,9 +384,17 @@ namespace dexih.transforms
                         return await DoReject();
                     break;
                 case 'T':
-                    var truncateResult = await _targetConnection.TruncateTable(_targetTable, _cancelToken);
-                    if (!truncateResult.Success)
-                        return truncateResult;
+                    if (!_targetConnection.DynamicTableCreation)
+                    {
+                        var truncateResult = await _targetConnection.TruncateTable(_targetTable, _cancelToken);
+
+                        if (!truncateResult.Success)
+                            return truncateResult;
+                    } 
+                    else
+                    {
+                        return new ReturnValue(true);
+                    }
                     break;
             }
 
