@@ -10,6 +10,8 @@ using System.Threading;
 using System.Diagnostics;
 using static dexih.connections.flatfile.FlatFile;
 using System.IO.Compression;
+using CsvHelper;
+using System.Linq;
 
 namespace dexih.connections.flatfile
 {
@@ -34,7 +36,9 @@ namespace dexih.connections.flatfile
         public override bool CanBulkLoad => true;
         public override bool CanSort => false;
 
-        public override bool CanFilter => false;
+        public override bool CanFilter => true;
+        public override bool CanDelete => false;
+        public override bool CanUpdate => false;
         public override bool CanAggregate => false;
         public override bool CanUseBinary => false;
         public override bool CanUseSql => false;
@@ -44,6 +48,7 @@ namespace dexih.connections.flatfile
 
         private Stream _fileStream;
         private StreamWriter _fileWriter;
+        private CsvWriter _csvWriter;
 
         public string LastWrittenFile { get; protected set; } = "";
 
@@ -146,17 +151,19 @@ namespace dexih.connections.flatfile
                 //open a new filestream and write a headerrow
                 _fileStream = new MemoryStream();
                 _fileWriter = new StreamWriter(_fileStream);
-                 
-                string[] s = new string[table.Columns.Count];
-                for (Int32 j = 0; j < table.Columns.Count; j++)
+                _csvWriter = new CsvWriter(_fileWriter);
+
+                var flatFile = (FlatFile)table;
+
+                if (flatFile.FileFormat.HasHeaderRecord)
                 {
-                    s[j] = table.Columns[j].Name;
-                    if (s[j].Contains("\"")) //replace " with ""
-                        s[j] = s[j].Replace("\"", "\"\"");
-                    if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
-                        s[j] = "\"" + s[j] + "\"";
+                    string[] s = new string[table.Columns.Count];
+                    for (Int32 j = 0; j < table.Columns.Count; j++)
+                    {
+                        _csvWriter.WriteField(table.Columns[j].Name);
+                    }
+                    _csvWriter.NextRecord();
                 }
-                await _fileWriter.WriteLineAsync(string.Join(",", s));
 
                 return new ReturnValue(true, "", null);
             }
@@ -178,6 +185,7 @@ namespace dexih.connections.flatfile
 
             _fileWriter.Dispose();
             _fileStream.Dispose();
+            _csvWriter.Dispose();
 
             LastWrittenFile = archiveFileName;
 
@@ -198,13 +206,9 @@ namespace dexih.connections.flatfile
                     string[] s = new string[reader.FieldCount];
                     for (int j = 0; j < reader.FieldCount; j++)
                     {
-                        s[j] = reader.GetString(j);
-                        if (s[j].Contains("\"")) //replace " with ""
-                            s[j] = s[j].Replace("\"", "\"\"");
-                        if(s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
-                            s[j] = "\"" + s[j] + "\"";
+                        _csvWriter.WriteField(reader[j]);
                     }
-                    await _fileWriter.WriteLineAsync(string.Join(",", s));
+                    _csvWriter.NextRecord();
                 }
                 return new ReturnValue<long>(true, timer.ElapsedTicks);
             }
@@ -224,90 +228,107 @@ namespace dexih.connections.flatfile
         {
             try
             {
-				var flatFile = (FlatFile)originalTable;
-
-                if (flatFile.FileFormat == null || flatFile.FileSample == null)
+                return await Task.Run(() =>
                 {
-                    return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.", null);
-                }
 
-                MemoryStream stream = new MemoryStream();
-                StreamWriter writer = new StreamWriter(stream);
-                writer.Write(flatFile.FileSample);
-                writer.Flush();
-                stream.Position = 0;
+                    var flatFile = (FlatFile)originalTable;
 
-                string[] headers;
-                try
-                {
-                    CsvReader csv = await Task.Run(() => new CsvReader(new StreamReader(stream), flatFile.FileFormat.Headers));
-                    headers = await Task.Run(() => csv.GetFieldHeaders());
-                    stream.Dispose();
-                }
-                catch(Exception ex)
-                {
-                    return new ReturnValue<Table>(false, "The following error occurred opening the filestream: " + ex.Message, ex, null);
-                }
+                    if (flatFile.FileFormat == null || flatFile.FileSample == null)
+                    {
+                        return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.", null);
+                    }
 
-                //The new datatable that will contain the table schema
-				FlatFile newFlatFile = new FlatFile();
-				flatFile.Name = originalTable.Name;
-                newFlatFile.Columns.Clear();
-                newFlatFile.LogicalName = newFlatFile.Name;
-                newFlatFile.Description = "";
-                newFlatFile.FileFormat = flatFile.FileFormat;
+                    MemoryStream stream = new MemoryStream();
+                    StreamWriter writer = new StreamWriter(stream);
+                    writer.Write(flatFile.FileSample);
+                    writer.Flush();
+                    stream.Position = 0;
 
-                TableColumn col;
+                    string[] headers;
+                    if (flatFile.FileFormat.HasHeaderRecord)
+                    {
+                        try
+                        {
+                            using (CsvReader csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
+                            {
+                                csv.ReadHeader();
+                                headers = csv.FieldHeaders;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            return new ReturnValue<Table>(false, "The following error occurred opening the filestream: " + ex.Message, ex, null);
+                        }
+                    } else
+                    {
+                        // if no header row specified, then just create a series column names "column001, column002 ..."
+                        using (CsvReader csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
+                        {
+                            csv.Read();
+                            headers = Enumerable.Range(0, csv.CurrentRecord.Count()).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
+                        }
+                    }
 
-                foreach (string field in headers)
-                {
+                    //The new datatable that will contain the table schema
+                    FlatFile newFlatFile = new FlatFile();
+                    flatFile.Name = originalTable.Name;
+                    newFlatFile.Columns.Clear();
+                    newFlatFile.LogicalName = newFlatFile.Name;
+                    newFlatFile.Description = "";
+                    newFlatFile.FileFormat = flatFile.FileFormat;
+
+                    TableColumn col;
+
+                    foreach (string field in headers)
+                    {
+                        col = new TableColumn()
+                        {
+
+                            //add the basic properties
+                            Name = field,
+                            LogicalName = field,
+                            IsInput = false,
+                            Datatype = ETypeCode.String,
+                            DeltaType = TableColumn.EDeltaType.TrackingField,
+                            Description = "",
+                            AllowDbNull = true,
+                            IsUnique = false
+                        };
+                        newFlatFile.Columns.Add(col);
+                    }
+
                     col = new TableColumn()
                     {
 
                         //add the basic properties
-                        Name = field,
-                        LogicalName = field,
+                        Name = "FileName",
+                        LogicalName = "FileName",
                         IsInput = false,
                         Datatype = ETypeCode.String,
-                        DeltaType = TableColumn.EDeltaType.TrackingField,
-                        Description = "",
-                        AllowDbNull = true,
+                        DeltaType = TableColumn.EDeltaType.FileName,
+                        Description = "The name of the file the record was loaded from.",
+                        AllowDbNull = false,
                         IsUnique = false
                     };
                     newFlatFile.Columns.Add(col);
-                }
 
-                col = new TableColumn()
-                {
+                    col = new TableColumn()
+                    {
 
-                    //add the basic properties
-                    Name = "FileName",
-                    LogicalName = "FileName",
-                    IsInput = false,
-                    Datatype = ETypeCode.String,
-                    DeltaType = TableColumn.EDeltaType.FileName,
-                    Description = "The name of the file the record was loaded from.",
-                    AllowDbNull = false,
-                    IsUnique = false
-                };
-                newFlatFile.Columns.Add(col);
+                        //add the basic properties
+                        Name = "FileRow",
+                        LogicalName = "FileRow",
+                        IsInput = false,
+                        Datatype = ETypeCode.Int32,
+                        DeltaType = TableColumn.EDeltaType.FileRowNumber,
+                        Description = "The file row number the record came from.",
+                        AllowDbNull = false,
+                        IsUnique = false
+                    };
+                    newFlatFile.Columns.Add(col);
 
-                col = new TableColumn()
-                {
-
-                    //add the basic properties
-                    Name = "FileRow",
-                    LogicalName = "FileRow",
-                    IsInput = false,
-                    Datatype = ETypeCode.Int32,
-                    DeltaType = TableColumn.EDeltaType.FileRowNumber,
-                    Description = "The file row number the record came from.",
-                    AllowDbNull = false,
-                    IsUnique = false
-                };
-                newFlatFile.Columns.Add(col);
-
-                return new ReturnValue<Table>(true, newFlatFile);
+                    return new ReturnValue<Table>(true, newFlatFile);
+                });
             }
             catch(Exception ex)
             {
@@ -320,9 +341,27 @@ namespace dexih.connections.flatfile
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+            var flatFile = (FlatFile)table;
+            var fileEnumeratorResult = await GetFileEnumerator(flatFile, FlatFile.EFlatFilePath.incoming, flatFile.FileMatchPattern);
+            if(!fileEnumeratorResult.Success)
+            {
+                return fileEnumeratorResult;
+            }
+
+            var fileEnumerator = fileEnumeratorResult.Value;
+
+            while(fileEnumerator.MoveNext())
+            {
+                var deleteResult = await DeleteFile(flatFile, FlatFile.EFlatFilePath.incoming, fileEnumerator.Current.FileName);
+                if(!deleteResult.Success)
+                {
+                    return deleteResult;
+                }
+            }
+
+            return new ReturnValue(true);
         }
 
         public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
@@ -356,57 +395,43 @@ namespace dexih.connections.flatfile
                 int rows = 0;
                 Stopwatch timer = Stopwatch.StartNew();
 
+                string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+                var flatFile = (FlatFile)table;
+
+                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.incoming, fileName);
+
                 //open a new filestream 
-                using (var stream = new MemoryStream())
+                using (var writer = writerResult.Value)
+                using(var streamWriter = new StreamWriter(writer))
+                using (var csv = new CsvWriter(streamWriter, flatFile.FileFormat))
                 {
-                    StreamWriter writer = new StreamWriter(stream);
 
                     if (!(queries?.Count >= 0))
                         return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.Elapsed.Ticks, (long)0));
 
-                    //write a header row.
-                    string[] s = new string[table.Columns.Count];
-                    for (Int32 j = 0; j < queries[0].InsertColumns.Count; j++)
+                    if (flatFile.FileFormat.HasHeaderRecord)
                     {
-                        s[j] = queries[0].InsertColumns[j].Column.Name;
-                        if (s[j].Contains("\"")) //replace " with ""
-                            s[j] = s[j].Replace("\"", "\"\"");
-                        if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
-                            s[j] = "\"" + s[j] + "\"";
+                        //write a header row.
+                        string[] s = new string[table.Columns.Count];
+                        for (Int32 j = 0; j < queries[0].InsertColumns.Count; j++)
+                        {
+                            csv.WriteField(queries[0].InsertColumns[j].Column.Name);
+                        }
+                        csv.NextRecord();
                     }
-                    await writer.WriteLineAsync(string.Join(",", s));
 
-                    
                     foreach (var query in queries)
                     {
                         for (Int32 j = 0; j < query.InsertColumns.Count; j++)
                         {
-                            s[j] = queries[0].InsertColumns[j].Value.ToString();
-                            if (s[j].Contains("\"")) //replace " with ""
-                                s[j] = s[j].Replace("\"", "\"\"");
-                            if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
-                                s[j] = "\"" + s[j] + "\"";
+                            csv.WriteField(query.InsertColumns[j].Value);
                         }
-                        await writer.WriteLineAsync(string.Join(",", s));
+                        csv.NextRecord();
                         rows++;
                     }
-
-                    writer.Flush();
-                    stream.Position = 0;
-
-                    //save the file
-                    string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
-
-                    var flatFile = (FlatFile)table;
-                    ReturnValue returnValue = await SaveFileStream(flatFile, EFlatFilePath.incoming, fileName, stream);
-                    if (!returnValue.Success)
-                        return new ReturnValue<Tuple<long, long>>(returnValue.Success, returnValue.Message, returnValue.Exception, Tuple.Create(timer.Elapsed.Ticks, (long)0));
-
-                    LastWrittenFile = Filename;
-
-                    stream.Dispose();
                 }
 
+                LastWrittenFile = Filename;
                 timer.Stop();
                 return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.Elapsed.Ticks, (long)0)); //sometimes reader returns -1, when we want this to be error condition.
             }
@@ -416,9 +441,31 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+
+        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+            var timer = Stopwatch.StartNew();
+
+            FlatFile flatFile = (FlatFile)table;
+            using (var reader = new ReaderFlatFile(this, flatFile, true))
+            {
+                var openResult = await reader.Open(0, query, cancelToken);
+                if (!openResult.Success)
+                {
+                    return new ReturnValue<object>(openResult);
+                }
+
+                var row = await reader.ReadAsync(cancelToken);
+                if (row)
+                {
+                    var value = reader[query.Columns[0].Column.Name];
+                    return new ReturnValue<object>(true, value);
+                }
+                else
+                {
+                    return new ReturnValue<object>(false, "No value was found.", null);
+                }
+            }
         }
 
         public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)

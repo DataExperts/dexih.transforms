@@ -30,6 +30,8 @@ namespace dexih.transforms
         public override bool CanSort => false;
 
         public override bool CanFilter => false;
+        public override bool CanDelete => false;
+        public override bool CanUpdate => false;
         public override bool CanAggregate => false;
         public override bool CanUseBinary => true;
         public override bool CanUseSql => false;

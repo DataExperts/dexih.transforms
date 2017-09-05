@@ -19,6 +19,8 @@ namespace dexih.connections.sql
         public override bool CanBulkLoad => true;
         public override bool CanSort => true;
         public override bool CanFilter => true;
+        public override bool CanDelete => true;
+        public override bool CanUpdate => true;
         public override bool CanAggregate => true;
         public override bool CanUseBinary => true;
         public override bool CanUseSql => true;

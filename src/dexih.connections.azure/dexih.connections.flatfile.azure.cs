@@ -1,5 +1,5 @@
 ﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.File;
+using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,43 +11,47 @@ using System.Threading;
 using dexih.connections.flatfile;
 using System.Text.RegularExpressions;
 using static dexih.connections.flatfile.FlatFile;
+using System.Linq;
 
 namespace dexih.connections.azure
 {
     public class ConnectionFlatFileAzureFile : ConnectionFlatFile
     {
-        public CloudFileClient CloudFileClient;
-        public CloudFileShare CloudFileShare;
+        public CloudBlobClient CloudBlobClient;
+        public CloudBlobContainer CloudBlobContainer;
 
-        private CloudFileClient GetCloudFileClient()
+        private CloudBlobClient _CloudBlobClient
         {
-            if (CloudFileClient == null)
+            get
             {
-                CloudStorageAccount storageAccount;
-                // Retrieve the storage account from the connection string.
-                if(UseConnectionString)
-                    storageAccount = CloudStorageAccount.Parse(ConnectionString);
-                else if (string.IsNullOrEmpty(Username)) //no username, then use the development settings.
-                    storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true");
-                else
-                    storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + Username + ";AccountKey=" + Password + ";BlobEndpoint=" + Server + ";TableEndpoint=" + Server + ";QueueEndpoint=" + Server + ";FileEndpoint=" + Server);
+                if (CloudBlobClient == null)
+                {
+                    CloudStorageAccount storageAccount;
+                    // Retrieve the storage account from the connection string.
+                    if (UseConnectionString)
+                        storageAccount = CloudStorageAccount.Parse(ConnectionString);
+                    else if (string.IsNullOrEmpty(Username)) //no username, then use the development settings.
+                        storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true;");
+                    else
+                        storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + Username + ";AccountKey=" + Password + ";BlobEndpoint=" + Server + ";TableEndpoint=" + Server + ";QueueEndpoint=" + Server + ";FileEndpoint=" + Server);
 
-                // Create the table client.
-                CloudFileClient = storageAccount.CreateCloudFileClient();
+                    // Create the table client.
+                    CloudBlobClient = storageAccount.CreateCloudBlobClient();
+                }
+
+                return CloudBlobClient;
             }
-
-            return CloudFileClient;
         }
 
-        private async Task<CloudFileShare> GetCloudFileShare()
+        private async Task<CloudBlobContainer> GetCloudBlobContainer()
         {
-            if (CloudFileShare == null)
+            if (CloudBlobContainer == null)
             {
-                CloudFileShare = GetCloudFileClient().GetShareReference(DefaultDatabase);
-                await CloudFileShare.CreateIfNotExistsAsync();
+                CloudBlobContainer = _CloudBlobClient.GetContainerReference(DefaultDatabase);
+                await CloudBlobContainer.CreateIfNotExistsAsync();
             }
 
-            return CloudFileShare;
+            return CloudBlobContainer;
         }
 
         public override async Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password)
@@ -55,13 +59,13 @@ namespace dexih.connections.azure
             List<string> fileShares = new List<string>();
 
             // Create the table client.
-            List<CloudFileShare> list = new List<CloudFileShare>();
+            List<CloudBlobContainer> list = new List<CloudBlobContainer>();
             try
             {
-                FileContinuationToken continuationToken = null;
+                BlobContinuationToken continuationToken = null;
                 do
                 {
-                    var shares = await GetCloudFileClient().ListSharesSegmentedAsync(continuationToken);
+                    var shares = await _CloudBlobClient.ListContainersSegmentedAsync(continuationToken);
                     continuationToken = shares.ContinuationToken;
                     list.AddRange(shares.Results);
 
@@ -73,32 +77,32 @@ namespace dexih.connections.azure
                 return new ReturnValue<List<string>>(false, "The following error occurred retrieving the Azure File shares: " + ex.Message, ex, null);
             }
 
-            foreach (CloudFileShare share in list)
+            foreach (CloudBlobContainer share in list)
             {
                 fileShares.Add(share.Name);
             }
             return new ReturnValue<List<string>>(true, "", null, fileShares);
         }
 
-        public async Task<ReturnValue<CloudFileDirectory>> GetDatabaseDirectory()
+        public async Task<ReturnValue<CloudBlobDirectory>> GetDatabaseDirectory()
         {
             try
             {
-                if (CloudFileShare == null)
+                if (CloudBlobContainer == null)
                 {
-                    CloudFileShare = GetCloudFileClient().GetShareReference(DefaultDatabase.ToLower());
-                    await CloudFileShare.CreateIfNotExistsAsync();
+                    CloudBlobContainer = _CloudBlobClient.GetContainerReference(DefaultDatabase.ToLower());
+                    await CloudBlobContainer.CreateIfNotExistsAsync();
                 }
 
-                return new ReturnValue<CloudFileDirectory>(true, CloudFileShare.GetRootDirectoryReference());
+                return new ReturnValue<CloudBlobDirectory>(true, CloudBlobContainer.GetDirectoryReference(""));
             }
             catch (Exception ex)
             {
-                return new ReturnValue<CloudFileDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase + ", message: " + ex.Message, ex);
+                return new ReturnValue<CloudBlobDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase + ", message: " + ex.Message, ex);
             }
         }
 
-        public async Task<ReturnValue<CloudFileDirectory>> GetFileDirectory(FlatFile file)
+        public async Task<ReturnValue<CloudBlobDirectory>> GetFileDirectory(FlatFile file)
         {
             try
             {
@@ -110,17 +114,17 @@ namespace dexih.connections.azure
 
                 var fileShare = getDatabaseDirectory.Value;
 
-                if(file != null && string.IsNullOrEmpty(file.FileRootPath))
+                if(file != null && !string.IsNullOrEmpty(file.FileRootPath))
                 {
                     fileShare = fileShare.GetDirectoryReference(file.FileRootPath);
-                    await fileShare.CreateIfNotExistsAsync();
+                    await fileShare.Container.CreateIfNotExistsAsync();
                 }
 
-                return new ReturnValue<CloudFileDirectory>(true, fileShare);
+                return new ReturnValue<CloudBlobDirectory>(true, fileShare);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<CloudFileDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase + ", message: " + ex.Message, ex);
+                return new ReturnValue<CloudBlobDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase + ", message: " + ex.Message, ex);
             }
         }
 
@@ -133,18 +137,18 @@ namespace dexih.connections.azure
                 if (!directory.Success)
                     return directory;
 
-                CloudFileDirectory cloudFileDirectory = directory.Value;
+                CloudBlobDirectory cloudFileDirectory = directory.Value;
 
-                if (file != null && string.IsNullOrEmpty(file.FileRootPath))
+                if (file != null && !string.IsNullOrEmpty(file.FileRootPath))
                 {
                     cloudFileDirectory = directory.Value.GetDirectoryReference(file.FileRootPath);
-                    await cloudFileDirectory.CreateIfNotExistsAsync();
+                    await cloudFileDirectory.Container.CreateIfNotExistsAsync();
                 }
 
                 if(file != null &&  path != EFlatFilePath.none)
                 {
                     cloudFileDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
-                    await cloudFileDirectory.CreateIfNotExistsAsync();
+                    await cloudFileDirectory.Container.CreateIfNotExistsAsync();
                 }
 
                 return new ReturnValue(true);
@@ -168,20 +172,20 @@ namespace dexih.connections.azure
                 if (!getFileDirectory.Success)
                     return getFileDirectory;
 
-                CloudFileDirectory cloudFileDirectory = getFileDirectory.Value;
-                CloudFileDirectory cloudFromDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(fromDirectory));
-                CloudFileDirectory cloudToDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(toDirectory));
+                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudFromDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(fromDirectory));
+                CloudBlobDirectory cloudToDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(toDirectory));
 
-                CloudFile sourceFile = cloudFromDirectory.GetFileReference(fileName);
-                CloudFile targetFile = cloudToDirectory.GetFileReference(fileName);
+                CloudBlob sourceFile = cloudFromDirectory.GetBlockBlobReference(fileName);
+                CloudBlob targetFile = cloudToDirectory.GetBlockBlobReference(fileName);
 
                 while (await targetFile.ExistsAsync())
                 {
                     version++;
                     newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
-                    targetFile = cloudToDirectory.GetFileReference(newFileName);
+                    targetFile = cloudToDirectory.GetBlockBlobReference(newFileName);
                 }
-                await targetFile.StartCopyAsync(sourceFile);
+                await targetFile.StartCopyAsync(sourceFile.Uri);
                 await sourceFile.DeleteAsync();
 
                 return new ReturnValue(true);
@@ -200,9 +204,9 @@ namespace dexih.connections.azure
                 if (!getFileDirectory.Success)
                     return getFileDirectory;
 
-                CloudFileDirectory cloudFileDirectory = getFileDirectory.Value;
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
-                CloudFile cloudFile = cloudSubDirectory.GetFileReference(fileName);
+                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
+                CloudBlob cloudFile = cloudSubDirectory.GetBlockBlobReference(fileName);
                 await cloudFile.DeleteAsync();
                 return new ReturnValue(true);
             }
@@ -222,25 +226,28 @@ namespace dexih.connections.azure
                 if (!getFileDirectory.Success)
                     return new ReturnValue<DexihFiles>(getFileDirectory);
 
-                CloudFileDirectory cloudFileDirectory = getFileDirectory.Value;
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
+                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                var pathstring = file.GetPath(path);
+                var pathlength = pathstring.Length + 1;
+                CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(pathstring);
 
-                FileContinuationToken continuationToken = null;
-                List<IListFileItem> list = new List<IListFileItem>();
+                BlobContinuationToken continuationToken = null;
+                List<IListBlobItem> list = new List<IListBlobItem>();
                 do
                 {
-                    var filesList = await cloudSubDirectory.ListFilesAndDirectoriesSegmentedAsync(continuationToken);
+                    var filesList = await cloudSubDirectory.ListBlobsSegmentedAsync(false, BlobListingDetails.None, 500, continuationToken, null, null);
                     continuationToken = filesList.ContinuationToken;
                     list.AddRange(filesList.Results);
 
                 } while (continuationToken != null);
 
-                foreach (CloudFile cloudFile in list)
+                foreach (CloudBlob cloudFile in list)
                 {
                     await cloudFile.FetchAttributesAsync();
+                    string fileName = cloudFile.Name.Substring(pathlength);
                     if (string.IsNullOrEmpty(searchPattern) || FitsMask(file.Name, searchPattern))
                     {
-                        files.Add(new DexihFileProperties() { FileName = file.Name, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length });
+                        files.Add(new DexihFileProperties() { FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length });
                     }
                 }
                 DexihFiles newFiles = new DexihFiles(files.ToArray());
@@ -276,23 +283,27 @@ namespace dexih.connections.azure
                 if (!getFileDirectory.Success)
                     return new ReturnValue<List<DexihFileProperties>>(getFileDirectory);
 
-                CloudFileDirectory cloudFileDirectory = getFileDirectory.Value;
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
+                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
 
-                FileContinuationToken continuationToken = null;
-                List<IListFileItem> list = new List<IListFileItem>();
+                var pathstring = file.GetPath(path);
+                var pathlength = pathstring.Length + 1;
+                CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(pathstring);
+
+                BlobContinuationToken continuationToken = null;
+                List<IListBlobItem> list = new List<IListBlobItem>();
                 do
                 {
-                    var filesList = await cloudSubDirectory.ListFilesAndDirectoriesSegmentedAsync(continuationToken);
+                    var filesList = await cloudSubDirectory.ListBlobsSegmentedAsync(true, BlobListingDetails.None, 500, continuationToken, null, null);
                     continuationToken = filesList.ContinuationToken;
                     list.AddRange(filesList.Results);
 
                 } while (continuationToken != null);
 
-                foreach (CloudFile cloudFile in list)
+                foreach (CloudBlob cloudFile in list)
                 {
                     await cloudFile.FetchAttributesAsync();
-                    files.Add(new DexihFileProperties() { FileName = file.Name, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length, ContentType = cloudFile.Properties.ContentType });
+                    string fileName = cloudFile.Name.Substring(pathlength);
+                    files.Add(new DexihFileProperties() { FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length, ContentType = cloudFile.Properties.ContentType });
                 }
                 return new ReturnValue<List<DexihFileProperties>>(true, "", null, files);
             }
@@ -310,9 +321,9 @@ namespace dexih.connections.azure
                 if (!getFileDirectory.Success)
                     return new ReturnValue<Stream>(getFileDirectory);
 
-                CloudFileDirectory cloudFileDirectory = getFileDirectory.Value;
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
-                Stream reader2 = await cloudSubDirectory.GetFileReference(fileName).OpenReadAsync();
+                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
+                Stream reader2 = await cloudSubDirectory.GetBlockBlobReference(fileName).OpenReadAsync();
                 return new ReturnValue<Stream>(true, "", null, reader2);
             }
             catch (Exception ex)
@@ -330,9 +341,9 @@ namespace dexih.connections.azure
                 if (!getFileDirectory.Success)
                     return new ReturnValue<Stream>(getFileDirectory);
 
-                CloudFileDirectory cloudFileDirectory = getFileDirectory.Value;
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
-                Stream reader2 = await cloudSubDirectory.GetFileReference(fileName).OpenWriteAsync(1000);
+                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
+                Stream reader2 = await cloudSubDirectory.GetBlockBlobReference(fileName).OpenWriteAsync();
                 return new ReturnValue<Stream>(true, "", null, reader2);
             }
             catch (Exception ex)
@@ -354,15 +365,15 @@ namespace dexih.connections.azure
                 if (!getFileDirectory.Success)
                     return new ReturnValue<DexihFiles>(getFileDirectory);
 
-                CloudFileDirectory cloudFileDirectory = getFileDirectory.Value;
-                CloudFileDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
-                CloudFile cloudFile = cloudSubDirectory.GetFileReference(fileName);
+                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
+                CloudBlockBlob cloudFile = cloudSubDirectory.GetBlockBlobReference(fileName);
 
                 while (await cloudFile.ExistsAsync())
                 {
                     version++;
                     newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
-                    cloudFile = cloudSubDirectory.GetFileReference(newFileName);
+                    cloudFile = cloudSubDirectory.GetBlockBlobReference(newFileName);
                 }
 
                 await cloudFile.UploadFromStreamAsync(fileStream);
@@ -379,7 +390,7 @@ namespace dexih.connections.azure
         {
             try
             {
-                CloudFileClient connection = GetCloudFileClient();
+                CloudBlobClient connection = _CloudBlobClient;
                 var serviceProperties = await connection.GetServicePropertiesAsync();
                 State = EConnectionState.Open;
                 return new ReturnValue(true);
@@ -389,6 +400,7 @@ namespace dexih.connections.azure
                 return new ReturnValue(false, "The following error occurred opening the Azure file connection: " + ex.Message, ex);
             }
         }
+
 
         public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
@@ -405,9 +417,9 @@ namespace dexih.connections.azure
                 if (!getDatabaseDirectory.Success)
                     return new ReturnValue<bool>(getDatabaseDirectory);
 
-				CloudFileDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(flatFile.FileRootPath);
+                CloudBlobDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(flatFile.FileRootPath);
 
-                var exists = await cloudFileDirectory.ExistsAsync();
+                var exists = await cloudFileDirectory.Container.ExistsAsync();
                 return new ReturnValue<bool>(true, exists);
             }
             catch (Exception ex)

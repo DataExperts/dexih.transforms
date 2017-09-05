@@ -13,7 +13,14 @@ namespace dexih.connections.azure.tests
         {
             var ConnectionString = Convert.ToString(Configuration.AppSettings["FlatFileAzure:ConnectionString"]);
             if (ConnectionString == "")
-                return null;
+            {
+                var connection2 = new ConnectionFlatFileAzureFile()
+                {
+                    Name = "Test Connection",
+                    UseConnectionString = false
+                };
+                return connection2;
+            }
 
             var connection = new ConnectionFlatFileAzureFile()
             {
@@ -29,6 +36,8 @@ namespace dexih.connections.azure.tests
         {
             string database = "test" + Guid.NewGuid().ToString().Replace('-', 'a').Substring(1, 10);
             var con = GetAzureConnection();
+
+            Assert.NotNull(con);
 
             if (con != null)
                 await new UnitTests().Unit(con, database);

@@ -24,6 +24,8 @@ namespace dexih.connections.webservice
         public override bool CanBulkLoad => false;
         public override bool CanSort => false;
         public override bool CanFilter => false;
+        public override bool CanDelete => false;
+        public override bool CanUpdate => false;
         public override bool CanAggregate => false;
         public override bool CanUseBinary => false;
         public override bool CanUseSql => false;

@@ -70,6 +70,8 @@ namespace dexih.transforms
         public abstract bool CanBulkLoad { get; }
         public abstract bool CanSort { get; }
         public abstract bool CanFilter { get; }
+        public abstract bool CanUpdate { get; }
+        public abstract bool CanDelete { get; }
         public abstract bool CanAggregate { get; }
         public abstract bool CanUseBinary { get; }
         public abstract bool CanUseSql { get; }

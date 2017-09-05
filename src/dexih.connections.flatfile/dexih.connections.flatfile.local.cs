@@ -88,32 +88,30 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                return await Task.Run(() =>
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                string fileNameExtension = Path.GetExtension(fileName);
+                int version = 0;
+                string newFileName;
+
+                newFileName = fileName;
+                var fullToDirectory = GetFullPath(file, toDirectory);
+                var fullFromDirectory = GetFullPath(file, fromDirectory);
+
+                var createDirectoryResult = await CreateDirectory(file, toDirectory);
+                if (!createDirectoryResult.Success)
                 {
-                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-                    string fileNameExtension = Path.GetExtension(fileName);
-                    int version = 0;
-                    string newFileName;
+                    return createDirectoryResult;
+                }
 
-                    newFileName = fileName;
-                    var fullToDirectory = GetFullPath(file, toDirectory);
-                    var fullFromDirectory = GetFullPath(file, fromDirectory);
+                // if there is already a file with the same name on the target directory, add a version number until a unique name is found.
+                while (File.Exists(Path.Combine(fullToDirectory, newFileName)))
+                {
+                    version++;
+                    newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                }
 
-                    if(!Directory.Exists(fullToDirectory))
-                    {
-                        Directory.CreateDirectory(fullToDirectory);
-                    }
-
-                    // if there is already a file with the same name on the target directory, add a version number until a unique name is found.
-                    while (File.Exists(Path.Combine(fullToDirectory, newFileName)))
-                    {
-                        version++;
-                        newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
-                    }
-
-                    File.Move(Path.Combine(fullFromDirectory, fileName), Path.Combine(fullToDirectory, newFileName));
-                    return new ReturnValue(true);
-                });
+                File.Move(Path.Combine(fullFromDirectory, fileName), Path.Combine(fullToDirectory, newFileName));
+                return new ReturnValue(true);
 
             }
             catch (Exception ex)
@@ -228,6 +226,12 @@ namespace dexih.connections.flatfile
         {
             try
             {
+                var createDirectoryResult = await CreateDirectory(file, path);
+                if(!createDirectoryResult.Success)
+                {
+                    return createDirectoryResult;
+                }
+
                 string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
                 string fileNameExtension = Path.GetExtension(fileName);
 

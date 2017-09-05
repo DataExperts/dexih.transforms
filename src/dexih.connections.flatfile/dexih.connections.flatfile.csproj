@@ -16,11 +16,19 @@
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Csv\**" />
+    <EmbeddedResource Remove="Csv\**" />
+    <None Remove="Csv\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj">
     </ProjectReference>
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="dexih.connections.flatfile.reader %28copy%29.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="2.16.3" />
   </ItemGroup>
 </Project>

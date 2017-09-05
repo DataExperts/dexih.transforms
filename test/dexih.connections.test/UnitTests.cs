@@ -52,23 +52,26 @@ namespace dexih.connections.test
             });
 
             returnValue = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
+
             Assert.True(returnValue.Success, "InsertQuery - Message:" + returnValue.Message);
 
-            if (connection.DatabaseCategory == Connection.ECategory.File)
-            {
-                //check the table loaded 2 rows successully
-                Transform fileReader = connection.GetTransformReader(table, null);
-                int rowCount = 0;
-                var filereaderResult = await fileReader.Open(0, null, CancellationToken.None);
-                Assert.True(filereaderResult.Success, "Open Reader:" + filereaderResult.Message);
-                while (await fileReader.ReadAsync()) rowCount++;
-                Assert.True(rowCount == 2, "Select count - value :" + rowCount);
-            }
-            else
-            {
-                SelectQuery selectQuery;
+            //if (connection.DatabaseCategory == Connection.ECategory.File)
+            //{
+            //    //check the table loaded 2 rows successully
+            //    Transform fileReader = connection.GetTransformReader(table, null);
+            //    int rowCount = 0;
+            //    var filereaderResult = await fileReader.Open(0, null, CancellationToken.None);
+            //    Assert.True(filereaderResult.Success, "Open Reader:" + filereaderResult.Message);
+            //    while (await fileReader.ReadAsync()) rowCount++;
+            //    Assert.True(rowCount == 2, "Select count - value :" + rowCount);
+            //}
+            //else
+            //{
+            SelectQuery selectQuery;
 
-                //run a select query with one row, sorted descending.  
+            //run a select query with one row, sorted descending.  
+            if (connection.CanFilter)
+            {
                 selectQuery = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("StringColumn"), SelectColumn.EAggregate.None) },
@@ -81,9 +84,13 @@ namespace dexih.connections.test
                 var returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
                 Assert.True(returnScalar.Success, "SelectQuery - Message:" + returnScalar.Message);
 
-                if (connection.CanSort == true) //azure can't sort, so don't bother with this test.
+                //if the connection doesn't support sorting, don't bother with this test.
+                if (connection.CanSort == true) 
                     Assert.True((string)returnScalar.Value == "value2", "SelectQuery - Message:" + returnScalar.Message);
+            }
 
+            if (connection.CanUpdate)
+            {
                 //run an update query which will change the second date value to 2001-01-21
                 var updateQuery = new UpdateQuery()
                 {
@@ -104,29 +111,31 @@ namespace dexih.connections.test
                 };
 
                 //should return updated date 
-                returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
+                var returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
                 Assert.True(returnScalar.Success, "SelectQuery - Message:" + returnScalar.Message);
                 Assert.True((DateTime)returnScalar.Value == new DateTime(2001, 01, 21), "DateTime didn't match");
+            }
 
-
-                //run a simple aggregate query to get max value from decimaColumn
-                if (connection.CanAggregate)
+            //run a simple aggregate query to get max value from decimaColumn
+            if (connection.CanAggregate)
+            {
+                selectQuery = new SelectQuery()
                 {
-                    selectQuery = new SelectQuery()
-                    {
-                        Columns = new List<SelectColumn>() { new SelectColumn("DecimalColumn", SelectColumn.EAggregate.Max) },
-                        Sorts = new List<Sort>() { new Sort("DateColumn") },
-                        Groups = new List<TableColumn>() { new TableColumn("DateColumn") },
-                        Rows = 1,
-                        Table = "test_table"
-                    };
+                    Columns = new List<SelectColumn>() { new SelectColumn("DecimalColumn", SelectColumn.EAggregate.Max) },
+                    Sorts = new List<Sort>() { new Sort("DateColumn") },
+                    Groups = new List<TableColumn>() { new TableColumn("DateColumn") },
+                    Rows = 1,
+                    Table = "test_table"
+                };
 
-                    //should return value2 from second row
-                    returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
-                    Assert.True(returnScalar.Success, "SelectQuery2 - Message:" + returnScalar.Message);
-                    Assert.True(Decimal.Compare(Convert.ToDecimal(returnScalar.Value), (Decimal)1.2) == 0, "SelectQuery2 - returned value: " + returnScalar.Value.ToString() + " Message:" + returnScalar.Message);
-                }
+                //should return value2 from second row
+                var returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
+                Assert.True(returnScalar.Success, "SelectQuery2 - Message:" + returnScalar.Message);
+                Assert.True(Decimal.Compare(Convert.ToDecimal(returnScalar.Value), (Decimal)1.2) == 0, "SelectQuery2 - returned value: " + returnScalar.Value.ToString() + " Message:" + returnScalar.Message);
+            }
 
+            if (connection.CanDelete)
+            {
                 //run a delete query.
                 var deleteQuery = new DeleteQuery()
                 {
@@ -136,7 +145,7 @@ namespace dexih.connections.test
 
                 //should return value2 from second row
                 var returnDelete = await connection.ExecuteDelete(table, new List<DeleteQuery>() { deleteQuery }, CancellationToken.None);
-                Assert.True(returnDelete.Success, "Delete Query - Message:" + returnScalar.Message);
+                Assert.True(returnDelete.Success, "Delete Query - Message:" + returnDelete.Message);
 
                 //run a select query to check row is deleted
                 selectQuery = new SelectQuery()
@@ -148,7 +157,7 @@ namespace dexih.connections.test
                 };
 
                 //should return null
-                returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
+                var returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
                 Assert.True(returnScalar.Success, "SelectQuery - Message:" + returnScalar.Message);
                 Assert.True(returnScalar.Value == null);
 
@@ -183,33 +192,39 @@ namespace dexih.connections.test
                 returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
                 Assert.True(returnScalar.Success, "SelectQuery - Message:" + returnScalar.Message);
                 Assert.True(returnScalar.Value == null);
+                // }
             }
 
-            //start a datawriter and insert the test data
-            await connection.DataWriterStart(table);
-            var testData = DataSets.CreateTestData();
+            if (connection.CanBulkLoad)
+            {
+                await connection.TruncateTable(table, CancellationToken.None);
 
-            var bulkResult = await connection.ExecuteInsertBulk(table, testData, CancellationToken.None);
-            Assert.True(bulkResult.Success, "WriteDataBulk - Message:" + bulkResult.Message);
+                //start a datawriter and insert the test data
+                await connection.DataWriterStart(table);
+                var testData = DataSets.CreateTestData();
 
-            await connection.DataWriterFinish(table);
+                var bulkResult = await connection.ExecuteInsertBulk(table, testData, CancellationToken.None);
+                Assert.True(bulkResult.Success, "WriteDataBulk - Message:" + bulkResult.Message);
 
-            ////if the write was a file.  move it back to the incoming directory to read it.
-            //if(connection.DatabaseCategory == Connection.ECategory.File)
-            //{
-            //    var fileConnection = (ConnectionFlatFile)connection;
-            //    var filename = fileConnection.LastWrittenFile;
+                await connection.DataWriterFinish(table);
 
-            //    var filemoveResult = fileConnection.MoveFile(table, filename, table.GetExtendedProperty("Archive"), table.GetExtendedProperty("Incoming"))
-            //}
+                ////if the write was a file.  move it back to the incoming directory to read it.
+                //if(connection.DatabaseCategory == Connection.ECategory.File)
+                //{
+                //    var fileConnection = (ConnectionFlatFile)connection;
+                //    var filename = fileConnection.LastWrittenFile;
 
-            //check the table loaded 10 rows successully
-            Transform reader = connection.GetTransformReader(table, null);
-            int count = 0;
-            var openResult = await reader.Open(0, null, CancellationToken.None);
-            Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
-            while (await reader.ReadAsync()) count++;
-            Assert.True(count == 10, "Select count - value :" + count);
+                //    var filemoveResult = fileConnection.MoveFile(table, filename, table.GetExtendedProperty("Archive"), table.GetExtendedProperty("Incoming"))
+                //}
+
+                //check the table loaded 10 rows successully
+                Transform reader = connection.GetTransformReader(table, null, null, true);
+                int count = 0;
+                var openResult = await reader.Open(0, null, CancellationToken.None);
+                Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
+                while (await reader.ReadAsync()) count++;
+                Assert.True(count == 10, "Select count - value :" + count);
+            }
 
             if (connection.CanFilter == true)
             {
@@ -217,27 +232,31 @@ namespace dexih.connections.test
                 var filters = new List<Filter> { new Filter("IntColumn", Filter.ECompare.IsEqual, 5) };
 
                 //should return value5
-                reader = connection.GetTransformReader(table, null);
-                openResult = await reader.Open(0, null, CancellationToken.None);
-                Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
+                var reader = connection.GetTransformReader(table, null);
 
-                var returnLookup = await reader.LookupRow(filters, CancellationToken.None);
-                Assert.True(returnLookup.Success, "Lookup - Message:" + returnLookup.Message);
-                Assert.True(Convert.ToString(returnLookup.Value[0]) == "value5", "LookupValue :" + returnLookup.Value[0]);
+                if (reader.CanLookupRowDirect)
+                {
+                    var openResult = await reader.Open(0, null, CancellationToken.None);
+                    Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
 
-                //run lookup again with caching set.
-                reader = connection.GetTransformReader(table, null);
-                openResult = await reader.Open(0, null, CancellationToken.None);
-                Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
-                reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
-                returnLookup = await reader.LookupRow(filters, CancellationToken.None);
-                Assert.True(returnLookup.Success, "Lookup - Message:" + returnLookup.Message);
-                Assert.True(Convert.ToString(returnLookup.Value[0]) == "value5", "Select count - value :" + returnLookup.Value);
+                    var returnLookup = await reader.LookupRow(filters, CancellationToken.None);
+                    Assert.True(returnLookup.Success, "Lookup - Message:" + returnLookup.Message);
+                    Assert.True(Convert.ToString(returnLookup.Value[0]) == "value5", "LookupValue :" + returnLookup.Value[0]);
+
+                    //run lookup again with caching set.
+                    reader = connection.GetTransformReader(table, null);
+                    openResult = await reader.Open(0, null, CancellationToken.None);
+                    Assert.True(openResult.Success, "Open Reader:" + openResult.Message);
+                    reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+                    returnLookup = await reader.LookupRow(filters, CancellationToken.None);
+                    Assert.True(returnLookup.Success, "Lookup - Message:" + returnLookup.Message);
+                    Assert.True(Convert.ToString(returnLookup.Value[0]) == "value5", "Select count - value :" + returnLookup.Value);
+                }
+
+                reader.Close();
             }
 
         }
-
-
 
     }
 }

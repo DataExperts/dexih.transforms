@@ -30,6 +30,8 @@ namespace dexih.connections.excel
         public override bool CanBulkLoad => false;
         public override bool CanSort => false;
         public override bool CanFilter => false;
+        public override bool CanDelete => true;
+        public override bool CanUpdate => true;
         public override bool CanAggregate => false;
 	    public override bool CanUseBinary => true;
 	    public override bool CanUseSql => false;
