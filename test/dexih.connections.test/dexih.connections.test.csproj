@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\dexih.connections.flatfile\dexih.connections.flatfile.csproj" />
     <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj">
     </ProjectReference>
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />

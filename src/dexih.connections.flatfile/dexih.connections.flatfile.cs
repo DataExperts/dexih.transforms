@@ -76,6 +76,8 @@ namespace dexih.connections.flatfile
             //create the subdirectories
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.incoming);
             if (returnValue.Success == false) return returnValue;
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.outgoing);
+            if (returnValue.Success == false) return returnValue;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.processed);
             if (returnValue.Success == false) return returnValue;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.rejected);
@@ -403,6 +405,10 @@ namespace dexih.connections.flatfile
                 var flatFile = (FlatFile)table;
 
                 var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName);
+                if (!writerResult.Success)
+                {
+                    return new ReturnValue<Tuple<long, long>>(writerResult);
+                }
 
                 //open a new filestream 
                 using (var writer = writerResult.Value)
@@ -426,7 +432,7 @@ namespace dexih.connections.flatfile
 
                     foreach (var query in queries)
                     {
-                        for (Int32 j = 0; j < query.InsertColumns.Count; j++)
+                        for (var j = 0; j < query.InsertColumns.Count; j++)
                         {
                             csv.WriteField(query.InsertColumns[j].Value);
                         }
@@ -435,7 +441,7 @@ namespace dexih.connections.flatfile
                     }
                 }
 
-                LastWrittenFile = Filename;
+                LastWrittenFile = fileName;
                 timer.Stop();
                 return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.Elapsed.Ticks, (long)0)); //sometimes reader returns -1, when we want this to be error condition.
             }

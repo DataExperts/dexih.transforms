@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.connections.flatfile;
 using Xunit;
 
 namespace dexih.connections.test
@@ -55,18 +56,18 @@ namespace dexih.connections.test
 
             Assert.True(returnValue.Success, "InsertQuery - Message:" + returnValue.Message);
 
-            //if (connection.DatabaseCategory == Connection.ECategory.File)
-            //{
-            //    //check the table loaded 2 rows successully
-            //    Transform fileReader = connection.GetTransformReader(table, null);
-            //    int rowCount = 0;
-            //    var filereaderResult = await fileReader.Open(0, null, CancellationToken.None);
-            //    Assert.True(filereaderResult.Success, "Open Reader:" + filereaderResult.Message);
-            //    while (await fileReader.ReadAsync()) rowCount++;
-            //    Assert.True(rowCount == 2, "Select count - value :" + rowCount);
-            //}
-            //else
-            //{
+            ////if the write was a file.  move it back to the incoming directory to read it.
+            if(connection.DatabaseCategory == Connection.ECategory.File)
+            {
+                var fileConnection = (ConnectionFlatFile)connection;
+                var filename = fileConnection.LastWrittenFile;
+
+                var filemoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
+                    FlatFile.EFlatFilePath.outgoing, FlatFile.EFlatFilePath.incoming);
+                    
+                Assert.True(filemoveResult.Success, filemoveResult.Message);
+            }
+            
             SelectQuery selectQuery;
 
             //run a select query with one row, sorted descending.  
@@ -209,13 +210,16 @@ namespace dexih.connections.test
                 await connection.DataWriterFinish(table);
 
                 ////if the write was a file.  move it back to the incoming directory to read it.
-                //if(connection.DatabaseCategory == Connection.ECategory.File)
-                //{
-                //    var fileConnection = (ConnectionFlatFile)connection;
-                //    var filename = fileConnection.LastWrittenFile;
+                if(connection.DatabaseCategory == Connection.ECategory.File)
+                {
+                    var fileConnection = (ConnectionFlatFile)connection;
+                    var filename = fileConnection.LastWrittenFile;
 
-                //    var filemoveResult = fileConnection.MoveFile(table, filename, table.GetExtendedProperty("Archive"), table.GetExtendedProperty("Incoming"))
-                //}
+                    var filemoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
+                        FlatFile.EFlatFilePath.outgoing, FlatFile.EFlatFilePath.incoming);
+                    
+                    Assert.True(filemoveResult.Success, filemoveResult.Message);
+                }
 
                 //check the table loaded 10 rows successully
                 Transform reader = connection.GetTransformReader(table, null, null, true);

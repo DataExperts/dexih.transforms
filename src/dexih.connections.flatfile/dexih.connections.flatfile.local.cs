@@ -209,12 +209,14 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                return await Task.Run(() =>
+                var createDirectoryResult = await CreateDirectory(file, path);
+                if(!createDirectoryResult.Success)
                 {
-                    var fullDirectory = GetFullPath(file, path);
-                    Stream reader = File.OpenWrite(Path.Combine(fullDirectory, fileName));
-                    return new ReturnValue<Stream>(true, "", null, reader);
-                });
+                    return new ReturnValue<Stream>(createDirectoryResult);
+                }
+                var fullDirectory = GetFullPath(file, path);
+                Stream reader = File.OpenWrite(Path.Combine(fullDirectory, fileName));
+                return new ReturnValue<Stream>(true, "", null, reader);
             }
             catch (Exception ex)
             {
