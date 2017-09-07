@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using static dexih.functions.TableColumn;
 
 namespace dexih.functions
 {
@@ -140,6 +141,46 @@ namespace dexih.functions
                     return typeof(object);
             }
         }
+
+		/// <summary>
+		/// Gets the default datatype for specified delta column
+		/// </summary>
+		/// <returns>The delta data type.</returns>
+		/// <param name="deltaType">Delta type.</param>
+		public static ETypeCode GetDeltaDataType(EDeltaType deltaType)
+		{
+			switch (deltaType)
+			{
+				case EDeltaType.SurrogateKey:
+				case EDeltaType.SourceSurrogateKey:
+				case EDeltaType.CreateAuditKey:
+				case EDeltaType.UpdateAuditKey:
+				case EDeltaType.FileRowNumber:
+				case EDeltaType.AutoIncrement:
+					return ETypeCode.UInt64;
+				case EDeltaType.ValidFromDate:
+				case EDeltaType.ValidToDate:
+				case EDeltaType.CreateDate:
+				case EDeltaType.UpdateDate:
+				case EDeltaType.TimeStamp:
+					return ETypeCode.DateTime;
+				case EDeltaType.IsCurrentField:
+					return ETypeCode.Boolean;
+				case EDeltaType.NaturalKey:
+				case EDeltaType.TrackingField:
+				case EDeltaType.NonTrackingField:
+				case EDeltaType.IgnoreField:
+				case EDeltaType.ValidationStatus:
+				case EDeltaType.RejectedReason:
+				case EDeltaType.FileName:
+				case EDeltaType.AzureRowKey:
+				case EDeltaType.AzurePartitionKey:
+				case EDeltaType.DatabaseOperation:
+					return ETypeCode.String;
+			}
+
+			return ETypeCode.String;
+		}
 
 
         /// <summary>

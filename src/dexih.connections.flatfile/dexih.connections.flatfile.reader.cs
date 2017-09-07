@@ -93,15 +93,24 @@ namespace dexih.connections.flatfile
 
         private void InitializeCsvReader(StreamReader streamReader)
         {
-            _csvReader = new CsvReader(streamReader, _fileFormat);
-            _csvReader.ReadHeader();
+			if (_fileFormat != null)
+			{
+				_csvReader = new CsvReader(streamReader, _fileFormat);
+			} 
+			else 
+			{
+				_csvReader = new CsvReader(streamReader);
+			}
+				
 
             _csvOrdinalMappings = new Dictionary<int, (int position, Type dataType)>();
 
             // create mappings from column name positions, to the csv field name positions.
-            if(_fileFormat.MatchHeaderRecord || _fileFormat.HasHeaderRecord == false)
+			if(_fileFormat != null && ( _fileFormat.MatchHeaderRecord || !_fileFormat.HasHeaderRecord))
             {
-                for(var col = 0; col < CacheTable.Columns.Count; col++)
+				_csvReader.ReadHeader();
+
+				for(var col = 0; col < CacheTable.Columns.Count; col++)
                 {
                     var column = CacheTable.Columns[col];
                     if (column.DeltaType != TableColumn.EDeltaType.FileName && column.DeltaType != TableColumn.EDeltaType.FileRowNumber)

@@ -23,8 +23,8 @@ namespace dexih.connections.sql
         public override string DatabaseTypeName => "MySql";
         public override ECategory DatabaseCategory => ECategory.SqlDatabase;
 
-        public override string SqlDelimiterOpen { get; } = "`";
-        public override string SqlDelimiterClose { get; } = "`";
+        protected override string SqlDelimiterOpen { get; } = "`";
+        protected override string SqlDelimiterClose { get; } = "`";
 
 //		public override object ConvertParameterType(object value)
 //		{

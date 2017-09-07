@@ -34,6 +34,8 @@ namespace dexih.connections.sql
                     return (long)uint32;
 				case ulong uint64:
 					return (long)uint64;
+				case null:
+					return DBNull.Value;
 				default:
                     return value;
             }

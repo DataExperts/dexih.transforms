@@ -85,8 +85,22 @@ namespace dexih.functions
 
 				if (!onlyPrimaryProperties)
 				{
+					if(srcProp.PropertyType.IsArray && srcProp.CanWrite)
+					{
+						var srcArray = srcProp.GetValue(source, null) as Array;
+						var targetArray = Array.CreateInstance(targetProperty.PropertyType.GetElementType(), srcArray.Length);
+
+						for (var i = 0; i < srcArray.Length; i++)
+						{
+							object value = Activator.CreateInstance(targetProperty.PropertyType.GetElementType());
+							srcArray.GetValue(i).CopyProperties(value);
+							targetArray.SetValue(value, i);
+						}
+
+						targetProperty.SetValue(destination, targetArray);
+					}
 					// if the item is a collection, then iterate through each property
-				if (srcProp.PropertyType.IsNonStringEnumerable() && srcProp.CanWrite)
+				else if (srcProp.PropertyType.IsNonStringEnumerable() && srcProp.CanWrite)
 					{
 						var srcCollection = (IEnumerable)srcProp.GetValue(source, null);
 						object targetCollection = (IEnumerable)targetProperty.GetValue(destination, null);

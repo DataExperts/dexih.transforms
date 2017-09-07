@@ -28,13 +28,14 @@ namespace dexih.connections.sql
 
 
         //These properties can be overridden for different databases
-        public virtual string SqlDelimiterOpen { get; } = "\"";
-        public virtual string SqlDelimiterClose { get; } = "\"";
+        protected virtual string SqlDelimiterOpen { get; } = "\"";
+
+        protected virtual string SqlDelimiterClose { get; } = "\"";
         public virtual string SqlValueOpen { get; } = "'";
         public virtual string SqlValueClose { get; } = "'";
-        public virtual string SqlFromAttribute(Table table) => "";
+        protected virtual string SqlFromAttribute(Table table) => "";
 
-		public long MaxSqlSize { get; set; } = 4000000; // the largest size the sql command can be (default 4mb)
+        protected long MaxSqlSize { get; set; } = 4000000; // the largest size the sql command can be (default 4mb)
 
 
 		public string AddDelimiter(string name)

@@ -14,34 +14,36 @@ namespace dexih.functions.tests
         [InlineData("hi", true)]
         [InlineData(1, true)]
         [InlineData(1.1, true)]
-        [InlineData(functions.DataType.ETypeCode.Boolean, true)]
+        [InlineData(DataType.ETypeCode.Boolean, true)]
         [InlineData(true, true)]
-        [MemberData("OtherProperties")] 
+        [MemberData(nameof(OtherProperties))] 
         public void Test_IsSimpleType(object value, bool expected)
         {
             Assert.Equal(expected, IsSimpleType(value.GetType()));
         }
 
-        public static IEnumerable<object[]> OtherProperties
+	    private static IEnumerable<object[]> OtherProperties
         {
             get
             {
                 var dateValue = DateTime.Parse("2001-01-01");
+                var timeValue = new TimeSpan(1, 2, 3);
 
-                return new[]
+				return new[]
                 {
                     new object[] { new object[] {1,2,3}, false },
                     new object[] { new int[] {1,2,3}, false },
                     new object[] { new string[] { "hi", "there" }, false },
-                    new object[] { dateValue, true }
-                };
+                    new object[] { dateValue, true },
+					new object[] { timeValue, true }
+				};
             }
         }
 
         [Fact]
-        public void Test_CopyProperties()
+        public void Test_CopyProperties_Column()
         {
-            TableColumn column = new TableColumn()
+            var column = new TableColumn()
             {
                 BaseDataType = DataType.ETypeCode.String,
                 DeltaType = TableColumn.EDeltaType.CreateDate,
@@ -50,7 +52,7 @@ namespace dexih.functions.tests
                 SecurityFlag = TableColumn.ESecurityFlag.OneWayHash
             };
 
-            TableColumn newColumn = new TableColumn();
+            var newColumn = new TableColumn();
             column.CopyProperties(newColumn, true);
 
             Assert.Equal(DataType.ETypeCode.String, newColumn.BaseDataType);
@@ -59,5 +61,24 @@ namespace dexih.functions.tests
             Assert.Equal(TableColumn.ESecurityFlag.OneWayHash, newColumn.SecurityFlag);
         }
 
+		[Theory]
+		[InlineData("hi")]
+		[InlineData(1)]
+		[InlineData(1.1)]
+		[InlineData(functions.DataType.ETypeCode.Boolean)]
+		[InlineData(true, true)]
+		[MemberData(nameof(OtherSimple))] 
+		public void Test_CopyProperties_Simple(object value)
+		{
+            var newValue = Activator.CreateInstance(value.GetType());
+            value.CopyProperties(newValue);
+            Assert.Equal(value, newValue);
+		}
+
+	    private static IEnumerable<object[]> OtherSimple => new[]
+	    {
+		    new object[] { DateTime.Parse("2001-01-01") },
+		    new object[] { new TimeSpan(1, 2, 3) },
+	    };
     }
 }

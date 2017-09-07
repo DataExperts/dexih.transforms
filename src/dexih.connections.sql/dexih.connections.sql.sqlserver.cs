@@ -22,7 +22,7 @@ namespace dexih.connections.sql
         public override string DatabaseTypeName => "SQL Server";
         public override ECategory DatabaseCategory => ECategory.SqlDatabase;
 
-        public override string SqlFromAttribute(Table table)
+        protected override string SqlFromAttribute(Table table)
         {
             string sql = "";
 
