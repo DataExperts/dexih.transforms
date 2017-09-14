@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.IO;
 using dexih.functions;
 using System.Data.Common;
-using static dexih.functions.DataType;
 using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
@@ -12,21 +11,25 @@ using static dexih.connections.flatfile.FlatFile;
 using System.IO.Compression;
 using CsvHelper;
 using System.Linq;
+using Dexih.Utils;
+using dexih.transforms.Exceptions;
+using static Dexih.Utils.DataType.DataType;
+using dexih.functions.Query;
 
 namespace dexih.connections.flatfile
 {
     public abstract class ConnectionFlatFile : Connection
     {
-        public abstract Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password);
-        public abstract Task<ReturnValue> CreateDirectory(FlatFile file, EFlatFilePath path);
-        public abstract Task<ReturnValue> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName);
-        public abstract Task<ReturnValue> DeleteFile(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<ReturnValue<DexihFiles>> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern);
-        public abstract Task<ReturnValue<List<DexihFileProperties>>> GetFileList(FlatFile file, EFlatFilePath path);
-        public abstract Task<ReturnValue<Stream>> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<ReturnValue<Stream>> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<ReturnValue> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream);
-        public abstract Task<ReturnValue> TestFileConnection();
+        public abstract Task<List<string>> GetFileShares(string serverName, string userName, string password);
+        public abstract Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path);
+        public abstract Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName);
+        public abstract Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName);
+        public abstract Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern);
+        public abstract Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path);
+        public abstract Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName);
+        public abstract Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName);
+        public abstract Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream);
+        public abstract Task<bool> TestFileConnection();
 
 
         public override string ServerHelp => "Path for the files (use //server/path format)";
@@ -54,32 +57,31 @@ namespace dexih.connections.flatfile
 
         public string LastWrittenFile { get; protected set; } = "";
 
-		public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+		public override async Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
 			var flatFile = (FlatFile)table;
             //create the subdirectories
             return await CreateDirectory(flatFile, EFlatFilePath.incoming);
         }
 
-        public override async Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override async Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
-            ReturnValue returnValue;
             DefaultDatabase = databaseName;
             //create the subdirectories
-            returnValue = await CreateDirectory(null, EFlatFilePath.none);
+            var returnValue = await CreateDirectory(null, EFlatFilePath.none);
             return returnValue;
         }
 
-        public async Task<ReturnValue> CreateFilePaths(FlatFile flatFile)
+        public async Task<bool> CreateFilePaths(FlatFile flatFile)
         {
-            ReturnValue returnValue;
+            Boolean returnValue;
             //create the subdirectories
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.incoming);
-            if (returnValue.Success == false) return returnValue;
+            if (returnValue == false) return returnValue;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.outgoing);
-            if (returnValue.Success == false) return returnValue;
+            if (returnValue == false) return returnValue;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.processed);
-            if (returnValue.Success == false) return returnValue;
+            if (returnValue == false) return returnValue;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.rejected);
             return returnValue;
         }
@@ -92,22 +94,22 @@ namespace dexih.connections.flatfile
         /// <param name="fromDirectory"></param>
         /// <param name="toDirectory"></param>
         /// <returns></returns>
-        public async Task<ReturnValue> MoveFile(FlatFile flatFile, string fileName, EFlatFilePath fromDirectory, EFlatFilePath toDirectory)
+        public async Task<bool> MoveFile(FlatFile flatFile, string fileName, EFlatFilePath fromDirectory, EFlatFilePath toDirectory)
         {
             return await MoveFile(flatFile, fromDirectory, toDirectory, fileName);
         }
 
-        public async Task<ReturnValue> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream)
+        public async Task<bool> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream)
         {
             return await SaveFileStream(flatFile, EFlatFilePath.incoming, fileName, fileStream);
         }
 
-        public async Task<ReturnValue<List<DexihFileProperties>>> GetFiles(FlatFile flatFile, EFlatFilePath path)
+        public async Task<List<DexihFileProperties>> GetFiles(FlatFile flatFile, EFlatFilePath path)
         {
             return await GetFileList(flatFile, path);
         }
 
-        public async Task<ReturnValue<Stream>> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles = false)
+        public async Task<Stream> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles = false)
         {
             if (zipFiles)
             {
@@ -118,21 +120,17 @@ namespace dexih.connections.flatfile
                     foreach (var fileName in fileNames)
                     {
                         var fileStreamResult = await GetReadFileStream(flatFile, path, fileName);
-                        if (!fileStreamResult.Success)
-                        {
-                            return new ReturnValue<Stream>(fileStreamResult);
-                        }
                         ZipArchiveEntry fileEntry = archive.CreateEntry(fileName);
 
                         using (var fileEntryStream = fileEntry.Open())
                         {
-                            fileStreamResult.Value.CopyTo(fileEntryStream);
+                            fileStreamResult.CopyTo(fileEntryStream);
                         }
                     }
                 }
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
-                return new ReturnValue<Stream>(true, memoryStream);
+                return memoryStream;
             } 
             else
             {
@@ -142,12 +140,12 @@ namespace dexih.connections.flatfile
                 }
                 else
                 {
-                    return new ReturnValue<Stream>(false, "When downloading more than one file, the zip option must be set.", null);
+                    throw new ConnectionException("When downloading more than one file, the zip option must be set.");
                 }
             }
         }
 
-        public override async Task<ReturnValue> DataWriterStart(Table table)
+        public override async Task DataWriterStart(Table table)
         {
             try
             {
@@ -155,13 +153,13 @@ namespace dexih.connections.flatfile
                 string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
                 var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName);
 
-                if(!writerResult.Success)
+                if(writerResult == null)
                 {
-                    return writerResult;
+                    throw new ConnectionException($"Flat file write failed, could not get a write stream for {flatFile.Name}.");
                 }
 
                 //open a new filestream and write a headerrow
-                _fileStream = writerResult.Value;
+                _fileStream = writerResult;
                 _fileWriter = new StreamWriter(_fileStream);
                 _csvWriter = new CsvWriter(_fileWriter);
 
@@ -177,28 +175,23 @@ namespace dexih.connections.flatfile
                 }
 
                 LastWrittenFile = fileName;
-
-                return new ReturnValue(true, "", null);
             }
             catch(Exception ex)
             {
-                return new ReturnValue(true, "The file could not be opened due to the following error: " + ex.Message, ex);
+                throw new ConnectionException($"Flat file write failed, could not get a write stream for {table.Name}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> DataWriterFinish(Table table)
+        public override Task DataWriterFinish(Table table)
         {
-            return await Task.Run(() =>
-            {
-                _fileWriter.Dispose();
-                _fileStream.Dispose();
-                _csvWriter.Dispose();
+            _fileWriter.Dispose();
+            _fileStream.Dispose();
+            _csvWriter.Dispose();
 
-                return new ReturnValue(true);
-            });
+            return Task.CompletedTask;
         }
 
-        public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
@@ -207,7 +200,9 @@ namespace dexih.connections.flatfile
                 while(await reader.ReadAsync(cancelToken))
                 {
                     if (cancelToken.IsCancellationRequested)
-                        return new ReturnValue<long>(false, "Insert rows cancelled.", null, timer.ElapsedTicks);
+                    {
+                        throw new ConnectionException("Insert bulk operation cancelled.");
+                    }
 
                     string[] s = new string[reader.FieldCount];
                     for (int j = 0; j < reader.FieldCount; j++)
@@ -216,161 +211,156 @@ namespace dexih.connections.flatfile
                     }
                     _csvWriter.NextRecord();
                 }
-                return new ReturnValue<long>(true, timer.ElapsedTicks);
+                return timer.ElapsedTicks;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<long>(false, "The file could not be written to due to the following error: " + ex.Message, ex);
+                throw new ConnectionException($"Insert bulk operation failed.  {ex.Message}", ex);
             }
         }
 
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
         {
             return await GetFileShares(Server, Username, Password);
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
+        public override Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
         {
             try
             {
-                return await Task.Run(() =>
+                var flatFile = (FlatFile)originalTable;
+
+                if (flatFile.FileFormat == null || flatFile.FileSample == null)
                 {
+                    throw new ConnectionException($"The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.");
+                }
 
-                    var flatFile = (FlatFile)originalTable;
+                MemoryStream stream = new MemoryStream();
+                StreamWriter writer = new StreamWriter(stream);
+                writer.Write(flatFile.FileSample);
+                writer.Flush();
+                stream.Position = 0;
 
-                    if (flatFile.FileFormat == null || flatFile.FileSample == null)
+                string[] headers;
+                if (flatFile.FileFormat.HasHeaderRecord)
+                {
+                    try
                     {
-                        return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.", null);
-                    }
-
-                    MemoryStream stream = new MemoryStream();
-                    StreamWriter writer = new StreamWriter(stream);
-                    writer.Write(flatFile.FileSample);
-                    writer.Flush();
-                    stream.Position = 0;
-
-                    string[] headers;
-                    if (flatFile.FileFormat.HasHeaderRecord)
-                    {
-                        try
-                        {
-                            using (CsvReader csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
-                            {
-                                csv.ReadHeader();
-                                headers = csv.FieldHeaders;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            return new ReturnValue<Table>(false, "The following error occurred opening the filestream: " + ex.Message, ex, null);
-                        }
-                    } else
-                    {
-                        // if no header row specified, then just create a series column names "column001, column002 ..."
                         using (CsvReader csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
                         {
-                            csv.Read();
-                            headers = Enumerable.Range(0, csv.CurrentRecord.Count()).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
+                            csv.ReadHeader();
+                            headers = csv.FieldHeaders;
                         }
                     }
-
-                    //The new datatable that will contain the table schema
-                    FlatFile newFlatFile = new FlatFile();
-                    flatFile.Name = originalTable.Name;
-                    newFlatFile.Columns.Clear();
-                    newFlatFile.LogicalName = newFlatFile.Name;
-                    newFlatFile.Description = "";
-                    newFlatFile.FileFormat = flatFile.FileFormat;
-
-                    TableColumn col;
-
-                    foreach (string field in headers)
+                    catch (Exception ex)
                     {
-                        col = new TableColumn()
-                        {
-
-                            //add the basic properties
-                            Name = field,
-                            LogicalName = field,
-                            IsInput = false,
-                            Datatype = ETypeCode.String,
-                            DeltaType = TableColumn.EDeltaType.TrackingField,
-                            Description = "",
-                            AllowDbNull = true,
-                            IsUnique = false
-                        };
-                        newFlatFile.Columns.Add(col);
+                        throw new ConnectionException($"Error occurred opening the filestream: {ex.Message}", ex);
                     }
+                }
+                else
+                {
+                    // if no header row specified, then just create a series column names "column001, column002 ..."
+                    using (CsvReader csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
+                    {
+                        csv.Read();
+                        headers = Enumerable.Range(0, csv.CurrentRecord.Count()).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
+                    }
+                }
 
+                //The new datatable that will contain the table schema
+                FlatFile newFlatFile = new FlatFile();
+                flatFile.Name = originalTable.Name;
+                newFlatFile.Columns.Clear();
+                newFlatFile.LogicalName = newFlatFile.Name;
+                newFlatFile.Description = "";
+                newFlatFile.FileFormat = flatFile.FileFormat;
+
+                TableColumn col;
+
+                foreach (string field in headers)
+                {
                     col = new TableColumn()
                     {
 
                         //add the basic properties
-                        Name = "FileName",
-                        LogicalName = "FileName",
+                        Name = field,
+                        LogicalName = field,
                         IsInput = false,
                         Datatype = ETypeCode.String,
-                        DeltaType = TableColumn.EDeltaType.FileName,
-                        Description = "The name of the file the record was loaded from.",
-                        AllowDbNull = false,
+                        DeltaType = TableColumn.EDeltaType.TrackingField,
+                        Description = "",
+                        AllowDbNull = true,
                         IsUnique = false
                     };
                     newFlatFile.Columns.Add(col);
+                }
 
-                    col = new TableColumn()
-                    {
+                col = new TableColumn()
+                {
 
-                        //add the basic properties
-                        Name = "FileRow",
-                        LogicalName = "FileRow",
-                        IsInput = false,
-                        Datatype = ETypeCode.Int32,
-                        DeltaType = TableColumn.EDeltaType.FileRowNumber,
-                        Description = "The file row number the record came from.",
-                        AllowDbNull = false,
-                        IsUnique = false
-                    };
-                    newFlatFile.Columns.Add(col);
+                    //add the basic properties
+                    Name = "FileName",
+                    LogicalName = "FileName",
+                    IsInput = false,
+                    Datatype = ETypeCode.String,
+                    DeltaType = TableColumn.EDeltaType.FileName,
+                    Description = "The name of the file the record was loaded from.",
+                    AllowDbNull = false,
+                    IsUnique = false
+                };
+                newFlatFile.Columns.Add(col);
 
-                    return new ReturnValue<Table>(true, newFlatFile);
-                });
+                col = new TableColumn()
+                {
+
+                    //add the basic properties
+                    Name = "FileRow",
+                    LogicalName = "FileRow",
+                    IsInput = false,
+                    Datatype = ETypeCode.Int32,
+                    DeltaType = TableColumn.EDeltaType.FileRowNumber,
+                    Description = "The file row number the record came from.",
+                    AllowDbNull = false,
+                    IsUnique = false
+                };
+                newFlatFile.Columns.Add(col);
+
+                return Task.FromResult<Table>(newFlatFile);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "The following error occurred when importing the file structure: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to import the file structure. {ex.Message}", ex);
             }
         }
 
-        public override Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
         {
             var flatFile = (FlatFile)table;
-            var fileEnumeratorResult = await GetFileEnumerator(flatFile, FlatFile.EFlatFilePath.incoming, flatFile.FileMatchPattern);
-            if(!fileEnumeratorResult.Success)
+            var fileEnumerator = await GetFileEnumerator(flatFile, FlatFile.EFlatFilePath.incoming, flatFile.FileMatchPattern);
+            if(fileEnumerator == null)
             {
-                return fileEnumeratorResult;
+                throw new ConnectionException($"Truncate failed, as no files were found.");
             }
-
-            var fileEnumerator = fileEnumeratorResult.Value;
 
             while(fileEnumerator.MoveNext())
             {
                 var deleteResult = await DeleteFile(flatFile, FlatFile.EFlatFilePath.incoming, fileEnumerator.Current.FileName);
-                if(!deleteResult.Success)
+                if(!deleteResult)
                 {
                     return deleteResult;
                 }
             }
 
-            return new ReturnValue(true);
+            return true;
         }
 
-        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
+        public override async Task<Table> InitializeTable(Table table, int position)
         {
 			var flatFile = new FlatFile();
             table.CopyProperties(flatFile, false);
@@ -380,21 +370,21 @@ namespace dexih.connections.flatfile
             flatFile.AutoManageFiles = true;
             
             await CreateFilePaths(flatFile);
-            
-            return new ReturnValue<Table>(true, flatFile);
+
+            return flatFile;
         }
 
-        public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
+        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
             try
             {
@@ -404,20 +394,14 @@ namespace dexih.connections.flatfile
                 string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
                 var flatFile = (FlatFile)table;
 
-                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName);
-                if (!writerResult.Success)
-                {
-                    return new ReturnValue<Tuple<long, long>>(writerResult);
-                }
-
                 //open a new filestream 
-                using (var writer = writerResult.Value)
-                using(var streamWriter = new StreamWriter(writer))
+                using (var writer = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName))
+                using (var streamWriter = new StreamWriter(writer))
                 using (var csv = new CsvWriter(streamWriter, flatFile.FileFormat))
                 {
 
                     if (!(queries?.Count >= 0))
-                        return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.Elapsed.Ticks, (long)0));
+                        return Tuple.Create(timer.Elapsed.Ticks, (long)0);
 
                     if (flatFile.FileFormat.HasHeaderRecord)
                     {
@@ -443,16 +427,16 @@ namespace dexih.connections.flatfile
 
                 LastWrittenFile = fileName;
                 timer.Stop();
-                return new ReturnValue<Tuple<long, long>>(true, Tuple.Create(timer.Elapsed.Ticks, (long)0)); //sometimes reader returns -1, when we want this to be error condition.
+                return Tuple.Create(timer.Elapsed.Ticks, (long)0); //sometimes reader returns -1, when we want this to be error condition.
             }
             catch(Exception ex)
             {
-                return new ReturnValue<Tuple<long, long>>(false, "The following error was encountered running the ExecuteInsert: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to run execute insert on {table.Name}.  {ex.Message}.");
             }
         }
 
 
-        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
             var timer = Stopwatch.StartNew();
 
@@ -460,25 +444,25 @@ namespace dexih.connections.flatfile
             using (var reader = new ReaderFlatFile(this, flatFile, true))
             {
                 var openResult = await reader.Open(0, query, cancelToken);
-                if (!openResult.Success)
+                if (!openResult)
                 {
-                    return new ReturnValue<object>(openResult);
+                    throw new ConnectionException($"Failed to run execute scalar on {table.Name}.  The reader failed to open.");
                 }
 
                 var row = await reader.ReadAsync(cancelToken);
                 if (row)
                 {
                     var value = reader[query.Columns[0].Column.Name];
-                    return new ReturnValue<object>(true, value);
+                    return value;
                 }
                 else
                 {
-                    return new ReturnValue<object>(false, "No value was found.", null);
+                    return null;
                 }
             }
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

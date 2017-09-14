@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
-using static dexih.functions.DataType;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Text;
+using Dexih.Utils.RealTimeBuffer;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
+using Dexih.Utils.Crypto;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.dexih
 {
@@ -18,7 +22,7 @@ namespace dexih.connections.dexih
 
 		private int _datasetRow;
         private object[][] _dataset;
-        private ERealTimeQueueStatus _datasetStatus;
+        private ERealTimeBufferStatus _datasetStatus;
 		private string _continuationToken;
 
         public ReaderDexih(Connection connection, Table table, Transform referenceTransform)
@@ -35,7 +39,7 @@ namespace dexih.connections.dexih
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -43,7 +47,7 @@ namespace dexih.connections.dexih
             {
                 if (_isOpen)
                 {
-                    return new ReturnValue(false, "The information hub connection is already open.", null);
+                    throw new ConnectionException("The information hub connection is already open.");
                 }
 
                 var message = Json.SerializeObject(new
@@ -54,32 +58,29 @@ namespace dexih.connections.dexih
                     TableSchema = CacheTable.Schema,
                     Query = query,
                 }, "");
-				var content = new StringContent(message, Encoding.UTF8, "application/json");
+
+                var content = new StringContent(message, Encoding.UTF8, "application/json");
 				var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("OpenTableQuery", content, true);
 
-				if(!response.Success)
-				{
-					return response;
-				}
 
-                var returnMessage = Json.JTokenToObject<RemoteMessage>(response.Value, null);
-
-                if(returnMessage.Success == false)
+                if ((bool)response["success"])
                 {
-                    return returnMessage; 
+                    _continuationToken = response["value"].ToString();
+                    ((ConnectionDexih)ReferenceConnection).SetContinuationToken(_continuationToken);
+                    CacheTable.ContinuationToken = _continuationToken;
                 }
-
-				_continuationToken = response.Value["value"].ToString();
-                ((ConnectionDexih)ReferenceConnection).SetContinuationToken(_continuationToken);
-                CacheTable.ContinuationToken = _continuationToken;
+                else
+                {
+                    throw new ConnectionException($"Error {response?["message"]}", new Exception(response["exceptionDetails"].ToString()));
+                }
 
 				_datasetRow = 0;
 
-                return new ReturnValue(true);
+                return true;
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred when starting the web service: " + ex.Message, ex);
+                throw new ConnectionException($"Opening connection to information hub failed.  {ex.Message}");
             }
         }
 
@@ -93,12 +94,12 @@ namespace dexih.connections.dexih
             return true;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             try
             {
@@ -107,12 +108,12 @@ namespace dexih.connections.dexih
 					var row = ConvertRow(_dataset[_datasetRow]);
                     _datasetRow++;
 
-					return new ReturnValue<object[]>(true, row);
+                    return row;
 				}
-				else if(!(_datasetStatus == ERealTimeQueueStatus.NotComplete))
+				else if(!(_datasetStatus == ERealTimeBufferStatus.NotComplete))
 				{
 					_isOpen = false;
-					return new ReturnValue<object[]>(false, null);
+                    return null;
 				}
 				else
 				{
@@ -122,31 +123,29 @@ namespace dexih.connections.dexih
                     {
                         new KeyValuePair<string, string>("ContinuationToken", _continuationToken),
                     });
+
                     var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("PopData", content, false);
 
-					if (!response.Success)
-					{
-						return new ReturnValue<object[]>(response);
-					}
-
-                    var popData = response.Value.ToObject<ReturnValue<RealTimeQueuePackage<object[][]>>>();
-
-                    if(!popData.Success)
+                    if ((bool)response["success"])
                     {
-                        return new ReturnValue<object[]>(popData);
+                        var popData = response["value"].ToObject<RealTimeBufferPackage<object[][]>>();
+                        _datasetStatus = popData.Status;
+                        _dataset = popData.Package;
                     }
-                    _datasetStatus = popData.Value.Status;
-                    _dataset = popData.Value.Package;
+                    else
+                    {
+                        throw new ConnectionException($"Error {response?["message"]}", new Exception(response["exceptionDetails"].ToString()));
+                    }
 
 					if(_dataset == null || _dataset.Count() == 0){
 						_isOpen = false;
-						return new ReturnValue<object[]>(false, null);
+                        return null;
 					}
 					else
 					{
 						var row = ConvertRow( _dataset[0]);
 						_datasetRow = 1;
-						return new ReturnValue<object[]>(true, row);
+                        return row;
 					}
 				}
             }

@@ -1,6 +1,8 @@
 ﻿using dexih.connections;
 using dexih.functions;
+using dexih.functions.Query;
 using dexih.transforms;
+using Dexih.Utils.DataType;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using static dexih.functions.DataType;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test
 {
@@ -21,7 +23,7 @@ namespace dexih.connections.test
         public async Task Performance(Connection connection, string databaseName, int rows)
         {
             var returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
-            Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
+            Assert.True(returnValue);
 
             //create a table that utilizes every available datatype.
             var table = new Table("LargeTable" + (DataSets.counter++));
@@ -43,7 +45,7 @@ namespace dexih.connections.test
 
             //create the table
             returnValue = await connection.CreateTable(table, true, CancellationToken.None);
-            Assert.True(returnValue.Success, "Create Managed Tables - Message:" + returnValue.Message);
+            Assert.True(returnValue);
 
             //add rows using the min/max values for each of the datatypes.
             var buffer = 0;
@@ -59,9 +61,9 @@ namespace dexih.connections.test
                 {
                     var dataType = DataType.GetType(table.Columns[j].Datatype);
                     if (i % 2 == 0)
-                        row[j] = connection.GetDataTypeMaxValue(table.Columns[j].Datatype, 20);
+                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].Datatype, 20);
                     else
-                        row[j] = connection.GetDataTypeMinValue(table.Columns[j].Datatype);
+                        row[j] = connection.GetConnectionMinValue(table.Columns[j].Datatype);
                 }
                 table.Data.Add(row);
                 buffer++;
@@ -73,7 +75,7 @@ namespace dexih.connections.test
 
                     var bulkResult =
                         await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
-                    Assert.True(bulkResult.Success, "WriteDataBulk - Message:" + bulkResult.Message);
+                    Assert.True(bulkResult > 0, "WriteDataBulk no time taken");
 
                     table.Data.Clear();
                     buffer = 0;
@@ -91,7 +93,7 @@ namespace dexih.connections.test
                 {
                     for (var j = 2; j < table.Columns.Count; j++)
                     {
-                        Assert.Equal(connection.GetDataTypeMaxValue(table.Columns[j].Datatype, 20), reader[j]);
+                        Assert.Equal(connection.GetConnectionMaxValue(table.Columns[j].Datatype, 20), reader[j]);
                     }
                     
                 }
@@ -99,7 +101,7 @@ namespace dexih.connections.test
                 {
                     for (var j = 2; j < table.Columns.Count; j++)
                     {
-                        Assert.Equal(connection.GetDataTypeMinValue(table.Columns[j].Datatype), reader[j]);
+                        Assert.Equal(connection.GetConnectionMinValue(table.Columns[j].Datatype), reader[j]);
                     }
                     
                 }
@@ -125,7 +127,7 @@ namespace dexih.connections.test
                 for (var j = 2; j < table.Columns.Count; j++)
                 {
                     updateColumn = new QueryColumn(table.Columns[j],
-                        connection.GetDataTypeMaxValue(table.Columns[j].Datatype));
+                        connection.GetConnectionMaxValue(table.Columns[j].Datatype));
                     updateColumns.Add(updateColumn);
                 }
                 updateQueries.Add(new UpdateQuery()
@@ -137,7 +139,7 @@ namespace dexih.connections.test
             }
 
             var updateResult = await connection.ExecuteUpdate(table, updateQueries, CancellationToken.None);
-            Assert.True(updateResult.Success, "Update- Message:" + updateResult.Message);
+            Assert.True(updateResult > 0);
 
             //check the table loaded 1,000 rows updated successully
             var selectQuery = new SelectQuery()
@@ -171,7 +173,7 @@ namespace dexih.connections.test
                 }
             };
             var deleteResult = await connection.ExecuteDelete(table, deleteQueries, CancellationToken.None);
-            Assert.True(deleteResult.Success, "Delete - Message:" + deleteResult.Message);
+            Assert.True(deleteResult > 0);
 
             selectQuery = new SelectQuery()
             {
@@ -192,8 +194,8 @@ namespace dexih.connections.test
             //run a preview
             var query = table.DefaultSelectQuery(50);
             var previewTable = await connection.GetPreview(table, query, CancellationToken.None);
-            Assert.Equal(true, previewTable.Success);
-            Assert.Equal(50, previewTable.Value.Data.Count);
+            Assert.NotNull(previewTable);
+            Assert.Equal(50, previewTable.Data.Count);
         }
 
 
@@ -203,12 +205,10 @@ namespace dexih.connections.test
         /// <param name="connection"></param>
         public async Task PerformanceTransformWriter(Connection connection, string databaseName, long rows)
         {
-            ReturnValue returnValue;
+            bool returnValue;
 
             returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
-            Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
-
-            Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
+            Assert.True(returnValue, "New Database Failed");
 
             //create a table that utilizes every available datatype.
             var table = new Table("LargeTable" + (DataSets.counter++));
@@ -233,7 +233,7 @@ namespace dexih.connections.test
 
             //create the table
             returnValue = await connection.CreateTable(table, true, CancellationToken.None);
-            Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
+            Assert.True(returnValue, "CreateManagedTables");
 
             //add rows.
             var buffer = 0;
@@ -249,9 +249,9 @@ namespace dexih.connections.test
                 {
                     var dataType = DataType.GetType(table.Columns[j].Datatype);
                     if (i % 2 == 0)
-                        row[j] = connection.GetDataTypeMaxValue(table.Columns[j].Datatype);
+                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].Datatype);
                     else
-                        row[j] = connection.GetDataTypeMinValue(table.Columns[j].Datatype);
+                        row[j] = connection.GetConnectionMinValue(table.Columns[j].Datatype);
                 }
                 table.Data.Add(row);
                 buffer++;
@@ -263,7 +263,7 @@ namespace dexih.connections.test
 
                     var bulkResult =
                         await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
-                    Assert.True(bulkResult.Success, "WriteDataBulk - Message:" + bulkResult.Message);
+                    Assert.True(bulkResult > 0, "WriteDataBulk");
 
                     table.Data.Clear();
                     buffer = 0;
@@ -284,20 +284,20 @@ namespace dexih.connections.test
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, false);
 
             var writer = new TransformWriter();
-            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target",
+            var writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target",
                 TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
-            Assert.True(auditResult.Success);
-            var writerResult = auditResult.Value;
+            Assert.NotNull(writerResult);
+
             var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null,
                 null, null, CancellationToken.None);
 
             Assert.Equal(rows, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true,
-                false, false, null, 1, 0, false, CancellationToken.None);
-            Assert.Equal(writerResult.RowsCreated, auditTable.Value[0].RowsCreated);
-            Assert.Equal(rows - 1, Convert.ToInt64(auditTable.Value[0].MaxIncrementalValue));
+            var auditTable = await connection.GetTransformWriterResults(0, null, writerResult.AuditKey, null, true,
+                false, false, null, 1, 2, false, CancellationToken.None);
+            Assert.Equal(writerResult.RowsCreated, auditTable[0].RowsCreated);
+            Assert.Equal(rows - 1, Convert.ToInt64(auditTable[0].MaxIncrementalValue));
         }
     }
 }

@@ -12,6 +12,8 @@ using dexih.connections.flatfile;
 using System.Text.RegularExpressions;
 using static dexih.connections.flatfile.FlatFile;
 using System.Linq;
+using dexih.transforms.Exceptions;
+using dexih.functions.Query;
 
 namespace dexih.connections.azure
 {
@@ -54,7 +56,7 @@ namespace dexih.connections.azure
             return CloudBlobContainer;
         }
 
-        public override async Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password)
+        public override async Task<List<string>> GetFileShares(string serverName, string userName, string password)
         {
             List<string> fileShares = new List<string>();
 
@@ -74,17 +76,17 @@ namespace dexih.connections.azure
             }
             catch(Exception ex)
             {
-                return new ReturnValue<List<string>>(false, "The following error occurred retrieving the Azure File shares: " + ex.Message, ex, null);
+                throw new ConnectionException($"Failed get the azure file containers on {serverName}.  {ex.Message}", ex);
             }
 
             foreach (CloudBlobContainer share in list)
             {
                 fileShares.Add(share.Name);
             }
-            return new ReturnValue<List<string>>(true, "", null, fileShares);
+            return fileShares;
         }
 
-        public async Task<ReturnValue<CloudBlobDirectory>> GetDatabaseDirectory()
+        public async Task<CloudBlobDirectory> GetDatabaseDirectory()
         {
             try
             {
@@ -94,54 +96,46 @@ namespace dexih.connections.azure
                     await CloudBlobContainer.CreateIfNotExistsAsync();
                 }
 
-                return new ReturnValue<CloudBlobDirectory>(true, CloudBlobContainer.GetDirectoryReference(""));
+                return CloudBlobContainer.GetDirectoryReference("");
             }
             catch (Exception ex)
             {
-                return new ReturnValue<CloudBlobDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase + ", message: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to get the root directory {DefaultDatabase}.  {ex.Message}", ex);
             }
         }
 
-        public async Task<ReturnValue<CloudBlobDirectory>> GetFileDirectory(FlatFile file)
+        public async Task<CloudBlobDirectory> GetFileDirectory(FlatFile file)
         {
             try
             {
-                var getDatabaseDirectory = await GetDatabaseDirectory();
-                if(!getDatabaseDirectory.Success)
-                {
-                    return getDatabaseDirectory;
-                }
+                var fileShare = await GetDatabaseDirectory();
 
-                var fileShare = getDatabaseDirectory.Value;
-
-                if(file != null && !string.IsNullOrEmpty(file.FileRootPath))
+                if (file != null && !string.IsNullOrEmpty(file.FileRootPath))
                 {
                     fileShare = fileShare.GetDirectoryReference(file.FileRootPath);
                     await fileShare.Container.CreateIfNotExistsAsync();
                 }
 
-                return new ReturnValue<CloudBlobDirectory>(true, fileShare);
+                return fileShare;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<CloudBlobDirectory>(false, "There was an issue getting the root directory - " + DefaultDatabase + ", message: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to get the directory for file  {file.Name}.  {ex.Message}", ex);
             }
         }
 
 
-        public override async Task<ReturnValue> CreateDirectory(FlatFile file, EFlatFilePath path)
+        public override async Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path)
         {
             try
             {
                 var directory = await GetDatabaseDirectory();
-                if (!directory.Success)
-                    return directory;
 
-                CloudBlobDirectory cloudFileDirectory = directory.Value;
+                CloudBlobDirectory cloudFileDirectory = directory;
 
                 if (file != null && !string.IsNullOrEmpty(file.FileRootPath))
                 {
-                    cloudFileDirectory = directory.Value.GetDirectoryReference(file.FileRootPath);
+                    cloudFileDirectory = directory.GetDirectoryReference(file.FileRootPath);
                     await cloudFileDirectory.Container.CreateIfNotExistsAsync();
                 }
 
@@ -151,15 +145,15 @@ namespace dexih.connections.azure
                     await cloudFileDirectory.Container.CreateIfNotExistsAsync();
                 }
 
-                return new ReturnValue(true);
+                return true;
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred creating Azure directory: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to create the directory for file  {file.Name} path {path}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> MoveFile(FlatFile file, EFlatFilePath fromDirectory, EFlatFilePath toDirectory, string fileName)
+        public override async Task<bool> MoveFile(FlatFile file, EFlatFilePath fromDirectory, EFlatFilePath toDirectory, string fileName)
         {
             try
             {
@@ -168,11 +162,7 @@ namespace dexih.connections.azure
                 int version = 0;
                 string newFileName;
 
-                var getFileDirectory = await GetFileDirectory(file);
-                if (!getFileDirectory.Success)
-                    return getFileDirectory;
-
-                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudFileDirectory = await GetFileDirectory(file);
                 CloudBlobDirectory cloudFromDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(fromDirectory));
                 CloudBlobDirectory cloudToDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(toDirectory));
 
@@ -188,45 +178,37 @@ namespace dexih.connections.azure
                 await targetFile.StartCopyAsync(sourceFile.Uri);
                 await sourceFile.DeleteAsync();
 
-                return new ReturnValue(true);
+                return true;
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred moving Azure file: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to move file {file.Name} filename {Filename} from {fromDirectory} to {toDirectory}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> DeleteFile(FlatFile file, EFlatFilePath path, string fileName)
+        public override async Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName)
         {
             try
             {
-                var getFileDirectory = await GetFileDirectory(file);
-                if (!getFileDirectory.Success)
-                    return getFileDirectory;
-
-                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudFileDirectory = await GetFileDirectory(file);
                 CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
                 CloudBlob cloudFile = cloudSubDirectory.GetBlockBlobReference(fileName);
                 await cloudFile.DeleteAsync();
-                return new ReturnValue(true);
+                return true;
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred deleting Azure file: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to delete file {file.Name} filename {Filename} from {path}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<DexihFiles>> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
+        public override async Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
         {
             try
             {
                 List<DexihFileProperties> files = new List<DexihFileProperties>();
 
-                var getFileDirectory = await GetFileDirectory(file);
-                if (!getFileDirectory.Success)
-                    return new ReturnValue<DexihFiles>(getFileDirectory);
-
-                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudFileDirectory = await GetFileDirectory(file);
                 var pathstring = file.GetPath(path);
                 var pathlength = pathstring.Length + 1;
                 CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(pathstring);
@@ -251,11 +233,11 @@ namespace dexih.connections.azure
                     }
                 }
                 DexihFiles newFiles = new DexihFiles(files.ToArray());
-                return new ReturnValue<DexihFiles>(true, "", null, newFiles);
+                return newFiles;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<DexihFiles>(false, "The following error occurred retriving Azure file list: " + ex.Message, ex, null);
+                throw new ConnectionException($"Failed get file {file.Name} files in path {path} with pattern {searchPattern}.  {ex.Message}", ex);
             }
         }
 
@@ -273,17 +255,13 @@ namespace dexih.connections.azure
             return new Regex(pattern, RegexOptions.IgnoreCase).IsMatch(fileName);
         }
 
-        public override async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(FlatFile file, EFlatFilePath path)
+        public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path)
         {
             try
             {
                 List<DexihFileProperties> files = new List<DexihFileProperties>();
 
-                var getFileDirectory = await GetFileDirectory(file);
-                if (!getFileDirectory.Success)
-                    return new ReturnValue<List<DexihFileProperties>>(getFileDirectory);
-
-                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudFileDirectory = await GetFileDirectory(file);
 
                 var pathstring = file.GetPath(path);
                 var pathlength = pathstring.Length + 1;
@@ -305,54 +283,46 @@ namespace dexih.connections.azure
                     string fileName = cloudFile.Name.Substring(pathlength);
                     files.Add(new DexihFileProperties() { FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length, ContentType = cloudFile.Properties.ContentType });
                 }
-                return new ReturnValue<List<DexihFileProperties>>(true, "", null, files);
+                return files;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<DexihFileProperties>>(false, "The following error occurred retriving Azure file list: " + ex.Message, ex, null);
+                throw new ConnectionException($"Failed get filelist {file.Name} files in path {path}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<Stream>> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName)
+        public override async Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName)
         {
             try
             {
-                var getFileDirectory = await GetFileDirectory(file);
-                if (!getFileDirectory.Success)
-                    return new ReturnValue<Stream>(getFileDirectory);
-
-                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudFileDirectory = await GetFileDirectory(file);
                 CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
-                Stream reader2 = await cloudSubDirectory.GetBlockBlobReference(fileName).OpenReadAsync();
-                return new ReturnValue<Stream>(true, "", null, reader2);
+                Stream stream = await cloudSubDirectory.GetBlockBlobReference(fileName).OpenReadAsync();
+                return stream;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Stream>(false, "The following error occurred retriving Azure filestream: " + ex.Message, ex, null);
+                throw new ConnectionException($"Failed read the file {file.Name} name {Filename} in path {path}.  {ex.Message}", ex);
             }
 
         }
 
-        public override async Task<ReturnValue<Stream>> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName)
+        public override async Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName)
         {
             try
             {
-                var getFileDirectory = await GetFileDirectory(file);
-                if (!getFileDirectory.Success)
-                    return new ReturnValue<Stream>(getFileDirectory);
-
-                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudFileDirectory = await GetFileDirectory(file);
                 CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
-                Stream reader2 = await cloudSubDirectory.GetBlockBlobReference(fileName).OpenWriteAsync();
-                return new ReturnValue<Stream>(true, "", null, reader2);
+                Stream stream = await cloudSubDirectory.GetBlockBlobReference(fileName).OpenWriteAsync();
+                return stream;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Stream>(false, "The following error occurred writing to Azure filestream: " + ex.Message, ex, null);
+                throw new ConnectionException($"Failed write the file {file.Name} name {Filename} in path {path}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream)
+        public override async Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream)
         {
             try
             {
@@ -361,11 +331,7 @@ namespace dexih.connections.azure
                 int version = 0;
                 string newFileName;
 
-                var getFileDirectory = await GetFileDirectory(file);
-                if (!getFileDirectory.Success)
-                    return new ReturnValue<DexihFiles>(getFileDirectory);
-
-                CloudBlobDirectory cloudFileDirectory = getFileDirectory.Value;
+                CloudBlobDirectory cloudFileDirectory = await GetFileDirectory(file);
                 CloudBlobDirectory cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
                 CloudBlockBlob cloudFile = cloudSubDirectory.GetBlockBlobReference(fileName);
 
@@ -378,53 +344,50 @@ namespace dexih.connections.azure
 
                 await cloudFile.UploadFromStreamAsync(fileStream);
                 fileStream.Dispose();
-                return new ReturnValue(true);
+                return true;
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred writing to Azure filestream: " + ex.Message, ex);
+                throw new ConnectionException($"Failed save the file {file.Name} name {Filename} in path {path}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> TestFileConnection()
+        public override async Task<bool> TestFileConnection()
         {
             try
             {
                 CloudBlobClient connection = _CloudBlobClient;
                 var serviceProperties = await connection.GetServicePropertiesAsync();
                 State = EConnectionState.Open;
-                return new ReturnValue(true);
+                return true;
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred opening the Azure file connection: " + ex.Message, ex);
+                throw new ConnectionException($"The azure file connection test failed.  {ex.Message}", ex);
             }
         }
 
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancelToken)
         {
             try
             {
 				FlatFile flatFile = (FlatFile)table;
 
 				var getDatabaseDirectory = await GetDatabaseDirectory();
-                if (!getDatabaseDirectory.Success)
-                    return new ReturnValue<bool>(getDatabaseDirectory);
-
-                CloudBlobDirectory cloudFileDirectory = getDatabaseDirectory.Value.GetDirectoryReference(flatFile.FileRootPath);
+                CloudBlobDirectory cloudFileDirectory = getDatabaseDirectory.GetDirectoryReference(flatFile.FileRootPath);
 
                 var exists = await cloudFileDirectory.Container.ExistsAsync();
-                return new ReturnValue<bool>(true, exists);
+                return exists;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<bool>(false, "The following error occurred testing if a directory exists: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to check the directory exists for {table.Name}.  {ex.Message}", ex);
             }
         }
     }

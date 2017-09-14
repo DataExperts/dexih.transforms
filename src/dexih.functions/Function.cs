@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using static dexih.functions.DataType;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
@@ -239,23 +239,30 @@ namespace dexih.functions
 
         public Function() { }
 
-        public ReturnValue SetVariableValues(string[] parametersValues)
+        public void SetVariableValues(string[] parametersValues)
         {
             if (Inputs.Length != parametersValues.Length)
             {
-                return new ReturnValue(false, "The number of inputs parameters does not match expected " + Inputs.Length + " values.", null);
+                throw new FunctionInvalidParametersException($"The number of inputs parameters of {parametersValues.Length} does not match expected {Inputs.Length} input values.");
             }
 
             for (var i = 0; i < Inputs.Length; i++)
             {
-                var result = Inputs[i].SetValue(parametersValues[i]);
-                if (result.Success == false)
-                    return result;
+                try
+                {
+                    Inputs[i].SetValue(parametersValues[i]);
+                } catch(Exception ex)
+                {
+#if DEBUG
+                    throw new AggregateException($"The input parameter {Inputs[i].Name} with value {parametersValues[i]} could not be set.  " + ex.Message, ex);
+#else
+                    throw new AggregateException($"The input parameter {Inputs[i].Name} could not be set.  " + ex.Message, ex); //don't include values in the release version as this might be a sensative value.
+#endif
+                }
             }
-            return new ReturnValue(true);
         }
 
-        public ReturnValue<object> RunFunction(object[] values, string[] outputNames = null)
+        public object RunFunction(object[] values, string[] outputNames = null)
         {
             //first add array parameters to the inputs field.
             if(Inputs.Length > 0 && Inputs[Inputs.Length - 1].IsArray)
@@ -288,13 +295,22 @@ namespace dexih.functions
 
             if (values.Length != Inputs.Length )
             {
-                return new ReturnValue<object>(false, "The number of parameters input does not matching the number expected.", null);
+                throw new FunctionInvalidParametersException($"The number of inputs parameters of {values.Length} does not match expected {Inputs.Length} input values.");
             }
             for (var i = 0; i < values.Length; i++)
             {
-                var result = Inputs[i].SetValue(values[i]);
-                if (result.Success == false)
-                    return new ReturnValue<object>(result);
+                try
+                {
+                    Inputs[i].SetValue(values[i]);
+                }
+                catch (Exception ex)
+                {
+#if DEBUG
+                    throw new AggregateException($"The input parameter {Inputs[i].Name} with value {values[i]} could not be set.  " + ex.Message, ex);
+#else
+                    throw new AggregateException($"The input parameter {Inputs[i].Name} could not be set.  " + ex.Message, ex); //don't include values in the release version as this might be a sensative value.
+#endif
+                }
             }
 
             return Invoke();
@@ -302,52 +318,62 @@ namespace dexih.functions
 
  
 
-        public ReturnValue<object> Invoke()
+        public object Invoke()
         {
             var mappingFunction = FunctionMethod;
-            try
+            var inputsCount = Inputs?.Length ?? 0;
+            var outputsCount = 0;
+            if (ResultMethod == null)
+                outputsCount = Outputs?.Length ?? 0;
+
+            var parameters = new object[inputsCount + outputsCount];
+
+            var parameterNumber = 0;
+
+            List<object> arrayValues = null;
+            var arrayType = ETypeCode.String;
+            for (var i = 0; i < inputsCount; i++)
             {
-                var inputsCount = Inputs?.Length ?? 0;
-                var outputsCount = 0;
-                if (ResultMethod == null)
-                    outputsCount = Outputs?.Length ?? 0;
-
-                var parameters = new object[inputsCount + outputsCount];
-
-                var parameterNumber = 0;
-
-                List<object> arrayValues = null;
-                var arrayType = ETypeCode.String;
-                for (var i = 0; i < inputsCount; i++)
+                //FYI: this code will only accommodate for array being last parameter.
+                if (Inputs != null && Inputs[i].IsArray)
                 {
-                    //FYI: this code will only accommodate for array being last parameter.
-                    if (Inputs != null && Inputs[i].IsArray)
+                    if (arrayValues == null)
                     {
-                        if (arrayValues == null)
-                        {
-                            arrayValues = new List<object>();
-                            arrayType = Inputs[i].DataType;
-                        }
-                        var try1 = TryParse(Inputs[i].DataType, Inputs[i].Value);
-                        if (try1.Success == false)
-                            return try1;
-                        arrayValues.Add(try1.Value);
+                        arrayValues = new List<object>();
+                        arrayType = Inputs[i].DataType;
                     }
-                    else
+
+                    try
                     {
-                        parameters[parameterNumber] = Inputs?[i].Value;
-                        if (parameters[parameterNumber] == null || parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
-                        parameterNumber++;
+                        var parseValue = TryParse(Inputs[i].DataType, Inputs[i].Value);
+                        arrayValues.Add(parseValue);
+                    }
+                    catch (Exception ex)
+                    {
+#if DEBUG
+                        throw new AggregateException($"The input parameter {Inputs[i].Name} with value {Inputs[i].Value} could not be parsed.  " + ex.Message, ex);
+#else
+                        throw new AggregateException($"The input parameter {Inputs[i].Name} could not be parsed.  " + ex.Message, ex);
+#endif
                     }
                 }
+                else
+                {
+                    parameters[parameterNumber] = Inputs?[i].Value;
+                    if (parameters[parameterNumber] == null || parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
+                    parameterNumber++;
+                }
+            }
 
-                if (arrayValues != null)
+            if (arrayValues != null)
+            {
+                try
                 {
                     //convert the values and load them into the parameter array.
                     switch (arrayType)
                     {
                         case ETypeCode.Byte:
-                            parameters[parameterNumber] = arrayValues.Select(c=>(byte)c).ToArray();
+                            parameters[parameterNumber] = arrayValues.Select(c => (byte)c).ToArray();
                             break;
                         case ETypeCode.SByte:
                             parameters[parameterNumber] = arrayValues.Select(c => (sbyte)c).ToArray();
@@ -399,89 +425,100 @@ namespace dexih.functions
                             parameters[parameterNumber] = arrayValues.ToArray();
                             break;
                     }
-                    parameterNumber++;
-                }
-
-                var outputParameterNumber = parameterNumber;
-
-                //if there is no resultfunction, then this function will require the output parameters
-                if (ResultMethod == null)
+                } catch(Exception ex)
                 {
-                    arrayValues = null;
-                    for (var i = 0; i < outputsCount; i++)
-                    {
-                        //FYI: this code will only accommodate for array being last parameter.
-                        if (Outputs != null && Outputs[i].IsArray)
-                        {
-                            if (arrayValues == null) arrayValues = new List<object>();
-                            arrayValues.Add(null);
-                        }
-                        else
-                        {
-                            parameters[parameterNumber] = Outputs?[i].Value;
-                            if (parameters[parameterNumber] != null && parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
+#if DEBUG
+                    throw new AggregateException($"The input array with values {string.Join(",", arrayValues)} could not be converted.  " + ex.Message, ex);
+#else
+                    throw new AggregateException($"The input array could not be converted.  " + ex.Message, ex);
+#endif
 
-                            parameterNumber++;
-                        }
+                }
+                parameterNumber++;
+            }
+
+            var outputParameterNumber = parameterNumber;
+
+            //if there is no resultfunction, then this function will require the output parameters
+            if (ResultMethod == null)
+            {
+                arrayValues = null;
+                for (var i = 0; i < outputsCount; i++)
+                {
+                    //FYI: this code will only accommodate for array being last parameter.
+                    if (Outputs != null && Outputs[i].IsArray)
+                    {
+                        if (arrayValues == null) arrayValues = new List<object>();
+                        arrayValues.Add(null);
                     }
-
-                    if (arrayValues != null)
+                    else
                     {
-                        //parameters[parameterNumber] = arrayValues.Select(c => c.ToString()).ToArray();
-                        parameters[parameterNumber] = new string[arrayValues.Count];
+                        parameters[parameterNumber] = Outputs?[i].Value;
+                        if (parameters[parameterNumber] != null && parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
+
                         parameterNumber++;
                     }
                 }
 
-                Array.Resize(ref parameters, parameterNumber);
-
-                try
+                if (arrayValues != null)
                 {
-                    _returnValue = mappingFunction.Invoke(ObjectReference, parameters);
+                    //parameters[parameterNumber] = arrayValues.Select(c => c.ToString()).ToArray();
+                    parameters[parameterNumber] = new string[arrayValues.Count];
+                    parameterNumber++;
                 }
-                catch (Exception ex)
-                {
-                    throw new Exception("Error occurred running the custom function " + (FunctionName?? "") + ". The error message was: " + ex.Message + ".  Stacktrace: " + ex.StackTrace + ".  InnerException: " + ex.InnerException?.Message + ".");
-                }
+            }
 
-                if (ResultMethod == null)
+            Array.Resize(ref parameters, parameterNumber);
+
+            try
+            {
+                _returnValue = mappingFunction.Invoke(ObjectReference, parameters);
+            }
+            catch (Exception ex)
+            {
+                throw new FunctionException($"The function {FunctionName} failed.  " + ex.Message, ex);
+            }
+
+            if (ResultMethod == null)
+            {
+                var arrayNumber = 0;
+                for (var i = 0; i < outputsCount; i++)
                 {
-                    var arrayNumber = 0;
-                    for (var i = 0; i < outputsCount; i++)
+
+                    try
                     {
-
-                        ReturnValue result1;
 
                         if (Outputs != null && Outputs[i].IsArray)
                         {
                             var parametersArray = (object[])parameters[outputParameterNumber];
                             if (parametersArray == null)
-                                result1 = Outputs[i].SetValue(DBNull.Value);
+                                Outputs[i].SetValue(DBNull.Value);
                             else
-                                result1 = Outputs[i].SetValue(arrayNumber >= parametersArray.Length ? DBNull.Value : parametersArray[arrayNumber]);
+                                Outputs[i].SetValue(arrayNumber >= parametersArray.Length ? DBNull.Value : parametersArray[arrayNumber]);
 
                             arrayNumber++;
                         }
                         else
                         {
-                            result1 = Outputs[i].SetValue(parameters[outputParameterNumber]);
+                            Outputs[i].SetValue(parameters[outputParameterNumber]);
                             outputParameterNumber++;
                         }
 
-                        if (result1.Success == false)
-                            return new ReturnValue<object>(false, "Error setting return parameter: " + Outputs[i].Name + "=" + parameters[inputsCount + i] + ", message: " + result1.Message, null);
+                    } catch(Exception ex)
+                    {
+#if DEBUG
+                        throw new AggregateException($"The function {FunctionName} with the return parameter {Outputs[i].Name} with value {parameters[outputParameterNumber]} could not be converted.  " + ex.Message, ex);
+#else
+                        throw new AggregateException($"The function {FunctionName} with the return parameter {Outputs[i].Name} could not be converted.  " + ex.Message, ex);
+#endif
                     }
                 }
-
-                if (ReturnType == ETypeCode.Boolean && NotCondition)
-                    _returnValue = !(bool)_returnValue;
-
-                return new ReturnValue<object>(true, _returnValue);
             }
-            catch (Exception ex)
-            {
-                return new ReturnValue<object>(false, "Error invoking function: "+ FunctionName, ex);
-            }
+
+            if (ReturnType == ETypeCode.Boolean && NotCondition)
+                _returnValue = !(bool)_returnValue;
+
+            return _returnValue;
         }
 
         /// <summary>
@@ -489,93 +526,104 @@ namespace dexih.functions
         /// </summary>
         /// <param name="index">Index represents result row number within the grouping, and is used for series functions that return multiple results from one aggregation.</param>
         /// <returns></returns>
-        public ReturnValue<object> ReturnValue(int? index = 0)
+        public object ReturnValue(int? index = 0)
         {
             if (ResultMethod != null)
             {
-                try
-                {
-                    var outputsCount = Outputs?.Length ?? 0;
-                    int indexAdjust;
-                    object[] parameters;
+                var outputsCount = Outputs?.Length ?? 0;
+                int indexAdjust;
+                object[] parameters;
 
-                    //if the result method has an "index" as the first parameter, then add the index
-                    if (ResultMethod.GetParameters().Count() > 0 && ResultMethod.GetParameters()[0].Name == "index")
+                //if the result method has an "index" as the first parameter, then add the index
+                if (ResultMethod.GetParameters().Count() > 0 && ResultMethod.GetParameters()[0].Name == "index")
+                {
+                    parameters = new object[outputsCount + 1];
+                    parameters[0] = index;
+                    indexAdjust = 1;
+                }
+                else
+                {
+                    parameters = new object[outputsCount];
+                    indexAdjust = 0;
+                }
+
+                List<object> arrayValues = null;
+                for (var i = 0; i < outputsCount; i++)
+                {
+                    //FYI: this code will only accommodate for array being last parameter.
+                    if (Outputs != null && Outputs[i].IsArray)
                     {
-                        parameters = new object[outputsCount + 1];
-                        parameters[0] = index;
-                        indexAdjust = 1;
+                        if (arrayValues == null) arrayValues = new List<object>();
+                        arrayValues.Add(null);
                     }
                     else
                     {
-                        parameters = new object[outputsCount];
-                        indexAdjust = 0;
-                    }
-
-                    List<object> arrayValues = null;
-                    for (var i = 0; i < outputsCount; i++)
-                    {
-                        //FYI: this code will only accommodate for array being last parameter.
-                        if (Outputs != null && Outputs[i].IsArray)
-                        {
-                            if (arrayValues == null) arrayValues = new List<object>();
-                            arrayValues.Add(null);
-                        }
-                        else
-                        {
-                            parameters[i + indexAdjust] = null; 
-                        }
-                    }
-
-                    if (arrayValues != null)
-                    {
-                        parameters[outputsCount + indexAdjust] = arrayValues.Select(c => Convert.ChangeType(c, Type.GetType("System." + Outputs.Last().DataType)));
-                    }
-
-                    _returnValue = ResultMethod.Invoke(ObjectReference, parameters);
-
-                    var arrayNumber = 0;
-                    for (var i = 0; i < outputsCount; i++)
-                    {
-                        ReturnValue result;
-
-                        if (Outputs != null && Outputs[i].IsArray)
-                        {
-                            var array = (object[])parameters[i + indexAdjust];
-                            result = Outputs[i].SetValue(arrayNumber >= array.Length ? DBNull.Value : array[arrayNumber]);
-                            arrayNumber++;
-                        }
-                        else
-                        {
-                            result = Outputs[i].SetValue(parameters[i + indexAdjust]);
-                        }
-
-                        if (result.Success == false)
-                            return new ReturnValue<object>(false, "Error setting return parameter: " + Outputs[i].Name + "=" + parameters[i + 1] + ", message: " + result.Message, null);
+                        parameters[i + indexAdjust] = null; 
                     }
                 }
-                catch (Exception ex)
+
+                if (arrayValues != null)
                 {
-                    return new ReturnValue<object>(false, "Error occurred getting a result from the custom function " + FunctionName + ". The error message was: " + ex.InnerException.Message + ".", ex);
+                    parameters[outputsCount + indexAdjust] = arrayValues.Select(c => Convert.ChangeType(c, Type.GetType("System." + Outputs.Last().DataType)));
+                }
+
+                _returnValue = ResultMethod.Invoke(ObjectReference, parameters);
+
+                var arrayNumber = 0;
+                for (var i = 0; i < outputsCount; i++)
+                {
+                    if (Outputs != null && Outputs[i].IsArray)
+                    {
+                        var array = (object[])parameters[i + indexAdjust];
+                        try
+                        {
+                            Outputs[i].SetValue(arrayNumber >= array.Length ? DBNull.Value : array[arrayNumber]);
+                        }
+                        catch (Exception ex)
+                        {
+#if DEBUG
+                            throw new AggregateException($"The function {FunctionName} with the output array {Outputs[i].Name} with values {string.Join(",", array)} could not be converted.  " + ex.Message, ex);
+#else
+                            throw new AggregateException($"The function {FunctionName} with the output array {Outputs[i].Name} could not be converted.  " + ex.Message, ex);
+#endif
+                        }
+                        arrayNumber++;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            Outputs[i].SetValue(parameters[i + indexAdjust]);
+                        }
+                        catch (Exception ex)
+                        {
+#if DEBUG
+                            throw new AggregateException($"The function {FunctionName} with the output parameter {Outputs[i].Name} with value {parameters[i + indexAdjust]} could not be converted.  " + ex.Message, ex);
+#else
+                                throw new AggregateException($"The function {FunctionName} with the output parameter {Outputs[i].Name} could not be converted.  " + ex.Message, ex);
+#endif
+
+                        }
+
+                    }
                 }
             }
-            return new ReturnValue<object>(true, _returnValue);
+
+            return _returnValue;
         }
 
-        public ReturnValue Reset()
+        public void Reset()
         {
             try
             {
-                //var mappingFunction = CreateFunctionMethod();
-                //if(mappingFunction.Success == false)
-                //    return mappingFunction;
-
-                ResetMethod.Invoke(ObjectReference, null);
-                return new ReturnValue(true); 
+                if (ResetMethod != null)
+                {
+                    ResetMethod.Invoke(ObjectReference, null);
+                }
             }
             catch(Exception ex)
             {
-                return new ReturnValue(false, "The function could not be reset.  Message: " + ex.Message, ex);
+                throw new FunctionException($"The ResetMethod on the function {FunctionName} failed.  " + ex.Message, ex);
             }
         }
 

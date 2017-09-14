@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using static dexih.connections.flatfile.FlatFile;
+using dexih.transforms.Exceptions;
 
 namespace dexih.connections.flatfile
 {
@@ -24,67 +25,64 @@ namespace dexih.connections.flatfile
             return fullPath;
         }
 
-        public override async Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password)
+        public override Task<List<string>> GetFileShares(string serverName, string userName, string password)
         {
             try
             {
                 List<string> fileShares = new List<string>();
             
-                var directories = await Task.Run(() => Directory.GetDirectories(serverName));
+                var directories = Directory.GetDirectories(serverName);
                 foreach (string directoryName in directories)
                 {
                     string[] directoryComponents = directoryName.Split(Path.DirectorySeparatorChar);
                     fileShares.Add(directoryComponents[directoryComponents.Length - 1]);
                 }
 
-                return new ReturnValue<List<string>>(true, "", null, fileShares);
+                return Task.FromResult(fileShares);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false, "The following error occurred getting a list of directories: " + ex.Message, ex, null);
+                throw new ConnectionException($"Error occurred getting file shares from {serverName}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> CreateDirectory(FlatFile file, EFlatFilePath path)
+        public override Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path)
         {
             try
             {
-                return await Task.Run(() =>
+                var directory = FilePath();
+                if (!Directory.Exists(directory))
                 {
-                    var directory = FilePath();
+                    Directory.CreateDirectory(directory);
+                }
+
+                if(file != null && !string.IsNullOrEmpty(file.FileRootPath))
+                {
+                    directory = Path.Combine(FilePath(), file.FileRootPath);
                     if (!Directory.Exists(directory))
                     {
                         Directory.CreateDirectory(directory);
                     }
+                }
 
-                    if(file != null && !string.IsNullOrEmpty(file.FileRootPath))
+                if(file != null &&  path != EFlatFilePath.none)
+                {
+                    directory = Path.Combine(directory, file.GetPath(path));
+                    if (!Directory.Exists(directory))
                     {
-                        directory = Path.Combine(FilePath(), file.FileRootPath);
-                        if (!Directory.Exists(directory))
-                        {
-                            Directory.CreateDirectory(directory);
-                        }
+                        Directory.CreateDirectory(directory);
                     }
+                }
 
-                    if(file != null &&  path != EFlatFilePath.none)
-                    {
-                        directory = Path.Combine(directory, file.GetPath(path));
-                        if (!Directory.Exists(directory))
-                        {
-                            Directory.CreateDirectory(directory);
-                        }
-                    }
-
-                    return new ReturnValue(true);
-                });
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred creating a directory: " + ex.Message, ex);
+                throw new ConnectionException($"Error occurred creating directory {path}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> MoveFile(FlatFile file, EFlatFilePath fromDirectory, EFlatFilePath toDirectory, string fileName)
+        public override async Task<bool> MoveFile(FlatFile file, EFlatFilePath fromDirectory, EFlatFilePath toDirectory, string fileName)
         {
             try
             {
@@ -98,7 +96,7 @@ namespace dexih.connections.flatfile
                 var fullFromDirectory = GetFullPath(file, fromDirectory);
 
                 var createDirectoryResult = await CreateDirectory(file, toDirectory);
-                if (!createDirectoryResult.Success)
+                if (!createDirectoryResult)
                 {
                     return createDirectoryResult;
                 }
@@ -111,128 +109,108 @@ namespace dexih.connections.flatfile
                 }
 
                 File.Move(Path.Combine(fullFromDirectory, fileName), Path.Combine(fullToDirectory, newFileName));
-                return new ReturnValue(true);
+                return true;
 
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred moving a file: " + ex.Message, ex);
+                throw new ConnectionException($"Error occurred moving file {file.Name} from {fromDirectory} to {toDirectory}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> DeleteFile(FlatFile file, EFlatFilePath path, string fileName)
+        public override Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName)
         {
             try
             {
-                return await Task.Run(() =>
-                {
-                    var fullDirectory = GetFullPath(file, path);
-                    File.Delete(Path.Combine(fullDirectory, fileName));
-                    return new ReturnValue(true);
-                });
+                var fullDirectory = GetFullPath(file, path);
+                File.Delete(Path.Combine(fullDirectory, fileName));
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred deleting a file: " + ex.Message, ex);
+                throw new ConnectionException($"Error occurred deleting file {file} at {path}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<DexihFiles>> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
+        public override Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
         {
             try
             {
-                return await Task.Run(() =>
+                List<DexihFileProperties> files = new List<DexihFileProperties>();
+
+                var fullDirectory = GetFullPath(file, path);
+                var filenames = string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern);
+                foreach (var fileName in filenames)
                 {
-                    List<DexihFileProperties> files = new List<DexihFileProperties>();
-
-                    var fullDirectory = GetFullPath(file, path);
-                    var filenames = string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern);
-                    foreach (var fileName in filenames)
-                    {
-                        FileInfo fileInfo = new FileInfo(fileName);
-                        files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length });
-                    }
-
-                    DexihFiles newFiles = new DexihFiles(files.ToArray());
-                    return new ReturnValue<DexihFiles>(true, "", null, newFiles);
-                });
-            }
-            catch (Exception ex)
-            {
-                return new ReturnValue<DexihFiles>(false, "The following error occurred getting a list of files: " + ex.Message, ex, null);
-            }
-        }
-
-        public override async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(FlatFile file, EFlatFilePath path)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                        List<DexihFileProperties> files = new List<DexihFileProperties>();
-
-                        var fullDirectory = GetFullPath(file, path);
-                        foreach (var fileName in Directory.GetFiles(fullDirectory))
-                        {
-                            FileInfo fileInfo = new FileInfo(fileName);
-                            string contentType = ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
-                            files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length, ContentType = contentType });
-                        }
-
-                        return new ReturnValue<List<DexihFileProperties>>(true, "", null, files);
+                    FileInfo fileInfo = new FileInfo(fileName);
+                    files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length });
                 }
-                catch (Exception ex)
-                {
-                    return new ReturnValue<List<DexihFileProperties>>(false, "The following error occurred getting a list of files: " + ex.Message, ex, null);
-                }
-            });
-        }
 
-        public override async Task<ReturnValue<Stream>> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName)
-        {
-            try
-            {
-                return await Task.Run(() =>
-                {
-                    var fullDirectory = GetFullPath(file, path);
-                    Stream reader = File.OpenRead(Path.Combine(fullDirectory, fileName));
-                    return new ReturnValue<Stream>(true, "", null, reader);
-                });
+                DexihFiles newFiles = new DexihFiles(files.ToArray());
+                return Task.FromResult(newFiles);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Stream>(false, "The following error occurred opening a file read stream: " + ex.Message, ex, null);
+                throw new ConnectionException($"Error occurred getting files from {path} with pattern {searchPattern}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<Stream>> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName)
+        public override Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path)
+        {
+            try
+            {
+                List<DexihFileProperties> files = new List<DexihFileProperties>();
+
+                var fullDirectory = GetFullPath(file, path);
+                foreach (var fileName in Directory.GetFiles(fullDirectory))
+                {
+                    FileInfo fileInfo = new FileInfo(fileName);
+                    string contentType = ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
+                    files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length, ContentType = contentType });
+                }
+
+                return Task.FromResult(files);
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Error occurred getting filelist {path}.  {ex.Message}", ex);
+            }
+        }
+
+        public override Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName)
+        {
+            try
+            {
+                var fullDirectory = GetFullPath(file, path);
+                Stream reader = File.OpenRead(Path.Combine(fullDirectory, fileName));
+                return Task.FromResult(reader);
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Error occurred reading file {fileName} at {path}.  {ex.Message}", ex);
+            }
+        }
+
+        public override async Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName)
         {
             try
             {
                 var createDirectoryResult = await CreateDirectory(file, path);
-                if(!createDirectoryResult.Success)
-                {
-                    return new ReturnValue<Stream>(createDirectoryResult);
-                }
                 var fullDirectory = GetFullPath(file, path);
                 Stream reader = File.OpenWrite(Path.Combine(fullDirectory, fileName));
-                return new ReturnValue<Stream>(true, "", null, reader);
+                return reader;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Stream>(false, "The following error occurred opening a file write stream: " + ex.Message, ex, null);
+                throw new ConnectionException($"Error occurred writing file {fileName} at {path}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream stream)
+        public override async Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream stream)
         {
             try
             {
                 var createDirectoryResult = await CreateDirectory(file, path);
-                if(!createDirectoryResult.Success)
-                {
-                    return createDirectoryResult;
-                }
 
                 string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
                 string fileNameExtension = Path.GetExtension(fileName);
@@ -248,7 +226,7 @@ namespace dexih.connections.flatfile
                         }
 
 	                }
-					return new ReturnValue(true);
+					return true;
 				}
 				else 
 				{
@@ -259,12 +237,12 @@ namespace dexih.connections.flatfile
 	                await stream.FlushAsync();
 	                newFile.Dispose();
 
-	                return new ReturnValue(true);
+	                return true;
 				}
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred creating saving file stream: " + ex.Message, ex);
+                throw new ConnectionException($"Error occurred saving file stream of file {fileName} at {path}.  {ex.Message}", ex);
             }
         }
 
@@ -290,37 +268,37 @@ namespace dexih.connections.flatfile
 			return filePath;
 		}
 
-        public override async Task<ReturnValue> TestFileConnection()
+        public override Task<bool> TestFileConnection()
         {
             try
             {
-                bool exists = await Task.Run(() => new DirectoryInfo(Server).Exists);
+                bool exists = new DirectoryInfo(Server).Exists;
                 if (exists)
                     State = EConnectionState.Open;
                 else
                     State = EConnectionState.Broken;
 
-                return new ReturnValue(exists);
+                return Task.FromResult(exists);
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred creating testing the file connection: " + ex.Message, ex);
+                throw new ConnectionException($"Error occurred testing if directory exists {Server}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancelToken)
         {
             try
             {
 				FlatFile flatFile = (FlatFile)table;
                 string fullPath = Path.Combine(FilePath(), flatFile.FileRootPath ?? "");
 
-                bool exists = await Task.Run(() => new DirectoryInfo(fullPath).Exists, cancelToken);
-                return new ReturnValue<bool>(true, exists);
+                bool exists = new DirectoryInfo(fullPath).Exists;
+                return Task.FromResult(exists);
             }
             catch(Exception ex)
             {
-                return new ReturnValue<bool>(false, "The following error occurred testing if a directory exists: " + ex.Message, ex);
+                throw new ConnectionException($"Error occurred testing if a directory exists for flatfile {table.Name}.  {ex.Message}", ex);
             }
         }
 

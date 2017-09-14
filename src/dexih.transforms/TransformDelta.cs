@@ -1,10 +1,13 @@
 ﻿using dexih.functions;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms
 {
@@ -107,7 +110,7 @@ namespace dexih.transforms
             //add the operation type, which indicates whether record are C-create/U-update or D-Deletes
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
             {
-                CacheTable.Columns.Insert(0, new TableColumn("Operation", DataType.ETypeCode.Byte)
+                CacheTable.Columns.Insert(0, new TableColumn("Operation", ETypeCode.Byte)
                 {
                     DeltaType = TableColumn.EDeltaType.DatabaseOperation
                 });
@@ -146,7 +149,7 @@ namespace dexih.transforms
             return true;
         }
 
-        public override async Task<ReturnValue> Open(long auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -201,7 +204,7 @@ namespace dexih.transforms
             _rejectedReasonOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
             if(CacheTable.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
             {
-                CacheTable.AddColumn("RejectedReason", DataType.ETypeCode.String, TableColumn.EDeltaType.RejectedReason);
+                CacheTable.AddColumn("RejectedReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason);
             }
 
             _sourceSurrogateKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
@@ -221,324 +224,330 @@ namespace dexih.transforms
         }
 
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            try
+            object[] newRow = null;
+            _currentDateTime = DateTime.Now; //this is created here an ensure all datetime records in the row match exactly.
+
+            //if the delta is set to reload.  Set the first row as an operation T="truncate table"
+            if (DeltaType == EUpdateStrategy.Reload && _truncateComplete == false)
             {
-                object[] newRow = null;
-                _currentDateTime = DateTime.Now; //this is created here an ensure all datetime records in the row match exactly.
+                newRow = new object[_columnCount];
+                newRow[0] = 'T';
 
-                //if the delta is set to reload.  Set the first row as an operation T="truncate table"
-                if (DeltaType == EUpdateStrategy.Reload && _truncateComplete == false)
+                _truncateComplete = true;
+                return newRow;
+            }
+
+            //very first action is to add a defaultRow
+            if (!_defaultRowAdded && AddDefaultRow)
+            {
+                _defaultRowAdded = true;
+
+                newRow = CreateDefaultRow();
+
+                //if this is a truncate job, always add the default row
+                if (DeltaType == EUpdateStrategy.Reload)
+                    return newRow;
+
+                //query the reference transform to check if the row already exists.
+                var filters = new List<Filter>();
+
+                //lookup the default value by the surrogate key (always = 0) or natrual key if a target surrogate key does not exist.
+                if (_colSurrogateKey != null)
                 {
-                    newRow = new object[_columnCount];
-                    newRow[0] = 'T';
+                    filters.Add(new Filter(_colSurrogateKey, Filter.ECompare.IsEqual, "0"));
+                }
+                else
+                {
+                    var naturalKey = CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey);
 
-                    _truncateComplete = true;
-                    return new ReturnValue<object[]>(true, newRow);
+                    if (!naturalKey.Any())
+                    {
+                        throw new TransformException("The delta transform cannot run as there are no natural key columns specified on the target table.");
+                    }
+
+                    foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey))
+                    {
+                        if (col.DefaultValue == null)
+                        {
+                            throw new TransformException("The delta transform cannot run null default value on the column " + col.Name + ".   Edit the table columns and specify a default value, or switch off of the generate default row setting");
+                        }
+                        filters.Add(new Filter(col, Filter.ECompare.IsEqual, col.DefaultValue));
+                    }
                 }
 
-                //very first action is to add a defaultRow
-                if(!_defaultRowAdded && AddDefaultRow)
+                var query = new SelectQuery() { Filters = filters };
+
+                var referenceOpenResult = await ReferenceTransform.Open(AuditKey, query, cancellationToken);
+                if (!referenceOpenResult)
                 {
-                    _defaultRowAdded = true;
+                    throw new TransformException("Failed to open the target table reader.");
+                }
 
-                    newRow = CreateDefaultRow();
+                //if no row in the reference transform, then return the created default value.
+                if (!await ReferenceTransform.ReadAsync(cancellationToken))
+                {
+                    return newRow;
+                }
 
-                    //if this is a truncate job, always add the default row
-                    if (DeltaType == EUpdateStrategy.Reload)
-                        return new ReturnValue<object[]>(true, newRow);
-
-                    //query the reference transform to check if the row already exists.
-                    var filters = new List<Filter>();
-
-                    //lookup the default value by the surrogate key (always = 0) or natrual key if a target surrogate key does not exist.
-                    if (_colSurrogateKey != null)
+                //if the default row exists, compare the tracking columns to determine if an update is neccessary.
+                var isMatch = true;
+                foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
+                {
+                    var targetOrdinal = CacheTable.GetOrdinal(col.Name);
+                    try
                     {
-                        filters.Add(new Filter(_colSurrogateKey, Filter.ECompare.IsEqual, "0"));
-                    }
-                    else
-                    {
-                        var naturalKey = CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey);
-
-                        if(!naturalKey.Any())
-                        {
-                            return new ReturnValue<object[]>(false, "The datalink cannot run as there are no natural key columns specified on the target table.", null);
-                        }
-
-                        foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey))
-                        {
-                            if(col.DefaultValue == null)
-                            {
-                                return new ReturnValue<object[]>(false, "The datalink could not be run due to a null default value on the column " + col.Name + ".  Edit the table columns and specify a default value, or switch of the generate default row setting for the datalink", null);
-                            }
-                            filters.Add(new Filter(col, Filter.ECompare.IsEqual, col.DefaultValue));
-                        }
-                    }
-
-                    var query = new SelectQuery() { Filters = filters };
-
-                    var referenceOpenResult = await ReferenceTransform.Open(AuditKey, query, cancellationToken);
-                    if (!referenceOpenResult.Success)
-                        return new ReturnValue<object[]>(referenceOpenResult);
-
-                    //if no row in the reference transform, then return the created default value.
-                    if(!await ReferenceTransform.ReadAsync(cancellationToken))
-                    {
-                        return new ReturnValue<object[]>(true, newRow);
-                    }
-                    
-                    //if the default row exists, compare the tracking columns to determine if an update is neccessary.
-                    var isMatch = true;
-                    foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
-                    {
-                        var targetOrdinal = CacheTable.GetOrdinal(col.Name);
-                        var result = functions.DataType.Compare(col.Datatype, ReferenceTransform[col.Name], newRow[targetOrdinal]);
-                        if (result.Success == false)
-                            throw new Exception("Data type comparison error: " + result.Message, result.Exception);
-
-                        if (result.Value != DataType.ECompareResult.Equal)
+                        var result = Compare(col.Datatype, ReferenceTransform[col.Name], newRow[targetOrdinal]);
+                        if (result != ECompareResult.Equal)
                         {
                             isMatch = false;
                             break;
                         }
                     }
-
-                    //columns do not match, so do an update
-                    if(!isMatch)
+                    catch (Exception ex)
                     {
-                        newRow[0] = 'U';
-                        return new ReturnValue<object[]>(true, newRow);
+                        throw new TransformException($"The delta transform failed as column {col.Name} contains incompatible values.", ex, ReferenceTransform[col.Name], newRow[targetOrdinal]);
                     }
-
-                    //rows is ignored.
-                    TransformRowsIgnored++;
                 }
 
-                //second action is to read a record from the primary transform.
-                if (_firstRead)
+                //columns do not match, so do an update
+                if (!isMatch)
                 {
-                    _firstRead = false;
+                    newRow[0] = 'U';
+                    return newRow;
+                }
 
-                    //read a row from the primary and target table
-                    _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
+                //rows is ignored.
+                TransformRowsIgnored++;
+            }
 
-                    //create a filter that will be passed (if supported to the database).  Improves performance.
-                    var filters = new List<Filter>();
+            //second action is to read a record from the primary transform.
+            if (_firstRead)
+            {
+                _firstRead = false;
 
-                    //first add a where IsCurrentField = true
-                    //if (colIsCurrentField != null)
-                    //    filters.Add(new Filter(colIsCurrentField, Filter.ECompare.IsEqual, true));
+                //read a row from the primary and target table
+                _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
 
-                    //second add a where natrual key is greater than the first record key.  (excluding where delete detection is on).
-                    if (_primaryOpen && !DoDelete)
+                //create a filter that will be passed (if supported to the database).  Improves performance.
+                var filters = new List<Filter>();
+
+                //first add a where IsCurrentField = true
+                //if (colIsCurrentField != null)
+                //    filters.Add(new Filter(colIsCurrentField, Filter.ECompare.IsEqual, true));
+
+                //second add a where natrual key is greater than the first record key.  (excluding where delete detection is on).
+                if (_primaryOpen && !DoDelete)
+                {
+                    foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey))
                     {
-                        foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey))
+                        var targetOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
+                        if (targetOrdinal > -1)
                         {
-                            var targetOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
-                            if (targetOrdinal > -1)
-                            {
-                                filters.Add(new Filter(col, Filter.ECompare.GreaterThanEqual, PrimaryTransform[col.Name]));
-                            }
+                            filters.Add(new Filter(col, Filter.ECompare.GreaterThanEqual, PrimaryTransform[col.Name]));
                         }
                     }
-
-                    var query = new SelectQuery() { Filters = filters };
-
-                    if (DoUpdate || DoDelete || DoPreserve)
-                    {
-                        ReferenceTransform.Dispose();
-                        await ReferenceTransform.Open(AuditKey, query, cancellationToken);
-                        _targetOpen = await ReferenceRead(cancellationToken);
-                    }
-                    else
-                        _targetOpen = false;
                 }
 
-                //if row is marked reject, then just push it through.
-                if(_primaryOpen && _databaseOperationOrdinal >= 0 && (char)PrimaryTransform[_databaseOperationOrdinal] == 'R')
+                var query = new SelectQuery() { Filters = filters };
+
+                if (DoUpdate || DoDelete || DoPreserve)
                 {
-                    newRow = CreateOutputRow('R');
+                    ReferenceTransform.Dispose();
+                    await ReferenceTransform.Open(AuditKey, query, cancellationToken);
+                    _targetOpen = await ReferenceRead(cancellationToken);
+                }
+                else
+                    _targetOpen = false;
+            }
+
+            //if row is marked reject, then just push it through.
+            if (_primaryOpen && _databaseOperationOrdinal >= 0 && (char)PrimaryTransform[_databaseOperationOrdinal] == 'R')
+            {
+                newRow = CreateOutputRow('R');
+                _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
+                return newRow;
+            }
+
+            //if there are no updates. logic is simple, just push the source records through to the target.
+            if (!DoUpdate)
+            {
+                if (_primaryOpen)
+                {
+                    newRow = CreateOutputRow('C');
                     _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
-                    return new ReturnValue<object[]>(true, newRow);
+                    return newRow;
+                }
+                return null;
+            }
+
+            //if there is a saved row (due to a preserve operation splitting a row into update/insert operations) write it out
+            if (PreserveRow != null)
+            {
+                var returnValue = PreserveRow;
+                PreserveRow = null;
+                return returnValue;
+            }
+
+            //this loop continues when there are matching source target rows.
+            while (true)
+            {
+                //if the primary table has finished reading any remaining rows in the target will be deletes.
+                if (!_primaryOpen)
+                {
+                    if (!DoDelete || !_targetOpen)
+                        return null; //not checking deletes, then finish.
+                                     //if there are still more records in the target table, then everything else is a delete.
+                    newRow = CreateDeleteRow();
+                    _targetOpen = await ReferenceRead(cancellationToken);
+                    return newRow;
                 }
 
-                //if there are no updates. logic is simple, just push the source records through to the target.
-                if (!DoUpdate)
+                //check if the natrual key in the source & target are less/match/greater to determine operation
+                var compareResult = ECompareResult.Less;
+
+                if (!_targetOpen)
                 {
-                    if (_primaryOpen)
-                    {
-                        newRow = CreateOutputRow('C');
-                        _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
-                        return new ReturnValue<object[]>(true, newRow);
-                    }
-                    return new ReturnValue<object[]>(false, null);
+                    //if target reader has finished, theen the natrual key compare will always be not-equal.
+                    compareResult = ECompareResult.Less;
                 }
-
-                //if there is a saved row (due to a preserve operation splitting a row into update/insert operations) write it out
-                if (PreserveRow != null)
+                else
                 {
-                    var returnValue = new ReturnValue<object[]>(true, PreserveRow);
-                    PreserveRow = null;
-                    return returnValue;
-                }
-
-                //this loop continues when there are matching source target rows.
-                while (true)
-                {
-                    //if the primary table has finished reading any remaining rows in the target will be deletes.
-                    if (!_primaryOpen)
+                    foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey || c.DeltaType == TableColumn.EDeltaType.ValidToDate))
                     {
-                        if (!DoDelete || !_targetOpen)
-                            return new ReturnValue<object[]>(false, null); //not checking deletes, then finish.
-                        //if there are still more records in the target table, then everything else is a delete.
-                        newRow = CreateDeleteRow();
-                        _targetOpen = await ReferenceRead(cancellationToken);
-                        return new ReturnValue<object[]>(true, newRow);
-                    }
-
-                    //check if the natrual key in the source & target are less/match/greater to determine operation
-                    var compareResult = DataType.ECompareResult.Less;
-
-                    if (!_targetOpen)
-                    {
-                        //if target reader has finished, theen the natrual key compare will always be not-equal.
-                        compareResult = DataType.ECompareResult.Less;
-                    }
-                    else
-                    {
-                        foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey || c.DeltaType == TableColumn.EDeltaType.ValidToDate))
+                        var targetOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
+                        if (targetOrdinal > -1)
                         {
-                            var targetOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
-                            if (targetOrdinal > -1)
+                            try
                             {
-                                var result = functions.DataType.Compare(col.Datatype, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
-                                if (result.Success == false)
-                                    throw new Exception("Data type comparison error: " + result.Message, result.Exception);
-
-                                compareResult = result.Value;
-                                if (compareResult != functions.DataType.ECompareResult.Equal)
+                                compareResult = Compare(col.Datatype, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
+                                if (compareResult != ECompareResult.Equal)
                                     break;
                             }
-                        }
-
-                    }
-
-                    //if the primary greater in sort order than the target, then the target row has been deleted.
-                    if (compareResult == DataType.ECompareResult.Greater && DoDelete)
-                    {
-                        newRow = CreateDeleteRow();
-                        _targetOpen = await ReferenceRead(cancellationToken);
-                        return new ReturnValue<object[]>(true, newRow);
-                    }
-
-                    //if compare result is greater, and not checking deletes.  Move the target table to the next row and test again.
-                    if (compareResult == DataType.ECompareResult.Greater)
-                    {
-                        _targetOpen = await ReferenceRead(cancellationToken);
-                        continue;
-                    }
-
-
-                    //if not checking deletes and not equal, than this is a new row.  
-                    if (compareResult != DataType.ECompareResult.Equal)
-                    {
-                        newRow = CreateOutputRow('C');
-                        _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
-                    }
-                    else
-                    {
-
-                        //the final possibility, is the natrual key is a match, check for changed tracking columns
-                        var isMatch = true;
-                        foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
-                        {
-                            var targetOrdinal = ReferenceTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
-                            if (targetOrdinal > -1)
+                            catch (Exception ex)
                             {
-                                var result = functions.DataType.Compare(col.Datatype, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
-                                if (result.Success == false)
-                                    throw new Exception("Data type comparison error: " + result.Message, result.Exception);
+                                throw new TransformException($"The delta transform failed comparing incompatible values on column {col.Name}.  {ex.Message}", PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
+                            }
+                        }
+                    }
 
-                                if (result.Value != DataType.ECompareResult.Equal)
+                }
+
+                //if the primary greater in sort order than the target, then the target row has been deleted.
+                if (compareResult == ECompareResult.Greater && DoDelete)
+                {
+                    newRow = CreateDeleteRow();
+                    _targetOpen = await ReferenceRead(cancellationToken);
+                    return newRow;
+                }
+
+                //if compare result is greater, and not checking deletes.  Move the target table to the next row and test again.
+                if (compareResult == ECompareResult.Greater)
+                {
+                    _targetOpen = await ReferenceRead(cancellationToken);
+                    continue;
+                }
+
+
+                //if not checking deletes and not equal, than this is a new row.  
+                if (compareResult != ECompareResult.Equal)
+                {
+                    newRow = CreateOutputRow('C');
+                    _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
+                }
+                else
+                {
+
+                    //the final possibility, is the natrual key is a match, check for changed tracking columns
+                    var isMatch = true;
+                    foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
+                    {
+                        var targetOrdinal = ReferenceTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
+                        if (targetOrdinal > -1)
+                        {
+                            try
+                            {
+                                var compareResult2 = Compare(col.Datatype, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
+                                if (compareResult2 != ECompareResult.Equal)
                                 {
                                     isMatch = false;
                                     break;
                                 }
                             }
-                        }
-
-                        if (!isMatch)
-                        {
-                            //if the record has changed and preserve history is on, then there will be two output operations.
-                            if (DoPreserve)
+                            catch (Exception ex)
                             {
-                                //store this in the preserve field, so it is written on the next read operation.
-                                PreserveRow = CreateOutputRow('C');
-                                newRow = CreateDeleteRow(PreserveRow);
+                                throw new TransformException($"The delta transform failed comparing incompatible values on column {col.Name}.  {ex.Message}", PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
                             }
-                            else
-                            {
-                                newRow = CreateOutputRow('U');
-
-                                //keep the surrogoate key, create date, and create audit.  update the rest.
-
-                                if(_colSurrogateKey != null )
-                                    newRow[CacheTable.GetOrdinal(_colSurrogateKey.Name)] = ReferenceTransform[_referenceSurrogateKeyOrdinal];
-                                if(_colCreateAuditKey != null)
-                                    newRow[CacheTable.GetOrdinal(_colCreateAuditKey.Name)] = ReferenceTransform[_referenceCreateAudit];
-                                if(_colCreateDate != null)
-                                    newRow[CacheTable.GetOrdinal(_colCreateDate.Name)] = ReferenceTransform[_referenceCreateDate];
-                            }
-
-                            //move primary and target readers to the next record.
-                            _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
-                            _targetOpen = await ReferenceRead(cancellationToken);
-                        }
-                        else
-                        {
-                            //if we have a full record match, then the record is to be skipped, and the next record read.
-                            TransformRowsIgnored++;
-                            _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
-                            _targetOpen = await ReferenceRead(cancellationToken);
-                            continue; //continue the loop
                         }
                     }
 
-
-                    //the delta always puts a sort against natural key, so duplicates rows will be next to each other.
-                    //check the newRow against the previous row in the file to deduplicate any matching natural keys.
-                    if (PreserveRow == null && _primaryOpen && CompareNewRowPrevious(newRow))
+                    if (!isMatch)
                     {
-                        //if the row is a match against the tracking keys then just ignore it.
-                        if (CompareNewRowPreviousValues(newRow))
-                            continue;
-                        //if the previous row is a match, and the tracking field values are different, then either updated it or ignore it.
+                        //if the record has changed and preserve history is on, then there will be two output operations.
                         if (DoPreserve)
                         {
-                            TransformRowsPreserved++;
-                            if (_isCurrentOrdinal >= 0)
-                                newRow[_isCurrentOrdinal] = false;
-                            newRow[0] = 'C';
+                            //store this in the preserve field, so it is written on the next read operation.
+                            PreserveRow = CreateOutputRow('C');
+                            newRow = CreateDeleteRow(PreserveRow);
                         }
                         else
                         {
-                            continue;
+                            newRow = CreateOutputRow('U');
+
+                            //keep the surrogoate key, create date, and create audit.  update the rest.
+
+                            if (_colSurrogateKey != null)
+                                newRow[CacheTable.GetOrdinal(_colSurrogateKey.Name)] = ReferenceTransform[_referenceSurrogateKeyOrdinal];
+                            if (_colCreateAuditKey != null)
+                                newRow[CacheTable.GetOrdinal(_colCreateAuditKey.Name)] = ReferenceTransform[_referenceCreateAudit];
+                            if (_colCreateDate != null)
+                                newRow[CacheTable.GetOrdinal(_colCreateDate.Name)] = ReferenceTransform[_referenceCreateDate];
                         }
 
-                        for (var i = 1; i < _columnCount; i++)
-                        {
-                            if (CacheTable.Columns[i].DeltaType == TableColumn.EDeltaType.IsCurrentField)
-                                newRow[i] = false;
-                        }
+                        //move primary and target readers to the next record.
+                        _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
+                        _targetOpen = await ReferenceRead(cancellationToken);
+                    }
+                    else
+                    {
+                        //if we have a full record match, then the record is to be skipped, and the next record read.
+                        TransformRowsIgnored++;
+                        _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
+                        _targetOpen = await ReferenceRead(cancellationToken);
+                        continue; //continue the loop
+                    }
+                }
+
+
+                //the delta always puts a sort against natural key, so duplicates rows will be next to each other.
+                //check the newRow against the previous row in the file to deduplicate any matching natural keys.
+                if (PreserveRow == null && _primaryOpen && CompareNewRowPrevious(newRow))
+                {
+                    //if the row is a match against the tracking keys then just ignore it.
+                    if (CompareNewRowPreviousValues(newRow))
+                        continue;
+                    //if the previous row is a match, and the tracking field values are different, then either updated it or ignore it.
+                    if (DoPreserve)
+                    {
+                        TransformRowsPreserved++;
+                        if (_isCurrentOrdinal >= 0)
+                            newRow[_isCurrentOrdinal] = false;
+                        newRow[0] = 'C';
+                    }
+                    else
+                    {
+                        continue;
                     }
 
-                    return new ReturnValue<object[]>(true, newRow);
+                    for (var i = 1; i < _columnCount; i++)
+                    {
+                        if (CacheTable.Columns[i].DeltaType == TableColumn.EDeltaType.IsCurrentField)
+                            newRow[i] = false;
+                    }
                 }
-            }
-            catch(Exception ex)
-            {
-                return new ReturnValue<object[]>(false, "Error reading delta: " + ex.Message, ex);
+
+                return newRow;
             }
         }
 
@@ -549,14 +558,19 @@ namespace dexih.transforms
             {
                 if(_colSurrogateKey != null)
                 {
-                    var returnValue = DataType.TryParse(DataType.ETypeCode.Int64, ReferenceTransform[_referenceSurrogateKeyOrdinal]);
-                    if (!returnValue.Success)
-                        throw new Exception("The surrogate key column is expected to have a numerical value, however the value " + ReferenceTransform[_referenceSurrogateKeyOrdinal] + " was found.");
-
-                    //surogate key = 0, ignore as this is the defaulted value.
-                    if ((long)returnValue.Value == 0)
+                    try
                     {
-                        continue;
+                        var returnValue = TryParse(ETypeCode.Int64, ReferenceTransform[_referenceSurrogateKeyOrdinal]);
+
+                        //surogate key = 0, ignore as this is the defaulted value.
+                        if ((long)returnValue == 0)
+                        {
+                            continue;
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new TransformException($"The Delta failed as the surrogate key column is expected to have a numerical value.  {ex.Message}. ", ex,ReferenceTransform[_referenceSurrogateKeyOrdinal]);
                     }
                 }
 
@@ -566,16 +580,21 @@ namespace dexih.transforms
                     return true;
                 }
                 {
-                    var returnValue = DataType.TryParse(DataType.ETypeCode.Boolean, ReferenceTransform[_referenceIsValidOrdinal]);
-                    if (!returnValue.Success)
-                        throw new Exception("The column " + _colIsCurrentField.Name + " is expected to have a boolean value, however the value " + ReferenceTransform[_colIsCurrentField.Name] + " was found.");
-
-                    //IsCurrent = false, continue to next record.
-                    if (!(bool)returnValue.Value)
+                    try
                     {
-                        continue;
+                        var returnValue = TryParse(ETypeCode.Boolean, ReferenceTransform[_referenceIsValidOrdinal]);
+
+                        //IsCurrent = false, continue to next record.
+                        if (!(bool)returnValue)
+                        {
+                            continue;
+                        }
+                        return true;
                     }
-                    return true;
+                    catch(Exception ex)
+                    {
+                        throw new TransformException($"The Delta failed as the column {_colIsCurrentField.Name} is expected to have a boolean value.  {ex.Message}.", ex, ReferenceTransform[_referenceIsValidOrdinal]);
+                    }
                 }
             }
             return false;
@@ -630,14 +649,20 @@ namespace dexih.transforms
                 if (sourceOrdinal > -1)
                 {
                     var targetOrdinal = CacheTable.GetOrdinal(col.Name);
-                    var result = functions.DataType.Compare(col.Datatype, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
-                    if (result.Success == false)
-                        throw new Exception("Data type comparison error: " + result.Message, result.Exception);
-
-                    if (result.Value != DataType.ECompareResult.Equal)
+                    try
                     {
-                        isMatch = false;
-                        break;
+                        var result = Compare(col.Datatype, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
+
+                        if (result != ECompareResult.Equal)
+                        {
+                            isMatch = false;
+                            break;
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new TransformException($"The delta transform failed comparing incompatible values on column {col.Name}.  {ex.Message}", PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
+
                     }
                 }
             }
@@ -885,14 +910,14 @@ namespace dexih.transforms
             }
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             _firstRead = true;
             _targetOpen = true;
             _primaryOpen = true;
             CurrentRowNumber = -1;
 
-            return new ReturnValue(true);
+            return true;
         }
 
         public override string Details()

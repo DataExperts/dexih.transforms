@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -42,7 +44,7 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
         public override bool PassThroughColumns => true;
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -56,20 +58,20 @@ namespace dexih.transforms
             foreach (var condition in Conditions)
             {
                 var filter = Filter.GetFilterFromFunction(condition);
-                if(filter.Success)
+                if(filter != null)
                 {
-                    filter.Value.AndOr = Filter.EAndOr.And;
-                    query.Filters.Add(filter.Value);
+                    filter.AndOr = Filter.EAndOr.And;
+                    query.Filters.Add(filter);
                 }
             }
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
             return returnValue;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
-                return new ReturnValue<object[]>(false, null);
+            if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
+                return null;
 
             bool showRecord = true;
             if (Conditions != null && Conditions.Count > 0)
@@ -81,20 +83,31 @@ namespace dexih.transforms
                     {
                         foreach (Parameter input in condition.Inputs.Where(c => c.IsColumn))
                         {
-                            var result = input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
-                            if (result.Success == false)
-                                throw new Exception("Error setting condition values: " + result.Message);
+                            try
+                            {
+                                input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
+                            }
+                            catch(Exception ex)
+                            {
+                                throw new TransformException($"The filter failed as the column {input.Column.SchemaColumnName()} has incompatible data values.  {ex.Message}.", ex, PrimaryTransform[input.Column.SchemaColumnName()]);
+                            }
                         }
 
-                        var invokeresult = condition.Invoke();
-                        if (invokeresult.Success == false)
-                            throw new Exception("Error invoking condition function: " + invokeresult.Message);
-
-                        if ((bool)invokeresult.Value == false)
+                        try
                         {
-                            showRecord = false;
-                            break;
+                            var invokeresult = condition.Invoke();
+
+                            if ((bool)invokeresult == false)
+                            {
+                                showRecord = false;
+                                break;
+                            }
                         }
+                        catch (Exception ex)
+                        {
+                            throw new TransformException($"The filter could not run the condition {condition.FunctionName} failed.  {ex.Message}.", ex);
+                        }
+
                     }
 
                     if (showRecord) break;
@@ -110,18 +123,16 @@ namespace dexih.transforms
             {
                 newRow = new object[FieldCount];
                 PrimaryTransform.GetValues(newRow);
-                //for (int i = 0; i < FieldCount; i++)
-                //    newRow[i] = PrimaryTransform[i];
             }
             else
                 newRow = null;
 
-            return new ReturnValue<object[]>(showRecord, newRow);
+            return newRow;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(true); // nothing to reset.
+            return true;
         }
 
         public override string Details()

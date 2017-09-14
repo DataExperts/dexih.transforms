@@ -10,6 +10,9 @@ using System.Threading;
 using System.Net;
 using System.Diagnostics;
 using System.Text;
+using dexih.transforms.Exceptions;
+using dexih.functions.Query;
+using Dexih.Utils.Crypto;
 
 namespace dexih.connections.dexih
 {
@@ -42,138 +45,156 @@ namespace dexih.connections.dexih
             _continuationToken = continuationToken; ;
         }
 
-		public async Task<ReturnValue<JObject>> HttpPost(string function, HttpContent content, bool authenticate)
+		public async Task<JObject> HttpPost(string function, HttpContent content, bool authenticate)
 		{
-            HttpClientHandler handler;
-            if (authenticate)
+            try
             {
-                var loginResult = await Login();
-                if (!loginResult.Success)
+                HttpClientHandler handler;
+                if (authenticate)
                 {
-                    return new ReturnValue<JObject>(loginResult);
+                    var loginCookie = await Login();
+
+                    handler = new HttpClientHandler()
+                    {
+                        CookieContainer = loginCookie
+                    };
+                }
+                else
+                {
+                    CookieContainer cookies = new CookieContainer();
+                    handler = new HttpClientHandler()
+                    {
+                        CookieContainer = cookies
+                    };
                 }
 
-                handler = new HttpClientHandler()
+                //Login to the web server to receive an authenicated cookie.
+                using (HttpClient httpClient = new HttpClient(handler))
                 {
-                    CookieContainer = loginResult.Value
-                };
+                    HttpResponseMessage response;
+                    try
+                    {
+                        response = await httpClient.PostAsync(Server + "Reader/" + function, content);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        JObject result = JObject.Parse(responseString);
+                        return result;
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        throw new ConnectionException($"Could not connect to server {Server}. {ex.Message}", ex);
+                    }
+                }
             }
-            else
+            catch(Exception ex)
             {
-                CookieContainer cookies = new CookieContainer();
-                handler = new HttpClientHandler()
-                {
-                    CookieContainer = cookies
-                };
+                throw new ConnectionException($"Http post failed. {ex.Message}", ex);
             }
-
-			//Login to the web server to receive an authenicated cookie.
-			using (HttpClient httpClient = new HttpClient(handler))
-			{
-				HttpResponseMessage response;
-				try
-				{
-					response = await httpClient.PostAsync(Server + "Reader/" + function, content);
-					var responseString = await response.Content.ReadAsStringAsync();
-					JObject result = JObject.Parse(responseString);
-					return new ReturnValue<JObject>(true, result);
-				}
-				catch (HttpRequestException ex)
-				{
-					return new ReturnValue<JObject>(false, $"Could not connect to the server at location: {Server}, with the message: {ex.Message}", ex);
-				}
-				catch (Exception ex)
-				{
-					return new ReturnValue<JObject>(false, $"Internal error connecting to the server at location:: {Server}, with the message: {ex.Message}", ex);
-				}
-			}
-		}
+        }
 
 		/// <summary>
 		/// Logs into the dexih instance and returns the cookiecontainer which can be used to authenticate future requests.
 		/// </summary>
 		/// <returns>The login.</returns>
-		private async Task<ReturnValue<CookieContainer>> Login()
+		private async Task<CookieContainer> Login()
 		{
-			CookieContainer cookies = new CookieContainer();
-			HttpClientHandler handler = new HttpClientHandler()
-			{
-				CookieContainer = cookies
-			};
+            try
+            {
+                CookieContainer cookies = new CookieContainer();
+                HttpClientHandler handler = new HttpClientHandler()
+                {
+                    CookieContainer = cookies
+                };
 
-			//Login to the web server to receive an authenicated cookie.
-			using (HttpClient httpClient = new HttpClient(handler))
-			{
-				var content = new FormUrlEncodedContent(new[]
-				{
-				new KeyValuePair<string, string>("User", Username),
-				new KeyValuePair<string, string>("Password", Password)
-				});
+                //Login to the web server to receive an authenicated cookie.
+                using (HttpClient httpClient = new HttpClient(handler))
+                {
+                    var content = new FormUrlEncodedContent(new[]
+                    {
+                        new KeyValuePair<string, string>("User", Username),
+                        new KeyValuePair<string, string>("Password", Password)
+                    });
 
-				HttpResponseMessage response;
-				try
-				{
-					response = await httpClient.PostAsync(Server + "Reader/Login", content);
-				}
-				catch (HttpRequestException ex)
-				{
-					return new ReturnValue<CookieContainer>(false, $"Could not connect to the server at location: {Server}, with the message: {ex.Message}", ex);
-				}
-				catch (Exception ex)
-				{
-					return new ReturnValue<CookieContainer>(false, $"Internal error connecting to the server at location:: {Server}, with the message: {ex.Message}", ex);
-				}
+                    HttpResponseMessage response;
+                    try
+                    {
+                        response = await httpClient.PostAsync(Server + "Reader/Login", content);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        throw new ConnectionException($"Could not connect to server {Server}. {ex.Message}", ex);
+                    }
 
-				var responseString = await response.Content.ReadAsStringAsync();
-				JObject result = JObject.Parse(responseString);
-				if ((bool)result["success"])
-				{
-					return new ReturnValue<CookieContainer>(true, handler.CookieContainer);
-				}
-				else
-				{
-					return new ReturnValue<CookieContainer>(false, $"User authentication failed with message: {result?["message"].ToString()}.", null);
-				}
-			}
-		}
-
-        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
-        {
-            return await Task.Run(() => new ReturnValue(true), cancelToken);
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    JObject result = JObject.Parse(responseString);
+                    if ((bool)result["success"])
+                    {
+                        return handler.CookieContainer;
+                    }
+                    else
+                    {
+                        throw new ConnectionException($"User authentication error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Login failed. {ex.Message}", ex);
+            }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
+        public override Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
-			var result = await HttpPost("GetHubs", null, true);
-			if(!result.Success)
-			{
-				return new ReturnValue<List<string>>(result);
-			}
-
-			var hubs = result.Value["value"];
-			var hubList = hubs.ToObject<List<string>>();
-
-			return new ReturnValue<List<string>>(true, hubList);
+            return Task.FromResult(true);
         }
 
-		public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
+        {
+            try
+            {
+                var result = await HttpPost("GetHubs", null, true);
+                if ((bool)result["success"])
+                {
+                    var hubs = result["value"];
+                    var hubList = hubs.ToObject<List<string>>();
+                    return hubList;
+                }
+                else
+                {
+                    throw new ConnectionException($"Error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Get integration hub hubs failed. {ex.Message}", ex);
+            }
+        }
+
+		public override async Task<List<Table>> GetTableList(CancellationToken cancelToken)
 		{
-			var content = new FormUrlEncodedContent(new[]
-			{
-				new KeyValuePair<string, string>("HubName", DefaultDatabase)
-			});
+            try
+            {
+                var content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("HubName", DefaultDatabase)
+                });
 
-			var result = await HttpPost("GetTables", content, true);
-			if (!result.Success)
-			{
-				return new ReturnValue<List<Table>>(result);
-			}
-
-			var tables = result.Value["value"];
-			var tableList = tables.ToObject<List<Table>>();
-
-			return new ReturnValue<List<Table>>(true, tableList);
-		}
+                var result = await HttpPost("GetTables", content, true);
+                if ((bool)result["success"])
+                {
+                    var tables = result["value"];
+                    var tableList = tables.ToObject<List<Table>>();
+                    return tableList; ;
+                }
+                else
+                {
+                    throw new ConnectionException($"Error {result?["message"]}");
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Get table list failed. {ex.Message}", ex);
+            }
+        }
 
         /// <summary>
         /// Retrieves web services information.  The RestfulUri must be passed through the properties.  This should be in the format http://sitename/{value1}/{value2} where the names between {} are the names for input parameters.  The properties can also contain default values for the parameters.
@@ -181,7 +202,7 @@ namespace dexih.connections.dexih
         /// <param name="tableName">Table Name</param>
         /// <param name="Properties">Mandatory property "RestfulUri".  Additional properties for the default column values.  Use ColumnName=value</param>
         /// <returns></returns>
-         public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
+         public override async Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
          {
 			try
 			{
@@ -194,22 +215,19 @@ namespace dexih.connections.dexih
 				});
 
 				var result = await HttpPost("GetTableInfo", content, true);
-				if (!result.Success)
-				{
-					return new ReturnValue<Table>(result);
-				}
-
-				if ((bool)result.Value["success"] == false)
-				{
-					return new ReturnValue<Table>(false, result.Value["message"].ToString(), null);
-				}
-
-				var table = result.Value["value"].ToObject<Table>();
-                return new ReturnValue<Table>(true, table);
+                if ((bool)result["success"])
+                {
+                    var table = result["value"].ToObject<Table>();
+                    return table;
+                }
+                else
+                {
+                    throw new ConnectionException($"Error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
+                }
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "Error getting table information: " + ex.Message, ex);
+                throw new ConnectionException($"Get source talbe information for table {importTable.Name} failed. {ex.Message}", ex);
             }
         }
 
@@ -219,63 +237,58 @@ namespace dexih.connections.dexih
 	    /// <param name="table"></param>
 	    /// <param name="filters"></param>
 	    /// <returns></returns>
-	    public ReturnValue<object[]> LookupRow(Table table, List<Filter> filters, CancellationToken cancelToken)
+	    public object[] LookupRow(Table table, List<Filter> filters, CancellationToken cancelToken)
         {
 			throw new NotImplementedException();
 		}
 
-        public override async Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
-        {
-            return await Task.Run(() => new ReturnValue(true), cancelToken);
-        }
-
-        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
-        {
-            return await Task.Run(() => new ReturnValue<Table>(true, table));
-        }
-
-        public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
+        public override Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
+        public override Task<Table> InitializeTable(Table table, int position)
+        {
+            return Task.FromResult(table);
+        }
+
+        public override Task<long> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
+        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+        public override Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
 			throw new NotImplementedException();
 		}
 
-        public override Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue> DataWriterStart(Table table)
+        public override Task DataWriterStart(Table table)
         {
-            return await Task.Run(() =>
-            {
-				_continuationToken = table.ContinuationToken;
-                // _rowsPerBufffer = table.GetExtendedProperty("rowsPerBuffer");
-
-                return new ReturnValue(true);
-            });
+			_continuationToken = table.ContinuationToken;
+            return Task.CompletedTask;
         }
 
-        public override async Task<ReturnValue> DataWriterFinish(Table table)
+        public override async Task DataWriterFinish(Table table)
         {
             var content = new FormUrlEncodedContent(new[]
             {
@@ -283,11 +296,9 @@ namespace dexih.connections.dexih
             });
 
             var result = await HttpPost("PushFinish", content, false);
-
-            return new ReturnValue(true);
         }
 
-        public override async Task<ReturnValue> DataWriterError(string message, Exception exception )
+        public override async Task DataWriterError(string message, Exception exception )
         {
             var content = new FormUrlEncodedContent(new[]
 {
@@ -297,11 +308,9 @@ namespace dexih.connections.dexih
             });
 
             var result = await HttpPost("SetError", content, false);
-
-            return new ReturnValue(true);
         }
 
-        public override async Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
@@ -341,24 +350,21 @@ namespace dexih.connections.dexih
                         string message = Json.SerializeObject(pushData, "");
                         var content = new StringContent(message, Encoding.UTF8, "application/json");
 
-                        var postResult = await HttpPost("PushData", content, false);
-                        if (!postResult.Success)
+                        var result = await HttpPost("PushData", content, false);
+
+                        if (!(bool)result["success"])
                         {
-                            return new ReturnValue<long>(postResult);
+                            throw new ConnectionException($"Error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
                         }
 
-                        if (postResult.Value["success"].ToString() == "false")
-                        {
-                            return new ReturnValue<long>(false, postResult.Value["message"].ToString(), new Exception(postResult.Value["exceptionDetails"].ToString()));
-                        }
                     }
                 }
 
-                return new ReturnValue<long>(true, timer.ElapsedTicks);
+                return timer.ElapsedTicks;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<long>(false, "The data could not be written to due to the following error: " + ex.Message, ex);
+                throw new ConnectionException($"Insert bulk rows for table {table.Name} failed. {ex.Message}", ex);
             }
         }
 
@@ -368,14 +374,14 @@ namespace dexih.connections.dexih
             return reader;
         }
 
-        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancelToken)
         {
-            return await Task.Run(() => new ReturnValue<bool>(true, true), cancelToken);
+            return Task.FromResult(true);
         }
 
-        public override async Task<ReturnValue> CompareTable(Table table, CancellationToken cancelToken)
+        public override Task<bool> CompareTable(Table table, CancellationToken cancelToken)
         {
-            return await Task.Run(() => new ReturnValue(true), cancelToken);
+            return Task.FromResult(true);
         }
 
         private class PushData

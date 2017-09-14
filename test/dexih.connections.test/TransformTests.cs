@@ -1,5 +1,6 @@
 ﻿using dexih.connections;
 using dexih.functions;
+using dexih.functions.Query;
 using dexih.transforms;
 using System;
 using System.Collections.Generic;
@@ -18,22 +19,20 @@ namespace dexih.connections.test
         {
             Table table = DataSets.CreateTable();
 
-            ReturnValue returnValue;
+            bool returnValue;
             returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
-            Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
+            Assert.True(returnValue, "New Database");
 
             //create a new table and write some data to it.  
             Transform reader = DataSets.CreateTestData();
             returnValue = await connection.CreateTable(table, true, CancellationToken.None);
-            Assert.True(returnValue.Success, "CreateManagedTables - Message:" + returnValue.Message);
+            Assert.True(returnValue, "CreateManagedTables");
             TransformWriter writer = new TransformWriter();
 
-            var auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
-            Assert.True(auditResult.Success);
-            TransformWriterResult writerResult = auditResult.Value;
+            TransformWriterResult writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
             returnValue = await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
-            Assert.True(returnValue.Success, "Write data:" + returnValue.Message);
+            Assert.True(returnValue, "Write data");
 
             //check database can sort 
             if (connection.CanSort)
@@ -88,17 +87,15 @@ namespace dexih.connections.test
             reader = connection.GetTransformReader(table);
             TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
 
-            auditResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
-            Assert.True(auditResult.Success);
-            writerResult = auditResult.Value;
+            writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
             returnValue = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
-            Assert.True(returnValue.Success, returnValue.Message);
+            Assert.True(returnValue);
             Assert.Equal(10, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, auditResult.Value.AuditKey, null, true, false, false, null, 1, null, false, CancellationToken.None);
-            Assert.Equal((long)10, auditTable.Value[0].RowsCreated);
+            var auditTable = await connection.GetTransformWriterResults(0, null, writerResult.AuditKey, null, true, false, false, null, 1, null, false, CancellationToken.None);
+            Assert.Equal((long)10, auditTable[0].RowsCreated);
 
         }
 

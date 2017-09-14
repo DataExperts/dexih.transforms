@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using dexih.functions;
 using static dexih.functions.TableColumn;
+using dexih.functions.Query;
 
 namespace dexih.transforms
 {

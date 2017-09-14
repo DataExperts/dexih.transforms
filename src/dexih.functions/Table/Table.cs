@@ -1,7 +1,11 @@
-﻿using System;
+﻿using dexih.functions.Query;
+using Dexih.Utils.DataType;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static dexih.functions.TableColumn;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
@@ -170,7 +174,7 @@ namespace dexih.functions
         /// <param name="filters">Filter for the lookup.  For an index to be used, the filters must be in the same column order as the index.</param>
         /// <param name="startRow"></param>
         /// <returns></returns>
-        public ReturnValue<object[]> LookupSingleRow(List<Filter> filters, int startRow = 0)
+        public object[] LookupSingleRow(List<Filter> filters, int startRow = 0)
         {
             try
             {
@@ -179,18 +183,18 @@ namespace dexih.functions
                 for (var i = startRow; i < Data.Count(); i++)
                 {
                     if (RowMatch(filters, Data[i]))
-                        return new ReturnValue<object[]>(true, Data[i]);
+                        return Data[i];
                 }
 
-                return new ReturnValue<object[]>(false, "Record not found.", null);
+                return null;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<object[]>(false, "Error in lookup: " + ex.Message, ex);
+                throw new TableException("The lookup row failed.  " + ex.Message, ex);
             }
         }
 
-        public ReturnValue<List<object[]>> LookupMultipleRows(List<Filter> filters, int startRow = 0)
+        public List<object[]> LookupMultipleRows(List<Filter> filters, int startRow = 0)
         {
             try
             {
@@ -204,11 +208,11 @@ namespace dexih.functions
                         rows.Add(Data[i]);
                 }
 
-                return new ReturnValue<List<object[]>>(true, rows);
+                return rows;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<object[]>>(false, "Error in lookup: " + ex.Message, ex);
+                throw new TableException("The lookup multiple rows failed.  " + ex.Message, ex);
             }
         }
 
@@ -242,22 +246,22 @@ namespace dexih.functions
                 switch (filter.Operator)
                 {
                     case Filter.ECompare.IsEqual:
-                        isMatch = compareResult.Value == DataType.ECompareResult.Equal;
+                        isMatch = compareResult == DataType.ECompareResult.Equal;
                         break;
                     case Filter.ECompare.NotEqual:
-                        isMatch = compareResult.Value != DataType.ECompareResult.Equal;
+                        isMatch = compareResult != DataType.ECompareResult.Equal;
                         break;
                     case Filter.ECompare.LessThan:
-                        isMatch = compareResult.Value == DataType.ECompareResult.Less;
+                        isMatch = compareResult == DataType.ECompareResult.Less;
                         break;
                     case Filter.ECompare.LessThanEqual:
-                        isMatch = compareResult.Value == DataType.ECompareResult.Less || compareResult.Value == DataType.ECompareResult.Equal;
+                        isMatch = compareResult == DataType.ECompareResult.Less || compareResult == DataType.ECompareResult.Equal;
                         break;
                     case Filter.ECompare.GreaterThan:
-                        isMatch = compareResult.Value == DataType.ECompareResult.Greater;
+                        isMatch = compareResult == DataType.ECompareResult.Greater;
                         break;
                     case Filter.ECompare.GreaterThanEqual:
-                        isMatch = compareResult.Value == DataType.ECompareResult.Greater || compareResult.Value == DataType.ECompareResult.Greater;
+                        isMatch = compareResult == DataType.ECompareResult.Greater || compareResult == DataType.ECompareResult.Greater;
                         break;
                 }
 
@@ -291,32 +295,32 @@ namespace dexih.functions
 
             if (colValidFrom == null)
             {
-                colValidFrom = new TableColumn("ValidFromDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidFromDate };
+                colValidFrom = new TableColumn("ValidFromDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidFromDate };
                 Columns.Add(colValidFrom);
             }
             if (colValidTo == null)
             {
-                colValidTo = new TableColumn("ValidToDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidToDate };
+                colValidTo = new TableColumn("ValidToDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidToDate };
                 Columns.Add(colValidTo);
             }
             if (colCreateDate == null)
             {
-                colCreateDate = new TableColumn("CreateDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.CreateDate };
+                colCreateDate = new TableColumn("CreateDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.CreateDate };
                 Columns.Add(colCreateDate);
             }
             if (colUpdateDate == null)
             {
-                colUpdateDate = new TableColumn("UpdateDate", DataType.ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.UpdateDate };
+                colUpdateDate = new TableColumn("UpdateDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.UpdateDate };
                 Columns.Add(colUpdateDate);
             }
             if (colSurrogateKey == null)
             {
-                colSurrogateKey = new TableColumn("SurrogateKey", DataType.ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.SurrogateKey };
+                colSurrogateKey = new TableColumn("SurrogateKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.SurrogateKey };
                 Columns.Add(colSurrogateKey);
             }
             if (colIsCurrentField == null)
             {
-                colIsCurrentField = new TableColumn("IsCurrent", DataType.ETypeCode.Boolean) { DeltaType = TableColumn.EDeltaType.IsCurrentField };
+                colIsCurrentField = new TableColumn("IsCurrent", ETypeCode.Boolean) { DeltaType = TableColumn.EDeltaType.IsCurrentField };
                 Columns.Add(colIsCurrentField);
             }
         }
@@ -335,7 +339,7 @@ namespace dexih.functions
             table.Description = "Rejected table for: " + Description;
 
             if(GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
-                table.Columns.Add(new TableColumn("RejectedReason", DataType.ETypeCode.String, TableColumn.EDeltaType.RejectedReason));
+                table.Columns.Add(new TableColumn("RejectedReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason));
 
             return table;
         }
@@ -353,7 +357,7 @@ namespace dexih.functions
                 column.SecurityFlag = Columns[column.Name].SecurityFlag;
                 if(column.SecurityFlag != TableColumn.ESecurityFlag.None)
                 {
-                    column.Datatype = DataType.ETypeCode.String;
+                    column.Datatype = ETypeCode.String;
                     column.MaxLength = 250;
                 }
             }
@@ -391,7 +395,7 @@ namespace dexih.functions
             return table;
         }
 
-        public void AddColumn(string columnName, DataType.ETypeCode dataType = DataType.ETypeCode.String)
+        public void AddColumn(string columnName, ETypeCode dataType = ETypeCode.String)
         {
             if (Columns == null)
                 Columns = new TableColumns();
@@ -399,7 +403,7 @@ namespace dexih.functions
             Columns.Add(new TableColumn(columnName, dataType, Name));
         }
 
-        public void AddColumn(string columnName, DataType.ETypeCode dataType = DataType.ETypeCode.String, TableColumn.EDeltaType deltaType = TableColumn.EDeltaType.TrackingField)
+        public void AddColumn(string columnName, ETypeCode dataType = ETypeCode.String, TableColumn.EDeltaType deltaType = TableColumn.EDeltaType.TrackingField)
         {
             if (Columns == null)
                 Columns = new TableColumns();
@@ -453,7 +457,7 @@ namespace dexih.functions
         {
             return new SelectQuery
             {
-                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.Datatype != DataType.ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
+                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.Datatype != ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
                 Table = Name,
                 Rows = rows
             };
@@ -493,5 +497,7 @@ namespace dexih.functions
 
             return csvData.ToString();
         }
+
+
     }
 }

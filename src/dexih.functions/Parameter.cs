@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using static dexih.functions.DataType;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
@@ -37,9 +37,7 @@ namespace dexih.functions
             IsArray = isArray;
             if (value != null)
             {
-                var result = SetValue(value);
-                if (result.Success == false)
-                    throw new Exception("Error creating parameter as the value " + value + " could not be set with the parameter type : " + parameterType);
+                SetValue(value);
             }
             Column = column;
             IsColumn = isColumn;
@@ -104,18 +102,15 @@ namespace dexih.functions
         /// Sets and converts the value to the appropriate type.
         /// </summary>
         /// <param name="input"></param>
-        /// <returns>True is value set, False with message if type conversion failed.</returns>
-        public ReturnValue SetValue(object input)
+        public void SetValue(object input)
         {
             if (IsArray)
             {
                 _value = input;
-                return new ReturnValue(true);
+                return;
             }
             var result = TryParse(DataType, input);
-            if (result.Success)
-                _value = result.Value;
-            return result;
+            _value = result;
         }
 
     }

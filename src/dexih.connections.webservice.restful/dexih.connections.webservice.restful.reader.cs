@@ -8,6 +8,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.webservice
 {
@@ -32,7 +35,7 @@ namespace dexih.connections.webservice
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -40,7 +43,7 @@ namespace dexih.connections.webservice
             {
                 if (_isOpen)
                 {
-                    return new ReturnValue(false, "The web service connection is already open.", null);
+                    throw new ConnectionException($"The webservice is already open");
                 }
 
                 //if no driving table is set, then use the row creator to simulate a single row.
@@ -52,19 +55,24 @@ namespace dexih.connections.webservice
                 }
                 else
                 {
-                    var result = await ReferenceTransform.Open(auditKey, null, cancelToken);
-                    if (!result.Success)
-                        return result;
+                    try
+                    {
+                        var result = await ReferenceTransform.Open(auditKey, null, cancelToken);
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new ConnectionException($"Failed to open the input transform.", ex);
+                    }
                 }
 
                 _isOpen = true;
 
                 //create a dummy inreader to allow fieldcount and other queries to work.
-                return new ReturnValue(true);
+                return true;
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred when starting the web service: " + ex.Message, ex);
+                throw new ConnectionException($"Opening the web service reader failed. {ex.Message}", ex);
             }
         }
 
@@ -78,23 +86,25 @@ namespace dexih.connections.webservice
             return true;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             try
             {
                 if(!_isOpen)
                 {
-                    return new ReturnValue<object[]>(false, "The read record failed as the reader has not been opened.", null);
+                    throw new ConnectionException($"The web service is not open");
                 }
 
 
                 if (_cachedJson == null && await ReferenceTransform.ReadAsync(cancellationToken) == false)
-                    return new ReturnValue<object[]>(false, null);
+                {
+                    return null;
+                }
                 else
                 {
                     var restFunction = (RestFunction)CacheTable;
@@ -115,14 +125,18 @@ namespace dexih.connections.webservice
                         var data = _cachedJson[_cachedRow];
                         for (int i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
                         {
-                            var returnValue = DataType.TryParse(CacheTable.Columns[i].Datatype, data.SelectToken(CacheTable.Columns[i].Name));
-                            if (!returnValue.Success)
-                                return new ReturnValue<object[]>(returnValue);
-
-                            row[i] = returnValue.Value;
+                            object value = data.SelectToken(CacheTable.Columns[i].Name);
+                            try
+                            {
+                                row[i] = Dexih.Utils.DataType.DataType.TryParse(CacheTable.Columns[i].Datatype, value);
+                            }
+                            catch(Exception ex)
+                            {
+                                throw new ConnectionException($"Failed to convert value on column {CacheTable.Columns[i].Name} to datatype {CacheTable.Columns[i].Datatype}. {ex.Message}", ex, value);
+                            }
                         }
                         _cachedRow++;
-                        if(_cachedRow >= _cachedJson.Count)
+                        if (_cachedRow >= _cachedJson.Count)
                         {
                             _cachedJson = null;
                         }
@@ -162,13 +176,11 @@ namespace dexih.connections.webservice
                             //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                             HttpResponseMessage response = await client.GetAsync(uri, cancellationToken);
-                            if (cancellationToken.IsCancellationRequested)
-                            {
-                                return new ReturnValue<object[]>(false, "Reader was cancelled", null);
-                            }
+                            cancellationToken.ThrowIfCancellationRequested();
+
                             if (!response.IsSuccessStatusCode)
                             {
-                                return new ReturnValue<object[]>(false, "Webservice called failed with status: " + response.StatusCode.ToString(), null);
+                                throw new ConnectionException($"Web service failed with status {response.StatusCode}.");
                             }
 
                             row[CacheTable.GetOrdinal("ResponseStatusCode")] = response.StatusCode.ToString();
@@ -184,7 +196,7 @@ namespace dexih.connections.webservice
                                     _cachedJson = (JArray)data;
                                     data = _cachedJson[0];
                                     _cachedRow = 1;
-                                    if(_cachedJson.Count <= 1)
+                                    if (_cachedJson.Count <= 1)
                                     {
                                         _cachedJson = null;
                                     }
@@ -192,22 +204,26 @@ namespace dexih.connections.webservice
 
                                 for (int i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
                                 {
-                                    var returnValue = DataType.TryParse(CacheTable.Columns[i].Datatype, data.SelectToken(CacheTable.Columns[i].Name));
-                                    if (!returnValue.Success)
-                                        return new ReturnValue<object[]>(returnValue);
-
-                                    row[i] = returnValue.Value;
+                                    object value = data.SelectToken(CacheTable.Columns[i].Name);
+                                    try
+                                    {
+                                        row[i] = DataType.TryParse(CacheTable.Columns[i].Datatype, value);
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        throw new ConnectionException($"Failed to convert value on column {CacheTable.Columns[i].Name} to datatype {CacheTable.Columns[i].Datatype}. {ex.Message}", ex, value);
+                                    }
                                 }
 
                             }
                         }
                     }
-                    return new ReturnValue<object[]>(true, row);
+                    return row;
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("The restful service failed due to the following error: " + ex.Message, ex);
+                throw new ConnectionException($"Read web service record failed. {ex.Message}", ex);
             }
         }
 
@@ -218,7 +234,7 @@ namespace dexih.connections.webservice
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
             return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters, cancelToken);
          }

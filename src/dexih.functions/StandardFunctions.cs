@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.XPath;
 using Newtonsoft.Json.Linq;
+using Dexih.Utils.Crypto;
 
 namespace dexih.functions
 {
@@ -279,8 +280,8 @@ namespace dexih.functions
         public string DateToString(DateTime dateValue, string format) { return dateValue.ToString(format); }
         public DateTime DateNow() { return DateTime.Now; }
         public DateTime DateNowUtc() { return DateTime.UtcNow; }
-        public string Encrypt(string value, string key) { return EncryptString.Encrypt(value, key, 1000).Value; }
-        public string Decrypt(string value, string key) { return EncryptString.Decrypt(value, key, 1000).Value; }
+        public string Encrypt(string value, string key) { return EncryptString.Encrypt(value, key, 1000); }
+        public string Decrypt(string value, string key) { return EncryptString.Decrypt(value, key, 1000); }
         public string CreateSaltedHash(string value) { return HashString.CreateHash(value); }
         public bool ValidateSaltedHash(string value, string hash) { return HashString.ValidateHash(value, hash); }
 

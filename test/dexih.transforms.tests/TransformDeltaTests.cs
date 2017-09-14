@@ -88,7 +88,7 @@ namespace dexih.transforms.tests
                 var writer = new TransformWriter();
                 var result = new TransformWriterResult(0, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                 var writeResult = await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
-                Assert.True(writeResult.Success, writeResult.Message);
+                Assert.True(writeResult);
             
                 target = new ReaderMemory(target.CacheTable, null);
 

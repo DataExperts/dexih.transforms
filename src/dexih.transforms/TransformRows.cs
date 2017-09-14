@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -111,7 +113,7 @@ namespace dexih.transforms
         }
 
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             if (query == null)
@@ -149,15 +151,17 @@ namespace dexih.transforms
         }
 
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             foreach (Function rowFunction in RowFunctions)
+            {
                 rowFunction.Reset();
+            }
             _firstRecord = true;
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             bool moreRows = true;
             object[] newRow = null;
@@ -167,7 +171,7 @@ namespace dexih.transforms
 
             //if the top level rowgenerator needs a new record, then read from source
             if (_rowGenerate[0] == false && await PrimaryTransform.ReadAsync(cancellationToken)== false)
-                return new ReturnValue<object[]>(false, null);
+                return null;
             do
             {
                 int i = 0;
@@ -192,28 +196,43 @@ namespace dexih.transforms
 
                     foreach (Parameter input in rowFunction.Inputs.Where(c => c.IsColumn))
                     {
-                        var result = input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
-                        if (result.Success == false)
-                            throw new Exception("Error setting row function values: " + result.Message);
+                        try
+                        {
+                            input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
+                        }
+                        catch(Exception ex)
+                        {
+                            throw new TransformException($"The row transform failed setting an input parameter on {rowFunction.FunctionName} parameter {input.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.SchemaColumnName()]);
+                        }
                     }
 
                     if (_firstRecord)
                         rowFunction.Reset();
 
-                    var invokeresult = rowFunction.Invoke();
-                    if (invokeresult.Success == false)
-                        throw new Exception("Error invoking row function: " + invokeresult.Message);
-                    _rowGenerate[j] = (bool)invokeresult.Value;
+                    try
+                    {
+                        var invokeresult = rowFunction.Invoke();
+                        _rowGenerate[j] = (bool)invokeresult;
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new TransformException($"The row transform failed calling the function {rowFunction.FunctionName}.  {ex.Message}.", ex);
+                    }
 
                     //if the sequence finished.  reset and try again
                     if (_rowGenerate[j] == false)
                     {
                         rowFunction.Reset();
 
-                        var invokeresult2 = rowFunction.Invoke();
-                        if (invokeresult2.Success == false)
-                            throw new Exception("Error invoking row function: " + invokeresult2.Message);
-                        _rowGenerate[j] = (bool)invokeresult2.Value;
+                        try
+                        {
+                            var invokeresult = rowFunction.Invoke();
+                            _rowGenerate[j] = (bool)invokeresult;
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new TransformException($"The row transform failed calling the function {rowFunction.FunctionName}.  {ex.Message}.", ex);
+                        }
 
                         moreRows = false; //indicate the row generator finished current sequence and started again.
                     }
@@ -258,9 +277,13 @@ namespace dexih.transforms
             } while (moreRows);
 
             if (moreRows)
-                return new ReturnValue<object[]>(true, newRow);
+            {
+                return newRow;
+            }
             else
-                return new ReturnValue<object[]>(false, null);
+            {
+                return null;
+            }
         }
 
         public override string Details()

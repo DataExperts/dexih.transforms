@@ -32,12 +32,7 @@ namespace dexih.connections.webservice.restful.tests
                 DefaultDatabase = ""
             };
 
-            var sourceTableResult = await connection.GetSourceTableInfo("get", CancellationToken.None);
-            Assert.True(sourceTableResult.Success, "GetSourceTableInfo failed: " + sourceTableResult.Message);
-
-            _output.WriteLine("GetSourceTableInfo completed");
-
-            var table = sourceTableResult.Value;
+            var table = await connection.GetSourceTableInfo("get", CancellationToken.None);
             Assert.True(table.Columns.GetOrdinal("args") >= 0);
             Assert.True(table.Columns.GetOrdinal("headers") >= 0);
             Assert.True(table.Columns.GetOrdinal("origin") >= 0);
@@ -45,7 +40,7 @@ namespace dexih.connections.webservice.restful.tests
 
             var reader = connection.GetTransformReader(table);
             var openResult = await reader.Open(0, null, CancellationToken.None);
-            Assert.True(openResult.Success, "Reader open failed: " + openResult.Message);
+            Assert.True(openResult, "Reader open failed");
 
             var result = await reader.ReadAsync();
             Assert.True(result, "No rows found.");
@@ -72,10 +67,7 @@ namespace dexih.connections.webservice.restful.tests
                 RestfulUri = "users",
             };
 
-            var sourceTableResult = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
-            Assert.True(sourceTableResult.Success, "GetSourceTableInfo failed: " + sourceTableResult.Message);
-
-            var table = sourceTableResult.Value;
+            var table = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
             Assert.True(table.Columns.GetOrdinal("id") >= 0);
             Assert.True(table.Columns.GetOrdinal("name") >= 0);
             Assert.True(table.Columns.GetOrdinal("username") >= 0);
@@ -84,7 +76,7 @@ namespace dexih.connections.webservice.restful.tests
 
             var reader = connection.GetTransformReader(table);
             var openResult = await reader.Open(0, null, CancellationToken.None);
-            Assert.True(openResult.Success, "Reader open failed: " + openResult.Message);
+            Assert.True(openResult, "Reader open failed");
 
             var id = 0;
             while(await reader.ReadAsync())
@@ -117,16 +109,13 @@ namespace dexih.connections.webservice.restful.tests
             restFunction.AddInputParameter("user1", "user");
             restFunction.AddInputParameter("passwd1", "passwd");
             
-            var sourceTableResult = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
-            Assert.True(sourceTableResult.Success, "GetSourceTableInfo failed: " + sourceTableResult.Message);
-
-            var table = sourceTableResult.Value;
+            var table = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
             Assert.True(table.Columns.GetOrdinal("authenticated") >= 0);
             Assert.True(table.Columns.GetOrdinal("user") >= 0);
 
             var reader = connection.GetTransformReader(table);
             var openResult = await reader.Open(0, null, CancellationToken.None);
-            Assert.True(openResult.Success, "Reader open failed: " + openResult.Message);
+            Assert.True(openResult, "Reader open failed");
 
             var result = await reader.ReadAsync();
             Assert.True(result, "No rows found.");

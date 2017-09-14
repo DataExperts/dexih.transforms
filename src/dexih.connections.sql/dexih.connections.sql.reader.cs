@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Data.Common;
 using System.Threading;
+using dexih.transforms.Exceptions;
+using dexih.functions.Query;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.sql
 {
@@ -39,49 +42,43 @@ namespace dexih.connections.sql
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
-            AuditKey = auditKey;
-
-            if (_isOpen)
+            try
             {
-                return new ReturnValue(false, "The reader is already open.", null);
-            }
+                AuditKey = auditKey;
 
-            var connectionResult = await ((ConnectionSql)ReferenceConnection).NewConnection();
-            if(!connectionResult.Success)
+                if (_isOpen)
+                {
+                    throw new ConnectionException("The reader is already open.");
+                }
+
+                _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
+                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, query, cancelToken);
+
+
+                _fieldCount = _sqlReader.FieldCount;
+                _fieldOrdinals = new List<int>();
+                for (int i = 0; i < _sqlReader.FieldCount; i++)
+                {
+                    var fieldName = _sqlReader.GetName(i);
+                    var ordinal = CacheTable.GetOrdinal(fieldName);
+                    if (ordinal < 0)
+                    {
+                        throw new ConnectionException($"The reader could not be opened as column {fieldName} could not be found in the table {CacheTable.Name}.");
+                    }
+                    _fieldOrdinals.Add(ordinal);
+                }
+
+                _sortFields = query?.Sorts;
+
+                _isOpen = true;
+                return true;
+            }
+            catch(Exception ex)
             {
-                return new ReturnValue(false, "The connection reader for the table " + CacheTable.Name + " could failed due to the following error: " + connectionResult.Message, connectionResult.Exception);
+                throw new ConnectionException($"Open reader failed. {ex.Message}", ex);
             }
-
-            _sqlConnection = connectionResult.Value;
-
-            var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, query, cancelToken);
-
-            _sortFields = query?.Sorts;
-
-            if (!readerResult.Success)
-            {
-                return new ReturnValue(false, "The connection reader for the table " + CacheTable.Name + " could failed due to the following error: " + readerResult.Message, readerResult.Exception);
-            }
-
-            _sqlReader = readerResult.Value;
-
-            _fieldCount = _sqlReader.FieldCount;
-            _fieldOrdinals = new List<int>();
-            for (int i = 0; i < _sqlReader.FieldCount; i++)
-            {
-				var fieldName = _sqlReader.GetName(i);
-				var ordinal = CacheTable.GetOrdinal(fieldName);
-				if(ordinal < 0) 
-				{
-					return new ReturnValue(false, $"The connection could not be opened as a match for the source field {fieldName} could not be found in the table metadata.", null);
-				}
-                _fieldOrdinals.Add(ordinal);
-            }
-
-            _isOpen = true;
-            return new ReturnValue(true, "", null);
         }
 
         public override string Details()
@@ -102,36 +99,49 @@ namespace dexih.connections.sql
             return true;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             if (_isOpen)
             {
-                return new ReturnValue(true);
+                return true;
             }
             else
-                return new ReturnValue(false, "The sql reader can not be reset", null);
+            {
+                return false;
+            }
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            if (! await _sqlReader.ReadAsync(cancellationToken))
-                return new ReturnValue<object[]>(false, null);
-
-            //load the new row up, converting datatypes where neccessary.
-            object[] row = new object[CacheTable.Columns.Count];
-
-            for (int i = 0; i < _fieldCount; i++)
+            try
             {
-                int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
-                var returnValue = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].Datatype, _sqlReader[i]);
-                if (!returnValue.Success)
-                    return new ReturnValue<object[]>(returnValue);
+                if (!await _sqlReader.ReadAsync(cancellationToken))
+                {
+                    return null;
+                }
 
-                row[_fieldOrdinals[i]] = returnValue.Value;
-                // row[_fieldOrdinals[i]] = _sqlReader[i];
-               
+                //load the new row up, converting datatypes where neccessary.
+                object[] row = new object[CacheTable.Columns.Count];
+
+                for (int i = 0; i < _fieldCount; i++)
+                {
+                    int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
+                    try
+                    {
+                        row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].Datatype, _sqlReader[i]);
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new ConnectionException($"The value on column {CacheTable.Columns[_fieldOrdinals[i]].Name} could not be converted to {CacheTable.Columns[_fieldOrdinals[i]].Datatype}.  {ex.Message}", ex, _sqlReader[i]);
+                    }
+
+                }
+                return row;
             }
-            return new ReturnValue<object[]>(true, row);
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Read record failed. {ex.Message}", ex);
+            }
         }
 
         public override bool CanLookupRowDirect { get; } = true;
@@ -141,39 +151,34 @@ namespace dexih.connections.sql
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
-            SelectQuery query = new SelectQuery()
+            try
             {
-                Columns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => new SelectColumn(c)).ToList(),
-                Filters = filters,
-            };
-
-            ReturnValue<DbConnection> connectionResult = await ((ConnectionSql)ReferenceConnection).NewConnection();
-            if (!connectionResult.Success)
-            {
-                return new ReturnValue<object[]>(false, "The connection reader for the table " + CacheTable.Name + " could failed due to the following error: " + connectionResult.Message, connectionResult.Exception);
-            }
-
-            using (var connection = connectionResult.Value)
-            {
-                var readerResult = await ReferenceConnection.GetDatabaseReader(CacheTable, connection, query, cancelToken);
-                if (!readerResult.Success)
+                SelectQuery query = new SelectQuery()
                 {
-                    return new ReturnValue<object[]>(false, "The connection reader for the table " + CacheTable.Name + " could failed due to the following error: " + readerResult.Message, readerResult.Exception);
-                }
+                    Columns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => new SelectColumn(c)).ToList(),
+                    Filters = filters,
+                };
 
-                using (var reader = readerResult.Value)
+                using (var connection = await ((ConnectionSql)ReferenceConnection).NewConnection())
                 {
-                    if (await reader.ReadAsync())
+                    using (var reader = await ReferenceConnection.GetDatabaseReader(CacheTable, connection, query, cancelToken))
                     {
-                        object[] values = new object[CacheTable.Columns.Count];
-                        reader.GetValues(values);
-                        return new ReturnValue<object[]>(true, values);
+                        if (await reader.ReadAsync())
+                        {
+                            object[] values = new object[CacheTable.Columns.Count];
+                            reader.GetValues(values);
+                            return values;
+                        }
+                        else
+                            return null;
                     }
-                    else
-                        return new ReturnValue<object[]>(false, "The lookup query for " + CacheTable.Name + " return no rows.", null);
                 }
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Lookup direct row failed. {ex.Message}", ex);
             }
         }
     }

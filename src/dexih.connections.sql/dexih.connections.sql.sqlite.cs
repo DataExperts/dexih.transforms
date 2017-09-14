@@ -7,9 +7,11 @@ using Microsoft.Data.Sqlite;
 using dexih.functions;
 using System.IO;
 using System.Data.Common;
-using static dexih.functions.DataType;
 using System.Threading;
 using System.Diagnostics;
+using static Dexih.Utils.DataType.DataType;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.connections.sql
 {
@@ -37,61 +39,48 @@ namespace dexih.connections.sql
                 return value;
         }
         
-        public override object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
                case ETypeCode.Decimal:
                    return (decimal) 999999999999999;
                 default:
-                    return DataType.GetDataTypeMaxValue(typeCode, length);
+                    return Dexih.Utils.DataType.DataType.GetDataTypeMaxValue(typeCode, length);
             }
         }
 
-        public override object GetDataTypeMinValue(ETypeCode typeCode)
+        public override object GetConnectionMinValue(ETypeCode typeCode)
         {
             switch (typeCode)
             {
                 case ETypeCode.Decimal:
                     return (decimal)-999999999999999;
                 default:
-                    return DataType.GetDataTypeMinValue(typeCode);
+                    return Dexih.Utils.DataType.DataType.GetDataTypeMinValue(typeCode);
             }
         }
 
 
-        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancelToken)
         {
-            ReturnValue<DbConnection> connectionResult = await NewConnection();
-            if (connectionResult.Success == false)
+            try
             {
-                return new ReturnValue<bool>(connectionResult);
-            }
-
-            using (var connection = connectionResult.Value)
-            {
-
-                using (DbCommand cmd = CreateCommand(connection,
-                    "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
+                using (var connection = await NewConnection())
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
 
-                    object tableExists = null;
-                    try
+                    using (DbCommand cmd = CreateCommand(connection,
+                        "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
                     {
-                        tableExists = await cmd.ExecuteScalarAsync(cancelToken);
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
+                        var tableExists = await cmd.ExecuteScalarAsync(cancelToken);
+                        return tableExists != null;
                     }
-                    catch (Exception ex)
-                    {
-                        return new ReturnValue<bool>(false,
-                            "The table exists query could not be run due to the following error: " + ex.Message, ex);
-                    }
-
-                    if (tableExists == null)
-                        return new ReturnValue<bool>(true, false);
-                    else
-                        return new ReturnValue<bool>(true, true);
                 }
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Table exists for table {table.Name} failed. {ex.Message}", ex);
             }
         }
 
@@ -99,29 +88,23 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             try
             {
 
-                var tableExistsResult = await TableExists(table, cancelToken);
-                if (!tableExistsResult.Success)
-                    return tableExistsResult;
+                var tableExists = await TableExists(table, cancelToken);
 
                 //if table exists, and the dropTable flag is set to false, then error.
-                if (tableExistsResult.Value && dropTable == false)
+                if (tableExists && dropTable == false)
                 {
-                    return new ReturnValue(false,
-                        "The table " + table.Name +
-                        " already exists on the underlying database.  Please drop the table first.", null);
+                    throw new ConnectionException($"The table {table.Name} already exists. Drop the table first.");
                 }
 
                 //if table exists, then drop it.
-                if (tableExistsResult.Value)
+                if (tableExists)
                 {
                     var dropResult = await DropTable(table);
-                    if (!dropResult.Success)
-                        return dropResult;
                 }
 
                 StringBuilder createSql = new StringBuilder();
@@ -174,13 +157,7 @@ namespace dexih.connections.sql
 
                 createSql.AppendLine(")");
 
-                ReturnValue<DbConnection> connectionResult = await NewConnection();
-                if (connectionResult.Success == false)
-                {
-                    return connectionResult;
-                }
-
-                using (var connection = connectionResult.Value)
+                using (var connection = await NewConnection())
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = createSql.ToString();
@@ -190,18 +167,15 @@ namespace dexih.connections.sql
                     }
                     catch (Exception ex)
                     {
-                        return new ReturnValue(false,
-                            "The following error occurred when attempting to create the table " + table.Name + ".  " +
-                            ex.Message, ex);
+                        throw new ConnectionException($"The create table query failed.  {ex.Message}");
                     }
                 }
 
-                return new ReturnValue(true, "", null);
+                return true;
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "An error occurred creating the table " + table.Name + ".  " + ex.Message,
-                    ex);
+                throw new ConnectionException($"Create table {table.Name} failed. {ex.Message}", ex);
             }
 
         }
@@ -331,7 +305,7 @@ namespace dexih.connections.sql
         }
 
 
-        public override async Task<ReturnValue<DbConnection>> NewConnection()
+        public override async Task<DbConnection> NewConnection()
         {
             try
             {
@@ -351,9 +325,8 @@ namespace dexih.connections.sql
 
                 if (connection.State != ConnectionState.Open)
                 {
-                    return new ReturnValue<DbConnection>(false,
-                        "The sqlserver connection failed to open with a state of : " + connection.State.ToString(),
-                        null, null);
+                    connection.Dispose();
+                    throw new ConnectionException($"The Sqlite connection has a state of {connection.State}.");
                 }
 
                 using (var command = new SqliteCommand())
@@ -363,124 +336,98 @@ namespace dexih.connections.sql
                     command.ExecuteNonQuery();
                 }
 
-                return new ReturnValue<DbConnection>(true, "", null, connection);
+                return connection;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<DbConnection>(false,
-                    "The sqlserver connection failed with the following message: " + ex.Message, null, null);
+                throw new ConnectionException($"Sqlite connection failed at directory {Server} for file {DefaultDatabase}. {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             try
             {
                 string fileName = Server + "/" + databaseName + ".sqlite";
 
-                bool fileExists = await Task.Run(() => File.Exists(fileName), cancelToken);
+                bool fileExists = File.Exists(fileName);
 
                 if (fileExists)
-                    return new ReturnValue(false,
-                        "The file " + fileName +
-                        " already exists.  Delete or move this file before attempting to create a new database.", null);
+                {
+                    return Task.FromResult(false);
+                }
 
-                var stream = await Task.Run(() => File.Create(fileName), cancelToken);
+                var stream = File.Create(fileName);
                 stream.Dispose();
                 DefaultDatabase = databaseName;
 
-                return new ReturnValue(true);
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false,
-                    "Error creating database " + DefaultDatabase + ".   " + ex.Message, ex);
+                throw new ConnectionException($"Create database {databaseName} failed. {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
         {
             try
             {
-                bool directoryExists = await Task.Run(() => Directory.Exists(Server));
+                bool directoryExists = Directory.Exists(Server);
                 if (!directoryExists)
-                    return new ReturnValue<List<string>>(false, "The directory " + Server + " does not exist.", null);
-
-                var dbList = await Task.Factory.StartNew(() =>
                 {
-                    var files = Directory.GetFiles(Server, "*.sqlite");
+                    throw new ConnectionException($"The directory {Server} does not exist.");
+                }
 
-                    List<string> list = new List<string>();
+                var files = Directory.GetFiles(Server, "*.sqlite");
 
-                    foreach (var file in files)
-                    {
-                        list.Add(Path.GetFileName(file).Replace(".sqlite", ""));
-                    }
+                List<string> list = new List<string>();
 
-                    return list;
-                }, cancelToken);
+                foreach (var file in files)
+                {
+                    list.Add(Path.GetFileName(file).Replace(".sqlite", ""));
+                }
 
-                return new ReturnValue<List<string>>(true, "", null, dbList);
+
+                return Task.FromResult(list);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<string>>(false,
-                    "The databases could not be listed due to the following error: " + ex.Message, ex, null);
+                throw new ConnectionException($"Get database list failed. {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
+        public override async Task<List<Table>> GetTableList(CancellationToken cancelToken)
         {
             try
             {
-                ReturnValue<DbConnection> connectionResult = await NewConnection();
-                if (connectionResult.Success == false)
+                using (var connection = await NewConnection())
+                using (DbCommand cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type='table';"))
                 {
-                    return new ReturnValue<List<Table>>(connectionResult.Success, connectionResult.Message,
-                        connectionResult.Exception, null);
-                }
+                    DbDataReader reader;
+                    reader = await cmd.ExecuteReaderAsync(cancelToken);
 
-                using (var connection = connectionResult.Value)
-                {
-
-                    using (DbCommand cmd = CreateCommand(connection,
-                        "SELECT name FROM sqlite_master WHERE type='table';"))
+                    using (reader)
                     {
-                        DbDataReader reader;
-                        try
+
+                        List<Table> tableList = new List<Table>();
+
+                        while (await reader.ReadAsync(cancelToken))
                         {
-                            reader = await cmd.ExecuteReaderAsync(cancelToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            return new ReturnValue<List<Table>>(false,
-                                "The sqllite 'get tables' query could not be run due to the following error: " +
-                                ex.Message, ex);
+                            tableList.Add(new Table((string)reader["name"]));
                         }
 
-                        using (reader)
-                        {
-
-                            List<Table> tableList = new List<Table>();
-
-                            while (await reader.ReadAsync(cancelToken))
-                            {
-                                tableList.Add(new Table((string) reader["name"]));
-                            }
-
-                            return new ReturnValue<List<Table>>(true, "", null, tableList);
-                        }
+                        return tableList;
                     }
                 }
             }
             catch (Exception ex)
             {
-                return new ReturnValue<List<Table>>(false,
-                    "The database tables could not be listed due to the following error: " + ex.Message, ex, null);
+                throw new ConnectionException($"Get table list failed. {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table originalTable,
+        public override async Task<Table> GetSourceTableInfo(Table originalTable,
             CancellationToken cancelToken)
         {
             if (originalTable.UseQuery)
@@ -490,14 +437,8 @@ namespace dexih.connections.sql
 
             try
             {
-                ReturnValue<DbConnection> connectionResult = await NewConnection();
-                if (connectionResult.Success == false)
-                {
-                    return new ReturnValue<Table>(connectionResult.Success, connectionResult.Message,
-                        connectionResult.Exception, null);
-                }
 
-                using (var connection = connectionResult.Value)
+                using (var connection = await NewConnection())
                 {
 
                     Table table = new Table(originalTable.Name);
@@ -565,14 +506,12 @@ namespace dexih.connections.sql
                         }
                     }
 
-                    return new ReturnValue<Table>(true, table);
+                    return table;
                 }
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false,
-                    "The source sqlserver table + " + originalTable.Name +
-                    " could not be read due to the following error: " + ex.Message, ex);
+                throw new ConnectionException($"Get source talbe information for {originalTable.Name} failed. {ex.Message}", ex);
             }
         }
 
@@ -642,101 +581,94 @@ namespace dexih.connections.sql
             return ETypeCode.Unknown;
         }
 
-        public override async Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries,
+        public override async Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries,
             CancellationToken cancelToken)
         {
-            ReturnValue<DbConnection> connectionResult = await NewConnection();
-            if (connectionResult.Success == false)
+            try
             {
-                return new ReturnValue<Tuple<long, long>>(false, connectionResult.Message, connectionResult.Exception);
-            }
 
-            var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null
-                ? ""
-                : " select last_insert_rowid() from [" + table.Name + "]";
-            long identityValue = 0;
+                var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null
+                    ? ""
+                    : " select last_insert_rowid() from [" + table.Name + "]";
+                long identityValue = 0;
 
-            using (var connection = connectionResult.Value)
-            {
-                StringBuilder insert = new StringBuilder();
-                StringBuilder values = new StringBuilder();
-
-                var timer = Stopwatch.StartNew();
-                using (var transaction = connection.BeginTransaction())
+                using (var connection = await NewConnection())
                 {
-                    foreach (var query in queries)
+                    StringBuilder insert = new StringBuilder();
+                    StringBuilder values = new StringBuilder();
+
+                    var timer = Stopwatch.StartNew();
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        insert.Clear();
-                        values.Clear();
-
-                        insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
-                        values.Append("VALUES (");
-
-                        for (int i = 0; i < query.InsertColumns.Count; i++)
+                        foreach (var query in queries)
                         {
-                            insert.Append("[" + query.InsertColumns[i].Column.Name + "],");
-                            values.Append("@col" + i.ToString() + ",");
-                        }
+                            cancelToken.ThrowIfCancellationRequested();
 
-                        string insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
-                                               values.Remove(values.Length - 1, 1).ToString() + "); " +
-                                               autoIncrementSql;
+                            insert.Clear();
+                            values.Clear();
 
-                        try
-                        {
-                            using (var cmd = connection.CreateCommand())
+                            insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
+                            values.Append("VALUES (");
+
+                            for (int i = 0; i < query.InsertColumns.Count; i++)
                             {
-                                cmd.CommandText = insertCommand;
-                                cmd.Transaction = transaction;
+                                insert.Append("[" + query.InsertColumns[i].Column.Name + "],");
+                                values.Append("@col" + i.ToString() + ",");
+                            }
 
-                                for (int i = 0; i < query.InsertColumns.Count; i++)
+                            string insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
+                                                   values.Remove(values.Length - 1, 1).ToString() + "); " +
+                                                   autoIncrementSql;
+
+                            try
+                            {
+                                using (var cmd = connection.CreateCommand())
                                 {
-                                    var param = new SqliteParameter(); // cmd.CreateParameter();
-                                    param.ParameterName = "@col" + i.ToString();
-                                    
-                                    // sqlite writes guids as binary, so need logic to convert to string first.
-                                    if (query.InsertColumns[i].Column.Datatype == ETypeCode.Guid)
+                                    cmd.CommandText = insertCommand;
+                                    cmd.Transaction = transaction;
+
+                                    for (int i = 0; i < query.InsertColumns.Count; i++)
                                     {
-                                        param.Value = query.InsertColumns[i].Value == null ? (object)DBNull.Value
-                                            : query.InsertColumns[i].Value.ToString();
+                                        var param = new SqliteParameter(); // cmd.CreateParameter();
+                                        param.ParameterName = "@col" + i.ToString();
 
+                                        // sqlite writes guids as binary, so need logic to convert to string first.
+                                        if (query.InsertColumns[i].Column.Datatype == ETypeCode.Guid)
+                                        {
+                                            param.Value = query.InsertColumns[i].Value == null ? (object)DBNull.Value
+                                                : query.InsertColumns[i].Value.ToString();
+
+                                        }
+                                        else
+                                        {
+                                            param.Value = query.InsertColumns[i].Value == null ? DBNull.Value
+                                                : query.InsertColumns[i].Value;
+                                        }
+                                        param.DbType = GetDbType(query.InsertColumns[i].Column.Datatype);
+
+                                        cmd.Parameters.Add(param);
                                     }
-                                    else
-                                    {
-                                        param.Value = query.InsertColumns[i].Value == null ? DBNull.Value
-                                            : query.InsertColumns[i].Value;
-                                    }
-                                    param.DbType = GetDbType(query.InsertColumns[i].Column.Datatype);
 
-                                    cmd.Parameters.Add(param);
-                                }
+                                    var identity = await cmd.ExecuteScalarAsync(cancelToken);
+                                    identityValue = Convert.ToInt64(identity);
 
-                                var identity = await cmd.ExecuteScalarAsync(cancelToken);
-                                identityValue = Convert.ToInt64(identity);
-
-                                if (cancelToken.IsCancellationRequested)
-                                {
-                                    return new ReturnValue<Tuple<long, long>>(false, "Insert rows cancelled.", null,
-                                        Tuple.Create(timer.ElapsedTicks, identityValue));
                                 }
                             }
+                            catch (Exception ex)
+                            {
+                                throw new ConnectionException($"The insert query failed.  {ex.Message}");
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            return new ReturnValue<Tuple<long, long>>(false,
-                                "The insert query for " + table.Name +
-                                " could not be run due to the following error: " + ex.Message +
-                                ".  The sql command was " + insertCommand?.ToString(), ex,
-                                Tuple.Create(timer.ElapsedTicks, (long) 0));
-                        }
+                        transaction.Commit();
                     }
-                    transaction.Commit();
-                }
 
-                timer.Stop();
-                return new ReturnValue<Tuple<long, long>>(true,
-                    Tuple.Create(timer.ElapsedTicks,
-                        identityValue)); //sometimes reader returns -1, when we want this to be error condition.
+                    timer.Stop();
+                    return Tuple.Create(timer.ElapsedTicks, identityValue); //sometimes reader returns -1, when we want this to be error condition.
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
             }
         }
     }

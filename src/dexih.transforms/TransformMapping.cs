@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -48,7 +50,7 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             List<Filter> newFilters = null;
@@ -260,19 +262,22 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
 
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             int i = 0;
             var newRow = new object[FieldCount];
 
             var readResult = await PrimaryTransform.ReadAsync(cancellationToken);
             if (readResult == false)
-                return new ReturnValue<object[]>(false, null);  
+            {
+                return null;
+            }
+
             if (MapFields != null)
             {
                 foreach (int mapField in _mapFieldOrdinals)
@@ -289,19 +294,29 @@ namespace dexih.transforms
                 {
                     foreach (Parameter input in mapping.Inputs.Where(c => c.IsColumn))
                     {
-                        var result = input.SetValue(PrimaryTransform[_functionInputOrdinals[parameterInputCount]]);
-                        parameterInputCount++;
-                        if (result.Success == false)
-                            throw new Exception("Error setting mapping values: " + result.Message);
-                    }
-                    var invokeresult = mapping.Invoke();
-                    if(invokeresult.Success== false)
-                        throw new Exception("Error invoking mapping function: " + invokeresult.Message);
+                        try
+                        {
+                            input.SetValue(PrimaryTransform[_functionInputOrdinals[parameterInputCount]]);
+                        } catch(Exception ex)
+                        {
+                            throw new TransformException($"The mapping transform failed setting parameters on the function {mapping.FunctionName} parameter {input.Name}.  {ex.Message}.", ex.Message, PrimaryTransform[_functionInputOrdinals[parameterInputCount]]);
+                        }
 
-                    if (mapping.TargetColumn != null)
+                        parameterInputCount++;
+                    }
+
+                    try
                     {
-                        newRow[i] = invokeresult.Value;
-                        i = i + 1;
+                        var invokeresult = mapping.Invoke();
+                        if (mapping.TargetColumn != null)
+                        {
+                            newRow[i] = invokeresult;
+                            i = i + 1;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new TransformException($"The mapping transform failed calling the function {mapping.FunctionName}.  {ex.Message}.", ex);
                     }
 
                     if (mapping.Outputs != null)
@@ -327,7 +342,7 @@ namespace dexih.transforms
                 }
             }
 
-            return new ReturnValue<object[]>(true, newRow);
+            return newRow;
         }
 
         public override List<Sort> RequiredSortFields()

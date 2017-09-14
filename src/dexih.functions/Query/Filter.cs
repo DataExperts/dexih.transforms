@@ -1,8 +1,10 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using static Dexih.Utils.DataType.DataType;
+using System.Collections;
 
-namespace dexih.functions
+namespace dexih.functions.Query
 {
  public class Filter
     {
@@ -12,10 +14,10 @@ namespace dexih.functions
         /// Converts a standard function to a filter object.
         /// </summary>
         /// <param name="function"></param>
-        public static ReturnValue<Filter> GetFilterFromFunction(Function function)
+        public static Filter GetFilterFromFunction(Function function)
         {
-            if (function.ReturnType != DataType.ETypeCode.Boolean)
-                return new ReturnValue<Filter>(false, "The function did not have a return type of boolean.", null);
+            if (function.ReturnType != ETypeCode.Boolean)
+                throw new QueryException($"The function {function.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
 
             ECompare compare;
 
@@ -37,20 +39,21 @@ namespace dexih.functions
                     compare = ECompare.GreaterThanEqual;
                     break;
                 default:
-                    return new ReturnValue<Filter>(false, "The function " + function.FunctionName + " was not converted.", null);
+                    return null;
             }
 
-            var filter = new Filter();
+            var filter = new Filter
+            {
+                Column1 = function.Inputs[0].IsColumn ? function.Inputs[0].Column : null,
+                Value1 = function.Inputs[0].IsColumn == false ? function.Inputs[0].Value : null,
+                Column2 = function.Inputs[1].IsColumn ? function.Inputs[1].Column : null,
+                Value2 = function.Inputs[1].IsColumn == false ? function.Inputs[1].Value : null,
 
-            filter.Column1 = function.Inputs[0].IsColumn ? function.Inputs[0].Column : null;
-            filter.Value1 = function.Inputs[0].IsColumn == false ? function.Inputs[0].Value : null;
-            filter.Column2 = function.Inputs[1].IsColumn ? function.Inputs[1].Column : null;
-            filter.Value2 = function.Inputs[1].IsColumn == false ? function.Inputs[1].Value : null;
+                CompareDataType = function.Inputs[0].IsColumn ? function.Inputs[0].DataType : function.Inputs[1].DataType,
+                Operator = compare
+            };
 
-            filter.CompareDataType = function.Inputs[0].IsColumn ? function.Inputs[0].DataType : function.Inputs[1].DataType;
-            filter.Operator = compare;
-
-            return new ReturnValue<Filter>(true, filter);
+            return filter;
         }
 
         /// <summary>
@@ -66,11 +69,11 @@ namespace dexih.functions
             Value2 = value2;
 
             if (Value2 == null)
-                CompareDataType = DataType.ETypeCode.String;
+                CompareDataType = ETypeCode.String;
             else if(Value2.GetType().IsArray)
-                CompareDataType = DataType.GetTypeCode(Value2.GetType().GetElementType());
+                CompareDataType = GetTypeCode(Value2.GetType().GetElementType());
             else
-                CompareDataType = DataType.GetTypeCode(Value2.GetType());
+                CompareDataType = GetTypeCode(Value2.GetType());
         }
 
         public Filter(string columnName1, ECompare operator1, object value2)
@@ -79,11 +82,11 @@ namespace dexih.functions
             Value2 = value2;
 
             if (Value2 == null)
-                CompareDataType = DataType.ETypeCode.String;
+                CompareDataType = ETypeCode.String;
             else if (Value2.GetType().IsArray)
-                CompareDataType = DataType.GetTypeCode(Value2.GetType().GetElementType());
+                CompareDataType = GetTypeCode(Value2.GetType().GetElementType());
             else
-                CompareDataType = DataType.GetTypeCode(Value2.GetType());
+                CompareDataType = GetTypeCode(Value2.GetType());
 
             Column1 = new TableColumn(columnName1, CompareDataType);
         }
@@ -95,7 +98,7 @@ namespace dexih.functions
         /// <param name="operator1">Comparison Operator</param>
         /// <param name="column2">Static value to compare to</param>
         /// <param name="dataType">Data type of the column</param>
-        public Filter(TableColumn column1, ECompare operator1, TableColumn column2, DataType.ETypeCode dataType)
+        public Filter(TableColumn column1, ECompare operator1, TableColumn column2, ETypeCode dataType)
         {
             Column1 = column1;
             Operator = operator1;
@@ -103,7 +106,7 @@ namespace dexih.functions
             CompareDataType = dataType;
         }
 
-        public Filter(string columnName1, ECompare operator1, string columnName2, DataType.ETypeCode dataType)
+        public Filter(string columnName1, ECompare operator1, string columnName2, ETypeCode dataType)
         {
             Column1 = new TableColumn(columnName1);
             Operator = operator1;
@@ -131,7 +134,7 @@ namespace dexih.functions
 
         public TableColumn Column1 { get; set; }
         public object Value1 { get; set; }
-        public DataType.ETypeCode CompareDataType { get; set; }
+        public ETypeCode CompareDataType { get; set; }
 
         public TableColumn Column2 { get; set; }
         public object Value2 { get; set; }
@@ -145,31 +148,38 @@ namespace dexih.functions
             var value1 = Column1 == null ? Value1 : column1Value;
             var value2 = Column2 == null ? Value2 : column2Value;
 
-            var compareResult = DataType.Compare(CompareDataType, value1, value2);
-
-            if (!compareResult.Success)
+            if(Operator == ECompare.IsIn && Value2.GetType().IsArray)
             {
+                foreach(var value in (IEnumerable)Value2)
+                {
+                    var compare = Compare(CompareDataType, value1, value);
+                    if(compare == ECompareResult.Equal)
+                    {
+                        return true;
+                    }
+                }
                 return false;
             }
+
+            var compareResult = Compare(CompareDataType, value1, value2);
 
             switch (Operator)
             {
                 case ECompare.IsEqual:
-                    return compareResult.Value == DataType.ECompareResult.Equal;
+                    return compareResult == ECompareResult.Equal;
                 case ECompare.GreaterThan:
-                    return compareResult.Value == DataType.ECompareResult.Greater;
+                    return compareResult == ECompareResult.Greater;
                 case ECompare.GreaterThanEqual:
-                    return compareResult.Value == DataType.ECompareResult.Greater || compareResult.Value == DataType.ECompareResult.Equal;
+                    return compareResult == ECompareResult.Greater || compareResult == ECompareResult.Equal;
                 case ECompare.LessThan:
-                    return compareResult.Value == DataType.ECompareResult.Less;
+                    return compareResult == ECompareResult.Less;
                 case ECompare.LessThanEqual:
-                    return compareResult.Value == DataType.ECompareResult.Less || compareResult.Value == DataType.ECompareResult.Equal;
+                    return compareResult == ECompareResult.Less || compareResult == ECompareResult.Equal;
                 case ECompare.NotEqual:
-                    return compareResult.Value == DataType.ECompareResult.Equal;
                 case ECompare.IsIn:
-                    throw new Exception("The IsIn is not currently supported in the query evaluation.");
+                    return compareResult == ECompareResult.Equal;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new QueryException($"The {Operator} is not currently supported in the query evaluation.");
             }
 
         }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using static dexih.functions.DataType;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.tests
 {
@@ -21,8 +21,15 @@ namespace dexih.functions.tests
         {
             //test boolean
             dexih.functions.Parameter parameter = new dexih.functions.Parameter("test", dataType);
-            var result = parameter.SetValue(value);
-            Assert.Equal(expectedSuccess, result.Success);
+            try
+            {
+                parameter.SetValue(value);
+                Assert.Equal(expectedSuccess, true);
+            }
+            catch (Exception)
+            {
+                Assert.Equal(expectedSuccess, false);
+            }
         }
 
 
@@ -104,13 +111,12 @@ namespace dexih.functions.tests
             var function = StandardFunctions.GetFunctionReference(functionName);
             var returnValue = function.RunFunction(parameters);
 
-            Assert.True(returnValue.Success);
-            if (returnValue.Value.GetType() == typeof(double))
+            if (returnValue.GetType() == typeof(double))
             {
-                Assert.Equal(expectedResult, Math.Round((double)returnValue.Value, 4));
+                Assert.Equal(expectedResult, Math.Round((double)returnValue, 4));
             }
             else
-                Assert.Equal(expectedResult, returnValue.Value);
+                Assert.Equal(expectedResult, returnValue);
         }
 
         public static IEnumerable<object[]> OtherFunctions
@@ -159,20 +165,18 @@ namespace dexih.functions.tests
                 for (int i = 1; i <= 10; i++)
                 {
                     var functionResult = function.RunFunction(new object[] { i });
-                    Assert.True(functionResult.Success);
                     functionResult = function.RunFunction(new object[] { i });
-                    Assert.True(functionResult.Success);
                 }
 
                 var aggregateResult = function.ReturnValue();
-                Assert.True(aggregateResult.Success);
+                Assert.NotNull(aggregateResult);
 
-                if(aggregateResult.Value.GetType() == typeof(double))
+                if(aggregateResult.GetType() == typeof(double))
                 {
-                    Assert.Equal(expectedResult, Math.Round((double)aggregateResult.Value, 4));
+                    Assert.Equal(expectedResult, Math.Round((double)aggregateResult, 4));
                 }
                 else
-                    Assert.Equal(expectedResult, aggregateResult.Value);
+                    Assert.Equal(expectedResult, aggregateResult);
 
                 function.Reset();
             }
@@ -192,18 +196,17 @@ namespace dexih.functions.tests
                     int value = i % 2;
 
                     var functionResult = function.RunFunction(new object[] { test, value, i });
-                    Assert.True(functionResult.Success);
                 }
 
                 var aggregateResult = function.ReturnValue();
-                Assert.True(aggregateResult.Success);
+                Assert.NotNull(aggregateResult);
 
-                if (aggregateResult.Value.GetType() == typeof(double))
+                if (aggregateResult.GetType() == typeof(double))
                 {
-                    Assert.Equal(expectedResult, Math.Round((double)aggregateResult.Value, 4));
+                    Assert.Equal(expectedResult, Math.Round((double)aggregateResult, 4));
                 }
                 else
-                    Assert.Equal(expectedResult, aggregateResult.Value);
+                    Assert.Equal(expectedResult, aggregateResult);
 
                 function.Reset();
             }
@@ -223,16 +226,14 @@ namespace dexih.functions.tests
                 {
                     var minFunctionResult = minFunction.RunFunction(new object[] { baseDate.AddDays(i) });
                     var maxFunctionResult = maxFunction.RunFunction(new object[] { baseDate.AddDays(i) });
-                    Assert.True(minFunctionResult.Success);
-                    Assert.True(maxFunctionResult.Success);
                 }
 
                 var minResult = minFunction.ReturnValue();
                 var maxResult = maxFunction.ReturnValue();
-                Assert.True(minResult.Success);
-                Assert.True(maxResult.Success);
-                Assert.Equal(baseDate, (DateTime)minResult.Value);
-                Assert.Equal(baseDate.AddDays(10), (DateTime)maxResult.Value);
+                Assert.NotNull(minResult);
+                Assert.NotNull(maxResult);
+                Assert.Equal(baseDate, (DateTime)minResult);
+                Assert.Equal(baseDate.AddDays(10), (DateTime)maxResult);
 
                 minFunction.Reset();
                 maxFunction.Reset();
@@ -249,12 +250,11 @@ namespace dexih.functions.tests
                 for (int i = 1; i <= 10; i++)
                 {
                     var functionResult = function.RunFunction(new object[] { });
-                    Assert.True(functionResult.Success);
                 }
 
                 var aggregateResult = function.ReturnValue();
-                Assert.True(aggregateResult.Success);
-                Assert.Equal(10, aggregateResult.Value);
+                Assert.NotNull(aggregateResult);
+                Assert.Equal(10, aggregateResult);
 
                 function.Reset();
             }
@@ -270,12 +270,11 @@ namespace dexih.functions.tests
                 for (int i = 1; i <= 10; i++)
                 {
                     var functionResult = function.RunFunction(new object[] { i, "," });
-                    Assert.True(functionResult.Success);
                 }
 
                 var aggregateResult = function.ReturnValue();
-                Assert.True(aggregateResult.Success);
-                Assert.Equal("1,2,3,4,5,6,7,8,9,10", aggregateResult.Value);
+                Assert.NotNull(aggregateResult);
+                Assert.Equal("1,2,3,4,5,6,7,8,9,10", aggregateResult);
 
                 function.Reset();
             }
@@ -288,7 +287,7 @@ namespace dexih.functions.tests
             //Get a rows that exists.
             Function XPathValue = StandardFunctions.GetFunctionReference("XPathValues");
             object[] Param = new object[] { "<root><row>0</row><row>1</row><row>2</row><row>3</row><row>4</row><row>5</row></root>", "//row[1]", "//row[2]", "//row[3]" };
-            Assert.Equal(true, XPathValue.RunFunction(Param, new string[] { "value1", "value2", "value3" }).Value);
+            Assert.Equal(true, XPathValue.RunFunction(Param, new string[] { "value1", "value2", "value3" }));
             Assert.Equal("0", (string)XPathValue.Outputs[0].Value);
             Assert.Equal("1", (string)XPathValue.Outputs[1].Value);
             Assert.Equal("2", (string)XPathValue.Outputs[2].Value);
@@ -300,7 +299,7 @@ namespace dexih.functions.tests
             //Get a rows that exists.
             Function JSONValues = StandardFunctions.GetFunctionReference("JsonValues");
             object[] Param = new object[] { "{ 'value1': '1', 'value2' : '2', 'value3': '3', 'array' : {'v1' : '1', 'v2' : '2'} }", "value1", "value2", "value3", "array", "badvalue" };
-            Assert.Equal(false, JSONValues.RunFunction(Param, new string[] { "value1", "value2", "value3", "array", "badvalue" }).Value);
+            Assert.Equal(false, JSONValues.RunFunction(Param, new string[] { "value1", "value2", "value3", "array", "badvalue" }));
             Assert.Equal("1", (string)JSONValues.Outputs[0].Value);
             Assert.Equal("2", (string)JSONValues.Outputs[1].Value);
             Assert.Equal("3", (string)JSONValues.Outputs[2].Value);
@@ -310,7 +309,7 @@ namespace dexih.functions.tests
             string MoreValues = (string)JSONValues.Outputs[3].Value;
             Param = new object[] { MoreValues, "v1", "v2" };
             JSONValues = StandardFunctions.GetFunctionReference("JsonValues");
-            Assert.Equal(true, JSONValues.RunFunction(Param, new string[] { "v1", "v2" }).Value);
+            Assert.Equal(true, JSONValues.RunFunction(Param, new string[] { "v1", "v2" }));
             Assert.Equal("1", (string)JSONValues.Outputs[0].Value);
             Assert.Equal("2", (string)JSONValues.Outputs[1].Value);
 
@@ -325,11 +324,11 @@ namespace dexih.functions.tests
             object[] Param = new object[] { 0, 10, 2 };
             for (int i = 0; i <= 10; i += 2)
             {
-                Assert.Equal(true, Sequence.RunFunction(Param).Value);
+                Assert.Equal(true, Sequence.RunFunction(Param));
                 Assert.Equal(i, (int)Sequence.Outputs[0].Value);
             }
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)Sequence.RunFunction(Param).Value);
+            Assert.False((bool)Sequence.RunFunction(Param));
         }
 
         [Fact]
@@ -341,12 +340,12 @@ namespace dexih.functions.tests
             string[] Compare = new string[] { "", "value2", "value3", "", "value5", "", "" };
             for (int i = 0; i <= 6; i++)
             {
-                Assert.Equal(true, SplitColumnToRows.RunFunction(Param).Value);
+                Assert.Equal(true, SplitColumnToRows.RunFunction(Param));
                 Assert.Equal(Compare[i], (string)SplitColumnToRows.Outputs[0].Value);
             }
 
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)SplitColumnToRows.RunFunction(Param).Value);
+            Assert.False((bool)SplitColumnToRows.RunFunction(Param));
         }
 
         [Fact]
@@ -357,12 +356,12 @@ namespace dexih.functions.tests
             object[] Param = new object[] { "<root><row>0</row><row>1</row><row>2</row><row>3</row><row>4</row><row>5</row></root>", "//row", 5 };
             for (int i = 0; i <= 5; i++)
             {
-                Assert.Equal(true, XPathNodesToRows.RunFunction(Param).Value);
+                Assert.Equal(true, XPathNodesToRows.RunFunction(Param));
                 Assert.Equal(i.ToString(), (string)XPathNodesToRows.Outputs[0].Value);
             }
 
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)XPathNodesToRows.RunFunction(Param).Value);
+            Assert.False((bool)XPathNodesToRows.RunFunction(Param));
         }
 
         [Fact]
@@ -373,7 +372,7 @@ namespace dexih.functions.tests
             object[] Param = new object[] { "{'results' : [{'value1' : 'r1v1', 'value2' : 'r1v2'}, {'value1' : 'r2v1', 'value2' : 'r2v2'}]} ", "results[*]", 2 };
             for (int i = 1; i <= 2; i++)
             {
-                Assert.Equal(true, JSONElementsToRows.RunFunction(Param).Value);
+                Assert.Equal(true, JSONElementsToRows.RunFunction(Param));
                 string JsonResult = (string)JSONElementsToRows.Outputs[0].Value;
                 var results = JObject.Parse(JsonResult);
                 Assert.Equal("r" + i.ToString() + "v1", results.SelectToken("value1").ToString());
@@ -381,7 +380,7 @@ namespace dexih.functions.tests
             }
 
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)JSONElementsToRows.RunFunction(Param).Value);
+            Assert.False((bool)JSONElementsToRows.RunFunction(Param));
         }
     }
 }

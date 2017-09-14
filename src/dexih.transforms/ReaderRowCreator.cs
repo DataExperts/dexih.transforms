@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Query;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms
 {
@@ -25,29 +27,30 @@ namespace dexih.transforms
         public override bool InitializeOutputFields()
         {
             CacheTable = new Table("RowCreator");
-            CacheTable.Columns.Add(new TableColumn("RowNumber", DataType.ETypeCode.Int32));
+            CacheTable.Columns.Add(new TableColumn("RowNumber", ETypeCode.Int32));
 
-            CacheTable.OutputSortFields = new List<Sort>() { new Sort(new TableColumn("RowNumber", DataType.ETypeCode.Int32)) };
+            CacheTable.OutputSortFields = new List<Sort>() { new Sort(new TableColumn("RowNumber", ETypeCode.Int32)) };
             _currentRow = StartAt-1;
             return true;
         }
 
         public override bool RequiresSort => false;
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
 
             _currentRow = _currentRow + Increment;
             if (_currentRow > EndAt)
-                return new ReturnValue<object[]>(false, null);
+                return Task.FromResult<object[]>(null);
+
             var newRow = new object[] { _currentRow };
-            return await Task.Run( () => new ReturnValue<object[]>(true, newRow));
+            return Task.FromResult(newRow);
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             _currentRow = StartAt-1;
-            return new ReturnValue(true);
+            return true;
         }
 
         public override string Details()
@@ -69,7 +72,7 @@ namespace dexih.transforms
         {
             get
             {
-                return new List<Sort>() { new Sort(new TableColumn("RowNumber", DataType.ETypeCode.Int32)) };
+                return new List<Sort>() { new Sort(new TableColumn("RowNumber", ETypeCode.Int32)) };
             }
         }
 

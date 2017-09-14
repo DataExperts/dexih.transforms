@@ -1,4 +1,5 @@
 ﻿using dexih.functions;
+using dexih.functions.Query;
 using dexih.transforms;
 using System;
 using System.Collections.Generic;
@@ -19,8 +20,7 @@ namespace dexih.transforms.tests
             List<Filter> filters = new List<Filter>() { new Filter("StringColumn", Filter.ECompare.IsEqual, "value04") };
             var row = await TestTransform.LookupRow(filters, CancellationToken.None);
 
-            Assert.True(row.Success, "Row was not found");
-            Assert.True((string)row.Value[0] == "value04", "Correct row not found");
+            Assert.True((string)row[0] == "value04", "Correct row not found");
         }
     }
 }

@@ -6,9 +6,11 @@ using System.Threading;
 using dexih.functions;
 using System.Diagnostics;
 using System.Data.Common;
-using static dexih.functions.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using dexih.functions.Query;
+using static Dexih.Utils.DataType.DataType;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -78,10 +80,10 @@ namespace dexih.transforms
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
         
         //Functions required for managed connection
-        public abstract Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken);
-        //public abstract Task<ReturnValue> TestConnection();
-        public abstract Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
+        public abstract Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken);
+        //public abstract Task TestConnection();
+        public abstract Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
+        public abstract Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
 
         /// <summary>
         /// 
@@ -90,7 +92,7 @@ namespace dexih.transforms
         /// <param name="queries"></param>
         /// <param name="cancelToken"></param>
         /// <returns>Item1 = elapsed time, Item2 = autoincrement value</returns>
-        public abstract Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
+        public abstract Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
 
         /// <summary>
         /// Runs a bulk insert operation for the connection.  
@@ -99,11 +101,11 @@ namespace dexih.transforms
         /// <param name="sourceData"></param>
         /// <param name="cancelToken"></param>
         /// <returns>ReturnValue with the value = elapsed timer ticks taken to write the record.</returns>
-        public abstract Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken);
+        public abstract Task<long> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken);
+        public abstract Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken);
         public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false);
-        public abstract Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken);
+        public abstract Task<bool> TruncateTable(Table table, CancellationToken cancelToken);
+        public abstract Task<bool> TableExists(Table table, CancellationToken cancelToken);
 
         /// <summary>
         /// If database connection supports direct DbDataReader.
@@ -113,12 +115,12 @@ namespace dexih.transforms
         /// <param name="query"></param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken);
+        public abstract Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken);
 
         //Functions required for datapoint.
-        public abstract Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken);
-        public abstract Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken);
-        public abstract Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken);
+        public abstract Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken);
+        public abstract Task<List<string>> GetDatabaseList(CancellationToken cancelToken);
+        public abstract Task<List<Table>> GetTableList(CancellationToken cancelToken);
 
         /// <summary>
         /// Interrogates the underlying data to get the Table structure.
@@ -126,17 +128,17 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue<Table>> GetSourceTableInfo(Table table, CancellationToken cancelToken);
+        public abstract Task<Table> GetSourceTableInfo(Table table, CancellationToken cancelToken);
 
-        public async Task<ReturnValue<Table>> GetSourceTableInfo(string TableName, CancellationToken cancelToken)
+        public async Task<Table> GetSourceTableInfo(string TableName, CancellationToken cancelToken)
         {
             var table = new Table(TableName);
             var initResult = await InitializeTable(table, 0);
-            if(!initResult.Success)
+            if(initResult == null)
             {
-                return initResult;
+                return null;
             }
-            return await GetSourceTableInfo(initResult.Value, cancelToken);
+            return await GetSourceTableInfo(initResult, cancelToken);
         }
 
         /// <summary>
@@ -145,7 +147,7 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <param name="position"></param>
         /// <returns></returns>
-        public abstract Task<ReturnValue<Table>> InitializeTable(Table table, int position);
+        public abstract Task<Table> InitializeTable(Table table, int position);
 
         public Stopwatch WriteDataTimer = new Stopwatch();
 
@@ -153,14 +155,14 @@ namespace dexih.transforms
         
         #region DataType ranges
 
-        public virtual object GetDataTypeMaxValue(ETypeCode typeCode, int length = 0)
+        public virtual object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
-            return DataType.GetDataTypeMaxValue(typeCode, length);
+            return GetConnectionMaxValue(typeCode, length);
         }
 
-        public virtual object GetDataTypeMinValue(ETypeCode typeCode)
+        public virtual object GetConnectionMinValue(ETypeCode typeCode)
         {
-            return DataType.GetDataTypeMinValue(typeCode);
+            return GetConnectionMinValue(typeCode);
         }
 
         
@@ -174,7 +176,7 @@ namespace dexih.transforms
             {
                 var newTable = new Table("DexihHistory");
                 var auditTableResult = InitializeTable(newTable, 0).Result;
-                var auditTable = auditTableResult.Value;
+                var auditTable = auditTableResult;
 
                 auditTable.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, TableColumn.EDeltaType.AutoIncrement));
                 auditTable.Columns.Add(new TableColumn("HubKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
@@ -221,7 +223,7 @@ namespace dexih.transforms
             }
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> InitializeAudit(long subScriptionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancelToken)
+        public virtual async Task<TransformWriterResult> InitializeAudit(long subScriptionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancelToken)
         {
             var auditTable = AuditTable;
 
@@ -229,24 +231,20 @@ namespace dexih.transforms
 
             TransformWriterResult previousResult = null;
 
-            if (!tableExistsResult.Success)
-                return new ReturnValue<TransformWriterResult>(tableExistsResult);
-
             //create the audit table if it does not exist.
-            if (tableExistsResult.Value == false)
+            if (tableExistsResult == false)
             {
-                //create the table if is doesn't already exist.
+                //create the table if it doesn't already exist.
                 var createAuditResult = await CreateTable(auditTable, false, cancelToken);
-                if (!createAuditResult.Success)
-                    return new ReturnValue<TransformWriterResult>(createAuditResult);
+                if (!createAuditResult)
+                {
+                    throw new ConnectionException($"The audit table {auditTable.Name} was not created successfully in the {Name}");
+                }
             }
             else
             {
                 //get the last audit result for this reference to collect previous run information
-                var lastAuditResult = await GetPreviousResult(subScriptionKey, referenceKey, CancellationToken.None);
-                if (!lastAuditResult.Success)
-                    return new ReturnValue<TransformWriterResult>(lastAuditResult);
-                previousResult = lastAuditResult.Value;
+                previousResult = await GetPreviousResult(subScriptionKey, referenceKey, CancellationToken.None);
             }
 
             var writerResult = new TransformWriterResult(subScriptionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, triggerMethod, triggerInfo);
@@ -304,15 +302,12 @@ namespace dexih.transforms
             var insertQuery = new InsertQuery(auditTable.Name, queryColumns);
             var insertResult = await ExecuteInsert(auditTable, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
 
-            writerResult.AuditKey = insertResult.Value.Item2;
+            writerResult.AuditKey = insertResult.Item2;
 
-            if (!insertResult.Success)
-                return new ReturnValue<TransformWriterResult>(insertResult);
-
-            return new ReturnValue<TransformWriterResult>(true, writerResult);
+            return writerResult;
         }
 
-        public virtual async Task<ReturnValue> UpdateAudit(TransformWriterResult writerResult)
+        public virtual async Task<long> UpdateAudit(TransformWriterResult writerResult)
         {
             var isCurrent = true;
             var isPrevious = false;
@@ -413,168 +408,100 @@ namespace dexih.transforms
         }
 
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> GetPreviousResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetPreviousResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
             var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, true, false, false, null, -1, null, false, cancellationToken);
-            if (!results.Success)
-                return new ReturnValue<TransformWriterResult>(results);
-
-            if (results.Value.Count > 0)
-                return new ReturnValue<TransformWriterResult>(true, results.Value[0]);
-            else
-                return new ReturnValue<TransformWriterResult>(true, null);
+            if (results == null || results.Count == 0)
+            {
+                return null;
+            }
+            return results[0];
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> GetPreviousSuccessResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetPreviousSuccessResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
             var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, true, false, null, -1, null, false, cancellationToken);
-            if (!results.Success)
-                return new ReturnValue<TransformWriterResult>(results);
-
-            if (results.Value.Count > 0)
-                return new ReturnValue<TransformWriterResult>(true, results.Value[0]);
-            else
-                return new ReturnValue<TransformWriterResult>(true, null);
+            if (results == null || results.Count == 0)
+            {
+                return null;
+            }
+            return results[0];
         }
 
-        public virtual async Task<ReturnValue<TransformWriterResult>> GetCurrentResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetCurrentResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
             var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, false, true, null, -1, null, false, cancellationToken);
-            if (!results.Success)
-                return new ReturnValue<TransformWriterResult>(results);
-
-            if (results.Value.Count > 0)
-                return new ReturnValue<TransformWriterResult>(true, results.Value[0]);
-            else
-                return new ReturnValue<TransformWriterResult>(true, null);
+            if (results == null || results.Count == 0)
+            {
+                return null;
+            }
+            return results[0];
         }
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetPreviousResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetPreviousResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
             return await GetTransformWriterResults(hubKey, referenceKeys, null, null, true, false, false, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetPreviousSuccessResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetPreviousSuccessResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
             return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, true, false, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetCurrentResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetCurrentResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
             return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, false, true, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<ReturnValue<List<TransformWriterResult>>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken)
         {
             Transform reader = null;
-            try
+            var watch = new Stopwatch();
+            watch.Start();
+
+            reader = GetTransformReader(AuditTable);
+
+            var filters = new List<Filter>();
+            if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, hubKey));
+            if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsIn, referenceKeys));
+            if (auditKey != null) filters.Add(new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, auditKey));
+            if (runStatus != null) filters.Add(new Filter(new TableColumn("RunStatus", ETypeCode.String), Filter.ECompare.IsEqual, runStatus.ToString()));
+            if (startTime != null) filters.Add(new Filter(new TableColumn("StartTime", ETypeCode.DateTime), Filter.ECompare.GreaterThanEqual, startTime));
+            if (currentResult) filters.Add(new Filter(new TableColumn("IsCurrent", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
+            if (previousResult) filters.Add(new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
+            if (previousSuccessResult) filters.Add(new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
+            if (parentAuditKey != null) filters.Add(new Filter(new TableColumn("ParentAuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, parentAuditKey));
+
+            var sorts = new List<Sort>() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), Sort.EDirection.Descending) };
+            var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
+
+            //add a sort transform to ensure sort order.
+            reader = new TransformSort(reader, sorts);
+
+            var returnValue = await reader.Open(0, query, cancellationToken);
+            if (!returnValue)
             {
-                var watch = new Stopwatch();
-                watch.Start();
+                throw new ConnectionException($"Failed to get the transform writer results on table {AuditTable.Name} at {Name}.");
+            }
 
-                reader = GetTransformReader(AuditTable);
+            var pocoReader = new PocoLoader<TransformWriterResult>();
+            var writerResults = await pocoReader.ToListAsync(reader, cancellationToken);
 
-                var filters = new List<Filter>();
-                if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, hubKey));
-                if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsIn, referenceKeys));
-                if (auditKey != null) filters.Add(new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, auditKey));
-                if (runStatus != null) filters.Add(new Filter(new TableColumn("RunStatus", ETypeCode.String), Filter.ECompare.IsEqual, runStatus.ToString()));
-                if (startTime != null) filters.Add(new Filter(new TableColumn("StartTime", ETypeCode.DateTime), Filter.ECompare.GreaterThanEqual, startTime));
-                if (currentResult) filters.Add(new Filter(new TableColumn("IsCurrent", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
-                if (previousResult) filters.Add(new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
-                if (previousSuccessResult) filters.Add(new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
-                if (parentAuditKey != null) filters.Add(new Filter(new TableColumn("ParentAuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, parentAuditKey));
-
-                var sorts = new List<Sort>() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), Sort.EDirection.Descending) };
-                var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
-
-                //add a sort transform to ensure sort order.
-                reader = new TransformSort(reader, sorts);
-
-                var returnValue = await reader.Open(0, query, cancellationToken);
-                if (returnValue.Success == false)
-                    return new ReturnValue<List<TransformWriterResult>>(returnValue.Success, returnValue.Message, returnValue.Exception, null);
-
-                var pocoReader = new PocoLoader<TransformWriterResult>();
-                var writerResults = await pocoReader.ToListAsync(reader, cancellationToken);
-
-                //var writerResults = new List<TransformWriterResult>();
-                //var count = 0;
-
-
-                //while ((count < query.Rows || query.Rows == -1) &&
-                //    cancellationToken.IsCancellationRequested == false &&
-                //    await reader.ReadAsync(cancellationToken)
-                //    )
-                //{
-                //    var result = new TransformWriterResult(
-                //        (long)TryParse(ETypeCode.Int64, reader["HubKey"]).Value,
-                //        (long)TryParse(ETypeCode.Int64, reader["AuditKey"]).Value,
-                //        (string)reader["AuditType"],
-                //        (long)TryParse(ETypeCode.Int64, reader["ReferenceKey"]).Value,
-                //        (long)TryParse(ETypeCode.Int64, reader["ParentAuditKey"]).Value,
-                //        (string)reader["ReferenceName"],
-                //        (long)TryParse(ETypeCode.Int64, reader["SourceTableKey"]).Value,
-                //        (string)reader["SourceTableName"],
-                //        (long)TryParse(ETypeCode.Int64, reader["TargetTableKey"]).Value,
-                //        (string)reader["TargetTableName"], null, null,
-                //        (TransformWriterResult.ETriggerMethod)Enum.Parse(typeof(TransformWriterResult.ETriggerMethod), (string)reader["TriggerMethod"]),
-                //        (string)(reader["TriggerInfo"] is DBNull ? null : reader["TriggerInfo"])
-                //        )
-                //    {
-                //        RowsTotal = (long)TryParse(ETypeCode.Int64, reader["RowsTotal"]).Value,
-                //        RowsCreated = (long)TryParse(ETypeCode.Int64, reader["RowsCreated"]).Value,
-                //        RowsUpdated = (long)TryParse(ETypeCode.Int64, reader["RowsUpdated"]).Value,
-                //        RowsDeleted = (long)TryParse(ETypeCode.Int64, reader["RowsDeleted"]).Value,
-                //        RowsPreserved = (long)TryParse(ETypeCode.Int64, reader["RowsPreserved"]).Value,
-                //        RowsIgnored = (long)TryParse(ETypeCode.Int64, reader["RowsIgnored"]).Value,
-                //        RowsRejected = (long)TryParse(ETypeCode.Int64, reader["RowsRejected"]).Value,
-                //        RowsFiltered = (long)TryParse(ETypeCode.Int64, reader["RowsFiltered"]).Value,
-                //        RowsSorted = (long)TryParse(ETypeCode.Int64, reader["RowsSorted"]).Value,
-                //        RowsReadPrimary = (long)TryParse(ETypeCode.Int64, reader["RowsReadPrimary"]).Value,
-                //        RowsReadReference = (long)TryParse(ETypeCode.Int64, reader["RowsReadReference"]).Value,
-                //        ReadTicks = (long)TryParse(ETypeCode.Int64, reader["ReadTicks"]).Value,
-                //        WriteTicks = (long)TryParse(ETypeCode.Int64, reader["WriteTicks"]).Value,
-                //        ProcessingTicks = (long)TryParse(ETypeCode.Int64, reader["ProcessingTicks"]).Value,
-                //        MaxIncrementalValue = reader["MaxIncrementalValue"],
-                //        MaxSurrogateKey = (long)TryParse(ETypeCode.Int64, reader["MaxSurrogateKey"]).Value,
-                //        InitializeTime = (DateTime)TryParse(ETypeCode.DateTime, reader["InitializeTime"]).Value,
-                //        ScheduledTime = reader["ScheduledTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["ScheduledTime"]).Value,
-                //        StartTime = reader["StartTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["StartTime"]).Value,
-                //        EndTime = reader["EndTime"] is DBNull ? null : (DateTime?)TryParse(ETypeCode.DateTime, reader["EndTime"]).Value,
-                //        LastUpdateTime = reader["LastUpdateTime"] is DBNull ? (DateTime?)null : (DateTime?)TryParse(ETypeCode.DateTime, reader["LastUpdateTime"]).Value,
-                //        RunStatus = (TransformWriterResult.ERunStatus)Enum.Parse(typeof(TransformWriterResult.ERunStatus), (string)reader["RunStatus"]),
-                //        Message = (string)(reader["Message"] is DBNull ? null : reader["Message"]),
-                //        ProfileTableName = (string)(reader["ProfileTableName"] is DBNull ? null : reader["ProfileTableName"]),
-                //        RejectTableName = (string)(reader["RejectTableName"] is DBNull ? null : reader["RejectTableName"]),
-                //    };
-
-                foreach(var result in writerResults)
-                { 
-                    if(childItems)
-                    {
-                        var childResults = await GetTransformWriterResults(hubKey, null, null, null, previousResult, previousSuccessResult, currentResult, null, 0, result.AuditKey, false, cancellationToken);
-                        if (!childResults.Success)
-                        {
-                            return childResults;
-                        }
-                        result.ChildResults = childResults.Value;
-                    }
-
-                    if (cancellationToken.IsCancellationRequested)
-                        break;
+            foreach(var result in writerResults)
+            { 
+                if(childItems)
+                {
+                    result.ChildResults = await GetTransformWriterResults(hubKey, null, null, null, previousResult, previousSuccessResult, currentResult, null, 0, result.AuditKey, false, cancellationToken);
                 }
 
-                watch.Stop();
-                reader.Dispose();
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+            }
 
-                return new ReturnValue<List<TransformWriterResult>>(true, writerResults);
-            }
-            catch(Exception ex)
-            {
-                if(reader != null) reader.Dispose();
-                return new ReturnValue<List<TransformWriterResult>>(false, "Get Transform Writer Results failed with error: " + ex.Message, ex);
-            }
+            watch.Stop();
+            reader.Dispose();
+
+            return writerResults;
         }
 
         #endregion
@@ -603,41 +530,39 @@ namespace dexih.transforms
         /// <param name="AuditKey">Included as Azure storage tables use the AuditKey to generate a new surrogate key</param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue<long>> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancelToken)
+        public virtual async Task<long> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancelToken)
         {
-            try
+            if(DynamicTableCreation)
             {
-                if(DynamicTableCreation)
-                {
-                    return new ReturnValue<long>(true, 0);
-                }
-                var query = new SelectQuery()
-                {
-                    Columns = new List<SelectColumn>() { new SelectColumn(surrogateKeyColumn, SelectColumn.EAggregate.Max) },
-                    Table = table.Name
-                };
-
-                long surrogateKeyValue;
-                var executeResult = await ExecuteScalar(table, query, cancelToken);
-                if (!executeResult.Success)
-                    return new ReturnValue<long>(executeResult);
-
-                if (executeResult.Value == null || executeResult.Value is DBNull)
-                    surrogateKeyValue = 0;
-                else
-                {
-                    var convertResult = DataType.TryParse(ETypeCode.Int64, executeResult.Value);
-                    if (!convertResult.Success)
-                        return new ReturnValue<long>(convertResult);
-                    surrogateKeyValue = (long)convertResult.Value;
-                }
-
-                return new ReturnValue<long>(true, surrogateKeyValue);
+                return 0;
             }
-            catch(Exception ex)
+
+            var query = new SelectQuery()
             {
-                return new ReturnValue<long>(false, ex.Message, ex);
+                Columns = new List<SelectColumn>() { new SelectColumn(surrogateKeyColumn, SelectColumn.EAggregate.Max) },
+                Table = table.Name
+            };
+
+            long surrogateKeyValue;
+            var executeResult = await ExecuteScalar(table, query, cancelToken);
+
+            if (executeResult == null || executeResult is DBNull)
+                surrogateKeyValue = 0;
+            else
+            {
+                try
+                {
+                    var convertResult = TryParse(ETypeCode.Int64, executeResult);
+                    surrogateKeyValue = (long)convertResult;
+                } 
+                catch(Exception ex)
+                {
+                    throw new ConnectionException($"Failed to get the surrogate key from {table.Name} on {Name} as the value is not a valid numeric.  {ex.Message}", ex);
+                }
             }
+
+            return surrogateKeyValue;
+
         }
 
         /// <summary>
@@ -649,9 +574,9 @@ namespace dexih.transforms
         /// <param name="value"></param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancelToken)
+        public virtual Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancelToken)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -659,9 +584,9 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> DataWriterStart(Table table)
+        public virtual Task DataWriterStart(Table table)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -669,22 +594,22 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue> DataWriterFinish(Table table)
+        public virtual Task DataWriterFinish(Table table)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return Task.CompletedTask;
         }
 
-        public virtual async Task<ReturnValue> DataWriterError(string message, Exception exception)
+        public virtual Task DataWriterError(string message, Exception exception)
         {
-            return await Task.Run(() => new ReturnValue(true));
+            return Task.CompletedTask;
         }
 
-        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public async Task<Table> GetPreview(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
             return await GetPreview(table, query, null, null, cancellationToken);
         }
 
-        public async Task<ReturnValue<Table>> GetPreview(Table table, SelectQuery query, Transform referenceTransform, List<JoinPair> referenceJoins, CancellationToken cancellationToken)
+        public async Task<Table> GetPreview(Table table, SelectQuery query, Transform referenceTransform, List<JoinPair> referenceJoins, CancellationToken cancellationToken)
         {
             try
             {
@@ -693,35 +618,36 @@ namespace dexih.transforms
 
                 var rows = query?.Rows ?? -1;
 
-                var reader = GetTransformReader(table, referenceTransform, null, true);
-                reader.JoinPairs = referenceJoins;
-                var returnValue = await reader.Open(0, query, cancellationToken);
-                if (returnValue.Success == false)
+                using (var reader = GetTransformReader(table, referenceTransform, null, true))
                 {
-                    return new ReturnValue<Table>(returnValue);
+                    reader.JoinPairs = referenceJoins;
+                    var returnValue = await reader.Open(0, query, cancellationToken);
+                    if (!returnValue)
+                    {
+                        throw new ConnectionException($"The reader failed to open for table {table.Name} on {Name}");
+                    }
+
+                    reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
+                    reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
+
+                    var count = 0;
+                    while (
+                        (count < rows || rows < 0) &&
+                           cancellationToken.IsCancellationRequested == false &&
+                           await reader.ReadAsync(cancellationToken)
+                    )
+                    {
+                        count++;
+                    }
+
+                    watch.Stop();
+                    return reader.CacheTable;
                 }
 
-                reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
-                reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
-
-                var count = 0;
-                while (
-                    (count < rows || rows < 0) &&
-                       cancellationToken.IsCancellationRequested == false &&
-                       await reader.ReadAsync(cancellationToken)
-                )
-                {
-                    count++;
-                }
-
-                watch.Stop();
-                reader.Dispose();
-
-                return new ReturnValue<Table>(true, reader.CacheTable);
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "GetPreview failed with error: " + ex.Message, ex);
+                throw new ConnectionException($"The preview failed to for table {table.Name} on {Name}", ex);
             }
         }
 
@@ -731,26 +657,26 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="table"></param>
         /// <param name="cancelToken"></param>
-        /// <returns></returns>
-        public virtual async Task<ReturnValue> CompareTable(Table table, CancellationToken cancelToken)
+        /// <returns>true if table matches, throw an exception is it does not match</returns>
+        public virtual async Task<bool> CompareTable(Table table, CancellationToken cancelToken)
         {
-            var physicalTableResult = await GetSourceTableInfo(table, cancelToken);
-            if (!physicalTableResult.Success)
-                return physicalTableResult;
-
-            var physicalTable = physicalTableResult.Value;
+            var physicalTable = await GetSourceTableInfo(table, cancelToken);
+            if (physicalTable == null)
+            {
+                throw new ConnectionException($"The compare table failed to get the source table information for table {table.Name} at {Name}.");
+            }
 
             foreach(var col in table.Columns)
             {
                 var compareCol = physicalTable.Columns.SingleOrDefault(c => c.Name == col.Name);
 
                 if (compareCol == null)
-                    return new ReturnValue(false, "The physical table " + table.Name + " does not contain the column " + col.Name + ".  Reimport the table or recreate the table to fix.", null);
-
+                {
+                    throw new ConnectionException($"The source table {table.Name} does not contain the column {col.Name}.  Reimport the table or recreate the table with the missing column to fix.");
+                }
             }
 
-            return new ReturnValue(true);
-
+            return true;
         }
 
     }

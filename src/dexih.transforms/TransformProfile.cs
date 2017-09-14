@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -50,16 +51,16 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             _lastRecord = false;
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             if (_lastRecord)
-                return new ReturnValue<object[]>(false, null);
+                return null;
 
             _lastRecord = !await PrimaryTransform.ReadAsync(cancellationToken);
 
@@ -72,17 +73,27 @@ namespace dexih.transforms
                 {
                     foreach (Parameter input in profile.Inputs.Where(c => c.IsColumn))
                     {
-                        var result = input.SetValue(PrimaryTransform[input.Column.Name]);
-                        if (result.Success == false)
-                            throw new Exception("Error setting mapping values: " + result.Message);
+                        try
+                        {
+                            input.SetValue(PrimaryTransform[input.Column.Name]);
+                        } 
+                        catch(Exception ex)
+                        {
+                            throw new TransformException($"The profile failed setting inputs on the function {profile.FunctionName} parameter {input.Name} column {input.Column.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.Name]);
+                        }
                     }
-                    var invokeresult = profile.Invoke();
 
-                    if (invokeresult.Success == false)
-                        throw new Exception("Error invoking profile function: " + invokeresult.Message);
+                    try
+                    {
+                        profile.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new TransformException($"The profile failed on the function {profile.FunctionName}.  {ex.Message}", ex);
+                    }
                 }
 
-                return new ReturnValue<object[]>(true, newRow);
+                return newRow;
             }
             else
             {
@@ -91,20 +102,22 @@ namespace dexih.transforms
 
                 foreach (Function profile in _profiles)
                 {
-                    var result = profile.ReturnValue();
-                    if (result.Success == false)
-                        throw new Exception("Error retrieving profile result.  Message: " + result.Message);
+                    object profileResult = null;
+                    try
+                    {
+                        profileResult = profile.ReturnValue();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new TransformException($"The profile failed getting the return value on the function {profile.FunctionName}.  {ex.Message}", ex);
+                    }
 
                     object[] row = new object[6];
                     row[0] = AuditKey;
                     row[1] = profile.FunctionName;
                     row[2] = profile.Inputs[0].Column.Name;
                     row[3] = true;
-
-                    if (profile.ReturnValue().Success)
-                        row[4] = profile.ReturnValue().Value;
-                    else
-                        row[4] = "Error: " + profile.ReturnValue().Message;
+                    row[4] = profileResult;
 
                     profileResults.Data.Add(row);
 
@@ -132,7 +145,7 @@ namespace dexih.transforms
                     _profileResults = profileResults;
                 }
 
-                return new ReturnValue<object[]>(false, null);
+                return null;
             }
 
         }

@@ -1,4 +1,5 @@
 ﻿using dexih.functions;
+using dexih.functions.Query;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -48,25 +49,21 @@ namespace dexih.transforms
             return "Source Table " + CacheTable.Name;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             CurrentRowNumber = -1;
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            //return await Task.Run(() => new ReturnValue<object[]>(false, null));
-            return await Task.Run(() =>
+            CurrentRowNumber++;
+            if (CurrentRowNumber < CacheTable.Data.Count)
             {
-                CurrentRowNumber++;
-                if (CurrentRowNumber < CacheTable.Data.Count)
-                {
-                    var row = CacheTable.Data[CurrentRowNumber];
-                    return new ReturnValue<object[]>(true, row);
-                }
-                return new ReturnValue<object[]>(false, null);
-            }, cancellationToken);
+                var row = CacheTable.Data[CurrentRowNumber];
+                return Task.FromResult<object[]>(row);
+            }
+            return Task.FromResult<object[]>(null);
         }
 
         public override bool IsClosed => CurrentRowNumber >= CacheTable.Data.Count;

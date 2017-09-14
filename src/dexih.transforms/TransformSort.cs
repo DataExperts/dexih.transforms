@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Query;
 
 namespace dexih.transforms
 {
@@ -40,7 +41,7 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -58,7 +59,7 @@ namespace dexih.transforms
         }
 
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             if(_alreadySorted)
             {
@@ -66,11 +67,11 @@ namespace dexih.transforms
                 {
                     object[] values = new object[PrimaryTransform.FieldCount];
                     PrimaryTransform.GetValues(values);
-                    return new ReturnValue<object[]>(true, values);
+                    return values;
                 }
                 else
                 {
-                    return new ReturnValue<object[]>(false, null);
+                    return null;
                 }
             }
             if (_firstRead) //load the entire record into a sorted list.
@@ -97,30 +98,30 @@ namespace dexih.transforms
                 }
                 _firstRead = false;
                 if (rowcount == 0)
-                    return new ReturnValue<object[]>(false, null);
+                    return null;
 
                 _iterator = _sortedDictionary.Keys.GetEnumerator();
                 _iterator.MoveNext();
-                return new ReturnValue<object[]>(true, _sortedDictionary[_iterator.Current]);
+                return _sortedDictionary[_iterator.Current];
             }
 
             var success = _iterator.MoveNext();
             if (success)
-                return new ReturnValue<object[]>(true, _sortedDictionary[_iterator.Current]);
+                return _sortedDictionary[_iterator.Current];
             else
             {
                 _sortedDictionary = null; //free up memory after all rows are read.
-                return new ReturnValue<object[]>(false, null);
+                return null;
             }
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             if (_sortedDictionary != null)
                 _sortedDictionary = null;
             _firstRead = true;
 
-            return new ReturnValue(true);
+            return true;
         }
 
         public override string Details()

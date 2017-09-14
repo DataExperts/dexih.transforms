@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Text;
 using System.Threading;
+using static Dexih.Utils.DataType.DataType;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -47,7 +49,7 @@ namespace dexih.transforms
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
             {
-                CacheTable.Columns.Insert(0, new TableColumn("Operation", DataType.ETypeCode.Byte)
+                CacheTable.Columns.Insert(0, new TableColumn("Operation", ETypeCode.Byte)
                 {
                     DeltaType = TableColumn.EDeltaType.DatabaseOperation
                 });
@@ -56,7 +58,7 @@ namespace dexih.transforms
             //add the rejection reason, which details the reason for a rejection.
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.RejectedReason) == null)
             {
-                CacheTable.Columns.Add(new TableColumn("RejectReason", DataType.ETypeCode.String)
+                CacheTable.Columns.Add(new TableColumn("RejectReason", ETypeCode.String)
                 {
                     DeltaType = TableColumn.EDeltaType.RejectedReason
                 });
@@ -65,7 +67,7 @@ namespace dexih.transforms
             //add the rejection reason, which details the reason for a rejection.
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.ValidationStatus) == null)
             {
-                CacheTable.Columns.Add(new TableColumn("ValidationStatus", DataType.ETypeCode.String)
+                CacheTable.Columns.Add(new TableColumn("ValidationStatus", ETypeCode.String)
                 {
                     DeltaType = TableColumn.EDeltaType.ValidationStatus
                 });
@@ -96,24 +98,26 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             _lastRecord = false;
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             //the saved reject row is when a validation outputs two rows (pass & fail).
             if (_savedRejectRow != null)
             {
                 var row = _savedRejectRow;
                 _savedRejectRow = null;
-                return new ReturnValue<object[]>(true, row);
+                return row;
             }
 
             if (_lastRecord)
-                return new ReturnValue<object[]>(false, null);
+            {
+                return null;
+            }
 
             while (await PrimaryTransform.ReadAsync(cancellationToken))
             {
@@ -140,18 +144,29 @@ namespace dexih.transforms
                         //set inputs for the validation function
                         foreach (Parameter input in validation.Inputs.Where(c => c.IsColumn))
                         {
-                            var result = input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
-                            if (result.Success == false)
-                                throw new Exception("Error setting validation values: " + result.Message);
+                            try
+                            {
+                                input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
+                            }
+                            catch(Exception ex)
+                            {
+                                throw new TransformException($"The validation transform failed setting input parameters on the function {validation.FunctionName} parameter {input.Name} for column {input.Column.SchemaColumnName()}.  {ex.Message}", ex, PrimaryTransform[input.Column.SchemaColumnName()]);
+                            }
                         }
-                        var invokeresult = validation.Invoke();
 
-                        //if the validation function had an error, then throw exception.
-                        if (invokeresult.Success == false)
-                            throw new Exception("Error invoking validation function: " + invokeresult.Message);
+                        bool validationResult;
+                        try
+                        {
+                            var invokeresult = validation.Invoke();
+                            validationResult = (bool)invokeresult;
+                        }
+                        catch(Exception ex)
+                        {
+                            throw new TransformException($"The validation transform failed on the function {validation.FunctionName}.  {ex.Message}", ex);
+                        }
 
                         //if the validation is negative.  apply any output columns, and set a reject status
-                        if ((bool)invokeresult.Value == false)
+                        if (!validationResult)
                         {
                             rejectReason.AppendLine("function: " + validation.FunctionName + ", parameters: " + string.Join(",", validation.Inputs.Select(c => c.Name + "=" + (c.IsColumn ? c.Column.SchemaColumnName() : c.Value.ToString())).ToArray()) + ".");
 
@@ -204,11 +219,15 @@ namespace dexih.transforms
                                             TableColumn col = CacheTable[output.Column.SchemaColumnName()];
                                             if (ordinal >= 0)
                                             {
-                                                var parseresult = DataType.TryParse(col.Datatype, output.Value, col.MaxLength);
-                                                if (!parseresult.Success)
-                                                    throw new Exception("Error parsing the cleaned value: " + output.Value.ToString() + " as a datatype: " + col.Datatype.ToString());
-
-                                                passRow[ordinal] = parseresult.Value;
+                                                try
+                                                {
+                                                    var parseresult = TryParse(col.Datatype, output.Value, col.MaxLength);
+                                                    passRow[ordinal] = parseresult;
+                                                }
+                                                catch(Exception ex)
+                                                {
+                                                    throw new TransformException($"The validation transform failed parsing output values on the function {validation.FunctionName} parameter {output.Name} column {col.Name}.  {ex.Message}", ex, output.Value);
+                                                }
                                             }
                                         }
                                     }
@@ -246,9 +265,14 @@ namespace dexih.transforms
                             }
                             else
                             {
-                                var parseresult = DataType.TryParse(col.Datatype, value, col.MaxLength);
-                                if (parseresult.Success == false)
+                                try
                                 {
+                                    var parseresult = TryParse(col.Datatype, value, col.MaxLength);
+                                    passRow[i] = parseresult;
+                                }
+                                catch (Exception ex)
+                                {
+                                    // if the parse fails on the column, then write out a reject record.
                                     if (rejectRow == null)
                                     {
                                         rejectRow = new object[_columnCount];
@@ -256,12 +280,8 @@ namespace dexih.transforms
                                         rejectRow[_operationOrdinal] = 'R';
                                         TransformRowsRejected++;
                                     }
-                                    rejectReason.AppendLine(parseresult.Message);
+                                    rejectReason.AppendLine(ex.Message);
                                     finalInvalidAction = Function.EInvalidAction.Reject;
-                                }
-                                else
-                                {
-                                    passRow[i] = parseresult.Value;
                                 }
                             }
                         }
@@ -272,28 +292,28 @@ namespace dexih.transforms
                 {
                     case Function.EInvalidAction.Pass:
                         passRow[_validationStatusOrdinal] = "passed";
-                        return new ReturnValue<object[]>(true, passRow);
+                        return passRow;
                     case Function.EInvalidAction.Clean:
                         passRow[_validationStatusOrdinal] = "cleaned";
-                        return new ReturnValue<object[]>(true, passRow);
+                        return passRow;
                     case Function.EInvalidAction.RejectClean:
                         passRow[_validationStatusOrdinal] = "rejected-cleaned";
                         rejectRow[_validationStatusOrdinal] = "rejected-cleaned";
                         rejectRow[_rejectReasonOrdinal] = rejectReason.ToString();
                         _savedRejectRow = rejectRow;
-                        return new ReturnValue<object[]>(true, passRow);
+                        return passRow;
                     case Function.EInvalidAction.Reject:
                         passRow[_validationStatusOrdinal] = "rejected";
                         rejectRow[_validationStatusOrdinal] = "rejected";
                         rejectRow[_rejectReasonOrdinal] = rejectReason.ToString();
-                        return new ReturnValue<object[]>(true, rejectRow);
+                        return rejectRow;
                 }
 
                 //should never get here.
-                throw new Exception("Validation reached an unknown possibility.  This should not be possible");
+                throw new TransformException("Validation failed due to an unknown error.");
             }
 
-            return new ReturnValue<object[]>(false, null);
+            return null;
 
         }
 

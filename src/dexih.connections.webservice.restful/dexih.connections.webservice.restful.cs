@@ -9,8 +9,12 @@ using System.Text.RegularExpressions;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
-using static dexih.functions.DataType;
 using System.Net;
+using Dexih.Utils;
+using dexih.transforms.Exceptions;
+using dexih.functions.Query;
+using static Dexih.Utils.DataType.DataType;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.webservice
 {
@@ -35,18 +39,14 @@ namespace dexih.connections.webservice
         public override string DatabaseTypeName => "Restful Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;
 
-        public override Task<ReturnValue> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<List<string>>> GetDatabaseList(CancellationToken cancelToken)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
-            {
-                List<string> list = new List<string>();
-                return new ReturnValue<List<string>>(true, "", null, list);
-            }, cancelToken);
+            return Task.FromResult(new List<string>());
         }
 
         /// <summary>
@@ -57,15 +57,15 @@ namespace dexih.connections.webservice
         /// <param name="importTable"></param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<Table>> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
+        public override async Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
         {
             try
             {
 				RestFunction restFunction = (RestFunction)importTable;
 
-                if (restFunction.RestfulUri == null )
+                if (string.IsNullOrEmpty( restFunction.RestfulUri))
                 {
-                    return new ReturnValue<Table>(false, "The RestfulUrl for the webservice has not been set.", null);
+                    throw new ConnectionException($"The restful uri has not been specified.");
                 }
 
                 string restfulUri = restFunction.RestfulUri;
@@ -176,22 +176,18 @@ namespace dexih.connections.webservice
 
                 if (newRestFunction.Columns.Count > 0)
                 {
-
                     var data = await GetPreview(newRestFunction, query, null, inputJoins, cancelToken);
-                    if(data.Success == false)
-                    {
-                        return new ReturnValue<Table>(false, data.Message, data.Exception, null);
-                    }
 
-                    TableCache reader = data.Value.Data;
+                    TableCache reader = data.Data;
                     JToken content;
+
                     try
                     {
                         content = JToken.Parse(reader[0][newRestFunction.GetOrdinal("Response")].ToString());
                     }
                     catch (Exception ex)
                     {
-                        return new ReturnValue<Table>(false, "The following error occurred when parsing the web service result: " + ex.Message, ex, null);
+                        throw new ConnectionException($"Failed to parse the response json value. {ex.Message}", ex, reader[0][newRestFunction.GetOrdinal("Response")].ToString());
                     }
 
                     if (content != null)
@@ -231,21 +227,17 @@ namespace dexih.connections.webservice
                         }
                     }
                 }
-                return new ReturnValue<Table>(true, newRestFunction);
+                return newRestFunction;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<Table>(false, "The following error was encountered when getting the restful service information: " + ex.Message, ex);
+                throw new ConnectionException($"Get web service information for {importTable.Name} failed. {ex.Message}", ex);
             }
         }
 
-        public override async Task<ReturnValue<List<Table>>> GetTableList(CancellationToken cancelToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
-           {
-               List<Table> list = new List<Table>();
-               return new ReturnValue<List<Table>>(true, "", null, list);
-           }, cancelToken);
+            return Task.FromResult(new List<Table>());
         }
 
 
@@ -255,7 +247,7 @@ namespace dexih.connections.webservice
         /// <param name="table"></param>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public async Task<ReturnValue<object[]>> LookupRow(Table table, List<Filter> filters, CancellationToken cancelToken)
+        public async Task<object[]> LookupRow(Table table, List<Filter> filters, CancellationToken cancelToken)
         {
             try
             {
@@ -310,81 +302,96 @@ namespace dexih.connections.webservice
 
                         if(data.Type == JTokenType.Array)
                         {
-                            return new ReturnValue<object[]>(false, "Cannot perform a lookup as the result returned an array of values.", null);
+                            throw new ConnectionException($"Lookup response was an array.");
                         }
 
                         for (int i = 3 + filters.Count; i < table.Columns.Count; i++)
                         {
-                            var returnValue = DataType.TryParse(table.Columns[i].Datatype, data.SelectToken(table.Columns[i].Name));
-                            if (!returnValue.Success)
-                                return new ReturnValue<object[]>(returnValue);
+                            var value = data.SelectToken(table.Columns[i].Name);
 
-                            row[i] = returnValue.Value;
+                            try
+                            {
+                                row[i] = DataType.TryParse(table.Columns[i].Datatype, value);
+                            }
+                            catch(Exception ex)
+                            {
+                                throw new ConnectionException($"Failed to convert value on column {table.Columns[i].Name} to datatype {table.Columns[i].Datatype}. {ex.Message}", ex, value);
+                            }
                         }
                     }
                 }
 
-                return new ReturnValue<object[]>(true, row);
+                return row;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<object[]>(false, "The following error occurred when calling the web service: " + ex.Message, ex);
+                throw new ConnectionException($"Lookup on the web service {table.Name} failed. {ex.Message}", ex);
             }
         }
 
-        public override Task<ReturnValue> TruncateTable(Table table, CancellationToken cancelToken)
+        public override Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<Table>> InitializeTable(Table table, int position)
+        public override Task<Table> InitializeTable(Table table, int position)
         {
-            return await Task.Run(() =>
+            try
             {
                 var restFunction = new RestFunction();
                 table.CopyProperties(restFunction, false);
                 restFunction.RestfulUri = restFunction.Name;
-                return new ReturnValue<Table>(true, restFunction);
-            });
+
+                return Task.FromResult<Table>(restFunction);
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Initialize table {table.Name} failed. {ex.Message}", ex);
+
+            }
         }
 
-        public override Task<ReturnValue<long>> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
+        public override Task<long> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<long>> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
+        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<Tuple<long, long>>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
+        public override Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<ReturnValue<object>> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
         {
-            var lookupResult = await LookupRow(table, query.Filters, cancelToken);
-            if (!lookupResult.Success)
-                return new ReturnValue<object>(lookupResult);
-
-            string schemaColumn = query.Columns[0].Column.SchemaColumnName();
-            object value = lookupResult.Value[table.GetOrdinal(schemaColumn)];
-            return new ReturnValue<object>(true, value);
+            try
+            {
+                var lookupResult = await LookupRow(table, query.Filters, cancelToken);
+                string schemaColumn = query.Columns[0].Column.SchemaColumnName();
+                object value = lookupResult[table.GetOrdinal(schemaColumn)];
+                return value;
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Get value from {table.Name} failed. {ex.Message}", ex);
+            }
         }
 
-        public override Task<ReturnValue> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<DbDataReader>> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<ReturnValue<long>> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
+        public override Task<long> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -395,7 +402,7 @@ namespace dexih.connections.webservice
             return reader;
         }
 
-        public override Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

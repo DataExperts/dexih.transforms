@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Query;
 
 namespace dexih.transforms
 {
@@ -50,7 +51,7 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
         public override bool PassThroughColumns => true;
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -87,10 +88,10 @@ namespace dexih.transforms
             return returnValue;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
-                return new ReturnValue<object[]>(false, null);
+            if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
+                return null;
 
             _rowCount++;
             bool showRecord = false;
@@ -143,14 +144,14 @@ namespace dexih.transforms
             else
                 newRow = null;
 
-            return new ReturnValue<object[]>(showRecord, newRow);
+            return newRow;
         }
 
 
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(true); // nothing to reset.
+            return true;
         }
 
         public override string Details()

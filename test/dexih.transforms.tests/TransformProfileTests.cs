@@ -1,10 +1,12 @@
 ﻿using dexih.functions;
+using dexih.functions.Query;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using static dexih.functions.DataType;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms.tests
 {
@@ -13,16 +15,16 @@ namespace dexih.transforms.tests
         public static ReaderMemory CreateProfileTestData()
         {
             Table table = new Table("test", 0,
-                new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("IntColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DateColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("NullsBlanksColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("ZerosColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("MaxLengthColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("MaxValueColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DistinctValuesColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("PatternsColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey)
+                new TableColumn("StringColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("NullsBlanksColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("ZerosColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("MaxLengthColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("MaxValueColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DistinctValuesColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("PatternsColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey)
                 );
 
             table.Data.Add(new object[] { "value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), DBNull.Value, 0, "a", 1, "value1", "12345"  });

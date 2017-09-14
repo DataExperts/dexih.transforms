@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Query;
 
 namespace dexih.transforms
 {
@@ -68,24 +69,24 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
         public override bool PassThroughColumns => true;
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             if (query == null)
                 query = new SelectQuery();
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
-            if (!returnValue.Success)
-                return returnValue;
+            if (!returnValue)
+                return false;
 
             returnValue = await ReferenceTransform.Open(auditKey, null, cancelToken);
-            if (!returnValue.Success)
-                return returnValue;
+            if (!returnValue)
+                return false;
 
             return returnValue;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             if(_firstRead )
             {
@@ -98,19 +99,19 @@ namespace dexih.transforms
             {
                 await Task.WhenAny(primaryReadTask, referenceReadTask);
 
-                if(primaryReadTask.IsCanceled || referenceReadTask.IsCanceled)
+                if(primaryReadTask.IsCanceled || referenceReadTask.IsCanceled || cancellationToken.IsCancellationRequested)
                 {
-                    return new ReturnValue<object[]>(false, "The read record task was cancelled.", null);
+                    throw new OperationCanceledException("The read record task was cancelled");
                 }
 
                 if(primaryReadTask.IsFaulted)
                 {
-                    return new ReturnValue<object[]>(false, "The primary reader failed due to " + primaryReadTask.Exception?.Message ?? "Unknown error.", primaryReadTask.Exception);
+                    throw primaryReadTask.Exception;
                 }
 
                 if (referenceReadTask.IsFaulted)
                 {
-                    return new ReturnValue<object[]>(false, "The reference reader failed due to " + referenceReadTask.Exception?.Message ?? "Unknown error.", referenceReadTask.Exception);
+                    throw referenceReadTask.Exception;
                 }
 
                 if (primaryReadTask.IsCompleted)
@@ -162,10 +163,10 @@ namespace dexih.transforms
                 referenceReadTask = null;
             }
 
-            return new ReturnValue<object[]>(false, null);
+            return null;
         }
 
-        private ReturnValue<object[]> CreateRecord(Transform transform, List<int> mappings)
+        private object[] CreateRecord(Transform transform, List<int> mappings)
         {
             var newRow = new object[CacheTable.Columns.Count];
 
@@ -174,12 +175,12 @@ namespace dexih.transforms
                 newRow[mappings[i]] = transform[i];
             }
 
-            return new ReturnValue<object[]>(true, newRow);
+            return newRow;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(true);
+            return true;
         }
 
         public override string Details()

@@ -1,4 +1,5 @@
 ﻿using dexih.functions;
+using dexih.functions.Query;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -41,7 +42,7 @@ namespace dexih.transforms
                     var column = new TableColumn(field.Name)
                     {
                         DeltaType = field.DeltaType,
-                        Datatype = DataType.GetTypeCode(propertyInfo.PropertyType),
+                        Datatype = Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType),
                         MaxLength = field.MaxLength,
                         Precision = field.Precision,
                         Scale = field.Scale,
@@ -78,33 +79,29 @@ namespace dexih.transforms
             return "Source Table " + CacheTable.Name;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             CurrentRowNumber = -1;
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            return await Task.Run(() =>
+            if (_enumerator.MoveNext())
             {
-                if (_enumerator.MoveNext())
+                var item = _enumerator.Current;
+                var row = new object[_fieldMappings.Count];
+                foreach (var mapping in _fieldMappings)
                 {
-                    var item = _enumerator.Current;
-                    var row = new object[_fieldMappings.Count];
-                    foreach (var mapping in _fieldMappings)
-                    {
-                        row[mapping.Item2] = mapping.Item1.GetValue(item);
-                    }
-                    
-                    return new ReturnValue<object[]>(true, row);
+                    row[mapping.Item2] = mapping.Item1.GetValue(item);
                 }
-                else
-                {
-                    return new ReturnValue<object[]>(false, null);
-                }
-                
-            }, cancellationToken);
+
+                return Task.FromResult(row);
+            }
+            else
+            {
+                return Task.FromResult<object[]>(null);
+            }
         }
     }
 }

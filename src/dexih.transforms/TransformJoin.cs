@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using dexih.transforms.Exceptions;
+using dexih.functions.Query;
 
 namespace dexih.transforms
 {
@@ -139,7 +140,7 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             if (query == null)
@@ -150,14 +151,21 @@ namespace dexih.transforms
                 query.Sorts = RequiredSortFields();
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
-            if (!returnValue.Success)
+            if (!returnValue)
+            {
                 return returnValue;
+            }
 
             var referenceQuery = new SelectQuery()
             {
                 Sorts = RequiredReferenceSortFields()
             };
+
             returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancelToken);
+            if (!returnValue)
+            {
+                return returnValue;
+            }
 
             //check if the primary and reference transform are sorted in the join
             if (SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) && SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))
@@ -185,7 +193,7 @@ namespace dexih.transforms
             return returnValue;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             object[] newRow = null;
             int pos = 0;
@@ -216,13 +224,13 @@ namespace dexih.transforms
                 if (_writeGroupPosition >= _filterdGroupData.Count)
                     _writeGroup = false;
 
-                return new ReturnValue<object[]>(true, newRow);
+                return newRow;
             }
 
             //read a new row from the primary table.
             if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
             {
-                return new ReturnValue<object[]>(false, null);
+                return null;
             }
 
             //if input is sorted, then run a sortedjoin
@@ -337,28 +345,39 @@ namespace dexih.transforms
                         {
                             foreach (Parameter input in condition.Inputs.Where(c => c.IsColumn))
                             {
-                                ReturnValue result;
-                                if (input.Column.Schema == _referenceTableName)
+                                object value = null;
+                                try
                                 {
-                                    result = input.SetValue(row[ReferenceTransform.GetOrdinal(input.Column.SchemaColumnName())]);
-                                }
-                                else
-                                {
-                                    result = input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
-                                }
+                                    if (input.Column.Schema == _referenceTableName)
+                                    {
+                                        value = row[ReferenceTransform.GetOrdinal(input.Column.SchemaColumnName())];
+                                    }
+                                    else
+                                    {
+                                        value = PrimaryTransform[input.Column.SchemaColumnName()];
+                                    }
 
-                                if (result.Success == false)
-                                    throw new Exception("Error setting condition values: " + result.Message);
+                                    input.SetValue(value);
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new TransformException($"The join failed setting parameters on the condition {condition.FunctionName} with the parameter {input.Name}.  {ex.Message}.", ex, value);
+                                }
                             }
 
-                            var invokeresult = condition.Invoke();
-                            if (invokeresult.Success == false)
-                                throw new Exception("Error invoking condition function: " + invokeresult.Message);
-
-                            if ((bool)invokeresult.Value == false)
+                            try
                             {
-                                matchFound = false;
-                                break;
+                                var invokeresult = condition.Invoke();
+
+                                if ((bool)invokeresult == false)
+                                {
+                                    matchFound = false;
+                                    break;
+                                }
+                            } catch (Exception ex)
+                            {
+                                throw new TransformException($"The join failed calling the function {condition.FunctionName}.  {ex.Message}.", ex);
                             }
                         }
 
@@ -376,7 +395,7 @@ namespace dexih.transforms
                         switch (JoinDuplicateStrategy)
                         {
                             case EDuplicateStrategy.Abend:
-                                throw new DuplicateJoinKeyException("The join operation could not complete as the selected columns on the join table " + ReferenceTableAlias + " are not unique.", ReferenceTableAlias, _groupFields);
+                                throw new DuplicateJoinKeyException("The join transform failed as the selected columns on the join table " + ReferenceTableAlias + " are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, _groupFields);
                             case EDuplicateStrategy.First:
                                 joinRow = _groupData[0];
                                 break;
@@ -389,7 +408,7 @@ namespace dexih.transforms
                                 _writeGroupPosition = 1;
                                 break;
                             default:
-                                throw new Exception("Join Duplicate Resolution not recognized.");
+                                throw new TransformException("The join transform failed due to an unkown join strategy "+ JoinDuplicateStrategy);
                         }
                     }
                     else
@@ -403,7 +422,7 @@ namespace dexih.transforms
                 }
             }
 
-            return new ReturnValue<object[]>(true, newRow);
+            return newRow;
         }
 
         private async Task<bool> ReadNextGroup()
@@ -501,9 +520,9 @@ namespace dexih.transforms
             }
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(true); 
+            return true;
         }
 
         public override string Details()

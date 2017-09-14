@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace dexih.functions
+namespace dexih.functions.Query
 {
     public class SelectColumn
     {

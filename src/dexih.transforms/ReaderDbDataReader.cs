@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Data.Common;
 using System.Threading;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -70,7 +72,7 @@ namespace dexih.transforms
                 {
                     var column = new TableColumn();
                     column.Name = columnDetail.ColumnName;
-                    column.Datatype = DataType.GetTypeCode(columnDetail.DataType);
+                    column.Datatype = Dexih.Utils.DataType.DataType.GetTypeCode(columnDetail.DataType);
                     column.MaxLength = columnDetail.ColumnSize;
                     column.Scale = columnDetail.NumericScale;
                     column.Precision = columnDetail.NumericPrecision;
@@ -116,12 +118,12 @@ namespace dexih.transforms
             }
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(false, "The source reader cannot be reset as the DbReader is a forward only reader", null);
+            throw new TransformException("The source reader cannot be reset as the DbReader is a forward only reader");
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             bool success = await InReader.ReadAsync();
             object[] newRow;
@@ -133,7 +135,7 @@ namespace dexih.transforms
             else
                 newRow = null;
 
-            return new ReturnValue<object[]>(success, newRow);
+            return newRow;
         }
     }
 }

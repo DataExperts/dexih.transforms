@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -121,7 +123,7 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
@@ -148,16 +150,20 @@ namespace dexih.transforms
         }
 
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             foreach (Function aggregate in Aggregates)
+            {
                 aggregate.Reset();
+            }
+
             _firstRecord = true;
             _lastRecord = true;
-            return new ReturnValue(true);
+
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             object[] newRow = null;
 
@@ -172,7 +178,7 @@ namespace dexih.transforms
                 {
                     newRow = _passThroughValues[_passThroughIndex];
                     _passThroughIndex++;
-                    return new ReturnValue<object[]>(true, newRow);
+                    return newRow;
                 }
                 //if all rows have been iterated through, reset the cache and add the stored row for the next group 
                 else if(_passThroughIndex >= _passThroughCount && _firstRecord == false && _lastRecord == false)
@@ -191,7 +197,7 @@ namespace dexih.transforms
             if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
             {
                 if (_lastRecord) //return false is all record have been written.
-                    return new ReturnValue<object[]>(false, null);
+                    return null;
             }
             else
             {
@@ -248,20 +254,23 @@ namespace dexih.transforms
                         {
                             foreach (Function mapping in Aggregates)
                             {
-                                var result = mapping.ReturnValue(0);
-                                if (result.Success == false)
-                                    throw new Exception("Error retrieving aggregate result.  Message: " + result.Message);
-
-                                newRow[i] = result.Value;
-                                i++;
-
-                                if (mapping.Outputs != null)
+                                try
                                 {
-                                    foreach (Parameter output in mapping.Outputs)
+                                    newRow[i] = mapping.ReturnValue(0);
+                                    i++;
+
+                                    if (mapping.Outputs != null)
                                     {
-                                        newRow[i] = output.Value;
-                                        i++;
+                                        foreach (Parameter output in mapping.Outputs)
+                                        {
+                                            newRow[i] = output.Value;
+                                            i++;
+                                        }
                                     }
+                                }
+                                catch(Exception ex)
+                                {
+                                    throw new TransformException($"The group transform failed, retrieving results.  {ex.Message}.", ex);
                                 }
                             }
                         }
@@ -275,20 +284,23 @@ namespace dexih.transforms
                                 i = startColumn;
                                 foreach (Function mapping in Aggregates)
                                 {
-                                    var result = mapping.ReturnValue(index);
-                                    if (result.Success == false)
-                                        throw new Exception("Error retrieving aggregate result.  Message: " + result.Message);
-
-                                    row[i] = result.Value;
-                                    i++;
-
-                                    if (mapping.Outputs != null)
+                                    try
                                     {
-                                        foreach (Parameter output in mapping.Outputs)
+                                        row[i] = mapping.ReturnValue(index);
+                                        i++;
+
+                                        if (mapping.Outputs != null)
                                         {
-                                            row[i] = output.Value;
-                                            i++;
+                                            foreach (Parameter output in mapping.Outputs)
+                                            {
+                                                row[i] = output.Value;
+                                                i++;
+                                            }
                                         }
+                                    } 
+                                    catch(Exception ex)
+                                    {
+                                        throw new TransformException($"The group transform failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
                                     }
                                 }
                                 index++;
@@ -341,14 +353,25 @@ namespace dexih.transforms
                         {
                             foreach (Parameter input in mapping.Inputs.Where(c => c.IsColumn))
                             {
-                                var result = input.SetValue(PrimaryTransform[input.Column]);
-                                if (result.Success == false)
-                                    throw new Exception("Error setting aggregate values: " + result.Message);
+                                try
+                                {
+                                    input.SetValue(PrimaryTransform[input.Column]);
+                                } 
+                                catch(Exception ex)
+                                {
+                                    throw new TransformException($"The group transform failed, setting in incompatible value to column {input.Column.Name}.  {ex.Message}.", ex, PrimaryTransform[input.Column]);
+                                }
                             }
                         }
-                        var invokeresult = mapping.Invoke();
-                        if (invokeresult.Success == false)
-                            throw new Exception("Error setting aggregate values: " + invokeresult.Message);
+
+                        try
+                        {
+                            var invokeresult = mapping.Invoke();
+                        }
+                        catch(Exception ex)
+                        {
+                            throw new TransformException($"The group transform could not run the function {mapping.FunctionName} failed.  {ex.Message}.", ex);
+                        }
                     }
 
                     if (groupChanged)
@@ -372,11 +395,14 @@ namespace dexih.transforms
 
                     foreach (Function mapping in Aggregates)
                     {
-                        var result = mapping.ReturnValue(0);
-                        if (result.Success == false)
-                            throw new Exception("Error retrieving aggregate result.  Message: " + result.Message);
-
-                        newRow[i] = result.Value;
+                        try
+                        {
+                            newRow[i] = mapping.ReturnValue(0);
+                        }
+                        catch(Exception ex)
+                        {
+                            throw new TransformException($"The group transform failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
+                        }
                         i++;
 
                         if (mapping.Outputs != null)
@@ -400,11 +426,15 @@ namespace dexih.transforms
                         i = startColumn;
                         foreach (Function mapping in Aggregates)
                         {
-                            var result = mapping.ReturnValue(index);
-                            if (result.Success == false)
-                                throw new Exception("Error retrieving aggregate result.  Message: " + result.Message);
+                            try
+                            {
+                                row[i] = mapping.ReturnValue(index);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new TransformException($"The group transform failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
+                            }
 
-                            row[i] = result.Value;
                             i++;
 
                             if (mapping.Outputs != null)
@@ -428,7 +458,7 @@ namespace dexih.transforms
                 _groupValues = newGroupValues;
                 _lastRecord = true;
             }
-            return new ReturnValue<object[]>(true, newRow);
+            return newRow;
 
         }
 

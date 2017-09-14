@@ -7,6 +7,9 @@ using System.IO;
 using System.Threading;
 using CsvHelper;
 using System.Linq;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.flatfile
 {
@@ -54,40 +57,30 @@ namespace dexih.connections.flatfile
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
             if (_isOpen)
             {
-                return new ReturnValue(false, "The file reader connection is already open.", null);
+                throw new ConnectionException("The file reader connection is already open.");
             }
 
-            var fileEnumerator = await _fileConnection.GetFileEnumerator(CacheFlatFile, FlatFile.EFlatFilePath.incoming, CacheFlatFile.FileMatchPattern);
-            if (fileEnumerator.Success == false)
-                return fileEnumerator;
-
-            _files = fileEnumerator.Value;
+            _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, FlatFile.EFlatFilePath.incoming, CacheFlatFile.FileMatchPattern);
             _currentFileRowNumber = 0;
 
             if (_files.MoveNext() == false)
             {
-                return new ReturnValue(false, $"There are no matching files in the incoming directory.", null);
-            }
-
-            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, FlatFile.EFlatFilePath.incoming, _files.Current.FileName);
-            if (fileStream.Success == false)
-            {
-                return fileStream;
+                throw new ConnectionException($"There are no matching files in the incoming directory.");
             }
 
             _query = query;
-
             _fileFormat = CacheFlatFile.FileFormat;
 
-            InitializeCsvReader(new StreamReader(fileStream.Value));
+            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, FlatFile.EFlatFilePath.incoming, _files.Current.FileName);
+            InitializeCsvReader(new StreamReader(fileStream));
 
-            return new ReturnValue(true);
+            return true;
 
         }
 
@@ -150,33 +143,33 @@ namespace dexih.connections.flatfile
             return true;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             if (_isOpen)
             {
-                return new ReturnValue(true);
+                return true;
             }
             else
             {
-                return new ReturnValue(false, "The flatfile reader can not be reset", null);
+                return false;
             }
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             while (true)
             {
-                bool notfinished;
+                bool moreRecords;
                 try
                 {
-                    notfinished = _csvReader.Read();
+                    moreRecords = _csvReader.Read();
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("The flatfile reader failed with the following message: " + ex.Message, ex);
+                    throw new ConnectionException("The flatfile reader failed with the following message: " + ex.Message, ex);
                 }
 
-                if (notfinished == false)
+                if (!moreRecords)
                 {
                     _csvReader.Dispose();
 
@@ -184,11 +177,13 @@ namespace dexih.connections.flatfile
                     // if this is preview mode, don't move files.
                     if (CacheFlatFile.AutoManageFiles && _previewMode == false)
                     {
-                        var moveFileResult = await _fileConnection.MoveFile(CacheFlatFile, FlatFile.EFlatFilePath.incoming, FlatFile.EFlatFilePath.processed, _files.Current.FileName); //backup the completed file
-
-                        if (!moveFileResult.Success)
+                        try
                         {
-                            return new ReturnValue<object[]>(moveFileResult);
+                            var moveFileResult = await _fileConnection.MoveFile(CacheFlatFile, FlatFile.EFlatFilePath.incoming, FlatFile.EFlatFilePath.processed, _files.Current.FileName); //backup the completed file
+                        }
+                        catch(Exception ex)
+                        {
+                            throw new ConnectionException($"Failed to move the file {_files.Current.FileName} from the incoming to processed directory.  {ex.Message}", ex);
                         }
                     }
 
@@ -196,45 +191,50 @@ namespace dexih.connections.flatfile
                         _isOpen = false;
                     else
                     {
-                        var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, FlatFile.EFlatFilePath.incoming, _files.Current.FileName);
-                        if (!fileStream.Success)
-                        {
-                            return new ReturnValue<object[]>(fileStream);
-                        }
-
-                        _currentFileRowNumber = 0;
-
-                        InitializeCsvReader(new StreamReader(fileStream.Value));
                         try
                         {
-                            notfinished = _csvReader.Read();
+                            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, FlatFile.EFlatFilePath.incoming, _files.Current.FileName);
+                            _currentFileRowNumber = 0;
+                            InitializeCsvReader(new StreamReader(fileStream));
                         }
                         catch (Exception ex)
                         {
-                            return new ReturnValue<object[]>(false, "The flatfile reader failed with the following message: " + ex.Message, ex);
+                            throw new ConnectionException($"Failed to read the file {_files.Current.FileName}.  {ex.Message}", ex);
                         }
-                        if (notfinished == false)
+
+                        
+                        try
+                        {
+                            moreRecords = _csvReader.Read();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new ConnectionException($"Flat file reader failed during the reading the file {_files.Current.FileName}.  {ex.Message}", ex);
+                        }
+                        if (!moreRecords)
+                        {
                             return await ReadRecord(cancellationToken); // this creates a recurive loop to cater for empty files.
+                        }
                     }
                 }
 
-                if (notfinished)
+                if (moreRecords)
                 {
                     object[] row = new object[CacheTable.Columns.Count];
                     _currentFileRowNumber++;
 
-                    foreach(var colPos in _csvOrdinalMappings.Keys)
+                    foreach (var colPos in _csvOrdinalMappings.Keys)
                     {
                         var mapping = _csvOrdinalMappings[colPos];
                         row[colPos] = _csvReader.GetField(mapping.dataType, mapping.position);
                     }
 
-                    if(_fileNameOrdinal >= 0)
+                    if (_fileNameOrdinal >= 0)
                     {
                         row[_fileNameOrdinal] = _files.Current.FileName;
                     }
 
-                    if(_fileRowNumberOrdinal >= 0)
+                    if (_fileRowNumberOrdinal >= 0)
                     {
                         row[_fileRowNumberOrdinal] = _currentFileRowNumber;
                     }
@@ -242,7 +242,7 @@ namespace dexih.connections.flatfile
                     // check if a row should be filtered.  If not return the value.
                     if (EvaluateRowFilter(row))
                     {
-                        return new ReturnValue<object[]>(true, row);
+                        return row;
                     }
                     else
                     {
@@ -250,7 +250,9 @@ namespace dexih.connections.flatfile
                     }
                 }
                 else
-                    return new ReturnValue<object[]>(false, null);
+                {
+                    return null;
+                }
             }
 
         }
@@ -309,7 +311,7 @@ namespace dexih.connections.flatfile
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
             throw new NotSupportedException("Direct lookup not supported with flat files.");
         }

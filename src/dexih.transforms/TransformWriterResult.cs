@@ -1,8 +1,11 @@
 ﻿using dexih.functions;
+using dexih.transforms.Exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -180,48 +183,74 @@ namespace dexih.transforms
             }
         }
 
-        public async Task<ReturnValue> SetRunStatus(ERunStatus newStatus, string message)
+
+        /// <summary>
+        /// Updates the run status, the audit table, and sends a status update event
+        /// </summary>
+        /// <param name="newStatus"></param>
+        /// <param name="message"></param>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        public async Task<bool> SetRunStatus(ERunStatus newStatus, string message = null, Exception exception = null)
         {
-            return await SetRunStatus(newStatus, new ReturnValue(false, message, null));
-        }
-        
-        public async Task<ReturnValue> SetRunStatus(ERunStatus newStatus, ReturnValue returnValue = null)
-        {
-            RunStatus = newStatus;
-            if(returnValue != null)
+            try
             {
-                if (!string.IsNullOrEmpty(returnValue.Message))
+                RunStatus = newStatus;
+                if (!string.IsNullOrEmpty(Message))
                 {
-                    Message = returnValue.Message;
+                    Message = message;
                 }
-                var exceptionDetails = returnValue.ExceptionDetails;
-                if (!string.IsNullOrEmpty(exceptionDetails))
-                {
-                    ExceptionDetails = exceptionDetails;
-                }
-            }
 
-            if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
+                if (exception != null)
+                {
+                    // pull out the full details of the exception.
+                    var properties = exception.GetType().GetProperties();
+                    var fields = properties
+                        .Select(property => new
+                        {
+                            property.Name,
+                            Value = property.GetValue(exception, null)
+                        })
+                        .Select(x => string.Format(
+                            "{0} = {1}",
+                            x.Name,
+                            x.Value != null ? x.Value.ToString() : string.Empty
+                        ));
+                    ExceptionDetails = string.Join("\n", fields);
+                }
+
+                if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
+                {
+                    EndTime = DateTime.Now;
+                    OnFinish?.Invoke(this);
+                }
+
+                if (_auditConnection != null)
+                {
+                    LastUpdateTime = DateTime.Now;
+
+                    try
+                    {
+                        var updateResult = await _auditConnection.UpdateAudit(this);
+                    }
+                    catch (Exception ex)
+                    {
+                        RunStatus = ERunStatus.Abended;
+                        Message = Message??"" + "\n" + $"An error occurred when updating the audit table of connection {_auditConnection.Name}.  {ex.Message}";
+                        return false;
+                    }
+                }
+
+                OnStatusUpdate?.Invoke(this);
+
+                return true;
+            }
+            catch(Exception ex)
             {
-                EndTime = DateTime.Now;
-                OnFinish?.Invoke(this);
+                RunStatus = ERunStatus.Abended;
+                Message = Message??"" + "\n" + $"An error occurred when updating run status.  {ex.Message}";
+                return false;
             }
-
-            if (_auditConnection != null)
-            {
-                LastUpdateTime = DateTime.Now;
-
-                var updateResult = await _auditConnection.UpdateAudit(this);
-                if (!updateResult.Success)
-                {
-                    RunStatus = ERunStatus.Abended;
-                    return updateResult;
-                }
-            }
-
-            OnStatusUpdate?.Invoke(this);
-
-            return new ReturnValue(true);
         }
 
         public bool IsRunning

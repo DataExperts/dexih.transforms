@@ -7,6 +7,8 @@ using dexih.functions;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage;
 using System.Threading;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.connections.azure
 {
@@ -37,12 +39,12 @@ namespace dexih.connections.azure
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             if (_isOpen)
             {
-                return new ReturnValue(false, "The current connection is already open.", null);
+                throw new ConnectionException($"The current connection is already open");
             }
 
             CloudTableClient tableClient = _connection.GetCloudTableClient();
@@ -68,22 +70,17 @@ namespace dexih.connections.azure
             catch (StorageException ex)
             {
                 string message = "Error reading Azure Storage table: " + CacheTable.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation?.ExtendedErrorInformation?.ErrorMessage + ".";
-                return new ReturnValue(false, message, ex);
+                throw new ConnectionException(message, ex);
             }
 
             _token = _tableResult.ContinuationToken;
 
-            //if (_tableResult != null && _tableResult.Any())
-            //{
-                return new ReturnValue(true);
-            //}
-            //else
-                //return new ReturnValue(false);
+            return true;
         }
 
         public override string Details()
         {
-            return "SqlConnection";
+            return "AzureConnection";
         }
 
         public override bool InitializeOutputFields()
@@ -91,32 +88,33 @@ namespace dexih.connections.azure
             return true;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             if (_isOpen)
             {
-                return new ReturnValue(true);
+                return true;
             }
             else
-                return new ReturnValue(false, "The sql reader can not be reset", null);
-
+            {
+                return false;
+            }
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             try
             {
-                if(_tableResult.Count() == 0)
-                    return new ReturnValue<object[]>(false, null);
+                if (_tableResult.Count() == 0)
+                    return null;
 
                 if (_currentReadRow >= _tableResult.Count())
                 {
                     if (_token == null)
-                        return new ReturnValue<object[]>(false, null);
+                        return null;
 
                     _tableResult = await _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token);
                     if (_tableResult.Count() == 0)
-                        return new ReturnValue<object[]>(false, null);
+                        return null;
 
                     _token = _tableResult.ContinuationToken;
                     _currentReadRow = 0;
@@ -128,11 +126,11 @@ namespace dexih.connections.azure
 
                 _currentReadRow++;
 
-                return new ReturnValue<object[]>(true, row);
+                return row;
             }
             catch (Exception ex)
             {
-                throw new Exception("The azure storage table reader failed due to the following error: " + ex.Message, ex);
+                throw new ConnectionException("The azure storage table reader failed due to the following error: " + ex.Message, ex);
             }
         }
 
@@ -173,7 +171,7 @@ namespace dexih.connections.azure
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
         {
             try
             {
@@ -193,11 +191,11 @@ namespace dexih.connections.azure
                 DynamicTableEntity currentEntity = result.ElementAt(_currentReadRow);
                 object[] row = GetRow(currentEntity);
 
-                return new ReturnValue<object[]>(true, row);
+                return row;
             }
             catch (Exception ex)
             {
-                return new ReturnValue<object[]>(false, "The following error occurred when calling the Azure: " + ex.Message, ex);
+                throw new ConnectionException("The azure table lookup failed due to the following error: " + ex.Message, ex);
             }
         }
     }

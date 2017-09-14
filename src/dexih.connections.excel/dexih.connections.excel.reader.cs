@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using OfficeOpenXml;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.connections.excel
 {
@@ -34,59 +36,52 @@ namespace dexih.connections.excel
             base.Dispose(disposing);
         }
 
-        public override async Task<ReturnValue> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
             try
             {
                 if (_isOpen)
                 {
-                    return new ReturnValue(false, "The excel file is already open.", null);
+                    throw new ConnectionException("The excel file is already open.");
                 }
 
-                return await Task.Run(() =>
+                var connection = ((ConnectionExcel)ReferenceConnection);
+                _excelPackage = connection.NewConnection();
+                _currentRow = connection.ExcelDataRow;
+                _excelWorkSheet = connection.GetWorkSheet(_excelPackage, CacheTable.Name);
+
+                _query = query;
+
+                // get the position of each of the column names.
+                _columnMappings = new Dictionary<int, (int ordinal, TableColumn column)>();
+                var headerRow = ((ConnectionExcel)ReferenceConnection).ExcelHeaderRow;
+                var headerCol = ((ConnectionExcel)ReferenceConnection).ExcelHeaderCol;
+                var headerMaxCol = ((ConnectionExcel)ReferenceConnection).ExcelHeaderColMax;
+
+                for (var col = headerCol; col <= _excelWorkSheet.Dimension.Columns && col <= headerMaxCol; col++)
                 {
-                    _excelPackage = ((ConnectionExcel)ReferenceConnection).NewConnection();
-                    _currentRow = ((ConnectionExcel) ReferenceConnection).ExcelDataRow;
+                    var columName = _excelWorkSheet.Cells[headerRow, col].Value.ToString();
+                    if (string.IsNullOrEmpty(columName)) columName = "Column-" + col;
+                    var column = CacheTable.Columns[columName];
+                    var ordinal = CacheTable.GetOrdinal(columName);
 
-                    _excelWorkSheet = _excelPackage.Workbook.Worksheets.SingleOrDefault(c => c.Name == CacheTable.Name);
-                    if (_excelWorkSheet == null)
+                    if (ordinal >= 0 && column != null)
                     {
-                        return new ReturnValue<Table>(false, $"The worksheet {query.Table} could not be found in the excel file. ", null);
+                        _columnMappings.Add(col, (ordinal, column));
                     }
+                }
 
-                    _query = query;
+                _headerOrdinals = ((ConnectionExcel)ReferenceConnection).GetHeaderOrdinals(_excelWorkSheet);
 
-                    // get the position of each of the column names.
-                    _columnMappings = new Dictionary<int, (int ordinal, TableColumn column)>();
-                    var headerRow = ((ConnectionExcel) ReferenceConnection).ExcelHeaderRow;
-                    var headerCol = ((ConnectionExcel) ReferenceConnection).ExcelHeaderCol;
-                    var headerMaxCol = ((ConnectionExcel) ReferenceConnection).ExcelHeaderColMax;
-                    
-                    for (var col = headerCol; col <= _excelWorkSheet.Dimension.Columns && col <= headerMaxCol; col++)
-                    {
-                        var columName = _excelWorkSheet.Cells[headerRow, col].Value.ToString();
-                        if (string.IsNullOrEmpty(columName)) columName = "Column-" + col;
-                        var column = CacheTable.Columns[columName];
-                        var ordinal = CacheTable.GetOrdinal(columName);
+                _isOpen = true;
+                _excelWorkSheetRows = _excelWorkSheet.Dimension.Rows;
 
-                        if (ordinal >= 0 && column != null)
-                        {
-                            _columnMappings.Add(col, (ordinal, column));
-                        }
-                    }
-
-                    _headerOrdinals = ((ConnectionExcel) ReferenceConnection).GetHeaderOrdinals(_excelWorkSheet);
-                    
-                    _isOpen = true;
-                    _excelWorkSheetRows = _excelWorkSheet.Dimension.Rows;
-
-                    return new ReturnValue(true);
-                }, cancelToken);
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                return new ReturnValue(false, "The following error occurred when opening the excel file: " + ex.Message, ex);
+                throw new ConnectionException($"Failed to open the Excel reader for sheet {CacheTable.Name}.  {ex.Message}.", ex);
             }
         }
 
@@ -100,24 +95,24 @@ namespace dexih.connections.excel
             return true;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
             _currentRow = ((ConnectionExcel) ReferenceConnection).ExcelDataRow;
-            return new ReturnValue(true);
+            return true;
         }
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             try
             {
                 if(!_isOpen)
                 {
-                    return new ReturnValue<object[]>(false, "The read record failed as the excel file is not open.", null);
+                    throw new ConnectionException("The excel file has not been opened");
                 }
 
                 if(_currentRow > _excelWorkSheetRows || _currentRow > ((ConnectionExcel) ReferenceConnection).ExcelDataRowMax )
                 {
-                    return new ReturnValue<object[]>(false, null);
+                    return Task.FromResult<object[]>(null);
                 }
 
                 if (_query?.Filters != null)
@@ -133,7 +128,7 @@ namespace dexih.connections.excel
                             if (_currentRow > _excelWorkSheetRows ||
                                 _currentRow > ((ConnectionExcel) ReferenceConnection).ExcelDataRowMax)
                             {
-                                return new ReturnValue<object[]>(false, null);
+                                return Task.FromResult<object[]>(null);
                             }
                         }
                         else
@@ -145,25 +140,14 @@ namespace dexih.connections.excel
 
                 var row = new object[_columnMappings.Count];
 
-                return await Task.Run(() =>
+				foreach (var mapping in _columnMappings)
 				{
-				    foreach (var mapping in _columnMappings)
-				    {
-				        var value = _excelWorkSheet.GetValue(_currentRow, mapping.Key);
-
-				        var parsedValue = ((ConnectionExcel) ReferenceConnection).ParseExcelValue(value, mapping.Value.Column);
-				        if (!parsedValue.Success)
-				        {
-				            return new ReturnValue<object[]>(parsedValue);
-				        }
-				        row[mapping.Value.Ordinal] = parsedValue.Value;
-				    }
+				    var value = _excelWorkSheet.GetValue(_currentRow, mapping.Key);
+                    row[mapping.Value.Ordinal] = ((ConnectionExcel)ReferenceConnection).ParseExcelValue(value, mapping.Value.Column);
+				}
 				    
-				    _currentRow++;
-				    return new ReturnValue<object[]>(true, row);
-
-				}, cancellationToken);
-
+				_currentRow++;
+                return Task.FromResult(row);
 
             }
             catch (Exception ex)

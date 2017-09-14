@@ -1,4 +1,4 @@
-﻿namespace dexih.functions
+﻿namespace dexih.functions.Query
 {
     public class QueryColumn
     {

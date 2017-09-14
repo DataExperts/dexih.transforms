@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
-using static dexih.functions.DataType;
 using System.Threading;
+using dexih.functions.Query;
+using static Dexih.Utils.DataType.DataType;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -72,13 +74,13 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        protected override async Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             object[] newRow = null;
 
             if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
             {
-                return new ReturnValue<object[]>(false, null);
+                return null;
             }
 
             //load in the primary table values
@@ -105,22 +107,30 @@ namespace dexih.transforms
                 });
             }
 
-            var lookup = await ReferenceTransform.LookupRow(filters, cancellationToken);
-            if (lookup.Success)
+            try
             {
-                for (int i = 0; i < _referenceFieldCount; i++)
+                var lookup = await ReferenceTransform.LookupRow(filters, cancellationToken);
+                if (lookup != null)
                 {
-                    newRow[pos] = lookup.Value[i];
-                    pos++;
+                    for (int i = 0; i < _referenceFieldCount; i++)
+                    {
+                        newRow[pos] = lookup[i];
+                        pos++;
+                    }
                 }
             }
+            catch(Exception ex)
+            {
+                throw new TransformException($"The lookup failed.  {ex.Message}.", ex);
 
-            return new ReturnValue<object[]>(true, newRow);
+            }
+
+            return newRow;
         }
 
-        public override ReturnValue ResetTransform()
+        public override bool ResetTransform()
         {
-            return new ReturnValue(true);
+            return true;
         }
 
         public override string Details()

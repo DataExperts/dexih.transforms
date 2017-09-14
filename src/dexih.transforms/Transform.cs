@@ -12,6 +12,10 @@ using System.Threading;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using dexih.functions.Query;
+using static Dexih.Utils.DataType.DataType;
+using Dexih.Utils.Crypto;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -118,7 +122,7 @@ namespace dexih.transforms
 
         private object _maxIncrementalValue = null;
         private int _incrementalColumnIndex = -1;
-        private DataType.ETypeCode _incrementalColumnType;
+        private ETypeCode _incrementalColumnType;
 
         public object GetMaxIncrementalValue()
         {
@@ -145,12 +149,12 @@ namespace dexih.transforms
             if (string.IsNullOrEmpty(profileTableName)) return null;
 
             Table profileResults = new Table(profileTableName, "");
-            profileResults.Columns.Add(new TableColumn("AuditKey", DataType.ETypeCode.Int64, TableColumn.EDeltaType.CreateAuditKey));
-            profileResults.Columns.Add(new TableColumn("Profile", DataType.ETypeCode.String));
-            profileResults.Columns.Add(new TableColumn("ColumnName", DataType.ETypeCode.String));
-            profileResults.Columns.Add(new TableColumn("IsSummary", DataType.ETypeCode.Boolean));
-            profileResults.Columns.Add(new TableColumn("Value", DataType.ETypeCode.String) { AllowDbNull = true });
-            profileResults.Columns.Add(new TableColumn("Count", DataType.ETypeCode.Int32) { AllowDbNull = true });
+            profileResults.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, EDeltaType.CreateAuditKey));
+            profileResults.Columns.Add(new TableColumn("Profile", ETypeCode.String));
+            profileResults.Columns.Add(new TableColumn("ColumnName", ETypeCode.String));
+            profileResults.Columns.Add(new TableColumn("IsSummary", ETypeCode.Boolean));
+            profileResults.Columns.Add(new TableColumn("Value", ETypeCode.String) { AllowDbNull = true });
+            profileResults.Columns.Add(new TableColumn("Count", ETypeCode.Int32) { AllowDbNull = true });
 
             return profileResults;
         }
@@ -169,8 +173,8 @@ namespace dexih.transforms
 
         public abstract bool InitializeOutputFields();
         public abstract string Details();
-        protected abstract Task<ReturnValue<object[]>> ReadRecord(CancellationToken cancellationToken);
-        public abstract ReturnValue ResetTransform();
+        protected abstract Task<object[]> ReadRecord(CancellationToken cancellationToken);
+        public abstract bool ResetTransform();
 
         #endregion
 
@@ -272,25 +276,22 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="filters">Requested filters for underlying transform to execute.</param>
         /// <param name="sorts">Requested sort for underlying transform to execute.</param>
-        /// <returns></returns>
-        public virtual async Task<ReturnValue> Open(long auditKey, SelectQuery query, CancellationToken cancelToken)
+        /// <returns>True is successful, False is unsuccessful.</returns>
+        public virtual async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancelToken)
         {
             AuditKey = auditKey;
 
-            ReturnValue result = null;
+            var result = true;
 
             if (PrimaryTransform != null)
             {
-                result = await PrimaryTransform.Open(auditKey, query, cancelToken);
-                if (!result.Success)
+                result = result && await PrimaryTransform.Open(auditKey, query, cancelToken);
+                if (!result)
                     return result;
             }
 
             if (ReferenceTransform != null)
-                result = await ReferenceTransform.Open(auditKey, null, cancelToken);
-
-            if (result == null)
-                result = new ReturnValue(true);
+                result = result && await ReferenceTransform.Open(auditKey, null, cancelToken);
 
             return result;
         }
@@ -375,27 +376,19 @@ namespace dexih.transforms
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
                             case TableColumn.ESecurityFlag.StrongEncrypt:
-                                var encryptResult = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 1000);
-                                if (encryptResult.Success)
-                                    row[i] = encryptResult.Value;
+                                row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 1000);
                                 break;
                             case TableColumn.ESecurityFlag.OneWayHash:
                                 row[i] = HashString.CreateHash(row[i].ToString());
                                 break;
                             case ESecurityFlag.StrongDecrypt:
-                                var decryptResult = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 1000);
-                                if (decryptResult.Success)
-                                    row[i] = decryptResult.Value;
+                                row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 1000);
                                 break;
                             case TableColumn.ESecurityFlag.FastEncrypt:
-                                encryptResult = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 5);
-                                if (encryptResult.Success)
-                                    row[i] = encryptResult.Value;
+                                row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 5);
                                 break;
                             case ESecurityFlag.FastDecrypt:
-                                decryptResult = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 5);
-                                if (decryptResult.Success)
-                                    row[i] = decryptResult.Value;
+                                row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 5);
                                 break;
                         }
                     }
@@ -531,13 +524,13 @@ namespace dexih.transforms
         /// Resets the transform and any source transforms.
         /// </summary>
         /// <returns></returns>
-        public ReturnValue Reset()
+        public bool Reset()
         {
             if (!_isResetting) //stops recursive looops where intertwinned transforms are resetting each other
             {
                 _isResetting = true;
 
-                ReturnValue returnValue;
+                bool returnValue = true;
 
                 _isFirstRead = true;
                 IsCacheFull = false;
@@ -560,14 +553,14 @@ namespace dexih.transforms
 
                 if (PrimaryTransform != null)
                 {
-                    returnValue = PrimaryTransform.Reset();
+                    returnValue = returnValue && PrimaryTransform.Reset();
                     //if (!returnValue.Success)
                     //    return returnValue;
                 }
 
                 if (ReferenceTransform != null)
                 {
-                    returnValue = ReferenceTransform.Reset();
+                    returnValue = returnValue && ReferenceTransform.Reset();
                     //if (!returnValue.Success)
                     //    return returnValue;
                 }
@@ -575,10 +568,10 @@ namespace dexih.transforms
                 IsReaderFinished = false;
 
                 _isResetting = false;
-                return new ReturnValue(true);
+                return returnValue;
             }
 
-            return new ReturnValue(false);
+            return false;
         }
 
         //Set the reader to a specific row.  If the rows has exceeded MaxRows this will only start from the beginning of the cache.   A read() is required folowing this to get data.
@@ -613,7 +606,7 @@ namespace dexih.transforms
         /// <param name="filters"></param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue<object[]>> LookupRow(List<Filter> filters, CancellationToken cancelToken)
+        public virtual async Task<object[]> LookupRow(List<Filter> filters, CancellationToken cancelToken)
         {
             if (CacheMethod == ECacheMethod.PreLoadCache)
             {
@@ -626,20 +619,22 @@ namespace dexih.transforms
             {
                 //lookup in the cache.
                 var lookupResult = CacheTable.LookupSingleRow(filters);
-                if (lookupResult.Success)
+                if (lookupResult != null)
+                {
                     return lookupResult;
+                }
 
                 if (CanLookupRowDirect)
                 {
                     //not found in the cache, attempt a direct lookup.
                     lookupResult = await LookupRowDirect(filters, cancelToken);
 
-                    if (lookupResult.Success)
+                    if (lookupResult != null)
                     {
                         if (EncryptionMethod != EEncryptionMethod.NoEncryption)
-                            EncryptRow(lookupResult.Value);
+                            EncryptRow(lookupResult);
 
-                        CacheTable.Data.Add(lookupResult.Value);
+                        CacheTable.Data.Add(lookupResult);
                         _currentRowCached = true;
                     }
                 }
@@ -648,12 +643,14 @@ namespace dexih.transforms
                     //not found in the cache, keep reading until it's found.
                     while (await ReadAsync(cancelToken))
                     {
-                        //does a lookup, using the record count to only check the latest record.
-                        if (lookupResult.Success)
-                            return lookupResult;
+
+                        if(CacheTable.RowMatch(filters, CurrentRow))
+                        {
+                            return CurrentRow;
+                        }
                     }
 
-                    return new ReturnValue<object[]>(false, "Lookup not found.", null);
+                    return null;
                 }
 
                 return lookupResult;
@@ -662,10 +659,10 @@ namespace dexih.transforms
             {
                 //if no caching is specified, run a direct lookup.
                 var lookupReturn = await LookupRowDirect(filters, cancelToken);
-                if (lookupReturn.Success)
+                if (lookupReturn != null)
                 {
                     if (EncryptionMethod != EEncryptionMethod.NoEncryption)
-                        EncryptRow(lookupReturn.Value);
+                        EncryptRow(lookupReturn);
                 }
                 return lookupReturn;
             }
@@ -680,10 +677,8 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public virtual async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
-        {
-            return await Task.Run(() => new ReturnValue<object[]>(false, "Lookup can not be performed unless transform caching is set on.", null));
-        }
+        public virtual async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken) => await Task.Run(() => { return (object[])null; });
+
         #endregion
 
         #region DbDataReader Implementation
@@ -744,46 +739,57 @@ namespace dexih.transforms
 
             _currentRowCached = false;
 
-            var returnValue = await ReadRecord(cancellationToken);
-
-            if (returnValue.Success)
+            try
             {
-                if (EncryptionMethod != EEncryptionMethod.NoEncryption)
-                    EncryptRow(returnValue.Value);
+                var returnRecord = await ReadRecord(cancellationToken);
 
-                CurrentRow = returnValue.Value;
+                if (returnRecord != null)
+                {
+                    if (EncryptionMethod != EEncryptionMethod.NoEncryption)
+                        EncryptRow(returnRecord);
+
+                    CurrentRow = returnRecord;
+                }
+                else
+                {
+                    CurrentRow = null;
+                    IsReaderFinished = true;
+                }
+
             }
-            else
-                CurrentRow = null;
-
-            if(IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && returnValue.Success)
+            catch (Exception ex)
             {
-                var compresult = DataType.Compare(_incrementalColumnType, CurrentRow[_incrementalColumnIndex], _maxIncrementalValue);
-                if (!compresult.Success )
-                    throw new Exception("There was an error comparing the incremental update column.  ");
+                IsReaderFinished = true;
+                throw ex;
+            }
 
-                if (compresult.Value == functions.DataType.ECompareResult.Greater)
-                    _maxIncrementalValue = CurrentRow[_incrementalColumnIndex];
+
+            if(IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && CurrentRow != null)
+            {
+                try
+                {
+                    var compresult = Compare(_incrementalColumnType, CurrentRow[_incrementalColumnIndex], _maxIncrementalValue);
+                    if (compresult == ECompareResult.Greater)
+                    {
+                        _maxIncrementalValue = CurrentRow[_incrementalColumnIndex];
+                    }
+                }
+                catch (Exception ex)
+                {
+                    IsReaderFinished = true;
+                    throw new TransformException("There was an error comparing the incremental update column.  " + ex.Message, ex);
+                }
+
             }
 
             if (IsReader && !IsPrimaryTransform)
                 TransformRowsReadReference++;
 
-            if (returnValue.Success == false)
-            {
-				if (returnValue.Message != "")
-						throw new Exception("The following error was enountered reading rows: " + returnValue.Message, returnValue.Exception);
-
-                IsReaderFinished = true;
-            }
-            else
-            {
-                //if this is a primary (i.e. starting reader), increment the rows read.
-                if (IsReader) TransformRowsReadPrimary++;
-            }
+            //if this is a primary (i.e. starting reader), increment the rows read.
+            if (IsReader) TransformRowsReadPrimary++;
 
             //add the row to the cache
-            if (returnValue.Success && !_currentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
+            if (CurrentRow != null && !_currentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
                 CacheTable.Data.Add(CurrentRow);
 
             TransformTimer.Stop();
@@ -1052,7 +1058,7 @@ namespace dexih.transforms
                     col.Name,
                     ordinal,
                     col.MaxLength > 0 ? col.MaxLength : int.MaxValue,
-                    DataType.GetType(col.Datatype),
+                    Dexih.Utils.DataType.DataType.GetType(col.Datatype),
                     col.Datatype.ToString(),
                     false,
                     false,
@@ -1060,7 +1066,7 @@ namespace dexih.transforms
                     false,
                     false,
                     col.DeltaType == EDeltaType.SurrogateKey ? true : false,
-                    col.Datatype == DataType.ETypeCode.Int64 ? true : false,
+                    col.Datatype == ETypeCode.Int64 ? true : false,
                     false,
                     col.DeltaType == EDeltaType.SurrogateKey ? true : false,
                     col.Precision,
