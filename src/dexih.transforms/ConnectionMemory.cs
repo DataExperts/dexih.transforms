@@ -41,26 +41,23 @@ namespace dexih.transforms
 
         public override Task<Table> InitializeTable(Table table, int position) => Task.FromResult<Table>(null);
 
-        public override Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken) => Task.FromResult(true);
+        public override Task CreateDatabase(string databaseName, CancellationToken cancelToken) => Task.FromResult(true);
 
-        public override async Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
+            if (_tables.ContainsKey(table.Name))
             {
-                if (_tables.ContainsKey(table.Name))
-                {
-                    if (dropTable)
-                        _tables[table.Name] = table;
-                    else
-                        throw new ConnectionException($"The table {table.Name} already exists on {Name}.");
-                }
+                if (dropTable)
+                    _tables[table.Name] = table;
                 else
-                {
-                    _tables.Add(table.Name, table);
-                }
+                    throw new ConnectionException($"The table {table.Name} already exists on {Name}.");
+            }
+            else
+            {
+                _tables.Add(table.Name, table);
+            }
 
-                return true;
-            });
+            return Task.CompletedTask;
         }
 
         public override async Task<long> ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancelToken)
@@ -208,10 +205,10 @@ namespace dexih.transforms
             return Task.FromResult(_tables.Values.ToList());
         }
 
-        public override Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
+        public override Task TruncateTable(Table table, CancellationToken cancelToken)
         {
             _tables[table.Name].Data.Clear();
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)

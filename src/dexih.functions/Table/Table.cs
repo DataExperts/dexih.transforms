@@ -3,14 +3,15 @@ using Dexih.Utils.DataType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
-using static dexih.functions.TableColumn;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
     
-    public class Table 
+    [Serializable]
+    public class Table
     {
 
         #region Initializers
@@ -497,7 +498,6 @@ namespace dexih.functions
 
             return csvData.ToString();
         }
-
 
     }
 }

@@ -6,6 +6,7 @@ using Dexih.Utils.DataType;
 namespace dexih.functions
 {
    
+    [Serializable]
     public class TableColumn
     {
         public TableColumn()

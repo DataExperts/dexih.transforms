@@ -216,7 +216,7 @@ namespace dexih.connections.azure
         /// <param name="table"></param>
         /// <param name="dropTable"></param>
         /// <returns></returns>
-        public override async Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             try
             {
@@ -241,7 +241,7 @@ namespace dexih.connections.azure
                 var exists = await cTable.ExistsAsync();
                 if (exists)
                 {
-                    return true;
+                    return;
                 }
 
                 //bool result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(), TimeSpan.FromSeconds(10), 6);
@@ -263,8 +263,12 @@ namespace dexih.connections.azure
                     }
                 }
 
+                if(!isCreated)
+                {
+                    throw new ConnectionException("Failed to create table after 10 attempts.");
+                }
 
-                return isCreated;
+                return;
             }
             catch (Exception ex)
             {
@@ -292,9 +296,9 @@ namespace dexih.connections.azure
             return storageAccount.CreateCloudTableClient();
         }
 
-        public override Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         public override Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
@@ -593,12 +597,12 @@ namespace dexih.connections.azure
             return filterString;
         }
 
-        public override async Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task TruncateTable(Table table, CancellationToken cancelToken)
         {
             try
             {
                 CloudTableClient connection = GetCloudTableClient();
-                return await CreateTable(table, true, cancelToken);
+                await CreateTable(table, true, cancelToken);
             }
             catch (Exception ex)
             {

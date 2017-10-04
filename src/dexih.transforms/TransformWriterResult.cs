@@ -196,7 +196,7 @@ namespace dexih.transforms
             try
             {
                 RunStatus = newStatus;
-                if (!string.IsNullOrEmpty(Message))
+                if (!string.IsNullOrEmpty(message))
                 {
                     Message = message;
                 }

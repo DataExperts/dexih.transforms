@@ -117,7 +117,7 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             try
             {
@@ -240,7 +240,7 @@ namespace dexih.connections.sql
                     }
                 }
 
-                return true;
+                return;
             }
             catch (Exception ex)
             {
@@ -413,7 +413,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             try
             {
@@ -426,7 +426,7 @@ namespace dexih.connections.sql
 
                 DefaultDatabase = databaseName;
 
-                return true;
+                return;
             }
             catch (Exception ex)
             {
@@ -714,7 +714,7 @@ namespace dexih.connections.sql
             return null;
         }
 
-        public override async Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task TruncateTable(Table table, CancellationToken cancelToken)
         {
             try
             {
@@ -742,7 +742,7 @@ namespace dexih.connections.sql
                     }
                 }
 
-                return true; ;
+                return;
             }
             catch(Exception ex)
             {

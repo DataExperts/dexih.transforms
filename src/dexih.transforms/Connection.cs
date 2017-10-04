@@ -80,7 +80,7 @@ namespace dexih.transforms
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
         
         //Functions required for managed connection
-        public abstract Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken);
+        public abstract Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken);
         //public abstract Task TestConnection();
         public abstract Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
         public abstract Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
@@ -104,7 +104,7 @@ namespace dexih.transforms
         public abstract Task<long> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken);
         public abstract Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken);
         public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false);
-        public abstract Task<bool> TruncateTable(Table table, CancellationToken cancelToken);
+        public abstract Task TruncateTable(Table table, CancellationToken cancelToken);
         public abstract Task<bool> TableExists(Table table, CancellationToken cancelToken);
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace dexih.transforms
         public abstract Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken);
 
         //Functions required for datapoint.
-        public abstract Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken);
+        public abstract Task CreateDatabase(string databaseName, CancellationToken cancelToken);
         public abstract Task<List<string>> GetDatabaseList(CancellationToken cancelToken);
         public abstract Task<List<Table>> GetTableList(CancellationToken cancelToken);
 
@@ -235,11 +235,7 @@ namespace dexih.transforms
             if (tableExistsResult == false)
             {
                 //create the table if it doesn't already exist.
-                var createAuditResult = await CreateTable(auditTable, false, cancelToken);
-                if (!createAuditResult)
-                {
-                    throw new ConnectionException($"The audit table {auditTable.Name} was not created successfully in the {Name}");
-                }
+                await CreateTable(auditTable, false, cancelToken);
             }
             else
             {

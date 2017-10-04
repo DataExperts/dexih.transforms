@@ -142,9 +142,9 @@ namespace dexih.connections.dexih
             }
         }
 
-        public override Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         public override async Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
@@ -242,7 +242,7 @@ namespace dexih.connections.dexih
 			throw new NotImplementedException();
 		}
 
-        public override Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
+        public override Task TruncateTable(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -272,7 +272,7 @@ namespace dexih.connections.dexih
 			throw new NotImplementedException();
 		}
 
-        public override Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

@@ -11,7 +11,7 @@ using static dexih.connections.flatfile.FlatFile;
 using System.IO.Compression;
 using CsvHelper;
 using System.Linq;
-using Dexih.Utils;
+using Dexih.Utils.CopyProperties;
 using dexih.transforms.Exceptions;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
@@ -57,19 +57,19 @@ namespace dexih.connections.flatfile
 
         public string LastWrittenFile { get; protected set; } = "";
 
-		public override async Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+		public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
 			var flatFile = (FlatFile)table;
             //create the subdirectories
-            return await CreateDirectory(flatFile, EFlatFilePath.incoming);
+            await CreateDirectory(flatFile, EFlatFilePath.incoming);
         }
 
-        public override async Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             DefaultDatabase = databaseName;
             //create the subdirectories
             var returnValue = await CreateDirectory(null, EFlatFilePath.none);
-            return returnValue;
+            return;
         }
 
         public async Task<bool> CreateFilePaths(FlatFile flatFile)
@@ -339,7 +339,7 @@ namespace dexih.connections.flatfile
             throw new NotImplementedException();
         }
 
-        public override async Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task TruncateTable(Table table, CancellationToken cancelToken)
         {
             var flatFile = (FlatFile)table;
             var fileEnumerator = await GetFileEnumerator(flatFile, FlatFile.EFlatFilePath.incoming, flatFile.FileMatchPattern);
@@ -353,11 +353,11 @@ namespace dexih.connections.flatfile
                 var deleteResult = await DeleteFile(flatFile, FlatFile.EFlatFilePath.incoming, fileEnumerator.Current.FileName);
                 if(!deleteResult)
                 {
-                    return deleteResult;
+                    return;
                 }
             }
 
-            return true;
+            return;
         }
 
         public override async Task<Table> InitializeTable(Table table, int position)

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace dexih.functions
 {
+    [Serializable]
     public class TableCache : IList<object[]>
     {
         private readonly int _maxRows;
@@ -138,8 +140,27 @@ namespace dexih.functions
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Workaround to remove DbNulls from the data, as these will not serialiaze.
+        /// </summary>
+        public void ClearDbNullValues()
+        {
+            foreach (var row in this)
+            {
+                for (var i = 0; i < row.Length; i++)
+                {
+                    if (row[i] is DBNull)
+                    {
+                        row[i] = null;
+                    }
+                }
+            }
+        }
+
+ 
     }
 
+    [Serializable]
     public class TableCacheEnumerator : IEnumerator<object[]>
     {
         private List<object[]> _data;
@@ -211,6 +232,7 @@ namespace dexih.functions
         {
             _startIndex = _enumeratorPosition;
         }
+
     }
 
 

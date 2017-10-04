@@ -78,7 +78,7 @@ namespace dexih.connections.excel
 		    
 	    }
 	    
-        public override async Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace dexih.connections.excel
                     }
                     else
                     {
-                        return false;
+                        throw new ConnectionException($"The sheet {table.Name} already exists.");
                     }
                 }
                 var sheet = package.Workbook.Worksheets.Add(table.Name);
@@ -112,7 +112,7 @@ namespace dexih.connections.excel
                 }
 
                 package.Save();
-                return true;
+                return;
             }
             catch(Exception ex)
             {
@@ -274,7 +274,7 @@ namespace dexih.connections.excel
             }
         }
 	    
-        public override  Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
+        public override  Task TruncateTable(Table table, CancellationToken cancelToken)
         {
 		    using (var package = NewConnection())
 		    {
@@ -289,8 +289,8 @@ namespace dexih.connections.excel
 
 			    package.Save();
 
-                return Task.FromResult(true);
-		    }
+                return Task.CompletedTask;
+            }
         }
 	    
 
@@ -640,7 +640,7 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             try
             {
@@ -658,9 +658,10 @@ namespace dexih.connections.excel
                     DefaultDatabase = databaseName;
                 }
                 var package = NewConnection();
-                return Task.FromResult(true);
+                return Task.CompletedTask;
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new ConnectionException($"Failed create a directory for {databaseName}.  {ex.Message}", ex);
             }

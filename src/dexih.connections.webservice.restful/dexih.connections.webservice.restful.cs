@@ -10,7 +10,7 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Net;
-using Dexih.Utils;
+using Dexih.Utils.CopyProperties;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
@@ -39,7 +39,7 @@ namespace dexih.connections.webservice
         public override string DatabaseTypeName => "Restful Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;
 
-        public override Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -329,7 +329,7 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
+        public override Task TruncateTable(Table table, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }
@@ -381,7 +381,7 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task<bool> CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
             throw new NotImplementedException();
         }

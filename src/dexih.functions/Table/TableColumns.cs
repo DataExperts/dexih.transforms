@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace dexih.functions
 {
+    [Serializable]
     public class TableColumns : IList<TableColumn>
     {
         private readonly List<TableColumn> _tableColumns;

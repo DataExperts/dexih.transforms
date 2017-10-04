@@ -177,7 +177,12 @@ namespace dexih.transforms
                 var profileResults = inTransform.GetProfileResults();
                 if (profileResults != null)
                 {
-                    await _profileConnection.CreateTable(_profileTable, false, cancelToken);
+                    var profileExists = await _profileConnection.TableExists(_profileTable, cancelToken);
+                    if (!profileExists)
+                    {
+                        await _profileConnection.CreateTable(_profileTable, false, cancelToken);
+                    }
+
                     writerResult.ProfileTableName = _profileTable.Name;
 
                     try
@@ -258,11 +263,7 @@ namespace dexih.transforms
             var tableExistsResult = await _targetConnection.TableExists(_targetTable, cancelToken);
             if (!tableExistsResult)
             {
-                returnValue = await _targetConnection.CreateTable(_targetTable, false, cancelToken);
-                if (!returnValue)
-                {
-                    throw new TransformWriterException($"Transform write failed to start, could not create the target table {_targetTable?.Name}.");
-                }
+                await _targetConnection.CreateTable(_targetTable, false, cancelToken);
             }
 
             await _targetConnection.DataWriterStart(_targetTable);
@@ -270,11 +271,7 @@ namespace dexih.transforms
             //if the truncate table flag is set, then truncate the target table.
             if (writerResult.TruncateTarget)
             {
-                var truncateResult = await _targetConnection.TruncateTable(_targetTable, cancelToken);
-                if (!truncateResult)
-                {
-                    throw new TransformWriterException($"Transform write failed to start, could not truncate the target table {_targetTable?.Name}.");
-                }
+                await _targetConnection.TruncateTable(_targetTable, cancelToken);
             }
 
             int columnCount = _targetTable.Columns.Count;
@@ -392,12 +389,7 @@ namespace dexih.transforms
                 case 'T':
                     if (!_targetConnection.DynamicTableCreation)
                     {
-                        var truncateResult = await _targetConnection.TruncateTable(_targetTable, _cancelToken);
-
-                        if (!truncateResult)
-                        {
-                            throw new TransformWriterException($"Transform write failed, could not truncate the target table {_targetTable?.Name}.");
-                        }
+                        await _targetConnection.TruncateTable(_targetTable, _cancelToken);
                     } 
                     else
                     {
@@ -608,11 +600,7 @@ namespace dexih.transforms
 
                     if (!rejectExistsResult)
                     {
-                        var returnValue = await _rejectConnection.CreateTable(_rejectTable, false, _cancelToken);
-                        if (!returnValue)
-                        {
-                            throw new TransformWriterException($"The transform writer failed create the reject table {_rejectTable.Name} on {_rejectConnection.Name}.");
-                        }
+                        await _rejectConnection.CreateTable(_rejectTable, false, _cancelToken);
                     }
                     // compare target table to ensure all columns exist.
                     var compareTableResult = await _rejectConnection.CompareTable(_rejectTable, _cancelToken);

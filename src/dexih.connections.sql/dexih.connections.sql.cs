@@ -8,7 +8,7 @@ using System.Data.Common;
 using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
-using Dexih.Utils;
+using Dexih.Utils.CopyProperties;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
@@ -194,7 +194,7 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task<bool> CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
             try
             {
@@ -256,7 +256,7 @@ namespace dexih.connections.sql
                         await command.ExecuteNonQueryAsync();
                     }
 
-                    return true;
+                    return;
                 }
             }
             catch (Exception ex)
@@ -548,7 +548,7 @@ namespace dexih.connections.sql
 
         }
 
-        public override async Task<bool> TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task TruncateTable(Table table, CancellationToken cancelToken)
         {
             try
             {
@@ -567,7 +567,7 @@ namespace dexih.connections.sql
                         throw new ConnectionException($"The truncate query failed. {ex.Message}", ex);
                     }
 
-                    return true;
+                    return;
                 }
             }
             catch (Exception ex)
