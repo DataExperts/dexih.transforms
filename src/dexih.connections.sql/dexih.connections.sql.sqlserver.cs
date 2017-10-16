@@ -275,6 +275,9 @@ namespace dexih.connections.sql
                     else
                         sqlType = "nvarchar(" + length.ToString() + ")";
                     break;
+				case ETypeCode.Text:
+					sqlType = "nvarchar(max)";
+					break;
                 case ETypeCode.Single:
                     sqlType = "float";
                     break;
@@ -366,7 +369,7 @@ namespace dexih.connections.sql
                     break;
                 case ETypeCode.Time:
                     if (value is TimeSpan)
-                        returnValue = "convert(time, '" + AddEscape(((TimeSpan)value).ToString()) + "')";
+                        returnValue = "convert(time, '" + AddEscape(((TimeSpan)value).ToString("c")) + "')";
                     else
                         returnValue = "convert(time, '" + AddEscape((string)value) + "')";
                     break;

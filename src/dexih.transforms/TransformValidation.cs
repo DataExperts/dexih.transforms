@@ -146,11 +146,11 @@ namespace dexih.transforms
                         {
                             try
                             {
-                                input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
+								input.SetValue(PrimaryTransform[input.Column.TableColumnName()]);
                             }
                             catch(Exception ex)
                             {
-                                throw new TransformException($"The validation transform failed setting input parameters on the function {validation.FunctionName} parameter {input.Name} for column {input.Column.SchemaColumnName()}.  {ex.Message}", ex, PrimaryTransform[input.Column.SchemaColumnName()]);
+								throw new TransformException($"The validation transform failed setting input parameters on the function {validation.FunctionName} parameter {input.Name} for column {input.Column.TableColumnName()}.  {ex.Message}", ex, PrimaryTransform[input.Column.TableColumnName()]);
                             }
                         }
 
@@ -160,6 +160,10 @@ namespace dexih.transforms
                             var invokeresult = validation.Invoke();
                             validationResult = (bool)invokeresult;
                         }
+						catch (FunctionIgnoreRowException)
+						{
+							validationResult = false;
+						}
                         catch(Exception ex)
                         {
                             throw new TransformException($"The validation transform failed on the function {validation.FunctionName}.  {ex.Message}", ex);
@@ -168,7 +172,7 @@ namespace dexih.transforms
                         //if the validation is negative.  apply any output columns, and set a reject status
                         if (!validationResult)
                         {
-                            rejectReason.AppendLine("function: " + validation.FunctionName + ", parameters: " + string.Join(",", validation.Inputs.Select(c => c.Name + "=" + (c.IsColumn ? c.Column.SchemaColumnName() : c.Value.ToString())).ToArray()) + ".");
+							rejectReason.AppendLine("function: " + validation.FunctionName + ", parameters: " + string.Join(",", validation.Inputs.Select(c => c.Name + "=" + (c.IsColumn ? c.Column.TableColumnName() : c.Value.ToString())).ToArray()) + ".");
 
                             // fail job immediately.
                             if (validation.InvalidAction == Function.EInvalidAction.Abend)
@@ -197,7 +201,7 @@ namespace dexih.transforms
                                 {
                                     if (validation.Outputs != null)
                                     {
-                                        Parameter param = validation.Outputs.SingleOrDefault(c => c.Column.SchemaColumnName() == _rejectReasonColumnName);
+										Parameter param = validation.Outputs.SingleOrDefault(c => c.Column.TableColumnName() == _rejectReasonColumnName);
                                         if (param != null)
                                         {
                                             rejectReason.Append("  Reason: " + (string)param.Value);
@@ -213,10 +217,10 @@ namespace dexih.transforms
                                 {
                                     foreach (Parameter output in validation.Outputs)
                                     {
-                                        if (output.Column.SchemaColumnName() != "")
+										if (output.Column.TableColumnName() != "")
                                         {
-                                            int ordinal = CacheTable.GetOrdinal(output.Column.SchemaColumnName());
-                                            TableColumn col = CacheTable[output.Column.SchemaColumnName()];
+											int ordinal = CacheTable.GetOrdinal(output.Column.TableColumnName());
+											TableColumn col = CacheTable[output.Column.TableColumnName()];
                                             if (ordinal >= 0)
                                             {
                                                 try

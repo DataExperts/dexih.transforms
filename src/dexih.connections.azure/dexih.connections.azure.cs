@@ -563,6 +563,7 @@ namespace dexih.connections.azure
             switch (compareDataType)
             {
                 case ETypeCode.String:
+				case ETypeCode.Text:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
                     filterString = TableQuery.GenerateFilterCondition(column, ConvertOperator(filterOperator), (string)value);
@@ -707,6 +708,7 @@ namespace dexih.connections.azure
                 case ETypeCode.Single:
                     return new EntityProperty((Single?)returnValue);
                 case ETypeCode.String:
+				case ETypeCode.Text:
                     return new EntityProperty((String)returnValue);
                 case ETypeCode.Boolean:
                     return new EntityProperty((Boolean?)returnValue);
@@ -755,6 +757,7 @@ namespace dexih.connections.azure
                 case ETypeCode.Single:
                     return Convert.ToSingle(value);
                 case ETypeCode.String:
+				case ETypeCode.Text:
                 case ETypeCode.Boolean:
                 case ETypeCode.DateTime:
                 case ETypeCode.Guid:

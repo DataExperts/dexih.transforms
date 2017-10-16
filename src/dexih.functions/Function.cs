@@ -13,7 +13,7 @@ namespace dexih.functions
     {
         Abend,
         Null,
-        Reject,
+		Ignore,
         Execute
     }
 
@@ -320,205 +320,259 @@ namespace dexih.functions
 
         public object Invoke()
         {
-            var mappingFunction = FunctionMethod;
-            var inputsCount = Inputs?.Length ?? 0;
-            var outputsCount = 0;
-            if (ResultMethod == null)
-                outputsCount = Outputs?.Length ?? 0;
+			try
+			{
+				var mappingFunction = FunctionMethod;
+				var inputsCount = Inputs?.Length ?? 0;
+				var outputsCount = 0;
+				if (ResultMethod == null)
+					outputsCount = Outputs?.Length ?? 0;
 
-            var parameters = new object[inputsCount + outputsCount];
+				var parameters = new object[inputsCount + outputsCount];
 
-            var parameterNumber = 0;
+				var parameterNumber = 0;
 
-            List<object> arrayValues = null;
-            var arrayType = ETypeCode.String;
-            for (var i = 0; i < inputsCount; i++)
-            {
-                //FYI: this code will only accommodate for array being last parameter.
-                if (Inputs != null && Inputs[i].IsArray)
-                {
-                    if (arrayValues == null)
-                    {
-                        arrayValues = new List<object>();
-                        arrayType = Inputs[i].DataType;
-                    }
+				var nullInputFound = false;
 
-                    try
-                    {
-                        var parseValue = TryParse(Inputs[i].DataType, Inputs[i].Value);
-                        arrayValues.Add(parseValue);
-                    }
-                    catch (Exception ex)
-                    {
+				List<object> arrayValues = null;
+				var arrayType = ETypeCode.String;
+				for (var i = 0; i < inputsCount; i++)
+				{
+					//FYI: this code will only accommodate for array being last parameter.
+					if (Inputs != null && Inputs[i].IsArray)
+					{
+						if (arrayValues == null)
+						{
+							arrayValues = new List<object>();
+							arrayType = Inputs[i].DataType;
+						}
+
+						try
+						{
+							var parseValue = TryParse(Inputs[i].DataType, Inputs[i].Value);
+
+							if (parseValue == null)
+							{
+								if (OnNull == EErrorAction.Abend)
+								{
+									throw new FunctionNullValueException($"The input parameter {Inputs[i].Name} has a null value, and the function is set to abend on nulls.");
+								}
+								if (OnNull == EErrorAction.Ignore)
+								{
+									throw new FunctionIgnoreRowException();
+								}
+								nullInputFound = true;
+							}
+
+							arrayValues.Add(parseValue);
+						}
+						catch (Exception ex)
+						{
 #if DEBUG
-                        throw new AggregateException($"The input parameter {Inputs[i].Name} with value {Inputs[i].Value} could not be parsed.  " + ex.Message, ex);
+							throw new AggregateException($"The input parameter {Inputs[i].Name} with value {Inputs[i].Value} could not be parsed.  " + ex.Message, ex);
 #else
                         throw new AggregateException($"The input parameter {Inputs[i].Name} could not be parsed.  " + ex.Message, ex);
 #endif
-                    }
-                }
-                else
-                {
-                    parameters[parameterNumber] = Inputs?[i].Value;
-                    if (parameters[parameterNumber] == null || parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
-                    parameterNumber++;
-                }
-            }
+						}
+					}
+					else
+					{
+						parameters[parameterNumber] = Inputs?[i].Value;
+						if (parameters[parameterNumber] == null || parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
 
-            if (arrayValues != null)
-            {
-                try
-                {
-                    //convert the values and load them into the parameter array.
-                    switch (arrayType)
-                    {
-                        case ETypeCode.Byte:
-                            parameters[parameterNumber] = arrayValues.Select(c => (byte)c).ToArray();
-                            break;
-                        case ETypeCode.SByte:
-                            parameters[parameterNumber] = arrayValues.Select(c => (sbyte)c).ToArray();
-                            break;
-                        case ETypeCode.UInt16:
-                            parameters[parameterNumber] = arrayValues.Select(c => (ushort)c).ToArray();
-                            break;
-                        case ETypeCode.UInt32:
-                            parameters[parameterNumber] = arrayValues.Select(c => (uint)c).ToArray();
-                            break;
-                        case ETypeCode.UInt64:
-                            parameters[parameterNumber] = arrayValues.Select(c => (ulong)c).ToArray();
-                            break;
-                        case ETypeCode.Int16:
-                            parameters[parameterNumber] = arrayValues.Select(c => (short)c).ToArray();
-                            break;
-                        case ETypeCode.Int32:
-                            parameters[parameterNumber] = arrayValues.Select(c => (int)c).ToArray();
-                            break;
-                        case ETypeCode.Int64:
-                            parameters[parameterNumber] = arrayValues.Select(c => (long)c).ToArray();
-                            break;
-                        case ETypeCode.Decimal:
-                            parameters[parameterNumber] = arrayValues.Select(c => (decimal)c).ToArray();
-                            break;
-                        case ETypeCode.Double:
-                            parameters[parameterNumber] = arrayValues.Select(c => (double)c).ToArray();
-                            break;
-                        case ETypeCode.Single:
-                            parameters[parameterNumber] = arrayValues.Select(c => (float)c).ToArray();
-                            break;
-                        case ETypeCode.String:
-                            parameters[parameterNumber] = arrayValues.Select(c => (string)c).ToArray();
-                            break;
-                        case ETypeCode.Boolean:
-                            parameters[parameterNumber] = arrayValues.Select(c => (bool)c).ToArray();
-                            break;
-                        case ETypeCode.DateTime:
-                            parameters[parameterNumber] = arrayValues.Select(c => (DateTime)c).ToArray();
-                            break;
-                        case ETypeCode.Time:
-                            parameters[parameterNumber] = arrayValues.Select(c => (DateTime)c).ToArray();
-                            break;
-                        case ETypeCode.Guid:
-                            parameters[parameterNumber] = arrayValues.Select(c => (Guid)c).ToArray();
-                            break;
-                        case ETypeCode.Unknown:
-                        default:
-                            parameters[parameterNumber] = arrayValues.ToArray();
-                            break;
-                    }
-                } catch(Exception ex)
-                {
+						if (parameters[parameterNumber] == null)
+						{
+							if (OnNull == EErrorAction.Abend)
+							{
+								throw new FunctionException($"The input parameter {Inputs[i].Name} has a null value, and the function is set to abend on nulls.");
+							}
+							if (OnNull == EErrorAction.Ignore)
+							{
+								throw new FunctionIgnoreRowException();
+							}
+
+							nullInputFound = true;
+						}
+
+						parameterNumber++;
+					}
+				}
+
+				if (arrayValues != null)
+				{
+					try
+					{
+						//convert the values and load them into the parameter array.
+						switch (arrayType)
+						{
+							case ETypeCode.Byte:
+								parameters[parameterNumber] = arrayValues.Select(c => (byte)c).ToArray();
+								break;
+							case ETypeCode.SByte:
+								parameters[parameterNumber] = arrayValues.Select(c => (sbyte)c).ToArray();
+								break;
+							case ETypeCode.UInt16:
+								parameters[parameterNumber] = arrayValues.Select(c => (ushort)c).ToArray();
+								break;
+							case ETypeCode.UInt32:
+								parameters[parameterNumber] = arrayValues.Select(c => (uint)c).ToArray();
+								break;
+							case ETypeCode.UInt64:
+								parameters[parameterNumber] = arrayValues.Select(c => (ulong)c).ToArray();
+								break;
+							case ETypeCode.Int16:
+								parameters[parameterNumber] = arrayValues.Select(c => (short)c).ToArray();
+								break;
+							case ETypeCode.Int32:
+								parameters[parameterNumber] = arrayValues.Select(c => (int)c).ToArray();
+								break;
+							case ETypeCode.Int64:
+								parameters[parameterNumber] = arrayValues.Select(c => (long)c).ToArray();
+								break;
+							case ETypeCode.Decimal:
+								parameters[parameterNumber] = arrayValues.Select(c => (decimal)c).ToArray();
+								break;
+							case ETypeCode.Double:
+								parameters[parameterNumber] = arrayValues.Select(c => (double)c).ToArray();
+								break;
+							case ETypeCode.Single:
+								parameters[parameterNumber] = arrayValues.Select(c => (float)c).ToArray();
+								break;
+							case ETypeCode.String:
+								parameters[parameterNumber] = arrayValues.Select(c => (string)c).ToArray();
+								break;
+							case ETypeCode.Boolean:
+								parameters[parameterNumber] = arrayValues.Select(c => (bool)c).ToArray();
+								break;
+							case ETypeCode.DateTime:
+								parameters[parameterNumber] = arrayValues.Select(c => (DateTime)c).ToArray();
+								break;
+							case ETypeCode.Time:
+								parameters[parameterNumber] = arrayValues.Select(c => (DateTime)c).ToArray();
+								break;
+							case ETypeCode.Guid:
+								parameters[parameterNumber] = arrayValues.Select(c => (Guid)c).ToArray();
+								break;
+							case ETypeCode.Unknown:
+							default:
+								parameters[parameterNumber] = arrayValues.ToArray();
+								break;
+						}
+					}
+					catch (Exception ex)
+					{
 #if DEBUG
-                    throw new AggregateException($"The input array with values {string.Join(",", arrayValues)} could not be converted.  " + ex.Message, ex);
+						throw new AggregateException($"The input array with values {string.Join(",", arrayValues)} could not be converted.  " + ex.Message, ex);
 #else
                     throw new AggregateException($"The input array could not be converted.  " + ex.Message, ex);
 #endif
 
-                }
-                parameterNumber++;
-            }
+					}
+					parameterNumber++;
+				}
 
-            var outputParameterNumber = parameterNumber;
+				var outputParameterNumber = parameterNumber;
 
-            //if there is no resultfunction, then this function will require the output parameters
-            if (ResultMethod == null)
-            {
-                arrayValues = null;
-                for (var i = 0; i < outputsCount; i++)
-                {
-                    //FYI: this code will only accommodate for array being last parameter.
-                    if (Outputs != null && Outputs[i].IsArray)
-                    {
-                        if (arrayValues == null) arrayValues = new List<object>();
-                        arrayValues.Add(null);
-                    }
-                    else
-                    {
-                        parameters[parameterNumber] = Outputs?[i].Value;
-                        if (parameters[parameterNumber] != null && parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
+				//if there is no resultfunction, then this function will require the output parameters
+				if (ResultMethod == null)
+				{
+					arrayValues = null;
+					for (var i = 0; i < outputsCount; i++)
+					{
+						//FYI: this code will only accommodate for array being last parameter.
+						if (Outputs != null && Outputs[i].IsArray)
+						{
+							if (arrayValues == null) arrayValues = new List<object>();
+							arrayValues.Add(null);
+						}
+						else
+						{
+							parameters[parameterNumber] = Outputs?[i].Value;
+							if (parameters[parameterNumber] != null && parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
 
-                        parameterNumber++;
-                    }
-                }
+							parameterNumber++;
+						}
+					}
 
-                if (arrayValues != null)
-                {
-                    //parameters[parameterNumber] = arrayValues.Select(c => c.ToString()).ToArray();
-                    parameters[parameterNumber] = new string[arrayValues.Count];
-                    parameterNumber++;
-                }
-            }
+					if (arrayValues != null)
+					{
+						//parameters[parameterNumber] = arrayValues.Select(c => c.ToString()).ToArray();
+						parameters[parameterNumber] = new string[arrayValues.Count];
+						parameterNumber++;
+					}
+				}
 
-            Array.Resize(ref parameters, parameterNumber);
+				Array.Resize(ref parameters, parameterNumber);
 
-            try
-            {
-                _returnValue = mappingFunction.Invoke(ObjectReference, parameters);
-            }
-            catch (Exception ex)
-            {
-                throw new FunctionException($"The function {FunctionName} failed.  " + ex.Message, ex);
-            }
+				// execute the function.
+				if (nullInputFound && OnNull == EErrorAction.Null)
+				{
+					_returnValue = null;
+				}
+				else
+				{
+					_returnValue = mappingFunction.Invoke(ObjectReference, parameters);
+				}
 
-            if (ResultMethod == null)
-            {
-                var arrayNumber = 0;
-                for (var i = 0; i < outputsCount; i++)
-                {
+				if (ResultMethod == null)
+				{
+					var arrayNumber = 0;
+					for (var i = 0; i < outputsCount; i++)
+					{
 
-                    try
-                    {
+						try
+						{
 
-                        if (Outputs != null && Outputs[i].IsArray)
-                        {
-                            var parametersArray = (object[])parameters[outputParameterNumber];
-                            if (parametersArray == null)
-                                Outputs[i].SetValue(DBNull.Value);
-                            else
-                                Outputs[i].SetValue(arrayNumber >= parametersArray.Length ? DBNull.Value : parametersArray[arrayNumber]);
+							if (Outputs != null && Outputs[i].IsArray)
+							{
+								var parametersArray = (object[])parameters[outputParameterNumber];
+								if (parametersArray == null)
+									Outputs[i].SetValue(DBNull.Value);
+								else
+									Outputs[i].SetValue(arrayNumber >= parametersArray.Length ? DBNull.Value : parametersArray[arrayNumber]);
 
-                            arrayNumber++;
-                        }
-                        else
-                        {
-                            Outputs[i].SetValue(parameters[outputParameterNumber]);
-                            outputParameterNumber++;
-                        }
+								arrayNumber++;
+							}
+							else
+							{
+								Outputs[i].SetValue(parameters[outputParameterNumber]);
+								outputParameterNumber++;
+							}
 
-                    } catch(Exception ex)
-                    {
+						}
+						catch (Exception ex)
+						{
 #if DEBUG
-                        throw new AggregateException($"The function {FunctionName} with the return parameter {Outputs[i].Name} with value {parameters[outputParameterNumber]} could not be converted.  " + ex.Message, ex);
+							throw new AggregateException($"The function {FunctionName} with the return parameter {Outputs[i].Name} with value {parameters[outputParameterNumber]} could not be converted.  " + ex.Message, ex);
 #else
                         throw new AggregateException($"The function {FunctionName} with the return parameter {Outputs[i].Name} could not be converted.  " + ex.Message, ex);
 #endif
-                    }
-                }
-            }
+						}
+					}
+				}
 
-            if (ReturnType == ETypeCode.Boolean && NotCondition)
-                _returnValue = !(bool)_returnValue;
+				if (ReturnType == ETypeCode.Boolean && NotCondition)
+					_returnValue = _returnValue == null ? null :  !(bool?)_returnValue;
 
-            return _returnValue;
+				return _returnValue;
+			}
+			catch(FunctionIgnoreRowException)
+			{
+				throw;
+			}
+			catch(Exception ex)
+			{
+				// based on onerror setting, either return null or rethrow the error.
+				switch (OnError)
+				{
+					case EErrorAction.Abend:
+						throw new FunctionException($"The function {FunctionName} failed.  " + ex.Message, ex);
+					case EErrorAction.Ignore:
+						throw new FunctionIgnoreRowException();
+					default:
+						return null;
+				}
+			}
         }
 
         /// <summary>

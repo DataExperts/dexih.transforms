@@ -388,7 +388,7 @@ namespace dexih.functions
             foreach (var column in Columns)
             {
                 var newCol = column.Copy();
-                if (removeSchema) newCol.Schema = null;
+                if (removeSchema) newCol.ReferenceTable = null;
 
                 table.Columns.Add(newCol);
             }

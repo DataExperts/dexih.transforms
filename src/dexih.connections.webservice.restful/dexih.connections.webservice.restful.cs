@@ -41,7 +41,7 @@ namespace dexih.connections.webservice
 
         public override Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			throw new ConnectionException("Create table cannot be used as the webservice is readonly.");
         }
 
         public override Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
@@ -49,19 +49,17 @@ namespace dexih.connections.webservice
             return Task.FromResult(new List<string>());
         }
 
-        /// <summary>
-        /// Retrieves web services information.  The RestfulUri must be passed through the properties.  This should be in the format http://sitename/{value1}/{value2} where the names between {} are the names for input parameters.  The properties can also contain default values for the parameters.
-        /// </summary>
-        /// <param name="tableName">Table Name</param>
-        /// <param name="Properties">Mandatory property "RestfulUri".  Additional properties for the default column values.  Use ColumnName=value</param>
-        /// <param name="importTable"></param>
-        /// <param name="cancelToken"></param>
-        /// <returns></returns>
-        public override async Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
+		/// <summary>
+		/// Retrieves web services information.  The RestfulUri must be passed through the properties.  This should be in the format http://sitename/{value1}/{value2} where the names between {} are the names for input parameters.  The properties can also contain default values for the parameters.
+		/// </summary>
+		/// <param name="table"></param>
+		/// <param name="cancelToken"></param>
+		/// <returns></returns>
+		public override async Task<Table> GetSourceTableInfo(Table table, CancellationToken cancelToken)
         {
             try
             {
-				RestFunction restFunction = (RestFunction)importTable;
+				RestFunction restFunction = (RestFunction)table;
 
                 if (string.IsNullOrEmpty( restFunction.RestfulUri))
                 {
@@ -71,15 +69,16 @@ namespace dexih.connections.webservice
                 string restfulUri = restFunction.RestfulUri;
                 string rowPath = restFunction.RowPath;
 
-                RestFunction newRestFunction = new RestFunction();
-				newRestFunction.Name = restFunction.Name;
+				RestFunction newRestFunction = new RestFunction
+				{
+					Name = restFunction.Name,
+					Description = "",
+					RestfulUri = restfulUri,
+					LogicalName = restFunction.Name
+				};
 
-                //The new datatable that will contain the table schema
-                newRestFunction.Columns.Clear();
-                newRestFunction.Description = "";
-				newRestFunction.RestfulUri = restfulUri;
-
-                newRestFunction.LogicalName = newRestFunction.Name;
+				//The new datatable that will contain the table schema
+				newRestFunction.Columns.Clear();
 
                 TableColumn col;
                 var inputJoins = new List<JoinPair>();
@@ -92,23 +91,25 @@ namespace dexih.connections.webservice
                 {
                     string name = match.Groups[1].Value;
 
-                    col = new TableColumn();
+					col = new TableColumn
+					{
 
-                    //add the basic properties
-                    col.Name = name;
-                    col.IsInput = true;
-                    col.LogicalName = name;
-                    col.Datatype = ETypeCode.String;
-                    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
-                    col.MaxLength = 1024;
+						//add the basic properties
+						Name = name,
+						IsInput = true,
+						LogicalName = name,
+						Datatype = ETypeCode.String,
+						DeltaType = TableColumn.EDeltaType.NaturalKey,
+						MaxLength = 1024,
 
-                    col.Description = "Url Parameter " + name;
+						Description = "Url Parameter " + name,
 
-                    col.AllowDbNull = true;
-                    col.IsUnique = false;
+						AllowDbNull = true,
+						IsUnique = false
+					};
 
-                    //Copy the inputvalue from the table input.  This allows the preview table function below to get sample data.
-                    var originalColumn = importTable.Columns.SingleOrDefault(c => c.Name == col.Name);
+					//Copy the inputvalue from the table input.  This allows the preview table function below to get sample data.
+					var originalColumn = table.Columns.SingleOrDefault(c => c.Name == col.Name);
                     if (originalColumn != null)
                     {
                         var inputValue = originalColumn.DefaultValue;
@@ -212,18 +213,20 @@ namespace dexih.connections.webservice
                             if (child.Type == JTokenType.Property)
                             {
                                 JProperty value = (JProperty)child;
-                                col = new TableColumn();
-                                col.Name = value.Name;
-                                col.IsInput = false;
-                                col.LogicalName = value.Path;
-                                col.Datatype = DataType.GetTypeCode(value.Value.Type);
-                                col.DeltaType = TableColumn.EDeltaType.TrackingField;
-                                col.MaxLength = null;
-                                col.Description = "Json value of the " + value.Path + " path";
-                                col.AllowDbNull = true;
-                                col.IsUnique = false;
-                                newRestFunction.Columns.Add(col);
-                            }
+								col = new TableColumn
+								{
+									Name = value.Name,
+									IsInput = false,
+									LogicalName = value.Path,
+									Datatype = DataType.GetTypeCode(value.Value.Type),
+									DeltaType = TableColumn.EDeltaType.TrackingField,
+									MaxLength = null,
+									Description = "Json value of the " + value.Path + " path",
+									AllowDbNull = true,
+									IsUnique = false
+								};
+								newRestFunction.Columns.Add(col);
+							}
                         }
                     }
                 }
@@ -231,7 +234,7 @@ namespace dexih.connections.webservice
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Get web service information for {importTable.Name} failed. {ex.Message}", ex);
+                throw new ConnectionException($"Get web service information for {table.Name} failed. {ex.Message}", ex);
             }
         }
 
@@ -259,7 +262,7 @@ namespace dexih.connections.webservice
                 foreach (var filter in filters)
                 {
                     uri = uri.Replace("{" + filter.Column1.Name + "}", filter.Value2.ToString());
-                    row[table.GetOrdinal(filter.Column1.SchemaColumnName())] = filter.Value2.ToString();
+					row[table.GetOrdinal(filter.Column1.TableColumnName())] = filter.Value2.ToString();
                 }
 
                 foreach (var column in table.Columns.Where(c => c.IsInput))
@@ -274,10 +277,12 @@ namespace dexih.connections.webservice
                 if (!String.IsNullOrEmpty(Username))
                 {
                     var credentials = new NetworkCredential(Username, Password);
-                    var creds = new CredentialCache();
-                    creds.Add(new Uri(Server), "basic", credentials);
-                    creds.Add(new Uri(Server), "digest", credentials);
-                    handler = new HttpClientHandler { Credentials = creds };
+					var creds = new CredentialCache
+					{
+						{ new Uri(Server), "basic", credentials },
+						{ new Uri(Server), "digest", credentials }
+					};
+					handler = new HttpClientHandler { Credentials = creds };
                 }
                 else
                 {
@@ -331,7 +336,7 @@ namespace dexih.connections.webservice
 
         public override Task TruncateTable(Table table, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			throw new ConnectionException("Truncate table cannot be used as the webservice is readonly.");
         }
 
         public override Task<Table> InitializeTable(Table table, int position)
@@ -351,19 +356,19 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task<long> ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancelToken)
+        public override Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			throw new ConnectionException("Update table cannot be used as the webservice is readonly.");
         }
 
-        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancelToken)
+        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			throw new ConnectionException("Delete from table cannot be used as the webservice is readonly.");
         }
 
-        public override Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancelToken)
+        public override Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			throw new ConnectionException("Insert into table cannot be used as the webservice is readonly.");
         }
 
         public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
@@ -371,7 +376,7 @@ namespace dexih.connections.webservice
             try
             {
                 var lookupResult = await LookupRow(table, query.Filters, cancelToken);
-                string schemaColumn = query.Columns[0].Column.SchemaColumnName();
+				string schemaColumn = query.Columns[0].Column.TableColumnName();
                 object value = lookupResult[table.GetOrdinal(schemaColumn)];
                 return value;
             }
@@ -383,17 +388,17 @@ namespace dexih.connections.webservice
 
         public override Task CreateDatabase(string databaseName, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			throw new ConnectionException("Create database cannot be used as the webservice is readonly.");
         }
 
         public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			throw new ConnectionException("Webservices do not have database readers.  Use the GetTransformReader function to simulate this.");
         }
 
         public override Task<long> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			throw new ConnectionException("Bulk insert into table cannot be used as the webservice is readonly.");
         }
 
         public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
@@ -404,9 +409,8 @@ namespace dexih.connections.webservice
 
         public override Task<bool> TableExists(Table table, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+			return Task.FromResult(true);
         }
-
 
     }
 }

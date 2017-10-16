@@ -57,14 +57,14 @@ namespace dexih.functions
         {
             get
             {
-                if (_columnOrdinals.ContainsKey(column.SchemaColumnName()))
-                    return _tableColumns[_columnOrdinals[column.SchemaColumnName()]];
+                if (_columnOrdinals.ContainsKey(column.TableColumnName()))
+					return _tableColumns[_columnOrdinals[column.TableColumnName()]];
                 return null;
             }
 
             set
             {
-                _tableColumns[_columnOrdinals[column.SchemaColumnName()]] = value;
+				_tableColumns[_columnOrdinals[column.TableColumnName()]] = value;
             }
         }
 
@@ -94,9 +94,9 @@ namespace dexih.functions
         public void Add(TableColumn item)
         {
             _tableColumns.Add(item);
-            if (!_columnOrdinals.ContainsKey(item.SchemaColumnName()))
+			if (!_columnOrdinals.ContainsKey(item.TableColumnName()))
             {
-                _columnOrdinals.Add(item.SchemaColumnName(), _tableColumns.Count - 1);
+				_columnOrdinals.Add(item.TableColumnName(), _tableColumns.Count - 1);
             }
             if (!_columnOrdinals.ContainsKey(item.Name))
             {
@@ -120,7 +120,7 @@ namespace dexih.functions
             if (_tableColumns == null)
                 return false;
 
-            return _columnOrdinals.ContainsKey(column.SchemaColumnName());
+			return _columnOrdinals.ContainsKey(column.TableColumnName());
         }
 
         public void CopyTo(TableColumn[] array, int arrayIndex)
@@ -167,7 +167,7 @@ namespace dexih.functions
             _columnOrdinals.Clear();
             for (var i = 0; i < _tableColumns.Count; i++)
             {
-                _columnOrdinals.Add(_tableColumns[i].SchemaColumnName(), i);
+				_columnOrdinals.Add(_tableColumns[i].TableColumnName(), i);
                 if (!_columnOrdinals.ContainsKey(_tableColumns[i].Name))
                 {
                     _columnOrdinals.Add(_tableColumns[i].Name, i);

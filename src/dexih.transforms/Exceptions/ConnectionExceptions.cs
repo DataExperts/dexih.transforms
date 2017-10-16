@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace dexih.transforms.Exceptions
 {
@@ -35,13 +36,13 @@ namespace dexih.transforms.Exceptions
             get
             {
 #if DEBUG
-                if (Data == null)
+                if (Values == null || Values.Length == 0)
                 {
                     return base.Message;
                 }
                 else
                 {
-                    return base.Message + ".  Data values: " + string.Join(",", Data);
+                    return string.Format("{0}.  Data values: {1}", base.Message, String.Join(", ", Values));
                 }
 #else
                 return base.Message;

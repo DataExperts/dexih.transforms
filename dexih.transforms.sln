@@ -11,43 +11,45 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8B5A2808-6790-4BE6-B4C2-B54BD4D67FB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.transforms", "src\dexih.transforms\dexih.transforms.csproj", "{DE06ED25-392B-4E85-849F-6E4FD96D5E0C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.transforms", "src\dexih.transforms\dexih.transforms.csproj", "{DE06ED25-392B-4E85-849F-6E4FD96D5E0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.functions.tests", "test\dexih.functions.tests\dexih.functions.tests.csproj", "{42FCB883-FA0E-4897-B678-7E600A93B354}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.functions.tests", "test\dexih.functions.tests\dexih.functions.tests.csproj", "{42FCB883-FA0E-4897-B678-7E600A93B354}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.transforms.tests", "test\dexih.transforms.tests\dexih.transforms.tests.csproj", "{465EA7D0-3C90-43D0-B72F-164B9A32D381}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.transforms.tests", "test\dexih.transforms.tests\dexih.transforms.tests.csproj", "{465EA7D0-3C90-43D0-B72F-164B9A32D381}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.test", "test\dexih.connections.test\dexih.connections.test.csproj", "{1459FE8E-0954-4FD7-BC97-9BDF00835A21}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.test", "test\dexih.connections.test\dexih.connections.test.csproj", "{1459FE8E-0954-4FD7-BC97-9BDF00835A21}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReaderExamples", "samples\FunctionExamples\ReaderExamples.csproj", "{1DA0D318-64EB-4151-AD0B-4062B7A862A6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReaderExamples", "samples\FunctionExamples\ReaderExamples.csproj", "{1DA0D318-64EB-4151-AD0B-4062B7A862A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.azure", "src\dexih.connections.azure\dexih.connections.azure.csproj", "{7F9A835E-7AD1-401A-93BC-E9FDE586366F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.azure", "src\dexih.connections.azure\dexih.connections.azure.csproj", "{7F9A835E-7AD1-401A-93BC-E9FDE586366F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.webservice.restful", "src\dexih.connections.webservice.restful\dexih.connections.webservice.restful.csproj", "{C692E99D-B2B1-4A8E-8378-20F937110E72}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.webservice.restful", "src\dexih.connections.webservice.restful\dexih.connections.webservice.restful.csproj", "{C692E99D-B2B1-4A8E-8378-20F937110E72}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.flatfile", "src\dexih.connections.flatfile\dexih.connections.flatfile.csproj", "{E9470918-7D49-4AD4-B015-60E4F1E02457}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.flatfile", "src\dexih.connections.flatfile\dexih.connections.flatfile.csproj", "{E9470918-7D49-4AD4-B015-60E4F1E02457}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.azure.tests", "test\dexih.connections.azure.tests\dexih.connections.azure.tests.csproj", "{770F19C5-BD62-4AF5-9C2D-D02212E0081F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.azure.tests", "test\dexih.connections.azure.tests\dexih.connections.azure.tests.csproj", "{770F19C5-BD62-4AF5-9C2D-D02212E0081F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.flatfile.tests", "test\dexih.connections.flatfile.tests\dexih.connections.flatfile.tests.csproj", "{C4B351AA-98F8-419E-AB09-F718074571D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.flatfile.tests", "test\dexih.connections.flatfile.tests\dexih.connections.flatfile.tests.csproj", "{C4B351AA-98F8-419E-AB09-F718074571D4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.sql.tests", "test\dexih.connections.sql.tests\dexih.connections.sql.tests.csproj", "{BEAD44B8-9796-42F6-B6D0-1B75ABDA5085}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.sql.tests", "test\dexih.connections.sql.tests\dexih.connections.sql.tests.csproj", "{BEAD44B8-9796-42F6-B6D0-1B75ABDA5085}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.sql", "src\dexih.connections.sql\dexih.connections.sql.csproj", "{0DF32018-188E-4C28-83B1-D748D3322083}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.sql", "src\dexih.connections.sql\dexih.connections.sql.csproj", "{0DF32018-188E-4C28-83B1-D748D3322083}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.functions", "src\dexih.functions\dexih.functions.csproj", "{4D9DF68E-6365-4F1F-9A0D-92A37A1C8B8A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.functions", "src\dexih.functions\dexih.functions.csproj", "{4D9DF68E-6365-4F1F-9A0D-92A37A1C8B8A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.webservice.restful.tests", "test\dexih.connections.webservice.restful.tests\dexih.connections.webservice.restful.tests.csproj", "{C7E245DC-2C1C-48B8-9A6B-278194684258}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.webservice.restful.tests", "test\dexih.connections.webservice.restful.tests\dexih.connections.webservice.restful.tests.csproj", "{C7E245DC-2C1C-48B8-9A6B-278194684258}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.excel", "src\dexih.connections.excel\dexih.connections.excel.csproj", "{92870864-65E8-4C33-9235-F269BB21DDE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.excel", "src\dexih.connections.excel\dexih.connections.excel.csproj", "{92870864-65E8-4C33-9235-F269BB21DDE9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.dexih", "src\dexih.connections.dexih\dexih.connections.dexih.csproj", "{826C6B11-4385-4DD7-80FD-31139FA0B0CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.dexih", "src\dexih.connections.dexih\dexih.connections.dexih.csproj", "{826C6B11-4385-4DD7-80FD-31139FA0B0CF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.connections.excel.tests", "test\dexih.connections.excel.tests\dexih.connections.excel.tests.csproj", "{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.excel.tests", "test\dexih.connections.excel.tests\dexih.connections.excel.tests.csproj", "{1270FA43-9CB5-48EB-A3FD-3F0C5396863E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.functions.tests.async", "test\dexih.functions.tests.async\dexih.functions.tests.async.csproj", "{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.functions.tests.async", "test\dexih.functions.tests.async\dexih.functions.tests.async.csproj", "{2B1478AC-8E6A-459A-91CE-D08F8F3BC5DC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dexih.transforms.tests.async", "test\dexih.transforms.tests.async\dexih.transforms.tests.async.csproj", "{8B299A01-25C7-42E2-B0DC-6B346F8448C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.transforms.tests.async", "test\dexih.transforms.tests.async\dexih.transforms.tests.async.csproj", "{8B299A01-25C7-42E2-B0DC-6B346F8448C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dexih.Utils.CopyProperties", "..\Dexih.Utils.CopyProperties\src\Dexih.Utils.CopyProperties\Dexih.Utils.CopyProperties.csproj", "{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -287,6 +289,18 @@ Global
 		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x64.Build.0 = Release|Any CPU
 		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x86.ActiveCfg = Release|Any CPU
 		{8B299A01-25C7-42E2-B0DC-6B346F8448C4}.Release|x86.Build.0 = Release|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Debug|x64.Build.0 = Debug|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Debug|x86.Build.0 = Debug|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Release|x64.ActiveCfg = Release|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Release|x64.Build.0 = Release|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Release|x86.ActiveCfg = Release|Any CPU
+		{F48E1E2E-89CA-475C-9EEA-0CE2AE4612B8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

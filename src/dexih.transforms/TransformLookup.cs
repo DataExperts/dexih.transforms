@@ -47,13 +47,13 @@ namespace dexih.transforms
             foreach (var column in ReferenceTransform.CacheTable.Columns)
             {
                 var newColumn = column.Copy();
-                newColumn.Schema = ReferenceTableAlias;
+                newColumn.ReferenceTable = ReferenceTableAlias;
                 newColumn.IsIncrementalUpdate = false;
 
                 //if a column of the same name exists, append a 1 to the name
-                if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.SchemaColumnName()) != null)
+                if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.TableColumnName()) != null)
                 {
-                    throw new Exception("The lookup could not be initialized as the column " + column.SchemaColumnName() + " is ambiguous.");
+                    throw new Exception("The lookup could not be initialized as the column " + column.TableColumnName() + " is ambiguous.");
                 }
                 CacheTable.Columns.Add(newColumn);
                 pos++;

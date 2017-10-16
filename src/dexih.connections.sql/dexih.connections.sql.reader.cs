@@ -125,7 +125,6 @@ namespace dexih.connections.sql
 
                 for (int i = 0; i < _fieldCount; i++)
                 {
-                    int ordinal = CacheTable.GetOrdinal(_sqlReader.GetName(i));
                     try
                     {
                         row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].Datatype, _sqlReader[i]);

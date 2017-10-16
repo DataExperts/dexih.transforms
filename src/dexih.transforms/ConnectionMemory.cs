@@ -60,35 +60,32 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
-        public override async Task<long> ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancelToken)
+        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
+            var deleteTable = _tables[table.Name];
+
+            var timer = Stopwatch.StartNew();
+
+            foreach (var query in deleteQueries)
             {
-                var deleteTable = _tables[table.Name];
-
-                var timer = Stopwatch.StartNew();
-
-                foreach (var query in deleteQueries)
+                if (cancelToken.IsCancellationRequested)
                 {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        throw new OperationCanceledException($"The execute delete for table {table.Name} was cancelled.", cancelToken);
-                    }
+                    throw new OperationCanceledException($"The execute delete for table {table.Name} was cancelled.", cancelToken);
+                }
 
-                    var lookupResult = deleteTable.LookupMultipleRows(query.Filters);
+                var lookupResult = deleteTable.LookupMultipleRows(query.Filters);
 
-                    if (lookupResult != null)
+                if (lookupResult != null)
+                {
+                    foreach (var row in lookupResult)
                     {
-                        foreach (var row in lookupResult)
-                        {
-                            deleteTable.Data.Remove(row);
-                        }
+                        deleteTable.Data.Remove(row);
                     }
                 }
-                timer.Stop();
+            }
+            timer.Stop();
 
-                return timer.ElapsedTicks;
-            }, cancelToken);
+            return Task.FromResult(timer.ElapsedTicks);
         }
 
         public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
@@ -171,7 +168,7 @@ namespace dexih.transforms
                     {
                         foreach (var updateColumn in query.UpdateColumns)
                         {
-                            var ordinal = updateTable.GetOrdinal(updateColumn.Column.SchemaColumnName());
+                            var ordinal = updateTable.GetOrdinal(updateColumn.Column.TableColumnName());
                             row[ordinal] = updateColumn.Value;
                         }
                     }

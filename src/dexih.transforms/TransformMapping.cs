@@ -128,14 +128,14 @@ namespace dexih.transforms
             {
                 if (MapFields != null)
                 {
-                    var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.SchemaColumnName() == outputColumn.SchemaColumnName());
+                    var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.TableColumnName() == outputColumn.TableColumnName());
                     if (mapping != null)
                         return mapping.SourceColumn.Copy();
                 }
 
                 if(PassThroughColumns)
                 {
-                    var column = CacheTable.Columns.SingleOrDefault(c => c.SchemaColumnName() == outputColumn.SchemaColumnName());
+                    var column = CacheTable.Columns.SingleOrDefault(c => c.TableColumnName() == outputColumn.TableColumnName());
                     if (column != null)
                         return outputColumn;
                 }
@@ -155,16 +155,17 @@ namespace dexih.transforms
 
                 foreach (ColumnPair mapField in MapFields)
                 {
-                    var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn].Copy();
+                    var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn.TableColumnName()];
 
                     if(column == null)
                     {
-                        throw new Exception("The mapping " + mapField.SourceColumn + " to " + mapField.TargetColumn + " could not be completed, as the source field was missing.");
+                        throw new Exception("The mapping " + mapField.SourceColumn.Name + " to " + mapField.TargetColumn.Name + " could not be completed, as the source field was missing.");
                     }
-                    column.Name = mapField.TargetColumn.Name;
-                    CacheTable.Columns.Add(column);
+					var columnCopy = column.Copy();
+					columnCopy.Name = mapField.TargetColumn.Name;
+					CacheTable.Columns.Add(columnCopy);
                     //store an mapFieldOrdinal to improve performance.
-                    _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn.SchemaColumnName()));
+                    _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn.TableColumnName()));
                     i++;
                 }
             }
@@ -182,7 +183,14 @@ namespace dexih.transforms
                         {
                             if (parameter.Column == null)
                                 throw new Exception("The mapping " + mapping.FunctionDetail() + " could not be executed as there was an error with one of the parameters.");
-                            _functionInputOrdinals.Add(PrimaryTransform.GetOrdinal(parameter.Column.SchemaColumnName()));
+
+							var ordinal = PrimaryTransform.GetOrdinal(parameter.Column.TableColumnName());
+
+							if(ordinal < 0) 
+							{
+								throw new TransformException($"The mapping {mapping.FunctionDetail()} could not be executed as the input column {parameter.Column.TableColumnName()} could not be found in the source transform or table.");	
+							}
+                            _functionInputOrdinals.Add(PrimaryTransform.GetOrdinal(parameter.Column.TableColumnName()));
                         }
                     }
                     if (mapping.TargetColumn != null)
@@ -269,80 +277,97 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            int i = 0;
-            var newRow = new object[FieldCount];
+			while (true) // while loop is used to allow a function with skiprecord to work.
+			{
+				var skipRecord = false;
 
-            var readResult = await PrimaryTransform.ReadAsync(cancellationToken);
-            if (readResult == false)
-            {
-                return null;
-            }
+				int i = 0;
+				var newRow = new object[FieldCount];
 
-            if (MapFields != null)
-            {
-                foreach (int mapField in _mapFieldOrdinals)
-                {
-                    newRow[i] = PrimaryTransform[mapField];
-                    i = i + 1;
-                }
-            }
-            //processes the mappings
-            if (Mappings != null)
-            {
-                int parameterInputCount = 0;
-                foreach (Function mapping in Mappings)
-                {
-                    foreach (Parameter input in mapping.Inputs.Where(c => c.IsColumn))
-                    {
-                        try
-                        {
-                            input.SetValue(PrimaryTransform[_functionInputOrdinals[parameterInputCount]]);
-                        } catch(Exception ex)
-                        {
-                            throw new TransformException($"The mapping transform failed setting parameters on the function {mapping.FunctionName} parameter {input.Name}.  {ex.Message}.", ex.Message, PrimaryTransform[_functionInputOrdinals[parameterInputCount]]);
-                        }
+				var readResult = await PrimaryTransform.ReadAsync(cancellationToken);
+				if (readResult == false)
+				{
+					return null;
+				}
 
-                        parameterInputCount++;
-                    }
+				if (MapFields != null)
+				{
+					foreach (int mapField in _mapFieldOrdinals)
+					{
+						newRow[i] = PrimaryTransform[mapField];
+						i = i + 1;
+					}
+				}
+				//processes the mappings
+				if (Mappings != null)
+				{
+					int parameterInputCount = 0;
+					foreach (Function mapping in Mappings)
+					{
+						foreach (Parameter input in mapping.Inputs.Where(c => c.IsColumn))
+						{
+							try
+							{
+								input.SetValue(PrimaryTransform[_functionInputOrdinals[parameterInputCount]]);
+							}
+							catch (Exception ex)
+							{
+								throw new TransformException($"The mapping transform failed setting parameters on the function {mapping.FunctionName} parameter {input.Name}.  {ex.Message}.", ex.Message, PrimaryTransform[_functionInputOrdinals[parameterInputCount]]);
+							}
 
-                    try
-                    {
-                        var invokeresult = mapping.Invoke();
-                        if (mapping.TargetColumn != null)
-                        {
-                            newRow[i] = invokeresult;
-                            i = i + 1;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new TransformException($"The mapping transform failed calling the function {mapping.FunctionName}.  {ex.Message}.", ex);
-                    }
+							parameterInputCount++;
+						}
 
-                    if (mapping.Outputs != null)
-                    {
-                        foreach (Parameter output in mapping.Outputs)
-                        {
-                            if (output.Column != null)
-                            {
-                                newRow[i] = output.Value;
-                                i = i + 1;
-                            }
-                        }
-                    }
-                }
-            }
+						try
+						{
+							var invokeresult = mapping.Invoke();
+							if (mapping.TargetColumn != null)
+							{
+								newRow[i] = invokeresult;
+								i = i + 1;
+							}
+						}
+						catch (FunctionIgnoreRowException)
+						{
+							TransformRowsIgnored++;
+							skipRecord = true;
+							continue;
+						}
+						catch (Exception ex)
+						{
+							throw new TransformException($"The mapping transform failed calling the function {mapping.FunctionName}.  {ex.Message}.", ex);
+						}
 
-            if (PassThroughColumns)
-            {
-                foreach (int index in _passThroughFields)
-                {
-                    newRow[i] = PrimaryTransform[index];
-                    i = i + 1;
-                }
-            }
+						if (mapping.Outputs != null)
+						{
+							foreach (Parameter output in mapping.Outputs)
+							{
+								if (output.Column != null)
+								{
+									newRow[i] = output.Value;
+									i = i + 1;
+								}
+							}
+						}
+					}
 
-            return newRow;
+					if(skipRecord) 
+					{
+						continue;
+					}
+				}
+
+				if (PassThroughColumns)
+				{
+					foreach (int index in _passThroughFields)
+					{
+						newRow[i] = PrimaryTransform[index];
+						i = i + 1;
+					}
+				}
+
+				return newRow;
+			}
         }
 
         public override List<Sort> RequiredSortFields()

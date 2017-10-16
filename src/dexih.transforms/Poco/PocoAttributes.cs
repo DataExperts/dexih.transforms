@@ -4,7 +4,7 @@ using dexih.functions;
 using static dexih.functions.TableColumn;
 using dexih.functions.Query;
 
-namespace dexih.transforms
+namespace dexih.transforms.Poco
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class FieldAttribute : Attribute

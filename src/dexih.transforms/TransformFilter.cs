@@ -85,11 +85,11 @@ namespace dexih.transforms
                         {
                             try
                             {
-                                input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
+                                input.SetValue(PrimaryTransform[input.Column.TableColumnName()]);
                             }
                             catch(Exception ex)
                             {
-                                throw new TransformException($"The filter failed as the column {input.Column.SchemaColumnName()} has incompatible data values.  {ex.Message}.", ex, PrimaryTransform[input.Column.SchemaColumnName()]);
+                                throw new TransformException($"The filter failed as the column {input.Column.TableColumnName()} has incompatible data values.  {ex.Message}.", ex, PrimaryTransform[input.Column.TableColumnName()]);
                             }
                         }
 
@@ -103,6 +103,12 @@ namespace dexih.transforms
                                 break;
                             }
                         }
+						catch(FunctionIgnoreRowException)
+						{
+							TransformRowsIgnored++;
+							showRecord = false;
+							break;
+						}
                         catch (Exception ex)
                         {
                             throw new TransformException($"The filter could not run the condition {condition.FunctionName} failed.  {ex.Message}.", ex);

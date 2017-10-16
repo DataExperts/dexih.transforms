@@ -182,6 +182,9 @@ namespace dexih.connections.sql
                     else
                         sqlType = "varchar(" + length.ToString() + ")";
                     break;
+				case ETypeCode.Text:
+					sqlType = "text";
+					break;
                 case ETypeCode.Single:
                     sqlType = "real";
                     break;
@@ -254,6 +257,7 @@ namespace dexih.connections.sql
                     returnValue = AddEscape(value.ToString());
                     break;
                 case ETypeCode.String:
+				case ETypeCode.Text:
                 case ETypeCode.Guid:
                 case ETypeCode.Boolean:
                 case ETypeCode.Unknown:
@@ -542,7 +546,7 @@ namespace dexih.connections.sql
                 case "character varying": return ETypeCode.String;
                 case "varchar": return ETypeCode.String;
                 case "character": return ETypeCode.String;
-                case "text": return ETypeCode.String;
+                case "text": return ETypeCode.Text;
             }
             return ETypeCode.Unknown;
         }
@@ -685,6 +689,8 @@ namespace dexih.connections.sql
                     return NpgsqlTypes.NpgsqlDbType.Double;
                 case ETypeCode.String:
                     return NpgsqlTypes.NpgsqlDbType.Varchar;
+				case ETypeCode.Text:
+					return NpgsqlTypes.NpgsqlDbType.Text;
                 case ETypeCode.Boolean:
                     return NpgsqlTypes.NpgsqlDbType.Boolean;
                 case ETypeCode.DateTime:

@@ -70,7 +70,7 @@ namespace dexih.transforms
             foreach (var column in ReferenceTransform.CacheTable.Columns)
             {
                 var newColumn = column.Copy();
-                newColumn.Schema = ReferenceTableAlias;
+                newColumn.ReferenceTable = ReferenceTableAlias;
                 newColumn.IsIncrementalUpdate = false;
 
                 // if (CacheTable.GetOrdinal(column.SchemaColumnName()) >= 0)
@@ -95,7 +95,7 @@ namespace dexih.transforms
                     {
                         if (input.IsColumn)
                         {
-                            if (input.Column.Schema != _referenceTableName)
+                            if (input.Column.ReferenceTable != _referenceTableName)
                             {
                                 isPrefilter = false;
                                 break;
@@ -185,8 +185,8 @@ namespace dexih.transforms
                 _sourceKeyOrdinals = new int[JoinPairs.Count];
                 for (int i = 0; i < JoinPairs.Count; i++)
                 {
-                    _joinKeyOrdinals[i] = ReferenceTransform.GetOrdinal(JoinPairs[i].JoinColumn.SchemaColumnName());
-                    _sourceKeyOrdinals[i] = JoinPairs[i].SourceColumn == null ? -1 : PrimaryTransform.GetOrdinal(JoinPairs[i].SourceColumn.SchemaColumnName());
+                    _joinKeyOrdinals[i] = ReferenceTransform.GetOrdinal(JoinPairs[i].JoinColumn.Name);
+                    _sourceKeyOrdinals[i] = JoinPairs[i].SourceColumn == null ? -1 : PrimaryTransform.GetOrdinal(JoinPairs[i].SourceColumn.Name);
                 }
             }
 
@@ -348,13 +348,13 @@ namespace dexih.transforms
                                 object value = null;
                                 try
                                 {
-                                    if (input.Column.Schema == _referenceTableName)
+                                    if (input.Column.ReferenceTable == _referenceTableName)
                                     {
-                                        value = row[ReferenceTransform.GetOrdinal(input.Column.SchemaColumnName())];
+                                        value = row[ReferenceTransform.GetOrdinal(input.Column.TableColumnName())];
                                     }
                                     else
                                     {
-                                        value = PrimaryTransform[input.Column.SchemaColumnName()];
+										value = PrimaryTransform[input.Column.TableColumnName()];
                                     }
 
                                     input.SetValue(value);
@@ -375,7 +375,14 @@ namespace dexih.transforms
                                     matchFound = false;
                                     break;
                                 }
-                            } catch (Exception ex)
+                            }
+							catch (FunctionIgnoreRowException)
+							{
+								matchFound = false;
+								TransformRowsIgnored++;
+								break;
+							}							
+							catch (Exception ex)
                             {
                                 throw new TransformException($"The join failed calling the function {condition.FunctionName}.  {ex.Message}.", ex);
                             }

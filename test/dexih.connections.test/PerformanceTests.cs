@@ -22,8 +22,7 @@ namespace dexih.connections.test
         /// <param name="connection"></param>
         public async Task Performance(Connection connection, string databaseName, int rows)
         {
-            var returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
-            Assert.True(returnValue);
+            await connection.CreateDatabase(databaseName, CancellationToken.None);
 
             //create a table that utilizes every available datatype.
             var table = new Table("LargeTable" + (DataSets.counter++));
@@ -44,8 +43,7 @@ namespace dexih.connections.test
             }
 
             //create the table
-            returnValue = await connection.CreateTable(table, true, CancellationToken.None);
-            Assert.True(returnValue);
+            await connection.CreateTable(table, true, CancellationToken.None);
 
             //add rows using the min/max values for each of the datatypes.
             var buffer = 0;
@@ -205,10 +203,7 @@ namespace dexih.connections.test
         /// <param name="connection"></param>
         public async Task PerformanceTransformWriter(Connection connection, string databaseName, long rows)
         {
-            bool returnValue;
-
-            returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
-            Assert.True(returnValue, "New Database Failed");
+            await connection.CreateDatabase(databaseName, CancellationToken.None);
 
             //create a table that utilizes every available datatype.
             var table = new Table("LargeTable" + (DataSets.counter++));
@@ -222,6 +217,8 @@ namespace dexih.connections.test
 
             foreach (ETypeCode typeCode in Enum.GetValues(typeof(ETypeCode)))
             {
+                if (typeCode == ETypeCode.Binary && connection.CanUseBinary) continue;
+
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "column" + typeCode,
@@ -232,8 +229,7 @@ namespace dexih.connections.test
             }
 
             //create the table
-            returnValue = await connection.CreateTable(table, true, CancellationToken.None);
-            Assert.True(returnValue, "CreateManagedTables");
+            await connection.CreateTable(table, true, CancellationToken.None);
 
             //add rows.
             var buffer = 0;

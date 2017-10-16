@@ -70,7 +70,7 @@ namespace dexih.transforms
                 foreach (ColumnPair groupField in GroupFields)
                 {
                     var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn].Copy();
-                    column.Schema = "";
+                    column.ReferenceTable = "";
                     column.Name = groupField.TargetColumn.Name;
                     CacheTable.Columns.Add(column);
                     i++;
@@ -368,6 +368,12 @@ namespace dexih.transforms
                         {
                             var invokeresult = mapping.Invoke();
                         }
+						catch (FunctionIgnoreRowException)
+						{
+							//TODO: Issue that some of the aggregate values may be calculated prior to the ignorerow being set.  
+							TransformRowsIgnored++;
+							continue;
+						}
                         catch(Exception ex)
                         {
                             throw new TransformException($"The group transform could not run the function {mapping.FunctionName} failed.  {ex.Message}.", ex);

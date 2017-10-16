@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Runtime.InteropServices.ComTypes;
 using dexih.transforms;
+using dexih.transforms.Poco;
 using dexih.transforms.tests;
 
 namespace FunctionExamples
@@ -13,7 +14,7 @@ namespace FunctionExamples
         public void Create()
         {
             var books = CreatBooksData();
-            var reader = new ReaderPoco<BookClass>(books);
+            var reader = new PocoReader<BookClass>(books);
 
             DisplayReader(reader);
         }

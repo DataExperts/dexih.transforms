@@ -24,7 +24,6 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>-->
   <ItemGroup>
-    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.2-ALPHA" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3">
     </PackageReference>
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
@@ -45,11 +44,12 @@
     <PackageReference Include="System.Xml.XPath.XDocument" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.7-ALPHA" />
-
+<PackageReference Include="Dexih.Utils.RealTimeBuffer" Version="0.1.4-ALPHA" />
+    <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.3-ALPHA" />
+    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Dexih.Utils.CopyProperties\src\Dexih.Utils.CopyProperties\Dexih.Utils.CopyProperties.csproj" />
-    <ProjectReference Include="..\..\..\Dexih.Utils.Crypto\src\Dexih.Utils.Crypto\Dexih.Utils.Crypto.csproj" />
   </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>

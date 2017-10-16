@@ -51,7 +51,10 @@ namespace dexih.connections.sql
                     return new DateTime(9999,12,31);
                 case ETypeCode.Time:
                     return TimeSpan.FromDays(1) - TimeSpan.FromSeconds(1); //mysql doesn't support milliseconds
-
+                case ETypeCode.Double:
+                    return 1E+100;
+                case ETypeCode.Single:
+                    return 1E+37F;
                 default:
                     return Dexih.Utils.DataType.DataType.GetDataTypeMaxValue(typeCode, length);
             }
@@ -63,6 +66,10 @@ namespace dexih.connections.sql
             {
                 case ETypeCode.DateTime:
                     return new DateTime(1000,1,1);
+                case ETypeCode.Double:
+                    return -1E+100;
+                case ETypeCode.Single:
+                    return -1E+37F;
                 default:
                     return Dexih.Utils.DataType.DataType.GetDataTypeMinValue(typeCode);
             }
@@ -272,10 +279,13 @@ namespace dexih.connections.sql
                     break;
                 case ETypeCode.String:
                     if (length == null)
-                        sqlType = "varchar(4000)";
+                        sqlType = "varchar(8000)";
                     else
                         sqlType = "varchar(" + length.ToString() + ")";
                     break;
+				case ETypeCode.Text:
+					sqlType = "longtext";
+					break;
                 case ETypeCode.Single:
                     sqlType = "real";
                     break;
@@ -346,6 +356,7 @@ namespace dexih.connections.sql
                     returnValue = AddEscape(value.ToString());
                     break;
                 case ETypeCode.String:
+				case ETypeCode.Text:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
                     returnValue = "'" + AddEscape(value.ToString()) + "'";
@@ -358,9 +369,9 @@ namespace dexih.connections.sql
                     break;
                 case ETypeCode.Time:
                     if (value is TimeSpan)
-						returnValue = "STR_TO_DATE('" + AddEscape(((TimeSpan)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
+						returnValue = "TIME_FORMAT('" + AddEscape(((TimeSpan)value).ToString("c")) + "', '%H:%i:%s.%f')";
 					else
-						returnValue = "STR_TO_DATE('" + AddEscape((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
+                        returnValue = "TIME_FORMAT('" + AddEscape((string)value) + "', '%H:%i:%s.%f')";
 					break;
                 default:
                     throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql insert statement.");
@@ -651,11 +662,12 @@ namespace dexih.connections.sql
 				case "varchar": 
 				case "enum": 
 				case "set": 
-				case "text": 
 				case "tinytext": 
 				case "mediumtext": 
 				case "longtext": 
 				    return ETypeCode.String;
+				case "text":
+					return ETypeCode.Text;
                 case "binary": 
                 case "varbinary": 
                 case "tinyblob": 
@@ -775,49 +787,6 @@ namespace dexih.connections.sql
                 throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
             }
         }
-
-//        public static MySqlDbType GetSqlDbType(ETypeCode typeCode)
-//        {
-//            switch (typeCode)
-//            {
-//                case ETypeCode.Byte:
-//                    return MySqlDbType.Byte;
-//                case ETypeCode.SByte:
-//                    return MySqlDbType.Byte;
-//                case ETypeCode.UInt16:
-//                    return MySqlDbType.UInt16;
-//                case ETypeCode.UInt32:
-//                    return MySqlDbType.UInt32;
-//                case ETypeCode.UInt64:
-//                    return MySqlDbType.UInt64;
-//                case ETypeCode.Int16:
-//                    return MySqlDbType.Int16;
-//                case ETypeCode.Int32:
-//                    return MySqlDbType.Int32;
-//                case ETypeCode.Int64:
-//                    return MySqlDbType.Int64;
-//                case ETypeCode.Decimal:
-//                    return MySqlDbType.Decimal;
-//                case ETypeCode.Double:
-//                    return MySqlDbType.Double;
-//                case ETypeCode.Single:
-//                    return MySqlDbType.Double;
-//                case ETypeCode.String:
-//                    return MySqlDbType.VarChar;
-//                case ETypeCode.Boolean:
-//                    return MySqlDbType.Bit;
-//                case ETypeCode.DateTime:
-//                    return MySqlDbType.DateTime;
-//                case ETypeCode.Time:
-//                    return MySqlDbType.Time;
-//                case ETypeCode.Guid:
-//                    return MySqlDbType.VarChar;
-//                case ETypeCode.Binary:
-//                    return MySqlDbType.Binary;
-//                default:
-//                    return MySqlDbType.VarChar;
-//            }
-//        }
 
         public override async Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
         {

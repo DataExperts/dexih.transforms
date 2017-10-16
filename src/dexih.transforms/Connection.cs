@@ -11,6 +11,7 @@ using Newtonsoft.Json.Converters;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Poco;
 
 namespace dexih.transforms
 {
@@ -213,7 +214,7 @@ namespace dexih.transforms
                 auditTable.Columns.Add(new TableColumn("TriggerMethod", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
                 auditTable.Columns.Add(new TableColumn("TriggerInfo", ETypeCode.String, TableColumn.EDeltaType.TrackingField) );
                 auditTable.Columns.Add(new TableColumn("Message", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("ExceptionDetails", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
+                auditTable.Columns.Add(new TableColumn("ExceptionDetails", ETypeCode.Text, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
                 auditTable.Columns.Add(new TableColumn("IsCurrent", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
                 auditTable.Columns.Add(new TableColumn("IsPrevious", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
                 auditTable.Columns.Add(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
@@ -282,7 +283,7 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("TriggerMethod", ETypeCode.String), writerResult.TriggerMethod.ToString()),
                     new QueryColumn(new TableColumn("TriggerInfo", ETypeCode.String), writerResult.TriggerInfo),
                     new QueryColumn(new TableColumn("Message", ETypeCode.String), writerResult.Message),
-                    new QueryColumn(new TableColumn("ExceptionDetails", ETypeCode.String), writerResult.ExceptionDetails),
+                    new QueryColumn(new TableColumn("ExceptionDetails", ETypeCode.Text), writerResult.ExceptionDetails),
                     new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), true),
                     new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), false),
                     new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), false),
@@ -387,7 +388,7 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("TriggerMethod", ETypeCode.String), writerResult.TriggerMethod.ToString()),
                     new QueryColumn(new TableColumn("TriggerInfo", ETypeCode.String), writerResult.TriggerInfo.ToString()),
                     new QueryColumn(new TableColumn("Message", ETypeCode.String), writerResult.Message),
-                    new QueryColumn(new TableColumn("ExceptionDetails", ETypeCode.String), writerResult.ExceptionDetails),
+                    new QueryColumn(new TableColumn("ExceptionDetails", ETypeCode.Text), writerResult.ExceptionDetails),
                     new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), isCurrent),
                     new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), isPrevious),
                     new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), isPreviousSuccess),

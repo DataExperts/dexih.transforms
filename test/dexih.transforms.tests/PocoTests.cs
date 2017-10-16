@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions;
+using dexih.transforms.Poco;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -88,7 +91,7 @@ namespace dexih.transforms.tests
                 new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04)),
             };
             
-            var pocoReader = new ReaderPoco<SamplePocoClass>(items);
+            var pocoReader = new PocoReader<SamplePocoClass>(items);
 
             var count = 0;
             while (await pocoReader.ReadAsync())
@@ -101,6 +104,111 @@ namespace dexih.transforms.tests
 
             Assert.Equal(3, count);
         }
+
+        [Fact]
+        public async Task PocoTest_Insert()
+        {
+            var items = new List<SamplePocoClass>
+            {
+                new SamplePocoClass("column1", 1, new DateTime(2000, 01, 02)),
+                new SamplePocoClass("column2", 2, new DateTime(2000, 01, 03)),
+                new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04)),
+            };
+
+            var pocoTable = new PocoTable<SamplePocoClass>();
+            var connection = new ConnectionMemory();
+
+            await pocoTable.CreateTable(connection, true, CancellationToken.None);
+            await pocoTable.ExecuteInsert(connection, items[0], CancellationToken.None);
+            await pocoTable.ExecuteInsert(connection, items[1], CancellationToken.None);
+            await pocoTable.ExecuteInsert(connection, items[2], CancellationToken.None);
+
+            var reader = connection.GetTransformReader(pocoTable.Table);
+
+            var count = 0;
+            while (await reader.ReadAsync())
+            {
+                count++;
+                Assert.Equal("column" + count, reader["StringColumn"]);
+                Assert.Equal(count, reader["IntColumn"]);
+                Assert.Equal(new DateTime(2000, 01, 01).AddDays(count), reader["DateColumn"]);
+            }
+
+            Assert.Equal(3, count);
+        }
+
+        [Fact]
+        public async Task PocoTest_InsertBulk()
+        {
+            var items = new List<SamplePocoClass>
+            {
+                new SamplePocoClass("column1", 1, new DateTime(2000, 01, 02)),
+                new SamplePocoClass("column2", 2, new DateTime(2000, 01, 03)),
+                new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04)),
+            };
+
+            var pocoTable = new PocoTable<SamplePocoClass>();
+            var connection = new ConnectionMemory();
+
+            await pocoTable.CreateTable(connection, true, CancellationToken.None);
+            await pocoTable.ExecuteInsertBulk(connection, items, CancellationToken.None);
+
+            var reader = connection.GetTransformReader(pocoTable.Table);
+
+            var count = 0;
+            while (await reader.ReadAsync())
+            {
+                count++;
+                Assert.Equal("column" + count, reader["StringColumn"]);
+                Assert.Equal(count, reader["IntColumn"]);
+                Assert.Equal(new DateTime(2000, 01, 01).AddDays(count), reader["DateColumn"]);
+            }
+
+            Assert.Equal(3, count);
+        }
+
+        [Fact]
+        public async Task PocoTest_Update()
+        {
+            var item = new SamplePocoClass("column1", 1, new DateTime(2000, 01, 02));
+            var updateItem = new SamplePocoClass("column1", 2, new DateTime(2000, 01, 03));
+
+            var pocoTable = new PocoTable<SamplePocoClass>();
+            var connection = new ConnectionMemory();
+
+            // creat table, insert sample column, and then update.
+            await pocoTable.CreateTable(connection, true, CancellationToken.None);
+            await pocoTable.ExecuteInsert(connection, item, CancellationToken.None);
+            await pocoTable.ExecuteUpdate(connection, updateItem, CancellationToken.None);
+
+            var reader = connection.GetTransformReader(pocoTable.Table);
+
+            await reader.ReadAsync();
+            Assert.Equal("column1", reader["StringColumn"]);
+            Assert.Equal(2, reader["IntColumn"]);
+            Assert.Equal(new DateTime(2000, 01, 03), reader["DateColumn"]);
+        }
+
+    
+        [Fact]
+        public async Task PocoTest_Delete()
+        {
+            var item = new SamplePocoClass("column1", 1, new DateTime(2000, 01, 02));
+
+            var pocoTable = new PocoTable<SamplePocoClass>();
+            var connection = new ConnectionMemory();
+
+            // creat table, insert sample column, and then delete.
+            await pocoTable.CreateTable(connection, true, CancellationToken.None);
+            await pocoTable.ExecuteInsert(connection, item, CancellationToken.None);
+            await pocoTable.ExecuteDelete(connection, item, CancellationToken.None);
+
+            var reader = connection.GetTransformReader(pocoTable.Table);
+
+            var moreRecords = await reader.ReadAsync();
+            Assert.False(moreRecords);
+        }
+
     }
 
     public class SamplePocoClass
@@ -116,7 +224,9 @@ namespace dexih.transforms.tests
             TheDate = theDate;
         }
 
+        [Field(DeltaType = TableColumn.EDeltaType.NaturalKey)]
         public string StringColumn { get; set; }
+
         public int IntColumn { get; set; }
         
         // this uses the field attribute which will read the incoming field "DateColumn" rather then "TheDate"

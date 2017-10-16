@@ -109,8 +109,15 @@ namespace dexih.functions
                 _value = input;
                 return;
             }
-            var result = TryParse(DataType, input);
-            _value = result;
+			if (input == null || string.IsNullOrEmpty(input.ToString()))
+			{
+				_value = null;
+			}
+			else
+			{
+				var result = TryParse(DataType, input);
+				_value = result;
+			}
         }
 
     }

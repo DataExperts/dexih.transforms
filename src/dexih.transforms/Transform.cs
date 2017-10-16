@@ -61,10 +61,16 @@ namespace dexih.transforms
             All
         }
 
+		/// <summary>
+		/// Optional: Any name describing the transform.
+		/// </summary>
+		/// <value>The name.</value>
+		public string Name { get; set; }
+
         /// <summary>
         /// The main source of data.
         /// </summary>
-        public Transform PrimaryTransform;
+		public Transform PrimaryTransform { get; set; }
 
         /// <summary>
         /// The reference transform (such as join, or compare table).
@@ -261,8 +267,8 @@ namespace dexih.transforms
             if (requiredSort == null || actualSort == null)
                 return false;
 
-            string requiredSortFields = String.Join(",", requiredSort.Select(c => c.Column.SchemaColumnName()).ToArray());
-            string actualSortFields = string.Join(",", actualSort.Select(c => c.Column.SchemaColumnName()).ToArray());
+            string requiredSortFields = String.Join(",", requiredSort.Select(c => c.Column.TableColumnName()).ToArray());
+            string actualSortFields = string.Join(",", actualSort.Select(c => c.Column.TableColumnName()).ToArray());
 
             //compare the fields.  if actualsortfields are more, that is ok, as the primary sort condition is still met.
             if (actualSortFields.Length >= requiredSortFields.Length && requiredSortFields == actualSortFields.Substring(0, requiredSortFields.Length))
@@ -760,7 +766,7 @@ namespace dexih.transforms
             catch (Exception ex)
             {
                 IsReaderFinished = true;
-                throw ex;
+				throw new TransformException($"Read record error. {ex.Message}", ex);
             }
 
 
@@ -797,9 +803,12 @@ namespace dexih.transforms
         }
 
         public override int FieldCount => CacheTable.Columns.Count;
-        public override int GetOrdinal(string columnName) => CacheTable.GetOrdinal(columnName);
-        public override string GetName(int i) => CacheTable.Columns[i].Name;
-        public override object this[string name]
+        
+		public override int GetOrdinal(string name) => CacheTable.GetOrdinal(name);
+        
+		public override string GetName(int i) => CacheTable.Columns[i].Name;
+        
+		public override object this[string name]
         {
             get
             {
@@ -816,7 +825,7 @@ namespace dexih.transforms
         {
             get
             {
-                return this[column.SchemaColumnName()];
+                return this[column.TableColumnName()];
             }
         }
 

@@ -18,18 +18,13 @@ namespace dexih.connections.test
 
         public async Task Unit(Connection connection, string databaseName)
         {
-            bool returnValue;
-
-            returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
-            Assert.True(returnValue, "New Database");
+            await connection.CreateDatabase(databaseName, CancellationToken.None);
 
             var newTable = DataSets.CreateTable();
-
             var table = await connection.InitializeTable(newTable, 1000);
 
             //create the table
-            returnValue = await connection.CreateTable(table, true, CancellationToken.None);
-            Assert.True(returnValue, "CreateManagedTables");
+            await connection.CreateTable(table, true, CancellationToken.None);
 
             //insert a single row
             InsertQuery insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
@@ -174,8 +169,7 @@ namespace dexih.connections.test
                 }
 
                 //run a truncate
-                var truncateResult = await connection.TruncateTable(table, CancellationToken.None);
-                Assert.True(truncateResult, "truncate error");
+                await connection.TruncateTable(table, CancellationToken.None);
 
                 //check the table is empty following truncate 
                 selectQuery = new SelectQuery()

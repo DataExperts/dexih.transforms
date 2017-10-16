@@ -4,7 +4,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace dexih.transforms
+namespace dexih.transforms.Poco
 {
 
     

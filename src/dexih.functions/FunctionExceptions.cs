@@ -30,4 +30,23 @@ namespace dexih.functions
         {
         }
     }
+
+	public class FunctionNullValueException : FunctionException
+	{
+		public FunctionNullValueException(string message) : base(message)
+		{
+		}
+	}
+
+	public class FunctionIgnoreRowException : FunctionException
+	{
+		public FunctionIgnoreRowException() : base()
+		{
+		}
+
+		public FunctionIgnoreRowException(string message) : base(message)
+		{
+		}
+	}
+
 }

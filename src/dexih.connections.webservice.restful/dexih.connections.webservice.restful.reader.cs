@@ -16,10 +16,9 @@ namespace dexih.connections.webservice
 {
     public class ReaderRestful : Transform
     {
-        private bool _isOpen = false;
-
-        private int _cachedRow = 0;
-        private JArray _cachedJson = null;
+        private bool _isOpen;
+        private int _cachedRow;
+        private JArray _cachedJson;
 
         public ReaderRestful(Connection connection, Table table, Transform referenceTransform)
         {
@@ -117,7 +116,7 @@ namespace dexih.connections.webservice
                         var joinValue = join.JoinColumn == null ? join.JoinValue : ReferenceTransform[join.JoinColumn].ToString();
 
                         uri = uri.Replace("{" + join.SourceColumn.Name + "}", joinValue.ToString());
-                        row[CacheTable.GetOrdinal(join.SourceColumn.SchemaColumnName())] = joinValue.ToString();
+						row[CacheTable.GetOrdinal(join.SourceColumn.TableColumnName())] = joinValue.ToString();
                     }
 
                     if (_cachedJson != null)
@@ -156,13 +155,12 @@ namespace dexih.connections.webservice
                         if (!String.IsNullOrEmpty(ReferenceConnection.Username))
                         {
                             var credentials = new NetworkCredential(ReferenceConnection.Username, ReferenceConnection.Password);
-                            var creds = new CredentialCache();
-                            creds.Add(new Uri(ReferenceConnection.Server), "basic", credentials);
-                            creds.Add(new Uri(ReferenceConnection.Server), "digest", credentials);
-
-                            handler = new HttpClientHandler { Credentials = creds };
-
-                            handler = new HttpClientHandler { Credentials = credentials };
+							var creds = new CredentialCache
+							{
+								{ new Uri(ReferenceConnection.Server), "basic", credentials },
+								{ new Uri(ReferenceConnection.Server), "digest", credentials }
+							};
+							handler = new HttpClientHandler { Credentials = creds };
                         }
                         else
                         {

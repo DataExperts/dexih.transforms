@@ -116,7 +116,6 @@ namespace dexih.transforms
         public object MaxIncrementalValue { get; set; }
         public long MaxSurrogateKey { get; set; }
 
-
         public string Message { get; set; }
         public string ExceptionDetails { get; set; }
         public DateTime InitializeTime { get; set; }

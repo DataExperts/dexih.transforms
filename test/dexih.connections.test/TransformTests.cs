@@ -19,20 +19,16 @@ namespace dexih.connections.test
         {
             Table table = DataSets.CreateTable();
 
-            bool returnValue;
-            returnValue = await connection.CreateDatabase(databaseName, CancellationToken.None);
-            Assert.True(returnValue, "New Database");
+            await connection.CreateDatabase(databaseName, CancellationToken.None);
 
             //create a new table and write some data to it.  
             Transform reader = DataSets.CreateTestData();
-            returnValue = await connection.CreateTable(table, true, CancellationToken.None);
-            Assert.True(returnValue, "CreateManagedTables");
+            await connection.CreateTable(table, true, CancellationToken.None);
             TransformWriter writer = new TransformWriter();
 
             TransformWriterResult writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
-            returnValue = await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
-            Assert.True(returnValue, "Write data");
+            await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
 
             //check database can sort 
             if (connection.CanSort)
@@ -81,7 +77,7 @@ namespace dexih.connections.test
             Table deltaTable = DataSets.CreateTable();
             deltaTable.AddAuditColumns();
             deltaTable.Name = "DeltaTable";
-            returnValue = await connection.CreateTable(deltaTable, true, CancellationToken.None);
+            await connection.CreateTable(deltaTable, true, CancellationToken.None);
 
             Transform targetReader = connection.GetTransformReader(deltaTable);
             reader = connection.GetTransformReader(table);
@@ -89,8 +85,7 @@ namespace dexih.connections.test
 
             writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
-            returnValue = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
-            Assert.True(returnValue);
+            await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
             Assert.Equal(10, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.

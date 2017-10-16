@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace dexih.transforms
+namespace dexih.transforms.Poco
 {
 
     public class PocoException : Exception

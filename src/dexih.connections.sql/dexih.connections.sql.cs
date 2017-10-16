@@ -41,7 +41,7 @@ namespace dexih.connections.sql
         protected long MaxSqlSize { get; set; } = 4000000; // the largest size the sql command can be (default 4mb)
 
 
-		public string AddDelimiter(string name)
+        public string AddDelimiter(string name)
         {
             var newName = AddEscape(name);
 
@@ -56,7 +56,7 @@ namespace dexih.connections.sql
 
         public virtual string SqlTableName(Table table)
         {
-            if(!string.IsNullOrEmpty(table.Schema))
+            if (!string.IsNullOrEmpty(table.Schema))
             {
                 return AddDelimiter(table.Schema) + "." + AddDelimiter(table.Name);
             }
@@ -104,7 +104,7 @@ namespace dexih.connections.sql
             return param;
         }
 
-         public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace dexih.connections.sql
 
                     for (var i = 0; i < fieldCount; i++)
                     {
-						insert.Append(AddDelimiter(reader.GetName(i)) + ",");
+                        insert.Append(AddDelimiter(reader.GetName(i)) + ",");
                         values.Append("@col" + i.ToString() + ",");
                     }
 
@@ -353,7 +353,7 @@ namespace dexih.connections.sql
                         sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");
                     else
                     {
-                        if(filter.Value2.GetType().IsArray)
+                        if (filter.Value2.GetType().IsArray)
                         {
                             var array = new List<string>();
                             foreach (var value in (Array)filter.Value2)
@@ -525,7 +525,7 @@ namespace dexih.connections.sql
                         {
                             value = await cmd.ExecuteScalarAsync(cancelToken);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             throw new ConnectionException($"The database query failed.  {ex.Message}", ex);
                         }
@@ -665,6 +665,6 @@ namespace dexih.connections.sql
             var reader = new ReaderSql(this, table);
             return reader;
         }
-        
+
     }
 }

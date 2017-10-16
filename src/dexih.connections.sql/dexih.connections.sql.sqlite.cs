@@ -207,6 +207,9 @@ namespace dexih.connections.sql
                     else
                         sqlType = "nvarchar(" + length.ToString() + ")";
                     break;
+				case ETypeCode.Text:
+					sqlType = "text";
+					break;
                 case ETypeCode.Single:
                     sqlType = "float";
                     break;
@@ -281,7 +284,8 @@ namespace dexih.connections.sql
                 case ETypeCode.Boolean:
                     returnValue = (bool) value ? "1" : "0";
                     break;
-                case ETypeCode.String:
+				case ETypeCode.String:
+                case ETypeCode.Text:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
                     returnValue = "'" + AddEscape(value.ToString()) + "'";
@@ -554,9 +558,9 @@ namespace dexih.connections.sql
                 case "NVARCHAR":
                     return ETypeCode.String;
                 case "TEXT":
-                    return ETypeCode.String;
+                    return ETypeCode.Text;
                 case "CLOB":
-                    return ETypeCode.String;
+                    return ETypeCode.Text;
                 case "BLOB":
                     return ETypeCode.Unknown;
                 case "REAL":

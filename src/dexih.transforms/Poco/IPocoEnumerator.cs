@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace dexih.transforms
+namespace dexih.transforms.Poco
 {
     public interface IPocoEnumerator<out T>: IEnumerator<T>
     {

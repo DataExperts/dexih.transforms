@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.DataType;
+using Dexih.Utils.CopyProperties;
 
 namespace dexih.functions
 {
@@ -21,28 +22,28 @@ namespace dexih.functions
             DeltaType = EDeltaType.TrackingField;
         }
 
-        public TableColumn(string columName, ETypeCode dataType, string schema = null)
+        public TableColumn(string columName, ETypeCode dataType, string parentTable = null)
         {
             Name = columName;
             Datatype = dataType;
             DeltaType = EDeltaType.TrackingField;
-            Schema = schema;
+			ReferenceTable = parentTable;
         }
 
-        public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType, string schema = null)
+		public TableColumn(string columName, ETypeCode dataType, EDeltaType deltaType, string parentTable = null)
         {
             Name = columName;
             Datatype = dataType;
             DeltaType = deltaType;
-            Schema = schema;
+			ReferenceTable = parentTable;
         }
 
-		public TableColumn(string columName, EDeltaType deltaType, string schema = null)
+		public TableColumn(string columName, EDeltaType deltaType, string parentTable = null)
 		{
 			Name = columName;
 			Datatype = GetDeltaDataType(deltaType);
 			DeltaType = deltaType;
-			Schema = schema;
+			ReferenceTable = parentTable;
 		}
 
         public enum EDeltaType
@@ -82,7 +83,8 @@ namespace dexih.functions
             Hide
         }
 
-		public virtual string Schema { get; set; }
+		public string ReferenceTable { get; set; }
+
 		public string Name { get; set; }
 
 		public string LogicalName { get; set; }
@@ -119,6 +121,7 @@ namespace dexih.functions
 
 		//this is the underlying datatype of a non encrypted data type.  
 		public ETypeCode BaseDataType { get; set; }
+
 		//this is the max length of the non-encrypted data type.
 		public int? BaseMaxLength { get; set; }
 
@@ -141,9 +144,8 @@ namespace dexih.functions
 		public bool IsInput { get; set; }
 
 		public bool IsIncrementalUpdate { get; set; }
-		// public Dictionary<string, string> ExtendedProperties { get; set; }
 
-		[JsonIgnore]
+		[JsonIgnore, CopyIgnore]
 		public Type ColumnGetType
 		{
 			get
@@ -160,9 +162,9 @@ namespace dexih.functions
 		/// Returns a string with the schema.columnname
 		/// </summary>
 		/// <returns></returns>
-		public string SchemaColumnName()
+		public string TableColumnName()
 		{
-			var columnName = string.IsNullOrEmpty(Schema) ? Name : Schema + "." + Name;
+			var columnName = string.IsNullOrEmpty(ReferenceTable) ? Name : ReferenceTable + "." + Name;
 			return columnName;
 		}
 
@@ -246,7 +248,7 @@ namespace dexih.functions
 		{
 			var newColumn = new TableColumn
 			{
-				Schema = Schema,
+				ReferenceTable = ReferenceTable,
 				Name = Name,
 				LogicalName = LogicalName,
 				Description = Description,

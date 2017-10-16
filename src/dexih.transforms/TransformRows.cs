@@ -65,7 +65,7 @@ namespace dexih.transforms
                 foreach (ColumnPair groupField in GroupFields)
                 {
                     var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn].Copy();
-                    column.Schema = "";
+                    column.ReferenceTable = "";
                     column.Name = groupField.TargetColumn.Name;
                     CacheTable.Columns.Add(column);
                     i++;
@@ -198,11 +198,11 @@ namespace dexih.transforms
                     {
                         try
                         {
-                            input.SetValue(PrimaryTransform[input.Column.SchemaColumnName()]);
+                            input.SetValue(PrimaryTransform[input.Column.TableColumnName()]);
                         }
                         catch(Exception ex)
                         {
-                            throw new TransformException($"The row transform failed setting an input parameter on {rowFunction.FunctionName} parameter {input.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.SchemaColumnName()]);
+                            throw new TransformException($"The row transform failed setting an input parameter on {rowFunction.FunctionName} parameter {input.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.TableColumnName()]);
                         }
                     }
 
@@ -214,6 +214,12 @@ namespace dexih.transforms
                         var invokeresult = rowFunction.Invoke();
                         _rowGenerate[j] = (bool)invokeresult;
                     }
+					catch (FunctionIgnoreRowException)
+					{
+						// TODO: This isn't really ignoring the record, just the function.
+						TransformRowsIgnored++;
+						continue;
+					}
                     catch(Exception ex)
                     {
                         throw new TransformException($"The row transform failed calling the function {rowFunction.FunctionName}.  {ex.Message}.", ex);
@@ -229,6 +235,12 @@ namespace dexih.transforms
                             var invokeresult = rowFunction.Invoke();
                             _rowGenerate[j] = (bool)invokeresult;
                         }
+						catch (FunctionIgnoreRowException)
+						{
+							// TODO: This isn't really ignoring the record, just the function.
+							TransformRowsIgnored++;
+							continue;
+						}
                         catch (Exception ex)
                         {
                             throw new TransformException($"The row transform failed calling the function {rowFunction.FunctionName}.  {ex.Message}.", ex);
