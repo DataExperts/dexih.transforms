@@ -41,7 +41,7 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -50,7 +50,7 @@ namespace dexih.transforms
 
             query.Sorts = RequiredSortFields();
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
 
             //check if the transform has already sorted the data, using sql or a presort.
             _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);
@@ -65,7 +65,7 @@ namespace dexih.transforms
             {
                 if (await PrimaryTransform.ReadAsync(cancellationToken))
                 {
-                    object[] values = new object[PrimaryTransform.FieldCount];
+                    var values = new object[PrimaryTransform.FieldCount];
                     PrimaryTransform.GetValues(values);
                     return values;
                 }
@@ -78,15 +78,15 @@ namespace dexih.transforms
             {
                 _sortedDictionary = new SortedDictionary<object[], object[]>(new SortKeyComparer(_sortFields));
 
-                int rowcount = 0;
+                var rowcount = 0;
                 while (await PrimaryTransform.ReadAsync(cancellationToken))
                 {
-                    object[] values = new object[PrimaryTransform.FieldCount];
-                    object[] sortFields = new object[_sortFields.Count + 1];
+                    var values = new object[PrimaryTransform.FieldCount];
+                    var sortFields = new object[_sortFields.Count + 1];
 
                     PrimaryTransform.GetValues(values);
 
-                    for(int i = 0; i < sortFields.Length-1; i++)
+                    for(var i = 0; i < sortFields.Length-1; i++)
                     {
                         sortFields[i] = PrimaryTransform[_sortFields[i].Column];
                     }
@@ -167,11 +167,11 @@ namespace dexih.transforms
 
         public int Compare(object[] x, object[] y)
         {
-            for (int i = 0; i < x.Length; i++)
+            for (var i = 0; i < x.Length; i++)
             {
                 if (object.Equals(x[i], y[i])) continue;
 
-                bool greater = false;
+                var greater = false;
 
                 if (x[i] is byte)
                     greater = (byte)x[i] > (byte)y[i];

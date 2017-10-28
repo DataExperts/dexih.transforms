@@ -120,6 +120,7 @@ namespace dexih.transforms.tests
 
             await pocoTable.CreateTable(connection, true, CancellationToken.None);
             await pocoTable.ExecuteInsert(connection, items[0], CancellationToken.None);
+            Assert.Equal(1, items[0].Incremental);
             await pocoTable.ExecuteInsert(connection, items[1], CancellationToken.None);
             await pocoTable.ExecuteInsert(connection, items[2], CancellationToken.None);
 
@@ -224,13 +225,16 @@ namespace dexih.transforms.tests
             TheDate = theDate;
         }
 
-        [Field(DeltaType = TableColumn.EDeltaType.NaturalKey)]
+        [PocoColumn(DeltaType = TableColumn.EDeltaType.AutoIncrement)]
+        public long Incremental { get; set; }
+
+        [PocoColumn(DeltaType = TableColumn.EDeltaType.NaturalKey)]
         public string StringColumn { get; set; }
 
         public int IntColumn { get; set; }
         
         // this uses the field attribute which will read the incoming field "DateColumn" rather then "TheDate"
-        [Field("DateColumn")]
+        [PocoColumn("DateColumn")]
         public DateTime TheDate { get; set; }
     }
 }

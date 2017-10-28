@@ -77,14 +77,14 @@ namespace dexih.connections.azure
             return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,254}$");
         }
 
-        public override async Task<bool> TableExists(Table table, CancellationToken cancelToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.Name);
+                var connection = GetCloudTableClient();
+                var cTable = connection.GetTableReference(table.Name);
 
-                var exists = await cTable.ExistsAsync(null, null, cancelToken);
+                var exists = await cTable.ExistsAsync(null, null, cancellationToken);
 
                 return exists;
             }
@@ -95,32 +95,31 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
-                string targetTableName = table.Name;
-                var timer = Stopwatch.StartNew();
+                var targetTableName = table.Name;
 
-                List<Task> tasks = new List<Task>();
+                var tasks = new List<Task>();
 
                 //create buffers of data and write in parallel.
-                int bufferSize = 0;
-                List<object[]> buffer = new List<object[]>();
+                var bufferSize = 0;
+                var buffer = new List<object[]>();
 
                 var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
 
-                while (await reader.ReadAsync(cancelToken))
+                while (await reader.ReadAsync(cancellationToken))
                 {
-                    if (cancelToken.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         throw new ConnectionException($"Bulk insert operation was cancelled.");
                     }
 
                     if (bufferSize > 99)
                     {
-                        tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancelToken));
-                        if (cancelToken.IsCancellationRequested)
+                        tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancellationToken));
+                        if (cancellationToken.IsCancellationRequested)
                         {
                             throw new ConnectionException($"Bulk insert operation was cancelled.");
                         }
@@ -129,9 +128,9 @@ namespace dexih.connections.azure
                         buffer = new List<object[]>();
                     }
 
-                    object[] row = new object[table.Columns.Count];
+                    var row = new object[table.Columns.Count];
 
-                    for (int i = 0; i < table.Columns.Count; i++)
+                    for (var i = 0; i < table.Columns.Count; i++)
                     {
                         if (i < reader.FieldCount)
                             row[i] = reader[i];
@@ -153,8 +152,8 @@ namespace dexih.connections.azure
                     buffer.Add(row);
                     bufferSize++;
                 }
-                tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancelToken));
-                if (cancelToken.IsCancellationRequested)
+                tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancellationToken));
+                if (cancellationToken.IsCancellationRequested)
                 {
                     throw new ConnectionException($"Bulk insert operation was cancelled.");
                 }
@@ -163,8 +162,6 @@ namespace dexih.connections.azure
                 buffer = new List<object[]>();
 
                 await Task.WhenAll(tasks);
-
-                return timer.ElapsedTicks;
             }
             catch (StorageException ex)
             {
@@ -176,36 +173,36 @@ namespace dexih.connections.azure
             }
         }
 
-        public async Task WriteDataBuffer(Table table, List<object[]> buffer, string targetTableName, CancellationToken cancelToken)
+        public async Task WriteDataBuffer(Table table, List<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
         {
-            CloudTableClient connection = GetCloudTableClient();
-            CloudTable cloudTable = connection.GetTableReference(targetTableName);
+            var connection = GetCloudTableClient();
+            var cloudTable = connection.GetTableReference(targetTableName);
 
             // Create the batch operation.
-            TableBatchOperation batchOperation = new TableBatchOperation();
+            var batchOperation = new TableBatchOperation();
 
-            int partitionKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
-            int rowKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
-            int surrogateKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SurrogateKey);
+            var partitionKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
+            var rowKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            var surrogateKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SurrogateKey);
 
-            foreach (object[] row in buffer)
+            foreach (var row in buffer)
             {
-                Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
-                for (int i = 0; i < table.Columns.Count; i++)
+                var properties = new Dictionary<string, EntityProperty>();
+                for (var i = 0; i < table.Columns.Count; i++)
                     if (table.Columns[i].DeltaType != TableColumn.EDeltaType.AzureRowKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.AzurePartitionKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.TimeStamp)
                     {
-                        object value = row[i];
+                        var value = row[i];
                         if (value == DBNull.Value) value = null;
                         properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].Datatype, value));
                     }
 
                 var partionKeyValue = partitionKey >= 0 ? row[partitionKey] : "default";
                 var rowKeyValue = rowKey >= 0 ? row[rowKey] : surrogateKey >= 0 ? ((long)row[surrogateKey]).ToString("D20") : Guid.NewGuid().ToString();
-                DynamicTableEntity entity = new DynamicTableEntity(partionKeyValue.ToString(), rowKeyValue.ToString(), "*", properties);
+                var entity = new DynamicTableEntity(partionKeyValue.ToString(), rowKeyValue.ToString(), "*", properties);
 
                 batchOperation.Insert(entity);
             }
-            await cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancelToken);
+            await cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken);
         }
 
 
@@ -216,7 +213,7 @@ namespace dexih.connections.azure
         /// <param name="table"></param>
         /// <param name="dropTable"></param>
         /// <returns></returns>
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
             try
             {
@@ -233,8 +230,8 @@ namespace dexih.connections.azure
                     }
                 }
 
-                CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.Name);
+                var connection = GetCloudTableClient();
+                var cTable = connection.GetTableReference(table.Name);
                 if (dropTable)
                     await cTable.DeleteIfExistsAsync();
 
@@ -246,19 +243,19 @@ namespace dexih.connections.azure
 
                 //bool result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(), TimeSpan.FromSeconds(10), 6);
 
-                bool isCreated = false;
-                for (int i = 0; i < 10; i++)
+                var isCreated = false;
+                for (var i = 0; i < 10; i++)
                 {
                     try
                     {
                         isCreated = await GetCloudTableClient().GetTableReference(table.Name).CreateIfNotExistsAsync();
                         if (isCreated)
                             break;
-                        await Task.Delay(5000, cancelToken);
+                        await Task.Delay(5000, cancellationToken);
                     }
                     catch
                     {
-                        await Task.Delay(5000, cancelToken);
+                        await Task.Delay(5000, cancellationToken);
                         continue;
                     }
                 }
@@ -296,18 +293,18 @@ namespace dexih.connections.azure
             return storageAccount.CreateCloudTableClient();
         }
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
 
-        public override Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
         {
             var list = new List<string> { "Default" };
             return Task.FromResult(list);
         }
 
-        public override async Task<List<Table>> GetTableList(CancellationToken cancelToken)
+        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken)
         {
             try
             {
@@ -330,23 +327,23 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
+        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
+                var connection = GetCloudTableClient();
 
 
                 //The new datatable that will contain the table schema
-                Table table = new Table(originalTable.Name);
+                var table = new Table(originalTable.Name);
                 table.LogicalName = originalTable.Name;
                 table.Description = "";
 
-                CloudTable cloudTable = connection.GetTableReference(table.Name);
+                var cloudTable = connection.GetTableReference(table.Name);
                 var query = new TableQuery().Take(1);
 
                 TableContinuationToken continuationToken = null;
-                List<DynamicTableEntity> list = new List<DynamicTableEntity>();
+                var list = new List<DynamicTableEntity>();
                 do
                 {
                     var result = await cloudTable.ExecuteQuerySegmentedAsync(query, continuationToken);
@@ -361,7 +358,7 @@ namespace dexih.connections.azure
                     foreach (var property in dynamicTableEntity.Properties)
                     {
                         //add the basic properties                            
-                        TableColumn col = new TableColumn()
+                        var col = new TableColumn()
                         {
                             Name = property.Key,
                             LogicalName = property.Key,
@@ -388,7 +385,7 @@ namespace dexih.connections.azure
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public override Task<bool> CompareTable(Table table, CancellationToken cancelToken)
+        public override Task<bool> CompareTable(Table table, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }
@@ -398,17 +395,17 @@ namespace dexih.connections.azure
         /// </summary>
         /// <param name="table"></param>
         /// <param name="surrogateKeyColumn"></param>
-        /// <param name="cancelToken"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<long> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancelToken)
+        public override async Task<long> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference("DexihKeys");
+                var connection = GetCloudTableClient();
+                var cTable = connection.GetTableReference("DexihKeys");
 
                 long incrementalKey = 0;
-                Guid lockGuid = Guid.NewGuid();
+                var lockGuid = Guid.NewGuid();
 
                 if (!await cTable.ExistsAsync())
                 {
@@ -453,12 +450,12 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancelToken)
+        public override async Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference("DexihKeys");
+                var connection = GetCloudTableClient();
+                var cTable = connection.GetTableReference("DexihKeys");
 
                 if (!await cTable.ExistsAsync())
                 {
@@ -507,7 +504,7 @@ namespace dexih.connections.azure
                 return "";
             else
             {
-                string combinedFilterString = "";
+                var combinedFilterString = "";
 
                 foreach (var filter in filters)
                 {
@@ -517,8 +514,8 @@ namespace dexih.connections.azure
 
                     if (filter.Value2.GetType().IsArray)
                     {
-                        List<object> array = new List<object>();
-                        foreach (object value in (Array)filter.Value2)
+                        var array = new List<object>();
+                        foreach (var value in (Array)filter.Value2)
                         {
                             try
                             {
@@ -598,12 +595,12 @@ namespace dexih.connections.azure
             return filterString;
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
-                await CreateTable(table, true, cancelToken);
+                var connection = GetCloudTableClient();
+                await CreateTable(table, true, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -774,24 +771,23 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.Name);
+                var connection = GetCloudTableClient();
+                var cTable = connection.GetTableReference(table.Name);
 
-                int rowsInserted = 0;
-                int rowcount = 0;
-                Stopwatch timer = Stopwatch.StartNew();
+                var rowsInserted = 0;
+                var rowcount = 0;
 
-                List<Task> batchTasks = new List<Task>();
+                var batchTasks = new List<Task>();
 
                 var autoIncrement = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
                 long lastAutoIncrement = 0;
 
                 //start a batch operation to update the rows.
-                TableBatchOperation batchOperation = new TableBatchOperation();
+                var batchOperation = new TableBatchOperation();
 
                 var partitionKey = table.GetDeltaColumn(TableColumn.EDeltaType.AzurePartitionKey);
                 var rowKey = table.GetDeltaColumn(TableColumn.EDeltaType.AzureRowKey);
@@ -800,12 +796,12 @@ namespace dexih.connections.azure
                 //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
                 {
-                    if (cancelToken.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         throw new ConnectionException("Insert rows was cancelled.");
                     }
 
-                    Dictionary<string, EntityProperty> properties = new Dictionary<string, EntityProperty>();
+                    var properties = new Dictionary<string, EntityProperty>();
                     foreach (var field in query.InsertColumns)
                     {
                         if (!(field.Column.Name == "RowKey" || field.Column.Name == "PartitionKey" || field.Column.Name == "Timestamp"))
@@ -843,7 +839,7 @@ namespace dexih.connections.azure
                             rowKeyValue = ((long)query.InsertColumns.Single(c => c.Column.Name == sk).Value).ToString("D20");
                     }
 
-                    DynamicTableEntity entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
+                    var entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
 
                     batchOperation.Insert(entity);
 
@@ -853,9 +849,9 @@ namespace dexih.connections.azure
                     if (rowcount > 99)
                     {
                         rowcount = 0;
-                        batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation, null, null, cancelToken));
+                        batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken));
 
-                        if (cancelToken.IsCancellationRequested)
+                        if (cancellationToken.IsCancellationRequested)
                         {
                             throw new ConnectionException("Insert rows was cancelled.");
                         }
@@ -871,7 +867,7 @@ namespace dexih.connections.azure
 
                 await Task.WhenAll(batchTasks.ToArray());
 
-                return Tuple.Create(timer.ElapsedTicks, (long)lastAutoIncrement);
+                return (long)lastAutoIncrement;
             }
             catch (Exception ex)
             {
@@ -879,21 +875,20 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.Name);
+                var connection = GetCloudTableClient();
+                var cTable = connection.GetTableReference(table.Name);
 
-                int rowsUpdated = 0;
-                int rowcount = 0;
-                Stopwatch timer = Stopwatch.StartNew();
+                var rowsUpdated = 0;
+                var rowcount = 0;
 
-                List<Task> batchTasks = new List<Task>();
+                var batchTasks = new List<Task>();
 
                 //start a batch operation to update the rows.
-                TableBatchOperation batchOperation = new TableBatchOperation();
+                var batchOperation = new TableBatchOperation();
 
                 var surrogateKeyColumn = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
 
@@ -901,7 +896,7 @@ namespace dexih.connections.azure
                 foreach (var query in queries)
                 {
                     //Read the key fields from the table
-                    TableQuery tableQuery = new TableQuery();
+                    var tableQuery = new TableQuery();
 
                     //select all columns
                     tableQuery.SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.Name != "PartitionKey" && c.Name != "RowKey").Select(c => c.Name)).ToList());
@@ -909,8 +904,8 @@ namespace dexih.connections.azure
                     //the rowkey is the same as the surrogate key, so add this to the filter string if the surrogate key is used.
                     if (surrogateKeyColumn != null)
                     {
-                        int filtercount = query.Filters.Count;
-                        for (int i = 0; i < filtercount; i++)
+                        var filtercount = query.Filters.Count;
+                        for (var i = 0; i < filtercount; i++)
                         {
                             if (query.Filters[i].Column1.Name == surrogateKeyColumn.Name)
                             {
@@ -936,8 +931,8 @@ namespace dexih.connections.azure
                     TableContinuationToken continuationToken = null;
                     do
                     {
-                        var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancelToken);
-                        if (cancelToken.IsCancellationRequested)
+                        var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancellationToken);
+                        if (cancellationToken.IsCancellationRequested)
                         {
                             throw new ConnectionException("Update rows cancelled.");
                         }
@@ -986,8 +981,6 @@ namespace dexih.connections.azure
 
                 await Task.WhenAll(batchTasks.ToArray());
 
-                timer.Stop();
-                return timer.ElapsedTicks;
             }
             catch (Exception ex)
             {
@@ -995,32 +988,31 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
+        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.Name);
+                var connection = GetCloudTableClient();
+                var cTable = connection.GetTableReference(table.Name);
 
-                Stopwatch timer = Stopwatch.StartNew();
-                int rowsDeleted = 0;
-                int rowcount = 0;
+                var rowsDeleted = 0;
+                var rowcount = 0;
 
-                List<Task> batchTasks = new List<Task>();
+                var batchTasks = new List<Task>();
 
                 //start a batch operation to update the rows.
-                TableBatchOperation batchOperation = new TableBatchOperation();
+                var batchOperation = new TableBatchOperation();
 
                 //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
                 {
-                    if (cancelToken.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         throw new ConnectionException("Delete rows cancelled.");
                     }
 
                     //Read the key fields from the table
-                    TableQuery tableQuery = new TableQuery();
+                    var tableQuery = new TableQuery();
                     tableQuery.SelectColumns = new[] { "PartitionKey", "RowKey" };
                     tableQuery.FilterString = BuildFilterString(query.Filters);
                     //TableResult = TableReference.ExecuteQuery(TableQuery);
@@ -1028,7 +1020,7 @@ namespace dexih.connections.azure
                     TableContinuationToken continuationToken = null;
                     do
                     {
-                        var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancelToken);
+                        var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancellationToken);
                         continuationToken = result.ContinuationToken;
 
                         foreach (var entity in result.Results)
@@ -1054,8 +1046,6 @@ namespace dexih.connections.azure
                     await cTable.ExecuteBatchAsync(batchOperation);
                 }
 
-                timer.Stop();
-                return timer.ElapsedTicks;
             }
             catch (Exception ex)
             {
@@ -1063,15 +1053,15 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient connection = GetCloudTableClient();
-                CloudTable cTable = connection.GetTableReference(table.Name);
+                var connection = GetCloudTableClient();
+                var cTable = connection.GetTableReference(table.Name);
 
                 //Read the key fields from the table
-                TableQuery tableQuery = new TableQuery();
+                var tableQuery = new TableQuery();
                 tableQuery.SelectColumns = query.Columns.Select(c => c.Column.Name).ToArray();
                 tableQuery.FilterString = BuildFilterString(query.Filters);
                 tableQuery.Take(1);
@@ -1079,9 +1069,9 @@ namespace dexih.connections.azure
                 TableContinuationToken continuationToken = null;
                 try
                 {
-                    var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancelToken);
+                    var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancellationToken);
 
-                    if (cancelToken.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         throw new ConnectionException("Execute scalar cancelled.");
                     }
@@ -1114,7 +1104,7 @@ namespace dexih.connections.azure
                 }
                 catch (StorageException ex)
                 {
-                    string message = "Error running a command against table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
+                    var message = "Error running a command against table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
                     throw new ConnectionException(message, ex);
                 }
 
@@ -1126,7 +1116,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
         {
             throw new NotImplementedException("A native database reader is not available for Azure table connections.");
         }

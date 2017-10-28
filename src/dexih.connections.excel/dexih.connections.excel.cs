@@ -78,13 +78,13 @@ namespace dexih.connections.excel
 		    
 	    }
 	    
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
             try
             {
                 var package = NewConnection();
 
-                var tableExistsResult = await TableExists(table, cancelToken);
+                var tableExistsResult = await TableExists(table, cancellationToken);
                 if (tableExistsResult)
                 {
                     if (dropTable)
@@ -120,7 +120,7 @@ namespace dexih.connections.excel
             }
         }
 
-		public override Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
+		public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -159,7 +159,7 @@ namespace dexih.connections.excel
             return worksheet;
         }
 
-        public override Task<List<Table>> GetTableList(CancellationToken cancelToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken)
 		{
             try
             {
@@ -186,9 +186,9 @@ namespace dexih.connections.excel
 	    /// Retrieves web services information.  The RestfulUri must be passed through the properties.  This should be in the format http://sitename/{value1}/{value2} where the names between {} are the names for input parameters.  The properties can also contain default values for the parameters.
 	    /// </summary>
 	    /// <param name="importTable"></param>
-	    /// <param name="cancelToken"></param>
+	    /// <param name="cancellationToken"></param>
 	    /// <returns></returns>
-	    public override Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancelToken)
+	    public override Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancellationToken)
         {
             try
             {
@@ -200,7 +200,7 @@ namespace dexih.connections.excel
                     var columns = new TableColumns();
                     for (var col = ExcelHeaderCol; col <= worksheet.Dimension.Columns && col <= ExcelHeaderColMax; col++)
                     {
-                        cancelToken.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         var columName = worksheet.Cells[ExcelHeaderRow, col].Value.ToString();
                         if (string.IsNullOrEmpty(columName)) columName = "Column-" + col.ToString();
@@ -274,7 +274,7 @@ namespace dexih.connections.excel
             }
         }
 	    
-        public override  Task TruncateTable(Table table, CancellationToken cancelToken)
+        public override  Task TruncateTable(Table table, CancellationToken cancellationToken)
         {
 		    using (var package = NewConnection())
 		    {
@@ -282,7 +282,7 @@ namespace dexih.connections.excel
 
                 for (var row = ExcelDataRow; row <= worksheet.Dimension.Rows && row <= ExcelDataRowMax; row++)
 			    {
-                    cancelToken.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     worksheet.DeleteRow(ExcelDataRow);
 			    }
@@ -299,13 +299,11 @@ namespace dexih.connections.excel
             return Task.FromResult(table);
         }
 
-        public override Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
                 long rowsUpdated = 0;
-                var timer = Stopwatch.StartNew();
-
                 using (var package = NewConnection())
                 {
                     var worksheet = GetWorkSheet(package, table.Name);
@@ -315,7 +313,7 @@ namespace dexih.connections.excel
                     // Scan through the excel sheet, checking the update queries for each row.
                     for (var row = ExcelDataRow; row < worksheet.Dimension.Rows || row < ExcelDataRowMax; row++)
                     {
-                        cancelToken.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         // check if any of the queries apply to this row.
                         foreach (var query in queries)
@@ -349,9 +347,7 @@ namespace dexih.connections.excel
                         package.Save();
                     }
 
-                    timer.Stop();
-
-                    return Task.FromResult(timer.ElapsedTicks);
+					return Task.CompletedTask;
                 }
             }
             catch(Exception ex)
@@ -361,13 +357,11 @@ namespace dexih.connections.excel
         }
 	    
 
-        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
 		        var rowsDeleted = 0;
-                var timer = Stopwatch.StartNew();
-
                 using (var package = NewConnection())
 		        {
                     var worksheet = GetWorkSheet(package, table.Name);
@@ -377,7 +371,7 @@ namespace dexih.connections.excel
 			        // Scan through the excel sheet, checking the update queries for each row.
 			        for (var row = ExcelDataRow; row < worksheet.Dimension.Rows || row < ExcelDataRowMax; row++)
 			        {
-                        cancelToken.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         // check if any of the queries apply to this row.
                         foreach (var query in queries)
@@ -399,9 +393,8 @@ namespace dexih.connections.excel
 			        }
 
                 }
-                timer.Stop();
-                return Task.FromResult(timer.ElapsedTicks);
-            }
+				return Task.CompletedTask;
+			}
             catch (Exception ex)
             {
                 throw new ConnectionException($"Failed to delete worksheet rows for {table.Name}.  {ex.Message}", ex);
@@ -518,12 +511,11 @@ namespace dexih.connections.excel
 		    return filterResult;
 	    }
 
-        public override  Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override  Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
                 long rowsInserted = 0;
-                var timer = Stopwatch.StartNew();
                 long autoIncrementValue = -1;
 
                 using (var package = NewConnection())
@@ -552,7 +544,7 @@ namespace dexih.connections.excel
                             throw new ConnectionException($"The maximum Excel rows of {ExcelDataRowMax} was exceeded.");
                         }
 
-                        cancelToken.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
 
 
                         if (autoIncrementOrdinal >= 0)
@@ -579,7 +571,7 @@ namespace dexih.connections.excel
                 }
 
 
-                return Task.FromResult(Tuple.Create(timer.Elapsed.Ticks, autoIncrementValue));
+                return Task.FromResult<long>(autoIncrementValue);
             }
             catch (Exception ex)
             {
@@ -587,7 +579,7 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
 	        try
 	        {
@@ -604,7 +596,7 @@ namespace dexih.connections.excel
 
 			        for (var row = ExcelDataRow; row < worksheet.Dimension.Rows || row < ExcelDataRowMax; row++)
 			        {
-                        cancelToken.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         var filterResult = EvaluateRowFilter(worksheet, row, columnMappings, query.Filters);
 				        if (filterResult)
@@ -640,7 +632,7 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
         {
             try
             {
@@ -667,17 +659,15 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
-                var timer = Stopwatch.StartNew();
-
                 using (var package = NewConnection())
                 {
                     long rowsInserted = 0;
@@ -687,9 +677,9 @@ namespace dexih.connections.excel
                     var columnMappings = GetHeaderOrdinals(worksheet);
                     var row = worksheet.Dimension.Rows + 1;
 
-                    while (await reader.ReadAsync(cancelToken))
+                    while (await reader.ReadAsync(cancellationToken))
                     {
-                        cancelToken.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         foreach (var mapping in columnMappings)
                         {
@@ -704,9 +694,6 @@ namespace dexih.connections.excel
                     {
                         package.Save();
                     }
-                    timer.Stop();
-
-                    return timer.ElapsedTicks;
                 }
             }
             catch (Exception ex)
@@ -721,7 +708,7 @@ namespace dexih.connections.excel
             return reader;
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancelToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {
             try
             {

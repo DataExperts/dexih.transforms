@@ -84,7 +84,7 @@ namespace dexih.transforms
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _columnCount = CacheTable.Columns.Count;
             _mapFieldOrdinals = new List<int>();
-            for (int i = 0; i < _primaryFieldCount; i++)
+            for (var i = 0; i < _primaryFieldCount; i++)
             {
                 _mapFieldOrdinals.Add(GetOrdinal(PrimaryTransform.GetName(i)));
             }
@@ -121,12 +121,12 @@ namespace dexih.transforms
 
             while (await PrimaryTransform.ReadAsync(cancellationToken))
             {
-                StringBuilder rejectReason = new StringBuilder();
-                Function.EInvalidAction finalInvalidAction = Function.EInvalidAction.Pass;
+                var rejectReason = new StringBuilder();
+                var finalInvalidAction = Function.EInvalidAction.Pass;
 
                 //copy row data.
-                object[] passRow = new object[_columnCount];
-                for (int i = 0; i < _primaryFieldCount; i++)
+                var passRow = new object[_columnCount];
+                for (var i = 0; i < _primaryFieldCount; i++)
                 {
                     passRow[_mapFieldOrdinals[i]] = PrimaryTransform[i];
                 }
@@ -139,14 +139,14 @@ namespace dexih.transforms
                 //run the validation functions
                 if (Validations != null)
                 {
-                    foreach (Function validation in Validations)
+                    foreach (var validation in Validations)
                     {
                         //set inputs for the validation function
-                        foreach (Parameter input in validation.Inputs.Where(c => c.IsColumn))
+                        foreach (var input in validation.Inputs.Where(c => c.IsColumn))
                         {
                             try
                             {
-								input.SetValue(PrimaryTransform[input.Column.TableColumnName()]);
+								input.SetValue(PrimaryTransform[input.Column]);
                             }
                             catch(Exception ex)
                             {
@@ -201,7 +201,7 @@ namespace dexih.transforms
                                 {
                                     if (validation.Outputs != null)
                                     {
-										Parameter param = validation.Outputs.SingleOrDefault(c => c.Column.TableColumnName() == _rejectReasonColumnName);
+										var param = validation.Outputs.SingleOrDefault(c => c.Column.TableColumnName() == _rejectReasonColumnName);
                                         if (param != null)
                                         {
                                             rejectReason.Append("  Reason: " + (string)param.Value);
@@ -215,12 +215,12 @@ namespace dexih.transforms
                                 validation.ReturnValue();
                                 if (validation.Outputs != null)
                                 {
-                                    foreach (Parameter output in validation.Outputs)
+                                    foreach (var output in validation.Outputs)
                                     {
 										if (output.Column.TableColumnName() != "")
                                         {
-											int ordinal = CacheTable.GetOrdinal(output.Column.TableColumnName());
-											TableColumn col = CacheTable[output.Column.TableColumnName()];
+											var ordinal = CacheTable.GetOrdinal(output.Column);
+											var col = CacheTable.Columns[ordinal];
                                             if (ordinal >= 0)
                                             {
                                                 try
@@ -243,9 +243,9 @@ namespace dexih.transforms
 
                 if (ValidateDataTypes && (finalInvalidAction == Function.EInvalidAction.Pass || finalInvalidAction == Function.EInvalidAction.Clean))
                 {
-                    for (int i = 0; i < _columnCount; i++)
+                    for (var i = 0; i < _columnCount; i++)
                     {
-                        object value = passRow[i];
+                        var value = passRow[i];
                         var col = CacheTable.Columns[i];
 
                         if (col.DeltaType == TableColumn.EDeltaType.TrackingField || col.DeltaType == TableColumn.EDeltaType.NonTrackingField)

@@ -104,7 +104,7 @@ namespace dexih.connections.sql
             return param;
         }
 
-        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
@@ -125,8 +125,6 @@ namespace dexih.connections.sql
 
                     var insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " + values.Remove(values.Length - 1, 1).ToString() + ");";
 
-                    var timer = new Stopwatch();
-                    timer.Start();
                     using (var transaction = connection.BeginTransaction())
                     {
                         using (var cmd = connection.CreateCommand())
@@ -143,25 +141,22 @@ namespace dexih.connections.sql
                                 parameters[i] = param;
                             }
 
-                            while (await reader.ReadAsync(cancelToken))
+                            while (await reader.ReadAsync(cancellationToken))
                             {
                                 for (var i = 0; i < fieldCount; i++)
                                 {
                                     parameters[i].Value = ConvertParameterType(reader[i]);
                                 }
-                                await cmd.ExecuteNonQueryAsync(cancelToken);
-                                if (cancelToken.IsCancellationRequested)
+                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+                                if (cancellationToken.IsCancellationRequested)
                                 {
                                     transaction.Rollback();
-                                    cancelToken.ThrowIfCancellationRequested();
+                                    cancellationToken.ThrowIfCancellationRequested();
                                 }
                             }
                         }
                         transaction.Commit();
                     }
-                    timer.Stop();
-
-                    return timer.ElapsedTicks;
                 }
             }
             catch (Exception ex)
@@ -194,13 +189,13 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
             try
             {
                 using (var connection = await NewConnection())
                 {
-                    var tableExists = await TableExists(table, cancelToken);
+                    var tableExists = await TableExists(table, cancellationToken);
 
                     //if table exists, and the dropTable flag is set to false, then error.
                     if (tableExists && dropTable == false)
@@ -324,7 +319,7 @@ namespace dexih.connections.sql
             if (query?.Sorts?.Count > 0)
             {
                 sql.Append("order by ");
-                sql.Append(String.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.Direction == Sort.EDirection.Descending ? " desc" : "")).ToArray()));
+                sql.Append(string.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.Direction == Sort.EDirection.Descending ? " desc" : "")).ToArray()));
             }
 
             return sql.ToString();
@@ -373,7 +368,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
@@ -383,8 +378,6 @@ namespace dexih.connections.sql
                     var sql = new StringBuilder();
 
                     var rows = 0;
-
-                    var timer = Stopwatch.StartNew();
 
                     using (var transaction = connection.BeginTransaction())
                     {
@@ -432,11 +425,11 @@ namespace dexih.connections.sql
                                     parameters[i] = param;
                                 }
 
-                                cancelToken.ThrowIfCancellationRequested();
+                                cancellationToken.ThrowIfCancellationRequested();
 
                                 try
                                 {
-                                    rows += await cmd.ExecuteNonQueryAsync(cancelToken);
+                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 }
                                 catch (Exception ex)
                                 {
@@ -446,9 +439,6 @@ namespace dexih.connections.sql
                         }
                         transaction.Commit();
                     }
-
-                    timer.Stop();
-                    return timer.ElapsedTicks;
                 }
             }
             catch (Exception ex)
@@ -457,7 +447,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
+        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
@@ -476,7 +466,7 @@ namespace dexih.connections.sql
                             sql.Append("delete from " + SqlTableName(table) + " ");
                             sql.Append(BuildFiltersString(query.Filters));
 
-                            cancelToken.ThrowIfCancellationRequested();
+                            cancellationToken.ThrowIfCancellationRequested();
 
                             using (var cmd = connection.CreateCommand())
                             {
@@ -485,7 +475,7 @@ namespace dexih.connections.sql
 
                                 try
                                 {
-                                    rows += await cmd.ExecuteNonQueryAsync(cancelToken);
+                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 }
                                 catch (Exception ex)
                                 {
@@ -495,9 +485,6 @@ namespace dexih.connections.sql
                         }
                         transaction.Commit();
                     }
-
-                    timer.Stop();
-                    return timer.ElapsedTicks;
                 }
             }
             catch (Exception ex)
@@ -507,7 +494,7 @@ namespace dexih.connections.sql
 
         }
 
-        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
             try
             {
@@ -523,7 +510,7 @@ namespace dexih.connections.sql
                         object value;
                         try
                         {
-                            value = await cmd.ExecuteScalarAsync(cancelToken);
+                            value = await cmd.ExecuteScalarAsync(cancellationToken);
                         }
                         catch (Exception ex)
                         {
@@ -548,7 +535,7 @@ namespace dexih.connections.sql
 
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
         {
             try
             {
@@ -560,7 +547,7 @@ namespace dexih.connections.sql
 
                     try
                     {
-                        await cmd.ExecuteNonQueryAsync(cancelToken);
+                        await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -582,7 +569,7 @@ namespace dexih.connections.sql
             return Task.FromResult(table);
         }
 
-        public async Task<Table> GetQueryTable(Table table, CancellationToken cancelToken)
+        public async Task<Table> GetQueryTable(Table table, CancellationToken cancellationToken)
         {
             try
             {
@@ -595,7 +582,7 @@ namespace dexih.connections.sql
                     try
                     {
                         cmd.CommandText = table.QueryString;
-                        reader = await cmd.ExecuteReaderAsync(cancelToken);
+                        reader = await cmd.ExecuteReaderAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -627,7 +614,7 @@ namespace dexih.connections.sql
 
         }
 
-        public override async Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
         {
             try
             {
@@ -638,11 +625,15 @@ namespace dexih.connections.sql
 
                     try
                     {
-                        reader = await cmd.ExecuteReaderAsync(cancelToken);
+                        reader = await cmd.ExecuteReaderAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
+#if DEBUG
+                        throw new ConnectionException($"The reader for table {table.Name} returned failed.  {ex.Message}.  The command was: {cmd.CommandText}", ex);
+#else
                         throw new ConnectionException($"The reader for table {table.Name} returned failed.  {ex.Message}", ex);
+#endif
                     }
 
                     if (reader == null)

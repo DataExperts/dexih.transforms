@@ -59,6 +59,10 @@ namespace dexih.functions
             {
                 if (_columnOrdinals.ContainsKey(column.TableColumnName()))
 					return _tableColumns[_columnOrdinals[column.TableColumnName()]];
+
+				if (_columnOrdinals.ContainsKey(column.Name))
+					return _tableColumns[_columnOrdinals[column.Name]];
+
                 return null;
             }
 

@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms.Poco
 {
@@ -12,16 +14,20 @@ namespace dexih.transforms.Poco
     {
         public Table Table { get; set; }
         public List<PocoTableMapping> TableMappings { get; set; }
+        public PropertyInfo AutoIncrementProperty {get;set;}
 
         public PocoTable()
         {
             var table = new Table(typeof(T).Name);
 
-            var tableAttr = typeof(T).GetTypeInfo().GetCustomAttribute<TableAttribute>(false);
+            var tableAttr = typeof(T).GetTypeInfo().GetCustomAttribute<PocoTableAttribute>(false);
             if (tableAttr != null)
             {
                 table.OutputSortFields = tableAttr.SortFields;
-                table.Name = table.Name;
+                if (!string.IsNullOrEmpty(tableAttr.Name))
+                {
+                    table.Name = tableAttr.Name;
+                }
             }
 
             var mappings = new List<PocoTableMapping>();
@@ -29,7 +35,7 @@ namespace dexih.transforms.Poco
             var position = 0;
             foreach (var propertyInfo in typeof(T).GetProperties())
             {
-                var field = propertyInfo.GetCustomAttribute<FieldAttribute>(false) ?? new FieldAttribute(propertyInfo.Name);
+                var field = propertyInfo.GetCustomAttribute<PocoColumnAttribute>(false) ?? new PocoColumnAttribute(propertyInfo.Name);
 
                 // no attributes, then just create a columns with the same name as the property.
                 if(field == null)
@@ -41,23 +47,30 @@ namespace dexih.transforms.Poco
                     };
 
                     table.Columns.Add(column);
-                    mappings.Add(new PocoTableMapping(propertyInfo, position));
+                    mappings.Add(new PocoTableMapping(propertyInfo, position, false));
                     position++; 
                 }
-                else if (field.DeltaType != TableColumn.EDeltaType.IgnoreField)
+                else if (field.DeltaType != TableColumn.EDeltaType.IgnoreField && !field.Skip)
                 {
                     var column = new TableColumn()
                     {
                         Name = string.IsNullOrEmpty(field.Name) ? propertyInfo.Name : field.Name,
                         DeltaType = field.DeltaType,
-                        Datatype = Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType),
-                        MaxLength = field.MaxLength,
-                        Precision = field.Precision,
-                        Scale = field.Scale,
+                        Datatype = field.DataType == ETypeCode.Unknown ? Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType) : field.DataType,
+                        AllowDbNull = Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null || field.AllowDbNull,
+                        MaxLength = field.MaxLength >= 0 ? (int?)field.MaxLength : null,
+                        Precision = field.Precision >= 0 ? (int?)field.Precision : null,
+                        Scale = field.Scale >= 0 ? (int?)field.Scale : null,
                     };
 
                     table.Columns.Add(column);
-                    mappings.Add(new PocoTableMapping(propertyInfo, position));
+                    mappings.Add(new PocoTableMapping(propertyInfo, position,field.IsKey));
+
+                    if(field.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                    {
+                        AutoIncrementProperty = propertyInfo;
+                    }
+
                     position++;
                 }
             }
@@ -72,23 +85,14 @@ namespace dexih.transforms.Poco
 
             foreach (var propertyInfo in typeof(T).GetProperties())
             {
-                var field = propertyInfo.GetCustomAttribute<FieldAttribute>(false) ?? new FieldAttribute(propertyInfo.Name);
-                string fieldName;
-
-                // no attributes, then just create a columns with the same name as the property.
-                if (field == null)
-                {
-                    fieldName = propertyInfo.Name;
-                }
-                else
-                {
-                    fieldName = string.IsNullOrEmpty(field.Name) ? propertyInfo.Name : field.Name;
-                }
+                var field = propertyInfo.GetCustomAttribute<PocoColumnAttribute>(false) ?? new PocoColumnAttribute(propertyInfo.Name);
+                var fieldName = string.IsNullOrEmpty(field?.Name) ? propertyInfo.Name : field.Name;
+                var isKey = field != null && field.IsKey;
 
                 var position = table.Columns.GetOrdinal(fieldName);
                 if(position >= 0)
                 {
-                    mappings.Add((new PocoTableMapping(propertyInfo, position)));
+                    mappings.Add((new PocoTableMapping(propertyInfo, position, isKey)));
                 }
             }
             Table = table;
@@ -108,6 +112,17 @@ namespace dexih.transforms.Poco
         }
 
         /// <summary>
+        /// Checks if the table exists in the target database
+        /// </summary>
+        /// <returns>True = table exists.</returns>
+        /// <param name="connection">Connection.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        public async Task<bool> TableExists(Connection connection, CancellationToken cancellationToken)
+        {
+            return await connection.TableExists(Table, cancellationToken);
+        }
+
+        /// <summary>
         /// Inserts the item into the connection.
         /// </summary>
         /// <returns>The insert.</returns>
@@ -120,13 +135,22 @@ namespace dexih.transforms.Poco
 
             foreach (var mapping in TableMappings)
             {
-                var column = new QueryColumn(Table.Columns[mapping.Position], mapping.PropertyInfo.GetValue(item));
-                columns.Add(column);
+                var column = Table.Columns[mapping.Position];
+                var value = DataType.TryParse(column.Datatype, mapping.PropertyInfo.GetValue(item));
+                var queryColumn = new QueryColumn(column, value);
+                columns.Add(queryColumn);
             }
+
 
             var insertQuery = new InsertQuery(Table.Name, columns);
 
-            await connection.ExecuteInsert(Table, new List<InsertQuery>() { insertQuery }, cancellationToken);
+            var insertResult = await connection.ExecuteInsert(Table, new List<InsertQuery>() { insertQuery }, cancellationToken);
+
+            if(AutoIncrementProperty != null)
+            {
+                AutoIncrementProperty.SetValue(item, insertResult);
+            }
+
         }
 
         /// <summary>
@@ -143,7 +167,7 @@ namespace dexih.transforms.Poco
             foreach (var mapping in TableMappings)
             {
                 var column = Table.Columns[mapping.Position];
-                if (column.DeltaType == TableColumn.EDeltaType.NaturalKey)
+                if (mapping.IsKey)
                 {
                     var filter = new Filter(column, Filter.ECompare.IsEqual, mapping.PropertyInfo.GetValue(item));
                     filters.Add(filter);
@@ -170,14 +194,16 @@ namespace dexih.transforms.Poco
             foreach (var mapping in TableMappings)
             {
                 var column = Table.Columns[mapping.Position];
-                if (column.DeltaType == TableColumn.EDeltaType.NaturalKey)
+                var value = DataType.TryParse(column.Datatype, mapping.PropertyInfo.GetValue(item));
+
+                if (mapping.IsKey)
                 {
-                    var filter = new Filter(column, Filter.ECompare.IsEqual, mapping.PropertyInfo.GetValue(item));
+                    var filter = new Filter(column, Filter.ECompare.IsEqual, value);
                     filters.Add(filter);
                 }
                 else
                 {
-                    var updateColumn = new QueryColumn(column, mapping.PropertyInfo.GetValue(item));
+                    var updateColumn = new QueryColumn(column, value);
                     updateColumns.Add(updateColumn);
                 }
             }

@@ -57,12 +57,12 @@ namespace dexih.transforms
         {
             CacheTable = new Table("Row");
 
-            int i = 0;
+            var i = 0;
             if (GroupFields != null)
             {
                 _firstRecord = true;
 
-                foreach (ColumnPair groupField in GroupFields)
+                foreach (var groupField in GroupFields)
                 {
                     var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn].Copy();
                     column.ReferenceTable = "";
@@ -74,15 +74,15 @@ namespace dexih.transforms
 
             //Initialize the rowgenerate levels to false so first run will run each function.
             _rowGenerate = new Boolean[RowFunctions.Count];
-            for (int j = 0; j < _rowGenerate.Length; j++)
+            for (var j = 0; j < _rowGenerate.Length; j++)
                 _rowGenerate[j] = false;
 
-            foreach (Function rowFunction in RowFunctions)
+            foreach (var rowFunction in RowFunctions)
             {
 
                 if (rowFunction.Outputs != null)
                 {
-                    foreach (Parameter param in rowFunction.Outputs)
+                    foreach (var param in rowFunction.Outputs)
                     {
                         var column = new TableColumn(param.Column.Name, param.DataType);
                         CacheTable.Columns.Add(column);
@@ -113,7 +113,7 @@ namespace dexih.transforms
         }
 
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
             if (query == null)
@@ -123,7 +123,7 @@ namespace dexih.transforms
 
             if (query.Sorts != null && query.Sorts.Count > 0)
             {
-                for (int i = 0; i < requiredSorts.Count; i++)
+                for (var i = 0; i < requiredSorts.Count; i++)
                 {
                     if (query.Sorts[i].Column == requiredSorts[i].Column)
                         requiredSorts[i].Direction = query.Sorts[i].Direction;
@@ -134,7 +134,7 @@ namespace dexih.transforms
 
             query.Sorts = requiredSorts;
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
             return returnValue;
         }
 
@@ -153,7 +153,7 @@ namespace dexih.transforms
 
         public override bool ResetTransform()
         {
-            foreach (Function rowFunction in RowFunctions)
+            foreach (var rowFunction in RowFunctions)
             {
                 rowFunction.Reset();
             }
@@ -163,7 +163,7 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            bool moreRows = true;
+            var moreRows = true;
             object[] newRow = null;
 
             //if (_rowGenerate[0] == false)
@@ -174,31 +174,31 @@ namespace dexih.transforms
                 return null;
             do
             {
-                int i = 0;
+                var i = 0;
 
                 if (GroupFields != null)
                 {
                     //map the group fields if it is a new row, otherwise just increment the column counter
-                    foreach (ColumnPair mapField in GroupFields)
+                    foreach (var mapField in GroupFields)
                     {
                         newRow[i] = PrimaryTransform[mapField.SourceColumn];
                         i = i + 1;
                     }
                 }
 
-                int functionColumn = i + RowFunctions.Count - 1; //use the FunctionColumn variable to track the column number as we are going in reverse through the rowfunctions.
+                var functionColumn = i + RowFunctions.Count - 1; //use the FunctionColumn variable to track the column number as we are going in reverse through the rowfunctions.
 
                 // Run the row generators functions in reverse as the lowest one will repeat, until finished and then cascade up.
-                for (int j = RowFunctions.Count - 1; j >= 0; j--)
+                for (var j = RowFunctions.Count - 1; j >= 0; j--)
                 {
                     moreRows = true;
-                    Function rowFunction = RowFunctions[j];
+                    var rowFunction = RowFunctions[j];
 
-                    foreach (Parameter input in rowFunction.Inputs.Where(c => c.IsColumn))
+                    foreach (var input in rowFunction.Inputs.Where(c => c.IsColumn))
                     {
                         try
                         {
-                            input.SetValue(PrimaryTransform[input.Column.TableColumnName()]);
+                            input.SetValue(PrimaryTransform[input.Column]);
                         }
                         catch(Exception ex)
                         {
@@ -251,7 +251,7 @@ namespace dexih.transforms
 
                     if (rowFunction.Outputs != null)
                     {
-                        foreach (Parameter output in rowFunction.Outputs)
+                        foreach (var output in rowFunction.Outputs)
                         {
                             if (output.Column != null)
                             {
@@ -272,7 +272,7 @@ namespace dexih.transforms
 
                 if (_rowGenerate[0] == false && PassThroughColumns)
                 {
-                    foreach (string columnName in _passThroughFields)
+                    foreach (var columnName in _passThroughFields)
                     {
                         newRow[i] = PrimaryTransform[columnName];
                         i = i + 1;

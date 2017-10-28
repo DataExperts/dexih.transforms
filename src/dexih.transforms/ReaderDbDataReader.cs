@@ -25,7 +25,7 @@ namespace dexih.transforms
         public ReaderDbDataReader(DbDataReader inReader, List<Sort> sortFields = null)
         {
             InReader = inReader;
-            int fieldCount = inReader.FieldCount;
+            var fieldCount = inReader.FieldCount;
 
             CacheTable = new Table("InReader");
 
@@ -58,7 +58,7 @@ namespace dexih.transforms
             //if we can't get a column schema we will have to settle for column names only
             if (!inReader.CanGetColumnSchema())
             {
-                for (int i = 0; i < fieldCount; i++)
+                for (var i = 0; i < fieldCount; i++)
                 {
                     CacheTable.Columns.Add(new TableColumn(inReader.GetName(i)));
                 }
@@ -125,7 +125,7 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            bool success = await InReader.ReadAsync();
+            var success = await InReader.ReadAsync();
             object[] newRow;
             if (success)
             {

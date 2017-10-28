@@ -131,8 +131,6 @@ namespace dexih.functions
 
         public TableColumns Columns { get; protected set; }
 
-		public string ContinuationToken { get; set; }
-
 		// public Dictionary<string, string> ExtendedProperties { get; set; }
 
         public TableColumn this[string columnName]
@@ -428,9 +426,27 @@ namespace dexih.functions
             return Columns.GetOrdinal(schemaColumnName);
         }
 
+		public int GetOrdinal(TableColumn column)
+		{
+			var ordinal = GetOrdinal(column.TableColumnName());
+			if(ordinal < 0) 
+			{
+				ordinal = GetOrdinal(column.Name);
+			}
+
+			return ordinal;
+		}
+
         public TableColumn GetDeltaColumn(TableColumn.EDeltaType deltaType)
         {
-            return Columns.SingleOrDefault(c => c.DeltaType == deltaType);
+            try
+            {
+                return Columns.SingleOrDefault(c => c.DeltaType == deltaType);
+            }
+            catch(Exception ex)
+            {
+                throw new TableException($"The column with the deltaType {deltaType} could not be determined.  {ex.Message}", ex);
+            }
         }
 
         public int GetDeltaColumnOrdinal(TableColumn.EDeltaType deltaType)

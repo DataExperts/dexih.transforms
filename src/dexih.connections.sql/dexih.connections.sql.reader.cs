@@ -9,10 +9,11 @@ using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
+using System.Threading.Tasks.Dataflow;
 
 namespace dexih.connections.sql
 {
-    public class ReaderSql : Transform
+    public sealed class ReaderSql : Transform
     {
         private bool _isOpen = false;
         private DbDataReader _sqlReader;
@@ -23,6 +24,7 @@ namespace dexih.connections.sql
 
         private List<Sort> _sortFields;
 
+
         public ReaderSql(ConnectionSql connection, Table table)
         {
             ReferenceConnection = connection;
@@ -31,18 +33,14 @@ namespace dexih.connections.sql
 
         protected override void Dispose(bool disposing)
         {
-            if (_sqlReader != null)
-                _sqlReader.Dispose();
-
-            if (_sqlConnection != null)
-                _sqlConnection.Dispose();
-
+            _sqlReader?.Dispose();
+            _sqlConnection?.Dispose();
             _isOpen = false;
 
             base.Dispose(disposing);
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             try
             {
@@ -54,12 +52,12 @@ namespace dexih.connections.sql
                 }
 
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
-                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, query, cancelToken);
+                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, query, cancellationToken);
 
 
                 _fieldCount = _sqlReader.FieldCount;
                 _fieldOrdinals = new List<int>();
-                for (int i = 0; i < _sqlReader.FieldCount; i++)
+                for (var i = 0; i < _sqlReader.FieldCount; i++)
                 {
                     var fieldName = _sqlReader.GetName(i);
                     var ordinal = CacheTable.GetOrdinal(fieldName);
@@ -72,7 +70,7 @@ namespace dexih.connections.sql
 
                 _sortFields = query?.Sorts;
 
-                _isOpen = true;
+				_isOpen = true;
                 return true;
             }
             catch(Exception ex)
@@ -86,13 +84,7 @@ namespace dexih.connections.sql
             return "SqlConnection";
         }
 
-        public override List<Sort> SortFields
-        {
-            get
-            {
-                return _sortFields;
-            }
-        }
+        public override List<Sort> SortFields => _sortFields;
 
         public override bool InitializeOutputFields()
         {
@@ -115,27 +107,36 @@ namespace dexih.connections.sql
         {
             try
             {
-                if (!await _sqlReader.ReadAsync(cancellationToken))
+                if (await _sqlReader.ReadAsync(cancellationToken))
+                {
+                    var row = new object[CacheTable.Columns.Count];
+
+                    for (var i = 0; i < _fieldCount; i++)
+                    {
+                        try
+                        {
+                            row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].Datatype,
+                                _sqlReader[i]);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new ConnectionException(
+                                $"The value on column {CacheTable.Columns[_fieldOrdinals[i]].Name} could not be converted to {CacheTable.Columns[_fieldOrdinals[i]].Datatype}.  {ex.Message}",
+                                ex, _sqlReader[i]);
+                        }
+
+                    }
+
+                    return row;
+                }
+                else
                 {
                     return null;
                 }
-
-                //load the new row up, converting datatypes where neccessary.
-                object[] row = new object[CacheTable.Columns.Count];
-
-                for (int i = 0; i < _fieldCount; i++)
-                {
-                    try
-                    {
-                        row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].Datatype, _sqlReader[i]);
-                    }
-                    catch(Exception ex)
-                    {
-                        throw new ConnectionException($"The value on column {CacheTable.Columns[_fieldOrdinals[i]].Name} could not be converted to {CacheTable.Columns[_fieldOrdinals[i]].Datatype}.  {ex.Message}", ex, _sqlReader[i]);
-                    }
-
-                }
-                return row;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch(Exception ex)
             {
@@ -150,11 +151,11 @@ namespace dexih.connections.sql
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken)
         {
             try
             {
-                SelectQuery query = new SelectQuery()
+                var query = new SelectQuery()
                 {
                     Columns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => new SelectColumn(c)).ToList(),
                     Filters = filters,
@@ -162,11 +163,11 @@ namespace dexih.connections.sql
 
                 using (var connection = await ((ConnectionSql)ReferenceConnection).NewConnection())
                 {
-                    using (var reader = await ReferenceConnection.GetDatabaseReader(CacheTable, connection, query, cancelToken))
+                    using (var reader = await ReferenceConnection.GetDatabaseReader(CacheTable, connection, query, cancellationToken))
                     {
-                        if (await reader.ReadAsync())
+                        if (await reader.ReadAsync(cancellationToken))
                         {
-                            object[] values = new object[CacheTable.Columns.Count];
+                            var values = new object[CacheTable.Columns.Count];
                             reader.GetValues(values);
                             return values;
                         }

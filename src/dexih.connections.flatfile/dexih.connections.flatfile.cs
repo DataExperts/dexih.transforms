@@ -57,14 +57,14 @@ namespace dexih.connections.flatfile
 
         public string LastWrittenFile { get; protected set; } = "";
 
-		public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+		public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
 			var flatFile = (FlatFile)table;
             //create the subdirectories
             await CreateDirectory(flatFile, EFlatFilePath.incoming);
         }
 
-        public override async Task CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
         {
             DefaultDatabase = databaseName;
             //create the subdirectories
@@ -113,14 +113,14 @@ namespace dexih.connections.flatfile
         {
             if (zipFiles)
             {
-                MemoryStream memoryStream = new MemoryStream();
+                var memoryStream = new MemoryStream();
 
                 using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Update, true))
                 {
                     foreach (var fileName in fileNames)
                     {
                         var fileStreamResult = await GetReadFileStream(flatFile, path, fileName);
-                        ZipArchiveEntry fileEntry = archive.CreateEntry(fileName);
+                        var fileEntry = archive.CreateEntry(fileName);
 
                         using (var fileEntryStream = fileEntry.Open())
                         {
@@ -150,7 +150,7 @@ namespace dexih.connections.flatfile
             try
             {
                 var flatFile = (FlatFile)table;
-                string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+                var fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
                 var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName);
 
                 if(writerResult == null)
@@ -166,8 +166,8 @@ namespace dexih.connections.flatfile
 
                 if (flatFile.FileFormat.HasHeaderRecord)
                 {
-                    string[] s = new string[table.Columns.Count];
-                    for (Int32 j = 0; j < table.Columns.Count; j++)
+                    var s = new string[table.Columns.Count];
+                    for (var j = 0; j < table.Columns.Count; j++)
                     {
                         _csvWriter.WriteField(table.Columns[j].Name);
                     }
@@ -191,27 +191,24 @@ namespace dexih.connections.flatfile
             return Task.CompletedTask;
         }
 
-        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
-                Stopwatch timer = Stopwatch.StartNew();
-
-                while(await reader.ReadAsync(cancelToken))
+                while(await reader.ReadAsync(cancellationToken))
                 {
-                    if (cancelToken.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         throw new ConnectionException("Insert bulk operation cancelled.");
                     }
 
-                    string[] s = new string[reader.FieldCount];
-                    for (int j = 0; j < reader.FieldCount; j++)
+                    var s = new string[reader.FieldCount];
+                    for (var j = 0; j < reader.FieldCount; j++)
                     {
                         _csvWriter.WriteField(reader[j]);
                     }
                     _csvWriter.NextRecord();
                 }
-                return timer.ElapsedTicks;
             }
             catch (Exception ex)
             {
@@ -220,12 +217,12 @@ namespace dexih.connections.flatfile
         }
 
 
-        public override async Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
         {
             return await GetFileShares(Server, Username, Password);
         }
 
-        public override Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
+        public override Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
         {
             try
             {
@@ -236,8 +233,8 @@ namespace dexih.connections.flatfile
                     throw new ConnectionException($"The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.");
                 }
 
-                MemoryStream stream = new MemoryStream();
-                StreamWriter writer = new StreamWriter(stream);
+                var stream = new MemoryStream();
+                var writer = new StreamWriter(stream);
                 writer.Write(flatFile.FileSample);
                 writer.Flush();
                 stream.Position = 0;
@@ -247,7 +244,7 @@ namespace dexih.connections.flatfile
                 {
                     try
                     {
-                        using (CsvReader csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
+                        using (var csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
                         {
                             csv.ReadHeader();
                             headers = csv.FieldHeaders;
@@ -261,7 +258,7 @@ namespace dexih.connections.flatfile
                 else
                 {
                     // if no header row specified, then just create a series column names "column001, column002 ..."
-                    using (CsvReader csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
+                    using (var csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
                     {
                         csv.Read();
                         headers = Enumerable.Range(0, csv.CurrentRecord.Count()).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
@@ -269,7 +266,7 @@ namespace dexih.connections.flatfile
                 }
 
                 //The new datatable that will contain the table schema
-                FlatFile newFlatFile = new FlatFile();
+                var newFlatFile = new FlatFile();
                 flatFile.Name = originalTable.Name;
                 newFlatFile.Columns.Clear();
                 newFlatFile.LogicalName = newFlatFile.Name;
@@ -278,7 +275,7 @@ namespace dexih.connections.flatfile
 
                 TableColumn col;
 
-                foreach (string field in headers)
+                foreach (var field in headers)
                 {
                     col = new TableColumn()
                     {
@@ -334,12 +331,12 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<List<Table>> GetTableList(CancellationToken cancelToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
         {
             var flatFile = (FlatFile)table;
             var fileEnumerator = await GetFileEnumerator(flatFile, FlatFile.EFlatFilePath.incoming, flatFile.FileMatchPattern);
@@ -374,24 +371,23 @@ namespace dexih.connections.flatfile
             return flatFile;
         }
 
-        public override Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
-                int rows = 0;
-                Stopwatch timer = Stopwatch.StartNew();
+                var rows = 0;
 
-                string fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+				var fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
                 var flatFile = (FlatFile)table;
 
                 //open a new filestream 
@@ -401,13 +397,13 @@ namespace dexih.connections.flatfile
                 {
 
                     if (!(queries?.Count >= 0))
-                        return Tuple.Create(timer.Elapsed.Ticks, (long)0);
+                        return 0L;
 
                     if (flatFile.FileFormat.HasHeaderRecord)
                     {
                         //write a header row.
-                        string[] s = new string[table.Columns.Count];
-                        for (Int32 j = 0; j < queries[0].InsertColumns.Count; j++)
+                        var s = new string[table.Columns.Count];
+                        for (var j = 0; j < queries[0].InsertColumns.Count; j++)
                         {
                             csv.WriteField(queries[0].InsertColumns[j].Column.Name);
                         }
@@ -426,8 +422,7 @@ namespace dexih.connections.flatfile
                 }
 
                 LastWrittenFile = fileName;
-                timer.Stop();
-                return Tuple.Create(timer.Elapsed.Ticks, (long)0); //sometimes reader returns -1, when we want this to be error condition.
+                return 0L;
             }
             catch(Exception ex)
             {
@@ -436,20 +431,20 @@ namespace dexih.connections.flatfile
         }
 
 
-        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
             var timer = Stopwatch.StartNew();
 
-            FlatFile flatFile = (FlatFile)table;
+            var flatFile = (FlatFile)table;
             using (var reader = new ReaderFlatFile(this, flatFile, true))
             {
-                var openResult = await reader.Open(0, query, cancelToken);
+                var openResult = await reader.Open(0, query, cancellationToken);
                 if (!openResult)
                 {
                     throw new ConnectionException($"Failed to run execute scalar on {table.Name}.  The reader failed to open.");
                 }
 
-                var row = await reader.ReadAsync(cancelToken);
+                var row = await reader.ReadAsync(cancellationToken);
                 if (row)
                 {
                     var value = reader[query.Columns[0].Column.Name];
@@ -462,14 +457,14 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
         public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
         {
-			FlatFile flatFile = (FlatFile)table;
+			var flatFile = (FlatFile)table;
             var reader = new ReaderFlatFile(this, flatFile, previewMode);
             return reader;
         }

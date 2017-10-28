@@ -30,8 +30,7 @@
     </PackageReference>
     <PackageReference Include="System.Data.Common" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Net.Security" Version="4.3.1">
-    </PackageReference>
+    <PackageReference Include="System.Net.Security" Version="4.3.2" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0">
     </PackageReference>
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0">
@@ -44,12 +43,10 @@
     <PackageReference Include="System.Xml.XPath.XDocument" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.7-ALPHA" />
-<PackageReference Include="Dexih.Utils.RealTimeBuffer" Version="0.1.4-ALPHA" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.3-ALPHA" />
-    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Dexih.Utils.CopyProperties\src\Dexih.Utils.CopyProperties\Dexih.Utils.CopyProperties.csproj" />
+    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.7" />
+    <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.60" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.8.0" />
   </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>

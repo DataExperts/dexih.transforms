@@ -50,7 +50,7 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
             List<Filter> newFilters = null;
@@ -78,46 +78,50 @@ namespace dexih.transforms
                             continue;
                     }
 
-                    Filter newFilter = new Filter();
-                    newFilter.Column1 = column1;
-                    newFilter.Column2 = column2;
-                    newFilter.Operator = filter.Operator;
-                    newFilter.Value1 = filter.Value1;
-                    newFilter.Value2 = filter.Value2;
-                    newFilter.CompareDataType = filter.CompareDataType;
+					var newFilter = new Filter
+					{
+						Column1 = column1,
+						Column2 = column2,
+						Operator = filter.Operator,
+						Value1 = filter.Value1,
+						Value2 = filter.Value2,
+						CompareDataType = filter.CompareDataType
+					};
 
-                    newFilters.Add(newFilter);
-                }
+					newFilters.Add(newFilter);
+				}
 
-                query.Filters = newFilters;
-            }
+				query.Filters = newFilters;
+			}
 
-            //we need to translate filters and sorts to source column names before passing them through.
-            if (query != null && query.Sorts != null)
-            {
-                newSorts = new List<Sort>();
-                foreach (var sort in query.Sorts)
-                {
-                    TableColumn column = null;
-                    if (sort.Column != null)
-                    {
-                        column = TranslateColumnName(sort.Column);
-                        if (column == null)
-                            continue;
-                    }
+			//we need to translate filters and sorts to source column names before passing them through.
+			if (query != null && query.Sorts != null)
+			{
+				newSorts = new List<Sort>();
+				foreach (var sort in query.Sorts)
+				{
+					TableColumn column = null;
+					if (sort.Column != null)
+					{
+						column = TranslateColumnName(sort.Column);
+						if (column == null)
+							continue;
+					}
 
 
-                    Sort newSort = new Sort();
-                    newSort.Column = column;
-                    newSort.Direction = sort.Direction;
-                    newSorts.Add(newSort);
-                }
+					var newSort = new Sort
+					{
+						Column = column,
+						Direction = sort.Direction
+					};
+					newSorts.Add(newSort);
+				}
 
-                query.Sorts = newSorts;
-            }
+				query.Sorts = newSorts;
+			}
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
-            return returnValue;
+			var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+			return returnValue;
         }
 
         public TableColumn TranslateColumnName(TableColumn outputColumn)
@@ -146,16 +150,16 @@ namespace dexih.transforms
 
         public override bool InitializeOutputFields()
         {
-            int i = 0;
+            var i = 0;
             CacheTable = new Table("Mapping");
 
             if (MapFields != null)
             {
                 _mapFieldOrdinals = new List<int>();
 
-                foreach (ColumnPair mapField in MapFields)
+                foreach (var mapField in MapFields)
                 {
-                    var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn.TableColumnName()];
+                    var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn];
 
                     if(column == null)
                     {
@@ -165,7 +169,7 @@ namespace dexih.transforms
 					columnCopy.Name = mapField.TargetColumn.Name;
 					CacheTable.Columns.Add(columnCopy);
                     //store an mapFieldOrdinal to improve performance.
-                    _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn.TableColumnName()));
+                    _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn));
                     i++;
                 }
             }
@@ -174,7 +178,7 @@ namespace dexih.transforms
             {
                 _functionInputOrdinals = new List<int>();
 
-                foreach (Function mapping in Mappings)
+                foreach (var mapping in Mappings)
                 {
                     //store the ordinals for each parameter to improve performance
                     foreach(var parameter in mapping.Inputs)
@@ -184,13 +188,13 @@ namespace dexih.transforms
                             if (parameter.Column == null)
                                 throw new Exception("The mapping " + mapping.FunctionDetail() + " could not be executed as there was an error with one of the parameters.");
 
-							var ordinal = PrimaryTransform.GetOrdinal(parameter.Column.TableColumnName());
+							var ordinal = PrimaryTransform.GetOrdinal(parameter.Column);
 
 							if(ordinal < 0) 
 							{
 								throw new TransformException($"The mapping {mapping.FunctionDetail()} could not be executed as the input column {parameter.Column.TableColumnName()} could not be found in the source transform or table.");	
 							}
-                            _functionInputOrdinals.Add(PrimaryTransform.GetOrdinal(parameter.Column.TableColumnName()));
+                            _functionInputOrdinals.Add(PrimaryTransform.GetOrdinal(parameter.Column));
                         }
                     }
                     if (mapping.TargetColumn != null)
@@ -203,7 +207,7 @@ namespace dexih.transforms
 
                     if (mapping.Outputs != null)
                     {
-                        foreach (Parameter param in mapping.Outputs)
+                        foreach (var param in mapping.Outputs)
                         {
                             if (param.Column != null)
                             {
@@ -221,7 +225,7 @@ namespace dexih.transforms
             {
                 _passThroughFields = new List<int>();
 
-                for(int j = 0; j< PrimaryTransform.CacheTable.Columns.Count; j++)
+                for(var j = 0; j< PrimaryTransform.CacheTable.Columns.Count; j++)
                 {
                     var column = PrimaryTransform.CacheTable.Columns[j];
                     if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.Name) == null)
@@ -232,14 +236,13 @@ namespace dexih.transforms
                 }
             }
 
-
             if (PrimaryTransform.CacheTable.OutputSortFields != null)
             {
                 //pass through the previous sort order, however limit to fields which have been mapped.
-                List<Sort> fields = new List<Sort>();
-                foreach (Sort t in PrimaryTransform.CacheTable.OutputSortFields)
+                var fields = new List<Sort>();
+                foreach (var t in PrimaryTransform.CacheTable.OutputSortFields)
                 {
-                    ColumnPair mapping = ColumnPairs?.FirstOrDefault(c => c.SourceColumn == t.Column);
+                    var mapping = ColumnPairs?.FirstOrDefault(c => c.SourceColumn == t.Column);
                     if (mapping == null)
                     {
                         //if passthrough column is on, and none of the function mappings override the target field then it is included.
@@ -262,7 +265,7 @@ namespace dexih.transforms
 
         public override string Details()
         {
-            return "Mapping:  Columns Mapped:" + (MapFields?.Count.ToString() ?? "Nill") + ", Functions Mapped:" + (Mappings?.Count.ToString() ?? "Nill");
+			return "Mapping(" + Name + "):  Columns Mapped:" + (MapFields?.Count.ToString() ?? "Nill") + ", Functions Mapped:" + (Mappings?.Count.ToString() ?? "Nill");
         }
 
         #region Transform Implementations
@@ -281,7 +284,7 @@ namespace dexih.transforms
 			{
 				var skipRecord = false;
 
-				int i = 0;
+				var i = 0;
 				var newRow = new object[FieldCount];
 
 				var readResult = await PrimaryTransform.ReadAsync(cancellationToken);
@@ -292,7 +295,7 @@ namespace dexih.transforms
 
 				if (MapFields != null)
 				{
-					foreach (int mapField in _mapFieldOrdinals)
+					foreach (var mapField in _mapFieldOrdinals)
 					{
 						newRow[i] = PrimaryTransform[mapField];
 						i = i + 1;
@@ -301,10 +304,10 @@ namespace dexih.transforms
 				//processes the mappings
 				if (Mappings != null)
 				{
-					int parameterInputCount = 0;
-					foreach (Function mapping in Mappings)
+					var parameterInputCount = 0;
+					foreach (var mapping in Mappings)
 					{
-						foreach (Parameter input in mapping.Inputs.Where(c => c.IsColumn))
+						foreach (var input in mapping.Inputs.Where(c => c.IsColumn))
 						{
 							try
 							{
@@ -340,7 +343,7 @@ namespace dexih.transforms
 
 						if (mapping.Outputs != null)
 						{
-							foreach (Parameter output in mapping.Outputs)
+							foreach (var output in mapping.Outputs)
 							{
 								if (output.Column != null)
 								{
@@ -359,7 +362,7 @@ namespace dexih.transforms
 
 				if (PassThroughColumns)
 				{
-					foreach (int index in _passThroughFields)
+					foreach (var index in _passThroughFields)
 					{
 						newRow[i] = PrimaryTransform[index];
 						i = i + 1;

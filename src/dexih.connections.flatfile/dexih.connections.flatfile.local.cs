@@ -29,12 +29,12 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                List<string> fileShares = new List<string>();
+                var fileShares = new List<string>();
             
                 var directories = Directory.GetDirectories(serverName);
-                foreach (string directoryName in directories)
+                foreach (var directoryName in directories)
                 {
-                    string[] directoryComponents = directoryName.Split(Path.DirectorySeparatorChar);
+                    var directoryComponents = directoryName.Split(Path.DirectorySeparatorChar);
                     fileShares.Add(directoryComponents[directoryComponents.Length - 1]);
                 }
 
@@ -86,9 +86,9 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-                string fileNameExtension = Path.GetExtension(fileName);
-                int version = 0;
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                var fileNameExtension = Path.GetExtension(fileName);
+                var version = 0;
                 string newFileName;
 
                 newFileName = fileName;
@@ -136,17 +136,17 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                List<DexihFileProperties> files = new List<DexihFileProperties>();
+                var files = new List<DexihFileProperties>();
 
                 var fullDirectory = GetFullPath(file, path);
                 var filenames = string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern);
                 foreach (var fileName in filenames)
                 {
-                    FileInfo fileInfo = new FileInfo(fileName);
+                    var fileInfo = new FileInfo(fileName);
                     files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length });
                 }
 
-                DexihFiles newFiles = new DexihFiles(files.ToArray());
+                var newFiles = new DexihFiles(files.ToArray());
                 return Task.FromResult(newFiles);
             }
             catch (Exception ex)
@@ -159,13 +159,13 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                List<DexihFileProperties> files = new List<DexihFileProperties>();
+                var files = new List<DexihFileProperties>();
 
                 var fullDirectory = GetFullPath(file, path);
                 foreach (var fileName in Directory.GetFiles(fullDirectory))
                 {
-                    FileInfo fileInfo = new FileInfo(fileName);
-                    string contentType = ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
+                    var fileInfo = new FileInfo(fileName);
+                    var contentType = ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
                     files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length, ContentType = contentType });
                 }
 
@@ -212,16 +212,16 @@ namespace dexih.connections.flatfile
             {
                 var createDirectoryResult = await CreateDirectory(file, path);
 
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-                string fileNameExtension = Path.GetExtension(fileName);
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                var fileNameExtension = Path.GetExtension(fileName);
 
 				if(fileNameExtension == ".zip") 
 				{
-					using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+					using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
 	                {
                         foreach(var entry in archive.Entries)
                         {
-                            string filePath = FixFileName(file, path, entry.Name);
+                            var filePath = FixFileName(file, path, entry.Name);
                             entry.ExtractToFile(filePath);
                         }
 
@@ -230,8 +230,8 @@ namespace dexih.connections.flatfile
 				}
 				else 
 				{
-                    string filePath = FixFileName(file, path, fileName);
-	                FileStream newFile = new FileStream(filePath, FileMode.Create, System.IO.FileAccess.Write);
+                    var filePath = FixFileName(file, path, fileName);
+	                var newFile = new FileStream(filePath, FileMode.Create, System.IO.FileAccess.Write);
 	                //stream.Seek(0, SeekOrigin.Begin);
 	                await stream.CopyToAsync(newFile);
 	                await stream.FlushAsync();
@@ -248,15 +248,15 @@ namespace dexih.connections.flatfile
 
         private string FixFileName(FlatFile file, EFlatFilePath path, string fileName)
         {
-			string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-			string fileNameExtension = Path.GetExtension(fileName);
+			var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+			var fileNameExtension = Path.GetExtension(fileName);
 
-			int version = 0;
+			var version = 0;
 
-            string fullPath = GetFullPath(file, path);
+            var fullPath = GetFullPath(file, path);
 
 
-            string newFileName = fileName;
+            var newFileName = fileName;
 			while (File.Exists(Path.Combine(fullPath, newFileName)))
 			{
 				version++;
@@ -272,7 +272,7 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                bool exists = new DirectoryInfo(Server).Exists;
+                var exists = new DirectoryInfo(Server).Exists;
                 if (exists)
                     State = EConnectionState.Open;
                 else
@@ -286,14 +286,14 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancelToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {
             try
             {
-				FlatFile flatFile = (FlatFile)table;
-                string fullPath = Path.Combine(FilePath(), flatFile.FileRootPath ?? "");
+				var flatFile = (FlatFile)table;
+                var fullPath = Path.Combine(FilePath(), flatFile.FileRootPath ?? "");
 
-                bool exists = new DirectoryInfo(fullPath).Exists;
+                var exists = new DirectoryInfo(fullPath).Exists;
                 return Task.FromResult(exists);
             }
             catch(Exception ex)

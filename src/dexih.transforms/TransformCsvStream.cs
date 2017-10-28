@@ -24,7 +24,7 @@ namespace dexih.transforms
             _position = 0;
 
             //write the file header.
-            string[] s = new string[reader.FieldCount];
+            var s = new string[reader.FieldCount];
             for (var j = 0; j < reader.FieldCount; j++)
             {
                 s[j] = reader.GetName(j);
@@ -76,8 +76,8 @@ namespace dexih.transforms
                     if (cancellationToken.IsCancellationRequested)
                         return 0;
 
-                    string[] s = new string[_reader.FieldCount];
-                    for (int j = 0; j < _reader.FieldCount; j++)
+                    var s = new string[_reader.FieldCount];
+                    for (var j = 0; j < _reader.FieldCount; j++)
                     {
                         s[j] = _reader.GetString(j);
                         if (s[j].Contains("\"")) //replace " with ""

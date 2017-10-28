@@ -8,7 +8,6 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Text;
-using Dexih.Utils.RealTimeBuffer;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.Crypto;
@@ -21,8 +20,10 @@ namespace dexih.connections.dexih
         private bool _isOpen = false;
 
 		private int _datasetRow;
+        private string[] _columns;
+        private int[] _columnOrdinals;
         private object[][] _dataset;
-        private ERealTimeBufferStatus _datasetStatus;
+		private bool _moreData;
 		private string _continuationToken;
 
         public ReaderDexih(Connection connection, Table table, Transform referenceTransform)
@@ -39,7 +40,7 @@ namespace dexih.connections.dexih
             base.Dispose(disposing);
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -66,8 +67,6 @@ namespace dexih.connections.dexih
                 if ((bool)response["success"])
                 {
                     _continuationToken = response["value"].ToString();
-                    ((ConnectionDexih)ReferenceConnection).SetContinuationToken(_continuationToken);
-                    CacheTable.ContinuationToken = _continuationToken;
                 }
                 else
                 {
@@ -75,12 +74,13 @@ namespace dexih.connections.dexih
                 }
 
 				_datasetRow = 0;
+				_moreData = true;
 
                 return true;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Opening connection to information hub failed.  {ex.Message}");
+                throw new ConnectionException($"Opening connection to information hub failed.  {ex.Message}", ex);
             }
         }
 
@@ -103,51 +103,64 @@ namespace dexih.connections.dexih
         {
             try
             {
-				if (_dataset != null && _datasetRow < _dataset.Count())
+                // if we already have a cached dataset, then keep reading
+                if (_dataset != null && _datasetRow < _dataset.Count())
 				{
 					var row = ConvertRow(_dataset[_datasetRow]);
                     _datasetRow++;
 
                     return row;
 				}
-				else if(!(_datasetStatus == ERealTimeBufferStatus.NotComplete))
-				{
-					_isOpen = false;
+                
+                if(!_moreData)
+                {
+                    _isOpen = false;
                     return null;
-				}
-				else
-				{
-                    //var message = Json.SerializeObject(new { ContinuationToken = _continuationToken }, "");
-                    //var content = new StringContent(message, Encoding.UTF8, "application/json");
-                    var content = new FormUrlEncodedContent(new[]
-                    {
-                        new KeyValuePair<string, string>("ContinuationToken", _continuationToken),
-                    });
+                }
+                
+                //var message = Json.SerializeObject(new { ContinuationToken = _continuationToken }, "");
+                //var content = new StringContent(message, Encoding.UTF8, "application/json");
+                var content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("ContinuationToken", _continuationToken),
+                });
 
-                    var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("PopData", content, false);
+                var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("ReceiveData", content, false);
 
-                    if ((bool)response["success"])
-                    {
-                        var popData = response["value"].ToObject<RealTimeBufferPackage<object[][]>>();
-                        _datasetStatus = popData.Status;
-                        _dataset = popData.Package;
-                    }
-                    else
-                    {
-                        throw new ConnectionException($"Error {response?["message"]}", new Exception(response["exceptionDetails"].ToString()));
-                    }
+                if ((bool)response["success"])
+                {
+                    var receiveData = response["value"].ToObject<(bool IsComplete, DataModel Package)>();
+                    _moreData = receiveData.IsComplete;
 
-					if(_dataset == null || _dataset.Count() == 0){
-						_isOpen = false;
+                    if (!_moreData && receiveData.Package == null)
+                    {
+                        _isOpen = false;
                         return null;
-					}
-					else
-					{
-						var row = ConvertRow( _dataset[0]);
-						_datasetRow = 1;
-                        return row;
-					}
-				}
+                    }
+                    _columns = receiveData.Package.Columns;
+                    _dataset = receiveData.Package.Data;
+
+                    _columnOrdinals = new int[CacheTable.Columns.Count];
+                    for(var i= 0; i< _columnOrdinals.Length; i++)
+                    {
+                        _columnOrdinals[i] = Array.IndexOf(_columns, CacheTable.Columns[i].Name);
+                    }
+                }
+                else
+                {
+                    throw new ConnectionException($"Error {response?["message"]}", new Exception(response["exceptionDetails"].ToString()));
+                }
+
+                if(_dataset == null || !_dataset.Any()){
+                    _isOpen = false;
+                    return null;
+                }
+                else
+                {
+                    var row = ConvertRow( _dataset[0]);
+                    _datasetRow = 1;
+                    return row;
+                }
             }
             catch (Exception ex)
             {
@@ -155,26 +168,40 @@ namespace dexih.connections.dexih
             }
         }
 
-        private object[] ConvertRow(object[] row)
+        private object[] ConvertRow(IReadOnlyList<object> row)
         {
-            for(int i = 0; i < row.Length; i++)
+            var newRow = new object[_columnOrdinals.Length];
+            
+            for(var i = 0; i < _columnOrdinals.Length; i++)
             {
+                if(row[_columnOrdinals[i]] is JToken)
+                {
+                    newRow[i] = DBNull.Value;
+                    continue;
+                }
+
                 switch(CacheTable.Columns[i].Datatype)
                 {
                     case ETypeCode.Guid:
-                        row[i] = Guid.Parse(row[i].ToString());
+                        newRow[i] = Guid.Parse(row[_columnOrdinals[i]].ToString());
                         break;
+                   default:
+                       newRow[i] = row[_columnOrdinals[i]];
+                       break;
                 }
 
-                if(row[i] is JToken)
-                {
-                    row[i] = DBNull.Value;
-                }
             }
 
-            return row;
+            return newRow;
 
         }
+        
+        public class DataModel
+        {
+            public string[] Columns{ get; set; }
+            public object[][] Data { get; set; }
+        }
+
 
 		public override bool CanLookupRowDirect { get; } = false;
 

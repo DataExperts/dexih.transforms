@@ -75,7 +75,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancelToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
@@ -83,7 +83,6 @@ namespace dexih.connections.sql
                 {
                     var fieldCount = reader.FieldCount;
                     var row = new StringBuilder();
-                    var timer = new Stopwatch();
 
                     while (!reader.IsClosed || row.Length > 0)
                     {
@@ -110,7 +109,7 @@ namespace dexih.connections.sql
                             isFirstRow = false;
                         }
 
-                        while (await reader.ReadAsync(cancelToken))
+                        while (await reader.ReadAsync(cancellationToken))
                         {
                             row.Append("(");
 
@@ -138,17 +137,13 @@ namespace dexih.connections.sql
                                 throw new ConnectionException($"The generated sql was too large to execute.  The size was {(insert.Length + row.Length)} and the maximum supported by MySql is {MaxSqlSize}.  To fix this, either reduce the fields being used or increase the `max_allow_packet` variable in the MySql database.");
                             }
 
-                            timer.Start();
                             using (var cmd = connection.CreateCommand())
                             {
                                 cmd.CommandText = insert.ToString();
                                 cmd.ExecuteNonQuery();
                             }
-                            timer.Stop();
                         }
                     }
-
-                    return timer.ElapsedTicks;
                 }
             }
             catch (Exception ex)
@@ -157,7 +152,7 @@ namespace dexih.connections.sql
             }
         }
         
-        public override async Task<bool> TableExists(Table table, CancellationToken cancelToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {
             try
             {
@@ -165,7 +160,7 @@ namespace dexih.connections.sql
                 using (var cmd = CreateCommand(connection, "SHOW TABLES LIKE @NAME"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
-                    var tableExists = await cmd.ExecuteScalarAsync(cancelToken);
+                    var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
                 }
             }
@@ -179,11 +174,11 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
             try
             {
-                var tableExists = await TableExists(table, cancelToken);
+                var tableExists = await TableExists(table, cancellationToken);
 
                 //if table exists, and the dropTable flag is set to false, then error.
                 if (tableExists && dropTable == false)
@@ -230,7 +225,7 @@ namespace dexih.connections.sql
 					command.CommandText = createSql.ToString();
 					try
 					{
-						await command.ExecuteNonQueryAsync(cancelToken);
+						await command.ExecuteNonQueryAsync(cancellationToken);
 					}
 					catch (Exception ex)
 					{
@@ -365,7 +360,7 @@ namespace dexih.connections.sql
                     if (value is DateTime)
                         returnValue = "STR_TO_DATE('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     else
-                        returnValue = "STR_TO_DATE('"+ AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
+						returnValue = "STR_TO_DATE('"+ AddEscape((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     break;
                 case ETypeCode.Time:
                     if (value is TimeSpan)
@@ -444,7 +439,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task CreateDatabase(string databaseName, CancellationToken cancelToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
         {
             try
             {
@@ -453,7 +448,7 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
                 {
-                    var value = await cmd.ExecuteNonQueryAsync(cancelToken);
+                    var value = await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
 
                 DefaultDatabase = databaseName;
@@ -466,7 +461,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
         {
             try
             {
@@ -474,9 +469,9 @@ namespace dexih.connections.sql
 
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "SHOW DATABASES"))
-                using (var reader = await cmd.ExecuteReaderAsync(cancelToken))
+                using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
-                    while (await reader.ReadAsync(cancelToken))
+                    while (await reader.ReadAsync(cancellationToken))
                     {
                         list.Add((string)reader["Database"]);
                     }
@@ -489,7 +484,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<List<Table>> GetTableList(CancellationToken cancelToken)
+        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken)
         {
             try
             {
@@ -499,9 +494,9 @@ namespace dexih.connections.sql
                 {
 
                     using (var cmd = CreateCommand(connection, "SHOW TABLES"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancelToken))
+                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
-                        while (await reader.ReadAsync(cancelToken))
+                        while (await reader.ReadAsync(cancellationToken))
                         {
 							var table = new Table()
 							{
@@ -521,11 +516,11 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
+        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
         {
             if (originalTable.UseQuery)
             {
-                return await GetQueryTable(originalTable, cancelToken);
+                return await GetQueryTable(originalTable, cancellationToken);
             }
             
             try
@@ -541,13 +536,13 @@ namespace dexih.connections.sql
 
                     // The schema table 
                     using (var cmd = CreateCommand(connection, @"SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + DefaultDatabase + "' AND TABLE_NAME='" + table.Name + "'"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancelToken))
+                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
 
                         //for the logical, just trim out any "
                         table.LogicalName = table.Name.Replace("\"", "");
 
-                        while (await reader.ReadAsync(cancelToken))
+                        while (await reader.ReadAsync(cancellationToken))
                         {
                             var isSigned = reader["COLUMN_TYPE"].ToString().IndexOf("unsigned", StringComparison.Ordinal) > 0;
                             var col = new TableColumn
@@ -604,7 +599,7 @@ namespace dexih.connections.sql
             }
         }
 
-		private Int32? ConvertNullableToInt(object value)
+		private int? ConvertNullableToInt(object value)
 		{
 			if(value == null || value is DBNull)
 			{
@@ -612,7 +607,7 @@ namespace dexih.connections.sql
 			}
 			else 
 			{
-				var parsed = Int32.TryParse(value.ToString(), out int result);
+				var parsed = int.TryParse(value.ToString(), out var result);
 				if(parsed) 
 				{
 					return result;
@@ -679,7 +674,7 @@ namespace dexih.connections.sql
             return ETypeCode.Unknown;
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancelToken)
+        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
         {
             try
             {
@@ -691,13 +686,13 @@ namespace dexih.connections.sql
 
                     try
                     {
-                        await cmd.ExecuteNonQueryAsync(cancelToken);
-                        cancelToken.ThrowIfCancellationRequested();
+                        await cmd.ExecuteNonQueryAsync(cancellationToken);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                     catch (Exception)
                     {
                         cmd.CommandText = "delete from " + AddDelimiter(table.Name);
-                        await cmd.ExecuteNonQueryAsync(cancelToken);
+                        await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
                 }
 
@@ -710,7 +705,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
@@ -728,12 +723,11 @@ namespace dexih.connections.sql
                     var insert = new StringBuilder();
                     var values = new StringBuilder();
 
-                    var timer = Stopwatch.StartNew();
                     using (var transaction = connection.BeginTransaction())
                     {
                         foreach (var query in queries)
                         {
-                            cancelToken.ThrowIfCancellationRequested();
+                            cancellationToken.ThrowIfCancellationRequested();
 
                             insert.Clear();
                             values.Clear();
@@ -765,7 +759,7 @@ namespace dexih.connections.sql
                                         cmd.Parameters.Add(param);
                                     }
 
-                                    var identity = await cmd.ExecuteScalarAsync(cancelToken);
+                                    var identity = await cmd.ExecuteScalarAsync(cancellationToken);
                                     identityValue = Convert.ToInt64(identity);
 
                                 }
@@ -778,8 +772,7 @@ namespace dexih.connections.sql
                         transaction.Commit();
                     }
 
-                    timer.Stop();
-                    return Tuple.Create(timer.ElapsedTicks, identityValue); //sometimes reader returns -1, when we want this to be error condition.
+					return identityValue;
                 }
             }
             catch(Exception ex)
@@ -788,7 +781,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
         {
             try
             {
@@ -800,13 +793,11 @@ namespace dexih.connections.sql
 
                     var rows = 0;
 
-                    var timer = Stopwatch.StartNew();
-
                     using (var transaction = connection.BeginTransaction())
                     {
                         foreach (var query in queries)
                         {
-                            cancelToken.ThrowIfCancellationRequested();
+                            cancellationToken.ThrowIfCancellationRequested();
                             sql.Clear();
                             sql.Append("update " + AddDelimiter(table.Name) + " set ");
 
@@ -843,19 +834,17 @@ namespace dexih.connections.sql
 
                                 try
                                 {
-                                    rows += await cmd.ExecuteNonQueryAsync(cancelToken);
+                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 }
                                 catch (Exception ex)
                                 {
-                                    throw new ConnectionException($"The udpate query failed. {ex.Message}");
+                                    throw new ConnectionException($"The update query failed. {ex.Message}");
                                 }
                             }
                         }
                         transaction.Commit();
                     }
 
-                    timer.Stop();
-                    return timer.ElapsedTicks; //sometimes reader returns -1, when we want this to be error condition.
                 }
             }
             catch (Exception ex)

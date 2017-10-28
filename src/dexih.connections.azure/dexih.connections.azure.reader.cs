@@ -39,7 +39,7 @@ namespace dexih.connections.azure
             base.Dispose(disposing);
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
             if (_isOpen)
@@ -47,7 +47,7 @@ namespace dexih.connections.azure
                 throw new ConnectionException($"The current connection is already open");
             }
 
-            CloudTableClient tableClient = _connection.GetCloudTableClient();
+            var tableClient = _connection.GetCloudTableClient();
             _tableReference = tableClient.GetTableReference(CacheTable.Name);
 
             _tableQuery = new TableQuery<DynamicTableEntity>().Take(1000);
@@ -69,7 +69,7 @@ namespace dexih.connections.azure
             }
             catch (StorageException ex)
             {
-                string message = "Error reading Azure Storage table: " + CacheTable.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation?.ExtendedErrorInformation?.ErrorMessage + ".";
+                var message = "Error reading Azure Storage table: " + CacheTable.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation?.ExtendedErrorInformation?.ErrorMessage + ".";
                 throw new ConnectionException(message, ex);
             }
 
@@ -120,9 +120,9 @@ namespace dexih.connections.azure
                     _currentReadRow = 0;
                 }
 
-                DynamicTableEntity currentEntity = _tableResult.ElementAt(_currentReadRow);
+                var currentEntity = _tableResult.ElementAt(_currentReadRow);
 
-                object[] row = GetRow(currentEntity);
+                var row = GetRow(currentEntity);
 
                 _currentReadRow++;
 
@@ -136,23 +136,23 @@ namespace dexih.connections.azure
 
         private object[] GetRow(DynamicTableEntity currentEntity)
         {
-            object[] row = new object[CacheTable.Columns.Count];
+            var row = new object[CacheTable.Columns.Count];
 
-            int partitionKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
+            var partitionKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
             if(partitionKeyOrdinal >= 0)
                 row[partitionKeyOrdinal] = currentEntity.PartitionKey;
 
-            int rowKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            var rowKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
             if (rowKeyOrdinal >= 0)
                 row[rowKeyOrdinal] = currentEntity.RowKey;
 
-            int timestampOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.TimeStamp);
+            var timestampOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.TimeStamp);
             if (timestampOrdinal >= 0)
                 row[timestampOrdinal] = currentEntity.Timestamp;
 
             foreach (var value in currentEntity.Properties)
             {
-                object returnValue = value.Value.PropertyAsObject;
+                var returnValue = value.Value.PropertyAsObject;
                 if (returnValue == null)
                     row[CacheTable.GetOrdinal(value.Key)] = DBNull.Value;
                 else
@@ -171,15 +171,15 @@ namespace dexih.connections.azure
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken)
         {
             try
             {
-                CloudTableClient tableClient = _connection.GetCloudTableClient();
-                CloudTable cTable = tableClient.GetTableReference(CacheTable.Name);
+                var tableClient = _connection.GetCloudTableClient();
+                var cTable = tableClient.GetTableReference(CacheTable.Name);
 
                 //Read the key fields from the table
-                TableQuery tableQuery = new TableQuery();
+                var tableQuery = new TableQuery();
                 tableQuery.SelectColumns = CacheTable.Columns.Select(c=>c.Name).ToArray();
                 tableQuery.FilterString = _connection.BuildFilterString(filters);
                 tableQuery.Take(1);
@@ -188,8 +188,8 @@ namespace dexih.connections.azure
                 var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                 continuationToken = result.ContinuationToken;
 
-                DynamicTableEntity currentEntity = result.ElementAt(_currentReadRow);
-                object[] row = GetRow(currentEntity);
+                var currentEntity = result.ElementAt(_currentReadRow);
+                var row = GetRow(currentEntity);
 
                 return row;
             }

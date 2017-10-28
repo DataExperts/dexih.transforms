@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Reflection;
+using dexih.functions;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms.Poco
 {
@@ -12,27 +15,41 @@ namespace dexih.transforms.Poco
     public class PocoMapper<T>
     {
         private readonly DbDataReader _reader;
-        private readonly List<PocoTableMapping> _fieldMappings;
-        
+        // private readonly List<PocoTableMapping> _fieldMappings;
+        private readonly PocoTable<T> _pocoTable;
+
         public PocoMapper(DbDataReader reader)
         {
             _reader = reader;
-            
-            _fieldMappings = new List<PocoTableMapping>();
-            //Create a list of properties in the type T, and match them to ordinals in the inputReader.
-            var properties = typeof(T).GetProperties();
-            foreach (var propertyInfo in properties)
-            {
-                // if the property has a field attribute, use this as the reference in the reader
-                var field = propertyInfo.GetCustomAttribute<FieldAttribute>(false);
-                var name = string.IsNullOrEmpty(field?.Name) ? propertyInfo.Name : field.Name;
+            _pocoTable = new PocoTable<T>();
 
-                var ordinal = reader.GetOrdinal(name);
-                if (ordinal >= 0)
-                {
-                    _fieldMappings.Add(new PocoTableMapping(propertyInfo, ordinal));
-                }
-            }
+
+
+            //_fieldMappings = new List<PocoTableMapping>();
+            ////Create a list of properties in the type T, and match them to ordinals in the inputReader.
+            //var properties = typeof(T).GetProperties();
+            //foreach (var propertyInfo in properties)
+            //{
+            //    // if the property has a field attribute, use this as the reference in the reader
+            //    var field = propertyInfo.GetCustomAttribute<PocoColumnAttribute>(false);
+            //    if (field != null && !field.Skip)
+            //    {
+            //        var name = string.IsNullOrEmpty(field?.Name) ? propertyInfo.Name : field.Name;
+            //        var isKey = field != null && field.IsKey;
+
+            //        var ordinal = reader.GetOrdinal(name);
+            //        if (ordinal >= 0)
+            //        {
+            //            _fieldMappings.Add(new PocoTableMapping(propertyInfo, ordinal, isKey));
+            //        }
+            //    }
+            //}
+        }
+
+        public PocoMapper(DbDataReader reader, PocoTable<T> pocoTable)
+        {
+            _reader = reader;
+            _pocoTable = pocoTable;
         }
 
         /// <summary>
@@ -41,20 +58,57 @@ namespace dexih.transforms.Poco
         /// <returns>Object</returns>
         public T GetItem()
         {
-            var item = (T) Activator.CreateInstance(typeof(T));
+            var item = (T)Activator.CreateInstance(typeof(T));
 
-            foreach (var mapping in _fieldMappings)
+            foreach (var mapping in _pocoTable.TableMappings)
             {
-                var value = _reader[mapping.Position];
-                
-                if (mapping.PropertyInfo.PropertyType.GetTypeInfo().IsEnum && value is string)
+                if (!mapping.PropertyInfo.CanWrite) continue;
+
+                var column = _pocoTable.Table.Columns[mapping.Position];
+                var ordinal = _reader.GetOrdinal(column.Name);
+                if (ordinal >= 0)
                 {
-                    value = Enum.Parse(mapping.PropertyInfo.PropertyType, (string)value);
+                    var value = _reader[ordinal];
+
+                    try
+                    {
+                        if (mapping.PropertyInfo.PropertyType.GetTypeInfo().IsEnum && value is string)
+                        {
+                            value = Enum.Parse(mapping.PropertyInfo.PropertyType, (string)value);
+                        }
+                        else
+                        {
+                            value = DataType.TryParse(column.Datatype, value);
+                        }
+
+                        mapping.PropertyInfo.SetValue(item, value is DBNull ? null : value);
+                    }
+                    catch (Exception ex)
+                    {
+#if DEBUG
+                        throw new PocoException($"Can't set value {value} to property {mapping.PropertyInfo.Name}.  {ex.Message}.", ex);
+#else
+                    throw new PocoException($"Can't set property {mapping.PropertyInfo.Name}.  {ex.Message}.", ex);
+#endif
+                    }
                 }
-                mapping.PropertyInfo.SetValue(item, value is DBNull ? null : value);
             }
 
             return item;
+        }
+    }
+
+    public class PocoReaderMapping
+    {
+        public PropertyInfo PropertyInfo { get; set; }
+        public int ReaderOrdinal { get; set; }
+        public TableColumn Column { get; set; }
+
+        public PocoReaderMapping(PropertyInfo propertyInfo, int readerOrdinal, TableColumn column)
+        {
+            PropertyInfo = propertyInfo;
+            ReaderOrdinal = readerOrdinal;
+            Column = column;
         }
     }
 }

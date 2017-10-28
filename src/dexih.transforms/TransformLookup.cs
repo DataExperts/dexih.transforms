@@ -38,7 +38,7 @@ namespace dexih.transforms
 
             CacheTable = new Table("Lookup");
 
-            int pos = 0;
+            var pos = 0;
             foreach (var column in PrimaryTransform.CacheTable.Columns)
             {
                 CacheTable.Columns.Add(column.Copy());
@@ -85,16 +85,16 @@ namespace dexih.transforms
 
             //load in the primary table values
             newRow = new object[FieldCount];
-            int pos = 0;
-            for (int i = 0; i < _primaryFieldCount; i++)
+            var pos = 0;
+            for (var i = 0; i < _primaryFieldCount; i++)
             {
                 newRow[pos] = PrimaryTransform[i];
                 pos++;
             }
 
             //set the values for the lookup
-            List<Filter> filters = new List<Filter>();
-            for (int i = 0; i < JoinPairs.Count; i++)
+            var filters = new List<Filter>();
+            for (var i = 0; i < JoinPairs.Count; i++)
             {
                 var value = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[JoinPairs[i].SourceColumn];
 
@@ -112,7 +112,7 @@ namespace dexih.transforms
                 var lookup = await ReferenceTransform.LookupRow(filters, cancellationToken);
                 if (lookup != null)
                 {
-                    for (int i = 0; i < _referenceFieldCount; i++)
+                    for (var i = 0; i < _referenceFieldCount; i++)
                     {
                         newRow[pos] = lookup[i];
                         pos++;
@@ -140,7 +140,7 @@ namespace dexih.transforms
 
         public override List<Sort> RequiredSortFields()
         {
-            List<Sort> fields = new List<Sort>();
+            var fields = new List<Sort>();
             return fields;
         }
 

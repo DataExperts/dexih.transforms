@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.7-ALPHA" />
-    <PackageReference Include="Dexih.Utils.RealTimeBuffer" Version="0.1.4-ALPHA" />
   </ItemGroup>
 
   <ItemGroup>

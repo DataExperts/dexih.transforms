@@ -154,7 +154,7 @@ namespace dexih.transforms
         {
             if (string.IsNullOrEmpty(profileTableName)) return null;
 
-            Table profileResults = new Table(profileTableName, "");
+            var profileResults = new Table(profileTableName, "");
             profileResults.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, EDeltaType.CreateAuditKey));
             profileResults.Columns.Add(new TableColumn("Profile", ETypeCode.String));
             profileResults.Columns.Add(new TableColumn("ColumnName", ETypeCode.String));
@@ -200,11 +200,11 @@ namespace dexih.transforms
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
             {
-                bool sortMatch = SortFieldsMatch(RequiredSortFields(), primaryTransform.CacheTable.OutputSortFields);
+                var sortMatch = SortFieldsMatch(RequiredSortFields(), primaryTransform.CacheTable.OutputSortFields);
 
                 if (!sortMatch)
                 {
-                    TransformSort sortTransform = new TransformSort(primaryTransform, RequiredSortFields());
+                    var sortTransform = new TransformSort(primaryTransform, RequiredSortFields());
                     PrimaryTransform = sortTransform;
                 }
                 else
@@ -218,7 +218,7 @@ namespace dexih.transforms
 
                     if (!sortMatch)
                     {
-                        TransformSort sortTransform = new TransformSort(referenceTransform, RequiredReferenceSortFields());
+                        var sortTransform = new TransformSort(referenceTransform, RequiredReferenceSortFields());
                         ReferenceTransform = sortTransform;
                     }
                     else
@@ -229,7 +229,7 @@ namespace dexih.transforms
             }
             else
             {
-                bool sortMatch = SortFieldsMatch(RequiredSortFields(), primaryTransform.CacheTable.OutputSortFields);
+                var sortMatch = SortFieldsMatch(RequiredSortFields(), primaryTransform.CacheTable.OutputSortFields);
 
                 if (ReferenceTransform != null)
                 {
@@ -267,8 +267,8 @@ namespace dexih.transforms
             if (requiredSort == null || actualSort == null)
                 return false;
 
-            string requiredSortFields = String.Join(",", requiredSort.Select(c => c.Column.TableColumnName()).ToArray());
-            string actualSortFields = string.Join(",", actualSort.Select(c => c.Column.TableColumnName()).ToArray());
+            var requiredSortFields = String.Join(",", requiredSort.Select(c => c.Column.TableColumnName()).ToArray());
+            var actualSortFields = string.Join(",", actualSort.Select(c => c.Column.TableColumnName()).ToArray());
 
             //compare the fields.  if actualsortfields are more, that is ok, as the primary sort condition is still met.
             if (actualSortFields.Length >= requiredSortFields.Length && requiredSortFields == actualSortFields.Substring(0, requiredSortFields.Length))
@@ -283,7 +283,7 @@ namespace dexih.transforms
         /// <param name="filters">Requested filters for underlying transform to execute.</param>
         /// <param name="sorts">Requested sort for underlying transform to execute.</param>
         /// <returns>True is successful, False is unsuccessful.</returns>
-        public virtual async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancelToken)
+        public virtual async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -291,13 +291,13 @@ namespace dexih.transforms
 
             if (PrimaryTransform != null)
             {
-                result = result && await PrimaryTransform.Open(auditKey, query, cancelToken);
+                result = result && await PrimaryTransform.Open(auditKey, query, cancellationToken);
                 if (!result)
                     return result;
             }
 
             if (ReferenceTransform != null)
-                result = result && await ReferenceTransform.Open(auditKey, null, cancelToken);
+                result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
 
             return result;
         }
@@ -376,8 +376,8 @@ namespace dexih.transforms
             switch (EncryptionMethod)
             {
                 case EEncryptionMethod.EncryptDecryptSecureFields:
-                    int columnCount = CacheTable.Columns.Count;
-                    for (int i = 0; i < columnCount; i++)
+                    var columnCount = CacheTable.Columns.Count;
+                    for (var i = 0; i < columnCount; i++)
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
@@ -401,7 +401,7 @@ namespace dexih.transforms
                     break;
                 case EEncryptionMethod.MaskSecureFields:
                     columnCount = CacheTable.Columns.Count;
-                    for (int i = 0; i < columnCount; i++)
+                    for (var i = 0; i < columnCount; i++)
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
@@ -454,9 +454,9 @@ namespace dexih.transforms
         /// The number of timer ticks specifically for this transform.
         /// </summary>
         /// <returns></returns>
-        public long TransformTimerTicks()
+        public TimeSpan TransformTimerTicks()
         {
-            long ticks = TimerTicks();
+            var ticks = TimerTicks();
 
             if (PrimaryTransform != null)
                 ticks = ticks - PrimaryTransform.TimerTicks();
@@ -470,13 +470,13 @@ namespace dexih.transforms
         /// The aggregates the number of timer ticks for any underlying base readers.  This provides a view of how long database/read operations are taking.
         /// </summary>
         /// <returns></returns>
-        public long ReaderTimerTicks()
+        public TimeSpan ReaderTimerTicks()
         {
             if (IsReader)
-                return TransformTimer.ElapsedTicks;
+                return TransformTimer.Elapsed;
             else
             {
-                var ticks = PrimaryTransform?.ReaderTimerTicks()??0 + ReferenceTransform?.ReaderTimerTicks()??0;
+				var ticks = PrimaryTransform?.ReaderTimerTicks()??TimeSpan.FromTicks(0) + ReferenceTransform?.ReaderTimerTicks()??TimeSpan.FromTicks(0);
                 return ticks;
             }
         }
@@ -485,24 +485,24 @@ namespace dexih.transforms
         /// The aggregates the number of timer ticks for this and underlying transforms, excluding the time taken for base readers. 
         /// </summary>
         /// <returns></returns>
-        public long ProcessingTimerTicks()
+        public TimeSpan ProcessingTimerTicks()
         {
-            return TransformTimer.ElapsedTicks - ReaderTimerTicks();
+            return TransformTimer.Elapsed - ReaderTimerTicks();
         }
 
         /// <summary>
         /// The total timer ticks for this transform.  This includes any underlying processing.
         /// </summary>
         /// <returns></returns>
-        public long TimerTicks() => TransformTimer.ElapsedTicks;
+        public TimeSpan TimerTicks() => TransformTimer.Elapsed;
 
 
         public string PerformanceSummary()
         {
-            StringBuilder performance = new StringBuilder();
+            var performance = new StringBuilder();
 
-            long ticks = TransformTimerTicks();
-            performance.AppendLine(Details() + " - " + ticks.ToString() + "(" + ((decimal)ticks / TimeSpan.TicksPerSecond).ToString()  + " seconds)");
+			var timeSpan = TransformTimerTicks();
+			performance.AppendLine($"{Details()} - Time: {timeSpan.ToString("c")}, Rows: {TotalRowsReadPrimary}, Performance: {(TotalRowsReadPrimary/timeSpan.TotalSeconds).ToString("F")} rows/second");
 
             if (PrimaryTransform != null)
                 performance.AppendLine(PrimaryTransform.PerformanceSummary());
@@ -536,7 +536,7 @@ namespace dexih.transforms
             {
                 _isResetting = true;
 
-                bool returnValue = true;
+                var returnValue = true;
 
                 _isFirstRead = true;
                 IsCacheFull = false;
@@ -610,14 +610,14 @@ namespace dexih.transforms
         /// The lookup will first attempt to retrieve a value from the cache (if cachemethod is set to PreLoad cache or OnDemandCache), and then a direct lookup if the transform supports it.
         /// </summary>
         /// <param name="filters"></param>
-        /// <param name="cancelToken"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<object[]> LookupRow(List<Filter> filters, CancellationToken cancelToken)
+        public virtual async Task<object[]> LookupRow(List<Filter> filters, CancellationToken cancellationToken)
         {
             if (CacheMethod == ECacheMethod.PreLoadCache)
             {
                 //preload all records.
-                while (await ReadAsync(cancelToken)) ;
+                while (await ReadAsync(cancellationToken));
 
                 return CacheTable.LookupSingleRow(filters);
             }
@@ -633,7 +633,7 @@ namespace dexih.transforms
                 if (CanLookupRowDirect)
                 {
                     //not found in the cache, attempt a direct lookup.
-                    lookupResult = await LookupRowDirect(filters, cancelToken);
+                    lookupResult = await LookupRowDirect(filters, cancellationToken);
 
                     if (lookupResult != null)
                     {
@@ -647,7 +647,7 @@ namespace dexih.transforms
                 else
                 {
                     //not found in the cache, keep reading until it's found.
-                    while (await ReadAsync(cancelToken))
+                    while (await ReadAsync(cancellationToken))
                     {
 
                         if(CacheTable.RowMatch(filters, CurrentRow))
@@ -664,7 +664,7 @@ namespace dexih.transforms
             else
             {
                 //if no caching is specified, run a direct lookup.
-                var lookupReturn = await LookupRowDirect(filters, cancelToken);
+                var lookupReturn = await LookupRowDirect(filters, cancellationToken);
                 if (lookupReturn != null)
                 {
                     if (EncryptionMethod != EEncryptionMethod.NoEncryption)
@@ -683,7 +683,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public virtual async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken) => await Task.Run(() => { return (object[])null; });
+        public virtual async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken) => await Task.Run(() => { return (object[])null; });
 
         #endregion
 
@@ -763,10 +763,15 @@ namespace dexih.transforms
                 }
 
             }
+            catch (OperationCanceledException)
+            {
+                IsReaderFinished = true;
+                throw;
+            }
             catch (Exception ex)
             {
                 IsReaderFinished = true;
-				throw new TransformException($"Read record error. {ex.Message}", ex);
+                throw new TransformException($"Read record error. {ex.Message}", ex);
             }
 
 
@@ -788,11 +793,12 @@ namespace dexih.transforms
 
             }
 
-            if (IsReader && !IsPrimaryTransform)
+			if (IsReader && !IsPrimaryTransform && !IsReaderFinished)
                 TransformRowsReadReference++;
 
             //if this is a primary (i.e. starting reader), increment the rows read.
-            if (IsReader) TransformRowsReadPrimary++;
+            if (IsReader && !IsReaderFinished) 
+				TransformRowsReadPrimary++;
 
             //add the row to the cache
             if (CurrentRow != null && !_currentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
@@ -805,27 +811,45 @@ namespace dexih.transforms
         public override int FieldCount => CacheTable.Columns.Count;
         
 		public override int GetOrdinal(string name) => CacheTable.GetOrdinal(name);
-        
+
+		public int GetOrdinal(TableColumn column)
+		{
+			var ordinal = GetOrdinal(column.TableColumnName());
+			if (ordinal < 0)
+			{
+				ordinal = GetOrdinal(column.Name);
+			}
+
+			return ordinal;
+		}
+
 		public override string GetName(int i) => CacheTable.Columns[i].Name;
         
 		public override object this[string name]
         {
             get
             {
-                int ordinal = GetOrdinal(name);
+                var ordinal = GetOrdinal(name);
                 if (ordinal < 0)
                     throw new Exception("The column " + name + " could not be found in the table.");
 
                 return GetValue(GetOrdinal(name));
             }
         }
-        public override object this[int i] => GetValue(i);
+        public override object this[int ordinal] => GetValue(ordinal);
 
         public object this[TableColumn column]
         {
             get
             {
-                return this[column.TableColumnName()];
+				var ordinal = GetOrdinal(column);
+
+				if(ordinal < 0)
+				{
+					throw new Exception("The column " + column.TableColumnName() + " could not be found in the table.");
+				}
+					
+                return this[ordinal];
             }
         }
 
@@ -922,7 +946,7 @@ namespace dexih.transforms
             if (values.Length > CurrentRow.Length)
                 throw new Exception("Could not GetValues as the input array was length " + values.Length.ToString() + " which is greater than the current number of fields " + CurrentRow.Length.ToString() + ".");
 
-            for (int i = 0; i < values.GetLength(0); i++)
+            for (var i = 0; i < values.GetLength(0); i++)
                 values[i] = CurrentRow[i];
             return values.GetLength(0);
         }
@@ -1050,11 +1074,11 @@ namespace dexih.transforms
 
         public static ReadOnlyCollection<DbColumn> GetColumnSchema(this Transform reader)
         {
-            Transform transform = (Transform)reader;
+            var transform = (Transform)reader;
 
             var columnSchema = new List<DbColumn>();
 
-            int ordinal = 0;
+            var ordinal = 0;
             foreach(var col in transform.CacheTable.Columns)
             {
                 var column = new TransformColumn(

@@ -85,12 +85,13 @@ namespace dexih.connections.test
 
             writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
-            await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
-            Assert.Equal(10, writerResult.RowsCreated);
+            var writeAllResult = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
+            Assert.True(writeAllResult, writerResult.Message);
+            Assert.Equal(10L, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
             var auditTable = await connection.GetTransformWriterResults(0, null, writerResult.AuditKey, null, true, false, false, null, 1, null, false, CancellationToken.None);
-            Assert.Equal((long)10, auditTable[0].RowsCreated);
+            Assert.Equal(10L, auditTable[0].RowsCreated);
 
         }
 

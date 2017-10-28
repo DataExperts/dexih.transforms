@@ -8,6 +8,7 @@ using System.Threading;
 using System.Diagnostics;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -41,9 +42,9 @@ namespace dexih.transforms
 
         public override Task<Table> InitializeTable(Table table, int position) => Task.FromResult<Table>(null);
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancelToken) => Task.FromResult(true);
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken) => Task.FromResult(true);
 
-        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
             if (_tables.ContainsKey(table.Name))
             {
@@ -60,17 +61,15 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
-        public override Task<long> ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancelToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancellationToken)
         {
             var deleteTable = _tables[table.Name];
 
-            var timer = Stopwatch.StartNew();
-
             foreach (var query in deleteQueries)
             {
-                if (cancelToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    throw new OperationCanceledException($"The execute delete for table {table.Name} was cancelled.", cancelToken);
+                    throw new OperationCanceledException($"The execute delete for table {table.Name} was cancelled.", cancellationToken);
                 }
 
                 var lookupResult = deleteTable.LookupMultipleRows(query.Filters);
@@ -83,42 +82,54 @@ namespace dexih.transforms
                     }
                 }
             }
-            timer.Stop();
 
-            return Task.FromResult(timer.ElapsedTicks);
+			return Task.CompletedTask;
         }
 
-        public override async Task<long> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken)
         {
             var insertTable = _tables[table.Name];
 
-            var timer = Stopwatch.StartNew();
-            while(await sourceData.ReadAsync(cancelToken))
+            while(await sourceData.ReadAsync(cancellationToken))
             {
-                if (cancelToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    throw new OperationCanceledException($"The bulk insert for table {table.Name} was cancelled.", cancelToken);
+                    throw new OperationCanceledException($"The bulk insert for table {table.Name} was cancelled.", cancellationToken);
                 }
 
                 var row = new object[sourceData.FieldCount];
                 sourceData.GetValues(row);
                 insertTable.Data.Add(row);
             }
-            timer.Stop();
-            return timer.ElapsedTicks;
         }
 
 
-        public override Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
         {
-            var timer = Stopwatch.StartNew();
             var insertTable = _tables[table.Name];
+
+            long maxIncrement = 0;
+            var autoIncrementOrdinal = -1;
+            var autoIncrement = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+            if(autoIncrement != null)
+            {
+                autoIncrementOrdinal = table.GetOrdinal(autoIncrement.Name);
+                foreach(var row in insertTable.Data)
+                {
+                    var value = (long)DataType.TryParse(DataType.ETypeCode.Int64, row[autoIncrementOrdinal]);
+                    if(value > maxIncrement)
+                    {
+                        maxIncrement = value;
+                    }
+                }
+            }
+
 
             foreach (var query in queries)
             {
-                if (cancelToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    throw new OperationCanceledException($"The insert rows for table {table.Name} was cancelled.", cancelToken);
+                    throw new OperationCanceledException($"The insert rows for table {table.Name} was cancelled.", cancellationToken);
                 }
 
                 var row = new object[table.Columns.Count];
@@ -128,37 +139,39 @@ namespace dexih.transforms
                     row[ordinal] = item.Value;
                 }
 
+                if(autoIncrement != null)
+                {
+                    row[autoIncrementOrdinal] = ++maxIncrement;
+                }
+
                 insertTable.Data.Add(row);
             }
 
-            timer.Stop();
-            return Task.FromResult(Tuple.Create<long, long>(0, timer.ElapsedTicks));
+            return Task.FromResult<long>(maxIncrement);
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
         {
             var reader = new ReaderMemory(_tables[table.Name], null);
             return Task.FromResult<DbDataReader>(reader);
         }
 
-        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken)
+        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
             //TODO Implement ExecuteScalar in ConnectionMemory.
 
             throw new NotImplementedException();
         }
 
-        public override Task<long> ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, CancellationToken cancelToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, CancellationToken cancellationToken)
         {
             var updateTable = _tables[table.Name];
 
-            var timer = Stopwatch.StartNew();
-
             foreach (var query in updateQueries)
             {
-                if (cancelToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    throw new OperationCanceledException($"The update rows for table {table.Name} was cancelled.", cancelToken);
+                    throw new OperationCanceledException($"The update rows for table {table.Name} was cancelled.", cancellationToken);
                 }
 
                 var lookupResult = updateTable.LookupMultipleRows(query.Filters);
@@ -175,16 +188,15 @@ namespace dexih.transforms
                 }
             }
 
-            timer.Stop();
-            return Task.FromResult<long>(timer.ElapsedTicks);
+			return Task.CompletedTask;
         }
 
-        public override Task<List<string>> GetDatabaseList(CancellationToken cancelToken)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
         {
             return Task.FromResult(new List<string>() { "" });
         }
 
-        public override Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancelToken)
+        public override Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
         {
             if (_tables.Keys.Contains(originalTable.Name))
             {
@@ -197,12 +209,12 @@ namespace dexih.transforms
             }
         }
 
-        public override Task<List<Table>> GetTableList(CancellationToken cancelToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken)
         {
             return Task.FromResult(_tables.Values.ToList());
         }
 
-        public override Task TruncateTable(Table table, CancellationToken cancelToken)
+        public override Task TruncateTable(Table table, CancellationToken cancellationToken)
         {
             _tables[table.Name].Data.Clear();
             return Task.CompletedTask;
@@ -214,7 +226,7 @@ namespace dexih.transforms
             return reader;
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancelToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {
             return Task.FromResult(_tables.ContainsKey(table.Name));
         }

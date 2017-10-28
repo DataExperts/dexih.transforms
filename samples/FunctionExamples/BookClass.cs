@@ -7,16 +7,16 @@ namespace FunctionExamples
 {
     public class BookClass
     {
-        [Field("code", DeltaType = TableColumn.EDeltaType.NaturalKey)]
+        [PocoColumn("code", DeltaType = TableColumn.EDeltaType.NaturalKey)]
         public string Code { get; set; }
 
-        [Field("name")]
+        [PocoColumn("name")]
         public string Name { get; set; }
 
-        [Field("name")]
+        [PocoColumn("name")]
         public int Cost { get; set; }
 
-        [Field("date_published")]
+        [PocoColumn("date_published")]
         public DateTime Published { get; set; }
     
     }

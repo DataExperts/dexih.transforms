@@ -8,9 +8,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.transforms.Poco;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms
 {
+    [PocoTable(Name = "DexihResults")]
     public class TransformWriterResult
     {
         #region Events
@@ -29,7 +32,10 @@ namespace dexih.transforms
 
         }
 
-        public TransformWriterResult(Int64 hubKey, Int64 auditKey, string auditType, Int64 referenceKey, Int64 parentAuditKey, string referenceName, Int64 sourceTableKey, string sourceTableName, Int64 targetTableKey, string targetTableName, Connection auditConnection, TransformWriterResult lastSuccessfulResult, ETriggerMethod triggerMethod, string triggerInfo)
+        public void SetProperties(long hubKey, long auditKey, string auditType, long referenceKey,
+            long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName,
+            long targetTableKey, string targetTableName, Connection auditConnection,
+            TransformWriterResult lastSuccessfulResult, ETriggerMethod triggerMethod, string triggerInfo)
         {
             HubKey = hubKey;
             AuditKey = auditKey;
@@ -42,14 +48,18 @@ namespace dexih.transforms
             TargetTableKey = targetTableKey;
             TargetTableName = targetTableName;
             _auditConnection = auditConnection;
-            LastRowTotal = lastSuccessfulResult == null ? 0 : lastSuccessfulResult.RowsTotal;
-            LastMaxIncrementalValue = lastSuccessfulResult == null ? null : lastSuccessfulResult.MaxIncrementalValue;
+            LastRowTotal = lastSuccessfulResult?.RowsTotal ?? 0;
+            LastMaxIncrementalValue = lastSuccessfulResult?.MaxIncrementalValue;
 
             InitializeTime = DateTime.Now;
             LastUpdateTime = InitializeTime;
             RunStatus = ERunStatus.Initialised;
             TriggerMethod = triggerMethod;
             TriggerInfo = triggerInfo;
+
+            IsCurrent = true;
+            IsPrevious = false;
+            IsPreviousSuccess = false;
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
@@ -78,67 +88,111 @@ namespace dexih.transforms
             Datajob
         }
 
-        private readonly Connection _auditConnection;
 
+        [PocoColumn(DeltaType = TableColumn.EDeltaType.AutoIncrement, IsKey = true)]
         public long AuditKey { get; set; }
+
+        [PocoColumn(MaxLength = 20)]
         public string AuditType { get; set; }
-        public Int64 ReferenceKey { get; set; }
-        public Int64 ParentAuditKey { get; set; }
+
+        public long ReferenceKey { get; set; }
+
+        public long ParentAuditKey { get; set; }
+
+        [PocoColumn(MaxLength = 1024)]
         public string ReferenceName { get; set; }
-        public Int64 SourceTableKey { get; set; }
+        public long SourceTableKey { get; set; }
+
+        [PocoColumn(MaxLength = 1024)]
         public string SourceTableName { get; set; }
-        public Int64 TargetTableKey { get; set; }
+
+        public long TargetTableKey { get; set; }
+
+        [PocoColumn(MaxLength = 1024)]
         public string TargetTableName { get; set; }
 
-        public Int64 HubKey { get; set; }
+        public long HubKey { get; set; }
 
+        [PocoColumn(Skip = true)]
         public long LastRowTotal { get; set; }
+
+        [PocoColumn(Skip = true)]
         public object LastMaxIncrementalValue { get; set; }
 
-        public Int32 RowsPerProgressEvent { get; set; } = 1000;
+        [PocoColumn(Skip = true)]
+        public int RowsPerProgressEvent { get; set; } = 1000;
 
         public long RowsTotal { get; set; }
         public long RowsCreated { get; set; }
         public long RowsUpdated { get; set; }
-        public Int64 RowsDeleted { get; set; }
-        public Int64 RowsPreserved { get; set; }
-        public Int64 RowsIgnored { get; set; }
-        public Int64 RowsRejected { get; set; }
-        public Int64 RowsFiltered { get; set; }
-        public Int64 RowsSorted { get; set; }
-        public Int64 RowsReadPrimary { get; set; }
-        public Int64 RowsReadReference { get; set; }
+        public long RowsDeleted { get; set; }
+        public long RowsPreserved { get; set; }
+        public long RowsIgnored { get; set; }
+        public long RowsRejected { get; set; }
+        public long RowsFiltered { get; set; }
+        public long RowsSorted { get; set; }
+        public long RowsReadPrimary { get; set; }
+        public long RowsReadReference { get; set; }
 
-        public Int64 ReadTicks { get; set; }
-        public Int64 WriteTicks { get; set; }
-        public Int64 ProcessingTicks { get; set; }
+        public long ReadTicks { get; set; }
+        public long WriteTicks { get; set; }
+        public long ProcessingTicks { get; set; }
 
+        [PocoColumn(DataType = ETypeCode.String, MaxLength = 255, AllowDbNull = true)]
         public object MaxIncrementalValue { get; set; }
+
         public long MaxSurrogateKey { get; set; }
 
+        [PocoColumn(MaxLength = 4000, AllowDbNull = true)]
         public string Message { get; set; }
+
+        [PocoColumn(MaxLength = 255, DataType = ETypeCode.Text, AllowDbNull = true)]
         public string ExceptionDetails { get; set; }
+
         public DateTime InitializeTime { get; set; }
         public DateTime? ScheduledTime { get; set; } 
         public DateTime? StartTime { get; set; } 
         public DateTime? EndTime { get; set; } 
         public DateTime? LastUpdateTime { get; set; }
+
+        [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
         public ETriggerMethod TriggerMethod { get; set; }
+
+        [PocoColumn(MaxLength = 1024)]
         public string TriggerInfo { get; set; }
+
+        [PocoColumn(MaxLength = 4000, AllowDbNull = true)]
         public string PerformanceSummary { get; set; }
 
+        [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
         public string ProfileTableName { get; set; }
+
+        [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
         public string RejectTableName { get; set; }
 
-        private CancellationTokenSource CancelTokenSource { get; set; }
 
+        [PocoColumn(Skip = true)]
         public bool TruncateTarget { get; set; } //once off truncate of the target table.  
+
+        [PocoColumn(Skip = true)]
         public bool ResetIncremental { get; set; }
+
+        [PocoColumn(Skip = true)]
         public object ResetIncrementalValue { get; set; }
 
+        /// these are used when reading the from table, if record is the current version, previous version, or the previous version that was successful.
+        public bool IsCurrent { get; set; }
+        public bool IsPrevious { get; set; }
+        public bool IsPreviousSuccess { get; set; }
+
+        Connection _auditConnection;
+
+        [PocoColumn(Skip = true)]
         public IEnumerable<TransformWriterResult> ChildResults { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
+
+        [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
         public ERunStatus RunStatus { get; set; }
 
         public TimeSpan? TimeTaken()
@@ -155,7 +209,7 @@ namespace dexih.transforms
                 return 0;
             else
             {
-                TimeSpan ts = TimeSpan.FromTicks(WriteTicks);
+                var ts = TimeSpan.FromTicks(WriteTicks);
                 return (decimal)RowsTotal / Convert.ToDecimal(ts.TotalSeconds);
             }
         }
@@ -166,7 +220,7 @@ namespace dexih.transforms
                 return 0;
             else
             {
-                TimeSpan ts = TimeSpan.FromTicks(ProcessingTicks);
+                var ts = TimeSpan.FromTicks(ProcessingTicks);
                 return (decimal)(RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
             }
         }
@@ -177,7 +231,7 @@ namespace dexih.transforms
                 return 0;
             else
             {
-                TimeSpan ts = TimeSpan.FromTicks(ReadTicks);
+                var ts = TimeSpan.FromTicks(ReadTicks);
                 return (decimal)(RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
             }
         }
@@ -190,7 +244,7 @@ namespace dexih.transforms
         /// <param name="message"></param>
         /// <param name="exception"></param>
         /// <returns></returns>
-        public async Task<bool> SetRunStatus(ERunStatus newStatus, string message = null, Exception exception = null)
+        public async Task<bool> SetRunStatus(ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken)
         {
             try
             {
@@ -230,7 +284,7 @@ namespace dexih.transforms
 
                     try
                     {
-                        var updateResult = await _auditConnection.UpdateAudit(this);
+                        await _auditConnection.UpdateAudit(this, cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -252,6 +306,7 @@ namespace dexih.transforms
             }
         }
 
+        [PocoColumn(Skip = true)]
         public bool IsRunning
         {
             get
@@ -260,6 +315,7 @@ namespace dexih.transforms
             }
         }
 
+        [PocoColumn(Skip = true)]
         public bool IsFinished
         {
             get
@@ -268,6 +324,7 @@ namespace dexih.transforms
             }
         }
 
+        [PocoColumn(Skip = true)]
         public bool IsScheduled
         {
             get
@@ -317,6 +374,7 @@ namespace dexih.transforms
             }
         }
 
+        [PocoColumn(Skip = true)]
         public int PercentageComplete
         {
             get
@@ -324,7 +382,7 @@ namespace dexih.transforms
                 if (RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.Abended) return 100;
                 if (RunStatus == ERunStatus.Initialised) return 0;
                 if (LastRowTotal == 0) return 50;
-                int value = Convert.ToInt32(100 * ((double)RowsTotal / LastRowTotal));
+                var value = Convert.ToInt32(100 * ((double)RowsTotal / LastRowTotal));
                 if (value > 100) return 100; else return value;
             }
         }

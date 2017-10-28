@@ -34,7 +34,7 @@ namespace dexih.connections.webservice
             base.Dispose(disposing);
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -48,7 +48,7 @@ namespace dexih.connections.webservice
                 //if no driving table is set, then use the row creator to simulate a single row.
                 if (ReferenceTransform == null)
                 {
-                    ReaderRowCreator rowCreator = new ReaderRowCreator();
+                    var rowCreator = new ReaderRowCreator();
                     rowCreator.InitializeRowCreator(1, 1, 1);
                     base.ReferenceTransform = rowCreator;
                 }
@@ -56,7 +56,7 @@ namespace dexih.connections.webservice
                 {
                     try
                     {
-                        var result = await ReferenceTransform.Open(auditKey, null, cancelToken);
+                        var result = await ReferenceTransform.Open(auditKey, null, cancellationToken);
                     }
                     catch(Exception ex)
                     {
@@ -107,9 +107,9 @@ namespace dexih.connections.webservice
                 else
                 {
                     var restFunction = (RestFunction)CacheTable;
-                    object[] row = new object[CacheTable.Columns.Count];
+                    var row = new object[CacheTable.Columns.Count];
 
-                    string uri = restFunction.RestfulUri;
+                    var uri = restFunction.RestfulUri;
 
                     foreach (var join in JoinPairs)
                     {
@@ -122,7 +122,7 @@ namespace dexih.connections.webservice
                     if (_cachedJson != null)
                     {
                         var data = _cachedJson[_cachedRow];
-                        for (int i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
+                        for (var i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
                         {
                             object value = data.SelectToken(CacheTable.Columns[i].Name);
                             try
@@ -173,7 +173,7 @@ namespace dexih.connections.webservice
                             client.DefaultRequestHeaders.Accept.Clear();
                             //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                            HttpResponseMessage response = await client.GetAsync(uri, cancellationToken);
+                            var response = await client.GetAsync(uri, cancellationToken);
                             cancellationToken.ThrowIfCancellationRequested();
 
                             if (!response.IsSuccessStatusCode)
@@ -187,7 +187,7 @@ namespace dexih.connections.webservice
 
                             if (CacheTable.Columns.Count > 3 + JoinPairs.Count)
                             {
-                                JToken data = JToken.Parse(row[CacheTable.GetOrdinal("Response")].ToString());
+                                var data = JToken.Parse(row[CacheTable.GetOrdinal("Response")].ToString());
 
                                 if (data.Type == JTokenType.Array)
                                 {
@@ -200,7 +200,7 @@ namespace dexih.connections.webservice
                                     }
                                 }
 
-                                for (int i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
+                                for (var i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
                                 {
                                     object value = data.SelectToken(CacheTable.Columns[i].Name);
                                     try
@@ -232,9 +232,9 @@ namespace dexih.connections.webservice
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken)
         {
-            return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters, cancelToken);
+            return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters, cancellationToken);
          }
     }
 }

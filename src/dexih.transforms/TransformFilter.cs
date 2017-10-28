@@ -44,7 +44,7 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
         public override bool PassThroughColumns => true;
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -64,7 +64,7 @@ namespace dexih.transforms
                     query.Filters.Add(filter);
                 }
             }
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
             return returnValue;
         }
 
@@ -73,19 +73,19 @@ namespace dexih.transforms
             if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
                 return null;
 
-            bool showRecord = true;
+            var showRecord = true;
             if (Conditions != null && Conditions.Count > 0)
             {
                 do //loop through the records util the filter is true
                 {
                     showRecord = true;
-                    foreach (Function condition in Conditions)
+                    foreach (var condition in Conditions)
                     {
-                        foreach (Parameter input in condition.Inputs.Where(c => c.IsColumn))
+                        foreach (var input in condition.Inputs.Where(c => c.IsColumn))
                         {
                             try
                             {
-                                input.SetValue(PrimaryTransform[input.Column.TableColumnName()]);
+                                input.SetValue(PrimaryTransform[input.Column]);
                             }
                             catch(Exception ex)
                             {

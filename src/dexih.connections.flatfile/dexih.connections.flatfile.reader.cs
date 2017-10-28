@@ -57,7 +57,7 @@ namespace dexih.connections.flatfile
             base.Dispose(disposing);
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -220,7 +220,7 @@ namespace dexih.connections.flatfile
 
                 if (moreRecords)
                 {
-                    object[] row = new object[CacheTable.Columns.Count];
+                    var row = new object[CacheTable.Columns.Count];
                     _currentFileRowNumber++;
 
                     foreach (var colPos in _csvOrdinalMappings.Keys)
@@ -311,7 +311,7 @@ namespace dexih.connections.flatfile
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancelToken)
+        public override Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken)
         {
             throw new NotSupportedException("Direct lookup not supported with flat files.");
         }

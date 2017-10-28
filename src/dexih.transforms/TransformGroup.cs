@@ -61,13 +61,13 @@ namespace dexih.transforms
         {
             CacheTable = new Table("Group");
 
-            int i = 0;
+            var i = 0;
             if (GroupFields != null)
             {
                 _groupValues = new string[GroupFields.Count];
                 _firstRecord = true;
 
-                foreach (ColumnPair groupField in GroupFields)
+                foreach (var groupField in GroupFields)
                 {
                     var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn].Copy();
                     column.ReferenceTable = "";
@@ -77,7 +77,7 @@ namespace dexih.transforms
                 }
             }
 
-            foreach (Function aggregate in Aggregates)
+            foreach (var aggregate in Aggregates)
             {
                 var column = new TableColumn(aggregate.TargetColumn.Name, aggregate.ReturnType);
                 CacheTable.Columns.Add(column);
@@ -85,7 +85,7 @@ namespace dexih.transforms
 
                 if (aggregate.Outputs != null)
                 {
-                    foreach (Parameter param in aggregate.Outputs)
+                    foreach (var param in aggregate.Outputs)
                     {
                         var paramColumn = new TableColumn(param.Column.Name, param.DataType);
                         CacheTable.Columns.Add(paramColumn);
@@ -123,7 +123,7 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancelToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -134,7 +134,7 @@ namespace dexih.transforms
 
             if(query.Sorts != null && query.Sorts.Count > 0)
             {
-                for(int i =0; i<requiredSorts.Count; i++)
+                for(var i =0; i<requiredSorts.Count; i++)
                 {
                     if (query.Sorts[i].Column == requiredSorts[i].Column)
                         requiredSorts[i].Direction = query.Sorts[i].Direction;
@@ -145,14 +145,14 @@ namespace dexih.transforms
 
             query.Sorts = requiredSorts;
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancelToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
             return returnValue;
         }
 
 
         public override bool ResetTransform()
         {
-            foreach (Function aggregate in Aggregates)
+            foreach (var aggregate in Aggregates)
             {
                 aggregate.Reset();
             }
@@ -191,7 +191,7 @@ namespace dexih.transforms
             newRow = new object[FieldCount];
 
             int i;
-            bool groupChanged = false;
+            var groupChanged = false;
             object[] newGroupValues = null;
 
             if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
@@ -213,7 +213,7 @@ namespace dexih.transforms
                         _firstRecord = false;
                         if (GroupFields != null)
                         {
-                            foreach (ColumnPair groupField in GroupFields)
+                            foreach (var groupField in GroupFields)
                             {
                                 _groupValues[i] = PrimaryTransform[groupField.SourceColumn].ToString();
                                 i++;
@@ -227,7 +227,7 @@ namespace dexih.transforms
                         {
                             newGroupValues = new string[GroupFields.Count];
 
-                            foreach (ColumnPair groupField in GroupFields)
+                            foreach (var groupField in GroupFields)
                             {
                                 newGroupValues[i] = PrimaryTransform[groupField.SourceColumn].ToString();
                                 if ((string)newGroupValues[i] != (string)_groupValues[i])
@@ -252,7 +252,7 @@ namespace dexih.transforms
 
                         if (PassThroughColumns == false)
                         {
-                            foreach (Function mapping in Aggregates)
+                            foreach (var mapping in Aggregates)
                             {
                                 try
                                 {
@@ -261,7 +261,7 @@ namespace dexih.transforms
 
                                     if (mapping.Outputs != null)
                                     {
-                                        foreach (Parameter output in mapping.Outputs)
+                                        foreach (var output in mapping.Outputs)
                                         {
                                             newRow[i] = output.Value;
                                             i++;
@@ -277,12 +277,12 @@ namespace dexih.transforms
                         //for passthrough, write out the aggregated values to the cached passthrough set
                         else
                         {
-                            int index = 0;
-                            int startColumn = i;
-                            foreach(object[] row in _passThroughValues)
+                            var index = 0;
+                            var startColumn = i;
+                            foreach(var row in _passThroughValues)
                             {
                                 i = startColumn;
-                                foreach (Function mapping in Aggregates)
+                                foreach (var mapping in Aggregates)
                                 {
                                     try
                                     {
@@ -291,7 +291,7 @@ namespace dexih.transforms
 
                                         if (mapping.Outputs != null)
                                         {
-                                            foreach (Parameter output in mapping.Outputs)
+                                            foreach (var output in mapping.Outputs)
                                             {
                                                 row[i] = output.Value;
                                                 i++;
@@ -308,10 +308,10 @@ namespace dexih.transforms
 
                             //the first row of the next group has been read, so this is to store it until ready to write out.
                             _nextPassThroughRow = new object[FieldCount];
-                            for (int j = 0; j< newGroupValues.Length; j++)
+                            for (var j = 0; j< newGroupValues.Length; j++)
                                 _nextPassThroughRow[j] = newGroupValues[j];
 
-                            for (int j = _passThroughStartIndex; j < FieldCount; j++)
+                            for (var j = _passThroughStartIndex; j < FieldCount; j++)
                                 _nextPassThroughRow[j] = PrimaryTransform[GetName(j)];
 
                             ////set the first cached row to current
@@ -321,7 +321,7 @@ namespace dexih.transforms
                         }
 
                         //reset the functions
-                        foreach (Function mapping in Aggregates)
+                        foreach (var mapping in Aggregates)
                             mapping.Reset();
 
                         //store the last groupvalues read to start the next grouping.
@@ -333,13 +333,13 @@ namespace dexih.transforms
                         if (PassThroughColumns)
                         {
                             //create a cached current row.  this will be output when the group has changed.
-                            object[] cacheRow = new object[newRow.Length];
+                            var cacheRow = new object[newRow.Length];
                             if (_groupValues != null)
                             {
-                                for (int j = 0; j < _groupValues.Length; j++)
+                                for (var j = 0; j < _groupValues.Length; j++)
                                     cacheRow[j] = _groupValues[j];
                             }
-                            for (int j = _passThroughStartIndex; j < FieldCount; j++)
+                            for (var j = _passThroughStartIndex; j < FieldCount; j++)
                                 cacheRow[j] = PrimaryTransform[GetName(j)];
                             _passThroughValues.Add(cacheRow);
                         }
@@ -347,11 +347,11 @@ namespace dexih.transforms
                     }
 
                     // update the aggregate values
-                    foreach (Function mapping in Aggregates)
+                    foreach (var mapping in Aggregates)
                     {
                         if (mapping.Inputs != null)
                         {
-                            foreach (Parameter input in mapping.Inputs.Where(c => c.IsColumn))
+                            foreach (var input in mapping.Inputs.Where(c => c.IsColumn))
                             {
                                 try
                                 {
@@ -399,7 +399,7 @@ namespace dexih.transforms
                 if (PassThroughColumns == false)
                 {
 
-                    foreach (Function mapping in Aggregates)
+                    foreach (var mapping in Aggregates)
                     {
                         try
                         {
@@ -413,7 +413,7 @@ namespace dexih.transforms
 
                         if (mapping.Outputs != null)
                         {
-                            foreach (Parameter output in mapping.Outputs)
+                            foreach (var output in mapping.Outputs)
                             {
                                 newRow[i] = output.Value;
                                 i++;
@@ -425,12 +425,12 @@ namespace dexih.transforms
                 else
                 {
                     //for passthrough, write out the aggregated values to the cached passthrough set
-                    int index = 0;
-                    int startColumn = i;
-                    foreach (object[] row in _passThroughValues)
+                    var index = 0;
+                    var startColumn = i;
+                    foreach (var row in _passThroughValues)
                     {
                         i = startColumn;
-                        foreach (Function mapping in Aggregates)
+                        foreach (var mapping in Aggregates)
                         {
                             try
                             {
@@ -445,7 +445,7 @@ namespace dexih.transforms
 
                             if (mapping.Outputs != null)
                             {
-                                foreach (Parameter output in mapping.Outputs)
+                                foreach (var output in mapping.Outputs)
                                 {
                                     row[i] = output.Value;
                                     i++;

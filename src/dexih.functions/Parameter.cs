@@ -81,6 +81,7 @@ namespace dexih.functions
         /// Indicates if the parameter is a column (vs a hard coded value)
         /// </summary>
         public bool IsColumn { get; set; }
+		public bool IsExpression { get; set; }
         public bool IsArray { get; set; }
         public TableColumn Column { get; set; } 
 

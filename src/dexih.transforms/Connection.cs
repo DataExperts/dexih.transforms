@@ -12,6 +12,7 @@ using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
+using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {
@@ -81,32 +82,32 @@ namespace dexih.transforms
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
         
         //Functions required for managed connection
-        public abstract Task CreateTable(Table table, bool dropTable, CancellationToken cancelToken);
+        public abstract Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken);
         //public abstract Task TestConnection();
-        public abstract Task<long> ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancelToken);
-        public abstract Task<long> ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancelToken);
+        public abstract Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken);
+        public abstract Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="table"></param>
         /// <param name="queries"></param>
-        /// <param name="cancelToken"></param>
-        /// <returns>Item1 = elapsed time, Item2 = autoincrement value</returns>
-        public abstract Task<Tuple<long, long>> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancelToken);
+        /// <param name="cancellationToken"></param>
+        /// <returns>The last autoincrement value</returns>
+        public abstract Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken);
 
         /// <summary>
         /// Runs a bulk insert operation for the connection.  
         /// </summary>
         /// <param name="table"></param>
         /// <param name="sourceData"></param>
-        /// <param name="cancelToken"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>ReturnValue with the value = elapsed timer ticks taken to write the record.</returns>
-        public abstract Task<long> ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancelToken);
-        public abstract Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancelToken);
+        public abstract Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken);
+        public abstract Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken);
         public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false);
-        public abstract Task TruncateTable(Table table, CancellationToken cancelToken);
-        public abstract Task<bool> TableExists(Table table, CancellationToken cancelToken);
+        public abstract Task TruncateTable(Table table, CancellationToken cancellationToken);
+        public abstract Task<bool> TableExists(Table table, CancellationToken cancellationToken);
 
         /// <summary>
         /// If database connection supports direct DbDataReader.
@@ -114,24 +115,24 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <param name="connection"></param>
         /// <param name="query"></param>
-        /// <param name="cancelToken"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public abstract Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancelToken);
+        public abstract Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken);
 
         //Functions required for datapoint.
-        public abstract Task CreateDatabase(string databaseName, CancellationToken cancelToken);
-        public abstract Task<List<string>> GetDatabaseList(CancellationToken cancelToken);
-        public abstract Task<List<Table>> GetTableList(CancellationToken cancelToken);
+        public abstract Task CreateDatabase(string databaseName, CancellationToken cancellationToken);
+        public abstract Task<List<string>> GetDatabaseList(CancellationToken cancellationToken);
+        public abstract Task<List<Table>> GetTableList(CancellationToken cancellationToken);
 
         /// <summary>
         /// Interrogates the underlying data to get the Table structure.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="cancelToken"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public abstract Task<Table> GetSourceTableInfo(Table table, CancellationToken cancelToken);
+        public abstract Task<Table> GetSourceTableInfo(Table table, CancellationToken cancellationToken);
 
-        public async Task<Table> GetSourceTableInfo(string TableName, CancellationToken cancelToken)
+        public async Task<Table> GetSourceTableInfo(string TableName, CancellationToken cancellationToken)
         {
             var table = new Table(TableName);
             var initResult = await InitializeTable(table, 0);
@@ -139,7 +140,7 @@ namespace dexih.transforms
             {
                 return null;
             }
-            return await GetSourceTableInfo(initResult, cancelToken);
+            return await GetSourceTableInfo(initResult, cancellationToken);
         }
 
         /// <summary>
@@ -158,12 +159,12 @@ namespace dexih.transforms
 
         public virtual object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
-            return GetConnectionMaxValue(typeCode, length);
+            return GetDataTypeMaxValue(typeCode, length);
         }
 
         public virtual object GetConnectionMinValue(ETypeCode typeCode)
         {
-            return GetConnectionMinValue(typeCode);
+            return GetDataTypeMinValue(typeCode);
         }
 
         
@@ -171,72 +172,35 @@ namespace dexih.transforms
 
         #region Audit
 
-        public virtual Table AuditTable
+        /// <summary>
+        /// Propulates the writerResult with a initial values, and writes the status to the database table.
+        /// </summary>
+        /// <param name="writreResult"></param>
+        /// <param name="subScriptionKey"></param>
+        /// <param name="auditType"></param>
+        /// <param name="referenceKey"></param>
+        /// <param name="parentAuditKey"></param>
+        /// <param name="referenceName"></param>
+        /// <param name="sourceTableKey"></param>
+        /// <param name="sourceTableName"></param>
+        /// <param name="targetTableKey"></param>
+        /// <param name="targetTableName"></param>
+        /// <param name="triggerMethod"></param>
+        /// <param name="triggerInfo"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual async Task InitializeAudit(TransformWriterResult writreResult, long subScriptionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancellationToken)
         {
-            get
-            {
-                var newTable = new Table("DexihHistory");
-                var auditTableResult = InitializeTable(newTable, 0).Result;
-                var auditTable = auditTableResult;
-
-                auditTable.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, TableColumn.EDeltaType.AutoIncrement));
-                auditTable.Columns.Add(new TableColumn("HubKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("AuditType", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
-                auditTable.Columns.Add(new TableColumn("ReferenceKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("ParentAuditKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("ReferenceName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
-                auditTable.Columns.Add(new TableColumn("SourceTableKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("SourceTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
-                auditTable.Columns.Add(new TableColumn("TargetTableKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("TargetTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 1024 });
-                auditTable.Columns.Add(new TableColumn("RowsTotal", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsCreated", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsUpdated", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsDeleted", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsPreserved", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsIgnored", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsRejected", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsSorted", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsFiltered", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsReadPrimary", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("RowsReadReference", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("ReadTicks", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("WriteTicks", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("ProcessingTicks", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("MaxIncrementalValue", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 255, AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("MaxSurrogateKey", ETypeCode.Int64, TableColumn.EDeltaType.TrackingField) { MaxLength = 255, AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("InitializeTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField));
-                auditTable.Columns.Add(new TableColumn("ScheduledTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("StartTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("EndTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("LastUpdateTime", ETypeCode.DateTime, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("RunStatus", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
-                auditTable.Columns.Add(new TableColumn("TriggerMethod", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { MaxLength = 20 });
-                auditTable.Columns.Add(new TableColumn("TriggerInfo", ETypeCode.String, TableColumn.EDeltaType.TrackingField) );
-                auditTable.Columns.Add(new TableColumn("Message", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("ExceptionDetails", ETypeCode.Text, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("IsCurrent", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
-                auditTable.Columns.Add(new TableColumn("IsPrevious", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
-                auditTable.Columns.Add(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean, TableColumn.EDeltaType.TrackingField) { AllowDbNull = false });
-                auditTable.Columns.Add(new TableColumn("ProfileTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                auditTable.Columns.Add(new TableColumn("RejectTableName", ETypeCode.String, TableColumn.EDeltaType.TrackingField) { AllowDbNull = true });
-                return auditTable;
-            }
-        }
-
-        public virtual async Task<TransformWriterResult> InitializeAudit(long subScriptionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancelToken)
-        {
-            var auditTable = AuditTable;
-
-            var tableExistsResult = await TableExists(auditTable, cancelToken);
+            var picoTable = new PocoTable<TransformWriterResult>();
 
             TransformWriterResult previousResult = null;
 
             //create the audit table if it does not exist.
+            var tableExistsResult = await picoTable.TableExists(this, cancellationToken);
             if (tableExistsResult == false)
             {
                 //create the table if it doesn't already exist.
-                await CreateTable(auditTable, false, cancelToken);
+                await picoTable.CreateTable(this, false, cancellationToken);
             }
             else
             {
@@ -244,71 +208,17 @@ namespace dexih.transforms
                 previousResult = await GetPreviousResult(subScriptionKey, referenceKey, CancellationToken.None);
             }
 
-            var writerResult = new TransformWriterResult(subScriptionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, triggerMethod, triggerInfo);
-
-            //note AuditKey not included in query columns as it is an AutoGenerate type.
-            var queryColumns = new List<QueryColumn>
-                {
-                    new QueryColumn(new TableColumn("HubKey", ETypeCode.Int64),  writerResult.HubKey),
-                    new QueryColumn(new TableColumn("AuditType", ETypeCode.String),  writerResult.AuditType),
-                    new QueryColumn(new TableColumn("ReferenceKey", ETypeCode.Int64), writerResult.ReferenceKey),
-                    new QueryColumn(new TableColumn("ParentAuditKey", ETypeCode.Int64), writerResult.ParentAuditKey),
-                    new QueryColumn(new TableColumn("ReferenceName", ETypeCode.String), writerResult.ReferenceName),
-                    new QueryColumn(new TableColumn("SourceTableKey", ETypeCode.Int64), writerResult.SourceTableKey),
-                    new QueryColumn(new TableColumn("SourceTableName", ETypeCode.String), writerResult.SourceTableName),
-                    new QueryColumn(new TableColumn("TargetTableKey", ETypeCode.Int64), writerResult.TargetTableKey),
-                    new QueryColumn(new TableColumn("TargetTableName", ETypeCode.String), writerResult.TargetTableName),
-                    new QueryColumn(new TableColumn("RowsTotal", ETypeCode.Int64), writerResult.RowsTotal),
-                    new QueryColumn(new TableColumn("RowsCreated", ETypeCode.Int64), writerResult.RowsCreated),
-                    new QueryColumn(new TableColumn("RowsUpdated", ETypeCode.Int64), writerResult.RowsUpdated),
-                    new QueryColumn(new TableColumn("RowsDeleted", ETypeCode.Int64), writerResult.RowsDeleted),
-                    new QueryColumn(new TableColumn("RowsPreserved", ETypeCode.Int64), writerResult.RowsPreserved),
-                    new QueryColumn(new TableColumn("RowsIgnored", ETypeCode.Int64), writerResult.RowsIgnored),
-                    new QueryColumn(new TableColumn("RowsRejected", ETypeCode.Int64), writerResult.RowsRejected),
-                    new QueryColumn(new TableColumn("RowsSorted", ETypeCode.Int64), writerResult.RowsSorted),
-                    new QueryColumn(new TableColumn("RowsFiltered", ETypeCode.Int64), writerResult.RowsFiltered),
-                    new QueryColumn(new TableColumn("RowsReadPrimary", ETypeCode.Int64), writerResult.RowsReadPrimary),
-                    new QueryColumn(new TableColumn("RowsReadReference", ETypeCode.Int64), writerResult.RowsReadReference),
-                    new QueryColumn(new TableColumn("ReadTicks", ETypeCode.Int64), writerResult.ReadTicks),
-                    new QueryColumn(new TableColumn("WriteTicks", ETypeCode.Int64), writerResult.WriteTicks),
-                    new QueryColumn(new TableColumn("ProcessingTicks", ETypeCode.Int64), writerResult.ProcessingTicks),
-                    new QueryColumn(new TableColumn("MaxIncrementalValue", ETypeCode.String), writerResult.MaxIncrementalValue),
-                    new QueryColumn(new TableColumn("MaxSurrogateKey", ETypeCode.Int64), writerResult.MaxSurrogateKey),
-                    new QueryColumn(new TableColumn("InitializeTime", ETypeCode.DateTime), writerResult.InitializeTime),
-                    new QueryColumn(new TableColumn("ScheduledTime", ETypeCode.DateTime), writerResult.ScheduledTime),
-                    new QueryColumn(new TableColumn("StartTime", ETypeCode.DateTime), writerResult.StartTime),
-                    new QueryColumn(new TableColumn("EndTime", ETypeCode.DateTime), writerResult.EndTime),
-                    new QueryColumn(new TableColumn("LastUpdateTime", ETypeCode.DateTime), writerResult.LastUpdateTime),
-                    new QueryColumn(new TableColumn("RunStatus", ETypeCode.String), writerResult.RunStatus.ToString()),
-                    new QueryColumn(new TableColumn("TriggerMethod", ETypeCode.String), writerResult.TriggerMethod.ToString()),
-                    new QueryColumn(new TableColumn("TriggerInfo", ETypeCode.String), writerResult.TriggerInfo),
-                    new QueryColumn(new TableColumn("Message", ETypeCode.String), writerResult.Message),
-                    new QueryColumn(new TableColumn("ExceptionDetails", ETypeCode.Text), writerResult.ExceptionDetails),
-                    new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), true),
-                    new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), false),
-                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), false),
-                    new QueryColumn(new TableColumn("ProfileTableName", ETypeCode.String), writerResult.ProfileTableName),
-                    new QueryColumn(new TableColumn("RejectTableName", ETypeCode.String), writerResult.RejectTableName)
-
-            };
-
-            var partitionKeyOrdinal = auditTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
-            if (partitionKeyOrdinal > 0)
-                queryColumns.Add(new QueryColumn(new TableColumn( auditTable.Columns[partitionKeyOrdinal].Name, ETypeCode.String), "AuditRow"));
-
-            var insertQuery = new InsertQuery(auditTable.Name, queryColumns);
-            var insertResult = await ExecuteInsert(auditTable, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
-
-            writerResult.AuditKey = insertResult.Item2;
-
-            return writerResult;
+            writreResult.SetProperties(subScriptionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, triggerMethod, triggerInfo);
+            await picoTable.ExecuteInsert(this, writreResult, cancellationToken);
         }
 
-        public virtual async Task<long> UpdateAudit(TransformWriterResult writerResult)
+        public virtual async Task UpdateAudit(TransformWriterResult writerResult, CancellationToken cancellationToken )
         {
-            var isCurrent = true;
-            var isPrevious = false;
-            var isPreviousSuccess = false;
+            var picoTable = new PocoTable<TransformWriterResult>();
+
+            writerResult.IsCurrent = true;
+            writerResult.IsPrevious = false;
+            writerResult.IsPreviousSuccess = false;
 
             //when the runstatuss is finished or finished with errors, set the previous success record to false.
             if (writerResult.RunStatus == TransformWriterResult.ERunStatus.Finished || writerResult.RunStatus == TransformWriterResult.ERunStatus.FinishedErrors)
@@ -324,10 +234,10 @@ namespace dexih.transforms
                     new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
                 };
 
-                var updateIsLatest = new UpdateQuery(AuditTable.Name, updateLatestColumn, updateLatestFilters);
-                var updateLatestResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
+                var updateIsLatest = new UpdateQuery(picoTable.Table.Name, updateLatestColumn, updateLatestFilters);
+                await ExecuteUpdate(picoTable.Table, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
 
-                isPreviousSuccess = true;
+                writerResult.IsPreviousSuccess = true;
             }
 
             //when finished, mark the previous result to false.
@@ -344,64 +254,15 @@ namespace dexih.transforms
                     new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
                 };
 
-                var updateIsLatest = new UpdateQuery(AuditTable.Name, updateLatestColumn, updateLatestFilters);
-                var updateLatestResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
+                var updateIsLatest = new UpdateQuery(picoTable.Table.Name, updateLatestColumn, updateLatestFilters);
+                await ExecuteUpdate(picoTable.Table, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
 
-                isCurrent = false;
-                isPrevious = true;
+                writerResult.IsCurrent = false;
+                writerResult.IsPrevious = true;
             }
 
+            await picoTable.ExecuteUpdate(this, writerResult, cancellationToken);
 
-            var updateColumns = new List<QueryColumn>()
-            {
-                    new QueryColumn(new TableColumn("AuditType", ETypeCode.String),  writerResult.AuditType),
-                    new QueryColumn(new TableColumn("HubKey", ETypeCode.Int64),  writerResult.HubKey),
-                    new QueryColumn(new TableColumn("ReferenceKey", ETypeCode.Int64), writerResult.ReferenceKey),
-                    new QueryColumn(new TableColumn("ParentAuditKey", ETypeCode.Int64), writerResult.ParentAuditKey),
-                    new QueryColumn(new TableColumn("ReferenceName", ETypeCode.String), writerResult.ReferenceName),
-                    new QueryColumn(new TableColumn("SourceTableKey", ETypeCode.Int64), writerResult.SourceTableKey),
-                    new QueryColumn(new TableColumn("SourceTableName", ETypeCode.String), writerResult.SourceTableName),
-                    new QueryColumn(new TableColumn("TargetTableKey", ETypeCode.Int64), writerResult.TargetTableKey),
-                    new QueryColumn(new TableColumn("TargetTableName", ETypeCode.String), writerResult.TargetTableName),
-                    new QueryColumn(new TableColumn("RowsTotal", ETypeCode.Int64), writerResult.RowsTotal),
-                    new QueryColumn(new TableColumn("RowsCreated", ETypeCode.Int64), writerResult.RowsCreated),
-                    new QueryColumn(new TableColumn("RowsUpdated", ETypeCode.Int64), writerResult.RowsUpdated),
-                    new QueryColumn(new TableColumn("RowsDeleted", ETypeCode.Int64), writerResult.RowsDeleted),
-                    new QueryColumn(new TableColumn("RowsPreserved", ETypeCode.Int64), writerResult.RowsPreserved),
-                    new QueryColumn(new TableColumn("RowsIgnored", ETypeCode.Int64), writerResult.RowsIgnored),
-                    new QueryColumn(new TableColumn("RowsRejected", ETypeCode.Int64), writerResult.RowsRejected),
-                    new QueryColumn(new TableColumn("RowsSorted", ETypeCode.Int64), writerResult.RowsSorted),
-                    new QueryColumn(new TableColumn("RowsFiltered", ETypeCode.Int64), writerResult.RowsFiltered),
-                    new QueryColumn(new TableColumn("RowsReadPrimary", ETypeCode.Int64), writerResult.RowsReadPrimary),
-                    new QueryColumn(new TableColumn("RowsReadReference", ETypeCode.Int64), writerResult.RowsReadReference),
-                    new QueryColumn(new TableColumn("ReadTicks", ETypeCode.Int64), writerResult.ReadTicks),
-                    new QueryColumn(new TableColumn("WriteTicks", ETypeCode.Int64), writerResult.WriteTicks),
-                    new QueryColumn(new TableColumn("ProcessingTicks", ETypeCode.Int64), writerResult.ProcessingTicks),
-                    new QueryColumn(new TableColumn("MaxIncrementalValue", ETypeCode.String), writerResult.MaxIncrementalValue),
-                    new QueryColumn(new TableColumn("MaxSurrogateKey", ETypeCode.Int64), writerResult.MaxSurrogateKey),
-                    new QueryColumn(new TableColumn("InitializeTime", ETypeCode.DateTime), writerResult.InitializeTime),
-                    new QueryColumn(new TableColumn("ScheduledTime", ETypeCode.DateTime), writerResult.ScheduledTime),
-                    new QueryColumn(new TableColumn("StartTime", ETypeCode.DateTime), writerResult.StartTime),
-                    new QueryColumn(new TableColumn("EndTime", ETypeCode.DateTime), writerResult.EndTime),
-                    new QueryColumn(new TableColumn("LastUpdateTime", ETypeCode.DateTime), writerResult.LastUpdateTime),
-                    new QueryColumn(new TableColumn("RunStatus", ETypeCode.String), writerResult.RunStatus.ToString()),
-                    new QueryColumn(new TableColumn("TriggerMethod", ETypeCode.String), writerResult.TriggerMethod.ToString()),
-                    new QueryColumn(new TableColumn("TriggerInfo", ETypeCode.String), writerResult.TriggerInfo.ToString()),
-                    new QueryColumn(new TableColumn("Message", ETypeCode.String), writerResult.Message),
-                    new QueryColumn(new TableColumn("ExceptionDetails", ETypeCode.Text), writerResult.ExceptionDetails),
-                    new QueryColumn(new TableColumn("IsCurrent", ETypeCode.Boolean), isCurrent),
-                    new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), isPrevious),
-                    new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), isPreviousSuccess),
-                    new QueryColumn(new TableColumn("ProfileTableName", ETypeCode.String), writerResult.ProfileTableName),
-                    new QueryColumn(new TableColumn("RejectTableName", ETypeCode.String), writerResult.RejectTableName)
-            };
-
-            var updateFilters = new List<Filter>() { new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.AuditKey) };
-
-            var updateQuery = new UpdateQuery(AuditTable.Name, updateColumns, updateFilters);
-            var updateResult = await ExecuteUpdate(AuditTable, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
-
-            return updateResult;
         }
 
 
@@ -456,7 +317,8 @@ namespace dexih.transforms
             var watch = new Stopwatch();
             watch.Start();
 
-            reader = GetTransformReader(AuditTable);
+            var picoTable = new PocoTable<TransformWriterResult>();
+            reader = GetTransformReader(picoTable.Table);
 
             var filters = new List<Filter>();
             if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, hubKey));
@@ -478,7 +340,7 @@ namespace dexih.transforms
             var returnValue = await reader.Open(0, query, cancellationToken);
             if (!returnValue)
             {
-                throw new ConnectionException($"Failed to get the transform writer results on table {AuditTable.Name} at {Name}.");
+                throw new ConnectionException($"Failed to get the transform writer results on table {picoTable.Table} at {Name}.");
             }
 
             var pocoReader = new PocoLoader<TransformWriterResult>();
@@ -524,10 +386,9 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="table"></param>
         /// <param name="surrogateKeyColumn"></param>
-        /// <param name="AuditKey">Included as Azure storage tables use the AuditKey to generate a new surrogate key</param>
-        /// <param name="cancelToken"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<long> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancelToken)
+        public virtual async Task<long> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken)
         {
             if(DynamicTableCreation)
             {
@@ -541,7 +402,7 @@ namespace dexih.transforms
             };
 
             long surrogateKeyValue;
-            var executeResult = await ExecuteScalar(table, query, cancelToken);
+            var executeResult = await ExecuteScalar(table, query, cancellationToken);
 
             if (executeResult == null || executeResult is DBNull)
                 surrogateKeyValue = 0;
@@ -569,9 +430,9 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <param name="surrogateKeyColumn"></param>
         /// <param name="value"></param>
-        /// <param name="cancelToken"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancelToken)
+        public virtual Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -592,11 +453,6 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <returns></returns>
         public virtual Task DataWriterFinish(Table table)
-        {
-            return Task.CompletedTask;
-        }
-
-        public virtual Task DataWriterError(string message, Exception exception)
         {
             return Task.CompletedTask;
         }
@@ -653,11 +509,11 @@ namespace dexih.transforms
         /// This compares the physical table with the table structure to ensure that it can be used.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="cancelToken"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>true if table matches, throw an exception is it does not match</returns>
-        public virtual async Task<bool> CompareTable(Table table, CancellationToken cancelToken)
+        public virtual async Task<bool> CompareTable(Table table, CancellationToken cancellationToken)
         {
-            var physicalTable = await GetSourceTableInfo(table, cancelToken);
+            var physicalTable = await GetSourceTableInfo(table, cancellationToken);
             if (physicalTable == null)
             {
                 throw new ConnectionException($"The compare table failed to get the source table information for table {table.Name} at {Name}.");

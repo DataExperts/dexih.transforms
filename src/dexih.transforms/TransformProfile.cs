@@ -66,12 +66,12 @@ namespace dexih.transforms
 
             if (!_lastRecord)
             {
-                object[] newRow = new object[CacheTable.Columns.Count];
+                var newRow = new object[CacheTable.Columns.Count];
                 PrimaryTransform.GetValues(newRow);
 
-                foreach (Function profile in _profiles)
+                foreach (var profile in _profiles)
                 {
-                    foreach (Parameter input in profile.Inputs.Where(c => c.IsColumn))
+                    foreach (var input in profile.Inputs.Where(c => c.IsColumn))
                     {
                         try
                         {
@@ -98,9 +98,9 @@ namespace dexih.transforms
             else
             {
 
-                Table profileResults = GetProfileTable("ProfileResults");
+                var profileResults = GetProfileTable("ProfileResults");
 
-                foreach (Function profile in _profiles)
+                foreach (var profile in _profiles)
                 {
                     object profileResult = null;
                     try
@@ -112,7 +112,7 @@ namespace dexih.transforms
                         throw new TransformException($"The profile failed getting the return value on the function {profile.FunctionName}.  {ex.Message}", ex);
                     }
 
-                    object[] row = new object[6];
+                    var row = new object[6];
                     row[0] = AuditKey;
                     row[1] = profile.FunctionName;
                     row[2] = profile.Inputs[0].Column.Name;
@@ -123,11 +123,11 @@ namespace dexih.transforms
 
                     if (profile.Outputs.Length > 0)
                     {
-                        Dictionary<string, int> details = (Dictionary <string,int>)profile.Outputs[0].Value;
+                        var details = (Dictionary <string,int>)profile.Outputs[0].Value;
 
                         if(details != null && details.Count > 0)
                         {
-                            foreach(string value  in details.Keys)
+                            foreach(var value  in details.Keys)
                             {
                                 row = new object[6];
                                 row[0] = AuditKey;
