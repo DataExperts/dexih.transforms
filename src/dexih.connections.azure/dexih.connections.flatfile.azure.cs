@@ -139,7 +139,7 @@ namespace dexih.connections.azure
                     await cloudFileDirectory.Container.CreateIfNotExistsAsync();
                 }
 
-                if(file != null &&  path != EFlatFilePath.none)
+                if(file != null &&  path != EFlatFilePath.None)
                 {
                     cloudFileDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
                     await cloudFileDirectory.Container.CreateIfNotExistsAsync();

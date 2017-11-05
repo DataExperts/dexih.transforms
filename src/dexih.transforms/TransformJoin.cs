@@ -255,7 +255,7 @@ namespace dexih.transforms
                         for (var i = 0; i < JoinPairs.Count; i++)
                         {
                             var joinValue = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
-                            if (!object.Equals(joinValue, _groupFields[i]))
+                            if (!Equals(joinValue, _groupFields[i]))
                             {
                                 recordMatch = false;
                                 break;
@@ -481,7 +481,7 @@ namespace dexih.transforms
             return _groupData.Count > 0;
         }
 
-        public class JoinKeyComparer : IComparer<object[]>
+        private class JoinKeyComparer : IComparer<object[]>
         {
             public int Compare(object[] x, object[] y)
             {

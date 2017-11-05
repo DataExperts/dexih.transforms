@@ -702,9 +702,9 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
+        public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
-            var reader = new ReaderExcel(this, table, referenceTransform);
+            var reader = new ReaderExcel(this, table);
             return reader;
         }
 

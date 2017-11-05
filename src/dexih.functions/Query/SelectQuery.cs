@@ -19,6 +19,13 @@ namespace dexih.functions.Query
         public List<Sort> Sorts { get; set; }
         public List<TableColumn> Groups { get; set; }
         public int Rows { get; set; }
-
+        
+        /// <summary>
+        /// Used for flatfiles to specify only a specific filename
+        /// </summary>
+        public string FileName { get; set; }
+        
+        public EFlatFilePath Path { get; set; }
+        
     }
 }

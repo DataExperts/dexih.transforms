@@ -65,7 +65,7 @@ namespace dexih.connections.flatfile
                     }
                 }
 
-                if(file != null &&  path != EFlatFilePath.none)
+                if(file != null &&  path != EFlatFilePath.None)
                 {
                     directory = Path.Combine(directory, file.GetPath(path));
                     if (!Directory.Exists(directory))

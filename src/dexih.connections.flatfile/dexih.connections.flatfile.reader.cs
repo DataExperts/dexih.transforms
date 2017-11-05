@@ -20,12 +20,12 @@ namespace dexih.connections.flatfile
         private DexihFiles _files;
         private CsvReader _csvReader;
 
-        private FileFormat _fileFormat;
+        private FileConfiguration _fileConfiguration;
 
-        private ConnectionFlatFile _fileConnection;
+        private readonly ConnectionFlatFile _fileConnection;
 
-        private int _fileNameOrdinal;
-        private int _fileRowNumberOrdinal;
+        private readonly int _fileNameOrdinal;
+        private readonly int _fileRowNumberOrdinal;
 
         private Dictionary<int, (int position, Type dataType)> _csvOrdinalMappings;
 
@@ -33,7 +33,7 @@ namespace dexih.connections.flatfile
 
         private SelectQuery _query;
 
-        private bool _previewMode;
+        private readonly bool _previewMode;
 
 		public FlatFile CacheFlatFile => (FlatFile)CacheTable;
 
@@ -57,7 +57,7 @@ namespace dexih.connections.flatfile
             base.Dispose(disposing);
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -66,7 +66,18 @@ namespace dexih.connections.flatfile
                 throw new ConnectionException("The file reader connection is already open.");
             }
 
-            _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, FlatFile.EFlatFilePath.incoming, CacheFlatFile.FileMatchPattern);
+            // if a filename was specified in the query, use this, otherwise, get a list of files from the incoming directory.
+            if (query == null || string.IsNullOrEmpty(query.FileName))
+            {
+                _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, EFlatFilePath.Incoming,
+                    CacheFlatFile.FileMatchPattern);
+            }
+            else
+            {
+                _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, query.Path,
+                    query.FileName);
+            }
+            
             _currentFileRowNumber = 0;
 
             if (_files.MoveNext() == false)
@@ -75,9 +86,9 @@ namespace dexih.connections.flatfile
             }
 
             _query = query;
-            _fileFormat = CacheFlatFile.FileFormat;
+            _fileConfiguration = CacheFlatFile.FileConfiguration;
 
-            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, FlatFile.EFlatFilePath.incoming, _files.Current.FileName);
+            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
             InitializeCsvReader(new StreamReader(fileStream));
 
             return true;
@@ -86,9 +97,9 @@ namespace dexih.connections.flatfile
 
         private void InitializeCsvReader(StreamReader streamReader)
         {
-			if (_fileFormat != null)
+			if (_fileConfiguration != null)
 			{
-				_csvReader = new CsvReader(streamReader, _fileFormat);
+				_csvReader = new CsvReader(streamReader, _fileConfiguration);
 			} 
 			else 
 			{
@@ -99,7 +110,7 @@ namespace dexih.connections.flatfile
             _csvOrdinalMappings = new Dictionary<int, (int position, Type dataType)>();
 
             // create mappings from column name positions, to the csv field name positions.
-			if(_fileFormat != null && ( _fileFormat.MatchHeaderRecord || !_fileFormat.HasHeaderRecord))
+			if(_fileConfiguration != null && ( _fileConfiguration.MatchHeaderRecord || !_fileConfiguration.HasHeaderRecord))
             {
 				_csvReader.ReadHeader();
 
@@ -179,7 +190,7 @@ namespace dexih.connections.flatfile
                     {
                         try
                         {
-                            var moveFileResult = await _fileConnection.MoveFile(CacheFlatFile, FlatFile.EFlatFilePath.incoming, FlatFile.EFlatFilePath.processed, _files.Current.FileName); //backup the completed file
+                            var moveFileResult = await _fileConnection.MoveFile(CacheFlatFile, EFlatFilePath.Incoming, EFlatFilePath.Processed, _files.Current.FileName); //backup the completed file
                         }
                         catch(Exception ex)
                         {
@@ -193,7 +204,7 @@ namespace dexih.connections.flatfile
                     {
                         try
                         {
-                            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, FlatFile.EFlatFilePath.incoming, _files.Current.FileName);
+                            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
                             _currentFileRowNumber = 0;
                             InitializeCsvReader(new StreamReader(fileStream));
                         }

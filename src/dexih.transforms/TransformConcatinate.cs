@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
+using Newtonsoft.Json;
 
 namespace dexih.transforms
 {
@@ -13,11 +15,18 @@ namespace dexih.transforms
     /// </summary>
     public class TransformConcatinate : Transform
     {
-        Task<bool> primaryReadTask;
-        Task<bool> referenceReadTask;
+        private Task<bool> _primaryReadTask;
+        private Task<bool> _referenceReadTask;
 
-        private List<int> primaryMappings = new List<int>();
-        private List<int> referenceMappings = new List<int>();
+        private bool _primaryMoreRecords;
+        private bool _referenceMoreRecords;
+        private List<int> _primarySortOrdinals;
+        private List<int> _referenceSortOrdinals;
+
+        private bool _sortedMerge = false;
+
+        private readonly List<int> _primaryMappings = new List<int>();
+        private readonly List<int> _referenceMappings = new List<int>();
 
         public TransformConcatinate() { }
 
@@ -28,10 +37,93 @@ namespace dexih.transforms
 
         private bool _firstRead;
 
-        private int _primaryFieldCount;
-        private int _referenceFieldCount;
+      public override bool RequiresSort => false;
+        public override bool PassThroughColumns => true;
+        // public override List<Sort> SortFields => new List<Sort>();
 
-        public override bool InitializeOutputFields()
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        {
+            AuditKey = auditKey;
+
+            var primarySorts = new List<Sort>();
+            var referenceSorts = new List<Sort>();
+            
+            //we need to translate filters and sorts to source column names before passing them through.
+            if (query?.Sorts != null)
+            {
+                foreach (var sort in query.Sorts)
+                {
+                    if (sort.Column != null)
+                    {
+                        var column = PrimaryTransform.CacheTable[sort.Column.Name];
+                        if (column != null)
+                        {
+                            primarySorts.Add(new Sort(column, sort.Direction));
+                        }
+                        
+                        column = ReferenceTransform.CacheTable[sort.Column.Name];
+                        if (column != null)
+                        {
+                            referenceSorts.Add(new Sort(column, sort.Direction));
+                        }
+                    }
+                }
+            }
+
+            var primaryQuery = new SelectQuery() {Sorts = primarySorts};
+            var referenceQuery = new SelectQuery() {Sorts = referenceSorts};
+            
+            var returnValue = await PrimaryTransform.Open(auditKey, primaryQuery, cancellationToken);
+            if (!returnValue)
+                return false;
+
+            returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
+
+            //if the primary & reference transforms are sorted, we will merge sort the items.
+            if (PrimaryTransform.SortFields != null && ReferenceTransform.SortFields != null)
+            {
+                var newSortFields = new List<Sort>();
+                _primarySortOrdinals = new List<int>();
+                _referenceSortOrdinals = new List<int>();
+                
+                var index = 0;
+                var referenceSortFields = ReferenceTransform.SortFields;
+                
+                foreach (var sortField in PrimaryTransform.SortFields)
+                {
+                    if (referenceSortFields.Count <= index)
+                    {
+                        break;
+                    }
+
+                    var referenceSortField = referenceSortFields[index];
+                    if (sortField.Column.Name == referenceSortField.Column.Name &&
+                        sortField.Direction == referenceSortField.Direction)
+                    {
+                        newSortFields.Add(sortField);
+                        
+                        _primarySortOrdinals.Add(PrimaryTransform.CacheTable.GetOrdinal(sortField.Column.Name));
+                        _referenceSortOrdinals.Add(ReferenceTransform.CacheTable.GetOrdinal(sortField.Column.Name));
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                    index++;
+                }
+                
+                if (newSortFields.Count > 0)
+                {
+                    _sortedMerge = true;
+                    CacheTable.OutputSortFields = newSortFields;
+                }
+            }
+            
+            return returnValue;
+        }
+        
+      public override bool InitializeOutputFields()
         {
             if (ReferenceTransform == null)
                 throw new Exception("There must a concatinate transform specified.");
@@ -42,7 +134,7 @@ namespace dexih.transforms
             foreach (var column in PrimaryTransform.CacheTable.Columns)
             {
                 CacheTable.Columns.Add(column.Copy());
-                primaryMappings.Add(pos);
+                _primaryMappings.Add(pos);
                 pos++;
             }
 
@@ -55,112 +147,190 @@ namespace dexih.transforms
                     ordinal = pos;
                     pos++;
                 }
-                referenceMappings.Add(ordinal);
+                _referenceMappings.Add(ordinal);
             }
-
+            
             _firstRead = true;
-
-            _primaryFieldCount = PrimaryTransform.FieldCount;
-            _referenceFieldCount = ReferenceTransform.FieldCount;
 
             return true;
         }
 
-        public override bool RequiresSort => false;
-        public override bool PassThroughColumns => true;
-
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
-        {
-            AuditKey = auditKey;
-            if (query == null)
-                query = new SelectQuery();
-
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-            if (!returnValue)
-                return false;
-
-            returnValue = await ReferenceTransform.Open(auditKey, null, cancellationToken);
-            if (!returnValue)
-                return false;
-
-            return returnValue;
-        }
-
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            if(_firstRead )
+            // sorted merge will concatinate 2 sorted incoming datasets, and maintain the sort order.
+            if (_sortedMerge)
             {
-                primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
-                referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
-                _firstRead = false;
-            }
-
-            if(primaryReadTask != null && referenceReadTask != null)
-            {
-                await Task.WhenAny(primaryReadTask, referenceReadTask);
-
-                if(primaryReadTask.IsCanceled || referenceReadTask.IsCanceled || cancellationToken.IsCancellationRequested)
+                if (_firstRead)
                 {
-                    throw new OperationCanceledException("The read record task was cancelled");
-                }
-
-                if(primaryReadTask.IsFaulted)
-                {
-                    throw primaryReadTask.Exception;
-                }
-
-                if (referenceReadTask.IsFaulted)
-                {
-                    throw referenceReadTask.Exception;
-                }
-
-                if (primaryReadTask.IsCompleted)
-                {
-                    var result = primaryReadTask.Result;
-                    if(result == true)
+                    // read one row for each reader.
+                    var primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
+                    var referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
+                    await Task.WhenAll(primaryReadTask, referenceReadTask);
+                    
+                    if (primaryReadTask.IsFaulted)
                     {
-                        var returnValue = CreateRecord(PrimaryTransform, primaryMappings);
-                        primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
-                        return returnValue;
+                        throw primaryReadTask.Exception;
                     }
-                    primaryReadTask = null;
-                }
 
-                if (referenceReadTask.IsCompleted)
-                {
-                    var result = referenceReadTask.Result;
-                    if (result == true)
+                    if (referenceReadTask.IsFaulted)
                     {
-                        var returnValue = CreateRecord(ReferenceTransform, referenceMappings);
-                        referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
-                        return returnValue;
+                        throw referenceReadTask.Exception;
                     }
-                    primaryReadTask = null;
-                }
-            }
 
-            if(primaryReadTask != null)
-            {
-                var result = await primaryReadTask;
-                if (result == true)
+                    _primaryMoreRecords = primaryReadTask.Result;
+                    _referenceMoreRecords = referenceReadTask.Result;
+                    
+                    _firstRead = false;
+                }
+
+                if (_primaryReadTask != null)
                 {
-                    var returnValue = CreateRecord(PrimaryTransform, primaryMappings);
-                    primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
+                    _primaryMoreRecords = await _primaryReadTask;
+                }
+
+                if (_referenceReadTask != null)
+                {
+                    _referenceMoreRecords = await _referenceReadTask;
+                }
+
+                if (!_primaryMoreRecords && !_referenceMoreRecords)
+                {
+                    return null;
+                }
+
+                var newRow = new object[FieldCount];
+                
+                // no more primary records, then just read from the reference
+                if (!_primaryMoreRecords)
+                {
+                    var returnValue = CreateRecord(ReferenceTransform, _referenceMappings);
+                    _primaryReadTask = null;
+                    _referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
+                    return returnValue;
+                } 
+                // no more reference record ,just read from the primary.
+                else if (!_referenceMoreRecords)
+                {
+                    var returnValue = CreateRecord(PrimaryTransform, _primaryMappings);
+                    PrimaryTransform.GetValues(newRow);
+                    _referenceReadTask = null;
+                    _primaryReadTask = ReferenceTransform.ReadAsync(cancellationToken);
                     return returnValue;
                 }
-                primaryReadTask = null;
-            }
-
-            if (referenceReadTask != null)
-            {
-                var result = await referenceReadTask;
-                if (result == true)
+                else
                 {
-                    var returnValue = CreateRecord(ReferenceTransform, referenceMappings);
-                    referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
-                    return returnValue;
+                    //more records in both, then compare the rows and take the next in sort order.
+                    
+                    bool usePrimary = true;
+                    
+                    for (var i = 0; i < _primarySortOrdinals.Count; i++)
+                    {
+                        var compareResult = Dexih.Utils.DataType.DataType.Compare(
+                            PrimaryTransform.CacheTable.Columns[_primarySortOrdinals[i]].Datatype,
+                            PrimaryTransform[_primarySortOrdinals[i]], ReferenceTransform[_referenceSortOrdinals[i]]);
+
+                        if ((compareResult == DataType.ECompareResult.Greater &&
+                             SortFields[i].Direction == Sort.EDirection.Ascending) ||
+                            (compareResult == DataType.ECompareResult.Less &&
+                             SortFields[i].Direction == Sort.EDirection.Descending))
+                        {
+                            usePrimary = false;
+                            break;
+                        }
+                    }
+
+                    if (usePrimary)
+                    {
+                        var returnValue = CreateRecord(PrimaryTransform, _primaryMappings);
+                        _primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
+                        return returnValue;
+                    }
+                    else
+                    {
+                        var returnValue = CreateRecord(ReferenceTransform, _referenceMappings);
+                        _referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
+                        return returnValue;
+                    }
                 }
-                referenceReadTask = null;
+                
+            } else
+            {
+                // if no sorting specified, concatinate will be in any order as the records arrive.
+                if (_firstRead)
+                {
+                    _primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
+                    _referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
+                    _firstRead = false;
+                }
+
+                if (_primaryReadTask != null && _referenceReadTask != null)
+                {
+                    await Task.WhenAny(_primaryReadTask, _referenceReadTask);
+
+                    if (_primaryReadTask.IsCanceled || _referenceReadTask.IsCanceled ||
+                        cancellationToken.IsCancellationRequested)
+                    {
+                        throw new OperationCanceledException("The read record task was cancelled");
+                    }
+
+                    if (_primaryReadTask.IsFaulted)
+                    {
+                        throw _primaryReadTask.Exception;
+                    }
+
+                    if (_referenceReadTask.IsFaulted)
+                    {
+                        throw _referenceReadTask.Exception;
+                    }
+
+                    if (_primaryReadTask.IsCompleted)
+                    {
+                        var result = _primaryReadTask.Result;
+                        if (result)
+                        {
+                            var returnValue = CreateRecord(PrimaryTransform, _primaryMappings);
+                            _primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
+                            return returnValue;
+                        }
+                        _primaryReadTask = null;
+                    }
+
+                    if (_referenceReadTask.IsCompleted)
+                    {
+                        var result = _referenceReadTask.Result;
+                        if (result)
+                        {
+                            var returnValue = CreateRecord(ReferenceTransform, _referenceMappings);
+                            _referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
+                            return returnValue;
+                        }
+                        _primaryReadTask = null;
+                    }
+                }
+
+                if (_primaryReadTask != null)
+                {
+                    var result = await _primaryReadTask;
+                    if (result)
+                    {
+                        var returnValue = CreateRecord(PrimaryTransform, _primaryMappings);
+                        _primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
+                        return returnValue;
+                    }
+                    _primaryReadTask = null;
+                }
+
+                if (_referenceReadTask != null)
+                {
+                    var result = await _referenceReadTask;
+                    if (result)
+                    {
+                        var returnValue = CreateRecord(ReferenceTransform, _referenceMappings);
+                        _referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
+                        return returnValue;
+                    }
+                    _referenceReadTask = null;
+                }
             }
 
             return null;
@@ -177,6 +347,7 @@ namespace dexih.transforms
 
             return newRow;
         }
+        
 
         public override bool ResetTransform()
         {

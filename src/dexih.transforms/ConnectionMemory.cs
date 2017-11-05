@@ -220,7 +220,7 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
+        public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
             var reader = new ReaderMemory(table);
             return reader;

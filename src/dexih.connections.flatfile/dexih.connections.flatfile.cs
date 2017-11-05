@@ -61,14 +61,14 @@ namespace dexih.connections.flatfile
         {
 			var flatFile = (FlatFile)table;
             //create the subdirectories
-            await CreateDirectory(flatFile, EFlatFilePath.incoming);
+            await CreateDirectory(flatFile, EFlatFilePath.Incoming);
         }
 
         public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
         {
             DefaultDatabase = databaseName;
             //create the subdirectories
-            var returnValue = await CreateDirectory(null, EFlatFilePath.none);
+            var returnValue = await CreateDirectory(null, EFlatFilePath.None);
             return;
         }
 
@@ -76,13 +76,13 @@ namespace dexih.connections.flatfile
         {
             Boolean returnValue;
             //create the subdirectories
-            returnValue = await CreateDirectory(flatFile, EFlatFilePath.incoming);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Incoming);
             if (returnValue == false) return returnValue;
-            returnValue = await CreateDirectory(flatFile, EFlatFilePath.outgoing);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Outgoing);
             if (returnValue == false) return returnValue;
-            returnValue = await CreateDirectory(flatFile, EFlatFilePath.processed);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Processed);
             if (returnValue == false) return returnValue;
-            returnValue = await CreateDirectory(flatFile, EFlatFilePath.rejected);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Rejected);
             return returnValue;
         }
 
@@ -101,7 +101,7 @@ namespace dexih.connections.flatfile
 
         public async Task<bool> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream)
         {
-            return await SaveFileStream(flatFile, EFlatFilePath.incoming, fileName, fileStream);
+            return await SaveFileStream(flatFile, EFlatFilePath.Incoming, fileName, fileStream);
         }
 
         public async Task<List<DexihFileProperties>> GetFiles(FlatFile flatFile, EFlatFilePath path)
@@ -151,7 +151,7 @@ namespace dexih.connections.flatfile
             {
                 var flatFile = (FlatFile)table;
                 var fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
-                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName);
+                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName);
 
                 if(writerResult == null)
                 {
@@ -164,7 +164,7 @@ namespace dexih.connections.flatfile
                 _csvWriter = new CsvWriter(_fileWriter);
 
 
-                if (flatFile.FileFormat.HasHeaderRecord)
+                if (flatFile.FileConfiguration.HasHeaderRecord)
                 {
                     var s = new string[table.Columns.Count];
                     for (var j = 0; j < table.Columns.Count; j++)
@@ -228,7 +228,7 @@ namespace dexih.connections.flatfile
             {
                 var flatFile = (FlatFile)originalTable;
 
-                if (flatFile.FileFormat == null || flatFile.FileSample == null)
+                if (flatFile.FileConfiguration == null || flatFile.FileSample == null)
                 {
                     throw new ConnectionException($"The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.");
                 }
@@ -240,11 +240,11 @@ namespace dexih.connections.flatfile
                 stream.Position = 0;
 
                 string[] headers;
-                if (flatFile.FileFormat.HasHeaderRecord)
+                if (flatFile.FileConfiguration.HasHeaderRecord)
                 {
                     try
                     {
-                        using (var csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
+                        using (var csv = new CsvReader(new StreamReader(stream), flatFile.FileConfiguration))
                         {
                             csv.ReadHeader();
                             headers = csv.FieldHeaders;
@@ -258,7 +258,7 @@ namespace dexih.connections.flatfile
                 else
                 {
                     // if no header row specified, then just create a series column names "column001, column002 ..."
-                    using (var csv = new CsvReader(new StreamReader(stream), flatFile.FileFormat))
+                    using (var csv = new CsvReader(new StreamReader(stream), flatFile.FileConfiguration))
                     {
                         csv.Read();
                         headers = Enumerable.Range(0, csv.CurrentRecord.Count()).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
@@ -271,7 +271,7 @@ namespace dexih.connections.flatfile
                 newFlatFile.Columns.Clear();
                 newFlatFile.LogicalName = newFlatFile.Name;
                 newFlatFile.Description = "";
-                newFlatFile.FileFormat = flatFile.FileFormat;
+                newFlatFile.FileConfiguration = flatFile.FileConfiguration;
 
                 TableColumn col;
 
@@ -339,7 +339,7 @@ namespace dexih.connections.flatfile
         public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
         {
             var flatFile = (FlatFile)table;
-            var fileEnumerator = await GetFileEnumerator(flatFile, FlatFile.EFlatFilePath.incoming, flatFile.FileMatchPattern);
+            var fileEnumerator = await GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern);
             if(fileEnumerator == null)
             {
                 throw new ConnectionException($"Truncate failed, as no files were found.");
@@ -347,7 +347,7 @@ namespace dexih.connections.flatfile
 
             while(fileEnumerator.MoveNext())
             {
-                var deleteResult = await DeleteFile(flatFile, FlatFile.EFlatFilePath.incoming, fileEnumerator.Current.FileName);
+                var deleteResult = await DeleteFile(flatFile, EFlatFilePath.Incoming, fileEnumerator.Current.FileName);
                 if(!deleteResult)
                 {
                     return;
@@ -391,15 +391,15 @@ namespace dexih.connections.flatfile
                 var flatFile = (FlatFile)table;
 
                 //open a new filestream 
-                using (var writer = await GetWriteFileStream(flatFile, EFlatFilePath.outgoing, fileName))
+                using (var writer = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName))
                 using (var streamWriter = new StreamWriter(writer))
-                using (var csv = new CsvWriter(streamWriter, flatFile.FileFormat))
+                using (var csv = new CsvWriter(streamWriter, flatFile.FileConfiguration))
                 {
 
                     if (!(queries?.Count >= 0))
                         return 0L;
 
-                    if (flatFile.FileFormat.HasHeaderRecord)
+                    if (flatFile.FileConfiguration.HasHeaderRecord)
                     {
                         //write a header row.
                         var s = new string[table.Columns.Count];
@@ -462,7 +462,7 @@ namespace dexih.connections.flatfile
             throw new NotImplementedException();
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
+        public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
 			var flatFile = (FlatFile)table;
             var reader = new ReaderFlatFile(this, flatFile, previewMode);

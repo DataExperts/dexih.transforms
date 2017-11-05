@@ -20,11 +20,10 @@ namespace dexih.connections.webservice
         private int _cachedRow;
         private JArray _cachedJson;
 
-        public ReaderRestful(Connection connection, Table table, Transform referenceTransform)
+        public ReaderRestful(Connection connection, Table table)
         {
             ReferenceConnection = connection;
             CacheTable = table;
-            ReferenceTransform = referenceTransform;
         }
 
         protected override void Dispose(bool disposing)
@@ -34,7 +33,7 @@ namespace dexih.connections.webservice
             base.Dispose(disposing);
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -45,25 +44,10 @@ namespace dexih.connections.webservice
                     throw new ConnectionException($"The webservice is already open");
                 }
 
-                //if no driving table is set, then use the row creator to simulate a single row.
-                if (ReferenceTransform == null)
-                {
-                    var rowCreator = new ReaderRowCreator();
-                    rowCreator.InitializeRowCreator(1, 1, 1);
-                    base.ReferenceTransform = rowCreator;
-                }
-                else
-                {
-                    try
-                    {
-                        var result = await ReferenceTransform.Open(auditKey, null, cancellationToken);
-                    }
-                    catch(Exception ex)
-                    {
-                        throw new ConnectionException($"Failed to open the input transform.", ex);
-                    }
-                }
-
+                var rowCreator = new ReaderRowCreator();
+                rowCreator.InitializeRowCreator(1, 1, 1);
+                ReferenceTransform = rowCreator;
+                
                 _isOpen = true;
 
                 //create a dummy inreader to allow fieldcount and other queries to work.
@@ -111,27 +95,27 @@ namespace dexih.connections.webservice
 
                     var uri = restFunction.RestfulUri;
 
-                    foreach (var join in JoinPairs)
-                    {
-                        var joinValue = join.JoinColumn == null ? join.JoinValue : ReferenceTransform[join.JoinColumn].ToString();
-
-                        uri = uri.Replace("{" + join.SourceColumn.Name + "}", joinValue.ToString());
-						row[CacheTable.GetOrdinal(join.SourceColumn.TableColumnName())] = joinValue.ToString();
-                    }
-
                     if (_cachedJson != null)
                     {
                         var data = _cachedJson[_cachedRow];
-                        for (var i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
+
+                        row[CacheTable.GetOrdinal("Response")] = data.ToString();
+                        
+                        for (var i = 3; i < CacheTable.Columns.Count; i++)
                         {
-                            object value = data.SelectToken(CacheTable.Columns[i].Name);
-                            try
+                            if (!CacheTable.Columns[i].IsInput)
                             {
-                                row[i] = Dexih.Utils.DataType.DataType.TryParse(CacheTable.Columns[i].Datatype, value);
-                            }
-                            catch(Exception ex)
-                            {
-                                throw new ConnectionException($"Failed to convert value on column {CacheTable.Columns[i].Name} to datatype {CacheTable.Columns[i].Datatype}. {ex.Message}", ex, value);
+                                object value = data.SelectToken(CacheTable.Columns[i].Name);
+                                try
+                                {
+                                    row[i] = DataType.TryParse(CacheTable.Columns[i].Datatype, value);
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new ConnectionException(
+                                        $"Failed to convert value on column {CacheTable.Columns[i].Name} to datatype {CacheTable.Columns[i].Datatype}. {ex.Message}",
+                                        ex, value);
+                                }
                             }
                         }
                         _cachedRow++;
@@ -152,7 +136,7 @@ namespace dexih.connections.webservice
                         }
 
                         HttpClientHandler handler = null;
-                        if (!String.IsNullOrEmpty(ReferenceConnection.Username))
+                        if (!string.IsNullOrEmpty(ReferenceConnection.Username))
                         {
                             var credentials = new NetworkCredential(ReferenceConnection.Username, ReferenceConnection.Password);
 							var creds = new CredentialCache
@@ -185,7 +169,7 @@ namespace dexih.connections.webservice
                             row[CacheTable.GetOrdinal("ResponseSuccess")] = response.IsSuccessStatusCode;
                             row[CacheTable.GetOrdinal("Response")] = await response.Content.ReadAsStringAsync();
 
-                            if (CacheTable.Columns.Count > 3 + JoinPairs.Count)
+                            if (CacheTable.Columns.Count > 3 )
                             {
                                 var data = JToken.Parse(row[CacheTable.GetOrdinal("Response")].ToString());
 
@@ -193,6 +177,9 @@ namespace dexih.connections.webservice
                                 {
                                     _cachedJson = (JArray)data;
                                     data = _cachedJson[0];
+
+                                    row[CacheTable.GetOrdinal("Response")] = data.ToString();
+
                                     _cachedRow = 1;
                                     if (_cachedJson.Count <= 1)
                                     {
@@ -200,16 +187,21 @@ namespace dexih.connections.webservice
                                     }
                                 }
 
-                                for (var i = 3 + JoinPairs.Count; i < CacheTable.Columns.Count; i++)
+                                for (var i = 3; i < CacheTable.Columns.Count; i++)
                                 {
-                                    object value = data.SelectToken(CacheTable.Columns[i].Name);
-                                    try
+                                    if (!CacheTable.Columns[i].IsInput)
                                     {
-                                        row[i] = DataType.TryParse(CacheTable.Columns[i].Datatype, value);
-                                    }
-                                    catch(Exception ex)
-                                    {
-                                        throw new ConnectionException($"Failed to convert value on column {CacheTable.Columns[i].Name} to datatype {CacheTable.Columns[i].Datatype}. {ex.Message}", ex, value);
+                                        object value = data.SelectToken(CacheTable.Columns[i].Name);
+                                        try
+                                        {
+                                            row[i] = DataType.TryParse(CacheTable.Columns[i].Datatype, value);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new ConnectionException(
+                                                $"Failed to convert value on column {CacheTable.Columns[i].Name} to datatype {CacheTable.Columns[i].Datatype}. {ex.Message}",
+                                                ex, value);
+                                        }
                                     }
                                 }
 
@@ -227,10 +219,12 @@ namespace dexih.connections.webservice
 
         public override bool CanLookupRowDirect { get; } = true;
 
+        /// <inheritdoc />
         /// <summary>
         /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
         /// </summary>
         /// <param name="filters"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken)
         {

@@ -287,9 +287,9 @@ namespace dexih.connections.dexih
             throw new NotImplementedException();
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
+        public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
-            var reader = new ReaderDexih(this, table, referenceTransform);
+            var reader = new ReaderDexih(this, table);
             return reader;
         }
 

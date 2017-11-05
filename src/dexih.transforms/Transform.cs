@@ -85,12 +85,7 @@ namespace dexih.transforms
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; }
 
         public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
-        public virtual List<Sort> SortFields {
-            get
-            {
-                return PrimaryTransform?.SortFields;
-            }
-        } //indicates fields for the sort transform.
+        public virtual List<Sort> SortFields => PrimaryTransform?.SortFields; //indicates fields for the sort transform.
 
         public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same talbe is joined multiple times.
 
@@ -170,7 +165,6 @@ namespace dexih.transforms
         #region Virtual Properties
         public virtual List<Sort> RequiredSortFields() { return null; }
         public virtual List<Sort> RequiredReferenceSortFields() { return null; }
-
         public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input 
 
         #endregion

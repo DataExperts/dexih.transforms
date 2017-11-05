@@ -81,7 +81,6 @@ namespace dexih.connections.webservice
 				newRestFunction.Columns.Clear();
 
                 TableColumn col;
-                var inputJoins = new List<JoinPair>();
 
                 //use the regex to extract items in uri between { }.  These will be input columns
                 var match = Regex.Match(restfulUri, @"\{([^}]+)\}");
@@ -114,11 +113,6 @@ namespace dexih.connections.webservice
                     {
                         var inputValue = originalColumn.DefaultValue;
                         col.DefaultValue = inputValue;
-                        inputJoins.Add(new JoinPair()
-                        {
-                            SourceColumn = col,
-                            JoinValue = inputValue
-                        });
                     }
 
                     newRestFunction.Columns.Add(col);
@@ -177,7 +171,7 @@ namespace dexih.connections.webservice
 
                 if (newRestFunction.Columns.Count > 0)
                 {
-                    var data = await GetPreview(newRestFunction, query, null, inputJoins, cancellationToken);
+                    var data = await GetPreview(newRestFunction, query, cancellationToken);
 
                     var reader = data.Data;
                     JToken content;
@@ -193,13 +187,12 @@ namespace dexih.connections.webservice
 
                     if (content != null)
                     {
-                        IEnumerable<JToken> children;
                         if(string.IsNullOrEmpty(rowPath)) {
-                            children = content.Children();
+                            content.Children();
                         } 
                         else 
                         {
-                            children = content.SelectTokens(rowPath);
+                            content.SelectTokens(rowPath);
                         }
 
                         if(content.Type == JTokenType.Array)
@@ -249,6 +242,7 @@ namespace dexih.connections.webservice
         /// </summary>
         /// <param name="table"></param>
         /// <param name="filters"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<object[]> LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken)
         {
@@ -401,9 +395,9 @@ namespace dexih.connections.webservice
 			throw new ConnectionException("Bulk insert into table cannot be used as the webservice is readonly.");
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
+        public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
-            var reader = new ReaderRestful(this, table, referenceTransform);
+            var reader = new ReaderRestful(this, table);
             return reader;
         }
 

@@ -9,9 +9,9 @@ namespace dexih.connections.flatfile
     /// <summary>
     /// reflects options used by the csvHelper = https://joshclose.github.io/CsvHelper/
     /// </summary>
-    public class FileFormat : CsvConfiguration
+    public class FileConfiguration : CsvConfiguration
     {
-        public FileFormat()
+        public FileConfiguration()
         {
         }
         private long HubKey { get; set; }

@@ -23,11 +23,10 @@ namespace dexih.connections.excel
         private Dictionary<int, (int Ordinal, TableColumn Column)> _columnMappings;
         private Dictionary<string, int> _headerOrdinals;
 
-        public ReaderExcel(Connection connection, Table table, Transform referenceTransform)
+        public ReaderExcel(Connection connection, Table table)
         {
             ReferenceConnection = connection;
             CacheTable = table;
-            ReferenceTransform = referenceTransform;
         }
 
         protected override void Dispose(bool disposing)

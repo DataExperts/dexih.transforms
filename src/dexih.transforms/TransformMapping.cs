@@ -28,38 +28,24 @@ namespace dexih.transforms
 
         public List<Function> Mappings
         {
-            get
-            {
-                return Functions;
-            }
-            set
-            {
-                Functions = value;
-            }
+            get => Functions;
+	        set => Functions = value;
         }
 
         public List<ColumnPair> MapFields
         {
-            get
-            {
-                return ColumnPairs;
-            }
-            set
-            {
-                ColumnPairs = value;
-            }
+            get => ColumnPairs;
+	        set => ColumnPairs = value;
         }
 
         public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
-            List<Filter> newFilters = null;
-            List<Sort> newSorts = null;
 
-            //we need to translate filters and sorts to source column names before passing them through.
-            if(query != null && query.Filters != null)
+	        //we need to translate filters and sorts to source column names before passing them through.
+            if(query?.Filters != null)
             {
-                newFilters = new List<Filter>();
+                var newFilters = new List<Filter>();
                 foreach(var filter in query.Filters)
                 {
                     TableColumn column1 = null;
@@ -95,9 +81,9 @@ namespace dexih.transforms
 			}
 
 			//we need to translate filters and sorts to source column names before passing them through.
-			if (query != null && query.Sorts != null)
+			if (query?.Sorts != null)
 			{
-				newSorts = new List<Sort>();
+				var newSorts = new List<Sort>();
 				foreach (var sort in query.Sorts)
 				{
 					TableColumn column = null;
@@ -128,24 +114,22 @@ namespace dexih.transforms
         {
             if (outputColumn == null)
                 return null;
-            else
-            {
-                if (MapFields != null)
-                {
-                    var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.TableColumnName() == outputColumn.TableColumnName());
-                    if (mapping != null)
-                        return mapping.SourceColumn.Copy();
-                }
+	        
+	        if (MapFields != null)
+	        {
+		        var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.TableColumnName() == outputColumn.TableColumnName());
+		        if (mapping != null)
+			        return mapping.SourceColumn.Copy();
+	        }
 
-                if(PassThroughColumns)
-                {
-                    var column = CacheTable.Columns.SingleOrDefault(c => c.TableColumnName() == outputColumn.TableColumnName());
-                    if (column != null)
-                        return outputColumn;
-                }
-            }
+	        if(PassThroughColumns)
+	        {
+		        var column = CacheTable.Columns.SingleOrDefault(c => c.TableColumnName() == outputColumn.TableColumnName());
+		        if (column != null)
+			        return outputColumn;
+	        }
 
-            return null;
+	        return null;
         }
 
         public override bool InitializeOutputFields()
@@ -168,7 +152,8 @@ namespace dexih.transforms
 					var columnCopy = column.Copy();
 					columnCopy.Name = mapField.TargetColumn.Name;
 					CacheTable.Columns.Add(columnCopy);
-                    //store an mapFieldOrdinal to improve performance.
+                    
+	                //store an mapFieldOrdinal to improve performance.
                     _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn));
                     i++;
                 }

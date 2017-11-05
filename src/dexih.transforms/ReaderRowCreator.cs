@@ -15,6 +15,13 @@ namespace dexih.transforms
         public int EndAt { get; set; }
         public int Increment { get; set; }
 
+        public Table GetTable()
+        {
+            var table = new Table("RowCreator");
+            table.Columns.Add(new TableColumn("RowNumber", ETypeCode.Int32) { IsMandatory = true});
+            table.OutputSortFields = new List<Sort>() { new Sort(new TableColumn("RowNumber", ETypeCode.Int32)) };
+            return table;
+        }
         public void InitializeRowCreator(int startAt, int endAt, int increment)
         {
             StartAt = startAt;
@@ -26,10 +33,7 @@ namespace dexih.transforms
 
         public override bool InitializeOutputFields()
         {
-            CacheTable = new Table("RowCreator");
-            CacheTable.Columns.Add(new TableColumn("RowNumber", ETypeCode.Int32));
-
-            CacheTable.OutputSortFields = new List<Sort>() { new Sort(new TableColumn("RowNumber", ETypeCode.Int32)) };
+            CacheTable = GetTable();
             _currentRow = StartAt-1;
             return true;
         }

@@ -26,11 +26,10 @@ namespace dexih.connections.dexih
 		private bool _moreData;
 		private string _continuationToken;
 
-        public ReaderDexih(Connection connection, Table table, Transform referenceTransform)
+        public ReaderDexih(Connection connection, Table table)
         {
             ReferenceConnection = connection;
             CacheTable = table;
-            ReferenceTransform = referenceTransform;
         }
 
         protected override void Dispose(bool disposing)

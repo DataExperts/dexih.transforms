@@ -117,8 +117,7 @@ namespace dexih.transforms
 
         public override bool ResetTransform()
         {
-            if (_sortedDictionary != null)
-                _sortedDictionary = null;
+            _sortedDictionary = null;
             _firstRead = true;
 
             return true;
@@ -126,7 +125,7 @@ namespace dexih.transforms
 
         public override string Details()
         {
-            return "Sort: "+ String.Join(",", _sortFields?.Select(c=> c.Column + " " + c.Direction.ToString()).ToArray());
+            return "Sort: "+ string.Join(",", _sortFields?.Select(c=> c.Column + " " + c.Direction.ToString()).ToArray());
         }
 
         public override List<Sort> RequiredSortFields()

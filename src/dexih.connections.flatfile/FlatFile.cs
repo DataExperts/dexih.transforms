@@ -4,11 +4,6 @@ namespace dexih.connections.flatfile
 {
 	public class FlatFile : Table
 	{
-        public enum EFlatFilePath
-        {
-            incoming, outgoing, processed, rejected, none
-        }
-
 		private string _fileRootPath;
 		private string _fileIncomingPath = "incoming";
         private string _fileOutgoingPath = "outgoing";
@@ -39,13 +34,13 @@ namespace dexih.connections.flatfile
 
         public string FileProcessedPath
 		{
-			get => AutoManageFiles ? (UseCustomFilePaths ? _fileIncomingPath : "processed") : "";
+			get => AutoManageFiles ? (UseCustomFilePaths ? _fileProcessedPath : "processed") : "";
             set => _fileProcessedPath = value;
 		}
 
 		public string FileRejectedPath
 		{
-			get => AutoManageFiles ? (UseCustomFilePaths ? _fileIncomingPath : "rejected") : "";
+			get => AutoManageFiles ? (UseCustomFilePaths ? _fileRejectedPath : "rejected") : "";
             set => _fileRejectedPath = value;
 		}
 
@@ -55,7 +50,7 @@ namespace dexih.connections.flatfile
 			set => _fileMatchPattern = value;
 		}
 
-		public FileFormat FileFormat { get; set; } = new FileFormat();
+		public FileConfiguration FileConfiguration { get; set; } = new FileConfiguration();
 		public string FileSample { get; set; }
 
 		public FlatFile()
@@ -66,15 +61,15 @@ namespace dexih.connections.flatfile
         {
             switch(path)
             {
-                case EFlatFilePath.incoming:
+                case EFlatFilePath.Incoming:
                     return FileIncomingPath;
-                case EFlatFilePath.outgoing:
+                case EFlatFilePath.Outgoing:
                     return FileOutgoingPath;
-                case EFlatFilePath.processed:
+                case EFlatFilePath.Processed:
                     return FileProcessedPath;
-                case EFlatFilePath.rejected:
+                case EFlatFilePath.Rejected:
                     return FileRejectedPath;
-                case EFlatFilePath.none:
+                case EFlatFilePath.None:
                     return "";
             }
 

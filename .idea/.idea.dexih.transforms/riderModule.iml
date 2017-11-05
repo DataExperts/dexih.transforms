@@ -1,78 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="RIDER_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$USER_HOME$/.nuget/packages/sqlitepclraw.lib.e_sqlite3.osx/1.1.7/runtimes/osx-x64/native/libe_sqlite3.dylib">
-      <sourceFolder url="file://$USER_HOME$/.nuget/packages/sqlitepclraw.lib.e_sqlite3.osx/1.1.7/runtimes/osx-x64/native/libe_sqlite3.dylib" isTestSource="false" />
-    </content>
-    <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.reporters.netstandard15.dll">
-      <sourceFolder url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.reporters.netstandard15.dll" isTestSource="false" />
-    </content>
-    <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.utility.netstandard15.dll">
-      <sourceFolder url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.utility.netstandard15.dll" isTestSource="false" />
-    </content>
-    <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll">
-      <sourceFolder url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll" isTestSource="false" />
-    </content>
-    <content url="file://$MODULE_DIR$/../..">
-      <sourceFolder url="file://$MODULE_DIR$/../../samples/FunctionExamples" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.azure" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.dexih" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.excel" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.flatfile" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.sql" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.restful" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.functions" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/dexih.transforms" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.azure.tests" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.excel.tests" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.flatfile.tests" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.sql.tests" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.test" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.connections.webservice.restful.tests" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests.async" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests.async" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/../../packages" />
-      <excludeFolder url="file://$MODULE_DIR$/../../samples/FunctionExamples/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../samples/FunctionExamples/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.azure/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.azure/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.dexih/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.dexih/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.excel/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.excel/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.flatfile/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.flatfile/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.sql/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.sql/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.restful/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.connections.webservice.restful/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.functions/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.functions/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.transforms/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../src/dexih.transforms/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.azure.tests/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.azure.tests/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.excel.tests/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.excel.tests/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.flatfile.tests/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.flatfile.tests/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.sql.tests/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.sql.tests/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.test/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.test/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.webservice.restful.tests/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.connections.webservice.restful.tests/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests.async/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests.async/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.functions.tests/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests.async/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests.async/obj" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests/bin" />
-      <excludeFolder url="file://$MODULE_DIR$/../../test/dexih.transforms.tests/obj" />
-    </content>
+    <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.reporters.netstandard15.dll" />
+    <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.utility.netstandard15.dll" />
+    <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll" />
+    <content url="file://$MODULE_DIR$/../../../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties" />
+    <content url="file://$MODULE_DIR$/../.." />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

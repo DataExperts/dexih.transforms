@@ -651,7 +651,7 @@ namespace dexih.connections.sql
 
         }
 
-        public override Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false)
+        public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
             var reader = new ReaderSql(this, table);
             return reader;

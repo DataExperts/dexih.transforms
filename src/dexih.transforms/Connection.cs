@@ -105,7 +105,7 @@ namespace dexih.transforms
         /// <returns>ReturnValue with the value = elapsed timer ticks taken to write the record.</returns>
         public abstract Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken);
         public abstract Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken);
-        public abstract Transform GetTransformReader(Table table, Transform referenceTransform = null, List<JoinPair> referenceJoins = null, bool previewMode = false);
+        public abstract Transform GetTransformReader(Table table, bool previewMode = false);
         public abstract Task TruncateTable(Table table, CancellationToken cancellationToken);
         public abstract Task<bool> TableExists(Table table, CancellationToken cancellationToken);
 
@@ -459,11 +459,6 @@ namespace dexih.transforms
 
         public async Task<Table> GetPreview(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
-            return await GetPreview(table, query, null, null, cancellationToken);
-        }
-
-        public async Task<Table> GetPreview(Table table, SelectQuery query, Transform referenceTransform, List<JoinPair> referenceJoins, CancellationToken cancellationToken)
-        {
             try
             {
                 var watch = new Stopwatch();
@@ -471,9 +466,8 @@ namespace dexih.transforms
 
                 var rows = query?.Rows ?? -1;
 
-                using (var reader = GetTransformReader(table, referenceTransform, null, true))
+                using (var reader = GetTransformReader(table, true))
                 {
-                    reader.JoinPairs = referenceJoins;
                     var returnValue = await reader.Open(0, query, cancellationToken);
                     if (!returnValue)
                     {
