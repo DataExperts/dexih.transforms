@@ -202,7 +202,11 @@ namespace dexih.connections.azure
             }
         }
 
+<<<<<<< HEAD
         public override async Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
+=======
+        public override async Task<ReturnValue<DexihFiles>> GetFileEnumerator(string mainDirectory, string subDirectory, string searchPattern)
+>>>>>>> cb9c297fbbe8f6a4412b32cfd099296bcac701d6
         {
             try
             {
@@ -225,11 +229,18 @@ namespace dexih.connections.azure
 
                 foreach (CloudBlob cloudFile in list)
                 {
+<<<<<<< HEAD
                     await cloudFile.FetchAttributesAsync();
                     var fileName = cloudFile.Name.Substring(pathlength);
                     if (string.IsNullOrEmpty(searchPattern) || FitsMask(file.Name, searchPattern))
                     {
                         files.Add(new DexihFileProperties() { FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length });
+=======
+                    await file.FetchAttributesAsync();
+                    if (string.IsNullOrEmpty(searchPattern) || FitsMask(file.Name, searchPattern))
+                    {
+                        files.Add(new DexihFileProperties() { FileName = file.Name, LastModified = file.Properties.LastModified.Value.DateTime, Length = file.Properties.Length });
+>>>>>>> cb9c297fbbe8f6a4412b32cfd099296bcac701d6
                     }
                 }
                 var newFiles = new DexihFiles(files.ToArray());
@@ -243,7 +254,11 @@ namespace dexih.connections.azure
 
         private bool FitsMask(string fileName, string fileMask)
         {
+<<<<<<< HEAD
             var pattern =
+=======
+            string pattern =
+>>>>>>> cb9c297fbbe8f6a4412b32cfd099296bcac701d6
                  '^' +
                  Regex.Escape(fileMask.Replace(".", "__DOT__")
                                  .Replace("*", "__STAR__")
@@ -255,7 +270,11 @@ namespace dexih.connections.azure
             return new Regex(pattern, RegexOptions.IgnoreCase).IsMatch(fileName);
         }
 
+<<<<<<< HEAD
         public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path)
+=======
+        public override async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string mainDirectory, string subDirectory)
+>>>>>>> cb9c297fbbe8f6a4412b32cfd099296bcac701d6
         {
             try
             {
