@@ -12,6 +12,7 @@ using System.Diagnostics;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms;
 
 namespace dexih.connections.sql
 {
@@ -28,6 +29,7 @@ namespace dexih.connections.sql
 
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "SQLite";
+        public override ECategory DatabaseCategory => ECategory.DatabaseFile;
 
         public override object ConvertParameterType(object value)
         {

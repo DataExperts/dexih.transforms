@@ -226,14 +226,16 @@ namespace dexih.functions
                 object value1;
                 object value2;
 
-                if (filter.Value1 != null)
+                if (filter.Column1 == null)
+                {
                     value1 = filter.Value1;
+                }
                 else
                 {
                     value1 = row[GetOrdinal(filter.Column1.Name)];
                 }
 
-                if (filter.Value2 != null)
+                if (filter.Column2 == null)
                     value2 = filter.Value2;
                 else
                 {

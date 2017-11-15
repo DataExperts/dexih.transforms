@@ -77,6 +77,14 @@ namespace dexih.functions
             }
         }
 
+        public void Add(IEnumerable<object[]> items)
+        {
+            foreach(var item in items)
+            {
+                Add(item);
+            }
+        }
+
         public void Clear()
         {
             _data.Clear();

@@ -18,10 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.7-ALPHA" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>

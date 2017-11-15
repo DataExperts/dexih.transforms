@@ -2,15 +2,17 @@
 using dexih.functions.Query;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace dexih.transforms
 {
     /// <summary>
-    /// A source transform that uses a prepopulated Table as an input.
+    /// Creates a reader the uses the filter to populate a single row defined by the filters passed to it.  
+    /// This is used for datalink with a source that is a lookup.
     /// </summary>
-    public class ReaderMemory : Transform
+    public class ReaderDynamic : Transform
     {
         public override ECacheMethod CacheMethod
         {
@@ -21,7 +23,7 @@ namespace dexih.transforms
 
         #region Constructors
 
-        public ReaderMemory(Table dataTable, List<Sort> sortFields = null)
+        public ReaderDynamic(Table dataTable, List<Sort> sortFields = null)
         {
             CacheTable = dataTable;
             CacheTable.OutputSortFields = sortFields;
@@ -32,12 +34,41 @@ namespace dexih.transforms
 
         public override List<Sort> SortFields { get; }
 
-        public void Add(object[] values)
+        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-            CacheTable.Data.Add(values);
+            ResetTransform();
+            CacheTable.Data.Clear();
+
+            var row = new object[CacheTable.Columns.Count];
+            for(int i =0; i < CacheTable.Columns.Count; i++)
+            {
+                var column = CacheTable.Columns[i];
+                if (query?.Filters != null)
+                {
+                    var filter = query.Filters.SingleOrDefault(c => c.Column1 != null && c.Column1.Name == column.Name);
+                    if(filter == null)
+                    {
+                        row[i] = column.DefaultValue;
+                    }
+                    else
+                    {
+                        row[i] = filter.Value2;
+                    }
+                }
+                else
+                {
+                    row[i] = column.DefaultValue;
+                }
+            }
+
+            CacheTable.Data.Add(row);
+
+            return Task.FromResult(true);
         }
 
         #endregion
+
+        public override bool CanLookupRowDirect { get; } = true;
 
         public override bool InitializeOutputFields()
         {
@@ -46,7 +77,7 @@ namespace dexih.transforms
 
         public override string Details()
         {
-            return "Memory Table " + CacheTable.Name;
+            return "Dynamic Table " + CacheTable.Name;
         }
 
         public override bool ResetTransform()

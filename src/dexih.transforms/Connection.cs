@@ -34,11 +34,12 @@ namespace dexih.transforms
         [JsonConverter(typeof(StringEnumConverter))]
         public enum ECategory
         {
-            SqlDatabase = 0,
-            NoSqlDatabase = 1,
-            File = 2,
-            WebService = 3,
-			Hub = 4
+            SqlDatabase = 0, // sql server, mysql, postgre etc.
+            NoSqlDatabase = 1, // Azure and others
+            DatabaseFile = 2, // coverts Excel, Sqlite where database is a simple file.
+            File = 3, // flat files
+            WebService = 4,
+			Hub = 5
         }
 
         #endregion
@@ -46,7 +47,7 @@ namespace dexih.transforms
         #region Properties
 
         public string Name { get; set; }
-        public string Server { get; set; }
+        public virtual string Server { get; set; }
         public bool UseWindowsAuth { get; set; }
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";

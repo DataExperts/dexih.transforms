@@ -21,6 +21,8 @@ namespace dexih.transforms
 
         private string _referenceTableName;
 
+        private IEnumerator<object[]> _lookupCache;
+
         public TransformLookup() { }
 
         public TransformLookup(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs, string referenceTableAlias)
@@ -51,10 +53,10 @@ namespace dexih.transforms
                 newColumn.IsIncrementalUpdate = false;
 
                 //if a column of the same name exists, append a 1 to the name
-                if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.TableColumnName()) != null)
-                {
-                    throw new Exception("The lookup could not be initialized as the column " + column.TableColumnName() + " is ambiguous.");
-                }
+                //if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.TableColumnName()) != null)
+                //{
+                //    throw new Exception("The lookup could not be initialized as the column " + column.TableColumnName() + " is ambiguous.");
+                //}
                 CacheTable.Columns.Add(newColumn);
                 pos++;
             }
@@ -77,6 +79,31 @@ namespace dexih.transforms
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             object[] newRow = null;
+
+            // if there is a previous lookup cache, then just populated that as the next row.
+            if(_lookupCache != null && _lookupCache.MoveNext())
+            {
+                newRow = new object[FieldCount];
+                var pos1 = 0;
+                for (var i = 0; i < _primaryFieldCount; i++)
+                {
+                    newRow[pos1] = PrimaryTransform[i];
+                    pos1++;
+                }
+
+                var lookup = _lookupCache.Current;
+                for (var i = 0; i < _referenceFieldCount; i++)
+                {
+                    newRow[pos1] = lookup[i];
+                    pos1++;
+                }
+
+                return newRow;
+            }
+            else
+            {
+                _lookupCache = null;
+            }
 
             if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
             {
@@ -109,14 +136,28 @@ namespace dexih.transforms
 
             try
             {
-                var lookup = await ReferenceTransform.LookupRow(filters, cancellationToken);
-                if (lookup != null)
+                var lookupResult = await ReferenceTransform.LookupRow(filters, JoinDuplicateStrategy.Value, cancellationToken);
+                if (lookupResult != null)
                 {
-                    for (var i = 0; i < _referenceFieldCount; i++)
+                    _lookupCache = lookupResult.GetEnumerator();
+
+                    if (_lookupCache.MoveNext())
                     {
-                        newRow[pos] = lookup[i];
-                        pos++;
+                        var lookup = _lookupCache.Current;
+                        for (var i = 0; i < _referenceFieldCount; i++)
+                        {
+                            newRow[pos] = lookup[i];
+                            pos++;
+                        }
                     }
+                    else
+                    {
+                        _lookupCache = null;
+                    }
+                }
+                else
+                {
+                    _lookupCache = null;
                 }
             }
             catch(Exception ex)

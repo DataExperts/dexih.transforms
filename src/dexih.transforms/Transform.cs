@@ -291,7 +291,9 @@ namespace dexih.transforms
             }
 
             if (ReferenceTransform != null)
+            {
                 result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
+            }
 
             return result;
         }
@@ -606,78 +608,178 @@ namespace dexih.transforms
         /// <param name="filters"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<object[]> LookupRow(List<Filter> filters, CancellationToken cancellationToken)
+        public virtual async Task<IEnumerable<object[]>> LookupRow(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
+            IEnumerable<object[]> lookupResult;
+
             if (CacheMethod == ECacheMethod.PreLoadCache)
             {
                 //preload all records.
-                while (await ReadAsync(cancellationToken));
+                while (await ReadAsync(cancellationToken)) ;
 
-                return CacheTable.LookupSingleRow(filters);
-            }
-            else if (CacheMethod == ECacheMethod.OnDemandCache)
-            {
-                //lookup in the cache.
-                var lookupResult = CacheTable.LookupSingleRow(filters);
-                if (lookupResult != null)
+                if(duplicateStrategy == EDuplicateStrategy.First)
                 {
-                    return lookupResult;
-                }
-
-                if (CanLookupRowDirect)
-                {
-                    //not found in the cache, attempt a direct lookup.
-                    lookupResult = await LookupRowDirect(filters, cancellationToken);
-
-                    if (lookupResult != null)
-                    {
-                        if (EncryptionMethod != EEncryptionMethod.NoEncryption)
-                            EncryptRow(lookupResult);
-
-                        CacheTable.Data.Add(lookupResult);
-                        _currentRowCached = true;
-                    }
+                    lookupResult = new [] { CacheTable.LookupSingleRow(filters) };
                 }
                 else
                 {
-                    //not found in the cache, keep reading until it's found.
-                    while (await ReadAsync(cancellationToken))
-                    {
-
-                        if(CacheTable.RowMatch(filters, CurrentRow))
-                        {
-                            return CurrentRow;
-                        }
-                    }
-
-                    return null;
+                    lookupResult = CacheTable.LookupMultipleRows(filters);
+                }
+            }
+            else if (CacheMethod == ECacheMethod.OnDemandCache)
+            {
+                if (duplicateStrategy == EDuplicateStrategy.First)
+                {
+                    lookupResult = new[] { CacheTable.LookupSingleRow(filters) };
+                }
+                else
+                {
+                    lookupResult = CacheTable.LookupMultipleRows(filters);
                 }
 
-                return lookupResult;
+                if (lookupResult == null)
+                {
+                    if (CanLookupRowDirect)
+                    {
+                        //not found in the cache, attempt a direct lookup.
+                        lookupResult = await LookupRowDirect(filters, duplicateStrategy, cancellationToken);
+
+                        if (lookupResult != null)
+                        {
+                            if (EncryptionMethod != EEncryptionMethod.NoEncryption)
+                            {
+                                foreach(var row in lookupResult)
+                                {
+                                    EncryptRow(row);
+                                }
+                            }
+
+                            CacheTable.Data.Add(lookupResult);
+                            _currentRowCached = true;
+                        }
+                    }
+                    else
+                    {
+                        //not found in the cache, keep reading until it's found.
+                        if (duplicateStrategy == EDuplicateStrategy.First || duplicateStrategy == EDuplicateStrategy.Last)
+                        {
+                            while (await ReadAsync(cancellationToken))
+                            {
+                                if (CacheTable.RowMatch(filters, CurrentRow))
+                                {
+                                    lookupResult = new[] { CurrentRow };
+                                    if (duplicateStrategy == EDuplicateStrategy.First)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                        } 
+                        else
+                        {
+                            // if the lookup is multiple records, scan entire dataset.
+                            while (await ReadAsync(cancellationToken)) ;
+                            lookupResult = CacheTable.LookupMultipleRows(filters);
+
+                        }
+                    }
+                }
             }
             else
             {
                 //if no caching is specified, run a direct lookup.
-                var lookupReturn = await LookupRowDirect(filters, cancellationToken);
-                if (lookupReturn != null)
+                lookupResult = await LookupRowDirect(filters, duplicateStrategy, cancellationToken);
+                if (lookupResult != null)
                 {
                     if (EncryptionMethod != EEncryptionMethod.NoEncryption)
-                        EncryptRow(lookupReturn);
+                    {
+                        foreach (var row in lookupResult)
+                        {
+                            EncryptRow(row);
+                        }
+                    }
                 }
-                return lookupReturn;
             }
 
-            
+            if(lookupResult == null || !lookupResult.Any())
+            {
+                return new List<object[]>() { new object[CacheTable.Columns.Count] };
+            }
+
+            switch (duplicateStrategy)
+            {
+                case EDuplicateStrategy.First:
+                    return new[] { lookupResult.First() };
+                case EDuplicateStrategy.Last:
+                    return new[] { lookupResult.Last() };
+                case EDuplicateStrategy.All:
+                    return lookupResult;
+                case EDuplicateStrategy.Abend:
+                    if (lookupResult.Count() > 1)
+                    {
+                        throw new TransformException("The lookup row failed as multiple rows were returned at the duplicate strategy is to abend when this happens.");
+                    }
+                    return lookupResult; ;
+            }
+
+            return null;
         }
 
-        public virtual bool CanLookupRowDirect { get; } = false;
+        public virtual bool CanLookupRowDirect { get { return PrimaryTransform?.CanLookupRowDirect ?? false; } }
 
         /// <summary>
         /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public virtual async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken) => await Task.Run(() => { return (object[])null; });
+        public virtual async Task<IEnumerable<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        {
+            if(CanLookupRowDirect)
+            {
+                Reset();
+                var query = new SelectQuery() { Filters = filters };
+                await Open(AuditKey, query, cancellationToken);
+
+                IEnumerable<object[]> lookupResult = null;
+                //not found in the cache, keep reading until it's found.
+
+                if (duplicateStrategy == EDuplicateStrategy.First || duplicateStrategy == EDuplicateStrategy.Last)
+                {
+                    while (await ReadAsync(cancellationToken))
+                    {
+                        if (CacheTable.RowMatch(filters, CurrentRow))
+                        {
+                            lookupResult = new[] { CurrentRow };
+                            if(duplicateStrategy == EDuplicateStrategy.First)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    var result = new List<object[]>();
+
+                    // if the lookup is multiple records, scan entire dataset.
+                    while (await ReadAsync(cancellationToken))
+                    {
+                        if (CacheTable.RowMatch(filters, CurrentRow))
+                        {
+                            result.Add(CurrentRow);
+                        }
+                    }
+
+                    lookupResult = result;
+                }
+
+                return lookupResult;
+            }
+            else
+            {
+                throw new TransformException("The lookup can not be performed as the data source does not support direct lookups.");
+            }
+        }
 
         #endregion
 

@@ -322,7 +322,7 @@ namespace dexih.connections.flatfile
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken)
+        public override Task<IEnumerable<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
             throw new NotSupportedException("Direct lookup not supported with flat files.");
         }

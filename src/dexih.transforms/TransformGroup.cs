@@ -215,10 +215,11 @@ namespace dexih.transforms
                         {
                             foreach (var groupField in GroupFields)
                             {
-                                _groupValues[i] = PrimaryTransform[groupField.SourceColumn].ToString();
+                                _groupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
                                 i++;
                             }
                         }
+                        newGroupValues = _groupValues;
                     }
                     else
                     {
@@ -229,9 +230,11 @@ namespace dexih.transforms
 
                             foreach (var groupField in GroupFields)
                             {
-                                newGroupValues[i] = PrimaryTransform[groupField.SourceColumn].ToString();
-                                if ((string)newGroupValues[i] != (string)_groupValues[i])
+                                newGroupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
+                                if ((string)newGroupValues[i] != (string)_groupValues[i] )
+                                {
                                     groupChanged = true;
+                                }
                                 i++;
                             }
                         }

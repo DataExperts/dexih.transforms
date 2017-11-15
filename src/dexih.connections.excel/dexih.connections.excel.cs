@@ -41,7 +41,7 @@ namespace dexih.connections.excel
 
 
         public override string DatabaseTypeName => "Excel Database";
-        public override ECategory DatabaseCategory => ECategory.SqlDatabase;
+        public override ECategory DatabaseCategory => ECategory.DatabaseFile;
 
 	    public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
 	    {
@@ -204,7 +204,10 @@ namespace dexih.connections.excel
 
                         var columName = worksheet.Cells[ExcelHeaderRow, col].Value.ToString();
                         if (string.IsNullOrEmpty(columName)) columName = "Column-" + col.ToString();
-                        var column = new TableColumn(columName, ETypeCode.String);
+                        var column = new TableColumn(columName, ETypeCode.String)
+                        {
+                            AllowDbNull = true
+                        };
 
                         //search the data to determine datatype.
                         var datatype = ETypeCode.Unknown;

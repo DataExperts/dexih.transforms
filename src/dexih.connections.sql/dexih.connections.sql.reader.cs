@@ -151,7 +151,7 @@ namespace dexih.connections.sql
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken)
+        public async override Task<IEnumerable<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
             try
             {
@@ -165,14 +165,16 @@ namespace dexih.connections.sql
                 {
                     using (var reader = await ReferenceConnection.GetDatabaseReader(CacheTable, connection, query, cancellationToken))
                     {
-                        if (await reader.ReadAsync(cancellationToken))
+                        var rows = new List<object[]>();
+
+                        while (await reader.ReadAsync(cancellationToken))
                         {
                             var values = new object[CacheTable.Columns.Count];
                             reader.GetValues(values);
-                            return values;
+                            rows.Add(values);
                         }
-                        else
-                            return null;
+
+                        return rows;
                     }
                 }
             }

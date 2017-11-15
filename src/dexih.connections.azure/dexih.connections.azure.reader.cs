@@ -171,7 +171,7 @@ namespace dexih.connections.azure
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public override async Task<object[]> LookupRowDirect(List<Filter> filters, CancellationToken cancellationToken)
+        public async override Task<IEnumerable<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
             try
             {
@@ -182,16 +182,21 @@ namespace dexih.connections.azure
                 var tableQuery = new TableQuery();
                 tableQuery.SelectColumns = CacheTable.Columns.Select(c=>c.Name).ToArray();
                 tableQuery.FilterString = _connection.BuildFilterString(filters);
-                tableQuery.Take(1);
+                // tableQuery.Take(1);
 
                 TableContinuationToken continuationToken = null;
                 var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                 continuationToken = result.ContinuationToken;
 
-                var currentEntity = result.ElementAt(_currentReadRow);
-                var row = GetRow(currentEntity);
+                var rows = new List<object[]>();
+                for(var i = 0; i < result.Count(); i++)
+                {
+                    var currentEntity = result.ElementAt(_currentReadRow);
+                    rows.Add(GetRow(currentEntity));
 
-                return row;
+                }
+
+                return rows;
             }
             catch (Exception ex)
             {
