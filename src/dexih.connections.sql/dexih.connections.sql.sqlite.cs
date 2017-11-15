@@ -210,7 +210,9 @@ namespace dexih.connections.sql
                         sqlType = "nvarchar(" + length.ToString() + ")";
                     break;
 				case ETypeCode.Text:
-					sqlType = "text";
+                case ETypeCode.Xml:
+                case ETypeCode.Json:
+                    sqlType = "text";
 					break;
                 case ETypeCode.Single:
                     sqlType = "float";
@@ -288,6 +290,8 @@ namespace dexih.connections.sql
                     break;
 				case ETypeCode.String:
                 case ETypeCode.Text:
+                case ETypeCode.Json:
+                case ETypeCode.Xml:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
                     returnValue = "'" + AddEscape(value.ToString()) + "'";

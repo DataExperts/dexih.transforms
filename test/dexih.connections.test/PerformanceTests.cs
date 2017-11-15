@@ -71,9 +71,7 @@ namespace dexih.connections.test
                     //start a datawriter and insert the test data
                     await connection.DataWriterStart(table);
 
-                    var bulkResult =
-                        await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
-                    Assert.True(bulkResult > 0, "WriteDataBulk no time taken");
+                    await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
 
                     table.Data.Clear();
                     buffer = 0;
@@ -136,8 +134,7 @@ namespace dexih.connections.test
                 });
             }
 
-            var updateResult = await connection.ExecuteUpdate(table, updateQueries, CancellationToken.None);
-            Assert.True(updateResult > 0);
+            await connection.ExecuteUpdate(table, updateQueries, CancellationToken.None);
 
             //check the table loaded 1,000 rows updated successully
             var selectQuery = new SelectQuery()
@@ -170,8 +167,7 @@ namespace dexih.connections.test
                     Table = table.Name,
                 }
             };
-            var deleteResult = await connection.ExecuteDelete(table, deleteQueries, CancellationToken.None);
-            Assert.True(deleteResult > 0);
+            await connection.ExecuteDelete(table, deleteQueries, CancellationToken.None);
 
             selectQuery = new SelectQuery()
             {
@@ -256,10 +252,7 @@ namespace dexih.connections.test
                 {
                     //start a datawriter and insert the test data
                     await connection.DataWriterStart(table);
-
-                    var bulkResult =
-                        await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
-                    Assert.True(bulkResult > 0, "WriteDataBulk");
+                    await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
 
                     table.Data.Clear();
                     buffer = 0;
@@ -280,7 +273,8 @@ namespace dexih.connections.test
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, false);
 
             var writer = new TransformWriter();
-            var writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target",
+            var writerResult = new TransformWriterResult();
+            await connection.InitializeAudit(writerResult, 0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target",
                 TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
             Assert.NotNull(writerResult);
 

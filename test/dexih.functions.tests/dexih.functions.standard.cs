@@ -109,6 +109,7 @@ namespace dexih.functions.tests
         public void StandardFunctionTest(string functionName, object[] parameters, object expectedResult)
         {
             var function = StandardFunctions.GetFunctionReference(functionName);
+            function.OnNull = EErrorAction.Execute;
             var returnValue = function.RunFunction(parameters);
 
             if (returnValue.GetType() == typeof(double))

@@ -183,7 +183,9 @@ namespace dexih.connections.sql
                         sqlType = "varchar(" + length.ToString() + ")";
                     break;
 				case ETypeCode.Text:
-					sqlType = "text";
+                case ETypeCode.Json:
+                case ETypeCode.Xml:
+                    sqlType = "text";
 					break;
                 case ETypeCode.Single:
                     sqlType = "real";
@@ -258,6 +260,8 @@ namespace dexih.connections.sql
                     break;
                 case ETypeCode.String:
 				case ETypeCode.Text:
+                case ETypeCode.Json:
+                case ETypeCode.Xml:
                 case ETypeCode.Guid:
                 case ETypeCode.Boolean:
                 case ETypeCode.Unknown:

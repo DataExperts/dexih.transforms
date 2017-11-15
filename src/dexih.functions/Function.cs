@@ -65,12 +65,12 @@ namespace dexih.functions
         /// <summary>
         /// Action to take if there is an error in the function.
         /// </summary>
-        public EErrorAction OnError { get; set; }
+        public EErrorAction OnError { get; set; } = EErrorAction.Abend;
 
         /// <summary>
         /// Action to take if there is a null value received by the function.
         /// </summary>
-        public EErrorAction OnNull { get; set; }
+        public EErrorAction OnNull { get; set; } = EErrorAction.Execute;
 
         /// <summary>
         /// If this is a boolean function, return the "NOT" result.

@@ -23,7 +23,9 @@ namespace dexih.functions
         public static Function GetProfileReference(bool detailedResults, string profileName, string inputColumnName)
         {
             var newProfile = new StandardProfiles(detailedResults);
-            return new Function(newProfile, profileName, profileName + "Result", "Reset", new[] { new TableColumn(inputColumnName) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") });
+            var function = new Function(newProfile, profileName, profileName + "Result", "Reset", new[] { new TableColumn(inputColumnName) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") });
+            function.OnNull = EErrorAction.Execute;
+            return function;
         }
 
         public void Reset()

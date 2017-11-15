@@ -81,8 +81,8 @@ namespace dexih.transforms
         public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
-        public TableColumn JoinSortField { get; set; } 
-        public EDuplicateStrategy? JoinDuplicateStrategy { get; set; }
+        public TableColumn JoinSortField { get; set; }
+        public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
 
         public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
         public virtual List<Sort> SortFields => PrimaryTransform?.SortFields; //indicates fields for the sort transform.
@@ -859,7 +859,7 @@ namespace dexih.transforms
                 }
 
             }
-            catch (OperationCanceledException)
+            catch (Exception ex) when (ex is OperationCanceledException || ex is DuplicateJoinKeyException)
             {
                 IsReaderFinished = true;
                 throw;

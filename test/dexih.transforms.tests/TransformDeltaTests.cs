@@ -86,7 +86,8 @@ namespace dexih.transforms.tests
                 //write result to a memory table
                 var memoryConnection = new ConnectionMemory();
                 var writer = new TransformWriter();
-                var result = new TransformWriterResult(0, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
+                var result = new TransformWriterResult();
+                result.SetProperties(0, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                 var writeResult = await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
                 Assert.True(writeResult);
             
@@ -203,7 +204,8 @@ namespace dexih.transforms.tests
                 //write result to a memory table
                 var memoryConnection = new ConnectionMemory();
                var writer = new TransformWriter();
-               var result = new TransformWriterResult(0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
+                var result = new TransformWriterResult();
+                result.SetProperties(0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
                target = new ReaderMemory(target.CacheTable, null);
 
@@ -243,7 +245,8 @@ namespace dexih.transforms.tests
 
                 //run the delta again.  this should ignore all 10 records.
                 transformDelta.SetRowNumber(0);
-               result = new TransformWriterResult(0, 1, "DataLink", 30, 40, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
+                result = new TransformWriterResult();
+                result.SetProperties( 0, 1, "DataLink", 30, 40, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection,CancellationToken.None);
                target = new ReaderMemory(target.CacheTable, null);
                transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);

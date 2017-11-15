@@ -26,7 +26,8 @@ namespace dexih.connections.test
             await connection.CreateTable(table, true, CancellationToken.None);
             TransformWriter writer = new TransformWriter();
 
-            TransformWriterResult writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
+            TransformWriterResult writerResult = new TransformWriterResult();
+            await connection.InitializeAudit(writerResult, 0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
             await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
 
@@ -83,7 +84,8 @@ namespace dexih.connections.test
             reader = connection.GetTransformReader(table);
             TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
 
-            writerResult = await connection.InitializeAudit(0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
+            writerResult = new TransformWriterResult();
+            await connection.InitializeAudit(writerResult, 0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
             var writeAllResult = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
             Assert.True(writeAllResult, writerResult.Message);

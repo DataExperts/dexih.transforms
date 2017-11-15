@@ -35,8 +35,7 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() )
             });
 
-            var insertTime = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
-            Assert.True(insertTime.Item1 > 0, "InsertQuery");
+            await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
 
             //insert a second row
             insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
@@ -47,9 +46,7 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() )
             });
 
-            insertTime = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
-
-            Assert.True(insertTime.Item1 > 0, "InsertQuery");
+            await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
 
             ////if the write was a file.  move it back to the incoming directory to read it.
             if(connection.DatabaseCategory == Connection.ECategory.File)
@@ -58,7 +55,7 @@ namespace dexih.connections.test
                 var filename = fileConnection.LastWrittenFile;
 
                 var filemoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
-                    FlatFile.EFlatFilePath.outgoing, FlatFile.EFlatFilePath.incoming);
+                    EFlatFilePath.Outgoing, EFlatFilePath.Incoming);
                     
                 Assert.True(filemoveResult);
             }
@@ -94,8 +91,7 @@ namespace dexih.connections.test
                     Filters = new List<Filter>() { new Filter() { Column1 = new TableColumn("IntColumn"), Operator = Filter.ECompare.IsEqual, Value2 = 2, CompareDataType = ETypeCode.Int32 } }
                 };
 
-                var returnUpdate = await connection.ExecuteUpdate(table, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
-                Assert.True(returnUpdate > 0, "UpdateQuery");
+                await connection.ExecuteUpdate(table, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
 
                 //run a select query to validate the updated row.
                 selectQuery = new SelectQuery()
@@ -138,8 +134,7 @@ namespace dexih.connections.test
                 };
 
                 //should return value2 from second row
-                var returnDelete = await connection.ExecuteDelete(table, new List<DeleteQuery>() { deleteQuery }, CancellationToken.None);
-                Assert.True(returnDelete > 0, "Delete Query");
+                await connection.ExecuteDelete(table, new List<DeleteQuery>() { deleteQuery }, CancellationToken.None);
 
                 //run a select query to check row is deleted
                 selectQuery = new SelectQuery()
@@ -193,8 +188,7 @@ namespace dexih.connections.test
                 await connection.DataWriterStart(table);
                 var testData = DataSets.CreateTestData();
 
-                var bulkResult = await connection.ExecuteInsertBulk(table, testData, CancellationToken.None);
-                Assert.True(bulkResult > 0, "WriteDataBulk");
+                await connection.ExecuteInsertBulk(table, testData, CancellationToken.None);
 
                 await connection.DataWriterFinish(table);
 
@@ -205,13 +199,13 @@ namespace dexih.connections.test
                     var filename = fileConnection.LastWrittenFile;
 
                     var filemoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
-                        FlatFile.EFlatFilePath.outgoing, FlatFile.EFlatFilePath.incoming);
+                        EFlatFilePath.Outgoing, EFlatFilePath.Incoming);
                     
                     Assert.True(filemoveResult);
                 }
 
                 //check the table loaded 10 rows successully
-                Transform reader = connection.GetTransformReader(table, null, null, true);
+                Transform reader = connection.GetTransformReader(table);
                 int count = 0;
                 var openResult = await reader.Open(0, null, CancellationToken.None);
                 Assert.True(openResult, "Open Reader");
@@ -225,23 +219,23 @@ namespace dexih.connections.test
                 var filters = new List<Filter> { new Filter("IntColumn", Filter.ECompare.IsEqual, 5) };
 
                 //should return value5
-                var reader = connection.GetTransformReader(table, null);
+                var reader = connection.GetTransformReader(table);
 
                 if (reader.CanLookupRowDirect)
                 {
                     var openResult = await reader.Open(0, null, CancellationToken.None);
                     Assert.True(openResult, "Open Reader");
 
-                    var returnLookup = await reader.LookupRow(filters, CancellationToken.None);
-                    Assert.True(Convert.ToString(returnLookup[0]) == "value5", "LookupValue :" + returnLookup[0]);
+                    var returnLookup = await reader.LookupRow(filters, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+                    Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "LookupValue :" + returnLookup.First()[0]);
 
                     //run lookup again with caching set.
-                    reader = connection.GetTransformReader(table, null);
+                    reader = connection.GetTransformReader(table);
                     openResult = await reader.Open(0, null, CancellationToken.None);
                     Assert.True(openResult, "Open Reader");
                     reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
-                    returnLookup = await reader.LookupRow(filters, CancellationToken.None);
-                    Assert.True(Convert.ToString(returnLookup[0]) == "value5", "Select count - value :" + returnLookup[0]);
+                    returnLookup = await reader.LookupRow(filters, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+                    Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "Select count - value :" + returnLookup.First()[0]);
                 }
 
                 reader.Close();

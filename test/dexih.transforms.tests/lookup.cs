@@ -18,9 +18,9 @@ namespace dexih.transforms.tests
             var TestTransform = Helpers.CreateSortedTestData();
 
             List<Filter> filters = new List<Filter>() { new Filter("StringColumn", Filter.ECompare.IsEqual, "value04") };
-            var row = await TestTransform.LookupRow(filters, CancellationToken.None);
+            var row = await TestTransform.LookupRow(filters, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
 
-            Assert.True((string)row[0] == "value04", "Correct row not found");
+            Assert.True((string)row.First()[0] == "value04", "Correct row not found");
         }
     }
 }
