@@ -52,7 +52,19 @@ namespace dexih.connections.sql
             }
         }
 
-        public override object GetConnectionMinValue(ETypeCode typeCode)
+        public override object GetDataTypeMinValue(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Decimal:
+                    return (decimal)-999999999999999;
+                default:
+                    return DataType.GetDataTypeMinValue(typeCode);
+            }
+        }
+
+
+        public override async Task<ReturnValue<bool>> TableExists(Table table, CancellationToken cancelToken)
         {
             switch (typeCode)
             {

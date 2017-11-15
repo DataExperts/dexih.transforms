@@ -20,16 +20,16 @@ namespace dexih.connections.flatfile
 {
     public abstract class ConnectionFlatFile : Connection
     {
-        public abstract Task<List<string>> GetFileShares(string serverName, string userName, string password);
-        public abstract Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path);
-        public abstract Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName);
-        public abstract Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern);
-        public abstract Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path);
-        public abstract Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream);
-        public abstract Task<bool> TestFileConnection();
+        public abstract Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password);
+        public abstract Task<ReturnValue> CreateDirectory(string rootDirectory, string subDirectory);
+        public abstract Task<ReturnValue> MoveFile(string rootDirectory, string fromDirectory, string toDirectory, string fileName);
+        public abstract Task<ReturnValue> DeleteFile(string rootDirectory, string subDirectory, string fileName);
+        public abstract Task<ReturnValue<DexihFiles>> GetFileEnumerator(string mainDirectory, string subDirectory, string searchPattern);
+        public abstract Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string mainDirectory, string subDirectory);
+        public abstract Task<ReturnValue<Stream>> GetReadFileStream(Table table, string subDirectory, string fileName);
+        public abstract Task<ReturnValue<Stream>> GetWriteFileStream(Table table, string subDirectory, string fileName);
+        public abstract Task<ReturnValue> SaveFileStream(Table table, string fileName, Stream fileStream);
+        public abstract Task<ReturnValue> TestFileConnection();
 
 
         public override string ServerHelp => "Path for the files (use //server/path format)";
@@ -230,11 +230,11 @@ namespace dexih.connections.flatfile
 
                 if (flatFile.FileConfiguration == null || flatFile.FileSample == null)
                 {
-                    throw new ConnectionException($"The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.");
+                    return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.", null);
                 }
 
-                var stream = new MemoryStream();
-                var writer = new StreamWriter(stream);
+                MemoryStream stream = new MemoryStream();
+                StreamWriter writer = new StreamWriter(stream);
                 writer.Write(flatFile.FileSample);
                 writer.Flush();
                 stream.Position = 0;
@@ -323,7 +323,7 @@ namespace dexih.connections.flatfile
                 };
                 newFlatFile.Columns.Add(col);
 
-                return Task.FromResult<Table>(newFlatFile);
+                return new ReturnValue<Table>(true, newFlatFile);
             }
             catch (Exception ex)
             {

@@ -34,7 +34,7 @@ namespace dexih.connections.flatfile
                 var directories = Directory.GetDirectories(serverName);
                 foreach (var directoryName in directories)
                 {
-                    var directoryComponents = directoryName.Split(Path.DirectorySeparatorChar);
+                    string[] directoryComponents = directoryName.Split(Path.DirectorySeparatorChar);
                     fileShares.Add(directoryComponents[directoryComponents.Length - 1]);
                 }
 
@@ -58,23 +58,18 @@ namespace dexih.connections.flatfile
 
                 if(file != null && !string.IsNullOrEmpty(file.FileRootPath))
                 {
-                    directory = Path.Combine(FilePath(), file.FileRootPath);
-                    if (!Directory.Exists(directory))
+                    var fullBaseDirectory = Path.Combine(FilePath(), rootDirectory ?? "");
+                    if (!Directory.Exists(fullBaseDirectory))
                     {
-                        Directory.CreateDirectory(directory);
+                        Directory.CreateDirectory(fullBaseDirectory);
                     }
-                }
-
-                if(file != null &&  path != EFlatFilePath.None)
-                {
-                    directory = Path.Combine(directory, file.GetPath(path));
-                    if (!Directory.Exists(directory))
+                    var fullSubDirectory = Path.Combine(fullBaseDirectory, subDirectory ?? "");
+                    if(!Directory.Exists(fullSubDirectory))
                     {
-                        Directory.CreateDirectory(directory);
+                        Directory.CreateDirectory(fullSubDirectory);
                     }
-                }
-
-                return Task.FromResult(true);
+                    return new ReturnValue(true);
+                });
             }
             catch (Exception ex)
             {
@@ -101,15 +96,20 @@ namespace dexih.connections.flatfile
                     return createDirectoryResult;
                 }
 
-                // if there is already a file with the same name on the target directory, add a version number until a unique name is found.
-                while (File.Exists(Path.Combine(fullToDirectory, newFileName)))
-                {
-                    version++;
-                    newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
-                }
+                    newFileName = fileName;
+                    var fullToDirectory = Path.Combine(FilePath(), rootDirectory ?? "", toDirectory ?? "");
+                    var fullFromDirectory = Path.Combine(FilePath(), rootDirectory ?? "", fromDirectory ?? "");
 
-                File.Move(Path.Combine(fullFromDirectory, fileName), Path.Combine(fullToDirectory, newFileName));
-                return true;
+                    // if there is already a file with the same name on the target directory, add a version number until a unique name is found.
+                    while (File.Exists(Path.Combine(fullToDirectory, newFileName)))
+                    {
+                        version++;
+                        newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                    }
+
+                    File.Move(Path.Combine(fullFromDirectory, fileName), Path.Combine(fullToDirectory, newFileName));
+                    return new ReturnValue(true);
+                });
 
             }
             catch (Exception ex)
@@ -122,9 +122,12 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                var fullDirectory = GetFullPath(file, path);
-                File.Delete(Path.Combine(fullDirectory, fileName));
-                return Task.FromResult(true);
+                return await Task.Run(() =>
+                {
+                    var fullDirectory = Path.Combine(FilePath(), rootDirectory ?? "", subDirectory ?? "");
+                    File.Delete(Path.Combine(fullDirectory, fileName));
+                    return new ReturnValue(true);
+                });
             }
             catch (Exception ex)
             {
@@ -132,19 +135,19 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
+        public override async Task<ReturnValue<DexihFiles>> GetFileEnumerator(string rootDirectory, string subDirectory, string searchPattern)
         {
             try
             {
                 var files = new List<DexihFileProperties>();
 
-                var fullDirectory = GetFullPath(file, path);
-                var filenames = string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern);
-                foreach (var fileName in filenames)
-                {
-                    var fileInfo = new FileInfo(fileName);
-                    files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length });
-                }
+                    var fullDirectory = Path.Combine(FilePath(), rootDirectory??"", subDirectory??"");
+                    var filenames = string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern);
+                    foreach (var file in filenames)
+                    {
+                        FileInfo fileInfo = new FileInfo(file);
+                        files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length });
+                    }
 
                 var newFiles = new DexihFiles(files.ToArray());
                 return Task.FromResult(newFiles);
@@ -155,19 +158,19 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path)
+        public override async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string rootDirectory, string subDirectory)
         {
             try
             {
                 var files = new List<DexihFileProperties>();
 
-                var fullDirectory = GetFullPath(file, path);
-                foreach (var fileName in Directory.GetFiles(fullDirectory))
-                {
-                    var fileInfo = new FileInfo(fileName);
-                    var contentType = ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
-                    files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length, ContentType = contentType });
-                }
+                    var fullDirectory = Path.Combine(FilePath(), rootDirectory??"", subDirectory ?? "");
+                    foreach (var file in Directory.GetFiles(fullDirectory))
+                    {
+                        FileInfo fileInfo = new FileInfo(file);
+                        string contentType = ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
+                        files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length, ContentType = contentType });
+                    }
 
                 return Task.FromResult(files);
             }
@@ -181,9 +184,13 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                var fullDirectory = GetFullPath(file, path);
-                Stream reader = File.OpenRead(Path.Combine(fullDirectory, fileName));
-                return Task.FromResult(reader);
+                return await Task.Run(() =>
+                {
+					FlatFile flatFile = (FlatFile)table;
+                    var fullDirectory = Path.Combine(FilePath(), flatFile.FileRootPath ?? "", subDirectory ?? "");
+                    Stream reader = File.OpenRead(Path.Combine(fullDirectory, fileName));
+                    return new ReturnValue<Stream>(true, "", null, reader);
+                });
             }
             catch (Exception ex)
             {
@@ -195,10 +202,13 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                var createDirectoryResult = await CreateDirectory(file, path);
-                var fullDirectory = GetFullPath(file, path);
-                Stream reader = File.OpenWrite(Path.Combine(fullDirectory, fileName));
-                return reader;
+                return await Task.Run(() =>
+                {
+					FlatFile flatFile = (FlatFile)table;
+                    var fullDirectory = Path.Combine(FilePath(), flatFile.FileRootPath ?? "", subDirectory ?? "");
+                    Stream reader = File.OpenWrite(Path.Combine(fullDirectory, fileName));
+                    return new ReturnValue<Stream>(true, "", null, reader);
+                });
             }
             catch (Exception ex)
             {
@@ -256,7 +266,10 @@ namespace dexih.connections.flatfile
             var fullPath = GetFullPath(file, path);
 
 
-            var newFileName = fileName;
+            string fullPath = Path.Combine(FilePath(), flatFile.FileRootPath ?? "", flatFile.FileIncomingPath ?? "");
+
+
+            string newFileName = fileName;
 			while (File.Exists(Path.Combine(fullPath, newFileName)))
 			{
 				version++;
@@ -290,11 +303,11 @@ namespace dexih.connections.flatfile
         {
             try
             {
-				var flatFile = (FlatFile)table;
-                var fullPath = Path.Combine(FilePath(), flatFile.FileRootPath ?? "");
+				FlatFile flatFile = (FlatFile)table;
+                string fullPath = Path.Combine(FilePath(), flatFile.FileRootPath ?? "");
 
-                var exists = new DirectoryInfo(fullPath).Exists;
-                return Task.FromResult(exists);
+                bool exists = await Task.Run(() => new DirectoryInfo(fullPath).Exists, cancelToken);
+                return new ReturnValue<bool>(true, exists);
             }
             catch(Exception ex)
             {
