@@ -156,14 +156,8 @@ namespace dexih.functions
 		[JsonIgnore, CopyIgnore]
 		public Type ColumnGetType
 		{
-			get
-			{
-				return DataType.GetType(Datatype);
-			}
-			set
-			{
-				Datatype = GetTypeCode(value);
-			}
+			get => DataType.GetType(Datatype);
+			set => Datatype = GetTypeCode(value);
 		}
 
 		/// <summary>
