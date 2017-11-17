@@ -561,6 +561,8 @@ namespace dexih.connections.azure
             {
                 case ETypeCode.String:
 				case ETypeCode.Text:
+				case ETypeCode.Json:
+				case ETypeCode.Xml:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
                     filterString = TableQuery.GenerateFilterCondition(column, ConvertOperator(filterOperator), (string)value);
@@ -706,6 +708,8 @@ namespace dexih.connections.azure
                     return new EntityProperty((Single?)returnValue);
                 case ETypeCode.String:
 				case ETypeCode.Text:
+				case ETypeCode.Json:
+				case ETypeCode.Xml:
                     return new EntityProperty((String)returnValue);
                 case ETypeCode.Boolean:
                     return new EntityProperty((Boolean?)returnValue);
@@ -755,6 +759,8 @@ namespace dexih.connections.azure
                     return Convert.ToSingle(value);
                 case ETypeCode.String:
 				case ETypeCode.Text:
+				case ETypeCode.Json:
+				case ETypeCode.Xml:
                 case ETypeCode.Boolean:
                 case ETypeCode.DateTime:
                 case ETypeCode.Guid:
