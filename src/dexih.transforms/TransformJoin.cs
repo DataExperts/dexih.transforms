@@ -153,7 +153,7 @@ namespace dexih.transforms
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
             if (!returnValue)
             {
-                return returnValue;
+                return false;
             }
 
             var referenceQuery = new SelectQuery()
@@ -164,7 +164,7 @@ namespace dexih.transforms
             returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
             if (!returnValue)
             {
-                return returnValue;
+                return false;
             }
 
             //check if the primary and reference transform are sorted in the join

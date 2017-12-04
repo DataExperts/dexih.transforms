@@ -104,7 +104,7 @@ namespace dexih.connections.azure
         {
             try
             {
-                if (_tableResult.Count() == 0)
+                if (!_tableResult.Any())
                     return null;
 
                 if (_currentReadRow >= _tableResult.Count())
@@ -113,7 +113,7 @@ namespace dexih.connections.azure
                         return null;
 
                     _tableResult = await _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token);
-                    if (_tableResult.Count() == 0)
+                    if (!_tableResult.Any())
                         return null;
 
                     _token = _tableResult.ContinuationToken;
@@ -166,12 +166,8 @@ namespace dexih.connections.azure
 
         public override bool CanLookupRowDirect { get; } = true;
 
-        /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <returns></returns>
-        public async override Task<IEnumerable<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public override async Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
             try
             {
@@ -182,18 +178,26 @@ namespace dexih.connections.azure
                 var tableQuery = new TableQuery();
                 tableQuery.SelectColumns = CacheTable.Columns.Select(c=>c.Name).ToArray();
                 tableQuery.FilterString = _connection.BuildFilterString(filters);
-                // tableQuery.Take(1);
+                tableQuery.Take(1000);
 
-                TableContinuationToken continuationToken = null;
-                var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
-                continuationToken = result.ContinuationToken;
+                var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, null);
+                var continuationToken = result.ContinuationToken;
 
                 var rows = new List<object[]>();
-                for(var i = 0; i < result.Count(); i++)
-                {
-                    var currentEntity = result.ElementAt(_currentReadRow);
-                    rows.Add(GetRow(currentEntity));
 
+                while (true)
+                {
+                    for (var i = 0; i < result.Count(); i++)
+                    {
+                        var currentEntity = result.ElementAt(_currentReadRow);
+                        rows.Add(GetRow(currentEntity));
+                    }
+
+                    result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
+                    if (!result.Any())
+                    {
+                        break;
+                    }
                 }
 
                 return rows;

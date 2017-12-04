@@ -207,10 +207,10 @@ namespace dexih.transforms
                 CacheTable.AddColumn("RejectedReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason);
             }
 
-            _sourceSurrogateKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
             _validFromOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
             _isCurrentOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
 
+            _sourceSurrogateKeyOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
             _sourceValidFromOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
             _sourceValidToOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
             _sourceIsCurrentOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);

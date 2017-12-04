@@ -19,11 +19,13 @@ namespace dexih.connections.flatfile
             return Path.Combine(Server ,DefaultDatabase ?? "");
         }
 
-        private string GetFullPath(FlatFile file, EFlatFilePath path)
+        public override string GetFullPath(FlatFile file, EFlatFilePath path)
         {
             var fullPath = Path.Combine(FilePath(), file.FileRootPath ?? "", file.GetPath(path));
             return fullPath;
         }
+        
+        
 
         public override Task<List<string>> GetFileShares(string serverName, string userName, string password)
         {

@@ -2,7 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.flatfile.azure.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.flatfile.azure.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.reader.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.reader.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.reader.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.reader.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.reader.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.reader.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/StandardFunctions.cs" afterPath="$PROJECT_DIR$/src/dexih.functions/StandardFunctions.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -110,95 +127,95 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoLoader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/IPocoEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/BookClass.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/Program.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/CreatePocoReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/Configuration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.mysql.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.sqlite.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.reader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connection.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformValidationTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformMappingTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.sqlserver.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/PocoTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TestSoureDbReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/dataadapter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/DataReaderAdapterTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transform.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformFilterTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformGroupTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/samples.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Function.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/StandardFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/lookup.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformLookupTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.flatfile/FlatFile.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sqlite.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/UpdateQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/InsertQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.standard.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/QueryColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/SelectQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sqlserver.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/DeleteQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.mysql.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.postgreSql.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.tableCache" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoExceptions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.reader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.flatfile.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.postgreSql.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoExceptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.mysql.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoCachedEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoMapper.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sqlserver.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transform.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoLoader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sqlite.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/IPocoEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connection.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/UpdateQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/InsertQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/QueryColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/BookClass.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/SelectQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/CreatePocoReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/Program.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/DeleteQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/Configuration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformLookupTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/lookup.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.sqlite.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/samples.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformGroupTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformFilterTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.sqlserver.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/DataReaderAdapterTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/dataadapter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.tableCache" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TestSoureDbReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/PocoTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformMappingTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Function.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformValidationTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/StandardFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.standard.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.mysql.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -290,7 +307,12 @@
           <expand>
             <path>
               <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
-              <item name="dexih.transforms (loading...)" type="977d5f41:SolutionExplorerNodeRider" />
+              <item name="dexih.transforms (17 projects)" type="977d5f41:SolutionExplorerNodeRider" />
+            </path>
+            <path>
+              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
+              <item name="dexih.transforms (17 projects)" type="977d5f41:SolutionExplorerNodeRider" />
+              <item name="src" type="977d5f41:SolutionExplorerNodeRider" />
             </path>
           </expand>
           <select />
@@ -332,13 +354,31 @@
       <option name="PROJECT_KIND" value="None" />
       <option name="PROJECT_TFM" value="" />
     </configuration>
-    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
-      <node-interpreter>project</node-interpreter>
-      <node-options />
-      <gulpfile />
-      <tasks />
-      <arguments />
+    <configuration name="samples\FunctionExamples" type="DotNetProject" factoryName=".NET Project" temporary="true">
+      <option name="EXE_PATH" value="$PROJECT_DIR$/samples/FunctionExamples/bin/Debug/netcoreapp1.1/FunctionExamples.dll" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/samples/FunctionExamples" />
+      <option name="PASS_PARENT_ENVS" value="1" />
       <envs />
+      <option name="USE_MONO" value="0" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="PROJECT_PATH" value="$PROJECT_DIR$/samples/FunctionExamples/FunctionExamples.csproj" />
+      <option name="PROJECT_OUTPUT_TRACKING" value="1" />
+      <option name="PROJECT_KIND" value="DotNetCore" />
+      <option name="PROJECT_TFM" value=".NETCoreApp,Version=v1.1" />
+    </configuration>
+    <configuration name="test\dexih.connections.sql.tests" type="DotNetProject" factoryName=".NET Project" temporary="true">
+      <option name="EXE_PATH" value="$PROJECT_DIR$/test/dexih.connections.sql.tests/bin/Debug/netcoreapp1.1/dexih.connections.sql.tests.dll" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/dexih.connections.sql.tests" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <envs />
+      <option name="USE_MONO" value="0" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="PROJECT_PATH" value="$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sql.tests.csproj" />
+      <option name="PROJECT_OUTPUT_TRACKING" value="1" />
+      <option name="PROJECT_KIND" value="DotNetCore" />
+      <option name="PROJECT_TFM" value=".NETCoreApp,Version=v1.1" />
     </configuration>
     <configuration default="true" type="DotNetProject" factoryName=".NET Project">
       <option name="PROJECT_PATH" value="" />
@@ -391,31 +431,13 @@
       <recursive>false</recursive>
       <method />
     </configuration>
-    <configuration name="samples\FunctionExamples" type="DotNetProject" factoryName=".NET Project" temporary="true">
-      <option name="EXE_PATH" value="$PROJECT_DIR$/samples/FunctionExamples/bin/Debug/netcoreapp1.1/FunctionExamples.dll" />
-      <option name="PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/samples/FunctionExamples" />
-      <option name="PASS_PARENT_ENVS" value="1" />
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
       <envs />
-      <option name="USE_MONO" value="0" />
-      <option name="USE_EXTERNAL_CONSOLE" value="0" />
-      <option name="PROJECT_PATH" value="$PROJECT_DIR$/samples/FunctionExamples/FunctionExamples.csproj" />
-      <option name="PROJECT_OUTPUT_TRACKING" value="1" />
-      <option name="PROJECT_KIND" value="DotNetCore" />
-      <option name="PROJECT_TFM" value=".NETCoreApp,Version=v1.1" />
-    </configuration>
-    <configuration name="test\dexih.connections.sql.tests" type="DotNetProject" factoryName=".NET Project" temporary="true">
-      <option name="EXE_PATH" value="$PROJECT_DIR$/test/dexih.connections.sql.tests/bin/Debug/netcoreapp1.1/dexih.connections.sql.tests.dll" />
-      <option name="PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/dexih.connections.sql.tests" />
-      <option name="PASS_PARENT_ENVS" value="1" />
-      <envs />
-      <option name="USE_MONO" value="0" />
-      <option name="USE_EXTERNAL_CONSOLE" value="0" />
-      <option name="PROJECT_PATH" value="$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sql.tests.csproj" />
-      <option name="PROJECT_OUTPUT_TRACKING" value="1" />
-      <option name="PROJECT_KIND" value="DotNetCore" />
-      <option name="PROJECT_TFM" value=".NETCoreApp,Version=v1.1" />
     </configuration>
     <list size="3">
       <item index="0" class="java.lang.String" itemvalue=".NET Project.Default" />
@@ -431,6 +453,9 @@
   </component>
   <component name="ShelveChangesManager" show_recycled="false">
     <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -477,6 +502,7 @@
       <workItem from="1504747905493" duration="479000" />
       <workItem from="1509235036067" duration="91000" />
       <workItem from="1510869732652" duration="11000" />
+      <workItem from="1512365976001" duration="60000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -629,7 +655,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="143239000" />
+    <option name="totallyTimeSpent" value="143299000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -648,15 +674,16 @@
       <window_info id="Errors In Solution" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18351063" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32947624" sideWeight="0.4192154" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Unit Tests" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3319149" sideWeight="0.74900264" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28696743" sideWeight="0.48752528" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="NuGet" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.21616541" sideWeight="0.49157113" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17586437" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25387728" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32948327" sideWeight="0.58078456" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />

@@ -136,7 +136,7 @@ namespace dexih.transforms
 
             try
             {
-                var lookupResult = await ReferenceTransform.LookupRow(filters, JoinDuplicateStrategy.Value, cancellationToken);
+                var lookupResult = await ReferenceTransform.LookupRow(filters, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
                 if (lookupResult != null)
                 {
                     _lookupCache = lookupResult.GetEnumerator();

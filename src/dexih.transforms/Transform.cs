@@ -377,16 +377,16 @@ namespace dexih.transforms
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
-                            case TableColumn.ESecurityFlag.StrongEncrypt:
+                            case ESecurityFlag.StrongEncrypt:
                                 row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 1000);
                                 break;
-                            case TableColumn.ESecurityFlag.OneWayHash:
+                            case ESecurityFlag.OneWayHash:
                                 row[i] = HashString.CreateHash(row[i].ToString());
                                 break;
                             case ESecurityFlag.StrongDecrypt:
                                 row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 1000);
                                 break;
-                            case TableColumn.ESecurityFlag.FastEncrypt:
+                            case ESecurityFlag.FastEncrypt:
                                 row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 5);
                                 break;
                             case ESecurityFlag.FastDecrypt:
@@ -401,16 +401,16 @@ namespace dexih.transforms
                     {
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
-                            case TableColumn.ESecurityFlag.FastEncrypt:
+                            case ESecurityFlag.FastEncrypt:
 								row[i] = "(Encrypted)";
 								break;
-							case TableColumn.ESecurityFlag.StrongEncrypt:
+							case ESecurityFlag.StrongEncrypt:
 								row[i] = "(Encrypted)";
 								break;
-							case TableColumn.ESecurityFlag.OneWayHash:
+							case ESecurityFlag.OneWayHash:
 								row[i] = "(Hashed)";
 								break;
-							case TableColumn.ESecurityFlag.Hide:
+							case ESecurityFlag.Hide:
 								row[i] = "(Hidden)";
 								break;
                         }
@@ -605,13 +605,15 @@ namespace dexih.transforms
         /// Performs a row lookup based on the filters.  For mutliple rows, only the first will be returned.
         /// The lookup will first attempt to retrieve a value from the cache (if cachemethod is set to PreLoad cache or OnDemandCache), and then a direct lookup if the transform supports it.
         /// </summary>
-        /// <param name="filters"></param>
+        /// <param name="filters">Lookup filters</param>
+        /// <param name="duplicateStrategy">Action to take when duplicate rows are returned.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<IEnumerable<object[]>> LookupRow(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
-            IEnumerable<object[]> lookupResult;
+            ICollection<object[]> lookupResult;
 
+            // preload all the records into memory on the first call.
             if (CacheMethod == ECacheMethod.PreLoadCache)
             {
                 //preload all records.
@@ -619,7 +621,8 @@ namespace dexih.transforms
 
                 if(duplicateStrategy == EDuplicateStrategy.First)
                 {
-                    lookupResult = new [] { CacheTable.LookupSingleRow(filters) };
+                    var result = CacheTable.LookupSingleRow(filters);
+                    lookupResult = result == null ? null : new[] { result };
                 }
                 else
                 {
@@ -630,7 +633,8 @@ namespace dexih.transforms
             {
                 if (duplicateStrategy == EDuplicateStrategy.First)
                 {
-                    lookupResult = new[] { CacheTable.LookupSingleRow(filters) };
+                    var result = CacheTable.LookupSingleRow(filters);
+                    lookupResult = result == null ? null : new[] { result };
                 }
                 else
                 {
@@ -644,7 +648,7 @@ namespace dexih.transforms
                         //not found in the cache, attempt a direct lookup.
                         lookupResult = await LookupRowDirect(filters, duplicateStrategy, cancellationToken);
 
-                        if (lookupResult != null)
+                        if (lookupResult != null && lookupResult.Any())
                         {
                             if (EncryptionMethod != EEncryptionMethod.NoEncryption)
                             {
@@ -703,7 +707,7 @@ namespace dexih.transforms
 
             if(lookupResult == null || !lookupResult.Any())
             {
-                return new List<object[]>() { new object[CacheTable.Columns.Count] };
+                return null;
             }
 
             switch (duplicateStrategy)
@@ -725,14 +729,16 @@ namespace dexih.transforms
             return null;
         }
 
-        public virtual bool CanLookupRowDirect { get { return PrimaryTransform?.CanLookupRowDirect ?? false; } }
+        public virtual bool CanLookupRowDirect => PrimaryTransform?.CanLookupRowDirect ?? false;
 
         /// <summary>
         /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
         /// </summary>
         /// <param name="filters"></param>
+        /// <param name="duplicateStrategy"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        public virtual async Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
             if(CanLookupRowDirect)
             {
@@ -740,7 +746,7 @@ namespace dexih.transforms
                 var query = new SelectQuery() { Filters = filters };
                 await Open(AuditKey, query, cancellationToken);
 
-                IEnumerable<object[]> lookupResult = null;
+                ICollection<object[]> lookupResult = null;
                 //not found in the cache, keep reading until it's found.
 
                 if (duplicateStrategy == EDuplicateStrategy.First || duplicateStrategy == EDuplicateStrategy.Last)
@@ -949,23 +955,11 @@ namespace dexih.transforms
             }
         }
 
-        public override int Depth
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override int Depth => throw new NotImplementedException();
 
         public override bool IsClosed => PrimaryTransform?.IsClosed??!IsReaderFinished;
 
-        public override int RecordsAffected
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override int RecordsAffected => throw new NotImplementedException();
 
         public override bool GetBoolean(int i)
         {
@@ -1035,8 +1029,13 @@ namespace dexih.transforms
         }
         public override object GetValue(int i)
         {
-            return CurrentRow[i];
+            if (i < CurrentRow.Length)
+            {
+                return CurrentRow[i];
+            }
+            throw new ArgumentOutOfRangeException($"The GetValue failed as the column at position {i} was greater than the number of columns {CurrentRow.Length}.");
         }
+        
         public override int GetValues(object[] values)
         {
             if (values.Length > CurrentRow.Length)
@@ -1046,6 +1045,7 @@ namespace dexih.transforms
                 values[i] = CurrentRow[i];
             return values.GetLength(0);
         }
+        
         public override bool IsDBNull(int i)
         {
             return GetValue(i) is DBNull;
@@ -1055,10 +1055,8 @@ namespace dexih.transforms
         {
             if (disposing)
             {
-                if (PrimaryTransform != null)
-                    PrimaryTransform.Dispose();
-                if (ReferenceTransform != null)
-                    ReferenceTransform.Dispose();
+                PrimaryTransform?.Dispose();
+                ReferenceTransform?.Dispose();
 
                 Reset();
             }
@@ -1170,7 +1168,7 @@ namespace dexih.transforms
 
         public static ReadOnlyCollection<DbColumn> GetColumnSchema(this Transform reader)
         {
-            var transform = (Transform)reader;
+            var transform = reader;
 
             var columnSchema = new List<DbColumn>();
 
@@ -1194,10 +1192,10 @@ namespace dexih.transforms
                     false,
                     false,
                     false,
-                    col.DeltaType == EDeltaType.SurrogateKey ? true : false,
-                    col.Datatype == ETypeCode.Int64 ? true : false,
+                    col.DeltaType == EDeltaType.SurrogateKey,
+                    col.Datatype == ETypeCode.Int64,
                     false,
-                    col.DeltaType == EDeltaType.SurrogateKey ? true : false,
+                    col.DeltaType == EDeltaType.SurrogateKey,
                     col.Precision,
                     col.Scale
                     );

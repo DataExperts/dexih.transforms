@@ -24,7 +24,7 @@ namespace dexih.functions
         public Table(string tableName, TableColumns columns, TableCache data) 
         {
             Name = tableName;
-            BaseTableName = DataType.CleanString(tableName);
+            BaseTableName = CleanString(tableName);
             Columns = columns;
             Data = data;
         }
@@ -32,7 +32,7 @@ namespace dexih.functions
         public Table(string tableName, int maxRows, params TableColumn[] columns) 
         {
             Name = tableName;
-            BaseTableName = DataType.CleanString(tableName);
+            BaseTableName = CleanString(tableName);
             Columns = new TableColumns();
             foreach (var column in columns)
                 Columns.Add(column);
@@ -43,7 +43,7 @@ namespace dexih.functions
         public Table(string tableName, int maxRows, TableColumns columns)
         {
             Name = tableName;
-            BaseTableName = DataType.CleanString(tableName);
+            BaseTableName = CleanString(tableName);
             Columns = columns;
             Data = new TableCache(maxRows);
         }
@@ -51,7 +51,7 @@ namespace dexih.functions
 		public Table(string tableName, int maxRows = 0)
 		{
 		    Name = tableName;
-			BaseTableName = DataType.CleanString(tableName);
+			BaseTableName = CleanString(tableName);
 			Columns = new TableColumns();
 			Data = new TableCache(maxRows);
 		}
@@ -60,7 +60,7 @@ namespace dexih.functions
         {
             Name = tableName;
 			Schema = schema;
-            BaseTableName = DataType.CleanString(tableName);
+            BaseTableName = CleanString(tableName);
             Columns = new TableColumns();
             Data = new TableCache(maxRows);
         }
@@ -197,14 +197,18 @@ namespace dexih.functions
         {
             try
             {
-                var rows = new List<object[]>();
+                List<object[]> rows = null;
 
                 //scan the data for a matching row.  
                 //TODO add indexing to lookup process.
                 for (var i = startRow; i < Data.Count(); i++)
                 {
                     if (RowMatch(filters, Data[i]))
+                    {
+                        if (rows == null)
+                            rows = new List<object[]>();
                         rows.Add(Data[i]);
+                    }
                 }
 
                 return rows;
@@ -217,7 +221,7 @@ namespace dexih.functions
 
 
 
-        public bool RowMatch(List<Filter> filters, object[] row)
+        public bool RowMatch(IEnumerable<Filter> filters, object[] row)
         {
             var isMatch = true;
 
@@ -242,27 +246,27 @@ namespace dexih.functions
                     value2 = row[GetOrdinal(filter.Column2.Name)];
                 }
 
-                var compareResult = DataType.Compare(filter.CompareDataType, value1, value2);
+                var compareResult = Compare(filter.CompareDataType, value1, value2);
 
                 switch (filter.Operator)
                 {
                     case Filter.ECompare.IsEqual:
-                        isMatch = compareResult == DataType.ECompareResult.Equal;
+                        isMatch = compareResult == ECompareResult.Equal;
                         break;
                     case Filter.ECompare.NotEqual:
-                        isMatch = compareResult != DataType.ECompareResult.Equal;
+                        isMatch = compareResult != ECompareResult.Equal;
                         break;
                     case Filter.ECompare.LessThan:
-                        isMatch = compareResult == DataType.ECompareResult.Less;
+                        isMatch = compareResult == ECompareResult.Less;
                         break;
                     case Filter.ECompare.LessThanEqual:
-                        isMatch = compareResult == DataType.ECompareResult.Less || compareResult == DataType.ECompareResult.Equal;
+                        isMatch = compareResult == ECompareResult.Less || compareResult == ECompareResult.Equal;
                         break;
                     case Filter.ECompare.GreaterThan:
-                        isMatch = compareResult == DataType.ECompareResult.Greater;
+                        isMatch = compareResult == ECompareResult.Greater;
                         break;
                     case Filter.ECompare.GreaterThanEqual:
-                        isMatch = compareResult == DataType.ECompareResult.Greater || compareResult == DataType.ECompareResult.Greater;
+                        isMatch = compareResult == ECompareResult.Greater || compareResult == ECompareResult.Greater;
                         break;
                 }
 

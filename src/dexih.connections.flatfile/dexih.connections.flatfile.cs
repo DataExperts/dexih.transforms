@@ -30,8 +30,8 @@ namespace dexih.connections.flatfile
         public abstract Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName);
         public abstract Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream);
         public abstract Task<bool> TestFileConnection();
-
-
+        public abstract string GetFullPath(FlatFile file, EFlatFilePath path);
+        
         public override string ServerHelp => "Path for the files (use //server/path format)";
         public override string DefaultDatabaseHelp => "";
         public override bool AllowNtAuth => false;
@@ -47,6 +47,7 @@ namespace dexih.connections.flatfile
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => true;
 
+        
 
         public override string DatabaseTypeName => "Flat Files";
         public override ECategory DatabaseCategory => ECategory.File;

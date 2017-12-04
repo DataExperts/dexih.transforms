@@ -146,12 +146,8 @@ namespace dexih.connections.sql
 
         public override bool CanLookupRowDirect { get; } = true;
 
-        /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <returns></returns>
-        public async override Task<IEnumerable<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public override async Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
             try
             {

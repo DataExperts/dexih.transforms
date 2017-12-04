@@ -269,7 +269,7 @@ namespace dexih.transforms
 
         public virtual async Task<TransformWriterResult> GetPreviousResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, true, false, false, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -279,7 +279,7 @@ namespace dexih.transforms
 
         public virtual async Task<TransformWriterResult> GetPreviousSuccessResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, true, false, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -289,7 +289,7 @@ namespace dexih.transforms
 
         public virtual async Task<TransformWriterResult> GetCurrentResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, false, false, true, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -299,20 +299,20 @@ namespace dexih.transforms
 
         public virtual async Task<List<TransformWriterResult>> GetPreviousResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, true, false, false, null, -1, null, false, cancellationToken);
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
         }
 
         public virtual async Task<List<TransformWriterResult>> GetPreviousSuccessResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, true, false, null, -1, null, false, cancellationToken);
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
         }
 
         public virtual async Task<List<TransformWriterResult>> GetCurrentResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, false, false, true, null, -1, null, false, cancellationToken);
+            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, string auditType, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken)
         {
             Transform reader = null;
             var watch = new Stopwatch();
@@ -324,6 +324,7 @@ namespace dexih.transforms
             var filters = new List<Filter>();
             if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, hubKey));
             if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsIn, referenceKeys));
+            if (auditType != null) filters.Add(new Filter(new TableColumn("AuditType", ETypeCode.String), Filter.ECompare.IsEqual, auditType));
             if (auditKey != null) filters.Add(new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, auditKey));
             if (runStatus != null) filters.Add(new Filter(new TableColumn("RunStatus", ETypeCode.String), Filter.ECompare.IsEqual, runStatus.ToString()));
             if (startTime != null) filters.Add(new Filter(new TableColumn("StartTime", ETypeCode.DateTime), Filter.ECompare.GreaterThanEqual, startTime));
@@ -351,7 +352,7 @@ namespace dexih.transforms
             { 
                 if(childItems)
                 {
-                    result.ChildResults = await GetTransformWriterResults(hubKey, null, null, null, previousResult, previousSuccessResult, currentResult, null, 0, result.AuditKey, false, cancellationToken);
+                    result.ChildResults = await GetTransformWriterResults(hubKey, null, null, null, null, previousResult, previousSuccessResult, currentResult, null, 0, result.AuditKey, false, cancellationToken);
                 }
 
                 if (cancellationToken.IsCancellationRequested)

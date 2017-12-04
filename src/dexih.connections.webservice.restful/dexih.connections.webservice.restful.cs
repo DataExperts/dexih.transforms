@@ -226,7 +226,7 @@ namespace dexih.connections.webservice
                             {
                                 tokens = content.SelectTokens(rowPath).First().Children();
                             }
-
+                            
                             foreach (var child in tokens)
                             {
 
@@ -387,7 +387,7 @@ namespace dexih.connections.webservice
             return Task.FromResult(new List<Table>());
         }
 
-        public async Task<(string statusCode, bool isSuccess, string response)> GetWebServiceResponse(RestFunction restFunction, List<Filter> filters, CancellationToken cancellationToken)
+        private async Task<(string statusCode, bool isSuccess, string response)> GetWebServiceResponse(RestFunction restFunction, List<Filter> filters, CancellationToken cancellationToken)
         {
             var uri = restFunction.RestfulUri;
 
@@ -431,27 +431,30 @@ namespace dexih.connections.webservice
             }
         }
 
-        public IEnumerable<object[]> ProcessJson(RestFunction restFunction, object[] baseRow, string data)
+        private ICollection<object[]> ProcessJson(RestFunction restFunction, object[] baseRow, string data)
         {
-            var content = JToken.Parse(data);
-            IEnumerator<JToken> jsonIterator;
-
-            if (string.IsNullOrEmpty(restFunction.RowPath))
+            JToken content = null;
+            try
             {
-                jsonIterator = content.AsJEnumerable().GetEnumerator();
+                content = JToken.Parse(data);
+                if (content == null)
+                {
+                    throw new ConnectionException("The json data parsing returned nothing.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                jsonIterator = content.SelectTokens(restFunction.RowPath).AsJEnumerable().GetEnumerator();
+                throw new ConnectionException($"The json data could not be parsed.  {ex.Message}", ex);
             }
 
             var rows = new List<object[]>();
             var responseDataOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
-
             var columnCount = restFunction.Columns.Count;
-            while (jsonIterator.MoveNext())
+
+            IEnumerable<JToken> jsonEnumerable;
+
+            void ProcessRow(JToken currentRow)
             {
-                var currentRow = jsonIterator.Current;
                 var row = new object[columnCount];
                 Array.Copy(baseRow, row, columnCount);
 
@@ -459,12 +462,14 @@ namespace dexih.connections.webservice
                 {
                     if (responseDataOrdinal >= 0)
                     {
-                        row[responseDataOrdinal] = currentRow?.ToString() ?? "";
+                        row[responseDataOrdinal] = currentRow.ToString();
                     }
 
-                    foreach (var column in restFunction.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
+                    foreach (var column in restFunction.Columns.Where(c =>
+                        c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
                     {
-                        object value = currentRow.SelectToken(column.Name);
+                        var value = currentRow.SelectToken(column.Name);
+                        
                         try
                         {
                             row[restFunction.GetOrdinal(column)] = DataType.TryParse(column.Datatype, value);
@@ -480,11 +485,33 @@ namespace dexih.connections.webservice
 
                 rows.Add(row);
             }
+            
+            if (string.IsNullOrEmpty(restFunction.RowPath))
+            {
+                if (content.Type == JTokenType.Array)
+                {
+                    foreach (var currentrow in content.Children())
+                    {
+                        ProcessRow(currentrow);
+                    }
+                }
+                else
+                {
+                    ProcessRow(content);
+                }
+            }
+            else
+            {
+                foreach (var currentRow in content.SelectTokens(restFunction.RowPath))
+                {
+                    ProcessRow(currentRow);
+                }
+            }
 
             return rows;
         }
 
-        public IEnumerable<object[]> ProcessXml(RestFunction restFunction, object[] baseRow, string data)
+        private ICollection<object[]> ProcessXml(RestFunction restFunction, object[] baseRow, string data)
         {
             var stream = new StringReader(data);
             var xPathDocument = new XPathDocument(stream);
@@ -558,7 +585,7 @@ namespace dexih.connections.webservice
         /// <param name="filters"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<object[]>> LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken)
+        public async Task<ICollection<object[]>> LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken)
         {
             try
             {
@@ -586,8 +613,8 @@ namespace dexih.connections.webservice
                 {
                     if(filters != null)
                     {
-                        var filter = filters.Where(c => c.Column1.Name == column.Name);
-                        if(filter.Count() == 0)
+                        var filter = filters.Where(c => c.Column1.Name == column.Name).ToArray();
+                        if(!filter.Any())
                         {
                             baseRow[restFunction.GetOrdinal(column)] = column.DefaultValue;
                         }
@@ -596,7 +623,10 @@ namespace dexih.connections.webservice
                             baseRow[restFunction.GetOrdinal(column)] = filter.First().Value2;
                         }
                     }
-                    baseRow[restFunction.GetOrdinal(column)] = column.DefaultValue;
+                    else
+                    {
+                        baseRow[restFunction.GetOrdinal(column)] = column.DefaultValue;
+                    }
                 }
 
                 if(restFunction.FormatType == ETypeCode.Json)

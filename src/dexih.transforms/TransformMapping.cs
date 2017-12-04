@@ -124,7 +124,7 @@ namespace dexih.transforms
 
 	        if(PassThroughColumns)
 	        {
-		        var column = CacheTable.Columns.SingleOrDefault(c => c.TableColumnName() == outputColumn.TableColumnName());
+		        var column = CacheTable.Columns.SingleOrDefault(c => c.Name == outputColumn.Name);
 		        if (column != null)
 			        return outputColumn;
 	        }

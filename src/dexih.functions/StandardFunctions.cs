@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Xml.XPath;
 using Newtonsoft.Json.Linq;
 using Dexih.Utils.Crypto;
+using Newtonsoft.Json;
 
 namespace dexih.functions
 {
@@ -43,6 +44,7 @@ namespace dexih.functions
             _cacheSeriesList = null;
             _cacheStringBuilder = null;
             _cacheXmlNodeList = null;
+            _cacheJsonTokens = null;
             return true;
         }
 
@@ -398,7 +400,7 @@ namespace dexih.functions
             {
                 var returnValue = true;
 
-                var results = JObject.Parse(json);
+                var results = JToken.Parse(json);
 
                 values = new string[jsonPaths.Length];
 
@@ -786,7 +788,16 @@ namespace dexih.functions
         {
             if (_cacheJsonTokens == null)
             {
-                var results = JObject.Parse(json);
+                JToken results;
+                try
+                {
+                    results = JToken.Parse(json);
+                }
+                catch (JsonReaderException e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
                 _cacheJsonTokens = results.SelectTokens(jsonPath).ToArray();
                 _cacheInt = 0;
             }

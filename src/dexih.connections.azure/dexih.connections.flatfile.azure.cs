@@ -123,6 +123,11 @@ namespace dexih.connections.azure
                 throw new ConnectionException($"Failed to get the directory for file  {file.Name}.  {ex.Message}", ex);
             }
         }
+        
+        public override string GetFullPath(FlatFile file, EFlatFilePath path)
+        {
+            throw new ConnectionException("File paths are not available on Azure connections.");
+        }
 
 
         public override async Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path)

@@ -157,6 +157,12 @@ namespace dexih.transforms
             {
                 rowFunction.Reset();
             }
+
+            for (var j = 0; j < _rowGenerate.Length; j++)
+            {
+                _rowGenerate[j] = false;
+            }
+
             _firstRecord = true;
             return true;
         }

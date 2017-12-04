@@ -4,7 +4,7 @@
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.reporters.netstandard15.dll" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.utility.netstandard15.dll" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.2.0/build/netcoreapp1.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll" t="Include" />
-    <e p="$USER_HOME$/Library/Caches/Rider2017.2/resharper-host/local/Transient/ReSharperHost/v10/SolutionCaches/_dexih.transforms.-909103707.00" t="ExcludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/Rider2017.3/resharper-host/local/Transient/ReSharperHost/v11/SolutionCaches/_dexih.transforms.-909103707.00" t="ExcludeRecursive" />
     <e p="$PROJECT_DIR$" t="IncludeFlat">
       <e p="dexih.transforms.sln" t="IncludeFlat" />
       <e p="packages" t="ExcludeRecursive" />
@@ -83,7 +83,7 @@
           <e p="dexih.connections.flatfile.csproj" t="IncludeRecursive" />
           <e p="dexih.connections.flatfile.local.cs" t="Include" />
           <e p="dexih.connections.flatfile.reader.cs" t="Include" />
-          <e p="FileFormat.cs" t="Include" />
+          <e p="FileConfiguration.cs" t="Include" />
           <e p="FlatFile.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
@@ -138,6 +138,8 @@
         <e p="dexih.functions" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.functions.csproj" t="IncludeRecursive" />
+          <e p="Extensions.cs" t="Include" />
+          <e p="FlatFile.cs" t="Include" />
           <e p="Function.cs" t="Include" />
           <e p="FunctionExceptions.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
@@ -208,6 +210,7 @@
             <e p="AssemblyInfo.cs" t="Include" />
           </e>
           <e p="ReaderDbDataReader.cs" t="Include" />
+          <e p="ReaderDynamic.cs" t="Include" />
           <e p="ReaderMemory.cs" t="Include" />
           <e p="ReaderRowCreator.cs" t="Include" />
           <e p="Transform.cs" t="Include" />
@@ -360,18 +363,6 @@
             <e p="AssemblyInfo.cs" t="Include" />
           </e>
         </e>
-        <e p="dexih.functions.tests.async" t="IncludeRecursive">
-          <e p="bin" t="ExcludeRecursive" />
-          <e p="dexih.functions.tests.async.csproj" t="IncludeRecursive" />
-          <e p="obj" t="ExcludeRecursive">
-            <e p="Debug" t="Include">
-              <e p="netcoreapp2.0" t="Include">
-                <e p="dexih.functions.tests.async.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.functions.tests.async.Program.cs" t="Include" />
-              </e>
-            </e>
-          </e>
-        </e>
         <e p="dexih.transforms.tests" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="dataadapter.cs" t="Include" />
@@ -405,33 +396,7 @@
           <e p="TransformSortTests.cs" t="Include" />
           <e p="TransformValidationTests.cs" t="Include" />
         </e>
-        <e p="dexih.transforms.tests.async" t="IncludeRecursive">
-          <e p="bin" t="ExcludeRecursive" />
-          <e p="dexih.transforms.tests.async.csproj" t="IncludeRecursive" />
-          <e p="obj" t="ExcludeRecursive">
-            <e p="Debug" t="Include">
-              <e p="netstandard2.0" t="Include">
-                <e p="dexih.transforms.tests.async.AssemblyInfo.cs" t="Include" />
-              </e>
-            </e>
-          </e>
-        </e>
       </e>
-    </e>
-    <e p="$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties" t="IncludeRecursive">
-      <e p="bin" t="ExcludeRecursive" />
-      <e p="CopyProperties.cs" t="Include" />
-      <e p="CopyPropertyAttributes.cs" t="Include" />
-      <e p="CopyPropertyExceptions.cs" t="Include" />
-      <e p="Dexih.Utils.CopyProperties.csproj" t="IncludeRecursive" />
-      <e p="obj" t="ExcludeRecursive">
-        <e p="Debug" t="Include">
-          <e p="netstandard1.3" t="Include">
-            <e p="Dexih.Utils.CopyProperties.AssemblyInfo.cs" t="Include" />
-          </e>
-        </e>
-      </e>
-      <e p="PropertyStructure.cs" t="Include" />
     </e>
   </component>
   <component name="RiderRiderContentModelStore">

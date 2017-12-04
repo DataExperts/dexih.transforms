@@ -21,6 +21,8 @@ namespace dexih.connections.webservice
         private bool _isOpen;
         private IEnumerator<object[]> _cachedRows;
 
+        private List<Filter> _filter;
+
         private RestFunction _restFunction;
 
         public ReaderRestful(Connection connection, Table table)
@@ -52,6 +54,12 @@ namespace dexih.connections.webservice
                 var rowCreator = new ReaderRowCreator();
                 rowCreator.InitializeRowCreator(1, 1, 1);
                 ReferenceTransform = rowCreator;
+
+                _filter = query?.Filters;
+                if (_filter == null)
+                {
+                    _filter = new List<Filter>();
+                }
                 
                 _isOpen = true;
 
@@ -92,25 +100,29 @@ namespace dexih.connections.webservice
                 {
                     return null;
                 }
-                else
+
+                if(_cachedRows != null)
                 {
-                    if(_cachedRows != null)
+                    if (!_cachedRows.MoveNext())
+                    {
+                        _cachedRows = null;
+                        if (await ReferenceTransform.ReadAsync(cancellationToken) == false)
+                        {
+                            return null;
+                        }
+                    }
+                    else
                     {
                         var row = _cachedRows.Current;
-                        if (!_cachedRows.MoveNext())
-                        {
-                            _cachedRows = null;
-                        }
-
                         return row;
                     }
+
                 }
 
-                var rows = await LookupRowDirect(new List<Filter>(), EDuplicateStrategy.All, cancellationToken);
+                var rows = await LookupRowDirect(_filter, EDuplicateStrategy.All, cancellationToken);
                 if(rows != null && rows.Any())
                 {
                     _cachedRows = rows.GetEnumerator();
-
                     _cachedRows.MoveNext();
 
                     return _cachedRows.Current;
@@ -130,13 +142,7 @@ namespace dexih.connections.webservice
         public override bool CanLookupRowDirect { get; } = true;
 
         /// <inheritdoc />
-        /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async override Task<IEnumerable<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        public async override Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
             return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters, cancellationToken);
          }
