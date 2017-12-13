@@ -92,9 +92,8 @@ namespace dexih.connections.test
             Assert.Equal(10L, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, writerResult.AuditKey, null, true, false, false, null, 1, null, false, CancellationToken.None);
+            var auditTable = await connection.GetTransformWriterResults(0, null, "Datalink", writerResult.AuditKey, null, true, false, false, null, 1, null, false, CancellationToken.None);
             Assert.Equal(10L, auditTable[0].RowsCreated);
-
         }
 
     }

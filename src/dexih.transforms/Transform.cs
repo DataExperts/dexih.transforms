@@ -658,7 +658,7 @@ namespace dexih.transforms
                                 }
                             }
 
-                            CacheTable.Data.Add(lookupResult);
+                            CacheTable.Data.AddRange(lookupResult);
                             _currentRowCached = true;
                         }
                     }

@@ -33,33 +33,14 @@ namespace dexih.functions
 
         public object[] this[int index]
         {
-            get
-            {
-                return _data[InternalIndex(index)];
-            }
+            get => _data[InternalIndex(index)];
 
-            set
-            {
-                _data[InternalIndex(index)] = value;
-            }
+            set => _data[InternalIndex(index)] = value;
         }
 
-        public int Count
-        {
-            get
-            {
-                return _data.Count;
-            }
-        }
+        public int Count => _data.Count;
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
-
+        public bool IsReadOnly => false;
 
 
         public void Add(object[] item)
@@ -77,7 +58,7 @@ namespace dexih.functions
             }
         }
 
-        public void Add(IEnumerable<object[]> items)
+        public void AddRange(IEnumerable<object[]> items)
         {
             foreach(var item in items)
             {

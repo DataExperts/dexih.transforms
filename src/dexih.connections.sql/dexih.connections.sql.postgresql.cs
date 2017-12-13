@@ -107,7 +107,7 @@ namespace dexih.connections.sql
                         createSql.Append(AddDelimiter(col.Name) + " SERIAL"); //TODO autoincrement for postgresql
                     else
                     {
-                        createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision));
+                        createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col));
                         if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
                             createSql.Append(" IDENTITY(1,1)"); //TODO autoincrement for postgresql
                         if (col.AllowDbNull == false)
@@ -156,11 +156,11 @@ namespace dexih.connections.sql
             }
         }
 
-        public override string GetSqlType(ETypeCode dataType, int? length, int? scale, int? precision)
+        protected override string GetSqlType(TableColumn column)
         {
             string sqlType;
 
-            switch (dataType)
+            switch (column.Datatype)
             {
                 case ETypeCode.Int32:
                 case ETypeCode.UInt16:
@@ -177,15 +177,15 @@ namespace dexih.connections.sql
                     sqlType = "bigint";
                     break;
                 case ETypeCode.String:
-                    if (length == null)
-                        sqlType = "varchar(10485760)";
+                    if (column.MaxLength == null)
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(10485760)";
                     else
-                        sqlType = "varchar(" + length.ToString() + ")";
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
 				case ETypeCode.Text:
                 case ETypeCode.Json:
                 case ETypeCode.Xml:
-                    sqlType = "text";
+                    sqlType = (column.IsUnicode == true ? "n" : "") + "text";
 					break;
                 case ETypeCode.Single:
                     sqlType = "real";
@@ -215,14 +215,10 @@ namespace dexih.connections.sql
                     sqlType = "varchar(10485760)";
                     break;
                 case ETypeCode.Decimal:
-                    if (precision.ToString() == "")
-                        precision = 28;
-                    if (scale.ToString() == "")
-                        scale = 0;
-                    sqlType = "numeric (" + precision.ToString() + "," + scale.ToString() + ")";
+                    sqlType =  $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
-                    throw new Exception("The datatype " + dataType.ToString() + " is not compatible with the create table.");
+                    throw new Exception($"The datatype {column.Datatype} is not compatible with the create table.");
             }
 
             return sqlType;
@@ -233,7 +229,7 @@ namespace dexih.connections.sql
         /// Gets the start quote to go around the values in sql insert statement based in the column type.
         /// </summary>
         /// <returns></returns>
-        public override string GetSqlFieldValueQuote(ETypeCode type, object value)
+        protected override string GetSqlFieldValueQuote(ETypeCode type, object value)
         {
             string returnValue;
 

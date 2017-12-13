@@ -1,4 +1,6 @@
 ﻿using dexih.functions;
+using dexih.functions.File;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.flatfile
 {
@@ -50,8 +52,11 @@ namespace dexih.connections.flatfile
 			set => _fileMatchPattern = value;
 		}
 
+		public DataType.ETypeCode FormatType { get; set; }
 		public FileConfiguration FileConfiguration { get; set; } = new FileConfiguration();
 		public string FileSample { get; set; }
+		
+		public string RowPath { get; set; }
 
 		public FlatFile()
 		{

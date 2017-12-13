@@ -141,6 +141,8 @@ namespace dexih.functions
 
 		public EDeltaType DeltaType { get; set; }
 
+	    public bool? IsUnicode { get; set; }
+
 		public string DefaultValue { get; set; }
 
 		public bool IsUnique { get; set; }

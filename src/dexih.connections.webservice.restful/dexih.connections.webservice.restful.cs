@@ -16,7 +16,9 @@ using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.DataType;
 using System.IO;
+using System.Text;
 using System.Xml.XPath;
+using dexih.functions.File;
 
 namespace dexih.connections.webservice
 {
@@ -192,188 +194,39 @@ namespace dexih.connections.webservice
                 if (newRestFunction.Columns.Count > 0)
                 {
                     var data = await GetPreview(newRestFunction, query, cancellationToken);
-
                     var reader = data.Data;
+
+                    var dataString =
+                        reader[0][newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData)]
+                            .ToString();
+
+                    var byteArray = Encoding.ASCII.GetBytes( dataString );
+                    var dataStream = new MemoryStream( byteArray ); 
+ 
+
+                    ICollection<TableColumn> fileColumns = null;
 
                     if (newRestFunction.FormatType == ETypeCode.Json)
                     {
-
-                        JToken content;
-                        try
-                        {
-                            content = JToken.Parse(reader[0][newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData)].ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ConnectionException($"Failed to parse the response json value. {ex.Message}", ex, reader[0][newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData)].ToString());
-                        }
-
-                        if (content != null)
-                        {
-                            IEnumerable<JToken> tokens;
-                            if (string.IsNullOrEmpty(rowPath))
-                            {
-                                if (content.Type == JTokenType.Array)
-                                {
-                                    tokens = content.First().Children();
-                                }
-                                else
-                                {
-                                    tokens = content.Children();
-                                }
-                            }
-                            else
-                            {
-                                tokens = content.SelectTokens(rowPath).First().Children();
-                            }
-                            
-                            foreach (var child in tokens)
-                            {
-
-                                if (child.Type == JTokenType.Property)
-                                {
-                                    var value = (JProperty)child;
-                                    ETypeCode dataType;
-                                    if (value.Value.Type == JTokenType.Array || value.Value.Type == JTokenType.Object || value.Value.Type == JTokenType.Property)
-                                    {
-                                        dataType = ETypeCode.Json;
-                                    }
-                                    else
-                                    {
-                                        dataType = DataType.GetTypeCode(value.Value.Type);
-                                    }
-                                    col = new TableColumn
-                                    {
-                                        Name = value.Name,
-                                        IsInput = false,
-                                        LogicalName = value.Name,
-                                        Datatype = dataType,
-                                        DeltaType = TableColumn.EDeltaType.ResponseSegment,
-                                        MaxLength = null,
-                                        Description = "Json value of the " + value.Path + " path",
-                                        AllowDbNull = true,
-                                        IsUnique = false
-                                    };
-                                    newRestFunction.Columns.Add(col);
-                                }
-                                else
-                                {
-                                    col = new TableColumn
-                                    {
-                                        Name = child.Path,
-                                        IsInput = false,
-                                        LogicalName = child.Path,
-                                        Datatype = ETypeCode.Json,
-                                        DeltaType = TableColumn.EDeltaType.ResponseSegment,
-                                        MaxLength = null,
-                                        Description = "Json from the " + child.Path + " path",
-                                        AllowDbNull = true,
-                                        IsUnique = false
-                                    };
-                                    newRestFunction.Columns.Add(col);
-                                }
-                            }
-                        }
+                        var jsonHandler = new FileHandlerJson(restFunction, rowPath);
+                        fileColumns = await jsonHandler.GetSourceColumns(dataStream);
                     }
-
 
                     if (newRestFunction.FormatType == ETypeCode.Xml)
                     {
+                        var xmlHandler = new FileHandlerXml(restFunction, rowPath);
+                        fileColumns = await xmlHandler.GetSourceColumns(dataStream);
+                    }
 
-                        XPathNavigator xPathNavigator;
-
-                        try
+                    if (fileColumns != null)
+                    {
+                        foreach (var column in fileColumns)
                         {
-                            var stream = new StringReader(reader[0][newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData)].ToString());
-                            var xPathDocument = new XPathDocument(stream);
-                            xPathNavigator = xPathDocument.CreateNavigator();
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ConnectionException($"Failed to parse the response xml value. {ex.Message}", ex, reader[0][newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData)].ToString());
-                        }
-
-                        if (xPathNavigator != null)
-                        {
-                            XPathNodeIterator nodes;
-                            if (string.IsNullOrEmpty(rowPath))
-                            {
-                                nodes = xPathNavigator.SelectChildren(XPathNodeType.All);
-                                if(nodes.Count == 1)
-                                {
-                                    nodes.MoveNext();
-                                    nodes = nodes.Current.SelectChildren(XPathNodeType.All);
-                                }
-                            }
-                            else
-                            {
-                                nodes = xPathNavigator.Select(rowPath);
-                                if(nodes.Count < 0)
-                                {
-                                    throw new ConnectionException($"Failed to find the path {rowPath} in the xml response.");
-                                }
-
-                                nodes.MoveNext();
-                                nodes = nodes.Current.SelectChildren(XPathNodeType.All);
-                            }
-
-                            Dictionary<string, int> columnCounts = new Dictionary<string, int>();
-                            
-                            while(nodes.MoveNext())
-                            {
-                                var node = nodes.Current;
-
-                                string nodePath;
-                                if(columnCounts.ContainsKey(node.Name))
-                                {
-                                    var count = columnCounts[node.Name];
-                                    count++;
-                                    columnCounts[node.Name] = count;
-                                    nodePath = $"{node.Name}[{count}]";
-                                }
-                                else
-                                {
-                                    columnCounts.Add(node.Name, 1);
-                                    nodePath = $"{node.Name}[1]";
-                                }
-
-                                if (node.SelectChildren(XPathNodeType.All).Count == 1)
-                                {
-                                    var dataType = DataType.GetTypeCode(node.ValueType);
-                                    col = new TableColumn
-                                    {
-                                        Name = nodePath,
-                                        IsInput = false,
-                                        LogicalName = node.Name,
-                                        Datatype = dataType,
-                                        DeltaType = TableColumn.EDeltaType.ResponseSegment,
-                                        MaxLength = null,
-                                        Description = "Value of the " + nodePath + " path",
-                                        AllowDbNull = true,
-                                        IsUnique = false
-                                    };
-                                    newRestFunction.Columns.Add(col);
-                                }
-                                else
-                                {
-                                    col = new TableColumn
-                                    {
-                                        Name = nodePath,
-                                        IsInput = false,
-                                        LogicalName = node.Name,
-                                        Datatype = ETypeCode.Xml,
-                                        DeltaType = TableColumn.EDeltaType.ResponseSegment,
-                                        MaxLength = null,
-                                        Description = "Xml from the " + nodePath + " path",
-                                        AllowDbNull = true,
-                                        IsUnique = false
-                                    };
-                                    newRestFunction.Columns.Add(col);
-                                }
-                            }
+                            newRestFunction.Columns.Add(column);
                         }
                     }
                 }
+
                 return newRestFunction;
             }
             catch (Exception ex)
@@ -387,7 +240,7 @@ namespace dexih.connections.webservice
             return Task.FromResult(new List<Table>());
         }
 
-        private async Task<(string statusCode, bool isSuccess, string response)> GetWebServiceResponse(RestFunction restFunction, List<Filter> filters, CancellationToken cancellationToken)
+        private async Task<(string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(RestFunction restFunction, List<Filter> filters, CancellationToken cancellationToken)
         {
             var uri = restFunction.RestfulUri;
 
@@ -427,158 +280,11 @@ namespace dexih.connections.webservice
 
                 var response = await client.GetAsync(uri, cancellationToken);
 
-                return (response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+                return (response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
             }
         }
 
-        private ICollection<object[]> ProcessJson(RestFunction restFunction, object[] baseRow, string data)
-        {
-            JToken content = null;
-            try
-            {
-                content = JToken.Parse(data);
-                if (content == null)
-                {
-                    throw new ConnectionException("The json data parsing returned nothing.");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"The json data could not be parsed.  {ex.Message}", ex);
-            }
-
-            var rows = new List<object[]>();
-            var responseDataOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
-            var columnCount = restFunction.Columns.Count;
-
-            IEnumerable<JToken> jsonEnumerable;
-
-            void ProcessRow(JToken currentRow)
-            {
-                var row = new object[columnCount];
-                Array.Copy(baseRow, row, columnCount);
-
-                if (currentRow != null)
-                {
-                    if (responseDataOrdinal >= 0)
-                    {
-                        row[responseDataOrdinal] = currentRow.ToString();
-                    }
-
-                    foreach (var column in restFunction.Columns.Where(c =>
-                        c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
-                    {
-                        var value = currentRow.SelectToken(column.Name);
-                        
-                        try
-                        {
-                            row[restFunction.GetOrdinal(column)] = DataType.TryParse(column.Datatype, value);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ConnectionException(
-                                $"Failed to convert value on column {column.Name} to datatype {column.Datatype}. {ex.Message}",
-                                ex, value);
-                        }
-                    }
-                }
-
-                rows.Add(row);
-            }
-            
-            if (string.IsNullOrEmpty(restFunction.RowPath))
-            {
-                if (content.Type == JTokenType.Array)
-                {
-                    foreach (var currentrow in content.Children())
-                    {
-                        ProcessRow(currentrow);
-                    }
-                }
-                else
-                {
-                    ProcessRow(content);
-                }
-            }
-            else
-            {
-                foreach (var currentRow in content.SelectTokens(restFunction.RowPath))
-                {
-                    ProcessRow(currentRow);
-                }
-            }
-
-            return rows;
-        }
-
-        private ICollection<object[]> ProcessXml(RestFunction restFunction, object[] baseRow, string data)
-        {
-            var stream = new StringReader(data);
-            var xPathDocument = new XPathDocument(stream);
-            var xPathNavigator = xPathDocument.CreateNavigator();
-
-            XPathNodeIterator iterator;
-
-            if (string.IsNullOrEmpty(restFunction.RowPath))
-            {
-                iterator = xPathNavigator.SelectChildren(XPathNodeType.All);
-            }
-            else
-            {
-                iterator = xPathNavigator.Select(restFunction.RowPath);
-            }
-
-            var rows = new List<object[]>();
-            var columnCount = restFunction.Columns.Count;
-            var responseDataOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
-
-            while (iterator.MoveNext())
-            {
-                var currentRow = iterator.Current;
-
-                var row = new object[columnCount];
-                Array.Copy(baseRow, row, columnCount);
-
-                if (responseDataOrdinal >= 0)
-                {
-                    row[responseDataOrdinal] = currentRow.OuterXml;
-                }
-
-                foreach (var column in restFunction.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
-                {
-                    var node = currentRow.SelectSingleNode(column.Name);
-                    if (node == null)
-                    {
-                        row[restFunction.GetOrdinal(column)] = DBNull.Value;
-                    }
-                    else
-                    {
-                        if (node.SelectChildren(XPathNodeType.All).Count == 1 || column.Datatype == DataType.ETypeCode.Xml)
-                        {
-                            row[restFunction.GetOrdinal(column)] = node.OuterXml;
-                        }
-                        else
-                        {
-                            try
-                            {
-                                row[restFunction.GetOrdinal(column)] = DataType.TryParse(column.Datatype, node.Value);
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new ConnectionException(
-                                    $"Failed to convert value on column {column.Name} to datatype {column.Datatype}. {ex.Message}",
-                                    ex, node.Value);
-                            }
-                        }
-                    }
-                }
-                rows.Add(row);
-            }
-
-            return rows;
-        }
-
-        /// <summary>
+      /// <summary>
         /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
         /// </summary>
         /// <param name="table"></param>
@@ -629,14 +335,22 @@ namespace dexih.connections.webservice
                     }
                 }
 
+                FileHandlerBase fileHanlder = null;
+                
                 if(restFunction.FormatType == ETypeCode.Json)
                 {
-                    return ProcessJson(restFunction, baseRow, response.response);
+                    fileHanlder = new FileHandlerJson(restFunction, restFunction.RowPath);
                 }
 
                 if (restFunction.FormatType == ETypeCode.Xml)
                 {
-                    return ProcessXml(restFunction, baseRow, response.response);
+                    fileHanlder = new FileHandlerXml(restFunction, restFunction.RowPath);
+                }
+
+                if (fileHanlder != null)
+                {
+                    await fileHanlder.SetStream(response.response, null);
+                    return await fileHanlder.GetAllRows(baseRow);
                 }
 
                 throw new ConnectionException($"The lookup failed as the web service format type {restFunction.FormatType} is not currently supported.");

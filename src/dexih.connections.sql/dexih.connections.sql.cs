@@ -41,7 +41,7 @@ namespace dexih.connections.sql
         protected long MaxSqlSize { get; set; } = 4000000; // the largest size the sql command can be (default 4mb)
 
 
-        public string AddDelimiter(string name)
+        protected string AddDelimiter(string name)
         {
             var newName = AddEscape(name);
 
@@ -54,7 +54,7 @@ namespace dexih.connections.sql
             return newName;
         }
 
-        public virtual string SqlTableName(Table table)
+        protected string SqlTableName(Table table)
         {
             if (!string.IsNullOrEmpty(table.Schema))
             {
@@ -66,13 +66,13 @@ namespace dexih.connections.sql
             }
         }
 
-        public string AddEscape(string value) => value.Replace("'", "''");
+        protected string AddEscape(string value) => value.Replace("'", "''");
 
 
         public abstract Task<DbConnection> NewConnection();
 
-        public abstract string GetSqlType(ETypeCode dataType, int? length, int? scale, int? precision);
-        public abstract string GetSqlFieldValueQuote(ETypeCode type, object value);
+        protected abstract string GetSqlType(TableColumn column);
+        protected abstract string GetSqlFieldValueQuote(ETypeCode type, object value);
 
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace dexih.connections.sql
         }
 
 
-        public DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
+        protected DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = commandText;
@@ -95,7 +95,7 @@ namespace dexih.connections.sql
             return cmd;
         }
 
-        public DbParameter CreateParameter(DbCommand cmd, string parameterName, object value)
+        protected DbParameter CreateParameter(DbCommand cmd, string parameterName, object value)
         {
             var param = cmd.CreateParameter();
             param.ParameterName = parameterName;
@@ -225,7 +225,7 @@ namespace dexih.connections.sql
                     {
                         var col = table.Columns[i];
 
-                        createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
+                        createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col) + " ");
                         if (col.AllowDbNull == false)
                             createSql.Append("NOT NULL ");
                         else
@@ -277,7 +277,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public virtual string AggregateFunction(SelectColumn column)
+        protected string AggregateFunction(SelectColumn column)
         {
             switch (column.Aggregate)
             {
@@ -325,7 +325,7 @@ namespace dexih.connections.sql
             return sql.ToString();
         }
 
-        public virtual string BuildFiltersString(List<Filter> filters)
+        protected string BuildFiltersString(List<Filter> filters)
         {
             if (filters == null || filters.Count == 0)
                 return "";

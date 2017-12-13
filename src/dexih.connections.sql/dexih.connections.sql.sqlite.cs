@@ -133,7 +133,7 @@ namespace dexih.connections.sql
                     else
                     {
                         createSql.Append(AddDelimiter(col.Name) + " " +
-                                         GetSqlType(col.Datatype, col.MaxLength, col.Scale, col.Precision) + " ");
+                                         GetSqlType(col) + " ");
                         if (col.AllowDbNull == false)
                             createSql.Append("NOT NULL ");
                         else
@@ -182,11 +182,11 @@ namespace dexih.connections.sql
 
         }
 
-        public override string GetSqlType(ETypeCode dataType, int? length, int? scale, int? precision)
+        protected override string GetSqlType(TableColumn column)
         {
             string sqlType;
 
-            switch (dataType)
+            switch (column.Datatype)
             {
                 case ETypeCode.Int32:
                 case ETypeCode.UInt16:
@@ -204,15 +204,15 @@ namespace dexih.connections.sql
                     sqlType = "bigint";
                     break;
                 case ETypeCode.String:
-                    if (length == null)
-                        sqlType = "text";
+                    if (column.MaxLength == null)
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "text";
                     else
-                        sqlType = "nvarchar(" + length.ToString() + ")";
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength.ToString() + ")";
                     break;
 				case ETypeCode.Text:
                 case ETypeCode.Xml:
                 case ETypeCode.Json:
-                    sqlType = "text";
+                    sqlType = (column.IsUnicode == true ? "n" : "") + "text";
 					break;
                 case ETypeCode.Single:
                     sqlType = "float";
@@ -239,17 +239,13 @@ namespace dexih.connections.sql
                     sqlType = "text";
                     break;
                 case ETypeCode.Decimal:
-                    if (precision.ToString() == "" || scale.ToString() == "")
-                        sqlType = "decimal";
-                    else
-                        sqlType = "decimal (" + precision.ToString() + "," + scale.ToString() + ")";
+                    sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 case ETypeCode.Binary:
                     sqlType = "blob";
                     break;
                 default:
-                    throw new Exception("The datatype " + dataType.ToString() +
-                                        " is not compatible with the create table.");
+                    throw new Exception($"The datatype {column.Datatype} is not compatible with the create table.");
             }
 
             return sqlType;
@@ -260,7 +256,7 @@ namespace dexih.connections.sql
         /// Gets the start quote to go around the values in sql insert statement based in the column type.
         /// </summary>
         /// <returns></returns>
-        public override string GetSqlFieldValueQuote(ETypeCode type, object value)
+        protected override string GetSqlFieldValueQuote(ETypeCode type, object value)
         {
             string returnValue;
 

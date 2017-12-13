@@ -56,7 +56,7 @@ namespace dexih.connections.azure
             return CloudBlobContainer;
         }
 
-        public override async Task<List<string>> GetFileShares(string serverName, string userName, string password)
+        public override async Task<List<string>> GetFileShares()
         {
             var fileShares = new List<string>();
 
@@ -76,7 +76,7 @@ namespace dexih.connections.azure
             }
             catch(Exception ex)
             {
-                throw new ConnectionException($"Failed get the azure file containers on {serverName}.  {ex.Message}", ex);
+                throw new ConnectionException($"Failed get the azure file containers on {Server}.  {ex.Message}", ex);
             }
 
             foreach (var share in list)
@@ -244,20 +244,6 @@ namespace dexih.connections.azure
             {
                 throw new ConnectionException($"Failed get file {file.Name} files in path {path} with pattern {searchPattern}.  {ex.Message}", ex);
             }
-        }
-
-        private bool FitsMask(string fileName, string fileMask)
-        {
-            var pattern =
-                 '^' +
-                 Regex.Escape(fileMask.Replace(".", "__DOT__")
-                                 .Replace("*", "__STAR__")
-                                 .Replace("?", "__QM__"))
-                     .Replace("__DOT__", "[.]")
-                     .Replace("__STAR__", ".*")
-                     .Replace("__QM__", ".")
-                 + '$';
-            return new Regex(pattern, RegexOptions.IgnoreCase).IsMatch(fileName);
         }
 
         public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path)

@@ -27,13 +27,13 @@ namespace dexih.connections.flatfile
         
         
 
-        public override Task<List<string>> GetFileShares(string serverName, string userName, string password)
+        public override Task<List<string>> GetFileShares()
         {
             try
             {
                 var fileShares = new List<string>();
             
-                var directories = Directory.GetDirectories(serverName);
+                var directories = Directory.GetDirectories(Server);
                 foreach (var directoryName in directories)
                 {
                     var directoryComponents = directoryName.Split(Path.DirectorySeparatorChar);
@@ -44,7 +44,7 @@ namespace dexih.connections.flatfile
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Error occurred getting file shares from {serverName}.  {ex.Message}", ex);
+                throw new ConnectionException($"Error occurred getting file shares from {Server}.  {ex.Message}", ex);
             }
         }
 

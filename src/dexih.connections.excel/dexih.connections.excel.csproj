@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Excel Connection and reader.</Description>
     <AssemblyTitle>Data Experts Group - Excel Connection</AssemblyTitle>
     <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.connections.excel</AssemblyName>
     <PackageId>dexih.connections.excel</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql</PackageTags>
@@ -16,13 +15,13 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EPPlus.Core" Version="1.5.2" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Class1.cs" />

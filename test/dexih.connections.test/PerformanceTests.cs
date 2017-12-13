@@ -284,7 +284,7 @@ namespace dexih.connections.test
             Assert.Equal(rows, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
-            var auditTable = await connection.GetTransformWriterResults(0, null, writerResult.AuditKey, null, true,
+            var auditTable = await connection.GetTransformWriterResults(0, null, "Datalink", writerResult.AuditKey, null, true,
                 false, false, null, 1, 2, false, CancellationToken.None);
             Assert.Equal(writerResult.RowsCreated, auditTable[0].RowsCreated);
             Assert.Equal(rows - 1, Convert.ToInt64(auditTable[0].MaxIncrementalValue));

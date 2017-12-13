@@ -11,6 +11,8 @@ using static dexih.connections.flatfile.FlatFile;
 using System.IO.Compression;
 using CsvHelper;
 using System.Linq;
+using System.Text.RegularExpressions;
+using dexih.functions.File;
 using Dexih.Utils.CopyProperties;
 using dexih.transforms.Exceptions;
 using static Dexih.Utils.DataType.DataType;
@@ -20,7 +22,7 @@ namespace dexih.connections.flatfile
 {
     public abstract class ConnectionFlatFile : Connection
     {
-        public abstract Task<List<string>> GetFileShares(string serverName, string userName, string password);
+        public abstract Task<List<string>> GetFileShares();
         public abstract Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path);
         public abstract Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName);
         public abstract Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName);
@@ -57,7 +59,7 @@ namespace dexih.connections.flatfile
         private CsvWriter _csvWriter;
 
         public string LastWrittenFile { get; protected set; } = "";
-
+        
 		public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
 			var flatFile = (FlatFile)table;
@@ -151,23 +153,25 @@ namespace dexih.connections.flatfile
             try
             {
                 var flatFile = (FlatFile)table;
+
+                if (flatFile.FormatType != ETypeCode.Text)
+                {
+                    //TODO Add support for flatfile writing to xml/json service.
+                    throw new ConnectionException("The flatfile writer currently only supports FormatTypes of Text for writing.");
+                }
+                
                 var fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
                 var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName);
 
-                if(writerResult == null)
-                {
-                    throw new ConnectionException($"Flat file write failed, could not get a write stream for {flatFile.Name}.");
-                }
-
                 //open a new filestream and write a headerrow
-                _fileStream = writerResult;
+                _fileStream = writerResult ?? throw new ConnectionException($"Flat file write failed, could not get a write stream for {flatFile.Name}.");
+                
                 _fileWriter = new StreamWriter(_fileStream);
                 _csvWriter = new CsvWriter(_fileWriter);
 
 
                 if (flatFile.FileConfiguration.HasHeaderRecord)
                 {
-                    var s = new string[table.Columns.Count];
                     for (var j = 0; j < table.Columns.Count; j++)
                     {
                         _csvWriter.WriteField(table.Columns[j].Name);
@@ -220,10 +224,10 @@ namespace dexih.connections.flatfile
 
         public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
         {
-            return await GetFileShares(Server, Username, Password);
+            return await GetFileShares();
         }
 
-        public override Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
+        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
         {
             try
             {
@@ -240,31 +244,24 @@ namespace dexih.connections.flatfile
                 writer.Flush();
                 stream.Position = 0;
 
-                string[] headers;
-                if (flatFile.FileConfiguration.HasHeaderRecord)
+                FileHandlerBase fileHandler = null;
+
+                switch (flatFile.FormatType)
                 {
-                    try
-                    {
-                        using (var csv = new CsvReader(new StreamReader(stream), flatFile.FileConfiguration))
-                        {
-                            csv.ReadHeader();
-                            headers = csv.FieldHeaders;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new ConnectionException($"Error occurred opening the filestream: {ex.Message}", ex);
-                    }
+                    case ETypeCode.Json:
+                        fileHandler = new FileHandlerJson(flatFile, flatFile.RowPath);
+                        break;
+                    case ETypeCode.Text:
+                        fileHandler = new FileHandlerText(flatFile, flatFile.FileConfiguration);
+                        break;
+                    case ETypeCode.Xml:
+                        fileHandler = new FileHandlerXml(flatFile, flatFile.RowPath);
+                        break;
+                   default:
+                       throw new ConnectionException($"The source type {flatFile.FormatType} is not currently supported.");        
                 }
-                else
-                {
-                    // if no header row specified, then just create a series column names "column001, column002 ..."
-                    using (var csv = new CsvReader(new StreamReader(stream), flatFile.FileConfiguration))
-                    {
-                        csv.Read();
-                        headers = Enumerable.Range(0, csv.CurrentRecord.Count()).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
-                    }
-                }
+
+                var columns = await fileHandler.GetSourceColumns(stream);
 
                 //The new datatable that will contain the table schema
                 var newFlatFile = new FlatFile();
@@ -274,27 +271,12 @@ namespace dexih.connections.flatfile
                 newFlatFile.Description = "";
                 newFlatFile.FileConfiguration = flatFile.FileConfiguration;
 
-                TableColumn col;
-
-                foreach (var field in headers)
+                foreach (var column in columns)
                 {
-                    col = new TableColumn()
-                    {
-
-                        //add the basic properties
-                        Name = field,
-                        LogicalName = field,
-                        IsInput = false,
-                        Datatype = ETypeCode.String,
-                        DeltaType = TableColumn.EDeltaType.TrackingField,
-                        Description = "",
-                        AllowDbNull = true,
-                        IsUnique = false
-                    };
-                    newFlatFile.Columns.Add(col);
+                    newFlatFile.Columns.Add(column);
                 }
 
-                col = new TableColumn()
+                var col = new TableColumn()
                 {
 
                     //add the basic properties
@@ -309,22 +291,7 @@ namespace dexih.connections.flatfile
                 };
                 newFlatFile.Columns.Add(col);
 
-                col = new TableColumn()
-                {
-
-                    //add the basic properties
-                    Name = "FileRow",
-                    LogicalName = "FileRow",
-                    IsInput = false,
-                    Datatype = ETypeCode.Int32,
-                    DeltaType = TableColumn.EDeltaType.FileRowNumber,
-                    Description = "The file row number the record came from.",
-                    AllowDbNull = false,
-                    IsUnique = false
-                };
-                newFlatFile.Columns.Add(col);
-
-                return Task.FromResult<Table>(newFlatFile);
+                return newFlatFile;
             }
             catch (Exception ex)
             {
@@ -354,8 +321,6 @@ namespace dexih.connections.flatfile
                     return;
                 }
             }
-
-            return;
         }
 
         public override async Task<Table> InitializeTable(Table table, int position)
@@ -366,6 +331,7 @@ namespace dexih.connections.flatfile
 			//use the default paths.
 			flatFile.UseCustomFilePaths = false;
             flatFile.AutoManageFiles = true;
+            flatFile.FormatType = ETypeCode.Text;
             
             await CreateFilePaths(flatFile);
 
@@ -468,6 +434,26 @@ namespace dexih.connections.flatfile
 			var flatFile = (FlatFile)table;
             var reader = new ReaderFlatFile(this, flatFile, previewMode);
             return reader;
+        }
+        
+        /// <summary>
+        /// Tests if a file matches search pattern
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="fileMask"></param>
+        /// <returns></returns>
+        protected bool FitsMask(string fileName, string fileMask)
+        {
+            var pattern =
+                '^' +
+                Regex.Escape(fileMask.Replace(".", "__DOT__")
+                        .Replace("*", "__STAR__")
+                        .Replace("?", "__QM__"))
+                    .Replace("__DOT__", "[.]")
+                    .Replace("__STAR__", ".*")
+                    .Replace("__QM__", ".")
+                + '$';
+            return new Regex(pattern, RegexOptions.IgnoreCase).IsMatch(fileName);
         }
 
 
