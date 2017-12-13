@@ -2,39 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/dexih.connections.ftp/FtpStream.cs" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/dexih.connections.sftp/SftpStream.cs" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.ftp.tests.cs" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.sftp.test.cs" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/dexih.transforms.sln" afterPath="$PROJECT_DIR$/dexih.transforms.sln" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.csproj" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.csproj" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.flatfile.azure.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.flatfile.azure.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.csproj" afterPath="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.csproj" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.csproj" afterPath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.csproj" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/FileConfiguration.cs" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/FlatFile.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/FlatFile.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.csproj" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.csproj" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.reader.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.reader.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.csproj" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.csproj" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.mysql.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.mysql.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.sqlite.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.sqlite.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.sqlserver.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.sqlserver.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.csproj" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.csproj" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/TableCache.cs" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/TableCache.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" afterPath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/dexih.transforms.csproj" afterPath="$PROJECT_DIR$/src/dexih.transforms/dexih.transforms.csproj" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.csproj" afterPath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.csproj" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" afterPath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" afterPath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -957,7 +925,7 @@
       <workItem from="1513048306089" duration="7937000" />
       <workItem from="1513119252685" duration="4695000" />
       <workItem from="1513123999786" duration="51000" />
-      <workItem from="1513124399139" duration="479000" />
+      <workItem from="1513124399139" duration="572000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1106,11 +1074,18 @@
       <option name="project" value="LOCAL" />
       <updated>1509235082858</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="added sftp/ftp connections">
+      <created>1513124901077</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1513124901077</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="172077000" />
+    <option name="totallyTimeSpent" value="172170000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1168,7 +1143,8 @@
     <MESSAGE value="fixing soap project to compile." />
     <MESSAGE value="fixed flatfile basic test" />
     <MESSAGE value="fixes, mostly to dexih.reader" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixes, mostly to dexih.reader" />
+    <MESSAGE value="added sftp/ftp connections" />
+    <option name="LAST_COMMIT_MESSAGE" value="added sftp/ftp connections" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

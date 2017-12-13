@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentFTP" Version="19.1.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\dexih.connections.flatfile\dexih.connections.flatfile.csproj" />
+  </ItemGroup>
+</Project>
