@@ -1,7 +1,7 @@
-﻿//using dexih.functions;
-using dexih.transforms;
+﻿using dexih.transforms;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -52,17 +52,27 @@ namespace dexih.connections.sftp
             var serverName = paths[0];
             var workingDirectory = "/" + string.Join("/", paths.Skip(1));
 
-            var connectionInfo = new ConnectionInfo(serverName,
-                Username,
-                new PasswordAuthenticationMethod(Username, Password),
-                new PrivateKeyAuthenticationMethod("rsa.key"));
+//            var connectionInfo = new ConnectionInfo(serverName,
+//                Username,
+//                new PasswordAuthenticationMethod(Username, Password),
+//                new PrivateKeyAuthenticationMethod("rsa.key")
+//                );
+//            
+//            var client = new SftpClient(connectionInfo);
             
-            var client = new SftpClient(connectionInfo);
-            
+            var client = new SftpClient(serverName, Username, Password);
             client.Connect();
             client.ChangeDirectory(workingDirectory);
 
+            client.ErrorOccurred += ClientError;
+            client.
+
             return client;
+        }
+
+        public void ClientError(Object sender, EventArgs args)
+        {
+            Debug.WriteLine("Error");
         }
         
         public override Task<List<string>> GetFileShares()
@@ -95,9 +105,9 @@ namespace dexih.connections.sftp
         {
             try
             {
+               
                 using (var client = GetSftpClient())
                 {
-
                     var directory = DefaultDatabase;
                     
                     if (!client.Exists(directory))
@@ -122,8 +132,6 @@ namespace dexih.connections.sftp
                             client.CreateDirectory(directory);
                         }
                     }
-                    
-                    client.Disconnect();
                     
                     return Task.FromResult(true);
                 }
