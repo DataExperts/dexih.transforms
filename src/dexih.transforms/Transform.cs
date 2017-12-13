@@ -1075,7 +1075,7 @@ namespace dexih.transforms
 
         public override bool HasRows => PrimaryTransform?.HasRows??IsReaderFinished;
 
-#if NET46
+#if NET462
         public override DataTable GetSchemaTable()
         {
             DataTable schema = new DataTable("SchemaTable")

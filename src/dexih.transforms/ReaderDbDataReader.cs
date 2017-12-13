@@ -29,7 +29,7 @@ namespace dexih.transforms
 
             CacheTable = new Table("InReader");
 
-#if NET46
+#if NET462
             try
             {
 
