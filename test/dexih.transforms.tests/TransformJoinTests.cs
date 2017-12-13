@@ -32,7 +32,7 @@ namespace dexih.transforms.tests
                 if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
 
             }
             Assert.Equal(10, pos);
@@ -56,7 +56,7 @@ namespace dexih.transforms.tests
                 if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
 
             }
             Assert.Equal(10, pos);
@@ -119,7 +119,7 @@ namespace dexih.transforms.tests
                 else if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
             }
             Assert.Equal(10, pos);
         }
@@ -150,7 +150,7 @@ namespace dexih.transforms.tests
                 if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
             }
             Assert.Equal(10, pos);
         }
@@ -176,7 +176,7 @@ namespace dexih.transforms.tests
                 if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
             }
             Assert.Equal(10, pos);
         }
@@ -204,7 +204,7 @@ namespace dexih.transforms.tests
                 else if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
             }
             Assert.Equal(10, pos);
         }
@@ -234,7 +234,7 @@ namespace dexih.transforms.tests
                 if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
             }
             Assert.Equal(10, pos);
         }
@@ -263,7 +263,7 @@ namespace dexih.transforms.tests
                 if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
             }
             Assert.Equal(10, pos);
         }
@@ -292,7 +292,7 @@ namespace dexih.transforms.tests
                 if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
 
             }
             Assert.Equal(10, pos);
@@ -323,7 +323,7 @@ namespace dexih.transforms.tests
                 if (pos < 9)
                     Assert.Equal("lookup" + (pos+1).ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
 
             }
             Assert.Equal(10, pos);
@@ -355,7 +355,7 @@ namespace dexih.transforms.tests
                 if (pos < 9)
                     Assert.Equal("lookup" + (pos + 1).ToString(), transformJoin["LookupValue"]);
                 else
-                    Assert.Equal(null, transformJoin["LookupValue"]); //test the last join which is not found.
+                    Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
             }
             Assert.Equal(10, pos);
         }

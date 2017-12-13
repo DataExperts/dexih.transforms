@@ -86,7 +86,7 @@ namespace dexih.connections.test
 
             // test the preview function returns one row.
             var previewResult = await connection.GetPreview(importTable, null, CancellationToken.None);
-            Assert.Equal(1, previewResult.Data.Count);
+            Assert.Single(previewResult.Data);
         }
     }
 }

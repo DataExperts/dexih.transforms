@@ -13,7 +13,7 @@ namespace dexih.transforms.tests
         {
             ReaderMemory Table = Helpers.CreateSortedTestData();
 
-            Assert.Equal(Table.FieldCount, 5);
+            Assert.Equal(5, Table.FieldCount);
 
             int count = 0;
             while (await Table.ReadAsync() == true)

@@ -4,7 +4,7 @@
     <AssemblyTitle>Data Experts Group - Supporting Functions</AssemblyTitle>
     <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>dexih.functions</AssemblyName>
     <PackageId>dexih.functions</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Poco;Data Processing;</PackageTags>
@@ -16,7 +16,6 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
   <!--<ItemGroup>
     <Compile Include="**\*.cs" />
@@ -27,7 +26,6 @@
     <PackageReference Include="CsvHelper" Version="2.16.3" />
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.60" />
     <PackageReference Include="Dexih.Utils.DataType" Version="0.1.13" />
-    <PackageReference Include="NETStandard.Library" Version="2.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3">
     </PackageReference>
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">

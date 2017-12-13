@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
-using Microsoft.Data.Sqlite;
 using dexih.functions;
 using System.IO;
 using System.Data.Common;
@@ -13,6 +12,7 @@ using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms;
+using Microsoft.Data.Sqlite;
 
 namespace dexih.connections.sql
 {

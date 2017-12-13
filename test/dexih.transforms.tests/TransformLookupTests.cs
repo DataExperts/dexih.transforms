@@ -30,7 +30,7 @@ namespace dexih.transforms.tests
                 if (pos < 10)
                     Assert.Equal("lookup" + pos.ToString(), transformLookup["LookupValue"]);
                 else
-                    Assert.Equal(null, transformLookup["LookupValue"]); //test the last Lookup which is not found.
+                    Assert.Null(transformLookup["LookupValue"]); //test the last Lookup which is not found.
 
             }
             Assert.Equal(10, pos);

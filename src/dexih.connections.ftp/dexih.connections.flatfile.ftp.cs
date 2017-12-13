@@ -126,7 +126,7 @@ namespace dexih.connections.ftp
                     if (file != null && !string.IsNullOrEmpty(file.FileRootPath))
                     {
                         directory = CombinePath(DefaultDatabase, file.FileRootPath);
-                        if (!Directory.Exists(directory))
+                        if (!client.DirectoryExists(directory))
                         {
                             await client.CreateDirectoryAsync(directory);
                         }
@@ -135,7 +135,7 @@ namespace dexih.connections.ftp
                     if (file != null && path != EFlatFilePath.None)
                     {
                         directory = CombinePath(directory, file.GetPath(path));
-                        if (!Directory.Exists(directory))
+                        if (!client.DirectoryExists(directory))
                         {
                             await client.CreateDirectoryAsync(directory);
                         }

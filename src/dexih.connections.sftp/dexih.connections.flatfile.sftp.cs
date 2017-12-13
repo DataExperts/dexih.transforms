@@ -10,14 +10,17 @@ using dexih.connections.flatfile;
 using dexih.functions;
 using dexih.transforms.Exceptions;
 using Renci.SshNet;
+using System.Text;
 
 namespace dexih.connections.sftp
 {
     public class ConnectionFlatFileSftp : ConnectionFlatFile
     {
+        private string _workingDirectory;
+
         public override string GetFullPath(FlatFile file, EFlatFilePath path)
         {
-            var fullPath = DefaultDatabase;
+            var fullPath = _workingDirectory + "/" + DefaultDatabase;
             if (!string.IsNullOrEmpty(file.FileRootPath))
             {
                 fullPath += "/" + file.FileRootPath;
@@ -50,7 +53,7 @@ namespace dexih.connections.sftp
             }
 
             var serverName = paths[0];
-            var workingDirectory = "/" + string.Join("/", paths.Skip(1));
+            _workingDirectory = "/" + string.Join("/", paths.Skip(1));
 
 //            var connectionInfo = new ConnectionInfo(serverName,
 //                Username,
@@ -62,10 +65,7 @@ namespace dexih.connections.sftp
             
             var client = new SftpClient(serverName, Username, Password);
             client.Connect();
-            client.ChangeDirectory(workingDirectory);
-
-            client.ErrorOccurred += ClientError;
-            client.
+            client.ChangeDirectory(_workingDirectory);
 
             return client;
         }
@@ -118,7 +118,7 @@ namespace dexih.connections.sftp
                     if (file != null && !string.IsNullOrEmpty(file.FileRootPath))
                     {
                         directory = CombinePath(DefaultDatabase, file.FileRootPath);
-                        if (!Directory.Exists(directory))
+                        if (!client.Exists(directory))
                         {
                             client.CreateDirectory(directory);
                         }
@@ -127,7 +127,7 @@ namespace dexih.connections.sftp
                     if (file != null && path != EFlatFilePath.None)
                     {
                         directory = CombinePath(directory, file.GetPath(path));
-                        if (!Directory.Exists(directory))
+                        if (!client.Exists(directory))
                         {
                             client.CreateDirectory(directory);
                         }
@@ -161,7 +161,8 @@ namespace dexih.connections.sftp
 
                 using (var client = GetSftpClient())
                 {
-                    var sourceFile = client.ListDirectory(CombinePath(fullFromDirectory, fileName)).FirstOrDefault();
+                    var files = client.ListDirectory(fullFromDirectory);
+                    var sourceFile = files.SingleOrDefault(c => c.Name == fileName);
 
                     if (sourceFile == null)
                     {
@@ -291,13 +292,11 @@ namespace dexih.connections.sftp
         {
             try
             {
-
                 await CreateDirectory(file, path);
                 var client = GetSftpClient();
                 var fullDirectory = GetFullPath(file, path);
-                var reader = client.OpenWrite(CombinePath(fullDirectory, fileName));
-
-                var ftpStream = new SftpStream(reader, client);
+                var stream = client.OpenWrite(fullDirectory + "/" + fileName);
+                var ftpStream = new SftpStream(stream, client);
                 return ftpStream;
             }
             catch (Exception ex)

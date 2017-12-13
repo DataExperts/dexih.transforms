@@ -23,7 +23,7 @@ namespace dexih.transforms.tests
             await RunSingleColumnSort("DateColumn", Sort.EDirection.Descending, "SortColumn");
         }
 
-        public async Task RunSingleColumnSort(string column, Sort.EDirection direction, string checkColumn)
+        private async Task RunSingleColumnSort(string column, Sort.EDirection direction, string checkColumn)
         {
             dexih.transforms.ReaderMemory Source = Helpers.CreateUnSortedTestData();
             TransformSort TransformSort = new TransformSort(Source, new List<Sort> { new Sort(column, direction ) });

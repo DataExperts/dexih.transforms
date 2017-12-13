@@ -24,11 +24,11 @@ namespace dexih.functions.tests
             try
             {
                 parameter.SetValue(value);
-                Assert.Equal(expectedSuccess, true);
+                Assert.True(expectedSuccess);
             }
             catch (Exception)
             {
-                Assert.Equal(expectedSuccess, false);
+                Assert.False(expectedSuccess);
             }
         }
 
@@ -105,7 +105,7 @@ namespace dexih.functions.tests
         [InlineData("IsIn", new object[] { "test2", "test1", "test2", "test3" }, true)]
         [InlineData("GetDistanceTo", new object[] { -38, -145, -34 ,- 151 }, 699082.1288)] //melbourne to sydney distance
         [InlineData("MaxLength", new object[] { "abcdef", 5 }, false)] 
-        [MemberData("OtherFunctions")]
+        [MemberData(nameof(OtherFunctions))]
         public void StandardFunctionTest(string functionName, object[] parameters, object expectedResult)
         {
             var function = StandardFunctions.GetFunctionReference(functionName);
@@ -288,7 +288,7 @@ namespace dexih.functions.tests
             //Get a rows that exists.
             Function XPathValue = StandardFunctions.GetFunctionReference("XPathValues");
             object[] Param = new object[] { "<root><row>0</row><row>1</row><row>2</row><row>3</row><row>4</row><row>5</row></root>", "//row[1]", "//row[2]", "//row[3]" };
-            Assert.Equal(true, XPathValue.RunFunction(Param, new string[] { "value1", "value2", "value3" }));
+            Assert.True((bool)XPathValue.RunFunction(Param, new string[] { "value1", "value2", "value3" }));
             Assert.Equal("0", (string)XPathValue.Outputs[0].Value);
             Assert.Equal("1", (string)XPathValue.Outputs[1].Value);
             Assert.Equal("2", (string)XPathValue.Outputs[2].Value);
@@ -300,17 +300,17 @@ namespace dexih.functions.tests
             //Get a rows that exists.
             Function JSONValues = StandardFunctions.GetFunctionReference("JsonValues");
             object[] Param = new object[] { "{ 'value1': '1', 'value2' : '2', 'value3': '3', 'array' : {'v1' : '1', 'v2' : '2'} }", "value1", "value2", "value3", "array", "badvalue" };
-            Assert.Equal(false, JSONValues.RunFunction(Param, new string[] { "value1", "value2", "value3", "array", "badvalue" }));
+            Assert.False((bool)JSONValues.RunFunction(Param, new string[] { "value1", "value2", "value3", "array", "badvalue" }));
             Assert.Equal("1", (string)JSONValues.Outputs[0].Value);
             Assert.Equal("2", (string)JSONValues.Outputs[1].Value);
             Assert.Equal("3", (string)JSONValues.Outputs[2].Value);
-            Assert.Equal(null, (string)JSONValues.Outputs[4].Value);
+            Assert.Null((string)JSONValues.Outputs[4].Value);
 
             //get the sub Json string, and run another parse over this.
             string MoreValues = (string)JSONValues.Outputs[3].Value;
             Param = new object[] { MoreValues, "v1", "v2" };
             JSONValues = StandardFunctions.GetFunctionReference("JsonValues");
-            Assert.Equal(true, JSONValues.RunFunction(Param, new string[] { "v1", "v2" }));
+            Assert.True((bool)JSONValues.RunFunction(Param, new string[] { "v1", "v2" }));
             Assert.Equal("1", (string)JSONValues.Outputs[0].Value);
             Assert.Equal("2", (string)JSONValues.Outputs[1].Value);
 
@@ -325,7 +325,7 @@ namespace dexih.functions.tests
             object[] Param = new object[] { 0, 10, 2 };
             for (int i = 0; i <= 10; i += 2)
             {
-                Assert.Equal(true, Sequence.RunFunction(Param));
+                Assert.True((bool)Sequence.RunFunction(Param));
                 Assert.Equal(i, (int)Sequence.Outputs[0].Value);
             }
             //last value should be false as the sequence has been exceeded.
@@ -341,7 +341,7 @@ namespace dexih.functions.tests
             string[] Compare = new string[] { "", "value2", "value3", "", "value5", "", "" };
             for (int i = 0; i <= 6; i++)
             {
-                Assert.Equal(true, SplitColumnToRows.RunFunction(Param));
+                Assert.True((bool)SplitColumnToRows.RunFunction(Param));
                 Assert.Equal(Compare[i], (string)SplitColumnToRows.Outputs[0].Value);
             }
 
@@ -357,7 +357,7 @@ namespace dexih.functions.tests
             object[] Param = new object[] { "<root><row>0</row><row>1</row><row>2</row><row>3</row><row>4</row><row>5</row></root>", "//row", 5 };
             for (int i = 0; i <= 5; i++)
             {
-                Assert.Equal(true, XPathNodesToRows.RunFunction(Param));
+                Assert.True((bool)XPathNodesToRows.RunFunction(Param));
                 Assert.Equal(i.ToString(), (string)XPathNodesToRows.Outputs[0].Value);
             }
 
@@ -373,7 +373,7 @@ namespace dexih.functions.tests
             object[] Param = new object[] { "{'results' : [{'value1' : 'r1v1', 'value2' : 'r1v2'}, {'value1' : 'r2v1', 'value2' : 'r2v2'}]} ", "results[*]", 2 };
             for (int i = 1; i <= 2; i++)
             {
-                Assert.Equal(true, JSONElementsToRows.RunFunction(Param));
+                Assert.True((bool)JSONElementsToRows.RunFunction(Param));
                 string JsonResult = (string)JSONElementsToRows.Outputs[0].Value;
                 var results = JObject.Parse(JsonResult);
                 Assert.Equal("r" + i.ToString() + "v1", results.SelectToken("value1").ToString());
