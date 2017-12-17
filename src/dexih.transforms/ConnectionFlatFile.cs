@@ -7,7 +7,6 @@ using System.Data.Common;
 using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
-using static dexih.connections.flatfile.FlatFile;
 using System.IO.Compression;
 using CsvHelper;
 using System.Linq;
