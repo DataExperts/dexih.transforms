@@ -121,7 +121,6 @@ namespace dexih.functions.File
         public override async Task SetStream(Stream stream, ICollection<Filter> filters)
         {
             var reader = new StreamReader(stream);
-            
             var jsonString = await reader.ReadToEndAsync();
             
             JToken jToken;

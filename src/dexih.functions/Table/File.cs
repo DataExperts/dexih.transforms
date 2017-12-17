@@ -2,7 +2,7 @@
 using dexih.functions.File;
 using Dexih.Utils.DataType;
 
-namespace dexih.connections.flatfile
+namespace dexih.functions
 {
 	public class FlatFile : Table
 	{
@@ -57,10 +57,6 @@ namespace dexih.connections.flatfile
 		public string FileSample { get; set; }
 		
 		public string RowPath { get; set; }
-
-		public FlatFile()
-		{
-		}
 
         public string GetPath(EFlatFilePath path)
         {

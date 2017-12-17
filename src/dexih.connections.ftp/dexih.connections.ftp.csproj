@@ -6,6 +6,6 @@
     <PackageReference Include="FluentFTP" Version="19.1.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dexih.connections.flatfile\dexih.connections.flatfile.csproj" />
+    <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
 </Project>

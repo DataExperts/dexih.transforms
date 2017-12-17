@@ -7,7 +7,6 @@ using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
-using static dexih.connections.flatfile.FlatFile;
 using dexih.transforms.Exceptions;
 
 namespace dexih.connections.flatfile

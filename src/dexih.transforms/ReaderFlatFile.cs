@@ -12,7 +12,7 @@ using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.DataType;
 
-namespace dexih.connections.flatfile
+namespace dexih.transforms
 {
     public class ReaderFlatFile : Transform
     {

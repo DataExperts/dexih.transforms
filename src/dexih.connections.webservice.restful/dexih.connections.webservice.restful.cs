@@ -39,24 +39,6 @@ namespace dexih.connections.webservice
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
 
-        /// <summary>
-        /// Add a "/" to the server name if it is not already there.
-        /// </summary>
-        public override string Server {
-            get => base.Server;
-            set
-            {
-                if(!value.EndsWith("/"))
-                {
-                    base.Server = value + "/";
-                }
-                else
-                {
-                    base.Server = value;
-                }
-            }
-        }
-
         public override string DatabaseTypeName => "Restful Web Service";
         public override ECategory DatabaseCategory => ECategory.WebService;
 
@@ -80,7 +62,7 @@ namespace dexih.connections.webservice
         {
             try
             {
-				var restFunction = (RestFunction)table;
+				var restFunction = (WebService)table;
 
                 if (string.IsNullOrEmpty( restFunction.RestfulUri))
                 {
@@ -90,7 +72,7 @@ namespace dexih.connections.webservice
                 var restfulUri = restFunction.RestfulUri;
                 var rowPath = restFunction.RowPath;
 
-				var newRestFunction = new RestFunction
+                var newRestFunction = new WebService
 				{
 					Name = restFunction.Name,
 					Description = "",
@@ -185,6 +167,34 @@ namespace dexih.connections.webservice
                 };
                 newRestFunction.Columns.Add(col);
 
+				col = new TableColumn()
+				{
+					Name = "ResponseError",
+					IsInput = false,
+					LogicalName = "ResponseError",
+					Datatype = ETypeCode.Boolean,
+					DeltaType = TableColumn.EDeltaType.Error,
+					MaxLength = null,
+					Description = "Error message calling the web service.",
+					AllowDbNull = true,
+					IsUnique = false
+				};
+				newRestFunction.Columns.Add(col);
+
+				col = new TableColumn()
+				{
+					Name = "Url",
+					IsInput = false,
+					LogicalName = "Url",
+					Datatype = ETypeCode.Boolean,
+					DeltaType = TableColumn.EDeltaType.Url,
+					MaxLength = null,
+					Description = "Url used to call the web service.",
+					AllowDbNull = true,
+					IsUnique = false
+				};
+				newRestFunction.Columns.Add(col);
+
                 var query = new SelectQuery();
                 query.Columns.Add(new SelectColumn(new TableColumn("Response"), SelectColumn.EAggregate.None));
                 query.Columns.Add(new SelectColumn(new TableColumn("ResponseSuccess"), SelectColumn.EAggregate.None));
@@ -196,9 +206,16 @@ namespace dexih.connections.webservice
                     var data = await GetPreview(newRestFunction, query, cancellationToken);
                     var reader = data.Data;
 
-                    var dataString =
-                        reader[0][newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData)]
-                            .ToString();
+					var row = reader[0];
+					var success = (bool)row[newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseSuccess)];
+					if(!success) {
+						var url = (string)row[newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Url)];
+						var error = (string)row[newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Error)];
+
+						throw new ConnectionException($"The web service called failed.  Url used: {url}.  Response Error:  {error}.");
+					}
+
+					var dataString = (string)row[newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData)];
 
                     var byteArray = Encoding.ASCII.GetBytes( dataString );
                     var dataStream = new MemoryStream( byteArray ); 
@@ -240,7 +257,7 @@ namespace dexih.connections.webservice
             return Task.FromResult(new List<Table>());
         }
 
-        private async Task<(string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(RestFunction restFunction, List<Filter> filters, CancellationToken cancellationToken)
+        private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(WebService restFunction, List<Filter> filters, CancellationToken cancellationToken)
         {
             var uri = restFunction.RestfulUri;
 
@@ -273,14 +290,25 @@ namespace dexih.connections.webservice
                 handler = new HttpClientHandler();
             }
 
+			Uri completeUri;
+
+			if (!Server.EndsWith("/") && !Server.Contains("?") && !uri.StartsWith("/"))
+			{
+				completeUri = new Uri(Server + "/" + uri);
+			}
+			else
+			{
+				completeUri = new Uri(Server + uri);
+			}
+
             using (var client = new HttpClient(handler))
             {
-                client.BaseAddress = new Uri(Server);
+				client.BaseAddress = new Uri(completeUri.GetLeftPart(UriPartial.Authority));
                 client.DefaultRequestHeaders.Accept.Clear();
 
-                var response = await client.GetAsync(uri, cancellationToken);
+				var response = await client.GetAsync(completeUri.PathAndQuery, cancellationToken);
 
-                return (response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
+				return (completeUri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
             }
         }
 
@@ -295,7 +323,7 @@ namespace dexih.connections.webservice
         {
             try
             {
-				var restFunction = (RestFunction)table;
+                var restFunction = (WebService)table;
                 var baseRow = new object[table.Columns.Count];
 
                 var response = await GetWebServiceResponse(restFunction, filters, cancellationToken);
@@ -303,6 +331,8 @@ namespace dexih.connections.webservice
                 var responseStatusOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseStatus);
                 var responseSuccessOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseSuccess);
                 var responseDataOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
+				var urlOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Url);
+				var errorOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Error);
 
                 var lookupResult = new List<object[]>();
 
@@ -310,10 +340,16 @@ namespace dexih.connections.webservice
                 {
                     baseRow[responseStatusOrdinal] = response.statusCode;
                 }
+
                 if (responseSuccessOrdinal >= 0)
                 {
                     baseRow[responseSuccessOrdinal] = response.isSuccess;
                 }
+
+				if (urlOrdinal >= 0)
+				{
+					baseRow[urlOrdinal] = response.url;
+				}
 
                 foreach (var column in restFunction.Columns.Where(c => c.IsInput))
                 {
@@ -335,23 +371,37 @@ namespace dexih.connections.webservice
                     }
                 }
 
-                FileHandlerBase fileHanlder = null;
-                
-                if(restFunction.FormatType == ETypeCode.Json)
-                {
-                    fileHanlder = new FileHandlerJson(restFunction, restFunction.RowPath);
-                }
+				if (response.isSuccess)
+				{
+					FileHandlerBase fileHanlder = null;
 
-                if (restFunction.FormatType == ETypeCode.Xml)
-                {
-                    fileHanlder = new FileHandlerXml(restFunction, restFunction.RowPath);
-                }
+					if (restFunction.FormatType == ETypeCode.Json)
+					{
+						fileHanlder = new FileHandlerJson(restFunction, restFunction.RowPath);
+					}
 
-                if (fileHanlder != null)
-                {
-                    await fileHanlder.SetStream(response.response, null);
-                    return await fileHanlder.GetAllRows(baseRow);
-                }
+					if (restFunction.FormatType == ETypeCode.Xml)
+					{
+						fileHanlder = new FileHandlerXml(restFunction, restFunction.RowPath);
+					}
+
+					if (fileHanlder != null)
+					{
+						await fileHanlder.SetStream(response.response, null);
+						return await fileHanlder.GetAllRows(baseRow);
+					}
+				} 
+				else
+				{
+					if(errorOrdinal >= 0)
+					{
+						var reader = new StreamReader(response.response);
+						var errorString = await reader.ReadToEndAsync();
+						baseRow[errorOrdinal] = errorString;
+					}
+
+					return new[] { baseRow };
+				}
 
                 throw new ConnectionException($"The lookup failed as the web service format type {restFunction.FormatType} is not currently supported.");
             }
@@ -370,7 +420,7 @@ namespace dexih.connections.webservice
         {
             try
             {
-                var restFunction = new RestFunction();
+                var restFunction = new WebService();
                 table.CopyProperties(restFunction, false);
                 restFunction.RestfulUri = restFunction.Name;
 

@@ -1,9 +1,9 @@
 ﻿using dexih.functions;
 using static Dexih.Utils.DataType.DataType;
 
-namespace dexih.connections.webservice
+namespace dexih.functions
 {
-	public class RestFunction : Table
+	public class WebService : Table
 	{
         private string _resetfulUri;
 

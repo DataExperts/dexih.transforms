@@ -17,8 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\dexih.connections.flatfile\dexih.connections.flatfile.csproj">
-    </ProjectReference>
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
   <ItemGroup>

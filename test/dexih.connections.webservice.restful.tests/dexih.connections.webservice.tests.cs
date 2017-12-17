@@ -61,7 +61,7 @@ namespace dexih.connections.webservice.restful.tests
                 DefaultDatabase = ""
             };
 
-            var restFunction = new RestFunction()
+            var restFunction = new WebService()
             {
                 Name = "users",
                 RestfulUri = "users",
@@ -100,7 +100,7 @@ namespace dexih.connections.webservice.restful.tests
                 Password = "passwd"
             };
 
-            var restFunction = new RestFunction()
+            var restFunction = new WebService()
             {
                 Name = "basic-auth",
                 RestfulUri = "basic-auth/{user1}/{passwd1}",

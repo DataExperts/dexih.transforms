@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using dexih.connections.flatfile;
 using dexih.functions;
 using dexih.transforms.Exceptions;
 using Renci.SshNet;

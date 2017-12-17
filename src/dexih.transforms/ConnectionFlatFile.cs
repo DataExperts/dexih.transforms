@@ -17,7 +17,7 @@ using dexih.transforms.Exceptions;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 
-namespace dexih.connections.flatfile
+namespace dexih.transforms
 {
     public abstract class ConnectionFlatFile : Connection
     {

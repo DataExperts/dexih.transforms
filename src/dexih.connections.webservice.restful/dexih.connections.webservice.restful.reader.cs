@@ -23,14 +23,14 @@ namespace dexih.connections.webservice
 
         private List<Filter> _filter;
 
-        private RestFunction _restFunction;
+        private WebService _restFunction;
 
         public ReaderRestful(Connection connection, Table table)
         {
             ReferenceConnection = connection;
             CacheTable = table;
 
-            _restFunction = (RestFunction)table;
+            _restFunction = (WebService)table;
         }
 
         protected override void Dispose(bool disposing)

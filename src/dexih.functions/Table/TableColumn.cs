@@ -78,6 +78,8 @@ namespace dexih.functions
             ResponseData, // raw data from a webservice/function response
             ResponseStatus, // status code from a webservice/function call
             ResponseSegment, // segment of data (such as xpath result) from a responsedata.
+			Error, // error message 
+			Url // the full url called for the web service.
         }
 
         public enum ESecurityFlag
