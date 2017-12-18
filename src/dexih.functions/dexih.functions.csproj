@@ -23,16 +23,20 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>-->
   <ItemGroup>
+<<<<<<< HEAD
     <PackageReference Include="CsvHelper" Version="2.16.3" />
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.60" />
     <PackageReference Include="Dexih.Utils.DataType" Version="0.1.13" />
+=======
+>>>>>>> 7875885bb0f9d570811728b8542d34bb67066506
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3">
     </PackageReference>
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="System.Data.Common" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Net.Security" Version="4.3.2" />
+    <PackageReference Include="System.Net.Security" Version="4.3.1">
+    </PackageReference>
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0">
     </PackageReference>
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0">

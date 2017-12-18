@@ -9,9 +9,12 @@ using dexih.transforms;
 using System.Data.Common;
 using System.Threading;
 using System.Text.RegularExpressions;
+<<<<<<< HEAD
 using System.Linq;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+=======
+>>>>>>> 7875885bb0f9d570811728b8542d34bb67066506
 
 namespace dexih.connections.azure
 {
@@ -205,7 +208,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
+        public override async Task<ReturnValue<DexihFiles>> GetFileEnumerator(string mainDirectory, string subDirectory, string searchPattern)
         {
             try
             {
@@ -228,11 +231,10 @@ namespace dexih.connections.azure
 
                 foreach (CloudBlob cloudFile in list)
                 {
-                    await cloudFile.FetchAttributesAsync();
-                    var fileName = cloudFile.Name.Substring(pathlength);
+                    await file.FetchAttributesAsync();
                     if (string.IsNullOrEmpty(searchPattern) || FitsMask(file.Name, searchPattern))
                     {
-                        files.Add(new DexihFileProperties() { FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length });
+                        files.Add(new DexihFileProperties() { FileName = file.Name, LastModified = file.Properties.LastModified.Value.DateTime, Length = file.Properties.Length });
                     }
                 }
                 var newFiles = new DexihFiles(files.ToArray());
@@ -244,7 +246,25 @@ namespace dexih.connections.azure
             }
         }
 
+<<<<<<< HEAD
         public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path)
+=======
+        private bool FitsMask(string fileName, string fileMask)
+        {
+            string pattern =
+                 '^' +
+                 Regex.Escape(fileMask.Replace(".", "__DOT__")
+                                 .Replace("*", "__STAR__")
+                                 .Replace("?", "__QM__"))
+                     .Replace("__DOT__", "[.]")
+                     .Replace("__STAR__", ".*")
+                     .Replace("__QM__", ".")
+                 + '$';
+            return new Regex(pattern, RegexOptions.IgnoreCase).IsMatch(fileName);
+        }
+
+        public override async Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string mainDirectory, string subDirectory)
+>>>>>>> 7875885bb0f9d570811728b8542d34bb67066506
         {
             try
             {

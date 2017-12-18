@@ -177,7 +177,7 @@ namespace dexih.functions.Query
                     return compareResult == ECompareResult.Less || compareResult == ECompareResult.Equal;
                 case ECompare.NotEqual:
                 case ECompare.IsIn:
-                    return compareResult == ECompareResult.Equal;
+                    throw new Exception("The IsIn is not currently supported in the query evaluation.");
                 default:
                     throw new QueryException($"The {Operator} is not currently supported in the query evaluation.");
             }

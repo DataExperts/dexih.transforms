@@ -19,7 +19,11 @@
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <Compile Remove="Class1.cs" />
+=======
+    <PackageReference Include="EPPlus.Core" Version="1.5.1" />
+>>>>>>> 7875885bb0f9d570811728b8542d34bb67066506
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EPPlus.Core" Version="1.5.4" />

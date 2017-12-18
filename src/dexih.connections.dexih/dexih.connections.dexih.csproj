@@ -18,4 +18,10 @@
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
+<<<<<<< HEAD
 </Project>
+=======
+  <ItemGroup>
+  </ItemGroup>
+</Project>
+>>>>>>> 7875885bb0f9d570811728b8542d34bb67066506

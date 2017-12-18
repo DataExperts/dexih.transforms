@@ -21,6 +21,7 @@ namespace dexih.transforms
 {
     public abstract class ConnectionFlatFile : Connection
     {
+<<<<<<< HEAD:src/dexih.transforms/ConnectionFlatFile.cs
         public abstract Task<List<string>> GetFileShares();
         public abstract Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path);
         public abstract Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName);
@@ -33,6 +34,20 @@ namespace dexih.transforms
         public abstract Task<bool> TestFileConnection();
         public abstract string GetFullPath(FlatFile file, EFlatFilePath path);
         
+=======
+        public abstract Task<ReturnValue<List<string>>> GetFileShares(string serverName, string userName, string password);
+        public abstract Task<ReturnValue> CreateDirectory(string rootDirectory, string subDirectory);
+        public abstract Task<ReturnValue> MoveFile(string rootDirectory, string fromDirectory, string toDirectory, string fileName);
+        public abstract Task<ReturnValue> DeleteFile(string rootDirectory, string subDirectory, string fileName);
+        public abstract Task<ReturnValue<DexihFiles>> GetFileEnumerator(string mainDirectory, string subDirectory, string searchPattern);
+        public abstract Task<ReturnValue<List<DexihFileProperties>>> GetFileList(string mainDirectory, string subDirectory);
+        public abstract Task<ReturnValue<Stream>> GetReadFileStream(Table table, string subDirectory, string fileName);
+        public abstract Task<ReturnValue<Stream>> GetWriteFileStream(Table table, string subDirectory, string fileName);
+        public abstract Task<ReturnValue> SaveFileStream(Table table, string fileName, Stream fileStream);
+        public abstract Task<ReturnValue> TestFileConnection();
+
+
+>>>>>>> 7875885bb0f9d570811728b8542d34bb67066506:src/dexih.connections.flatfile/dexih.connections.flatfile.cs
         public override string ServerHelp => "Path for the files (use //server/path format)";
         public override string DefaultDatabaseHelp => "";
         public override bool AllowNtAuth => false;
@@ -234,11 +249,11 @@ namespace dexih.transforms
 
                 if (flatFile.FileConfiguration == null || flatFile.FileSample == null)
                 {
-                    throw new ConnectionException($"The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.");
+                    return new ReturnValue<Table>(false, "The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.", null);
                 }
 
-                var stream = new MemoryStream();
-                var writer = new StreamWriter(stream);
+                MemoryStream stream = new MemoryStream();
+                StreamWriter writer = new StreamWriter(stream);
                 writer.Write(flatFile.FileSample);
                 writer.Flush();
                 stream.Position = 0;
@@ -290,7 +305,26 @@ namespace dexih.transforms
                 };
                 newFlatFile.Columns.Add(col);
 
+<<<<<<< HEAD:src/dexih.transforms/ConnectionFlatFile.cs
                 return newFlatFile;
+=======
+                col = new TableColumn()
+                {
+
+                    //add the basic properties
+                    Name = "FileRow",
+                    LogicalName = "FileRow",
+                    IsInput = false,
+                    Datatype = ETypeCode.Int32,
+                    DeltaType = TableColumn.EDeltaType.FileRowNumber,
+                    Description = "The file row number the record came from.",
+                    AllowDbNull = false,
+                    IsUnique = false
+                };
+                newFlatFile.Columns.Add(col);
+
+                return new ReturnValue<Table>(true, newFlatFile);
+>>>>>>> 7875885bb0f9d570811728b8542d34bb67066506:src/dexih.connections.flatfile/dexih.connections.flatfile.cs
             }
             catch (Exception ex)
             {

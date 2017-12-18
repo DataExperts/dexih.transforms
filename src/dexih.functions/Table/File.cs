@@ -24,7 +24,7 @@ namespace dexih.functions
 
 		public string FileIncomingPath
 		{
-			get => AutoManageFiles ? ( UseCustomFilePaths ? _fileIncomingPath: "incoming") : "";
+			get => UseCustomFilePaths ? "incoming" : _fileIncomingPath;
 			set => _fileIncomingPath = value;
 		}
 
@@ -36,14 +36,14 @@ namespace dexih.functions
 
         public string FileProcessedPath
 		{
-			get => AutoManageFiles ? (UseCustomFilePaths ? _fileProcessedPath : "processed") : "";
-            set => _fileProcessedPath = value;
+			get => UseCustomFilePaths ? "processed" : _fileProcessedPath;
+			set => _fileProcessedPath = value;
 		}
 
 		public string FileRejectedPath
 		{
-			get => AutoManageFiles ? (UseCustomFilePaths ? _fileRejectedPath : "rejected") : "";
-            set => _fileRejectedPath = value;
+			get => UseCustomFilePaths ? "rejected" : _fileRejectedPath;
+			set => _fileRejectedPath = value;
 		}
 
 		public string FileMatchPattern
