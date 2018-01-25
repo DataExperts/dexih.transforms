@@ -9,7 +9,6 @@ using System.Data.Common;
 using dexih.transforms;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Diagnostics;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;

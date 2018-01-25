@@ -7,17 +7,14 @@ using dexih.functions;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Net;
 using Dexih.Utils.CopyProperties;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
-using Dexih.Utils.DataType;
 using System.IO;
 using System.Text;
-using System.Xml.XPath;
 using dexih.functions.File;
 
 namespace dexih.connections.webservice

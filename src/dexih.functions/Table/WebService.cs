@@ -1,5 +1,4 @@
-﻿using dexih.functions;
-using static Dexih.Utils.DataType.DataType;
+﻿using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {

@@ -5,7 +5,6 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
 
 namespace dexih.transforms
 {

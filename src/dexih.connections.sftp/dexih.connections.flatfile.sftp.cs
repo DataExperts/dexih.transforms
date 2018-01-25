@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using dexih.functions;
 using dexih.transforms.Exceptions;
 using Renci.SshNet;
-using System.Text;
 
 namespace dexih.connections.sftp
 {

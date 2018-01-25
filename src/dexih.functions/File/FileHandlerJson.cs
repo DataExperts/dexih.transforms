@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.File

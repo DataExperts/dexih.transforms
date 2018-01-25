@@ -8,8 +8,6 @@ using dexih.functions;
 using dexih.transforms;
 using System.Data.Common;
 using System.Threading;
-using System.Text.RegularExpressions;
-using System.Linq;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 

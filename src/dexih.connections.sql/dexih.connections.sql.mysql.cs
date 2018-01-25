@@ -6,7 +6,6 @@ using System.Data;
 using dexih.functions;
 using System.Data.Common;
 using System.Threading;
-using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using System.Linq;
 using static Dexih.Utils.DataType.DataType;

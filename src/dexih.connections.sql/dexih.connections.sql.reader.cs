@@ -9,7 +9,6 @@ using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using System.Threading.Tasks.Dataflow;
 
 namespace dexih.connections.sql
 {

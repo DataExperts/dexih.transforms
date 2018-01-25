@@ -12,7 +12,6 @@ using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
-using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {

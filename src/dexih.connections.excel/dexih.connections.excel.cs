@@ -6,7 +6,6 @@ using dexih.transforms;
 using dexih.functions;
 using System.IO;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Threading;
 using OfficeOpenXml;
 using OfficeOpenXml.FormulaParsing.Utilities;

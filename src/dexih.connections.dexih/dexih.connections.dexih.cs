@@ -8,11 +8,8 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Net;
-using System.Diagnostics;
-using System.Text;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using Dexih.Utils.Crypto;
 
 namespace dexih.connections.dexih
 {

@@ -7,11 +7,9 @@ using dexih.functions;
 using System.IO;
 using System.Data.Common;
 using System.Threading;
-using System.Diagnostics;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
-using dexih.transforms;
 using Microsoft.Data.Sqlite;
 
 namespace dexih.connections.sql
