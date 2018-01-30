@@ -724,7 +724,7 @@ namespace dexih.transforms
                 {
                     case TableColumn.EDeltaType.ValidFromDate:
                         if (_sourceValidFromOrdinal == -1 && sourceOrdinal == -1)
-                            newRow[targetOrdinal] = new DateTime(1900, 01, 01);
+                            newRow[targetOrdinal] = _currentDateTime;
                         else if(sourceOrdinal >= 0)
                             newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
                         else
