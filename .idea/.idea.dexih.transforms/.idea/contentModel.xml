@@ -79,11 +79,8 @@
         </e>
         <e p="dexih.connections.flatfile" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
-          <e p="dexih.connections.flatfile.cs" t="Include" />
           <e p="dexih.connections.flatfile.csproj" t="IncludeRecursive" />
           <e p="dexih.connections.flatfile.local.cs" t="Include" />
-          <e p="dexih.connections.flatfile.reader.cs" t="Include" />
-          <e p="FlatFile.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netstandard1.3" t="Include">
@@ -158,7 +155,6 @@
           <e p="Properties" t="Include">
             <e p="AssemblyInfo.cs" t="Include" />
           </e>
-          <e p="RestFunction.cs" t="Include" />
         </e>
         <e p="dexih.functions" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
@@ -198,17 +194,20 @@
           <e p="StandardFunctions.cs" t="Include" />
           <e p="StandardProfiles.cs" t="Include" />
           <e p="Table" t="Include">
+            <e p="File.cs" t="Include" />
             <e p="Table.cs" t="Include" />
             <e p="TableCache.cs" t="Include" />
             <e p="TableColumn.cs" t="Include" />
             <e p="TableColumns.cs" t="Include" />
             <e p="TableExceptions.cs" t="Include" />
+            <e p="WebService.cs" t="Include" />
           </e>
           <e p="TaskTimer.cs" t="Include" />
         </e>
         <e p="dexih.transforms" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="Connection.cs" t="Include" />
+          <e p="ConnectionFlatFile.cs" t="Include" />
           <e p="ConnectionMemory.cs" t="Include" />
           <e p="dexih.transforms.csproj" t="IncludeRecursive" />
           <e p="Exceptions" t="Include">
@@ -244,6 +243,7 @@
           </e>
           <e p="ReaderDbDataReader.cs" t="Include" />
           <e p="ReaderDynamic.cs" t="Include" />
+          <e p="ReaderFlatFile.cs" t="Include" />
           <e p="ReaderMemory.cs" t="Include" />
           <e p="ReaderRowCreator.cs" t="Include" />
           <e p="Transform.cs" t="Include" />

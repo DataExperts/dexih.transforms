@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.XPath;
+using CsvHelper;
 using Newtonsoft.Json.Linq;
 using Dexih.Utils.Crypto;
 using Newtonsoft.Json;
@@ -812,6 +813,45 @@ namespace dexih.functions
             item = _cacheJsonTokens[(int)_cacheInt].ToString();
             return true;
         }
+
+        public bool JsonPivotElementToRows(string json, string jsonPath, int maxItems, out string name, out string value)
+        {
+            if (_cacheJsonTokens == null)
+            {
+                JToken results;
+                try
+                {
+                    results = JToken.Parse(json);
+                }
+                catch (JsonReaderException e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+
+                _cacheJsonTokens = results.SelectTokens(jsonPath).ToArray();
+                _cacheInt = 0;
+            }
+            else
+            {
+                _cacheInt++;
+            }
+
+            var item = _cacheJsonTokens[0].ElementAtOrDefault((int)_cacheInt);
+            if (_cacheInt > maxItems - 1 || item == null)
+            {
+                name = "";
+                value = "";
+                return false;
+            }
+
+
+            var property = (JProperty) item;
+            name = property.Name;
+            value = item.Values().FirstOrDefault()?.ToString();
+            return true;
+        }
+        
         #endregion
 
         #region Validation Functions

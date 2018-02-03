@@ -383,5 +383,24 @@ namespace dexih.functions.tests
             //last value should be false as the sequence has been exceeded.
             Assert.False((bool)JSONElementsToRows.RunFunction(Param));
         }
+        
+        [Fact]
+        public void RowFunctions_JsonPivotElementToRows()
+        {
+            //Use a for loop to similate gen sequence.
+            Function JSONElementsToRows = StandardFunctions.GetFunctionReference("JsonPivotElementToRows");
+            object[] Param = new object[] { "{'results' : {'name1' : 'value1', 'name2' : 'value2', 'name3' : 'value3'}} ", "$..results", 3 };
+            for (int i = 1; i <= 3; i++)
+            {
+                Assert.True((bool)JSONElementsToRows.RunFunction(Param));
+                string name = (string)JSONElementsToRows.Outputs[0].Value;
+                string value = (string)JSONElementsToRows.Outputs[1].Value;
+                Assert.Equal(name, "name" + i.ToString());
+                Assert.Equal(value, "value" + i.ToString());
+            }
+
+            //last value should be false as the sequence has been exceeded.
+            Assert.False((bool)JSONElementsToRows.RunFunction(Param));
+        }
     }
 }
