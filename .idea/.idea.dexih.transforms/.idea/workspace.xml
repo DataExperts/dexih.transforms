@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/StandardFunctions.cs" afterPath="$PROJECT_DIR$/src/dexih.functions/StandardFunctions.cs" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.standard.cs" afterPath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.standard.cs" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -1002,7 +999,7 @@
       <workItem from="1513124399139" duration="658000" />
       <workItem from="1513128647431" duration="3070000" />
       <workItem from="1513201423474" duration="707000" />
-      <workItem from="1517654585864" duration="4980000" />
+      <workItem from="1517654585864" duration="5043000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1158,11 +1155,18 @@
       <option name="project" value="LOCAL" />
       <updated>1513124901077</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="added JsonRowPivot function">
+      <created>1517696767734</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1517696767734</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="181013000" />
+    <option name="totallyTimeSpent" value="181076000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1221,7 +1225,8 @@
     <MESSAGE value="fixed flatfile basic test" />
     <MESSAGE value="fixes, mostly to dexih.reader" />
     <MESSAGE value="added sftp/ftp connections" />
-    <option name="LAST_COMMIT_MESSAGE" value="added sftp/ftp connections" />
+    <MESSAGE value="added JsonRowPivot function" />
+    <option name="LAST_COMMIT_MESSAGE" value="added JsonRowPivot function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
