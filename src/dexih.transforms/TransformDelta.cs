@@ -936,16 +936,22 @@ namespace dexih.transforms
             {
                 foreach (var col in ReferenceTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
                 {
-                    var referenceColumn = PrimaryTransform.CacheTable.Columns[col.Name];
-                    if (referenceColumn == null)
+                    var primaryColumn = PrimaryTransform.CacheTable.Columns[col.Name];
+                    if (primaryColumn == null)
                     {
                         throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
                     }
-                    fields.Add(new Sort(col));
+                    fields.Add(new Sort(primaryColumn));
                 }
                 var validTo = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
                 if (validTo != null)
-                    fields.Add(new Sort(validTo));
+                {
+                    var primaryValidTo = PrimaryTransform.CacheTable.Columns[validTo.Name];
+                    if (primaryValidTo != null)
+                    {
+                        fields.Add(new Sort(primaryValidTo));
+                    }
+                }
             }
 
             return fields;
@@ -964,12 +970,12 @@ namespace dexih.transforms
                 
                 foreach (var col in ReferenceTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
                 {
-                    var referenceColumn = PrimaryTransform.CacheTable.Columns[col.Name];
-                    if (referenceColumn == null)
-                    {
-                        throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
-                    }
-                    fields.Add(new Sort(referenceColumn));
+//                    var referenceColumn = PrimaryTransform.CacheTable.Columns[col.Name];
+//                    if (referenceColumn == null)
+//                    {
+//                        throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
+//                    }
+                    fields.Add(new Sort(col));
                 }
                 var validTo = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
                 if (validTo != null)
