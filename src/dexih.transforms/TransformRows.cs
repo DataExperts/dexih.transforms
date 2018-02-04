@@ -262,7 +262,7 @@ namespace dexih.transforms
                             if (output.Column != null)
                             {
                                 newRow[functionColumn] = output.Value;
-                                functionColumn = functionColumn - 1;
+                                functionColumn = functionColumn + 1;
                             }
                         }
                     }

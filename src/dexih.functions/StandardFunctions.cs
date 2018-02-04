@@ -749,7 +749,7 @@ namespace dexih.functions
             else
                 _cacheInt++;
 
-            if (_cacheInt > maxItems || _cacheInt > _cacheArray.Length - 1)
+            if ((maxItems > 0 && _cacheInt > maxItems - 1) || _cacheInt > _cacheArray.Length - 1)
             {
                 item = "";
                 return false;
@@ -774,7 +774,7 @@ namespace dexih.functions
                 _cacheInt = 0;
             }
 
-            if (_cacheInt > maxItems || _cacheXmlNodeList.MoveNext() == false)
+            if ((maxItems > 0 && _cacheInt > maxItems - 1) || _cacheXmlNodeList.MoveNext() == false)
             {
                 node = "";
                 return false;
@@ -805,7 +805,7 @@ namespace dexih.functions
             else
                 _cacheInt++;
 
-            if (_cacheInt > maxItems - 1 || _cacheInt > _cacheJsonTokens.Length - 1)
+            if ((maxItems > 0 && _cacheInt > maxItems - 1) || _cacheInt > _cacheJsonTokens.Length - 1)
             {
                 item = "";
                 return false;
@@ -837,14 +837,13 @@ namespace dexih.functions
                 _cacheInt++;
             }
 
-            var item = _cacheJsonTokens[0].ElementAtOrDefault((int)_cacheInt);
-            if (_cacheInt > maxItems - 1 || item == null)
+            var item = _cacheJsonTokens == null || _cacheJsonTokens.Length ==0 ? null : _cacheJsonTokens[0].ElementAtOrDefault((int) _cacheInt);
+            if ((maxItems > 0 && _cacheInt > maxItems - 1) || item == null)
             {
                 name = "";
                 value = "";
                 return false;
             }
-
 
             var property = (JProperty) item;
             name = property.Name;
@@ -880,7 +879,7 @@ namespace dexih.functions
 
         public bool DefaultNullString(string value, string defaultValue, out string adjustedValue)
         {
-            if (value == null || value.GetType() == typeof(DBNull))
+            if (value == null)
             {
                 adjustedValue = defaultValue;
                 return false;
