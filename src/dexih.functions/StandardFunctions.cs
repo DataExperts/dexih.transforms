@@ -789,17 +789,8 @@ namespace dexih.functions
         {
             if (_cacheJsonTokens == null)
             {
-                JToken results;
-                try
-                {
-                    results = JToken.Parse(json);
-                }
-                catch (JsonReaderException e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-                _cacheJsonTokens = results.SelectTokens(jsonPath).ToArray();
+                var results = JToken.Parse(json);
+                _cacheJsonTokens = string.IsNullOrEmpty(jsonPath) ? results.ToArray() : results.SelectTokens(jsonPath).ToArray();
                 _cacheInt = 0;
             }
             else
@@ -818,18 +809,10 @@ namespace dexih.functions
         {
             if (_cacheJsonTokens == null)
             {
-                JToken results;
-                try
-                {
-                    results = JToken.Parse(json);
-                }
-                catch (JsonReaderException e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
+                var results = JToken.Parse(json);
 
-                _cacheJsonTokens = results.SelectTokens(jsonPath).ToArray();
+                _cacheJsonTokens = string.IsNullOrEmpty(jsonPath) ? results.SelectTokens(" ").ToArray() : results.SelectTokens(jsonPath).ToArray();
+
                 _cacheInt = 0;
             }
             else

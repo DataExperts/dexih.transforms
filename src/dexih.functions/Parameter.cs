@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 
@@ -109,7 +110,7 @@ namespace dexih.functions
                 _value = input;
                 return;
             }
-			if (input == null) // || string.IsNullOrEmpty(input.ToString()))
+			if (input == null || Equals(input, "")) // || string.IsNullOrEmpty(input.ToString()))
 			{
 				_value = null;
 			}
