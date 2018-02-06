@@ -223,7 +223,7 @@ namespace dexih.connections.dexih
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Get source talbe information for table {importTable.Name} failed. {ex.Message}", ex);
+                throw new ConnectionException($"Get source table information for table {importTable.Name} failed. {ex.Message}", ex);
             }
         }
 

@@ -53,7 +53,7 @@ namespace dexih.connections.dexih
                 var message = Json.SerializeObject(new
                 {
                     HubName = ReferenceConnection.DefaultDatabase,
-                    SourceConnectionName = CacheTable.SourceConnectionName,
+                    CacheTable.SourceConnectionName,
                     TableName = CacheTable.Name,
                     TableSchema = CacheTable.Schema,
                     Query = query,

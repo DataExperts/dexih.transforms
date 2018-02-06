@@ -500,7 +500,6 @@ namespace dexih.connections.sql
 							var table = new Table()
 							{
 								Name = reader[0].ToString(),
-								Schema = "",
 							};
 							tableList.Add(table);;
                         }

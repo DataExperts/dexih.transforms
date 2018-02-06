@@ -87,7 +87,7 @@ namespace dexih.transforms
         public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
         public virtual List<Sort> SortFields => PrimaryTransform?.SortFields; //indicates fields for the sort transform.
 
-        public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same talbe is joined multiple times.
+        public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
 

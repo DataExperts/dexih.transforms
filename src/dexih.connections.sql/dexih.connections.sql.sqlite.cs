@@ -515,7 +515,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Get source talbe information for {originalTable.Name} failed. {ex.Message}", ex);
+                throw new ConnectionException($"Get source table information for {originalTable.Name} failed. {ex.Message}", ex);
             }
         }
 
