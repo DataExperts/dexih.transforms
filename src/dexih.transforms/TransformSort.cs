@@ -137,14 +137,7 @@ namespace dexih.transforms
             return null;
         }
 
-        public override List<Sort> SortFields
-        {
-            get
-            {
-                return _sortFields;
-            }
-        }
-
+        public override List<Sort> SortFields => _sortFields;
     }
 
 

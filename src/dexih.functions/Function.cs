@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using dexih.functions.Query;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
@@ -79,6 +80,8 @@ namespace dexih.functions
 
         public EInvalidAction InvalidAction { get; set; } = EInvalidAction.Reject;
         
+	    public Filter.ECompare? CompareEnum { get; set; }
+	    
         /// <summary>
         /// Createa a new function from a "Delegate".
         /// </summary>

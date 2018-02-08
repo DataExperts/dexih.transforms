@@ -22,7 +22,7 @@ namespace dexih.transforms.tests
             ReaderMemory reader1 = Helpers.CreateSortedTestData();
             ReaderMemory reader2 = Helpers.CreateSortedTestData();
 
-            TransformConcatinate concatinateTransform = new TransformConcatinate(reader1, reader2);
+            TransformConcatenate concatinateTransform = new TransformConcatenate(reader1, reader2);
 
             Assert.Equal(5, concatinateTransform.FieldCount);
 

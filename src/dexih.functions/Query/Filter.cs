@@ -18,28 +18,11 @@ namespace dexih.functions.Query
             if (function.ReturnType != ETypeCode.Boolean)
                 throw new QueryException($"The function {function.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
 
-            ECompare compare;
-
-            switch(function.FunctionName)
+            if (function.CompareEnum == null)
             {
-                case "IsEqual":
-                    compare = ECompare.IsEqual;
-                    break;
-                case "LessThan":
-                    compare = ECompare.LessThan;
-                    break;
-                case "LessThanEqual":
-                    compare = ECompare.LessThanEqual;
-                    break;
-                case "GreaterThan":
-                    compare = ECompare.GreaterThan;
-                    break;
-                case "GreaterThanEqual":
-                    compare = ECompare.GreaterThanEqual;
-                    break;
-                default:
-                    return null;
+                return null;
             }
+            var compare = (ECompare) function.CompareEnum;
 
             var filter = new Filter
             {

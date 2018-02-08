@@ -139,7 +139,19 @@ namespace dexih.connections.sql
                             using (var cmd = connection.CreateCommand())
                             {
                                 cmd.CommandText = insert.ToString();
-                                cmd.ExecuteNonQuery();
+                                try
+                                {
+                                    cmd.ExecuteNonQuery();
+                                }
+                                catch (Exception ex)
+                                {
+#if DEBUG
+                                    throw new ConnectionException("Error running following sql command: " + insert.ToString(0, 500), ex);
+#else
+                                    throw;
+#endif                                
+                                }
+
                             }
                         }
                     }

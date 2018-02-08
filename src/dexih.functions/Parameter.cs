@@ -110,9 +110,9 @@ namespace dexih.functions
                 _value = input;
                 return;
             }
-			if (input == null || Equals(input, "")) // || string.IsNullOrEmpty(input.ToString()))
+            if (input == null || Equals(input, "")) // || string.IsNullOrEmpty(input.ToString()))
 			{
-				_value = null;
+				_value = input;
 			}
 			else
 			{

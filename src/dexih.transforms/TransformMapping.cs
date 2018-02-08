@@ -52,14 +52,14 @@ namespace dexih.transforms
                     TableColumn column2 = null;
                     if (filter.Column1 != null)
                     {
-                        column1 = TranslateColumnName(filter.Column1);
+                        column1 = TranslateTargetColumn(filter.Column1);
                         if (column1 == null)
                             continue;
                     }
 
                     if (filter.Column2 != null)
                     {
-                        column2 = TranslateColumnName(filter.Column2);
+                        column2 = TranslateTargetColumn(filter.Column2);
                         if (column2 == null)
                             continue;
                     }
@@ -89,7 +89,7 @@ namespace dexih.transforms
 					TableColumn column = null;
 					if (sort.Column != null)
 					{
-						column = TranslateColumnName(sort.Column);
+						column = TranslateTargetColumn(sort.Column);
 						if (column == null)
 							continue;
 					}
@@ -110,27 +110,65 @@ namespace dexih.transforms
 			return returnValue;
         }
 
-        public TableColumn TranslateColumnName(TableColumn outputColumn)
+	    /// <summary>
+	    /// 
+	    /// </summary>
+	    /// <param name="targetColumn">Converts a target column into the mapped source column.</param>
+	    /// <returns></returns>
+        public TableColumn TranslateTargetColumn(TableColumn targetColumn)
         {
-            if (outputColumn == null)
+            if (targetColumn == null)
                 return null;
 	        
 	        if (MapFields != null)
 	        {
-		        var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.TableColumnName() == outputColumn.TableColumnName());
+		        var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.TableColumnName() == targetColumn.TableColumnName()) ??
+		                      MapFields.SingleOrDefault(c => c.TargetColumn.Name == targetColumn.Name);
+
 		        if (mapping != null)
+		        {
 			        return mapping.SourceColumn.Copy();
+		        }
 	        }
 
 	        if(PassThroughColumns)
 	        {
-		        var column = CacheTable.Columns.SingleOrDefault(c => c.Name == outputColumn.Name);
+		        var column = CacheTable.Columns.SingleOrDefault(c => c.Name == targetColumn.Name);
 		        if (column != null)
-			        return outputColumn;
+			        return targetColumn;
 	        }
 
 	        return null;
         }
+	    
+	    public TableColumn TranslateSourceColumn(TableColumn sourceColumn)
+	    {
+		    if (sourceColumn == null)
+			    return null;
+	        
+		    if (MapFields != null)
+		    {
+			    var mapping = MapFields.SingleOrDefault(c => c.SourceColumn.TableColumnName() == sourceColumn.TableColumnName()) ??
+			                  MapFields.SingleOrDefault(c => c.SourceColumn.Name == sourceColumn.Name);
+
+			    if (mapping != null)
+			    {
+				    return mapping.TargetColumn.Copy();
+			    }
+		    }
+
+		    if(PassThroughColumns)
+		    {
+			    var column = CacheTable.Columns.SingleOrDefault(c => c.Name == sourceColumn.Name);
+			    if (column != null)
+			    {
+				    return column.Copy();
+			    }
+		    }
+
+		    return null;
+	    }
+	    
 
         public override bool InitializeOutputFields()
         {
@@ -256,6 +294,36 @@ namespace dexih.transforms
         #region Transform Implementations
 
         public override bool RequiresSort => false;
+
+	    public override List<Sort> SortFields
+	    {
+		    get
+		    {
+			    if (PrimaryTransform?.SortFields?.Count > 0)
+			    {
+				    var sortFields = new List<Sort>();
+
+				    foreach (var sortField in PrimaryTransform.SortFields)
+				    {
+					    var newColumn = TranslateSourceColumn(sortField.Column);
+					    if (newColumn != null)
+					    {
+						    sortFields.Add(new Sort(newColumn, sortField.Direction));
+					    }
+					    else
+					    {
+						    break;
+					    }
+				    }
+
+				    return sortFields;
+			    }
+			    else
+			    {
+				    return null;
+			    }
+		    }
+	    }
 
 
         public override bool ResetTransform()

@@ -87,9 +87,12 @@ namespace dexih.functions
             None,
             FastEncrypt,
             FastDecrypt,
+	        FastEncrypted,
             StrongEncrypt,
             StrongDecrypt,
+	        StrongEncrypted,
             OneWayHash,
+	        OnWayHashed,
             Hide
         }
 
@@ -266,11 +269,26 @@ namespace dexih.functions
 				DefaultValue = DefaultValue,
 				DeltaType = DeltaType,
 				IsUnique = IsUnique,
-				SecurityFlag = ESecurityFlag.None, //don't copy securityFlag as only the first table requires encryption.
 				IsInput = IsInput,
 				IsMandatory = IsMandatory,
 				IsIncrementalUpdate = IsIncrementalUpdate
 			};
+
+			switch (SecurityFlag)
+			{
+				case ESecurityFlag.FastEncrypt:
+					newColumn.SecurityFlag = ESecurityFlag.FastEncrypted;
+					break;
+				case ESecurityFlag.StrongEncrypt:
+					newColumn.SecurityFlag = ESecurityFlag.StrongEncrypted;
+					break;
+				case ESecurityFlag.OneWayHash:
+					newColumn.SecurityFlag = ESecurityFlag.OnWayHashed;
+					break;
+				default:
+					newColumn.SecurityFlag = SecurityFlag;
+					break;
+			}
 
 			return newColumn;
 		}

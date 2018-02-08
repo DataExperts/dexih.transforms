@@ -190,6 +190,14 @@ namespace dexih.functions
             }
             return DateTime.TryParse(value, out result);
         }
+
+        public DateTime UnixTimeStampToDate(long unixTimeStamp)
+        {
+            var origDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            var convertedDate = origDate.AddSeconds(unixTimeStamp).ToLocalTime();
+            return convertedDate; 
+        }
+
         public bool IsNull(string value) { return value == null;  }
         public bool IsBetween(double value, double lowRange, double highRange) { return value > lowRange && value < highRange; }
         public bool IsBetweenInclusive(double value, double lowRange, double highRange) { return value >= lowRange && value <= highRange; }

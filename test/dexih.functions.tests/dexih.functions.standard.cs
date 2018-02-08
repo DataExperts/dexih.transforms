@@ -112,7 +112,7 @@ namespace dexih.functions.tests
             function.OnNull = EErrorAction.Execute;
             var returnValue = function.RunFunction(parameters);
 
-            if (returnValue.GetType() == typeof(double))
+            if (returnValue is double)
             {
                 Assert.Equal(expectedResult, Math.Round((double)returnValue, 4));
             }
@@ -141,7 +141,8 @@ namespace dexih.functions.tests
                 new object[] { "Negate", new object[] { 6 }, (Decimal) (-6)},
                 new object[] { "Remainder", new object[] { 6, 4 }, (Decimal)2 },
                 new object[] { "Subtract", new object[] { 6, 2 }, (Decimal)4 },
-                new object[] { "IsDateTimeEqual", new object[] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015") }, true }
+                new object[] { "IsDateTimeEqual", new object[] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015") }, true },
+                    new object[] { "UnixTimeStampToDate", new object[] { 1518053467 }, DateTime.Parse("2018-02-08 01:31:07Z") }
             };
             }
         }
@@ -172,7 +173,7 @@ namespace dexih.functions.tests
                 var aggregateResult = function.ReturnValue();
                 Assert.NotNull(aggregateResult);
 
-                if(aggregateResult.GetType() == typeof(double))
+                if(aggregateResult is double)
                 {
                     Assert.Equal(expectedResult, Math.Round((double)aggregateResult, 4));
                 }
@@ -339,7 +340,7 @@ namespace dexih.functions.tests
             Function SplitColumnToRows = StandardFunctions.GetFunctionReference("SplitColumnToRows");
             object[] Param = new object[] { "|", "|value2|value3||value5||", 6 };
             string[] Compare = new string[] { "", "value2", "value3", "", "value5", "", "" };
-            for (int i = 0; i <= 6; i++)
+            for (int i = 0; i < 6; i++)
             {
                 Assert.True((bool)SplitColumnToRows.RunFunction(Param));
                 Assert.Equal(Compare[i], (string)SplitColumnToRows.Outputs[0].Value);
@@ -355,7 +356,7 @@ namespace dexih.functions.tests
             //Use a for loop to similate gen sequence.
             Function XPathNodesToRows = StandardFunctions.GetFunctionReference("XPathNodesToRows");
             object[] Param = new object[] { "<root><row>0</row><row>1</row><row>2</row><row>3</row><row>4</row><row>5</row></root>", "//row", 5 };
-            for (int i = 0; i <= 5; i++)
+            for (int i = 0; i < 5; i++)
             {
                 Assert.True((bool)XPathNodesToRows.RunFunction(Param));
                 Assert.Equal(i.ToString(), (string)XPathNodesToRows.Outputs[0].Value);

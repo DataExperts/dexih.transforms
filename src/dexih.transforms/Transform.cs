@@ -250,8 +250,8 @@ namespace dexih.transforms
         /// <summary>
         /// This function will confirm that the ActualSort is equivalent to the RequiredSort.  Note: ascending/descending is ignored as this makes no difference for the transforms.
         /// </summary>
-        /// <param name="PrimarySort"></param>
-        /// <param name="CompareSort"></param>
+        /// <param name="requiredSort"></param>
+        /// <param name="actualSort"></param>
         /// <returns></returns>
         public bool SortFieldsMatch(List<Sort> requiredSort, List<Sort> actualSort)
         {
@@ -261,14 +261,41 @@ namespace dexih.transforms
             if (requiredSort == null || actualSort == null)
                 return false;
 
-            var requiredSortFields = String.Join(",", requiredSort.Select(c => c.Column.TableColumnName()).ToArray());
-            var actualSortFields = string.Join(",", actualSort.Select(c => c.Column.TableColumnName()).ToArray());
-
-            //compare the fields.  if actualsortfields are more, that is ok, as the primary sort condition is still met.
-            if (actualSortFields.Length >= requiredSortFields.Length && requiredSortFields == actualSortFields.Substring(0, requiredSortFields.Length))
-                return true;
-            else
+            if (requiredSort.Count < actualSort.Count)
                 return false;
+
+            var match = true;
+
+            using (var actualSortEnumerator = actualSort.GetEnumerator())
+            {
+                foreach (var requiredField in requiredSort)
+                {
+                    if(!actualSortEnumerator.MoveNext())
+                    {
+                        match = false;
+                        break;
+                    }
+                    var actualField = actualSortEnumerator.Current;
+
+
+
+                    if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName())
+                    {
+                        continue;
+                    }
+
+                    if (requiredField.Column.Name == actualField.Column.Name)
+                    {
+                        continue;
+                    }
+
+                    match = false;
+                    break;
+                }
+            }
+
+            return match;
+
         }
         
         /// <summary>
@@ -367,6 +394,37 @@ namespace dexih.transforms
             column.SecurityFlag = securityFlag;
         }
 
+        protected string FastEncrypt(object value)
+        {
+            return EncryptString.Encrypt(value.ToString(), EncryptionKey, 5);
+        }
+
+        protected string FastDecrypt(object value)
+        {
+            return EncryptString.Decrypt(value.ToString(), EncryptionKey, 5);
+        }
+        
+        protected string StrongEncrypt(object value)
+        {
+            return EncryptString.Encrypt(value.ToString(), EncryptionKey, 1000);
+        }
+
+        protected string StrongDecrypt(object value)
+        {
+            return EncryptString.Decrypt(value.ToString(), EncryptionKey, 1000);
+        }
+
+        protected string OneWayHash(object value)
+        {
+            return HashString.CreateHash(value.ToString());
+        }
+
+        protected bool OneWayHashCompare(object hashedValue, object value)
+        {
+            return HashString.ValidateHash(value.ToString(), hashedValue.ToString());
+        }
+        
+
         private void EncryptRow(object[] row)
         {
             switch (EncryptionMethod)
@@ -378,19 +436,19 @@ namespace dexih.transforms
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
                             case ESecurityFlag.StrongEncrypt:
-                                row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 1000);
+                                row[i] = new EncryptedObject(row[i], StrongEncrypt(row[i]));
                                 break;
                             case ESecurityFlag.OneWayHash:
-                                row[i] = HashString.CreateHash(row[i].ToString());
+                                row[i] = new EncryptedObject(row[i], OneWayHash(row[i]));
                                 break;
                             case ESecurityFlag.StrongDecrypt:
-                                row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 1000);
+                                row[i] = new EncryptedObject(row[i], StrongDecrypt(row[i]));
                                 break;
                             case ESecurityFlag.FastEncrypt:
-                                row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 5);
+                                row[i] = new EncryptedObject(row[i], FastEncrypt(row[i]));
                                 break;
                             case ESecurityFlag.FastDecrypt:
-                                row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 5);
+                                row[i] = new EncryptedObject(row[i], FastDecrypt(row[i]));
                                 break;
                         }
                     }
@@ -402,12 +460,13 @@ namespace dexih.transforms
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
                             case ESecurityFlag.FastEncrypt:
-								row[i] = "(Encrypted)";
-								break;
-							case ESecurityFlag.StrongEncrypt:
+                            case ESecurityFlag.FastEncrypted:
+                            case ESecurityFlag.StrongEncrypt:
+                            case ESecurityFlag.StrongEncrypted:
 								row[i] = "(Encrypted)";
 								break;
 							case ESecurityFlag.OneWayHash:
+                            case ESecurityFlag.OnWayHashed:
 								row[i] = "(Hashed)";
 								break;
 							case ESecurityFlag.Hide:

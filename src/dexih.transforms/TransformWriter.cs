@@ -14,7 +14,7 @@ namespace dexih.transforms
         /// <summary>
         /// Indicates the rows buffer per commit.  
         /// </summary>
-        public virtual int CommitSize { get; protected set; } = 10000;
+        public int CommitSize { get; set; } = 10000;
 
         private TableCache _createRows;
         private TableCache _updateRows;

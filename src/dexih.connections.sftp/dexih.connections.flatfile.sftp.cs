@@ -38,7 +38,7 @@ namespace dexih.connections.sftp
             return path + "/" + filename;
         }
 
-        private SftpClient GetSftpClient()
+        private SftpClientWrapper GetSftpClient()
         {
             string[] paths;
             
@@ -61,7 +61,7 @@ namespace dexih.connections.sftp
 //            
 //            var client = new SftpClient(connectionInfo);
             
-            var client = new SftpClient(serverName, Username, Password);
+            var client = new SftpClientWrapper(serverName, Username, Password);
             client.Connect();
             client.ChangeDirectory(_workingDirectory);
 
@@ -277,8 +277,8 @@ namespace dexih.connections.sftp
                 var fullDirectory = GetFullPath(file, path);
                 var client = GetSftpClient();
                 var reader = client.OpenRead(CombinePath(fullDirectory, fileName));
-                var ftpStream = new SftpStream(reader, client);
-                return Task.FromResult<Stream>(ftpStream);
+                // var ftpStream = new SftpStream(reader, client);
+                return Task.FromResult<Stream>(reader);
             }
             catch (Exception ex)
             {
@@ -294,8 +294,8 @@ namespace dexih.connections.sftp
                 var client = GetSftpClient();
                 var fullDirectory = GetFullPath(file, path);
                 var stream = client.OpenWrite(fullDirectory + "/" + fileName);
-                var ftpStream = new SftpStream(stream, client);
-                return ftpStream;
+                // var ftpStream = new SftpStream(stream, client);
+                return stream;
             }
             catch (Exception ex)
             {
@@ -311,8 +311,8 @@ namespace dexih.connections.sftp
                 var filePath = await FixFileName(file, path, fileName);
 
                 using (var client = GetSftpClient())
-                using (var newFile = client.OpenWrite(filePath))
                 {
+                    var newFile = client.OpenWrite(filePath);
                     await stream.CopyToAsync(newFile);
                     await stream.FlushAsync();
                     return true;

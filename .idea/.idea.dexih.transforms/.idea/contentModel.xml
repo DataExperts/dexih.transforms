@@ -117,6 +117,7 @@
               </e>
             </e>
           </e>
+          <e p="SftpClientWrapper.cs" t="Include" />
           <e p="SftpStream.cs" t="Include" />
         </e>
         <e p="dexih.connections.sql" t="IncludeRecursive">
@@ -210,6 +211,7 @@
           <e p="ConnectionFlatFile.cs" t="Include" />
           <e p="ConnectionMemory.cs" t="Include" />
           <e p="dexih.transforms.csproj" t="IncludeRecursive" />
+          <e p="EncryptedObject.cs" t="Include" />
           <e p="Exceptions" t="Include">
             <e p="ConnectionExceptions.cs" t="Include" />
             <e p="DuplicateJoinKeyException.cs" t="Include" />

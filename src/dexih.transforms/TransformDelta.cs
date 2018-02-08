@@ -223,6 +223,31 @@ namespace dexih.transforms
 
         }
 
+        private bool CompareFields(object sourceValue, TableColumn targetColumn, object targetValue)
+        {
+            var source = sourceValue;
+            var target = targetValue;
+
+            if (sourceValue is EncryptedObject sourceObject)
+            {
+                switch (targetColumn.SecurityFlag)
+                {
+                    case TableColumn.ESecurityFlag.FastEncrypted:
+                        target = FastDecrypt(targetValue);
+                        source = sourceObject.OriginalValue; 
+                        break;
+                    case TableColumn.ESecurityFlag.StrongEncrypted:
+                        target = StrongDecrypt(targetValue);
+                        source = sourceObject.OriginalValue; 
+                        break;
+                    case TableColumn.ESecurityFlag.OnWayHashed:
+                        return OneWayHashCompare(targetValue, sourceObject.OriginalValue);
+                }
+            }
+
+            return Compare(targetColumn.Datatype, source, target) == ECompareResult.Equal;
+        }
+
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
@@ -298,8 +323,8 @@ namespace dexih.transforms
                     var targetOrdinal = CacheTable.GetOrdinal(col.Name);
                     try
                     {
-                        var result = Compare(col.Datatype, ReferenceTransform[col.Name], newRow[targetOrdinal]);
-                        if (result != ECompareResult.Equal)
+                        var result = CompareFields(ReferenceTransform[col.Name], col, newRow[targetOrdinal]);
+                        if (!result)
                         {
                             isMatch = false;
                             break;
@@ -468,8 +493,8 @@ namespace dexih.transforms
                         {
                             try
                             {
-                                var compareResult2 = Compare(col.Datatype, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
-                                if (compareResult2 != ECompareResult.Equal)
+                                var compareResult2 = CompareFields(PrimaryTransform[col.Name], col, ReferenceTransform[col.Name]);
+                                if (!compareResult2)
                                 {
                                     isMatch = false;
                                     break;
