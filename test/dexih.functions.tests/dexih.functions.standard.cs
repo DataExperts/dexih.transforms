@@ -112,9 +112,9 @@ namespace dexih.functions.tests
             function.OnNull = EErrorAction.Execute;
             var returnValue = function.RunFunction(parameters);
 
-            if (returnValue is double)
+            if (returnValue is double d)
             {
-                Assert.Equal(expectedResult, Math.Round((double)returnValue, 4));
+                Assert.Equal(expectedResult, Math.Round(d, 4));
             }
             else
                 Assert.Equal(expectedResult, returnValue);
@@ -126,24 +126,29 @@ namespace dexih.functions.tests
             {
                 return new[]
                 {
-                new object[] { "AddDays", new object[] { "2015-09-24", 1 }, DateTime.Parse("25 Sep 2015")},
-                new object[] { "AddHours", new object[] { "2015-09-24", 24 }, DateTime.Parse("25 Sep 2015")},
-                new object[] { "AddMilliseconds", new object[] { "2015-09-24", 86400000 }, DateTime.Parse("25 Sep 2015")},
-                new object[] { "AddMinutes", new object[] { "2015-09-24", 1440 }, DateTime.Parse("25 Sep 2015")},
-                new object[] { "AddMonths", new object[] { "2015-09-24", 1 }, DateTime.Parse("24 Oct 2015")},
-                new object[] { "AddSeconds", new object[] { "2015-09-24", 86400 }, DateTime.Parse("25 Sep 2015")},
-                new object[] { "AddYears", new object[] { "2015-09-24", 1 }, DateTime.Parse("24 Sep 2016")},
-                new object[] { "Add", new object[] { 1, 2 }, (Decimal) 3},
-                new object[] { "Ceiling", new object[] { 6.4 }, (Decimal)7 },
-                new object[] { "Divide", new object[] { 6, 2 }, (Decimal)3 },
-                new object[] { "Floor", new object[] { 6.4 }, (Decimal)6 },
-                new object[] { "Multiply", new object[] { 6, 2 }, (Decimal)12 },
-                new object[] { "Negate", new object[] { 6 }, (Decimal) (-6)},
-                new object[] { "Remainder", new object[] { 6, 4 }, (Decimal)2 },
-                new object[] { "Subtract", new object[] { 6, 2 }, (Decimal)4 },
-                new object[] { "IsDateTimeEqual", new object[] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015") }, true },
-                    new object[] { "UnixTimeStampToDate", new object[] { 1518053467 }, DateTime.Parse("2018-02-08 01:31:07Z") }
-            };
+                    new object[] { "AddDays", new object[] { "2015-09-24", 1 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { "AddHours", new object[] { "2015-09-24", 24 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { "AddMilliseconds", new object[] { "2015-09-24", 86400000 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { "AddMinutes", new object[] { "2015-09-24", 1440 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { "AddMonths", new object[] { "2015-09-24", 1 }, DateTime.Parse("24 Oct 2015")},
+                    new object[] { "AddSeconds", new object[] { "2015-09-24", 86400 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { "AddYears", new object[] { "2015-09-24", 1 }, DateTime.Parse("24 Sep 2016")},
+                    new object[] { "AgeInYearsAtDate", new object[] { "2015-09-24", "2016-09-24" }, 1},
+                    new object[] { "AgeInYearsAtDate", new object[] { "2015-09-25", "2016-09-24" }, 0},
+                    new object[] { "AgeInYearsAtDate", new object[] { "2015-09-24", "2017-09-25" }, 2},
+                    new object[] { "Add", new object[] { 1, 2 }, (Decimal) 3},
+                    new object[] { "Ceiling", new object[] { 6.4 }, (Decimal)7 },
+                    new object[] { "Divide", new object[] { 6, 2 }, (Decimal)3 },
+                    new object[] { "Floor", new object[] { 6.4 }, (Decimal)6 },
+                    new object[] { "Multiply", new object[] { 6, 2 }, (Decimal)12 },
+                    new object[] { "Negate", new object[] { 6 }, (Decimal) (-6)},
+                    new object[] { "Remainder", new object[] { 6, 4 }, (Decimal)2 },
+                    new object[] { "Subtract", new object[] { 6, 2 }, (Decimal)4 },
+                    new object[] { "IsDateTimeEqual", new object[] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015") }, true },
+                    new object[] { "IsDateBetween", new object[] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015") }, true },
+                    new object[] { "IsDateBetweenInclusive", new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015") }, true },
+                    // new object[] { "UnixTimeStampToDate", new object[] { 1518739200 }, new DateTime(2018, 2, 16, 0, 0, 0, 0, System.DateTimeKind.Utc).ToLocalTime() }
+                };
             }
         }
 

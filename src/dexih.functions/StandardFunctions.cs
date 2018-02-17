@@ -201,6 +201,10 @@ namespace dexih.functions
         public bool IsNull(string value) { return value == null;  }
         public bool IsBetween(double value, double lowRange, double highRange) { return value > lowRange && value < highRange; }
         public bool IsBetweenInclusive(double value, double lowRange, double highRange) { return value >= lowRange && value <= highRange; }
+        public bool IsDateBetween(DateTime value, DateTime lowRange, DateTime highRange) { return value > lowRange && value < highRange; }
+        public bool IsDateBetweenInclusive(DateTime value, DateTime lowRange, DateTime highRange) { return value >= lowRange && value <= highRange; }
+        public bool IsDateBetweenNow(DateTime lowRange, DateTime highRange) { return DateTime.Now > lowRange && DateTime.Now < highRange; }
+        public bool IsDateBetweenInclusiveNow(DateTime lowRange, DateTime highRange) { return DateTime.Now >= lowRange && DateTime.Now <= highRange; }
         public bool RegexMatch(string input, string pattern) { return Regex.Match(input, pattern).Success; }
         public bool Contains(string value, string contains) { return value.Contains(contains); }
         public bool EndsWith(string value, string endsWith) { return value.EndsWith(endsWith); }
@@ -291,6 +295,16 @@ namespace dexih.functions
         public string DateToString(DateTime dateValue, string format) { return dateValue.ToString(format); }
         public DateTime DateNow() { return DateTime.Now; }
         public DateTime DateNowUtc() { return DateTime.UtcNow; }
+
+        public int AgeInYears(DateTime dateValue) { return AgeInYearsAtDate(dateValue, DateTime.Today);}
+
+        public int AgeInYearsAtDate(DateTime startDate, DateTime endDate)
+        {
+            var age = endDate.Year - startDate.Year;
+            if (startDate > endDate.AddYears(-age)) age--;
+            return age;
+        }
+        
         public string Encrypt(string value, string key) { return EncryptString.Encrypt(value, key, 1000); }
         public string Decrypt(string value, string key) { return EncryptString.Decrypt(value, key, 1000); }
         public string CreateSaltedHash(string value) { return HashString.CreateHash(value); }
