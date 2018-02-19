@@ -345,7 +345,7 @@ namespace dexih.transforms
             }
 
             var pocoReader = new PocoLoader<TransformWriterResult>();
-            var writerResults = await pocoReader.ToListAsync(reader, cancellationToken);
+            var writerResults = await pocoReader.ToListAsync(reader, rows, cancellationToken);
 
             foreach(var result in writerResults)
             { 

@@ -147,8 +147,6 @@ namespace dexih.transforms
             return newRow;
         }
 
-
-
         public override bool ResetTransform()
         {
             return true;
