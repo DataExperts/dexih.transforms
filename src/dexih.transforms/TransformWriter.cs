@@ -3,7 +3,9 @@ using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -133,7 +135,7 @@ namespace dexih.transforms
                     var runStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Running, null, null, cancellationToken);
                     if (!runStatusResult)
                     {
-                        return runStatusResult;
+                        return false;
                     }
                     firstRead = false;
                 }
@@ -432,12 +434,6 @@ namespace dexih.transforms
                 WriteDataTicks += returnValue;
             }
 
-            if (_createRecordsTask != null)
-            {
-                var returnValue = await _createRecordsTask;
-                WriteDataTicks += returnValue;
-            }
-
             if (_updateRecordsTask != null)
             {
                 var returnValue = await _updateRecordsTask;
@@ -465,10 +461,15 @@ namespace dexih.transforms
             writerResult.RowsReadPrimary = reader.TotalRowsReadPrimary;
             writerResult.RowsReadReference = reader.TotalRowsReadReference;
 
-            writerResult.PerformanceSummary = reader.PerformanceSummary();
-
             //calculate the throughput figures
             var rowsWritten = writerResult.RowsTotal - writerResult.RowsIgnored;
+
+            var performance = new StringBuilder();
+            performance.AppendLine(reader.PerformanceSummary());
+            performance.AppendLine($"Target {_targetConnection.Name} - Time: {WriteDataTicks:c}, Rows: {rowsWritten}, Performance: {(rowsWritten/WriteDataTicks.TotalSeconds):F} rows/second");
+
+            writerResult.PerformanceSummary = performance.ToString();
+
 
             writerResult.WriteTicks = WriteDataTicks.Ticks;
             writerResult.ReadTicks = reader.ReaderTimerTicks().Ticks;

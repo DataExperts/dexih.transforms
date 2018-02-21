@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Data;
 using dexih.functions;
 using System.Data.Common;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Threading;
 using MySql.Data.MySqlClient;
 using System.Linq;
@@ -78,6 +80,7 @@ namespace dexih.connections.sql
         {
             try
             {
+                var timer = Stopwatch.StartNew();
                 using (var connection = await NewConnection())
                 {
                     var fieldCount = reader.FieldCount;
@@ -136,9 +139,9 @@ namespace dexih.connections.sql
                                 throw new ConnectionException($"The generated sql was too large to execute.  The size was {(insert.Length + row.Length)} and the maximum supported by MySql is {MaxSqlSize}.  To fix this, either reduce the fields being used or increase the `max_allow_packet` variable in the MySql database.");
                             }
 
-                            using (var cmd = connection.CreateCommand())
+                            using (MySqlCommand cmd = new MySqlCommand(insert.ToString(), (MySqlConnection)connection))
                             {
-                                cmd.CommandText = insert.ToString();
+                                cmd.CommandType = CommandType.Text;
                                 try
                                 {
                                     cmd.ExecuteNonQuery();
@@ -151,7 +154,7 @@ namespace dexih.connections.sql
                                     throw;
 #endif                                
                                 }
-
+                            
                             }
                         }
                     }
@@ -357,7 +360,7 @@ namespace dexih.connections.sql
                 case ETypeCode.Double:
                 case ETypeCode.Decimal:
                 case ETypeCode.Boolean:
-                    returnValue = AddEscape(value.ToString());
+                    returnValue = MySqlHelper.EscapeString(value.ToString());
                     break;
                 case ETypeCode.String:
 				case ETypeCode.Text:
@@ -365,22 +368,22 @@ namespace dexih.connections.sql
                 case ETypeCode.Xml:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
-                    returnValue = "'" + AddEscape(value.ToString()) + "'";
+                    returnValue = "'" + MySqlHelper.EscapeString(value.ToString()) + "'";
                     break;
                 case ETypeCode.DateTime:
                     if (value is DateTime)
-                        returnValue = "STR_TO_DATE('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
+                        returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     else
-						returnValue = "STR_TO_DATE('"+ AddEscape((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
+						returnValue = "STR_TO_DATE('"+ MySqlHelper.EscapeString((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     break;
                 case ETypeCode.Time:
-                    if (value is TimeSpan)
-						returnValue = "TIME_FORMAT('" + AddEscape(((TimeSpan)value).ToString("c")) + "', '%H:%i:%s.%f')";
+                    if (value is TimeSpan span)
+						returnValue = "TIME_FORMAT('" + MySqlHelper.EscapeString(span.ToString("c")) + "', '%H:%i:%s.%f')";
 					else
-                        returnValue = "TIME_FORMAT('" + AddEscape((string)value) + "', '%H:%i:%s.%f')";
+                        returnValue = "TIME_FORMAT('" + MySqlHelper.EscapeString((string)value) + "', '%H:%i:%s.%f')";
 					break;
                 default:
-                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql insert statement.");
+                    throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");
             }
 
             return returnValue;
@@ -399,7 +402,6 @@ namespace dexih.connections.sql
                 {
                     var hostport = Server.Split(':');
                     string port;
-                    var host = hostport[0];
                     if (hostport.Count() == 1)
                     {
                         port = "";

@@ -65,12 +65,12 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 {
 
-                    var bulkCopy = new SqlBulkCopy((SqlConnection)connection)
+                    var bulkCopy = new SqlBulkCopy((SqlConnection) connection)
                     {
-                        DestinationTableName = SqlTableName(table)
+                        DestinationTableName = SqlTableName(table),
+                        BulkCopyTimeout = 60
                     };
 
-                    bulkCopy.BulkCopyTimeout = 60;
                     await bulkCopy.WriteToServerAsync(reader, cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();

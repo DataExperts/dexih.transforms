@@ -36,7 +36,7 @@ namespace dexih.transforms.Poco
             var data = new List<T>();
 
             var row = 0;
-            while (await reader.ReadAsync(cancellationToken) && rows > row)
+            while (await reader.ReadAsync(cancellationToken) && (rows > row || rows < 0))
             {
                 data.Add(pocoMapping.GetItem());
                 row++;

@@ -248,7 +248,7 @@ namespace dexih.connections.sql
                     using (var command = connection.CreateCommand())
                     {
                         command.CommandText = createSql.ToString();
-                        await command.ExecuteNonQueryAsync();
+                        await command.ExecuteNonQueryAsync(cancellationToken);
                     }
 
                     return;

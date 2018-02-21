@@ -80,7 +80,7 @@ namespace dexih.connections.sql
 
         public override string Details()
         {
-            return "SqlConnection";
+            return ReferenceConnection == null ? "SqlReader" : $"SqlReader - {ReferenceConnection.Name}({ReferenceConnection.DatabaseTypeName})";
         }
 
         public override List<Sort> SortFields => _sortFields;

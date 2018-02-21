@@ -104,22 +104,22 @@ namespace dexih.transforms
         #region Statistics
 
         //statistics for this transform
-        public Int64 TransformRowsSorted { get; protected set; }
-        public Int64 TransformRowsPreserved { get; protected set; }
-        public Int64 TransformRowsIgnored { get; protected set; }
-        public Int64 TransformRowsRejected { get; protected set; }
-        public Int64 TransformRowsFiltered { get; protected set; }
-        public Int64 TransformRowsReadPrimary { get; protected set; }
-        public Int64 TransformRowsReadReference { get; protected set; }
+        public long TransformRowsSorted { get; protected set; }
+        public long TransformRowsPreserved { get; protected set; }
+        public long TransformRowsIgnored { get; protected set; }
+        public long TransformRowsRejected { get; protected set; }
+        public long TransformRowsFiltered { get; protected set; }
+        public long TransformRowsReadPrimary { get; protected set; }
+        public long TransformRowsReadReference { get; protected set; }
 
         //statistics for all child transforms.
-        public Int64 TotalRowsSorted { get { return TransformRowsSorted + PrimaryTransform?.TotalRowsSorted ?? 0 + ReferenceTransform?.TotalRowsSorted ?? 0; } }
-        public Int64 TotalRowsPreserved { get { return TransformRowsPreserved + PrimaryTransform?.TotalRowsPreserved ?? 0 + ReferenceTransform?.TotalRowsPreserved ?? 0; } }
-        public Int64 TotalRowsIgnored { get { return TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0; } }
-        public Int64 TotalRowsRejected { get { return TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0; } }
-        public Int64 TotalRowsFiltered { get { return TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0; } }
-        public Int64 TotalRowsReadPrimary { get { return TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0); } }
-        public Int64 TotalRowsReadReference { get { return TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0; } }
+        public long TotalRowsSorted { get { return TransformRowsSorted + PrimaryTransform?.TotalRowsSorted ?? 0 + ReferenceTransform?.TotalRowsSorted ?? 0; } }
+        public long TotalRowsPreserved { get { return TransformRowsPreserved + PrimaryTransform?.TotalRowsPreserved ?? 0 + ReferenceTransform?.TotalRowsPreserved ?? 0; } }
+        public long TotalRowsIgnored { get { return TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0; } }
+        public long TotalRowsRejected { get { return TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0; } }
+        public long TotalRowsFiltered { get { return TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0; } }
+        public long TotalRowsReadPrimary { get { return TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0); } }
+        public long TotalRowsReadReference { get { return TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0; } }
 
         private object _maxIncrementalValue = null;
         private int _incrementalColumnIndex = -1;
@@ -127,18 +127,12 @@ namespace dexih.transforms
 
         public object GetMaxIncrementalValue()
         {
-            if (IsReader)
-                return _maxIncrementalValue;
-            else
-                return PrimaryTransform.GetMaxIncrementalValue();
+            return IsReader ? _maxIncrementalValue : PrimaryTransform.GetMaxIncrementalValue();
         }
 
         public virtual Transform GetProfileResults()
         {
-            if (IsReader)
-                return null;
-            else
-                return PrimaryTransform.GetProfileResults();
+            return IsReader ? null : PrimaryTransform.GetProfileResults();
         }
 
         /// <summary>
@@ -556,13 +550,24 @@ namespace dexih.transforms
         {
             var performance = new StringBuilder();
 
-			var timeSpan = TransformTimerTicks();
-			performance.AppendLine($"{Details()} - Time: {timeSpan.ToString("c")}, Rows: {TotalRowsReadPrimary}, Performance: {(TotalRowsReadPrimary/timeSpan.TotalSeconds).ToString("F")} rows/second");
-
             if (PrimaryTransform != null)
                 performance.AppendLine(PrimaryTransform.PerformanceSummary());
+
+			var timeSpan = TransformTimerTicks();
+
+            if (timeSpan.Ticks == 0)
+            {
+                performance.AppendLine(
+                    $"{Details()} - Not used.");
+            }
+            else
+            {
+                performance.AppendLine($"{Details()} - Time: {timeSpan:c}, Rows: {TotalRowsReadPrimary}, Performance: {(TotalRowsReadPrimary/timeSpan.TotalSeconds):F} rows/second");
+            }
+
+
             if (ReferenceTransform != null)
-                performance.AppendLine("Reference: " + ReferenceTransform.PerformanceSummary());
+                performance.AppendLine("\tReference: " + ReferenceTransform.PerformanceSummary());
 
             return performance.ToString();
         }
