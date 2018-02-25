@@ -1,16 +1,20 @@
 ﻿using dexih.transforms;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Text;
+using dexih.functions.File;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.Crypto;
+using Dexih.Utils.MessageHelpers;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.dexih
@@ -24,7 +28,10 @@ namespace dexih.connections.dexih
         private int[] _columnOrdinals;
         private object[][] _dataset;
 		private bool _moreData;
-		private string _continuationToken;
+		private string _dataUrl;
+        
+        private FileHandlerBase _fileHandler;
+        private Object[] _baseRow;
 
         public ReaderDexih(Connection connection, Table table)
         {
@@ -50,6 +57,7 @@ namespace dexih.connections.dexih
                     throw new ConnectionException("The information hub connection is already open.");
                 }
 
+                // call the central web server to requet the query start.
                 var message = Json.SerializeObject(new
                 {
                     HubName = ReferenceConnection.DefaultDatabase,
@@ -65,17 +73,36 @@ namespace dexih.connections.dexih
 
                 if ((bool)response["success"])
                 {
-                    _continuationToken = response["value"].ToString();
+                    _dataUrl = response["value"].ToString();
                 }
                 else
                 {
                     throw new ConnectionException($"Error {response?["message"]}", new Exception(response["exceptionDetails"].ToString()));
                 }
+                
+                // use the returned url, to start streaming the data.
+                using (var httpClient = new HttpClient())
+                {
+                    var response2 = await httpClient.GetAsync(_dataUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-				_datasetRow = 0;
-				_moreData = true;
+                    if (response2.StatusCode == HttpStatusCode.InternalServerError)
+                    {
+                        var responseString = await response2.Content.ReadAsStringAsync();
+                        var result = JObject.Parse(responseString);
+                        var returnValue = result.ToObject<ReturnValue>();
+                        throw new ConnectionException("Dexih Reader Failed.  " + returnValue.Message,
+                            returnValue.Exception);
+                    }
 
-                return true;
+                    var responseStream = await response2.Content.ReadAsStreamAsync();
+                    FileConfiguration config = new FileConfiguration();
+                    _fileHandler = new FileHandlerText(CacheTable, config);
+                    await _fileHandler.SetStream(responseStream, null);
+
+                    _baseRow = new object[CacheTable.Columns.Count];
+
+                    return true;
+                }
             }
             catch (Exception ex)
             {
@@ -98,75 +125,30 @@ namespace dexih.connections.dexih
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+ protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            try
+            while (true)
             {
-                // if we already have a cached dataset, then keep reading
-                if (_dataset != null && _datasetRow < _dataset.Count())
-				{
-					var row = ConvertRow(_dataset[_datasetRow]);
-                    _datasetRow++;
-
-                    return row;
-				}
-                
-                if(!_moreData)
+                object[] row;
+                try
                 {
-                    _isOpen = false;
-                    return null;
+                    row = await _fileHandler.GetRow(_baseRow);
                 }
-                
-                //var message = Json.SerializeObject(new { ContinuationToken = _continuationToken }, "");
-                //var content = new StringContent(message, Encoding.UTF8, "application/json");
-                var content = new FormUrlEncodedContent(new[]
+                catch (Exception ex)
                 {
-                    new KeyValuePair<string, string>("ContinuationToken", _continuationToken),
-                });
-
-                var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("ReceiveData", content, false);
-
-                if ((bool)response["success"])
-                {
-                    var receiveData = response["value"].ToObject<(bool IsComplete, DataModel Package)>();
-                    _moreData = receiveData.IsComplete;
-
-                    if (!_moreData && receiveData.Package == null)
-                    {
-                        _isOpen = false;
-                        return null;
-                    }
-                    _columns = receiveData.Package.Columns;
-                    _dataset = receiveData.Package.Data;
-
-                    _columnOrdinals = new int[CacheTable.Columns.Count];
-                    for(var i= 0; i< _columnOrdinals.Length; i++)
-                    {
-                        _columnOrdinals[i] = Array.IndexOf(_columns, CacheTable.Columns[i].Name);
-                    }
-                }
-                else
-                {
-                    throw new ConnectionException($"Error {response?["message"]}", new Exception(response["exceptionDetails"].ToString()));
+                    throw new ConnectionException("The flatfile reader failed with the following message: " + ex.Message, ex);
                 }
 
-                if(_dataset == null || !_dataset.Any()){
-                    _isOpen = false;
-                    return null;
-                }
-                else
+                if (row == null)
                 {
-                    var row = ConvertRow( _dataset[0]);
-                    _datasetRow = 1;
-                    return row;
+                    _fileHandler.Dispose();
                 }
+
+                return row;
             }
-            catch (Exception ex)
-            {
-                throw new Exception("The hub reader service failed due to the following error: " + ex.Message, ex);
-            }
+
         }
-
+        
         private object[] ConvertRow(IReadOnlyList<object> row)
         {
             var newRow = new object[_columnOrdinals.Length];

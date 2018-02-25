@@ -76,7 +76,7 @@ namespace dexih.transforms
             }
             
             // if a filename was specified in the query, use this, otherwise, get a list of files from the incoming directory.
-            if (query == null || string.IsNullOrEmpty(query.FileName))
+            if (string.IsNullOrEmpty(query?.FileName))
             {
                 _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, EFlatFilePath.Incoming,
                     CacheFlatFile.FileMatchPattern);
