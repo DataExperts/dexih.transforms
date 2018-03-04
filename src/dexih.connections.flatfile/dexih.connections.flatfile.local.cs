@@ -15,23 +15,53 @@ namespace dexih.connections.flatfile
     {
         public string FilePath()
         {
-            return Path.Combine(Server ,DefaultDatabase ?? "");
+            var path = Path.Combine(Server ,DefaultDatabase ?? "");
+            ValidatePath(path);
+            return path;
         }
 
         public override string GetFullPath(FlatFile file, EFlatFilePath path)
         {
             var fullPath = Path.Combine(FilePath(), file.FileRootPath ?? "", file.GetPath(path));
+            ValidatePath(fullPath);
             return fullPath;
         }
-        
-        
+
+        private void ValidatePath(string path)
+        {
+            if (AllowAllPaths)
+            {
+                return;
+            }
+
+            if (path.IndexOf("..", StringComparison.Ordinal) >= 0)
+            {
+                throw new ConnectionException($"The path {path} is invalid as it contains a '..'.");
+            }
+
+            if (AllowedPaths == null || AllowedPaths.Length == 0)
+            {
+                throw new ConnectionException($"The path cannot be validated as there are no allowed paths specified in the appsettings.json on the remote agent.");
+            }
+
+            foreach (var allowedPath in AllowedPaths)
+            {
+                if (path.StartsWith(allowedPath))
+                {
+                    return;
+                }
+            }
+            
+            throw new ConnectionException($"The path {path} is forbidden as it is not within allowed directories.  To include this path, modify the AllowedFileDirectories section of the appsettings.json file on the remote agent.");
+        }
 
         public override Task<List<string>> GetFileShares()
         {
             try
             {
+                ValidatePath(Server);
+
                 var fileShares = new List<string>();
-            
                 var directories = Directory.GetDirectories(Server);
                 foreach (var directoryName in directories)
                 {
@@ -273,7 +303,8 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                var exists = new DirectoryInfo(Server).Exists;
+                var path = FilePath();
+                var exists = new DirectoryInfo(path).Exists;
                 if (exists)
                     State = EConnectionState.Open;
                 else
