@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,6 +42,8 @@ namespace dexih.transforms
         private int[] _joinKeyOrdinals;
         private int[] _sourceKeyOrdinals;
         private string _referenceTableName;
+
+        private JoinKeyComparer _joinKeyComparer;
 
         private readonly List<Function> _joinFilters = new List<Function>();
 
@@ -130,6 +133,7 @@ namespace dexih.transforms
 
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
+            _joinKeyComparer = new JoinKeyComparer();
 
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
@@ -147,7 +151,7 @@ namespace dexih.transforms
                 query = new SelectQuery();
 
             //only apply a sort if there is not already a sort applied.
-            if(query.Sorts == null)
+            if(query.Sorts == null || query.Sorts.Count == 0)
                 query.Sorts = RequiredSortFields();
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
@@ -233,6 +237,8 @@ namespace dexih.transforms
                 return null;
             }
 
+            var joinMatchFound = false;
+
             //if input is sorted, then run a sortedjoin
             if (JoinAlgorithm == EJoinAlgorithm.Sorted)
             {
@@ -248,29 +254,59 @@ namespace dexih.transforms
                 //loop through join table until we find a matching row.
                 if (JoinPairs != null)
                 {
-
                     while (_groupsOpen)
                     {
-                        var recordMatch = true;
+//                        var recordMatch = true;
+                        var joinFields = new object[JoinPairs.Count];
                         for (var i = 0; i < JoinPairs.Count; i++)
                         {
-                            var joinValue = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
-                            if (!Equals(joinValue, _groupFields[i]))
-                            {
-                                recordMatch = false;
-                                break;
-                            }
+                            joinFields[i] = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
+                            
+//                            var joinValue = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
+//                            if (!Equals(joinValue, _groupFields[i]))
+//                            {
+//                                recordMatch = false;
+//                                if(Comparer<>)
+//                                break;
+//                            }
                         }
 
-                        if (recordMatch == false)
+                        var compare = _joinKeyComparer.Compare(_groupFields, joinFields);
+                        var done = false;
+                        
+                        switch (compare)
                         {
-                            if (_groupsOpen)
-                                _groupsOpen = await ReadNextGroup();
+                            case 1:
+                                joinMatchFound = false;
+                                done = true;
+                                break;
+                            case -1:
+                                if (_groupsOpen)
+                                {
+                                    _groupsOpen = await ReadNextGroup();
+                                }
+
+                                break;
+                            case 0:
+                                joinMatchFound = true;
+                                done = true;
+                                break;
                         }
-                        else
+
+                        if (done)
                         {
                             break;
                         }
+
+//                        if (recordMatch == false)
+//                        {
+//                            if (_groupsOpen)
+//                                _groupsOpen = await ReadNextGroup();
+//                        }
+//                        else
+//                        {
+//                            break;
+//                        }
                     }
                 }
             }
@@ -311,11 +347,11 @@ namespace dexih.transforms
                 {
                     _groupData = _joinHashData[sourceKeys];
                     _groupsOpen = true;
+                    joinMatchFound = true;
                 }
                 else
                 {
-                    _groupData = null;
-                    _groupsOpen = false;
+                    joinMatchFound = false;
                 }
             }
 
@@ -327,7 +363,7 @@ namespace dexih.transforms
                 pos++;
             }
 
-            if (_groupsOpen)
+            if (joinMatchFound)
             {
                 //if there are additional join functions, we run them
                 if (_joinFilters.Count == 0)
@@ -487,7 +523,7 @@ namespace dexih.transforms
             {
                 for (var i = 0; i < x.Length; i++)
                 {
-                    if (object.Equals(x[i], y[i])) continue;
+                    if (Equals(x[i], y[i])) continue;
 
                     var greater = false;
 

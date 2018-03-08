@@ -310,6 +310,24 @@ namespace dexih.functions
         public string CreateSaltedHash(string value) { return HashString.CreateHash(value); }
         public bool ValidateSaltedHash(string value, string hash) { return HashString.ValidateHash(value, hash); }
 
+        public string CreateSHA1(string value)
+        {
+            var bytes = Encoding.UTF8.GetBytes(value);
+            var sha1 = System.Security.Cryptography.SHA1.Create();
+            var hash = sha1.ComputeHash(bytes);
+            // Loop through each byte of the hashed data 
+            // and format each one as a hexadecimal string.
+            var sBuilder = new StringBuilder();
+            
+            for (var i = 0; i < hash.Length; i++)
+            {
+                sBuilder.Append(hash[i].ToString("x2"));
+            }
+
+            // Return the hexadecimal string.
+            return sBuilder.ToString();
+        }
+
         public double Abs(double value) { return Math.Abs(value); }
         public double Acos(double value) { return Math.Acos(value); }
         public double Asin(double value) { return Math.Asin(value); }

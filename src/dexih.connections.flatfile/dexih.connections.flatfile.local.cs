@@ -29,19 +29,29 @@ namespace dexih.connections.flatfile
 
         private void ValidatePath(string path)
         {
+            if (path.StartsWith(Directory.GetCurrentDirectory()))
+            {
+                throw new ForbiddenPathException($"The path {path} is invalid as it contains the remote agent binaries.", path);
+            }
+
+            if (path.IndexOf("..", StringComparison.Ordinal) >= 0)
+            {
+                throw new ForbiddenPathException($"The path {path} is invalid as it contains a '..'.", path);
+            }
+
+            if (path.IndexOf("~", StringComparison.Ordinal) >= 0)
+            {
+                throw new ForbiddenPathException($"The path {path} is invalid as it contains a '~'.", path);
+            }
+            
             if (AllowAllPaths)
             {
                 return;
             }
 
-            if (path.IndexOf("..", StringComparison.Ordinal) >= 0)
-            {
-                throw new ConnectionException($"The path {path} is invalid as it contains a '..'.");
-            }
-
             if (AllowedPaths == null || AllowedPaths.Length == 0)
             {
-                throw new ConnectionException($"The path cannot be validated as there are no allowed paths specified in the appsettings.json on the remote agent.");
+                throw new ForbiddenPathException($"The path cannot be validated as there are no allowed paths specified in the appsettings.json on the remote agent.", path);
             }
 
             foreach (var allowedPath in AllowedPaths)
@@ -52,7 +62,7 @@ namespace dexih.connections.flatfile
                 }
             }
             
-            throw new ConnectionException($"The path {path} is forbidden as it is not within allowed directories.  To include this path, modify the AllowedFileDirectories section of the appsettings.json file on the remote agent.");
+            throw new ForbiddenPathException($"The path {path} is forbidden as it is not within allowed paths.  To include this path, modify the AllowedFileDirectories section of the appsettings.json file on the remote agent.", path);
         }
 
         public override Task<List<string>> GetFileShares()
@@ -120,16 +130,15 @@ namespace dexih.connections.flatfile
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
                 var fileNameExtension = Path.GetExtension(fileName);
                 var version = 0;
-                string newFileName;
 
-                newFileName = fileName;
+                var newFileName = fileName;
                 var fullToDirectory = GetFullPath(file, toDirectory);
                 var fullFromDirectory = GetFullPath(file, fromDirectory);
 
                 var createDirectoryResult = await CreateDirectory(file, toDirectory);
                 if (!createDirectoryResult)
                 {
-                    return createDirectoryResult;
+                    return false;
                 }
 
                 // if there is already a file with the same name on the target directory, add a version number until a unique name is found.
