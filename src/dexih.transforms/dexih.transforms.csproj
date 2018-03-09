@@ -4,7 +4,7 @@
     <AssemblyTitle>Data Experts Group - Transforms Library</AssemblyTitle>
     <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.transforms</AssemblyName>
     <PackageId>dexih.transforms</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Poco;Data Processing;</PackageTags>

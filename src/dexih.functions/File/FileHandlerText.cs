@@ -32,7 +32,7 @@ namespace dexih.functions.File
             _fileRowNumberOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileRowNumber);
            
         }
-        public override Task<ICollection<TableColumn>> GetSourceColumns(Stream data)
+        public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream data)
         {
             string[] headers;
             if (_fileConfiguration.HasHeaderRecord)
@@ -41,8 +41,9 @@ namespace dexih.functions.File
                 {
                     using (var csv = new CsvReader(new StreamReader(data), _fileConfiguration))
                     {
+                        await csv.ReadAsync();
                         csv.ReadHeader();
-                        headers = csv.FieldHeaders;
+                        headers = csv.Context.HeaderRecord;
                     }
                 }
                 catch (Exception ex)
@@ -55,8 +56,8 @@ namespace dexih.functions.File
                 // if no header row specified, then just create a series column names "column001, column002 ..."
                 using (var csv = new CsvReader(new StreamReader(data), _fileConfiguration))
                 {
-                    csv.Read();
-                    headers = Enumerable.Range(0, csv.CurrentRecord.Count()).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
+                    await csv.ReadAsync();
+                    headers = Enumerable.Range(0, csv.Context.HeaderRecord.Length).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
                 }
             }
 
@@ -94,10 +95,10 @@ namespace dexih.functions.File
                 IsUnique = false
             });
 
-            return Task.FromResult((ICollection<TableColumn>) columns);
+            return columns;
         }
 
-        public override Task SetStream(Stream stream, ICollection<Filter> filters)
+        public override async Task SetStream(Stream stream, ICollection<Filter> filters)
         {
             _currentFileRowNumber = 0;
             _filters = filters;
@@ -117,6 +118,7 @@ namespace dexih.functions.File
             // create mappings from column name positions, to the csv field name positions.
             if(_fileConfiguration != null && ( _fileConfiguration.MatchHeaderRecord || !_fileConfiguration.HasHeaderRecord))
             {
+                await _csvReader.ReadAsync();
                 _csvReader.ReadHeader();
 
                 for(var col = 0; col < _table.Columns.Count; col++)
@@ -124,9 +126,9 @@ namespace dexih.functions.File
                     var column = _table.Columns[col];
                     if (column.DeltaType != TableColumn.EDeltaType.FileName && column.DeltaType != TableColumn.EDeltaType.FileRowNumber)
                     {
-                        for (var csvPos = 0; csvPos < _csvReader.FieldHeaders.Length; csvPos++)
+                        for (var csvPos = 0; csvPos < _csvReader.Context.HeaderRecord.Length; csvPos++)
                         {
-                            if (_csvReader.FieldHeaders[csvPos] == column.Name)
+                            if (_csvReader.Context.HeaderRecord[csvPos] == column.Name)
                             {
                                 _csvOrdinalMappings.Add(col, (csvPos, DataType.GetType(column.Datatype)));
                                 break;
@@ -148,13 +150,11 @@ namespace dexih.functions.File
                 }
             }
 
-            return Task.CompletedTask;
-
         }
 
-        public override  Task<object[]> GetRow(object[] baseRow)
+        public override async Task<object[]> GetRow(object[] baseRow)
         {
-            while (_csvReader != null && _csvReader.Read())
+            while (_csvReader != null && await _csvReader.ReadAsync())
             {
                 var row = new object[baseRow.Length];
                 Array.Copy(baseRow, row, baseRow.Length);
@@ -174,10 +174,10 @@ namespace dexih.functions.File
 
                 if (EvaluateRowFilter(row, _filters, _table))
                 {
-                    return Task.FromResult(row);
+                    return row;
                 }
             }
-            return Task.FromResult((object[])null);
+            return null;
         }
 
         public override void Dispose()

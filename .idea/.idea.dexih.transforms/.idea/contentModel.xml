@@ -41,7 +41,7 @@
           <e p="dexih.connections.flatfile.azure.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.connections.azure.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -58,7 +58,7 @@
           <e p="dexih.connections.dexih.reader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.connections.dexih.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -71,7 +71,7 @@
           <e p="dexih.connections.excel.reader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.connections.excel.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -81,9 +81,10 @@
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.connections.flatfile.csproj" t="IncludeRecursive" />
           <e p="dexih.connections.flatfile.local.cs" t="Include" />
+          <e p="FlatFile.Local.Exceptions.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.connections.flatfile.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -174,7 +175,7 @@
           <e p="FunctionExceptions.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.functions.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -222,7 +223,7 @@
           <e p="Mapping.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.transforms.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -255,6 +256,7 @@
           <e p="TransformFilter.cs" t="Include" />
           <e p="TransformGroup.cs" t="Include" />
           <e p="TransformJoin.cs" t="Include" />
+          <e p="TransformJsonStream.cs" t="Include" />
           <e p="TransformLookup.cs" t="Include" />
           <e p="TransformMapping.cs" t="Include" />
           <e p="TransformProfile.cs" t="Include" />

@@ -8,7 +8,7 @@ namespace dexih.functions.File
     /// <summary>
     /// reflects options used by the csvHelper = https://joshclose.github.io/CsvHelper/
     /// </summary>
-    public class FileConfiguration : CsvConfiguration
+    public class FileConfiguration : CsvHelper.Configuration.Configuration
     {
         public FileConfiguration()
         {

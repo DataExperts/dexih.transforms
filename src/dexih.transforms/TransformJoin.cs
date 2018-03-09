@@ -32,6 +32,8 @@ namespace dexih.transforms
         private bool _firstRead;
         private SortedDictionary<object[], List<object[]>> _joinHashData; //stores all the reference data grouped by the join keys (used for hashjoin).
 
+        private JoinPair[] _joinColumns;
+        
         private object[] _groupFields;
         private List<object[]> _groupData;
         private List<object[]> _filterdGroupData;
@@ -88,6 +90,21 @@ namespace dexih.transforms
 
             _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.Name : ReferenceTransform.ReferenceTableAlias;
 
+            List<FilterPair> filterJoins = null;
+            if (JoinPairs != null)
+            {
+                _joinColumns = JoinPairs.Where(c => c.SourceColumn != null).ToArray();
+                filterJoins = JoinPairs
+                    .Where(c=>c.SourceColumn == null)
+                    .Select(c => new FilterPair
+                    {
+                    Column1 = c.JoinColumn,
+                    Column2 = null,
+                    FilterValue = c.JoinValue,
+                    Compare = Filter.ECompare.IsEqual
+                }).ToList();
+            }
+            
             //seperate out the filers that only use the reference table and add them to prefilters from the ones required for joining.
             if (Functions != null)
             {
@@ -112,12 +129,14 @@ namespace dexih.transforms
                         _joinFilters.Add(function);
                 }
 
-                if (preFilters.Count > 0)
-                {
-                    var preFilterTransform = new TransformFilter(ReferenceTransform, preFilters);
-                    ReferenceTransform = preFilterTransform;
-                }
             }
+
+            if (preFilters.Count > 0 || filterJoins != null)
+            {
+                var preFilterTransform = new TransformFilter(ReferenceTransform, preFilters, filterJoins);
+                ReferenceTransform = preFilterTransform;
+            }
+
 
             //if the joinSortField has been, we need to enssure the reference dataset is sorted for duplication resolution.
             if(JoinSortField != null)
@@ -178,23 +197,25 @@ namespace dexih.transforms
                 JoinAlgorithm = EJoinAlgorithm.Hash;
 
             //store the ordinals for the joins to improve performance.
-            if (JoinPairs == null)
+            if (_joinColumns == null)
             {
                 _joinKeyOrdinals = new int[0];
                 _sourceKeyOrdinals = new int[0];
             }
             else
             {
-                _joinKeyOrdinals = new int[JoinPairs.Count];
-                _sourceKeyOrdinals = new int[JoinPairs.Count];
-                for (var i = 0; i < JoinPairs.Count; i++)
+                _joinKeyOrdinals = new int[_joinColumns.Length];
+                _sourceKeyOrdinals = new int[_joinColumns.Length];
+
+                for (var i = 0; i <  _joinColumns.Length; i++)
                 {
-                    _joinKeyOrdinals[i] = ReferenceTransform.GetOrdinal(JoinPairs[i].JoinColumn.Name);
-                    _sourceKeyOrdinals[i] = JoinPairs[i].SourceColumn == null ? -1 : PrimaryTransform.GetOrdinal(JoinPairs[i].SourceColumn.Name);
+                    _joinKeyOrdinals[i] = ReferenceTransform.GetOrdinal(_joinColumns[i].JoinColumn.Name);
+                    _sourceKeyOrdinals[i] = _joinColumns[i].SourceColumn == null ? -1 : PrimaryTransform.GetOrdinal(_joinColumns[i].SourceColumn.Name);
                 }
             }
+            
 
-            return returnValue;
+            return true;
         }
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
@@ -252,23 +273,14 @@ namespace dexih.transforms
                 }
 
                 //loop through join table until we find a matching row.
-                if (JoinPairs != null)
+                if (_joinColumns != null)
                 {
                     while (_groupsOpen)
                     {
-//                        var recordMatch = true;
-                        var joinFields = new object[JoinPairs.Count];
-                        for (var i = 0; i < JoinPairs.Count; i++)
+                        var joinFields = new object[_joinColumns.Length];
+                        for (var i = 0; i < _joinColumns.Length; i++)
                         {
-                            joinFields[i] = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
-                            
-//                            var joinValue = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
-//                            if (!Equals(joinValue, _groupFields[i]))
-//                            {
-//                                recordMatch = false;
-//                                if(Comparer<>)
-//                                break;
-//                            }
+                            joinFields[i] = _joinColumns[i].SourceColumn == null ? _joinColumns[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
                         }
 
                         var compare = _joinKeyComparer.Compare(_groupFields, joinFields);
@@ -297,16 +309,6 @@ namespace dexih.transforms
                         {
                             break;
                         }
-
-//                        if (recordMatch == false)
-//                        {
-//                            if (_groupsOpen)
-//                                _groupsOpen = await ReadNextGroup();
-//                        }
-//                        else
-//                        {
-//                            break;
-//                        }
                     }
                 }
             }
@@ -332,12 +334,12 @@ namespace dexih.transforms
                 object[] sourceKeys;
 
                 //set the values for the lookup
-                if (JoinPairs != null)
+                if (_joinColumns != null)
                 {
-                    sourceKeys = new object[JoinPairs.Count];
-                    for (var i = 0; i < JoinPairs.Count; i++)
+                    sourceKeys = new object[_joinColumns.Length];
+                    for (var i = 0; i < _joinColumns.Length; i++)
                     {
-                        sourceKeys[i] = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
+                        sourceKeys[i] = _joinColumns[i].SourceColumn == null ? _joinColumns[i].JoinValue : PrimaryTransform[_sourceKeyOrdinals[i]];
                     }
                 }
                 else
@@ -468,17 +470,24 @@ namespace dexih.transforms
             return newRow;
         }
 
+        /// <summary>
+        /// Reads the next group of rows (based on join key) from the reference transform.
+        /// </summary>
+        /// <returns></returns>
         private async Task<bool> ReadNextGroup()
         {
             _groupData = new List<object[]>();
 
-            if(_joinReaderOpen)
+            if (_joinReaderOpen)
+            {
                 _groupData.Add(ReferenceTransform.CurrentRow);
+            }
 
             while (_joinReaderOpen)
             {
 
-                if (JoinPairs == null)
+                // if no joins, then the whole reference table is the group
+                if (_joinColumns == null)
                 {
                     _joinReaderOpen = await ReferenceTransform.ReadAsync();
                     _groupFields = new object[0];
@@ -489,18 +498,22 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    _groupFields = new object[JoinPairs.Count];
-                    for (var i = 0; i < JoinPairs.Count; i++)
+                    _groupFields = new object[_joinColumns.Length];
+                    for (var i = 0; i < _groupFields.Length; i++)
+                    {
                         _groupFields[i] = ReferenceTransform[_joinKeyOrdinals[i]];
+                    }
 
                     _joinReaderOpen = await ReferenceTransform.ReadAsync();
                     if (!_joinReaderOpen)
+                    {
                         break;
+                    }
 
                     var duplicateCheck = true;
-                    for (var i = 0; i < JoinPairs.Count; i++)
+                    for (var i = 0; i < _joinColumns.Length; i++)
                     {
-                        if (!object.Equals(_groupFields[i], ReferenceTransform[_joinKeyOrdinals[i]]))
+                        if (!Equals(_groupFields[i], ReferenceTransform[_joinKeyOrdinals[i]]))
                         {
                             duplicateCheck = false;
                             break;
@@ -508,9 +521,13 @@ namespace dexih.transforms
                     }
 
                     if (duplicateCheck)
+                    {
                         _groupData.Add(ReferenceTransform.CurrentRow);
+                    }
                     else
+                    {
                         break;
+                    }
                 }
             }
 
@@ -576,10 +593,12 @@ namespace dexih.transforms
         public override List<Sort> RequiredSortFields()
         {
             var fields = new List<Sort>();
-            if (JoinPairs != null)
+            if (_joinColumns != null)
             {
-                foreach (var joinPair in JoinPairs.Where(c => c.SourceColumn != null))
-                    fields.Add(new Sort { Column = joinPair.SourceColumn, Direction = Sort.EDirection.Ascending });
+                foreach (var joinPair in _joinColumns)
+                {
+                    fields.Add(new Sort {Column = joinPair.SourceColumn, Direction = Sort.EDirection.Ascending});
+                }
             }
             return fields;
         }
@@ -587,10 +606,12 @@ namespace dexih.transforms
         public override List<Sort> RequiredReferenceSortFields()
         {
             var fields = new List<Sort>();
-            if (JoinPairs != null)
+            if (_joinColumns != null)
             {
-                foreach (var joinPair in JoinPairs.Where(c => c.SourceColumn != null))
-                    fields.Add(new Sort { Column = joinPair.JoinColumn, Direction = Sort.EDirection.Ascending });
+                foreach (var joinPair in _joinColumns)
+                {
+                    fields.Add(new Sort {Column = joinPair.JoinColumn, Direction = Sort.EDirection.Ascending});
+                }
             }
 
             if (JoinSortField != null)

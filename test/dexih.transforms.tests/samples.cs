@@ -27,7 +27,8 @@ public class samples
                 new Func<string, bool>((value) => value != null), //function code
                 new[] { new TableColumn("PurchaseOrderNumber") },  //input column
                 null, null )
-            }
+            },
+            null
         );
 
         // Add daily medium and sum columns

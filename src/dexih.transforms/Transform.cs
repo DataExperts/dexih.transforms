@@ -81,6 +81,7 @@ namespace dexih.transforms
         public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
+        public List<FilterPair> FilterPairs { get; set; } //fields pairs, used for simple filters
         public TableColumn JoinSortField { get; set; }
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
 
