@@ -47,6 +47,7 @@ namespace dexih.transforms
             //intialize standard objects.
             ColumnPairs = new List<ColumnPair>();
             JoinPairs = new List<JoinPair>();
+            FilterPairs = new List<FilterPair>();
             Functions = new List<Function>();
             TransformTimer = new Stopwatch();
         }
@@ -114,13 +115,13 @@ namespace dexih.transforms
         public long TransformRowsReadReference { get; protected set; }
 
         //statistics for all child transforms.
-        public long TotalRowsSorted { get { return TransformRowsSorted + PrimaryTransform?.TotalRowsSorted ?? 0 + ReferenceTransform?.TotalRowsSorted ?? 0; } }
-        public long TotalRowsPreserved { get { return TransformRowsPreserved + PrimaryTransform?.TotalRowsPreserved ?? 0 + ReferenceTransform?.TotalRowsPreserved ?? 0; } }
-        public long TotalRowsIgnored { get { return TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0; } }
-        public long TotalRowsRejected { get { return TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0; } }
-        public long TotalRowsFiltered { get { return TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0; } }
-        public long TotalRowsReadPrimary { get { return TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0); } }
-        public long TotalRowsReadReference { get { return TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0; } }
+        public long TotalRowsSorted => TransformRowsSorted + PrimaryTransform?.TotalRowsSorted ?? 0 + ReferenceTransform?.TotalRowsSorted ?? 0;
+        public long TotalRowsPreserved => TransformRowsPreserved + PrimaryTransform?.TotalRowsPreserved ?? 0 + ReferenceTransform?.TotalRowsPreserved ?? 0;
+        public long TotalRowsIgnored => TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0;
+        public long TotalRowsRejected => TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0;
+        public long TotalRowsFiltered => TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0;
+        public long TotalRowsReadPrimary => TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0);
+        public long TotalRowsReadReference => TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0;
 
         private object _maxIncrementalValue = null;
         private int _incrementalColumnIndex = -1;

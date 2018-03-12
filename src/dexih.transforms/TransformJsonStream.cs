@@ -102,6 +102,10 @@ namespace dexih.transforms
                 if (_first)
                 {
                     _hasRows = await _reader.ReadAsync(cancellationToken);
+                    if (_hasRows == false)
+                    {
+                        await _streamWriter.WriteAsync("]}");
+                    }
                     _first = false;
                 }
 
