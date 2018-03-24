@@ -161,7 +161,7 @@ namespace dexih.connections.dexih
                     continue;
                 }
 
-                switch(CacheTable.Columns[i].Datatype)
+                switch(CacheTable.Columns[i].DataType)
                 {
                     case ETypeCode.Guid:
                         newRow[i] = Guid.Parse(row[_columnOrdinals[i]].ToString());

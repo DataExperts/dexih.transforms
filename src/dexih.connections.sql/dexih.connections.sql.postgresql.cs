@@ -10,10 +10,28 @@ using System.Data.Common;
 using System.Threading;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
+using dexih.transforms;
 using dexih.transforms.Exceptions;
 
 namespace dexih.connections.sql
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.SqlDatabase,
+        Name = "PostgreSQL", 
+        Description = "PostgreSQL (Postgres), is an object-relational database management system (ORDBMS) with an emphasis on extensibility and standards compliance",
+        DatabaseDescription = "Database Name",
+        ServerDescription = "Server:Port Name",
+        AllowsConnectionString = true,
+        AllowsSql = true,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = true,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = true,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+    )]
     public class ConnectionPostgreSql : ConnectionSql
     {
 
@@ -22,7 +40,7 @@ namespace dexih.connections.sql
         public override bool AllowNtAuth => true;
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "PostgreSQL";
-        public override ECategory DatabaseCategory => ECategory.SqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
 
         // postgre doesn't have unsigned values, so convert the unsigned to signed 
         public override object ConvertParameterType(object value)
@@ -159,7 +177,7 @@ namespace dexih.connections.sql
         {
             string sqlType;
 
-            switch (column.Datatype)
+            switch (column.DataType)
             {
                 case ETypeCode.Int32:
                 case ETypeCode.UInt16:
@@ -217,7 +235,7 @@ namespace dexih.connections.sql
                     sqlType =  $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
-                    throw new Exception($"The datatype {column.Datatype} is not compatible with the create table.");
+                    throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
             }
 
             return sqlType;
@@ -447,8 +465,8 @@ namespace dexih.connections.sql
                             col.Name = reader["column_name"].ToString();
                             col.LogicalName = reader["column_name"].ToString();
                             col.IsInput = false;
-                            col.Datatype = ConvertSqlToTypeCode(reader["data_type"].ToString());
-                            if (col.Datatype == ETypeCode.Unknown)
+                            col.DataType = ConvertSqlToTypeCode(reader["data_type"].ToString());
+                            if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -461,11 +479,11 @@ namespace dexih.connections.sql
                                 col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-                            if (col.Datatype == ETypeCode.String)
+                            if (col.DataType == ETypeCode.String)
                             {
                                 col.MaxLength = ConvertNullableToInt(reader["character_maximum_length"]);
                             }
-                            else if (col.Datatype == ETypeCode.Double || col.Datatype == ETypeCode.Decimal)
+                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
                             {
                                 col.Precision = ConvertNullableToInt(reader["numeric_precision_radix"]);
                                 col.Scale = ConvertNullableToInt(reader["numeric_scale"]);
@@ -744,7 +762,7 @@ namespace dexih.connections.sql
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i.ToString();
-                                    param.NpgsqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.Datatype);
+                                    param.NpgsqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType);
                                     param.Size = -1;
                                     param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value : query.UpdateColumns[i].Value;
                                     cmd.Parameters.Add(param);

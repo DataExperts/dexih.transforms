@@ -19,14 +19,14 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task Concatinate()
         {
-            ReaderMemory reader1 = Helpers.CreateSortedTestData();
-            ReaderMemory reader2 = Helpers.CreateSortedTestData();
+            var reader1 = Helpers.CreateSortedTestData();
+            var reader2 = Helpers.CreateSortedTestData();
 
-            TransformConcatenate concatinateTransform = new TransformConcatenate(reader1, reader2);
+            var concatinateTransform = new TransformConcatenate(reader1, reader2);
 
             Assert.Equal(5, concatinateTransform.FieldCount);
 
-            int count = 0;
+            var count = 0;
             while(await concatinateTransform.ReadAsync())
             {
                 count++;

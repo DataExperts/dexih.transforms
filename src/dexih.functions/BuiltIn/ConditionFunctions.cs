@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using dexih.functions;
+using dexih.functions.Query;
 
-namespace dexih.standard.functions
+namespace dexih.functions.BuiltIn
 {
     public class ConditionFunctions
     {
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Less Than",
             Description = "Less than")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.LessThan)]
         public bool LessThan(double value, double compare)
         {
             return value < compare;
@@ -15,6 +16,7 @@ namespace dexih.standard.functions
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Less Than/Equal",
             Description = "Less than or Equal")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.LessThanEqual)]
         public bool LessThanEqual(double value, double compare)
         {
             return value <= compare;
@@ -22,6 +24,7 @@ namespace dexih.standard.functions
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Greater Than",
             Description = "Greater than")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThan)]
         public bool GreaterThan(double value, double compare)
         {
             return value > compare;
@@ -29,6 +32,7 @@ namespace dexih.standard.functions
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition",
             Name = "Greater Than/Equal", Description = "Greater or Equal")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThanEqual)]
         public bool GreaterThanEqual(double value, double compare)
         {
             return value >= compare;
@@ -36,6 +40,7 @@ namespace dexih.standard.functions
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Strings Equal",
             Description = "The list of string values are equal.")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
         public bool IsEqual(string[] values)
         {
             for (var i = 1; i < values.Length; i++)
@@ -228,6 +233,7 @@ namespace dexih.standard.functions
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "DateTime Equals",
             Description = "Are the specified datetime values equal.")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
         public bool IsDateTimeEqual(DateTime[] values)
         {
             for (var i = 1; i < values.Length; i++)
@@ -240,6 +246,7 @@ namespace dexih.standard.functions
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Numeric Equals",
             Description = "Are the specified numeric values equal.")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
         public bool IsNumericEqual(decimal[] values)
         {
             for (var i = 1; i < values.Length; i++)
@@ -252,6 +259,7 @@ namespace dexih.standard.functions
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "Boolean Equals",
             Description = "Are the specified boolean conditions equal.")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
         public bool IsBooleanEqual(bool[] values)
         {
             for (var i = 1; i < values.Length; i++)

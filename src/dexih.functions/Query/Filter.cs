@@ -12,26 +12,26 @@ namespace dexih.functions.Query
         /// <summary>
         /// Converts a standard function to a filter object.
         /// </summary>
-        /// <param name="function"></param>
-        public static Filter GetFilterFromFunction(Function function)
+        /// <param name="transformFunction"></param>
+        public static Filter GetFilterFromFunction(TransformFunction transformFunction)
         {
-            if (function.ReturnType != ETypeCode.Boolean)
-                throw new QueryException($"The function {function.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
+            if (transformFunction.ReturnType != ETypeCode.Boolean)
+                throw new QueryException($"The function {transformFunction.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
 
-            if (function.CompareEnum == null)
+            if (transformFunction.CompareEnum == null)
             {
                 return null;
             }
-            var compare = (ECompare) function.CompareEnum;
+            var compare = (ECompare) transformFunction.CompareEnum;
 
             var filter = new Filter
             {
-                Column1 = function.Inputs[0].IsColumn ? function.Inputs[0].Column : null,
-                Value1 = function.Inputs[0].IsColumn == false ? function.Inputs[0].Value : null,
-                Column2 = function.Inputs[1].IsColumn ? function.Inputs[1].Column : null,
-                Value2 = function.Inputs[1].IsColumn == false ? function.Inputs[1].Value : null,
+                Column1 = transformFunction.Inputs[0].IsColumn ? transformFunction.Inputs[0].Column : null,
+                Value1 = transformFunction.Inputs[0].IsColumn == false ? transformFunction.Inputs[0].Value : null,
+                Column2 = transformFunction.Inputs[1].IsColumn ? transformFunction.Inputs[1].Column : null,
+                Value2 = transformFunction.Inputs[1].IsColumn == false ? transformFunction.Inputs[1].Value : null,
 
-                CompareDataType = function.Inputs[0].IsColumn ? function.Inputs[0].DataType : function.Inputs[1].DataType,
+                CompareDataType = transformFunction.Inputs[0].IsColumn ? transformFunction.Inputs[0].DataType : transformFunction.Inputs[1].DataType,
                 Operator = compare
             };
 

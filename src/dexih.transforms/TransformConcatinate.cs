@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
+using dexih.transforms.Transforms;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms
@@ -12,6 +13,11 @@ namespace dexih.transforms
     /// <summary>
     /// The join table is loaded into memory and then joined to the primary table.
     /// </summary>
+    [Transform(
+        Name = "Concatenate",
+        Description = "Concatenate (union) the two data streams together.",
+        TransformType = TransformAttribute.ETransformType.Concatenate
+        )]
     public class TransformConcatenate : Transform
     {
         private Task<bool> _primaryReadTask;
@@ -225,7 +231,7 @@ namespace dexih.transforms
                     for (var i = 0; i < _primarySortOrdinals.Count; i++)
                     {
                         var compareResult = Dexih.Utils.DataType.DataType.Compare(
-                            PrimaryTransform.CacheTable.Columns[_primarySortOrdinals[i]].Datatype,
+                            PrimaryTransform.CacheTable.Columns[_primarySortOrdinals[i]].DataType,
                             PrimaryTransform[_primarySortOrdinals[i]], ReferenceTransform[_referenceSortOrdinals[i]]);
 
                         if ((compareResult == DataType.ECompareResult.Greater &&

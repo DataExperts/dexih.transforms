@@ -13,6 +13,23 @@ using FluentFTP;
 
 namespace dexih.connections.ftp
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.File,
+        Name = "Ftp Flat File", 
+        Description = "Ftp File storage",
+        DatabaseDescription = "Sub Directory",
+        ServerDescription = "Ftp Server & Path (e.g. ftp://server/path)",
+        AllowsConnectionString = false,
+        AllowsSql = false,
+        AllowsFlatFiles = true,
+        AllowsManagedConnection = false,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = false,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+    )]
     public class ConnectionFlatFileFtp : ConnectionFlatFile
     {
         public override string GetFullPath(FlatFile file, EFlatFilePath path)

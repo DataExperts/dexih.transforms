@@ -7,7 +7,7 @@ using System.Xml.XPath;
 using dexih.functions;
 using Newtonsoft.Json.Linq;
 
-namespace dexih.standard.functions
+namespace dexih.functions.BuiltIn
 {
     public class RowFunctions
     {
@@ -80,6 +80,29 @@ namespace dexih.standard.functions
             }
 
             item = _cacheArray[(int) _cacheInt];
+            return true;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "ColumnsToRows",
+            Description = "Columns into rows.", ResetMethod = nameof(Reset))]
+        public bool ColumnsToRows(string[] column, out string item)
+        {
+            if (_cacheInt == null)
+            {
+                _cacheInt = 0;
+            }
+            else
+            {
+                _cacheInt++;
+            }
+
+            if (_cacheInt > column.Length - 1)
+            {
+                item = "";
+                return false;
+            }
+
+            item = column[(int) _cacheInt];
             return true;
         }
 

@@ -12,6 +12,23 @@ using Renci.SshNet;
 
 namespace dexih.connections.sftp
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.File,
+        Name = "SFtp Flat File", 
+        Description = "(Secure) SFtp File storage",
+        DatabaseDescription = "Sub Directory",
+        ServerDescription = "SFtp Server & Path (e.g. sftp://server/path)",
+        AllowsConnectionString = false,
+        AllowsSql = false,
+        AllowsFlatFiles = true,
+        AllowsManagedConnection = false,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = false,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+    )]
     public class ConnectionFlatFileSftp : ConnectionFlatFile
     {
         private string _workingDirectory;

@@ -6,23 +6,29 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Transforms;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Filter",
+        Description = "Filter incoming rows based on a set of conditions.",
+        TransformType = TransformAttribute.ETransformType.Filter
+    )]
     public class TransformFilter : Transform
     {
 
         public TransformFilter() { }
 
-        public TransformFilter(Transform inReader, List<Function> conditions, List<FilterPair> filterPairs)
+        public TransformFilter(Transform inReader, List<TransformFunction> conditions, List<FilterPair> filterPairs)
         {
             Conditions = conditions;
             FilterPairs = filterPairs;
             SetInTransform(inReader);
         }
 
-        public List<Function> Conditions
+        public List<TransformFunction> Conditions
         {
             get => Functions;
             set => Functions = value;
@@ -127,7 +133,7 @@ namespace dexih.transforms
                             var value1 = PrimaryTransform[_filterColumn1Ordinals[i]];
                             var value2 = FilterPairs[i].Column2 == null ? FilterPairs[i].FilterValue : PrimaryTransform[_filterColumn2Ordinals[i]];
 
-                            var compare = DataType.Compare(FilterPairs[i].Column1.Datatype, value1, value2);
+                            var compare = DataType.Compare(FilterPairs[i].Column1.DataType, value1, value2);
 
                             switch (FilterPairs[i].Compare)
                             {

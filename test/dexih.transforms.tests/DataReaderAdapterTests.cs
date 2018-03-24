@@ -11,11 +11,11 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task DataReaderAdapterAdapter_Tests()
         {
-            ReaderMemory Table = Helpers.CreateSortedTestData();
+            var Table = Helpers.CreateSortedTestData();
 
             Assert.Equal(5, Table.FieldCount);
 
-            int count = 0;
+            var count = 0;
             while (await Table.ReadAsync() == true)
             {
                 count = count + 1;

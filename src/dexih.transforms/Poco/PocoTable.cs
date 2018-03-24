@@ -43,7 +43,7 @@ namespace dexih.transforms.Poco
                     var column = new TableColumn(propertyInfo.Name)
                     {
                         DeltaType = TableColumn.EDeltaType.TrackingField,
-                        Datatype = Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType)
+                        DataType = Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType)
                     };
 
                     table.Columns.Add(column);
@@ -56,7 +56,7 @@ namespace dexih.transforms.Poco
                     {
                         Name = string.IsNullOrEmpty(field.Name) ? propertyInfo.Name : field.Name,
                         DeltaType = field.DeltaType,
-                        Datatype = field.DataType == ETypeCode.Unknown ? Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType) : field.DataType,
+                        DataType = field.DataType == ETypeCode.Unknown ? Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType) : field.DataType,
                         AllowDbNull = Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null || field.AllowDbNull,
                         MaxLength = field.MaxLength >= 0 ? (int?)field.MaxLength : null,
                         Precision = field.Precision >= 0 ? (int?)field.Precision : null,
@@ -138,7 +138,7 @@ namespace dexih.transforms.Poco
                 var column = Table.Columns[mapping.Position];
                 if (column.DeltaType != TableColumn.EDeltaType.AutoIncrement)
                 {
-                    var value = DataType.TryParse(column.Datatype, mapping.PropertyInfo.GetValue(item));
+                    var value = DataType.TryParse(column.DataType, mapping.PropertyInfo.GetValue(item));
                     var queryColumn = new QueryColumn(column, value);
                     columns.Add(queryColumn);
                 }
@@ -197,7 +197,7 @@ namespace dexih.transforms.Poco
             foreach (var mapping in TableMappings)
             {
                 var column = Table.Columns[mapping.Position];
-                var value = DataType.TryParse(column.Datatype, mapping.PropertyInfo.GetValue(item));
+                var value = DataType.TryParse(column.DataType, mapping.PropertyInfo.GetValue(item));
 
                 if (mapping.IsKey)
                 {

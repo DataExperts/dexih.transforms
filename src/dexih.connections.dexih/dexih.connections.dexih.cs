@@ -13,7 +13,23 @@ using dexih.functions.Query;
 
 namespace dexih.connections.dexih
 {
-    
+    [Connection(
+        ConnectionCategory = EConnectionCategory.Hub,
+        Name = "Information Hub", 
+        Description = "A link to another Information Hub instance",
+        DatabaseDescription = "Database Name",
+        ServerDescription = "Information Hub Url",
+        AllowsConnectionString = false,
+        AllowsSql = false,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = false,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = false,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = false,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+    )]
     public class ConnectionDexih : Connection
     {
         public override string ServerHelp => "The URI for the Integration Hub";
@@ -29,10 +45,8 @@ namespace dexih.connections.dexih
 	    public override bool CanUseBinary => true;
 	    public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
-
-
         public override string DatabaseTypeName => "Dexih Hub";
-        public override ECategory DatabaseCategory => ECategory.Hub;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.Hub;
 
         private string ServerUrl()
         {

@@ -1,20 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
-using System.Net.Mime;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml.XPath;
-using CsvHelper.Configuration.Attributes;
-using dexih.functions;
 using Dexih.Utils.Crypto;
 using Newtonsoft.Json.Linq;
 
-namespace dexih.standard.functions
+namespace dexih.functions.BuiltIn
 {
     /// <summary>
     /// 

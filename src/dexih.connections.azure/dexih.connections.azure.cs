@@ -15,6 +15,23 @@ using dexih.functions.Query;
 
 namespace dexih.connections.azure
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.NoSqlDatabase,
+        Name = "Azure Storage Tables", 
+        Description = "A NoSQL key-value store which supports massive semi-structured datasets",
+        DatabaseDescription = "Database Name",
+        ServerDescription = "Azure End Point",
+        AllowsConnectionString = true,
+        AllowsSql = false,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = true,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = false,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+    )]
     public class ConnectionAzureTable : Connection
     {
 
@@ -23,7 +40,7 @@ namespace dexih.connections.azure
         public override bool AllowNtAuth => false;
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "Azure Storage Tables";
-        public override ECategory DatabaseCategory => ECategory.NoSqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.NoSqlDatabase;
 
 
         public override bool CanBulkLoad => true;
@@ -192,7 +209,7 @@ namespace dexih.connections.azure
                     {
                         var value = row[i];
                         if (value == DBNull.Value) value = null;
-                        properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].Datatype, value));
+                        properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].DataType, value));
                     }
 
                 var partionKeyValue = partitionKey >= 0 ? row[partitionKey] : "default";
@@ -618,7 +635,7 @@ namespace dexih.connections.azure
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "PartitionKey",
-                    Datatype = ETypeCode.String,
+                    DataType = ETypeCode.String,
                     MaxLength = 0,
                     Precision = 0,
                     AllowDbNull = false,
@@ -637,7 +654,7 @@ namespace dexih.connections.azure
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "RowKey",
-                    Datatype = ETypeCode.String,
+                    DataType = ETypeCode.String,
                     MaxLength = 0,
                     Precision = 0,
                     AllowDbNull = false,
@@ -656,7 +673,7 @@ namespace dexih.connections.azure
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "Timestamp",
-                    Datatype = ETypeCode.DateTime,
+                    DataType = ETypeCode.DateTime,
                     MaxLength = 0,
                     Precision = 0,
                     AllowDbNull = false,
@@ -810,7 +827,7 @@ namespace dexih.connections.azure
                     foreach (var field in query.InsertColumns)
                     {
                         if (!(field.Column.Name == "RowKey" || field.Column.Name == "PartitionKey" || field.Column.Name == "Timestamp"))
-                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column].Datatype, field.Value));
+                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column].DataType, field.Value));
                     }
 
                     if (autoIncrement != null)
@@ -958,7 +975,7 @@ namespace dexih.connections.azure
                                         entity.PartitionKey = column.Value.ToString();
                                         break;
                                     default:
-                                        entity.Properties[column.Column.Name] = NewEntityProperty(table[column.Column.Name].Datatype, column.Value);
+                                        entity.Properties[column.Column.Name] = NewEntityProperty(table[column.Column.Name].DataType, column.Value);
                                         break;
                                 }
                             }
@@ -1103,7 +1120,7 @@ namespace dexih.connections.azure
                     }
 
                     //convert it back to a .net type.
-                    value = ConvertEntityProperty(table.Columns[query.Columns[0].Column].Datatype, value);
+                    value = ConvertEntityProperty(table.Columns[query.Columns[0].Column].DataType, value);
                     return value;
 
                 }

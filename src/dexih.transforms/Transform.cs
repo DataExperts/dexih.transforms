@@ -48,7 +48,7 @@ namespace dexih.transforms
             ColumnPairs = new List<ColumnPair>();
             JoinPairs = new List<JoinPair>();
             FilterPairs = new List<FilterPair>();
-            Functions = new List<Function>();
+            Functions = new List<TransformFunction>();
             TransformTimer = new Stopwatch();
         }
 
@@ -79,7 +79,7 @@ namespace dexih.transforms
         public Transform ReferenceTransform { get; set; }
 
         //Generic transform contains properties for a list of Functions, Fields and simple Mappings 
-        public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
+        public List<TransformFunction> Functions { get; set; } //functions used for complex mapping, conditions.
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
         public List<FilterPair> FilterPairs { get; set; } //fields pairs, used for simple filters
@@ -878,7 +878,7 @@ namespace dexih.transforms
                     if (incrementalCol.Length == 1)
                     {
                         _incrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].Name);
-                        _incrementalColumnType = incrementalCol[0].Datatype;
+                        _incrementalColumnType = incrementalCol[0].DataType;
                     }
                     else if (incrementalCol.Length > 1)
                     {
@@ -1251,15 +1251,15 @@ namespace dexih.transforms
                     col.Name,
                     ordinal,
                     col.MaxLength > 0 ? col.MaxLength : int.MaxValue,
-                    Dexih.Utils.DataType.DataType.GetType(col.Datatype),
-                    col.Datatype.ToString(),
+                    Dexih.Utils.DataType.DataType.GetType(col.DataType),
+                    col.DataType.ToString(),
                     false,
                     false,
                     false,
                     false,
                     false,
                     col.DeltaType == EDeltaType.SurrogateKey,
-                    col.Datatype == ETypeCode.Int64,
+                    col.DataType == ETypeCode.Int64,
                     false,
                     col.DeltaType == EDeltaType.SurrogateKey,
                     col.Precision,

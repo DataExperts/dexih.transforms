@@ -21,7 +21,7 @@ namespace dexih.transforms
 
         public override bool CanBulkLoad => false;
 
-        public override ECategory DatabaseCategory => ECategory.NoSqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.NoSqlDatabase;
 
         public override string DatabaseTypeName => "In Memory";
 

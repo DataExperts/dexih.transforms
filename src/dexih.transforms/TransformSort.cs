@@ -4,9 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using dexih.functions.Query;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Sort",
+        Description = "Sort a table by one or more columns.",
+        TransformType = TransformAttribute.ETransformType.Sort
+    )]
     public class TransformSort : Transform
     {
         private bool _alreadySorted;

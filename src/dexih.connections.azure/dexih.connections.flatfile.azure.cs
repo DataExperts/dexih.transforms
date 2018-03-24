@@ -13,6 +13,22 @@ using dexih.functions.Query;
 
 namespace dexih.connections.azure
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.File,
+        Name = "Azure Storage Flat File", 
+        Description = "Use flat files on an Azure Storage Blob.",
+        DatabaseDescription = "Directory",
+        ServerDescription = "Azure End Point",
+        AllowsConnectionString = true,
+        AllowsSql = false,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = false,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = false,
+        RequiresDatabase = true
+    )]
     public class ConnectionFlatFileAzureFile : ConnectionFlatFile
     {
         public CloudBlobClient CloudBlobClient;

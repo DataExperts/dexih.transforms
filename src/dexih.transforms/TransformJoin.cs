@@ -7,6 +7,7 @@ using dexih.functions;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
@@ -14,11 +15,16 @@ namespace dexih.transforms
     /// <summary>
     /// The join table is loaded into memory and then joined to the primary table.
     /// </summary>
+    [Transform(
+        Name = "Join",
+        Description = "Join two tables by first loading the secondary table into memory.  This is fast when the secondary table is not large.",
+        TransformType = TransformAttribute.ETransformType.Join
+    )]
     public class TransformJoin : Transform
     {
         public TransformJoin() { }
 
-        public TransformJoin(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs, List<Function> functions, EDuplicateStrategy joinDuplicateResolution, TableColumn joinSortField, string referenceTableAlias)
+        public TransformJoin(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs, List<TransformFunction> functions, EDuplicateStrategy joinDuplicateResolution, TableColumn joinSortField, string referenceTableAlias)
         {
             JoinPairs = joinPairs;
             Functions = functions;
@@ -47,7 +53,7 @@ namespace dexih.transforms
 
         private JoinKeyComparer _joinKeyComparer;
 
-        private readonly List<Function> _joinFilters = new List<Function>();
+        private readonly List<TransformFunction> _joinFilters = new List<TransformFunction>();
 
 
         public enum EJoinAlgorithm
@@ -86,7 +92,7 @@ namespace dexih.transforms
                 pos++;
             }
 
-            var preFilters = new List<Function>();
+            var preFilters = new List<TransformFunction>();
 
             _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.Name : ReferenceTransform.ReferenceTableAlias;
 

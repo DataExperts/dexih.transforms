@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
@@ -12,10 +13,28 @@ using MySql.Data.MySqlClient;
 using System.Linq;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
+using dexih.transforms;
 using dexih.transforms.Exceptions;
 
 namespace dexih.connections.sql
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.SqlDatabase,
+        Name = "MySql", 
+        Description = "MySQL is an open-source relational database management system (RDBMS) owned by Oracle Corporation",
+        DatabaseDescription = "Database Name",
+        ServerDescription = "Server Name",
+        AllowsConnectionString = true,
+        AllowsSql = true,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = true,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = true,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+        )]
     public class ConnectionMySql : ConnectionSql
     {
 
@@ -24,7 +43,7 @@ namespace dexih.connections.sql
         public override bool AllowNtAuth => true;
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "MySql";
-        public override ECategory DatabaseCategory => ECategory.SqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
 
         protected override string SqlDelimiterOpen { get; } = "`";
         protected override string SqlDelimiterClose { get; } = "`";
@@ -117,7 +136,7 @@ namespace dexih.connections.sql
 
                             for (var i = 0; i < fieldCount; i++)
                             {
-                                row.Append(GetSqlFieldValueQuote(table.Columns[i].Datatype, reader[i]) +
+                                row.Append(GetSqlFieldValueQuote(table.Columns[i].DataType, reader[i]) +
                                            (i < fieldCount - 1 ? "," : ")"));
                             }
 
@@ -260,7 +279,7 @@ namespace dexih.connections.sql
         {
             string sqlType;
 
-            switch (column.Datatype)
+            switch (column.DataType)
             {
                 case ETypeCode.Byte:
                     sqlType = "tinyint unsigned";
@@ -325,7 +344,7 @@ namespace dexih.connections.sql
                     sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
-                    throw new Exception($"The datatype {column.Datatype} is not compatible with the create table.");
+                    throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
             }
 
             return sqlType;
@@ -562,7 +581,7 @@ namespace dexih.connections.sql
                                 Name = reader["COLUMN_NAME"].ToString(),
                                 LogicalName = reader["COLUMN_NAME"].ToString(),
                                 IsInput = false,
-                                Datatype = ConvertSqlToTypeCode(reader["DATA_TYPE"].ToString(), isSigned),
+                                DataType = ConvertSqlToTypeCode(reader["DATA_TYPE"].ToString(), isSigned),
                                 AllowDbNull = reader["IS_NULLABLE"].ToString() != "NO" 
                             };
 
@@ -570,7 +589,7 @@ namespace dexih.connections.sql
                             {
                                 col.DeltaType = TableColumn.EDeltaType.NaturalKey;
                             }
-                            else if (col.Datatype == ETypeCode.Unknown)
+                            else if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -579,7 +598,7 @@ namespace dexih.connections.sql
                                 col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-							switch (col.Datatype)
+							switch (col.DataType)
 							{
 							    case ETypeCode.String:
 							        col.MaxLength = ConvertNullableToInt(reader["CHARACTER_MAXIMUM_LENGTH"]);

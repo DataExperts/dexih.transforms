@@ -72,7 +72,7 @@ namespace dexih.functions.File
                     Name = field,
                     LogicalName = field,
                     IsInput = false,
-                    Datatype = DataType.ETypeCode.String,
+                    DataType = DataType.ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.TrackingField,
                     Description = "",
                     AllowDbNull = true,
@@ -88,7 +88,7 @@ namespace dexih.functions.File
                 Name = "FileRow",
                 LogicalName = "FileRow",
                 IsInput = false,
-                Datatype = DataType.ETypeCode.Int32,
+                DataType = DataType.ETypeCode.Int32,
                 DeltaType = TableColumn.EDeltaType.FileRowNumber,
                 Description = "The file row number the record came from.",
                 AllowDbNull = false,
@@ -130,7 +130,7 @@ namespace dexih.functions.File
                         {
                             if (_csvReader.Context.HeaderRecord[csvPos] == column.Name)
                             {
-                                _csvOrdinalMappings.Add(col, (csvPos, DataType.GetType(column.Datatype)));
+                                _csvOrdinalMappings.Add(col, (csvPos, DataType.GetType(column.DataType)));
                                 break;
                             }
                         }
@@ -145,7 +145,7 @@ namespace dexih.functions.File
                     var column = _table.Columns[col];
                     if (column.DeltaType != TableColumn.EDeltaType.FileName && column.DeltaType != TableColumn.EDeltaType.FileRowNumber)
                     {
-                        _csvOrdinalMappings.Add(col, (col, DataType.GetType(column.Datatype)));
+                        _csvOrdinalMappings.Add(col, (col, DataType.GetType(column.DataType)));
                     }
                 }
             }

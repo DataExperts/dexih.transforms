@@ -1,6 +1,6 @@
 ﻿using dexih.functions;
 
-namespace dexih.standard.functions
+namespace dexih.functions.BuiltIn
 {
     public class ValidationFunctions
     {

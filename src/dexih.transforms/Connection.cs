@@ -31,14 +31,14 @@ namespace dexih.transforms
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public enum ECategory
+        public enum EConnectionCategory
         {
-            SqlDatabase = 0, // sql server, mysql, postgre etc.
-            NoSqlDatabase = 1, // Azure and others
-            DatabaseFile = 2, // coverts Excel, Sqlite where database is a simple file.
-            File = 3, // flat files
-            WebService = 4,
-			Hub = 5
+            SqlDatabase, // sql server, mysql, postgre etc.
+            NoSqlDatabase, // Azure and others
+            DatabaseFile, // coverts Excel, Sqlite where database is a simple file.
+            File, // flat files
+            WebService,
+			Hub
         }
 
         #endregion
@@ -67,7 +67,7 @@ namespace dexih.transforms
         public abstract string DefaultDatabaseHelp { get; } //help text for what the default database means for this description
 
         public abstract string DatabaseTypeName { get; }
-        public abstract ECategory DatabaseCategory { get; }
+        public abstract EConnectionCategory DatabaseConnectionCategory { get; }
         public abstract bool AllowNtAuth { get; }
         public abstract bool AllowUserPass { get; }
 

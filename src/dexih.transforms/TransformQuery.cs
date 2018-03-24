@@ -27,7 +27,7 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
 
-        public List<Function> Conditions
+        public List<TransformFunction> Conditions
         {
             get
             {

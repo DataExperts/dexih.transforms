@@ -12,15 +12,15 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task sourceDbReader_UnitTest()
         {
-            SqliteConnection connection = new SqliteConnection("Data Source=:memory:;");
+            var connection = new SqliteConnection("Data Source=:memory:;");
             connection.Open();
 
-            SqliteCommand cmd = new SqliteCommand("CREATE TABLE [test_data]([StringColumn] VARCHAR(100) PRIMARY KEY NOT NULL,[IntColumn] INT,[DateColumn] DATETIME);", connection);
+            var cmd = new SqliteCommand("CREATE TABLE [test_data]([StringColumn] VARCHAR(100) PRIMARY KEY NOT NULL,[IntColumn] INT,[DateColumn] DATETIME);", connection);
             cmd.ExecuteNonQuery();
 
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
-                string sql = "INSERT INTO [test_data] values ('value" + i.ToString().PadLeft(2, '0') + "', " + i.ToString() + ", '2001-01-" + (i+1).ToString().PadLeft(2, '0') + "');";
+                var sql = "INSERT INTO [test_data] values ('value" + i.ToString().PadLeft(2, '0') + "', " + i.ToString() + ", '2001-01-" + (i+1).ToString().PadLeft(2, '0') + "');";
                 cmd = new SqliteCommand(sql, connection);
                 cmd.ExecuteNonQuery();
             }
@@ -29,7 +29,7 @@ namespace dexih.transforms.tests
             var reader = cmd.ExecuteReader();
 
             //run tests with no cache.
-            ReaderDbDataReader dbReader = new ReaderDbDataReader(reader, null);
+            var dbReader = new ReaderDbDataReader(reader, null);
             dbReader.SetCacheMethod(Transform.ECacheMethod.NoCache);
 
             //check the fields load correctly
@@ -37,7 +37,7 @@ namespace dexih.transforms.tests
             Assert.Equal("IntColumn", dbReader.GetName(1));
             Assert.Equal("DateColumn", dbReader.GetName(2));
 
-            int count = 0;
+            var count = 0;
             while(await dbReader.ReadAsync())
             {
                 Assert.Equal("value" + count.ToString().PadLeft(2, '0'), dbReader["StringColumn"]);
@@ -84,7 +84,7 @@ namespace dexih.transforms.tests
 
 
             //peek at a row
-            object[] peekRow = new object[3];
+            var peekRow = new object[3];
             dbReader.RowPeek(5, peekRow);
             Assert.Equal("value05", peekRow[0]);
             Assert.Equal(Convert.ToInt32(5), Convert.ToInt32(peekRow[1]));

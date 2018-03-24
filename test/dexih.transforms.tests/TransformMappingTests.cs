@@ -21,10 +21,10 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task Mappings()
         {
-            ReaderMemory Source = Helpers.CreateSortedTestData();
-            TransformMapping transformMapping = new TransformMapping();
+            var Source = Helpers.CreateSortedTestData();
+            var transformMapping = new TransformMapping();
 
-            List<Function> Mappings = new List<Function>();
+            var Mappings = new List<TransformFunction>();
 
             //Mappings.Add(new Function("CustomFunction", false, "test", "return StringColumn + number.ToString();", null, ETypeCode.String,
             //    new dexih.functions.Parameter[] {
@@ -32,28 +32,28 @@ namespace dexih.transforms.tests
             //        new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123)
             //    }, null));
 
-            Function Function = new Function(new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()), new TableColumn[] { new TableColumn("StringColumn"), new TableColumn("number", ETypeCode.Int32) }, new TableColumn("CustomFunction"), null);
-            Function.Inputs = new dexih.functions.Parameter[] {
+            var transformFunction = new TransformFunction(new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()), new TableColumn[] { new TableColumn("StringColumn"), new TableColumn("number", ETypeCode.Int32) }, new TableColumn("CustomFunction"), null);
+            transformFunction.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
                     new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123) };
-            Mappings.Add(Function);
+            Mappings.Add(transformFunction);
 
-            Function = StandardFunctions.GetFunctionReference("Substring");
-            Function.TargetColumn = new TableColumn("Substring");
-            Function.Inputs = new dexih.functions.Parameter[] {
+            transformFunction = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "Substring").GetTransformFunction();
+            transformFunction.TargetColumn = new TableColumn("Substring");
+            transformFunction.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("name", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
                     new dexih.functions.Parameter("start", ETypeCode.Int32, false, 1),
                     new dexih.functions.Parameter("start", ETypeCode.Int32, false, 3) };
-            Mappings.Add(Function);
+            Mappings.Add(transformFunction);
 
-            List<ColumnPair> MappingColumn = new List<ColumnPair>();
+            var MappingColumn = new List<ColumnPair>();
             MappingColumn.Add(new ColumnPair(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)));
 
             transformMapping = new TransformMapping(Source, false, MappingColumn, Mappings);
 
             Assert.Equal(3, transformMapping.FieldCount);
 
-            int count = 0;
+            var count = 0;
             while (await transformMapping.ReadAsync() == true)
             {
                 count = count + 1;
@@ -75,11 +75,11 @@ namespace dexih.transforms.tests
         public async Task MappingPerformancePassthrough(int rows)
         {
             var data = Helpers.CreateLargeTable(rows);
-            TransformMapping transformMapping = new TransformMapping();
+            var transformMapping = new TransformMapping();
             transformMapping.PassThroughColumns = true;
             transformMapping.SetInTransform(data);
 
-            int count = 0;
+            var count = 0;
             while (await transformMapping.ReadAsync())
                 count++;
 
@@ -93,17 +93,17 @@ namespace dexih.transforms.tests
         public async Task MappingPerformanceColumnPairs(int rows)
         {
             var data = Helpers.CreateLargeTable(rows);
-            TransformMapping transformMapping = new TransformMapping();
-            List<ColumnPair> columnMappings = new List<ColumnPair>();
+            var transformMapping = new TransformMapping();
+            var columnMappings = new List<ColumnPair>();
 
-            for (int i = 0; i < data.FieldCount; i++)
+            for (var i = 0; i < data.FieldCount; i++)
                 columnMappings.Add(new ColumnPair(new TableColumn(data.GetName(i))));
 
             transformMapping.PassThroughColumns = false;
             transformMapping.MapFields = columnMappings;
             transformMapping.SetInTransform(data);
 
-            int count = 0;
+            var count = 0;
             while (await transformMapping.ReadAsync())
                 count++;
 
@@ -118,20 +118,20 @@ namespace dexih.transforms.tests
         public async Task MappingPerformanceFunctions(int rows)
         {
             var data = Helpers.CreateLargeTable(rows);
-            TransformMapping transformMapping = new TransformMapping();
-            List<Function> columnMappings = new List<Function>();
+            var transformMapping = new TransformMapping();
+            var columnMappings = new List<TransformFunction>();
 
-            for (int i = 0; i < data.FieldCount; i++)
+            for (var i = 0; i < data.FieldCount; i++)
             {
-                Function newFunction = new Function(new Func<object, object>((value) => value), new TableColumn[] { new TableColumn(data.GetName(i)) }, new TableColumn(data.GetName(i)), null);
-                columnMappings.Add(newFunction);
+                var newTransformFunction = new TransformFunction(new Func<object, object>((value) => value), new TableColumn[] { new TableColumn(data.GetName(i)) }, new TableColumn(data.GetName(i)), null);
+                columnMappings.Add(newTransformFunction);
             }
 
             transformMapping.PassThroughColumns = false;
             transformMapping.Functions = columnMappings;
             transformMapping.SetInTransform(data);
 
-            int count = 0;
+            var count = 0;
             while (await transformMapping.ReadAsync())
                 count++;
 

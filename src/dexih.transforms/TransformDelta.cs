@@ -7,10 +7,18 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.transforms.Transforms;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Delta",
+        Description = "Compare incoming data against the target table to produce a delta.",
+        TransformType = TransformAttribute.ETransformType.Delta
+    )]
     public sealed class TransformDelta : Transform
     {
         public TransformDelta(Transform inReader, Transform targetTransform, EUpdateStrategy deltaType, long surrogateKey, bool addDefaultRow)
@@ -36,6 +44,7 @@ namespace dexih.transforms
             SetInTransform(inReader, targetTransform);
         }
 
+        [JsonConverter(typeof (StringEnumConverter))]
         public enum EUpdateStrategy
         {
             Reload, //truncates the table and reloads
@@ -245,7 +254,7 @@ namespace dexih.transforms
                 }
             }
 
-            return Compare(targetColumn.Datatype, source, target) == ECompareResult.Equal;
+            return Compare(targetColumn.DataType, source, target) == ECompareResult.Equal;
         }
 
 
@@ -446,7 +455,7 @@ namespace dexih.transforms
                         {
                             try
                             {
-                                compareResult = Compare(col.Datatype, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
+                                compareResult = Compare(col.DataType, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
                                 if (compareResult != ECompareResult.Equal)
                                     break;
                             }
@@ -676,7 +685,7 @@ namespace dexih.transforms
                     var targetOrdinal = CacheTable.GetOrdinal(col.Name);
                     try
                     {
-                        var result = Compare(col.Datatype, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
+                        var result = Compare(col.DataType, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
 
                         if (result != ECompareResult.Equal)
                         {

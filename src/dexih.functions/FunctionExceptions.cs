@@ -47,4 +47,14 @@ namespace dexih.functions
 		}
 	}
 
+	public class FunctionNotFoundException : FunctionException
+	{
+		public FunctionNotFoundException() : base()
+		{
+		}
+
+		public FunctionNotFoundException(string message) : base(message)
+		{
+		}
+	}
 }

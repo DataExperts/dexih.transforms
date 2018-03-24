@@ -6,7 +6,7 @@ using System.Xml.XPath;
 using dexih.functions;
 using Newtonsoft.Json.Linq;
 
-namespace dexih.standard.functions
+namespace dexih.functions.BuiltIn
 {
     public class AggregateFunctions
     {

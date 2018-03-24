@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using dexih.functions;
 
-namespace dexih.standard.functions
+namespace dexih.functions.BuiltIn
 {
     public class ProfileFunctions
     {
@@ -13,6 +13,8 @@ namespace dexih.standard.functions
         private object _objectValue;
 
         private int _recordCount;
+        
+        [TransformFunctionDetailedFlag]
         public bool DetailedResults { get; set; }
         
         public void Reset()

@@ -17,7 +17,7 @@ namespace dexih.connections.sql
 {
     public abstract class ConnectionSql : Connection
     {
-        public override ECategory DatabaseCategory => ECategory.SqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
 
         public override bool CanBulkLoad => true;
         public override bool CanSort => true;
@@ -407,11 +407,11 @@ namespace dexih.connections.sql
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i.ToString();
-                                    param.DbType = GetDbType(query.UpdateColumns[i].Column.Datatype);
+                                    param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
                                     param.Size = -1;
 
                                     // GUID's get parameterized as binary.  So need to explicitly convert to string.
-                                    if (query.UpdateColumns[i].Column.Datatype == ETypeCode.Guid)
+                                    if (query.UpdateColumns[i].Column.DataType == ETypeCode.Guid)
                                     {
                                         param.Value = query.UpdateColumns[i].Value == null ? (object)DBNull.Value : query.UpdateColumns[i].Value.ToString();
                                     }
@@ -519,11 +519,11 @@ namespace dexih.connections.sql
 
                         try
                         {
-                            return TryParse(table.Columns[query.Columns[0].Column].Datatype, value);
+                            return TryParse(table.Columns[query.Columns[0].Column].DataType, value);
                         }
                         catch (Exception ex)
                         {
-                            throw new ConnectionException($"The value in column {query.Columns[0].Column.Name} was incompatible with data type {query.Columns[0].Column.Datatype}.  {ex.Message}", ex);
+                            throw new ConnectionException($"The value in column {query.Columns[0].Column.Name} was incompatible with data type {query.Columns[0].Column.DataType}.  {ex.Message}", ex);
                         }
                     }
                 }
@@ -598,7 +598,7 @@ namespace dexih.connections.sql
                         {
                             Name = reader.GetName(i),
                             LogicalName = reader.GetName(i),
-                            Datatype = GetTypeCode(reader.GetFieldType(i)),
+                            DataType = GetTypeCode(reader.GetFieldType(i)),
                             DeltaType = TableColumn.EDeltaType.TrackingField,
                         };
                         newTable.Columns.Add(col);

@@ -6,6 +6,7 @@ using System.Threading;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
@@ -13,6 +14,11 @@ namespace dexih.transforms
     /// <summary>
     /// The join table is loaded into memory and then joined to the primary table.
     /// </summary>
+    [Transform(
+        Name = "Lookup",
+        Description = "Looks up a value in a database or external service.",
+        TransformType = TransformAttribute.ETransformType.Lookup
+    )]
     public class TransformLookup : Transform
     {
         private int _primaryFieldCount;

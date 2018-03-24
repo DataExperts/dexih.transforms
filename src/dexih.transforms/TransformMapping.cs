@@ -6,14 +6,20 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
+	[Transform(
+		Name = "Mapping",
+		Description = "Apply mapping rules from source to target.",
+		TransformType = TransformAttribute.ETransformType.Mapping
+	)]
     public class TransformMapping : Transform 
     {
         public TransformMapping() { }
 
-        public TransformMapping(Transform inTransform, bool passThroughColumns, List<ColumnPair> mapFields, List<Function> mappings)
+        public TransformMapping(Transform inTransform, bool passThroughColumns, List<ColumnPair> mapFields, List<TransformFunction> mappings)
         {
             Mappings = mappings;
             MapFields = mapFields;
@@ -26,7 +32,7 @@ namespace dexih.transforms
         private List<int> _mapFieldOrdinals;
         private List<int> _functionInputOrdinals;
 
-        public List<Function> Mappings
+        public List<TransformFunction> Mappings
         {
             get => Functions;
 	        set => Functions = value;
