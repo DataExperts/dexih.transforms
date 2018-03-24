@@ -42,7 +42,7 @@ namespace dexih.functions
         }
 
         /// <summary>
-        /// A name the describes the function.
+        /// A name that describes the function.
         /// </summary>
         public string FunctionName { get; set; }
 
