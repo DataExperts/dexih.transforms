@@ -174,9 +174,6 @@ namespace dexih.connections.azure
                     throw new ConnectionException($"Bulk insert operation was cancelled.");
                 }
 
-                bufferSize = 0;
-                buffer = new List<object[]>();
-
                 await Task.WhenAll(tasks);
             }
             catch (StorageException ex)
@@ -189,7 +186,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public async Task WriteDataBuffer(Table table, List<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
+        public async Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
         {
             var connection = GetCloudTableClient();
             var cloudTable = connection.GetTableReference(targetTableName);
@@ -222,12 +219,12 @@ namespace dexih.connections.azure
         }
 
 
-
         /// <summary>
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <param name="table"></param>
         /// <param name="dropTable"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
@@ -257,8 +254,6 @@ namespace dexih.connections.azure
                     return;
                 }
 
-                //bool result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(), TimeSpan.FromSeconds(10), 6);
-
                 var isCreated = false;
                 for (var i = 0; i < 10; i++)
                 {
@@ -272,7 +267,6 @@ namespace dexih.connections.azure
                     catch
                     {
                         await Task.Delay(5000, cancellationToken);
-                        continue;
                     }
                 }
 

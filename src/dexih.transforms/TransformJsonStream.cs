@@ -48,14 +48,14 @@ namespace dexih.transforms
             // if this is a transform, then use the dataTypes from the cache table
             if (reader is Transform transform)
             {
-                var columns = JsonConvert.SerializeObject(transform.CacheTable.Columns.Select(c => new {name = c.Name, datatype = c.DataType}));
+                var columns = JsonConvert.SerializeObject(transform.CacheTable.Columns.Select(c => new {name = c.Name, dataType = c.DataType}));
                 _streamWriter.Write(columns);
             }
             else
             {
                 for (var j = 0; j < reader.FieldCount; j++)
                 {
-                    _streamWriter.Write(JsonConvert.SerializeObject(new {name = reader.GetName(j), datatype = reader.GetDataTypeName(j)}) + ",");
+                    _streamWriter.Write(JsonConvert.SerializeObject(new {name = reader.GetName(j), dataType = reader.GetDataTypeName(j)}) + ",");
                 }
             }
             

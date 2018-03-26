@@ -225,60 +225,60 @@ namespace dexih.connections.excel
                         };
 
                         //search the data to determine datatype.
-                        var datatype = ETypeCode.Unknown;
+                        var dataType = ETypeCode.Unknown;
                         for (var row = ExcelDataRow; row <= worksheet.Dimension.Rows; row++)
                         {
                             var value = worksheet.GetValue(row, col);
-                            if (datatype == ETypeCode.Unknown || datatype == ETypeCode.DateTime)
+                            if (dataType == ETypeCode.Unknown || dataType == ETypeCode.DateTime)
                             {
                                 if (worksheet.Cells[row, col].Style.Numberformat.Format.Contains("yy"))
                                 {
-                                    datatype = ETypeCode.DateTime;
+                                    dataType = ETypeCode.DateTime;
                                     continue;
                                 }
-                                if (datatype == ETypeCode.DateTime)
+                                if (dataType == ETypeCode.DateTime)
                                 {
-                                    datatype = ETypeCode.Int64;
+                                    dataType = ETypeCode.Int64;
                                 }
 
                             }
 
-                            if (datatype == ETypeCode.Unknown || datatype == ETypeCode.Int64)
+                            if (dataType == ETypeCode.Unknown || dataType == ETypeCode.Int64)
                             {
                                 if (value.IsNumeric())
                                 {
                                     if (Math.Abs((Double)value % 1) <= (Double.Epsilon * 100))
                                     {
-                                        datatype = ETypeCode.Int64;
+                                        dataType = ETypeCode.Int64;
                                         continue;
                                     }
                                     else
                                     {
-                                        datatype = ETypeCode.Double;
+                                        dataType = ETypeCode.Double;
                                         continue;
                                     }
                                 }
-                                datatype = ETypeCode.String;
+                                dataType = ETypeCode.String;
                                 break;
                             }
 
-                            if (datatype == ETypeCode.Unknown || datatype == ETypeCode.Decimal)
+                            if (dataType == ETypeCode.Unknown || dataType == ETypeCode.Decimal)
                             {
                                 if (value.IsNumeric())
                                 {
-                                    datatype = ETypeCode.Decimal;
+                                    dataType = ETypeCode.Decimal;
                                     continue;
                                 }
-                                datatype = ETypeCode.String;
+                                dataType = ETypeCode.String;
                                 break;
 
                             }
-                            datatype = ETypeCode.String;
+                            dataType = ETypeCode.String;
                             break;
 
                         }
 
-                        column.DataType = datatype == ETypeCode.Unknown ? ETypeCode.String : datatype;
+                        column.DataType = dataType == ETypeCode.Unknown ? ETypeCode.String : dataType;
                         columns.Add(column);
                     }
 
