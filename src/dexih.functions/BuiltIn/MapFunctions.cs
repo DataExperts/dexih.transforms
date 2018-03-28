@@ -367,11 +367,24 @@ namespace dexih.functions.BuiltIn
             return dateValue.ToString(format);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Now",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date/Time Now",
             Description = "The local date time")]
-        public DateTime DateNow()
+        public DateTime DateTimeNow()
         {
             return DateTime.Now;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date/Time Now UTC",
+            Description = "The current Universal Coordinated Time (UCT/GMT) (no time component). ")]
+        public DateTime DateTimeNowUtc()
+        {
+            return DateTime.UtcNow.Date;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Now", Description = "The local date (no time component)")]
+        public DateTime DateNow()
+        {
+            return DateTime.Now.Date;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Now UTC",

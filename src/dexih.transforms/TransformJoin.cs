@@ -176,7 +176,7 @@ namespace dexih.transforms
                 query = new SelectQuery();
 
             //only apply a sort if there is not already a sort applied.
-            if(query.Sorts == null || query.Sorts.Count == 0)
+            // if(query.Sorts == null || query.Sorts.Count == 0)
                 query.Sorts = RequiredSortFields();
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);

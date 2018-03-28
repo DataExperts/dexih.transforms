@@ -23,11 +23,7 @@ namespace dexih.connections.dexih
     {
         private bool _isOpen = false;
 
-		private int _datasetRow;
-        private string[] _columns;
         private int[] _columnOrdinals;
-        private object[][] _dataset;
-		private bool _moreData;
 		private string _dataUrl;
         
         private FileHandlerBase _fileHandler;
