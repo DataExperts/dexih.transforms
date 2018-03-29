@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
+using dexih.transforms.Transforms;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
 
 namespace dexih.transforms
 {
@@ -13,7 +13,12 @@ namespace dexih.transforms
     /// <summary>
     /// The join table is loaded into memory and then joined to the primary table.
     /// </summary>
-    public class TransformConcatinate : Transform
+    [Transform(
+        Name = "Concatenate",
+        Description = "Concatenate (union) the two data streams together.",
+        TransformType = TransformAttribute.ETransformType.Concatenate
+        )]
+    public class TransformConcatenate : Transform
     {
         private Task<bool> _primaryReadTask;
         private Task<bool> _referenceReadTask;
@@ -28,11 +33,11 @@ namespace dexih.transforms
         private readonly List<int> _primaryMappings = new List<int>();
         private readonly List<int> _referenceMappings = new List<int>();
 
-        public TransformConcatinate() { }
+        public TransformConcatenate() { }
 
-        public TransformConcatinate(Transform primaryTransform, Transform concatinateTransform)
+        public TransformConcatenate(Transform primaryTransform, Transform concatenateTransform)
         {
-            SetInTransform(primaryTransform, concatinateTransform);
+            SetInTransform(primaryTransform, concatenateTransform);
         }
 
         private bool _firstRead;
@@ -126,9 +131,9 @@ namespace dexih.transforms
       public override bool InitializeOutputFields()
         {
             if (ReferenceTransform == null)
-                throw new Exception("There must a concatinate transform specified.");
+                throw new Exception("There must a concatenate transform specified.");
 
-            CacheTable = new Table("Concatinated");
+            CacheTable = new Table("Concatenated");
 
             var pos = 0;
             foreach (var column in PrimaryTransform.CacheTable.Columns)
@@ -157,7 +162,7 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            // sorted merge will concatinate 2 sorted incoming datasets, and maintain the sort order.
+            // sorted merge will concatenate 2 sorted incoming datasets, and maintain the sort order.
             if (_sortedMerge)
             {
                 if (_firstRead)
@@ -226,7 +231,7 @@ namespace dexih.transforms
                     for (var i = 0; i < _primarySortOrdinals.Count; i++)
                     {
                         var compareResult = Dexih.Utils.DataType.DataType.Compare(
-                            PrimaryTransform.CacheTable.Columns[_primarySortOrdinals[i]].Datatype,
+                            PrimaryTransform.CacheTable.Columns[_primarySortOrdinals[i]].DataType,
                             PrimaryTransform[_primarySortOrdinals[i]], ReferenceTransform[_referenceSortOrdinals[i]]);
 
                         if ((compareResult == DataType.ECompareResult.Greater &&
@@ -255,7 +260,7 @@ namespace dexih.transforms
                 
             } else
             {
-                // if no sorting specified, concatinate will be in any order as the records arrive.
+                // if no sorting specified, concatenate will be in any order as the records arrive.
                 if (_firstRead)
                 {
                     _primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
@@ -356,7 +361,7 @@ namespace dexih.transforms
 
         public override string Details()
         {
-            return "Concatinate";
+            return "Concatenate";
         }
 
     }

@@ -157,7 +157,7 @@ namespace dexih.connections.azure
                     row[CacheTable.GetOrdinal(value.Key)] = DBNull.Value;
                 else
                 {
-                    row[CacheTable.GetOrdinal(value.Key)] = _connection.ConvertEntityProperty(CacheTable[value.Key].Datatype, returnValue);
+                    row[CacheTable.GetOrdinal(value.Key)] = _connection.ConvertEntityProperty(CacheTable[value.Key].DataType, returnValue);
                 }
             }
 

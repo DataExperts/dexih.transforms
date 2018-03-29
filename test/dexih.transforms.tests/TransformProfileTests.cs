@@ -12,9 +12,14 @@ namespace dexih.transforms.tests
 {
     public class TransformProfileTests
     {
+        private TransformFunction GetProfileReference(bool detailed, string methodName, string column)
+        {
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.ProfileFunctions", methodName).GetTransformFunction(new[] { new TableColumn(column) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") }, detailed);
+            return function;
+        }
         public static ReaderMemory CreateProfileTestData()
         {
-            Table table = new Table("test", 0,
+            var table = new Table("test", 0,
                 new TableColumn("StringColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("IntColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("DecimalColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
@@ -38,7 +43,7 @@ namespace dexih.transforms.tests
             table.Data.Add(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), "not null", 2, "ab", 1, "value1", "1234a" });
             table.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), "not null", 2.1, "ab", -1, "value1", "12335" });
 
-            ReaderMemory Adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") });
+            var Adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") });
             Adapter.Reset();
             return Adapter;
         }
@@ -46,26 +51,26 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task ProfileTest()
         {
-            ReaderMemory Table = CreateProfileTestData();
+            var Table = CreateProfileTestData();
 
-            List<Function> profiles = new List<Function>();
+            var profiles = new List<TransformFunction>();
 
-            profiles.Add(StandardProfiles.GetProfileReference(true, "BestDataType", "StringColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "BestDataType", "IntColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "BestDataType", "DecimalColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "BestDataType", "DateColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "Nulls", "NullsBlanksColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "Blanks", "NullsBlanksColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "Zeros", "ZerosColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "MaxLength", "MaxLengthColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "MaxValue", "MaxValueColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "DistinctValues", "DistinctValuesColumn"));
-            profiles.Add(StandardProfiles.GetProfileReference(true, "Patterns", "PatternsColumn"));
+            profiles.Add(GetProfileReference(true, "BestDataType", "StringColumn"));
+            profiles.Add(GetProfileReference(true, "BestDataType", "IntColumn"));
+            profiles.Add(GetProfileReference(true, "BestDataType", "DecimalColumn"));
+            profiles.Add(GetProfileReference(true, "BestDataType", "DateColumn"));
+            profiles.Add(GetProfileReference(true, "Nulls", "NullsBlanksColumn"));
+            profiles.Add(GetProfileReference(true, "Blanks", "NullsBlanksColumn"));
+            profiles.Add(GetProfileReference(true, "Zeros", "ZerosColumn"));
+            profiles.Add(GetProfileReference(true, "MaxLength", "MaxLengthColumn"));
+            profiles.Add(GetProfileReference(true, "MaxValue", "MaxValueColumn"));
+            profiles.Add(GetProfileReference(true, "DistinctValues", "DistinctValuesColumn"));
+            profiles.Add(GetProfileReference(true, "Patterns", "PatternsColumn"));
 
-            TransformProfile transformProfile = new TransformProfile(Table, profiles);
+            var transformProfile = new TransformProfile(Table, profiles);
 
             //read all records in the tranform profile
-            int count = 0;
+            var count = 0;
             while(await transformProfile.ReadAsync())
             {
                 count++;
@@ -73,9 +78,9 @@ namespace dexih.transforms.tests
 
             Assert.Equal(10, count); //confirm profile hasn't impacted the read.
 
-            Transform profileResults = transformProfile.GetProfileResults();
+            var profileResults = transformProfile.GetProfileResults();
             count = 0;
-            int detailCount = 0;
+            var detailCount = 0;
             while(await profileResults.ReadAsync())
             {
                 if ((bool)profileResults["IsSummary"] == true)

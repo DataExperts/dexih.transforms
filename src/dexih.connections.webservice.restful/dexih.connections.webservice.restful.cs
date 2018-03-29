@@ -7,22 +7,35 @@ using dexih.functions;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Net;
 using Dexih.Utils.CopyProperties;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
-using Dexih.Utils.DataType;
 using System.IO;
 using System.Text;
-using System.Xml.XPath;
 using dexih.functions.File;
 
 namespace dexih.connections.webservice
 {
-    
+	[Connection(
+		ConnectionCategory = EConnectionCategory.WebService,
+		Name = "RESTFul Web Service", 
+		Description = "RESTful Web Services is a popular specification for web services.  These are only supported for readonly operations.",
+		DatabaseDescription = "",
+		ServerDescription = "Restful Service Url (use {0},{1} for parameters)",
+		AllowsConnectionString = false,
+		AllowsSql = false,
+		AllowsFlatFiles = true,
+		AllowsManagedConnection = false,
+		AllowsSourceConnection = true,
+		AllowsTargetConnection = false,
+		AllowsUserPassword = true,
+		AllowsWindowsAuth = false,
+		RequiresDatabase = false,
+		RequiresLocalStorage = false
+	)]
     public class ConnectionRestful : Connection
     {
         public override string ServerHelp => "The API end point for the Restful web service, excluding query strings.  Eg.  http://twitter.com/statuses/";
@@ -40,7 +53,7 @@ namespace dexih.connections.webservice
         public override bool DynamicTableCreation => false;
 
         public override string DatabaseTypeName => "Restful Web Service";
-        public override ECategory DatabaseCategory => ECategory.WebService;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.WebService;
 
         public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
@@ -101,7 +114,7 @@ namespace dexih.connections.webservice
 						Name = name,
 						IsInput = true,
 						LogicalName = name,
-						Datatype = ETypeCode.String,
+						DataType = ETypeCode.String,
 						DeltaType = TableColumn.EDeltaType.NaturalKey,
 						MaxLength = 1024,
 
@@ -130,7 +143,7 @@ namespace dexih.connections.webservice
                     Name = "Response",
                     IsInput = false,
                     LogicalName = "Response",
-                    Datatype = newRestFunction.FormatType,
+                    DataType = newRestFunction.FormatType,
                     DeltaType = TableColumn.EDeltaType.ResponseData,
                     MaxLength = null,
                     Description = "Response content from the service",
@@ -144,7 +157,7 @@ namespace dexih.connections.webservice
                     Name = "ResponseStatusCode",
                     IsInput = false,
                     LogicalName = "ResponseStatusCode",
-                    Datatype = ETypeCode.String,
+                    DataType = ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.ResponseStatus,
                     MaxLength = null,
                     Description = "The status code returned by the service",
@@ -158,7 +171,7 @@ namespace dexih.connections.webservice
                     Name = "ResponseSuccess",
                     IsInput = false,
                     LogicalName = "ResponseSuccess",
-                    Datatype = ETypeCode.Boolean,
+                    DataType = ETypeCode.Boolean,
                     DeltaType = TableColumn.EDeltaType.ResponseSuccess,
                     MaxLength = null,
                     Description = "Is the web service call successful.",
@@ -172,7 +185,7 @@ namespace dexih.connections.webservice
 					Name = "ResponseError",
 					IsInput = false,
 					LogicalName = "ResponseError",
-					Datatype = ETypeCode.Boolean,
+					DataType = ETypeCode.Boolean,
 					DeltaType = TableColumn.EDeltaType.Error,
 					MaxLength = null,
 					Description = "Error message calling the web service.",
@@ -186,7 +199,7 @@ namespace dexih.connections.webservice
 					Name = "Url",
 					IsInput = false,
 					LogicalName = "Url",
-					Datatype = ETypeCode.Boolean,
+					DataType = ETypeCode.Boolean,
 					DeltaType = TableColumn.EDeltaType.Url,
 					MaxLength = null,
 					Description = "Url used to call the web service.",

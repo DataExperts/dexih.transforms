@@ -6,14 +6,20 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Rows",
+        Description = "Groups columns and generates rows.",
+        TransformType = TransformAttribute.ETransformType.Rows
+    )]
     public class TransformRows : Transform
     {
         public TransformRows() { }
 
-        public TransformRows(Transform inTransform, List<ColumnPair> groupFields, List<Function> rowFunctions)
+        public TransformRows(Transform inTransform, List<ColumnPair> groupFields, List<TransformFunction> rowFunctions)
         {
             GroupFields = groupFields;
             RowFunctions = rowFunctions;
@@ -41,7 +47,7 @@ namespace dexih.transforms
             }
         }
 
-        public List<Function> RowFunctions
+        public List<TransformFunction> RowFunctions
         {
             get
             {
@@ -262,7 +268,7 @@ namespace dexih.transforms
                             if (output.Column != null)
                             {
                                 newRow[functionColumn] = output.Value;
-                                functionColumn = functionColumn - 1;
+                                functionColumn = functionColumn + 1;
                             }
                         }
                     }
@@ -276,7 +282,7 @@ namespace dexih.transforms
 
                 i = i + RowFunctions.Count;
 
-                if (_rowGenerate[0] == false && PassThroughColumns)
+                if (PassThroughColumns)
                 {
                     foreach (var columnName in _passThroughFields)
                     {

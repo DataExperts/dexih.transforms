@@ -7,15 +7,31 @@ using dexih.functions;
 using System.IO;
 using System.Data.Common;
 using System.Threading;
-using System.Diagnostics;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
-using dexih.transforms.Exceptions;
 using dexih.transforms;
+using dexih.transforms.Exceptions;
 using Microsoft.Data.Sqlite;
 
 namespace dexih.connections.sql
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.DatabaseFile,
+        Name = "SQLite", 
+        Description = "SQLite is an embedded relational database management system. In contrast to many other database management systems, SQLite is not a client–server database engine, and requires no other software to use.",
+        DatabaseDescription = "Directory",
+        ServerDescription = "Sqlite File Name",
+        AllowsConnectionString = true,
+        AllowsSql = true,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = true,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = false,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+    )]
     public class ConnectionSqlite : ConnectionSql
     {
 
@@ -29,7 +45,7 @@ namespace dexih.connections.sql
 
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "SQLite";
-        public override ECategory DatabaseCategory => ECategory.DatabaseFile;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.DatabaseFile;
 
         public override object ConvertParameterType(object value)
         {
@@ -198,7 +214,7 @@ namespace dexih.connections.sql
         {
             string sqlType;
 
-            switch (column.Datatype)
+            switch (column.DataType)
             {
                 case ETypeCode.Int32:
                 case ETypeCode.UInt16:
@@ -257,7 +273,7 @@ namespace dexih.connections.sql
                     sqlType = "blob";
                     break;
                 default:
-                    throw new Exception($"The datatype {column.Datatype} is not compatible with the create table.");
+                    throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
             }
 
             return sqlType;
@@ -484,8 +500,8 @@ namespace dexih.connections.sql
                             col.IsInput = false;
 
                             var dataType = reader["type"].ToString().Split('(', ')');
-                            col.Datatype = ConvertSqlToTypeCode(dataType[0]);
-                            if (col.Datatype == ETypeCode.Unknown)
+                            col.DataType = ConvertSqlToTypeCode(dataType[0]);
+                            if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -498,12 +514,12 @@ namespace dexih.connections.sql
                                     col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-                            if (col.Datatype == ETypeCode.String)
+                            if (col.DataType == ETypeCode.String)
                             {
                                 if (dataType.Length > 1)
                                     col.MaxLength = Convert.ToInt32(dataType[1]);
                             }
-                            else if (col.Datatype == ETypeCode.Double || col.Datatype == ETypeCode.Decimal)
+                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
                             {
                                 if (dataType.Length > 1)
                                 {
@@ -529,7 +545,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Get source talbe information for {originalTable.Name} failed. {ex.Message}", ex);
+                throw new ConnectionException($"Get source table information for {originalTable.Name} failed. {ex.Message}", ex);
             }
         }
 
@@ -650,7 +666,7 @@ namespace dexih.connections.sql
                                         param.ParameterName = "@col" + i.ToString();
 
                                         // sqlite writes guids as binary, so need logic to convert to string first.
-                                        if (query.InsertColumns[i].Column.Datatype == ETypeCode.Guid)
+                                        if (query.InsertColumns[i].Column.DataType == ETypeCode.Guid)
                                         {
                                             param.Value = query.InsertColumns[i].Value == null ? (object)DBNull.Value
                                                 : query.InsertColumns[i].Value.ToString();
@@ -661,7 +677,7 @@ namespace dexih.connections.sql
                                             param.Value = query.InsertColumns[i].Value == null ? DBNull.Value
                                                 : query.InsertColumns[i].Value;
                                         }
-                                        param.DbType = GetDbType(query.InsertColumns[i].Column.Datatype);
+                                        param.DbType = GetDbType(query.InsertColumns[i].Column.DataType);
 
                                         cmd.Parameters.Add(param);
                                     }

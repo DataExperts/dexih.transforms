@@ -1,12 +1,8 @@
-﻿using dexih.transforms;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
-using System.IO;
 using System.Threading;
-using CsvHelper;
-using System.Linq;
 using dexih.functions.File;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
@@ -80,7 +76,7 @@ namespace dexih.transforms
             }
             
             // if a filename was specified in the query, use this, otherwise, get a list of files from the incoming directory.
-            if (query == null || string.IsNullOrEmpty(query.FileName))
+            if (string.IsNullOrEmpty(query?.FileName))
             {
                 _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, EFlatFilePath.Incoming,
                     CacheFlatFile.FileMatchPattern);

@@ -5,14 +5,20 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Profile",
+        Description = "Profile incoming data",
+        TransformType = TransformAttribute.ETransformType.Profile
+    )]
     public class TransformProfile : Transform
     {
         public TransformProfile() {  }
 
-        public TransformProfile(Transform inTransform, List<Function> profiles)
+        public TransformProfile(Transform inTransform, List<TransformFunction> profiles)
         {
             _profiles = profiles;
             SetInTransform(inTransform);
@@ -20,7 +26,7 @@ namespace dexih.transforms
 
         private bool _lastRecord = false;
 
-        private List<Function> _profiles;
+        private List<TransformFunction> _profiles;
 
         private Table _profileResults;
 
@@ -40,7 +46,7 @@ namespace dexih.transforms
             return true;
         }
 
-        public bool SetProfiles(List<Function> profiles)
+        public bool SetProfiles(List<TransformFunction> profiles)
         {
             _profiles = profiles;
             return InitializeOutputFields();

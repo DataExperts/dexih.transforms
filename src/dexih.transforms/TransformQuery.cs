@@ -27,7 +27,7 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
 
-        public List<Function> Conditions
+        public List<TransformFunction> Conditions
         {
             get
             {
@@ -146,8 +146,6 @@ namespace dexih.transforms
 
             return newRow;
         }
-
-
 
         public override bool ResetTransform()
         {

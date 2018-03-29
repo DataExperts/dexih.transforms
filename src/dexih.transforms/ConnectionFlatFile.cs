@@ -4,12 +4,10 @@ using System.Threading.Tasks;
 using System.IO;
 using dexih.functions;
 using System.Data.Common;
-using dexih.transforms;
 using System.Threading;
 using System.Diagnostics;
 using System.IO.Compression;
 using CsvHelper;
-using System.Linq;
 using System.Text.RegularExpressions;
 using dexih.functions.File;
 using Dexih.Utils.CopyProperties;
@@ -66,7 +64,7 @@ namespace dexih.transforms
         
 
         public override string DatabaseTypeName => "Flat Files";
-        public override ECategory DatabaseCategory => ECategory.File;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.File;
 
         private Stream _fileStream;
         private StreamWriter _fileWriter;
@@ -91,14 +89,14 @@ namespace dexih.transforms
 
         public async Task<bool> CreateFilePaths(FlatFile flatFile)
         {
-            Boolean returnValue;
+            bool returnValue;
             //create the subdirectories
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.Incoming);
-            if (returnValue == false) return returnValue;
+            if (returnValue == false) return false;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.Outgoing);
-            if (returnValue == false) return returnValue;
+            if (returnValue == false) return false;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.Processed);
-            if (returnValue == false) return returnValue;
+            if (returnValue == false) return false;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.Rejected);
             return returnValue;
         }
@@ -297,7 +295,7 @@ namespace dexih.transforms
                     Name = "FileName",
                     LogicalName = "FileName",
                     IsInput = false,
-                    Datatype = ETypeCode.String,
+                    DataType = ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.FileName,
                     Description = "The name of the file the record was loaded from.",
                     AllowDbNull = false,

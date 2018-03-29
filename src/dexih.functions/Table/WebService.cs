@@ -1,5 +1,4 @@
-﻿using dexih.functions;
-using static Dexih.Utils.DataType.DataType;
+﻿using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
@@ -31,7 +30,7 @@ namespace dexih.functions
         }
 		public string RowPath { get; set; }
 
-        public ETypeCode FormatType { get; set; }
+        public ETypeCode FormatType { get; set; } = ETypeCode.Json;
 
 		public void AddInputParameter(string name, string defaultValue = null)
 		{

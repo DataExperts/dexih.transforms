@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,7 +28,7 @@ namespace dexih.functions.File
             
             foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
             {
-                _responseSegementOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column.Datatype));
+                _responseSegementOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column.DataType));
             }
 
         }
@@ -102,7 +101,7 @@ namespace dexih.functions.File
                             Name = nodePath,
                             IsInput = false,
                             LogicalName = node.Name,
-                            Datatype = dataType,
+                            DataType = dataType,
                             DeltaType = TableColumn.EDeltaType.ResponseSegment,
                             MaxLength = null,
                             Description = "Value of the " + nodePath + " path",
@@ -118,7 +117,7 @@ namespace dexih.functions.File
                             Name = nodePath,
                             IsInput = false,
                             LogicalName = node.Name,
-                            Datatype = DataType.ETypeCode.Xml,
+                            DataType = DataType.ETypeCode.Xml,
                             DeltaType = TableColumn.EDeltaType.ResponseSegment,
                             MaxLength = null,
                             Description = "Xml from the " + nodePath + " path",

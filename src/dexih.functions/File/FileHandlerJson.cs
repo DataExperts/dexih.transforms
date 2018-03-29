@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.File
@@ -29,7 +28,7 @@ namespace dexih.functions.File
             
             foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
             {
-                _responseSegementOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column.Datatype));
+                _responseSegementOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column.DataType));
             }
         }
         
@@ -88,7 +87,7 @@ namespace dexih.functions.File
                             Name = value.Name,
                             IsInput = false,
                             LogicalName = value.Name,
-                            Datatype = dataType,
+                            DataType = dataType,
                             DeltaType = TableColumn.EDeltaType.ResponseSegment,
                             MaxLength = null,
                             Description = "Json value of the " + value.Path + " path",
@@ -104,7 +103,7 @@ namespace dexih.functions.File
                             Name = child.Path,
                             IsInput = false,
                             LogicalName = child.Path,
-                            Datatype = DataType.ETypeCode.Json,
+                            DataType = DataType.ETypeCode.Json,
                             DeltaType = TableColumn.EDeltaType.ResponseSegment,
                             MaxLength = null,
                             Description = "Json from the " + child.Path + " path",

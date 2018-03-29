@@ -1,9 +1,7 @@
 ﻿using dexih.functions.Query;
-using Dexih.Utils.DataType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using static Dexih.Utils.DataType.DataType;
 
@@ -362,7 +360,7 @@ namespace dexih.functions
                 column.SecurityFlag = Columns[column.Name].SecurityFlag;
                 if(column.SecurityFlag != TableColumn.ESecurityFlag.None)
                 {
-                    column.Datatype = ETypeCode.String;
+                    column.DataType = ETypeCode.String;
                     column.MaxLength = 250;
                 }
             }
@@ -480,7 +478,7 @@ namespace dexih.functions
         {
             return new SelectQuery
             {
-                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.Datatype != ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
+                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.DataType != ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
                 Table = Name,
                 Rows = rows
             };

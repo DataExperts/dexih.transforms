@@ -30,6 +30,22 @@ namespace dexih.transforms.Poco
             return data;
         }
 
+        public async Task<List<T>> ToListAsync(DbDataReader reader, long rows, CancellationToken cancellationToken)
+        {
+            var pocoMapping = new PocoMapper<T>(reader);
+            var data = new List<T>();
+
+            var row = 0;
+            while (await reader.ReadAsync(cancellationToken) && (rows > row || rows < 0))
+            {
+                data.Add(pocoMapping.GetItem());
+                row++;
+            }
+
+            return data;
+        }
+
+        
         public void Open(DbDataReader reader)
         {
             _enumerator = new PocoEnumerator<T>(reader);

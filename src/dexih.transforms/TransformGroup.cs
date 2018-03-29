@@ -6,14 +6,20 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Group",
+        Description = "Group columns and apply aggregation rules to other columns.",
+        TransformType = TransformAttribute.ETransformType.Group
+    )]
     public class TransformGroup : Transform
     {
         public TransformGroup() {  }
 
-        public TransformGroup(Transform inReader, List<ColumnPair> groupFields, List<Function> aggregates, bool passThroughColumns)
+        public TransformGroup(Transform inReader, List<ColumnPair> groupFields, List<TransformFunction> aggregates, bool passThroughColumns)
         {
             GroupFields = groupFields;
             Aggregates = aggregates;
@@ -45,7 +51,7 @@ namespace dexih.transforms
             }
         }
 
-        public List<Function> Aggregates
+        public List<TransformFunction> Aggregates
         {
             get
             {

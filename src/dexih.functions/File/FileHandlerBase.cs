@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using dexih.functions.Query;
-using Dexih.Utils.DataType;
 
 namespace dexih.functions.File
 {

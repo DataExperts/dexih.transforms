@@ -4,7 +4,7 @@
     <AssemblyTitle>Data Experts Group - Excel Connection</AssemblyTitle>
     <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.connections.excel</AssemblyName>
     <PackageId>dexih.connections.excel</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql</PackageTags>

@@ -3,7 +3,9 @@ using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,7 +16,7 @@ namespace dexih.transforms
         /// <summary>
         /// Indicates the rows buffer per commit.  
         /// </summary>
-        public virtual int CommitSize { get; protected set; } = 10000;
+        public int CommitSize { get; set; } = 10000;
 
         private TableCache _createRows;
         private TableCache _updateRows;
@@ -133,7 +135,7 @@ namespace dexih.transforms
                     var runStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Running, null, null, cancellationToken);
                     if (!runStatusResult)
                     {
-                        return runStatusResult;
+                        return false;
                     }
                     firstRead = false;
                 }
@@ -463,6 +465,7 @@ namespace dexih.transforms
                     return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
+<<<<<<< HEAD
             if (_createRecordsTask != null)
             {
                 var returnValue = await _createRecordsTask;
@@ -471,6 +474,8 @@ namespace dexih.transforms
                     return await returnUpdate(returnValue, writerResult, _cancelToken);
             }
 
+=======
+>>>>>>> dev-gh
             if (_updateRecordsTask != null)
             {
                 var returnValue = await _updateRecordsTask;
@@ -504,10 +509,15 @@ namespace dexih.transforms
             writerResult.RowsReadPrimary = reader.TotalRowsReadPrimary;
             writerResult.RowsReadReference = reader.TotalRowsReadReference;
 
-            writerResult.PerformanceSummary = reader.PerformanceSummary();
-
             //calculate the throughput figures
             var rowsWritten = writerResult.RowsTotal - writerResult.RowsIgnored;
+
+            var performance = new StringBuilder();
+            performance.AppendLine(reader.PerformanceSummary());
+            performance.AppendLine($"Target {_targetConnection.Name} - Time: {WriteDataTicks:c}, Rows: {rowsWritten}, Performance: {(rowsWritten/WriteDataTicks.TotalSeconds):F} rows/second");
+
+            writerResult.PerformanceSummary = performance.ToString();
+
 
             writerResult.WriteTicks = WriteDataTicks.Ticks;
             writerResult.ReadTicks = reader.ReaderTimerTicks().Ticks;

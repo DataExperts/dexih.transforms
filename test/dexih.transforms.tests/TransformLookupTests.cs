@@ -16,14 +16,14 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task Lookup()
         {
-            ReaderMemory Source = Helpers.CreateSortedTestData();
-            TransformLookup transformLookup = new TransformLookup(Source, Helpers.CreateUnSortedJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, "Lookup");
+            var Source = Helpers.CreateSortedTestData();
+            var transformLookup = new TransformLookup(Source, Helpers.CreateUnSortedJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, "Lookup");
 
             Assert.Equal(8, transformLookup.FieldCount);
 
             await transformLookup.Open(1, null, CancellationToken.None);
 
-            int pos = 0;
+            var pos = 0;
             while (await transformLookup.ReadAsync() == true)
             {
                 pos++;

@@ -20,6 +20,7 @@
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
 <<<<<<< HEAD
     <PackageReference Include="MySqlConnector" Version="0.33.1" />
@@ -30,5 +31,11 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
     <PackageReference Include="Npgsql" Version="3.2.5" />
 >>>>>>> 7875885bb0f9d570811728b8542d34bb67066506
+=======
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.1" />
+    <PackageReference Include="MySqlConnector" Version="0.37.1" />
+    <PackageReference Include="Npgsql" Version="3.2.7" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
+>>>>>>> dev-gh
   </ItemGroup>
 </Project>

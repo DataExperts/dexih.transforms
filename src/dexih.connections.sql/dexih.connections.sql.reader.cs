@@ -9,7 +9,6 @@ using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using System.Threading.Tasks.Dataflow;
 
 namespace dexih.connections.sql
 {
@@ -81,7 +80,7 @@ namespace dexih.connections.sql
 
         public override string Details()
         {
-            return "SqlConnection";
+            return ReferenceConnection == null ? "SqlReader" : $"SqlReader - {ReferenceConnection.Name}({ReferenceConnection.DatabaseTypeName})";
         }
 
         public override List<Sort> SortFields => _sortFields;
@@ -115,13 +114,13 @@ namespace dexih.connections.sql
                     {
                         try
                         {
-                            row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].Datatype,
+                            row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].DataType,
                                 _sqlReader[i]);
                         }
                         catch (Exception ex)
                         {
                             throw new ConnectionException(
-                                $"The value on column {CacheTable.Columns[_fieldOrdinals[i]].Name} could not be converted to {CacheTable.Columns[_fieldOrdinals[i]].Datatype}.  {ex.Message}",
+                                $"The value on column {CacheTable.Columns[_fieldOrdinals[i]].Name} could not be converted to {CacheTable.Columns[_fieldOrdinals[i]].DataType}.  {ex.Message}",
                                 ex, _sqlReader[i]);
                         }
 

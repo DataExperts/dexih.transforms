@@ -22,7 +22,7 @@ namespace dexih.functions
         /// <param name="parameterType">Parameter datatype</param>
         /// <param name="isColumn">Indicates if the parameter is a column (vs a hard coded value)</param>
         /// <param name="value">Value for the parameter (note: requires isColumn = false)</param>
-        /// <param name="columnName">Column Name for the parameter to map to (note: requires isColumn = true)</param>
+        /// <param name="column">Column for the parameter to map to (note: requires isColumn = true)</param>
         /// <param name="isArray">Inidicates the parameter is an array of values (note array parameter</param>
         public Parameter(
             string name, 
@@ -47,7 +47,7 @@ namespace dexih.functions
         /// Initializes a parameter.
         /// </summary>
         /// <param name="parameterType">Parameter datatype</param>
-        /// <param name="columnName">Column Name for the parameter to map to.</param>
+        /// <param name="column">Column for the parameter to map to.</param>
         public Parameter( ETypeCode parameterType, TableColumn column)
         {
             Name = column.Name;
@@ -81,22 +81,13 @@ namespace dexih.functions
         /// Indicates if the parameter is a column (vs a hard coded value)
         /// </summary>
         public bool IsColumn { get; set; }
-		public bool IsExpression { get; set; }
         public bool IsArray { get; set; }
-        public TableColumn Column { get; set; } 
-
-        private object _value;
+        public TableColumn Column { get; set; }
 
         /// <summary>
         /// The returned value.
         /// </summary>
-        public object Value
-        {
-            get
-            {
-                return _value;
-            }
-        }
+        public object Value { get; private set; }
 
 
         /// <summary>
@@ -107,17 +98,17 @@ namespace dexih.functions
         {
             if (IsArray)
             {
-                _value = input;
+                Value = input;
                 return;
             }
-			if (input == null) // || string.IsNullOrEmpty(input.ToString()))
+            if (input == null || Equals(input, "")) // || string.IsNullOrEmpty(input.ToString()))
 			{
-				_value = null;
+				Value = input;
 			}
 			else
 			{
 				var result = TryParse(DataType, input);
-				_value = result;
+				Value = result;
 			}
         }
 

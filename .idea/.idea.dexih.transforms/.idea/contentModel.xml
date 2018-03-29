@@ -41,7 +41,7 @@
           <e p="dexih.connections.flatfile.azure.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.connections.azure.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -58,7 +58,7 @@
           <e p="dexih.connections.dexih.reader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.connections.dexih.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -71,7 +71,7 @@
           <e p="dexih.connections.excel.reader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.connections.excel.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -79,14 +79,12 @@
         </e>
         <e p="dexih.connections.flatfile" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
-          <e p="dexih.connections.flatfile.cs" t="Include" />
           <e p="dexih.connections.flatfile.csproj" t="IncludeRecursive" />
           <e p="dexih.connections.flatfile.local.cs" t="Include" />
-          <e p="dexih.connections.flatfile.reader.cs" t="Include" />
-          <e p="FlatFile.cs" t="Include" />
+          <e p="FlatFile.Local.Exceptions.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.connections.flatfile.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -120,6 +118,7 @@
               </e>
             </e>
           </e>
+          <e p="SftpClientWrapper.cs" t="Include" />
           <e p="SftpStream.cs" t="Include" />
         </e>
         <e p="dexih.connections.sql" t="IncludeRecursive">
@@ -158,10 +157,18 @@
           <e p="Properties" t="Include">
             <e p="AssemblyInfo.cs" t="Include" />
           </e>
-          <e p="RestFunction.cs" t="Include" />
         </e>
         <e p="dexih.functions" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
+          <e p="BuiltIn" t="Include">
+            <e p="AggregateFunctions.cs" t="Include" />
+            <e p="ConditionFunctions.cs" t="Include" />
+            <e p="MapFunctions.cs" t="Include" />
+            <e p="ProfileFunctions.cs" t="Include" />
+            <e p="RowFunctions.cs" t="Include" />
+            <e p="SeriesFunctions.cs" t="Include" />
+            <e p="ValidationFunctions.cs" t="Include" />
+          </e>
           <e p="dexih.functions.csproj" t="IncludeRecursive" />
           <e p="Extensions.cs" t="Include" />
           <e p="File" t="Include">
@@ -173,11 +180,16 @@
             <e p="FileHandlerXml.cs" t="Include" />
           </e>
           <e p="FlatFile.cs" t="Include" />
-          <e p="Function.cs" t="Include" />
           <e p="FunctionExceptions.cs" t="Include" />
+          <e p="Functions" t="Include">
+            <e p="Function.cs" t="Include" />
+            <e p="FunctionAttribute.cs" t="Include" />
+            <e p="FunctionParameter.cs" t="Include" />
+            <e p="Functions.cs" t="Include" />
+          </e>
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.functions.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -198,19 +210,24 @@
           <e p="StandardFunctions.cs" t="Include" />
           <e p="StandardProfiles.cs" t="Include" />
           <e p="Table" t="Include">
+            <e p="File.cs" t="Include" />
             <e p="Table.cs" t="Include" />
             <e p="TableCache.cs" t="Include" />
             <e p="TableColumn.cs" t="Include" />
             <e p="TableColumns.cs" t="Include" />
             <e p="TableExceptions.cs" t="Include" />
+            <e p="WebService.cs" t="Include" />
           </e>
           <e p="TaskTimer.cs" t="Include" />
+          <e p="TransformFunction.cs" t="Include" />
         </e>
         <e p="dexih.transforms" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="Connection.cs" t="Include" />
+          <e p="ConnectionFlatFile.cs" t="Include" />
           <e p="ConnectionMemory.cs" t="Include" />
           <e p="dexih.transforms.csproj" t="IncludeRecursive" />
+          <e p="EncryptedObject.cs" t="Include" />
           <e p="Exceptions" t="Include">
             <e p="ConnectionExceptions.cs" t="Include" />
             <e p="DuplicateJoinKeyException.cs" t="Include" />
@@ -221,7 +238,7 @@
           <e p="Mapping.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netstandard1.3" t="Include">
+              <e p="netstandard2.0" t="Include">
                 <e p="dexih.transforms.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -244,6 +261,7 @@
           </e>
           <e p="ReaderDbDataReader.cs" t="Include" />
           <e p="ReaderDynamic.cs" t="Include" />
+          <e p="ReaderFlatFile.cs" t="Include" />
           <e p="ReaderMemory.cs" t="Include" />
           <e p="ReaderRowCreator.cs" t="Include" />
           <e p="Transform.cs" t="Include" />
@@ -253,6 +271,7 @@
           <e p="TransformFilter.cs" t="Include" />
           <e p="TransformGroup.cs" t="Include" />
           <e p="TransformJoin.cs" t="Include" />
+          <e p="TransformJsonStream.cs" t="Include" />
           <e p="TransformLookup.cs" t="Include" />
           <e p="TransformMapping.cs" t="Include" />
           <e p="TransformProfile.cs" t="Include" />
@@ -383,7 +402,7 @@
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.functions.initialize.cs" t="Include" />
           <e p="dexih.functions.standard.cs" t="Include" />
-          <e p="dexih.functions.tableCache" t="Include" />
+          <e p="dexih.functions.tableCache.cs" t="Include" />
           <e p="dexih.functions.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">

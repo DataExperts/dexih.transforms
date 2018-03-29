@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace dexih.functions
 {
@@ -49,4 +47,14 @@ namespace dexih.functions
 		}
 	}
 
+	public class FunctionNotFoundException : FunctionException
+	{
+		public FunctionNotFoundException() : base()
+		{
+		}
+
+		public FunctionNotFoundException(string message) : base(message)
+		{
+		}
+	}
 }

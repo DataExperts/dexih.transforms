@@ -7,13 +7,30 @@ using System.Data;
 using dexih.functions;
 using System.Data.Common;
 using System.Threading;
-using System.Diagnostics;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
+using dexih.transforms;
 using dexih.transforms.Exceptions;
 
 namespace dexih.connections.sql
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.SqlDatabase,
+        Name = "Microsoft SqlServer", 
+        Description = "Microsoft SQL Server is a relational database management system developed by Microsoft",
+        DatabaseDescription = "Database Name",
+        ServerDescription = "Server Name",
+        AllowsConnectionString = true,
+        AllowsSql = true,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = true,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = true,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+    )]
     public class ConnectionSqlServer : ConnectionSql
     {
 
@@ -22,7 +39,7 @@ namespace dexih.connections.sql
         public override bool AllowNtAuth => true;
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "SQL Server";
-        public override ECategory DatabaseCategory => ECategory.SqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
 
         protected override string SqlFromAttribute(Table table)
         {
@@ -66,12 +83,12 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 {
 
-                    var bulkCopy = new SqlBulkCopy((SqlConnection)connection)
+                    var bulkCopy = new SqlBulkCopy((SqlConnection) connection)
                     {
-                        DestinationTableName = SqlTableName(table)
+                        DestinationTableName = SqlTableName(table),
+                        BulkCopyTimeout = 60
                     };
 
-                    bulkCopy.BulkCopyTimeout = 60;
                     await bulkCopy.WriteToServerAsync(reader, cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
@@ -247,7 +264,7 @@ namespace dexih.connections.sql
         {
             string sqlType;
 
-            switch (column.Datatype)
+            switch (column.DataType)
             {
                 case ETypeCode.Int32:
                 case ETypeCode.UInt16:
@@ -312,7 +329,7 @@ namespace dexih.connections.sql
                     sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
-                    throw new Exception($"The datatype {column.Datatype} is not compatible with the create table.");
+                    throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
             }
 
             return sqlType;
@@ -602,8 +619,8 @@ namespace dexih.connections.sql
                             col.Name = reader["ColumnName"].ToString();
                             col.LogicalName = reader["ColumnName"].ToString();
                             col.IsInput = false;
-                            col.Datatype = ConvertSqlToTypeCode(reader["DataType"].ToString());
-                            if (col.Datatype == ETypeCode.Unknown)
+                            col.DataType = ConvertSqlToTypeCode(reader["DataType"].ToString());
+                            if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -616,9 +633,9 @@ namespace dexih.connections.sql
                                     col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-                            if (col.Datatype == ETypeCode.String)
+                            if (col.DataType == ETypeCode.String)
                                 col.MaxLength = ConvertSqlMaxLength(reader["DataType"].ToString(), Convert.ToInt32(reader["Max_Length"]));
-                            else if (col.Datatype == ETypeCode.Double || col.Datatype == ETypeCode.Decimal)
+                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
                             {
                                 col.Precision = Convert.ToInt32(reader["Precision"]);
                                 if ((string)reader["DataType"] == "money" || (string)reader["DataType"] == "smallmoney") // this is required as bug in sqlschematable query for money types doesn't get proper scale.
@@ -654,7 +671,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Get source talbe information for {originalTable.Name} failed. {ex.Message}", ex);
+                throw new ConnectionException($"Get source table information for {originalTable.Name} failed. {ex.Message}", ex);
             }
         }
 
@@ -903,7 +920,7 @@ namespace dexih.connections.sql
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i.ToString();
-                                    param.SqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.Datatype);
+                                    param.SqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType);
                                     param.Size = -1;
                                     param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value : query.UpdateColumns[i].Value;
                                     cmd.Parameters.Add(param);

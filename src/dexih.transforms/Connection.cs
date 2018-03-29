@@ -12,7 +12,6 @@ using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
-using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {
@@ -32,14 +31,14 @@ namespace dexih.transforms
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public enum ECategory
+        public enum EConnectionCategory
         {
-            SqlDatabase = 0, // sql server, mysql, postgre etc.
-            NoSqlDatabase = 1, // Azure and others
-            DatabaseFile = 2, // coverts Excel, Sqlite where database is a simple file.
-            File = 3, // flat files
-            WebService = 4,
-			Hub = 5
+            SqlDatabase, // sql server, mysql, postgre etc.
+            NoSqlDatabase, // Azure and others
+            DatabaseFile, // coverts Excel, Sqlite where database is a simple file.
+            File, // flat files
+            WebService,
+			Hub
         }
 
         #endregion
@@ -68,7 +67,7 @@ namespace dexih.transforms
         public abstract string DefaultDatabaseHelp { get; } //help text for what the default database means for this description
 
         public abstract string DatabaseTypeName { get; }
-        public abstract ECategory DatabaseCategory { get; }
+        public abstract EConnectionCategory DatabaseConnectionCategory { get; }
         public abstract bool AllowNtAuth { get; }
         public abstract bool AllowUserPass { get; }
 
@@ -81,6 +80,9 @@ namespace dexih.transforms
         public abstract bool CanUseBinary { get; }
         public abstract bool CanUseSql { get; }
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
+
+        public bool AllowAllPaths { get; set; } = true;
+        public string[] AllowedPaths { get; set; } = null; // list of paths the connection can use (flat file connections only).
         
         //Functions required for managed connection
         public abstract Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken);
@@ -346,7 +348,7 @@ namespace dexih.transforms
             }
 
             var pocoReader = new PocoLoader<TransformWriterResult>();
-            var writerResults = await pocoReader.ToListAsync(reader, cancellationToken);
+            var writerResults = await pocoReader.ToListAsync(reader, rows, cancellationToken);
 
             foreach(var result in writerResults)
             { 

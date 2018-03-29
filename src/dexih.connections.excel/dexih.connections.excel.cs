@@ -6,7 +6,6 @@ using dexih.transforms;
 using dexih.functions;
 using System.IO;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Threading;
 using OfficeOpenXml;
 using OfficeOpenXml.FormulaParsing.Utilities;
@@ -16,7 +15,23 @@ using dexih.functions.Query;
 
 namespace dexih.connections.excel
 {
-    
+	[Connection(
+		ConnectionCategory = EConnectionCategory.DatabaseFile,
+		Name = "Microsoft Excel File", 
+		Description = "A Microsoft Excel File, sheets are treated as tables.",
+		DatabaseDescription = "Excel File Name",
+		ServerDescription = "Directory",
+		AllowsConnectionString = false,
+		AllowsSql = false,
+		AllowsFlatFiles = false,
+		AllowsManagedConnection = false,
+		AllowsSourceConnection = true,
+		AllowsTargetConnection = true,
+		AllowsUserPassword = false,
+		AllowsWindowsAuth = false,
+		RequiresDatabase = true,
+		RequiresLocalStorage = true
+	)]
     public class ConnectionExcel : Connection
     {
 	    public readonly int ExcelHeaderRow = 1;
@@ -41,7 +56,7 @@ namespace dexih.connections.excel
 
 
         public override string DatabaseTypeName => "Excel Database";
-        public override ECategory DatabaseCategory => ECategory.DatabaseFile;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.DatabaseFile;
 
 	    public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
 	    {
@@ -103,7 +118,7 @@ namespace dexih.connections.excel
                 {
                     var column = table.Columns[i];
                     sheet.SetValue(ExcelHeaderRow, i + 1, column.Name);
-                    switch (column.Datatype)
+                    switch (column.DataType)
                     {
                         case ETypeCode.DateTime:
                             sheet.Column(i + 1).Style.Numberformat.Format = "yyyy-mm-dd";
@@ -210,60 +225,60 @@ namespace dexih.connections.excel
                         };
 
                         //search the data to determine datatype.
-                        var datatype = ETypeCode.Unknown;
+                        var dataType = ETypeCode.Unknown;
                         for (var row = ExcelDataRow; row <= worksheet.Dimension.Rows; row++)
                         {
                             var value = worksheet.GetValue(row, col);
-                            if (datatype == ETypeCode.Unknown || datatype == ETypeCode.DateTime)
+                            if (dataType == ETypeCode.Unknown || dataType == ETypeCode.DateTime)
                             {
                                 if (worksheet.Cells[row, col].Style.Numberformat.Format.Contains("yy"))
                                 {
-                                    datatype = ETypeCode.DateTime;
+                                    dataType = ETypeCode.DateTime;
                                     continue;
                                 }
-                                if (datatype == ETypeCode.DateTime)
+                                if (dataType == ETypeCode.DateTime)
                                 {
-                                    datatype = ETypeCode.Int64;
+                                    dataType = ETypeCode.Int64;
                                 }
 
                             }
 
-                            if (datatype == ETypeCode.Unknown || datatype == ETypeCode.Int64)
+                            if (dataType == ETypeCode.Unknown || dataType == ETypeCode.Int64)
                             {
                                 if (value.IsNumeric())
                                 {
                                     if (Math.Abs((Double)value % 1) <= (Double.Epsilon * 100))
                                     {
-                                        datatype = ETypeCode.Int64;
+                                        dataType = ETypeCode.Int64;
                                         continue;
                                     }
                                     else
                                     {
-                                        datatype = ETypeCode.Double;
+                                        dataType = ETypeCode.Double;
                                         continue;
                                     }
                                 }
-                                datatype = ETypeCode.String;
+                                dataType = ETypeCode.String;
                                 break;
                             }
 
-                            if (datatype == ETypeCode.Unknown || datatype == ETypeCode.Decimal)
+                            if (dataType == ETypeCode.Unknown || dataType == ETypeCode.Decimal)
                             {
                                 if (value.IsNumeric())
                                 {
-                                    datatype = ETypeCode.Decimal;
+                                    dataType = ETypeCode.Decimal;
                                     continue;
                                 }
-                                datatype = ETypeCode.String;
+                                dataType = ETypeCode.String;
                                 break;
 
                             }
-                            datatype = ETypeCode.String;
+                            dataType = ETypeCode.String;
                             break;
 
                         }
 
-                        column.Datatype = datatype == ETypeCode.Unknown ? ETypeCode.String : datatype;
+                        column.DataType = dataType == ETypeCode.Unknown ? ETypeCode.String : dataType;
                         columns.Add(column);
                     }
 
@@ -456,10 +471,10 @@ namespace dexih.connections.excel
 	    public object ParseExcelValue(object value, TableColumn column)
 	    {
 		    object parsedValue;
-		    if (value is Double && column.Datatype == ETypeCode.DateTime)
+		    if (value is Double && column.DataType == ETypeCode.DateTime)
 		    {
 			    parsedValue = FromExcelSerialDate((Double) value);
-		    } else if (value is Double && column.Datatype == ETypeCode.Time)
+		    } else if (value is Double && column.DataType == ETypeCode.Time)
 		    {
 			    parsedValue = FromExcelSerialTime((Double) value);
 		    }
@@ -467,11 +482,11 @@ namespace dexih.connections.excel
 		    {
                 try
                 {
-                    parsedValue = TryParse(column.Datatype, value, column.MaxLength);
+                    parsedValue = TryParse(column.DataType, value, column.MaxLength);
                 }
                 catch (Exception ex)
                 {
-                    throw new ConnectionException($"Failed to convert the a value from the column {column.Name} to datatype {column.Datatype}.", ex, value);
+                    throw new ConnectionException($"Failed to convert the a value from the column {column.Name} to datatype {column.DataType}.", ex, value);
                 }
 		    }
             return parsedValue;
@@ -619,7 +634,7 @@ namespace dexih.connections.excel
                             }
                             catch(Exception ex)
                             {
-                                throw new ConnectionException($"The value in column ${column.Column.Name} was incompatible with the type {column.Column.Datatype}.  {ex.Message}.", ex, value);
+                                throw new ConnectionException($"The value in column ${column.Column.Name} was incompatible with the type {column.Column.DataType}.  {ex.Message}.", ex, value);
                             }
                         }
 			        }

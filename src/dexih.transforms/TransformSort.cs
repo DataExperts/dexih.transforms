@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Sort",
+        Description = "Sort a table by one or more columns.",
+        TransformType = TransformAttribute.ETransformType.Sort
+    )]
     public class TransformSort : Transform
     {
         private bool _alreadySorted;
@@ -138,14 +143,7 @@ namespace dexih.transforms
             return null;
         }
 
-        public override List<Sort> SortFields
-        {
-            get
-            {
-                return _sortFields;
-            }
-        }
-
+        public override List<Sort> SortFields => _sortFields;
     }
 
 

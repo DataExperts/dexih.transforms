@@ -29,7 +29,7 @@ namespace dexih.connections.webservice.restful.tests
             var connection = new ConnectionRestful()
             {
                 Server = "https://httpbin.org",
-                DefaultDatabase = ""
+                DefaultDatabase = "",
             };
 
             var table = await connection.GetSourceTableInfo("get", CancellationToken.None);

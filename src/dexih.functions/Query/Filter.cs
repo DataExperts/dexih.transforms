@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 using System.Collections;
@@ -13,43 +12,26 @@ namespace dexih.functions.Query
         /// <summary>
         /// Converts a standard function to a filter object.
         /// </summary>
-        /// <param name="function"></param>
-        public static Filter GetFilterFromFunction(Function function)
+        /// <param name="transformFunction"></param>
+        public static Filter GetFilterFromFunction(TransformFunction transformFunction)
         {
-            if (function.ReturnType != ETypeCode.Boolean)
-                throw new QueryException($"The function {function.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
+            if (transformFunction.ReturnType != ETypeCode.Boolean)
+                throw new QueryException($"The function {transformFunction.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
 
-            ECompare compare;
-
-            switch(function.FunctionName)
+            if (transformFunction.CompareEnum == null)
             {
-                case "IsEqual":
-                    compare = ECompare.IsEqual;
-                    break;
-                case "LessThan":
-                    compare = ECompare.LessThan;
-                    break;
-                case "LessThanEqual":
-                    compare = ECompare.LessThanEqual;
-                    break;
-                case "GreaterThan":
-                    compare = ECompare.GreaterThan;
-                    break;
-                case "GreaterThanEqual":
-                    compare = ECompare.GreaterThanEqual;
-                    break;
-                default:
-                    return null;
+                return null;
             }
+            var compare = (ECompare) transformFunction.CompareEnum;
 
             var filter = new Filter
             {
-                Column1 = function.Inputs[0].IsColumn ? function.Inputs[0].Column : null,
-                Value1 = function.Inputs[0].IsColumn == false ? function.Inputs[0].Value : null,
-                Column2 = function.Inputs[1].IsColumn ? function.Inputs[1].Column : null,
-                Value2 = function.Inputs[1].IsColumn == false ? function.Inputs[1].Value : null,
+                Column1 = transformFunction.Inputs[0].IsColumn ? transformFunction.Inputs[0].Column : null,
+                Value1 = transformFunction.Inputs[0].IsColumn == false ? transformFunction.Inputs[0].Value : null,
+                Column2 = transformFunction.Inputs[1].IsColumn ? transformFunction.Inputs[1].Column : null,
+                Value2 = transformFunction.Inputs[1].IsColumn == false ? transformFunction.Inputs[1].Value : null,
 
-                CompareDataType = function.Inputs[0].IsColumn ? function.Inputs[0].DataType : function.Inputs[1].DataType,
+                CompareDataType = transformFunction.Inputs[0].IsColumn ? transformFunction.Inputs[0].DataType : transformFunction.Inputs[1].DataType,
                 Operator = compare
             };
 

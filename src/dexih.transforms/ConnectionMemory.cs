@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
-using System.Diagnostics;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -22,7 +21,7 @@ namespace dexih.transforms
 
         public override bool CanBulkLoad => false;
 
-        public override ECategory DatabaseCategory => ECategory.NoSqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.NoSqlDatabase;
 
         public override string DatabaseTypeName => "In Memory";
 

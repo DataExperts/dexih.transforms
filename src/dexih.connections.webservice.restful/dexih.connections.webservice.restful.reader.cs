@@ -5,14 +5,8 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using System.Linq;
-using System.Net.Http;
-using System.Net;
-using Newtonsoft.Json.Linq;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
-using Dexih.Utils.DataType;
-using System.Xml.XPath;
-using System.IO;
 
 namespace dexih.connections.webservice
 {

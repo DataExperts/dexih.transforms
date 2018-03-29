@@ -9,13 +9,29 @@ using System.Data.Common;
 using dexih.transforms;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Diagnostics;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 
 namespace dexih.connections.azure
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.NoSqlDatabase,
+        Name = "Azure Storage Tables", 
+        Description = "A NoSQL key-value store which supports massive semi-structured datasets",
+        DatabaseDescription = "Database Name",
+        ServerDescription = "Azure End Point",
+        AllowsConnectionString = true,
+        AllowsSql = false,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = true,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = false,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+    )]
     public class ConnectionAzureTable : Connection
     {
 
@@ -24,7 +40,7 @@ namespace dexih.connections.azure
         public override bool AllowNtAuth => false;
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "Azure Storage Tables";
-        public override ECategory DatabaseCategory => ECategory.NoSqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.NoSqlDatabase;
 
 
         public override bool CanBulkLoad => true;
@@ -158,9 +174,6 @@ namespace dexih.connections.azure
                     throw new ConnectionException($"Bulk insert operation was cancelled.");
                 }
 
-                bufferSize = 0;
-                buffer = new List<object[]>();
-
                 await Task.WhenAll(tasks);
             }
             catch (StorageException ex)
@@ -173,7 +186,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public async Task WriteDataBuffer(Table table, List<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
+        public async Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
         {
             var connection = GetCloudTableClient();
             var cloudTable = connection.GetTableReference(targetTableName);
@@ -193,7 +206,7 @@ namespace dexih.connections.azure
                     {
                         var value = row[i];
                         if (value == DBNull.Value) value = null;
-                        properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].Datatype, value));
+                        properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].DataType, value));
                     }
 
                 var partionKeyValue = partitionKey >= 0 ? row[partitionKey] : "default";
@@ -206,12 +219,12 @@ namespace dexih.connections.azure
         }
 
 
-
         /// <summary>
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <param name="table"></param>
         /// <param name="dropTable"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {
@@ -241,8 +254,6 @@ namespace dexih.connections.azure
                     return;
                 }
 
-                //bool result = await Retry.Do(async () => await cTable.CreateIfNotExistsAsync(), TimeSpan.FromSeconds(10), 6);
-
                 var isCreated = false;
                 for (var i = 0; i < 10; i++)
                 {
@@ -256,7 +267,6 @@ namespace dexih.connections.azure
                     catch
                     {
                         await Task.Delay(5000, cancellationToken);
-                        continue;
                     }
                 }
 
@@ -619,7 +629,7 @@ namespace dexih.connections.azure
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "PartitionKey",
-                    Datatype = ETypeCode.String,
+                    DataType = ETypeCode.String,
                     MaxLength = 0,
                     Precision = 0,
                     AllowDbNull = false,
@@ -638,7 +648,7 @@ namespace dexih.connections.azure
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "RowKey",
-                    Datatype = ETypeCode.String,
+                    DataType = ETypeCode.String,
                     MaxLength = 0,
                     Precision = 0,
                     AllowDbNull = false,
@@ -657,7 +667,7 @@ namespace dexih.connections.azure
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "Timestamp",
-                    Datatype = ETypeCode.DateTime,
+                    DataType = ETypeCode.DateTime,
                     MaxLength = 0,
                     Precision = 0,
                     AllowDbNull = false,
@@ -811,7 +821,7 @@ namespace dexih.connections.azure
                     foreach (var field in query.InsertColumns)
                     {
                         if (!(field.Column.Name == "RowKey" || field.Column.Name == "PartitionKey" || field.Column.Name == "Timestamp"))
-                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column].Datatype, field.Value));
+                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column].DataType, field.Value));
                     }
 
                     if (autoIncrement != null)
@@ -959,7 +969,7 @@ namespace dexih.connections.azure
                                         entity.PartitionKey = column.Value.ToString();
                                         break;
                                     default:
-                                        entity.Properties[column.Column.Name] = NewEntityProperty(table[column.Column.Name].Datatype, column.Value);
+                                        entity.Properties[column.Column.Name] = NewEntityProperty(table[column.Column.Name].DataType, column.Value);
                                         break;
                                 }
                             }
@@ -1104,7 +1114,7 @@ namespace dexih.connections.azure
                     }
 
                     //convert it back to a .net type.
-                    value = ConvertEntityProperty(table.Columns[query.Columns[0].Column].Datatype, value);
+                    value = ConvertEntityProperty(table.Columns[query.Columns[0].Column].DataType, value);
                     return value;
 
                 }

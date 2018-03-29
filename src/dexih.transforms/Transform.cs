@@ -47,7 +47,8 @@ namespace dexih.transforms
             //intialize standard objects.
             ColumnPairs = new List<ColumnPair>();
             JoinPairs = new List<JoinPair>();
-            Functions = new List<Function>();
+            FilterPairs = new List<FilterPair>();
+            Functions = new List<TransformFunction>();
             TransformTimer = new Stopwatch();
         }
 
@@ -78,16 +79,17 @@ namespace dexih.transforms
         public Transform ReferenceTransform { get; set; }
 
         //Generic transform contains properties for a list of Functions, Fields and simple Mappings 
-        public List<Function> Functions { get; set; } //functions used for complex mapping, conditions.
+        public List<TransformFunction> Functions { get; set; } //functions used for complex mapping, conditions.
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
+        public List<FilterPair> FilterPairs { get; set; } //fields pairs, used for simple filters
         public TableColumn JoinSortField { get; set; }
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
 
         public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
         public virtual List<Sort> SortFields => PrimaryTransform?.SortFields; //indicates fields for the sort transform.
 
-        public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same talbe is joined multiple times.
+        public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
 
@@ -104,22 +106,22 @@ namespace dexih.transforms
         #region Statistics
 
         //statistics for this transform
-        public Int64 TransformRowsSorted { get; protected set; }
-        public Int64 TransformRowsPreserved { get; protected set; }
-        public Int64 TransformRowsIgnored { get; protected set; }
-        public Int64 TransformRowsRejected { get; protected set; }
-        public Int64 TransformRowsFiltered { get; protected set; }
-        public Int64 TransformRowsReadPrimary { get; protected set; }
-        public Int64 TransformRowsReadReference { get; protected set; }
+        public long TransformRowsSorted { get; protected set; }
+        public long TransformRowsPreserved { get; protected set; }
+        public long TransformRowsIgnored { get; protected set; }
+        public long TransformRowsRejected { get; protected set; }
+        public long TransformRowsFiltered { get; protected set; }
+        public long TransformRowsReadPrimary { get; protected set; }
+        public long TransformRowsReadReference { get; protected set; }
 
         //statistics for all child transforms.
-        public Int64 TotalRowsSorted { get { return TransformRowsSorted + PrimaryTransform?.TotalRowsSorted ?? 0 + ReferenceTransform?.TotalRowsSorted ?? 0; } }
-        public Int64 TotalRowsPreserved { get { return TransformRowsPreserved + PrimaryTransform?.TotalRowsPreserved ?? 0 + ReferenceTransform?.TotalRowsPreserved ?? 0; } }
-        public Int64 TotalRowsIgnored { get { return TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0; } }
-        public Int64 TotalRowsRejected { get { return TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0; } }
-        public Int64 TotalRowsFiltered { get { return TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0; } }
-        public Int64 TotalRowsReadPrimary { get { return TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0); } }
-        public Int64 TotalRowsReadReference { get { return TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0; } }
+        public long TotalRowsSorted => TransformRowsSorted + PrimaryTransform?.TotalRowsSorted ?? 0 + ReferenceTransform?.TotalRowsSorted ?? 0;
+        public long TotalRowsPreserved => TransformRowsPreserved + PrimaryTransform?.TotalRowsPreserved ?? 0 + ReferenceTransform?.TotalRowsPreserved ?? 0;
+        public long TotalRowsIgnored => TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0;
+        public long TotalRowsRejected => TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0;
+        public long TotalRowsFiltered => TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0;
+        public long TotalRowsReadPrimary => TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0);
+        public long TotalRowsReadReference => TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0;
 
         private object _maxIncrementalValue = null;
         private int _incrementalColumnIndex = -1;
@@ -127,18 +129,12 @@ namespace dexih.transforms
 
         public object GetMaxIncrementalValue()
         {
-            if (IsReader)
-                return _maxIncrementalValue;
-            else
-                return PrimaryTransform.GetMaxIncrementalValue();
+            return IsReader ? _maxIncrementalValue : PrimaryTransform.GetMaxIncrementalValue();
         }
 
         public virtual Transform GetProfileResults()
         {
-            if (IsReader)
-                return null;
-            else
-                return PrimaryTransform.GetProfileResults();
+            return IsReader ? null : PrimaryTransform.GetProfileResults();
         }
 
         /// <summary>
@@ -250,8 +246,8 @@ namespace dexih.transforms
         /// <summary>
         /// This function will confirm that the ActualSort is equivalent to the RequiredSort.  Note: ascending/descending is ignored as this makes no difference for the transforms.
         /// </summary>
-        /// <param name="PrimarySort"></param>
-        /// <param name="CompareSort"></param>
+        /// <param name="requiredSort"></param>
+        /// <param name="actualSort"></param>
         /// <returns></returns>
         public bool SortFieldsMatch(List<Sort> requiredSort, List<Sort> actualSort)
         {
@@ -261,14 +257,41 @@ namespace dexih.transforms
             if (requiredSort == null || actualSort == null)
                 return false;
 
-            var requiredSortFields = String.Join(",", requiredSort.Select(c => c.Column.TableColumnName()).ToArray());
-            var actualSortFields = string.Join(",", actualSort.Select(c => c.Column.TableColumnName()).ToArray());
-
-            //compare the fields.  if actualsortfields are more, that is ok, as the primary sort condition is still met.
-            if (actualSortFields.Length >= requiredSortFields.Length && requiredSortFields == actualSortFields.Substring(0, requiredSortFields.Length))
-                return true;
-            else
+            if (requiredSort.Count < actualSort.Count)
                 return false;
+
+            var match = true;
+
+            using (var actualSortEnumerator = actualSort.GetEnumerator())
+            {
+                foreach (var requiredField in requiredSort)
+                {
+                    if(!actualSortEnumerator.MoveNext())
+                    {
+                        match = false;
+                        break;
+                    }
+                    var actualField = actualSortEnumerator.Current;
+
+
+
+                    if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName())
+                    {
+                        continue;
+                    }
+
+                    if (requiredField.Column.Name == actualField.Column.Name)
+                    {
+                        continue;
+                    }
+
+                    match = false;
+                    break;
+                }
+            }
+
+            return match;
+
         }
         
         /// <summary>
@@ -367,6 +390,37 @@ namespace dexih.transforms
             column.SecurityFlag = securityFlag;
         }
 
+        protected string FastEncrypt(object value)
+        {
+            return EncryptString.Encrypt(value.ToString(), EncryptionKey, 5);
+        }
+
+        protected string FastDecrypt(object value)
+        {
+            return EncryptString.Decrypt(value.ToString(), EncryptionKey, 5);
+        }
+        
+        protected string StrongEncrypt(object value)
+        {
+            return EncryptString.Encrypt(value.ToString(), EncryptionKey, 1000);
+        }
+
+        protected string StrongDecrypt(object value)
+        {
+            return EncryptString.Decrypt(value.ToString(), EncryptionKey, 1000);
+        }
+
+        protected string OneWayHash(object value)
+        {
+            return HashString.CreateHash(value.ToString());
+        }
+
+        protected bool OneWayHashCompare(object hashedValue, object value)
+        {
+            return HashString.ValidateHash(value.ToString(), hashedValue.ToString());
+        }
+        
+
         private void EncryptRow(object[] row)
         {
             switch (EncryptionMethod)
@@ -378,19 +432,19 @@ namespace dexih.transforms
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
                             case ESecurityFlag.StrongEncrypt:
-                                row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 1000);
+                                row[i] = new EncryptedObject(row[i], StrongEncrypt(row[i]));
                                 break;
                             case ESecurityFlag.OneWayHash:
-                                row[i] = HashString.CreateHash(row[i].ToString());
+                                row[i] = new EncryptedObject(row[i], OneWayHash(row[i]));
                                 break;
                             case ESecurityFlag.StrongDecrypt:
-                                row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 1000);
+                                row[i] = new EncryptedObject(row[i], StrongDecrypt(row[i]));
                                 break;
                             case ESecurityFlag.FastEncrypt:
-                                row[i] = EncryptString.Encrypt(row[i].ToString(), EncryptionKey, 5);
+                                row[i] = new EncryptedObject(row[i], FastEncrypt(row[i]));
                                 break;
                             case ESecurityFlag.FastDecrypt:
-                                row[i] = EncryptString.Decrypt(row[i].ToString(), EncryptionKey, 5);
+                                row[i] = new EncryptedObject(row[i], FastDecrypt(row[i]));
                                 break;
                         }
                     }
@@ -402,12 +456,13 @@ namespace dexih.transforms
                         switch (CacheTable.Columns[i].SecurityFlag)
                         {
                             case ESecurityFlag.FastEncrypt:
-								row[i] = "(Encrypted)";
-								break;
-							case ESecurityFlag.StrongEncrypt:
+                            case ESecurityFlag.FastEncrypted:
+                            case ESecurityFlag.StrongEncrypt:
+                            case ESecurityFlag.StrongEncrypted:
 								row[i] = "(Encrypted)";
 								break;
 							case ESecurityFlag.OneWayHash:
+                            case ESecurityFlag.OnWayHashed:
 								row[i] = "(Hashed)";
 								break;
 							case ESecurityFlag.Hide:
@@ -497,13 +552,24 @@ namespace dexih.transforms
         {
             var performance = new StringBuilder();
 
-			var timeSpan = TransformTimerTicks();
-			performance.AppendLine($"{Details()} - Time: {timeSpan.ToString("c")}, Rows: {TotalRowsReadPrimary}, Performance: {(TotalRowsReadPrimary/timeSpan.TotalSeconds).ToString("F")} rows/second");
-
             if (PrimaryTransform != null)
                 performance.AppendLine(PrimaryTransform.PerformanceSummary());
+
+			var timeSpan = TransformTimerTicks();
+
+            if (timeSpan.Ticks == 0)
+            {
+                performance.AppendLine(
+                    $"{Details()} - Not used.");
+            }
+            else
+            {
+                performance.AppendLine($"{Details()} - Time: {timeSpan:c}, Rows: {TotalRowsReadPrimary}, Performance: {(TotalRowsReadPrimary/timeSpan.TotalSeconds):F} rows/second");
+            }
+
+
             if (ReferenceTransform != null)
-                performance.AppendLine("Reference: " + ReferenceTransform.PerformanceSummary());
+                performance.AppendLine("\tReference: " + ReferenceTransform.PerformanceSummary());
 
             return performance.ToString();
         }
@@ -812,7 +878,7 @@ namespace dexih.transforms
                     if (incrementalCol.Length == 1)
                     {
                         _incrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].Name);
-                        _incrementalColumnType = incrementalCol[0].Datatype;
+                        _incrementalColumnType = incrementalCol[0].DataType;
                     }
                     else if (incrementalCol.Length > 1)
                     {
@@ -1185,15 +1251,15 @@ namespace dexih.transforms
                     col.Name,
                     ordinal,
                     col.MaxLength > 0 ? col.MaxLength : int.MaxValue,
-                    Dexih.Utils.DataType.DataType.GetType(col.Datatype),
-                    col.Datatype.ToString(),
+                    Dexih.Utils.DataType.DataType.GetType(col.DataType),
+                    col.DataType.ToString(),
                     false,
                     false,
                     false,
                     false,
                     false,
                     col.DeltaType == EDeltaType.SurrogateKey,
-                    col.Datatype == ETypeCode.Int64,
+                    col.DataType == ETypeCode.Int64,
                     false,
                     col.DeltaType == EDeltaType.SurrogateKey,
                     col.Precision,

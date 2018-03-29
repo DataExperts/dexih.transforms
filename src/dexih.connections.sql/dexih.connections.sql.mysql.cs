@@ -1,20 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using dexih.functions;
 using System.Data.Common;
-using System.Threading;
+using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Threading;
 using MySql.Data.MySqlClient;
 using System.Linq;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
+using dexih.transforms;
 using dexih.transforms.Exceptions;
 
 namespace dexih.connections.sql
 {
+    [Connection(
+        ConnectionCategory = EConnectionCategory.SqlDatabase,
+        Name = "MySql", 
+        Description = "MySQL is an open-source relational database management system (RDBMS) owned by Oracle Corporation",
+        DatabaseDescription = "Database Name",
+        ServerDescription = "Server Name",
+        AllowsConnectionString = true,
+        AllowsSql = true,
+        AllowsFlatFiles = false,
+        AllowsManagedConnection = true,
+        AllowsSourceConnection = true,
+        AllowsTargetConnection = true,
+        AllowsUserPassword = true,
+        AllowsWindowsAuth = true,
+        RequiresDatabase = true,
+        RequiresLocalStorage = false
+        )]
     public class ConnectionMySql : ConnectionSql
     {
 
@@ -23,7 +43,7 @@ namespace dexih.connections.sql
         public override bool AllowNtAuth => true;
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "MySql";
-        public override ECategory DatabaseCategory => ECategory.SqlDatabase;
+        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
 
         protected override string SqlDelimiterOpen { get; } = "`";
         protected override string SqlDelimiterClose { get; } = "`";
@@ -79,6 +99,7 @@ namespace dexih.connections.sql
         {
             try
             {
+                var timer = Stopwatch.StartNew();
                 using (var connection = await NewConnection())
                 {
                     var fieldCount = reader.FieldCount;
@@ -115,7 +136,7 @@ namespace dexih.connections.sql
 
                             for (var i = 0; i < fieldCount; i++)
                             {
-                                row.Append(GetSqlFieldValueQuote(table.Columns[i].Datatype, reader[i]) +
+                                row.Append(GetSqlFieldValueQuote(table.Columns[i].DataType, reader[i]) +
                                            (i < fieldCount - 1 ? "," : ")"));
                             }
 
@@ -137,10 +158,22 @@ namespace dexih.connections.sql
                                 throw new ConnectionException($"The generated sql was too large to execute.  The size was {(insert.Length + row.Length)} and the maximum supported by MySql is {MaxSqlSize}.  To fix this, either reduce the fields being used or increase the `max_allow_packet` variable in the MySql database.");
                             }
 
-                            using (var cmd = connection.CreateCommand())
+                            using (MySqlCommand cmd = new MySqlCommand(insert.ToString(), (MySqlConnection)connection))
                             {
-                                cmd.CommandText = insert.ToString();
-                                cmd.ExecuteNonQuery();
+                                cmd.CommandType = CommandType.Text;
+                                try
+                                {
+                                    cmd.ExecuteNonQuery();
+                                }
+                                catch (Exception ex)
+                                {
+#if DEBUG
+                                    throw new ConnectionException("Error running following sql command: " + insert.ToString(0, 500), ex);
+#else
+                                    throw;
+#endif                                
+                                }
+                            
                             }
                         }
                     }
@@ -246,7 +279,7 @@ namespace dexih.connections.sql
         {
             string sqlType;
 
-            switch (column.Datatype)
+            switch (column.DataType)
             {
                 case ETypeCode.Byte:
                     sqlType = "tinyint unsigned";
@@ -311,7 +344,7 @@ namespace dexih.connections.sql
                     sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
-                    throw new Exception($"The datatype {column.Datatype} is not compatible with the create table.");
+                    throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
             }
 
             return sqlType;
@@ -346,7 +379,7 @@ namespace dexih.connections.sql
                 case ETypeCode.Double:
                 case ETypeCode.Decimal:
                 case ETypeCode.Boolean:
-                    returnValue = AddEscape(value.ToString());
+                    returnValue = MySqlHelper.EscapeString(value.ToString());
                     break;
                 case ETypeCode.String:
 				case ETypeCode.Text:
@@ -354,22 +387,22 @@ namespace dexih.connections.sql
                 case ETypeCode.Xml:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
-                    returnValue = "'" + AddEscape(value.ToString()) + "'";
+                    returnValue = "'" + MySqlHelper.EscapeString(value.ToString()) + "'";
                     break;
                 case ETypeCode.DateTime:
                     if (value is DateTime)
-                        returnValue = "STR_TO_DATE('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
+                        returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     else
-						returnValue = "STR_TO_DATE('"+ AddEscape((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
+						returnValue = "STR_TO_DATE('"+ MySqlHelper.EscapeString((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     break;
                 case ETypeCode.Time:
-                    if (value is TimeSpan)
-						returnValue = "TIME_FORMAT('" + AddEscape(((TimeSpan)value).ToString("c")) + "', '%H:%i:%s.%f')";
+                    if (value is TimeSpan span)
+						returnValue = "TIME_FORMAT('" + MySqlHelper.EscapeString(span.ToString("c")) + "', '%H:%i:%s.%f')";
 					else
-                        returnValue = "TIME_FORMAT('" + AddEscape((string)value) + "', '%H:%i:%s.%f')";
+                        returnValue = "TIME_FORMAT('" + MySqlHelper.EscapeString((string)value) + "', '%H:%i:%s.%f')";
 					break;
                 default:
-                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql insert statement.");
+                    throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");
             }
 
             return returnValue;
@@ -388,7 +421,6 @@ namespace dexih.connections.sql
                 {
                     var hostport = Server.Split(':');
                     string port;
-                    var host = hostport[0];
                     if (hostport.Count() == 1)
                     {
                         port = "";
@@ -501,7 +533,6 @@ namespace dexih.connections.sql
 							var table = new Table()
 							{
 								Name = reader[0].ToString(),
-								Schema = "",
 							};
 							tableList.Add(table);;
                         }
@@ -550,7 +581,7 @@ namespace dexih.connections.sql
                                 Name = reader["COLUMN_NAME"].ToString(),
                                 LogicalName = reader["COLUMN_NAME"].ToString(),
                                 IsInput = false,
-                                Datatype = ConvertSqlToTypeCode(reader["DATA_TYPE"].ToString(), isSigned),
+                                DataType = ConvertSqlToTypeCode(reader["DATA_TYPE"].ToString(), isSigned),
                                 AllowDbNull = reader["IS_NULLABLE"].ToString() != "NO" 
                             };
 
@@ -558,7 +589,7 @@ namespace dexih.connections.sql
                             {
                                 col.DeltaType = TableColumn.EDeltaType.NaturalKey;
                             }
-                            else if (col.Datatype == ETypeCode.Unknown)
+                            else if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -567,7 +598,7 @@ namespace dexih.connections.sql
                                 col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-							switch (col.Datatype)
+							switch (col.DataType)
 							{
 							    case ETypeCode.String:
 							        col.MaxLength = ConvertNullableToInt(reader["CHARACTER_MAXIMUM_LENGTH"]);

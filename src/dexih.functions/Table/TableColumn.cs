@@ -19,7 +19,7 @@ namespace dexih.functions
         {
             Name = columName;
             LogicalName = columName;
-            Datatype = ETypeCode.String;
+            DataType = ETypeCode.String;
             DeltaType = EDeltaType.TrackingField;
         }
 
@@ -27,7 +27,7 @@ namespace dexih.functions
         {
             Name = columName;
             LogicalName = columName;
-            Datatype = dataType;
+            DataType = dataType;
             DeltaType = EDeltaType.TrackingField;
 			ReferenceTable = parentTable;
         }
@@ -36,7 +36,7 @@ namespace dexih.functions
         {
             Name = columName;
             LogicalName = columName;
-            Datatype = dataType;
+            DataType = dataType;
             DeltaType = deltaType;
 			ReferenceTable = parentTable;
         }
@@ -45,7 +45,7 @@ namespace dexih.functions
 		{
 			Name = columName;
             LogicalName = columName;
-            Datatype = GetDeltaDataType(deltaType);
+            DataType = GetDeltaDataType(deltaType);
 			DeltaType = deltaType;
 			ReferenceTable = parentTable;
 		}
@@ -87,9 +87,12 @@ namespace dexih.functions
             None,
             FastEncrypt,
             FastDecrypt,
+	        FastEncrypted,
             StrongEncrypt,
             StrongDecrypt,
+	        StrongEncrypted,
             OneWayHash,
+	        OnWayHashed,
             Hide
         }
 
@@ -101,7 +104,7 @@ namespace dexih.functions
 
 		public string Description { get; set; }
 
-		public ETypeCode Datatype
+		public ETypeCode DataType
 		{
 			get
 			{
@@ -160,8 +163,8 @@ namespace dexih.functions
 		[JsonIgnore, CopyIgnore]
 		public Type ColumnGetType
 		{
-			get => DataType.GetType(Datatype);
-			set => Datatype = GetTypeCode(value);
+			get => Dexih.Utils.DataType.DataType.GetType(DataType);
+			set => DataType = GetTypeCode(value);
 		}
 
 		/// <summary>
@@ -258,7 +261,7 @@ namespace dexih.functions
 				Name = Name,
 				LogicalName = LogicalName,
 				Description = Description,
-				Datatype = Datatype,
+				DataType = DataType,
 				MaxLength = MaxLength,
 				Precision = Precision,
 				Scale = Scale,
@@ -266,11 +269,26 @@ namespace dexih.functions
 				DefaultValue = DefaultValue,
 				DeltaType = DeltaType,
 				IsUnique = IsUnique,
-				SecurityFlag = ESecurityFlag.None, //don't copy securityFlag as only the first table requires encryption.
 				IsInput = IsInput,
 				IsMandatory = IsMandatory,
 				IsIncrementalUpdate = IsIncrementalUpdate
 			};
+
+			switch (SecurityFlag)
+			{
+				case ESecurityFlag.FastEncrypt:
+					newColumn.SecurityFlag = ESecurityFlag.FastEncrypted;
+					break;
+				case ESecurityFlag.StrongEncrypt:
+					newColumn.SecurityFlag = ESecurityFlag.StrongEncrypted;
+					break;
+				case ESecurityFlag.OneWayHash:
+					newColumn.SecurityFlag = ESecurityFlag.OnWayHashed;
+					break;
+				default:
+					newColumn.SecurityFlag = SecurityFlag;
+					break;
+			}
 
 			return newColumn;
 		}

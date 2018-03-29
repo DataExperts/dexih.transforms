@@ -7,14 +7,20 @@ using System.Text;
 using System.Threading;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Validation",
+        Description = "Validates and cleans/rejects data.",
+        TransformType = TransformAttribute.ETransformType.Validation
+    )]
     public class TransformValidation : Transform
     {
         public TransformValidation() { }
 
-        public TransformValidation(Transform inReader, List<Function> validations, bool validateDataTypes)
+        public TransformValidation(Transform inReader, List<TransformFunction> validations, bool validateDataTypes)
         {
             SetInTransform(inReader);
             Validations = validations;
@@ -36,7 +42,7 @@ namespace dexih.transforms
         private int _primaryFieldCount;
         private int _columnCount;
 
-        public List<Function> Validations
+        public List<TransformFunction> Validations
         {
             get { return Functions;  }
             set { Functions = value;  }
@@ -122,7 +128,7 @@ namespace dexih.transforms
             while (await PrimaryTransform.ReadAsync(cancellationToken))
             {
                 var rejectReason = new StringBuilder();
-                var finalInvalidAction = Function.EInvalidAction.Pass;
+                var finalInvalidAction = TransformFunction.EInvalidAction.Pass;
 
                 //copy row data.
                 var passRow = new object[_columnCount];
@@ -175,17 +181,17 @@ namespace dexih.transforms
 							rejectReason.AppendLine("function: " + validation.FunctionName + ", parameters: " + string.Join(",", validation.Inputs.Select(c => c.Name + "=" + (c.IsColumn ? c.Column.TableColumnName() : c.Value.ToString())).ToArray()) + ".");
 
                             // fail job immediately.
-                            if (validation.InvalidAction == Function.EInvalidAction.Abend)
+                            if (validation.InvalidAction == TransformFunction.EInvalidAction.Abend)
                                 throw new Exception(rejectReason.ToString());
 
                             //if the record is to be discarded, continue the loop and get the next source record.
-                            if (validation.InvalidAction == Function.EInvalidAction.Discard)
+                            if (validation.InvalidAction == TransformFunction.EInvalidAction.Discard)
                                 continue;
 
                             //set the final invalidation action based on priority order of other rejections.
                             finalInvalidAction = finalInvalidAction < validation.InvalidAction ? validation.InvalidAction : finalInvalidAction;
 
-                            if (validation.InvalidAction == Function.EInvalidAction.Reject || validation.InvalidAction == Function.EInvalidAction.RejectClean)
+                            if (validation.InvalidAction == TransformFunction.EInvalidAction.Reject || validation.InvalidAction == TransformFunction.EInvalidAction.RejectClean)
                             {
                                 //if the row is rejected, copy unmodified row to a reject row.
                                 if (rejectRow == null)
@@ -210,7 +216,7 @@ namespace dexih.transforms
                                 }
                             }
 
-                            if (validation.InvalidAction == Function.EInvalidAction.Clean || validation.InvalidAction == Function.EInvalidAction.RejectClean)
+                            if (validation.InvalidAction == TransformFunction.EInvalidAction.Clean || validation.InvalidAction == TransformFunction.EInvalidAction.RejectClean)
                             {
                                 validation.ReturnValue();
                                 if (validation.Outputs != null)
@@ -225,7 +231,7 @@ namespace dexih.transforms
                                             {
                                                 try
                                                 {
-                                                    var parseresult = TryParse(col.Datatype, output.Value, col.MaxLength);
+                                                    var parseresult = TryParse(col.DataType, output.Value, col.MaxLength);
                                                     passRow[ordinal] = parseresult;
                                                 }
                                                 catch(Exception ex)
@@ -241,7 +247,7 @@ namespace dexih.transforms
                     }
                 }
 
-                if (ValidateDataTypes && (finalInvalidAction == Function.EInvalidAction.Pass || finalInvalidAction == Function.EInvalidAction.Clean))
+                if (ValidateDataTypes && (finalInvalidAction == TransformFunction.EInvalidAction.Pass || finalInvalidAction == TransformFunction.EInvalidAction.Clean))
                 {
                     for (var i = 0; i < _columnCount; i++)
                     {
@@ -263,7 +269,7 @@ namespace dexih.transforms
                                         TransformRowsRejected++;
                                     }
                                     rejectReason.AppendLine("Column:" + col.Name + ": Tried to insert null into non-null column.");
-                                    finalInvalidAction = Function.EInvalidAction.Reject;
+                                    finalInvalidAction = TransformFunction.EInvalidAction.Reject;
                                 }
                                 passRow[i] = DBNull.Value;
                             }
@@ -271,7 +277,7 @@ namespace dexih.transforms
                             {
                                 try
                                 {
-                                    var parseresult = TryParse(col.Datatype, value, col.MaxLength);
+                                    var parseresult = TryParse(col.DataType, value, col.MaxLength);
                                     passRow[i] = parseresult;
                                 }
                                 catch (Exception ex)
@@ -285,7 +291,7 @@ namespace dexih.transforms
                                         TransformRowsRejected++;
                                     }
                                     rejectReason.AppendLine(ex.Message);
-                                    finalInvalidAction = Function.EInvalidAction.Reject;
+                                    finalInvalidAction = TransformFunction.EInvalidAction.Reject;
                                 }
                             }
                         }
@@ -294,19 +300,19 @@ namespace dexih.transforms
 
                 switch(finalInvalidAction)
                 {
-                    case Function.EInvalidAction.Pass:
+                    case TransformFunction.EInvalidAction.Pass:
                         passRow[_validationStatusOrdinal] = "passed";
                         return passRow;
-                    case Function.EInvalidAction.Clean:
+                    case TransformFunction.EInvalidAction.Clean:
                         passRow[_validationStatusOrdinal] = "cleaned";
                         return passRow;
-                    case Function.EInvalidAction.RejectClean:
+                    case TransformFunction.EInvalidAction.RejectClean:
                         passRow[_validationStatusOrdinal] = "rejected-cleaned";
                         rejectRow[_validationStatusOrdinal] = "rejected-cleaned";
                         rejectRow[_rejectReasonOrdinal] = rejectReason.ToString();
                         _savedRejectRow = rejectRow;
                         return passRow;
-                    case Function.EInvalidAction.Reject:
+                    case TransformFunction.EInvalidAction.Reject:
                         passRow[_validationStatusOrdinal] = "rejected";
                         rejectRow[_validationStatusOrdinal] = "rejected";
                         rejectRow[_rejectReasonOrdinal] = rejectReason.ToString();

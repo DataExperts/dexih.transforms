@@ -7,10 +7,18 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.transforms.Transforms;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms
 {
+    [Transform(
+        Name = "Delta",
+        Description = "Compare incoming data against the target table to produce a delta.",
+        TransformType = TransformAttribute.ETransformType.Delta
+    )]
     public sealed class TransformDelta : Transform
     {
         public TransformDelta(Transform inReader, Transform targetTransform, EUpdateStrategy deltaType, long surrogateKey, bool addDefaultRow)
@@ -36,6 +44,7 @@ namespace dexih.transforms
             SetInTransform(inReader, targetTransform);
         }
 
+        [JsonConverter(typeof (StringEnumConverter))]
         public enum EUpdateStrategy
         {
             Reload, //truncates the table and reloads
@@ -223,6 +232,31 @@ namespace dexih.transforms
 
         }
 
+        private bool CompareFields(object sourceValue, TableColumn targetColumn, object targetValue)
+        {
+            var source = sourceValue;
+            var target = targetValue;
+
+            if (sourceValue is EncryptedObject sourceObject)
+            {
+                switch (targetColumn.SecurityFlag)
+                {
+                    case TableColumn.ESecurityFlag.FastEncrypted:
+                        target = FastDecrypt(targetValue);
+                        source = sourceObject.OriginalValue; 
+                        break;
+                    case TableColumn.ESecurityFlag.StrongEncrypted:
+                        target = StrongDecrypt(targetValue);
+                        source = sourceObject.OriginalValue; 
+                        break;
+                    case TableColumn.ESecurityFlag.OnWayHashed:
+                        return OneWayHashCompare(targetValue, sourceObject.OriginalValue);
+                }
+            }
+
+            return Compare(targetColumn.DataType, source, target) == ECompareResult.Equal;
+        }
+
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
@@ -298,8 +332,8 @@ namespace dexih.transforms
                     var targetOrdinal = CacheTable.GetOrdinal(col.Name);
                     try
                     {
-                        var result = Compare(col.Datatype, ReferenceTransform[col.Name], newRow[targetOrdinal]);
-                        if (result != ECompareResult.Equal)
+                        var result = CompareFields(ReferenceTransform[col.Name], col, newRow[targetOrdinal]);
+                        if (!result)
                         {
                             isMatch = false;
                             break;
@@ -421,7 +455,7 @@ namespace dexih.transforms
                         {
                             try
                             {
-                                compareResult = Compare(col.Datatype, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
+                                compareResult = Compare(col.DataType, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
                                 if (compareResult != ECompareResult.Equal)
                                     break;
                             }
@@ -468,8 +502,8 @@ namespace dexih.transforms
                         {
                             try
                             {
-                                var compareResult2 = Compare(col.Datatype, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
-                                if (compareResult2 != ECompareResult.Equal)
+                                var compareResult2 = CompareFields(PrimaryTransform[col.Name], col, ReferenceTransform[col.Name]);
+                                if (!compareResult2)
                                 {
                                     isMatch = false;
                                     break;
@@ -600,7 +634,7 @@ namespace dexih.transforms
             return false;
         }
 
-        public int MatchingSourceOrdinal(TableColumn col)
+        private int MatchingSourceOrdinal(TableColumn col)
         {
             var sourceOrdinal = -1;
             switch (col.DeltaType)
@@ -620,7 +654,7 @@ namespace dexih.transforms
         }
 
 
-        public bool CompareNewRowPrevious(object[] newRow)
+        private bool CompareNewRowPrevious(object[] newRow)
         {
             //check if the natrual key in the source & target are less/match/greater to determine operation
             foreach (var col in _colNatrualKey)
@@ -631,7 +665,7 @@ namespace dexih.transforms
                 if (sourceOrdinal > -1)
                 {
                     var targetOrdinal = CacheTable.GetOrdinal(col.Name);
-                    if(!object.Equals(PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]))
+                    if(!Equals(PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]))
                         return false;
                 }
             }
@@ -639,7 +673,7 @@ namespace dexih.transforms
             return true;
         }
 
-        public bool CompareNewRowPreviousValues(object[] newRow)
+        private bool CompareNewRowPreviousValues(object[] newRow)
         {
             //the final possibility, is the natrual key is a match, check for changed tracking columns
             var isMatch = true;
@@ -651,7 +685,7 @@ namespace dexih.transforms
                     var targetOrdinal = CacheTable.GetOrdinal(col.Name);
                     try
                     {
-                        var result = Compare(col.Datatype, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
+                        var result = Compare(col.DataType, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
 
                         if (result != ECompareResult.Equal)
                         {
@@ -670,7 +704,7 @@ namespace dexih.transforms
             return isMatch;
         }
 
-        public object[] CreateDeleteRow(object[] nextRow = null)
+        private object[] CreateDeleteRow(object[] nextRow = null)
         {
             var newRow = new object[_columnCount];
             newRow[0] = DoPreserve ? 'U' : 'D';
@@ -708,7 +742,7 @@ namespace dexih.transforms
             return newRow;
         }
 
-        public object[] CreateOutputRow(char operation)
+        private object[] CreateOutputRow(char operation)
         {
             var newRow = new object[_columnCount];
 
@@ -724,7 +758,7 @@ namespace dexih.transforms
                 {
                     case TableColumn.EDeltaType.ValidFromDate:
                         if (_sourceValidFromOrdinal == -1 && sourceOrdinal == -1)
-                            newRow[targetOrdinal] = new DateTime(1900, 01, 01);
+                            newRow[targetOrdinal] = _currentDateTime;
                         else if(sourceOrdinal >= 0)
                             newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
                         else
@@ -733,7 +767,7 @@ namespace dexih.transforms
                         break;
                     case TableColumn.EDeltaType.ValidToDate:
                         if (_sourceValidToOrdinal == -1 && sourceOrdinal == -1)
-                            newRow[targetOrdinal] = new DateTime(2099, 12, 31);
+                            newRow[targetOrdinal] = new DateTime(2099, 12, 31, 23, 59, 59);
                         else if(sourceOrdinal >= 0)
                             newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
                         else
@@ -800,7 +834,7 @@ namespace dexih.transforms
             return newRow;
         }
 
-        public object[] CreateDefaultRow()
+        private object[] CreateDefaultRow()
         {
             var newRow = new object[_columnCount];
 
@@ -934,13 +968,24 @@ namespace dexih.transforms
             }
             else
             {
-                foreach (var col in PrimaryTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
+                foreach (var col in ReferenceTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
                 {
-                    fields.Add(new Sort(col));
+                    var primaryColumn = PrimaryTransform.CacheTable.Columns[col.Name];
+                    if (primaryColumn == null)
+                    {
+                        throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
+                    }
+                    fields.Add(new Sort(primaryColumn));
                 }
-                var validTo = PrimaryTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
+                var validTo = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
                 if (validTo != null)
-                    fields.Add(new Sort(validTo));
+                {
+                    var primaryValidTo = PrimaryTransform.CacheTable.Columns[validTo.Name];
+                    if (primaryValidTo != null)
+                    {
+                        fields.Add(new Sort(primaryValidTo));
+                    }
+                }
             }
 
             return fields;
@@ -957,14 +1002,14 @@ namespace dexih.transforms
             {
                 // sure sort columns are same order or primary transform
                 
-                foreach (var col in PrimaryTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
+                foreach (var col in ReferenceTransform.CacheTable.GetColumnsByDeltaType(TableColumn.EDeltaType.NaturalKey))
                 {
-                    var referenceColumn = ReferenceTransform.CacheTable.Columns[col.Name];
-                    if (referenceColumn == null)
-                    {
-                        throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
-                    }
-                    fields.Add(new Sort(referenceColumn));
+//                    var referenceColumn = PrimaryTransform.CacheTable.Columns[col.Name];
+//                    if (referenceColumn == null)
+//                    {
+//                        throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
+//                    }
+                    fields.Add(new Sort(col));
                 }
                 var validTo = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
                 if (validTo != null)

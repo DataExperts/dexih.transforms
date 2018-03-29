@@ -25,9 +25,9 @@ namespace dexih.transforms.tests
 
         private async Task RunSingleColumnSort(string column, Sort.EDirection direction, string checkColumn)
         {
-            dexih.transforms.ReaderMemory Source = Helpers.CreateUnSortedTestData();
-            TransformSort TransformSort = new TransformSort(Source, new List<Sort> { new Sort(column, direction ) });
-            int SortCount = 1;
+            var Source = Helpers.CreateUnSortedTestData();
+            var TransformSort = new TransformSort(Source, new List<Sort> { new Sort(column, direction ) });
+            var SortCount = 1;
 
             Assert.Equal(6, TransformSort.FieldCount);
 
@@ -41,8 +41,8 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task  RunDoubleColumnSort()
         {
-            dexih.transforms.ReaderMemory Source = Helpers.CreateUnSortedTestData();
-            TransformSort TransformSort = new TransformSort(Source, new List <Sort> { new Sort("GroupColumn"), new Sort("IntColumn") });
+            var Source = Helpers.CreateUnSortedTestData();
+            var TransformSort = new TransformSort(Source, new List <Sort> { new Sort("GroupColumn"), new Sort("IntColumn") });
 
             Assert.Equal(6, TransformSort.FieldCount);
 
@@ -72,14 +72,14 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task SortLargeTable()
         {
-            dexih.transforms.ReaderMemory Source = Helpers.CreateLargeTable(100000);
-            TransformSort TransformSort = new TransformSort(Source, new List <Sort> { new Sort("random", Sort.EDirection.Ascending) });
+            var Source = Helpers.CreateLargeTable(100000);
+            var TransformSort = new TransformSort(Source, new List <Sort> { new Sort("random", Sort.EDirection.Ascending) });
             TransformSort.SetInTransform(Source);
 
-            string previousValue = "";
+            var previousValue = "";
             while (await TransformSort.ReadAsync() == true)
             {
-                string value = (string)TransformSort["random"];
+                var value = (string)TransformSort["random"];
                 Assert.True(String.Compare( previousValue, value) <= 0 );
             }
         }

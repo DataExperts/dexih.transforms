@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using dexih.functions.Query;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
@@ -20,7 +21,7 @@ namespace dexih.functions
     /// <summary>
     /// The function class is used by transforms to run functions for conditions, mappings, and aggregations.
     /// </summary>
-    public class Function
+    public class TransformFunction
     {
         public MethodInfo FunctionMethod { get; set; }
         public MethodInfo ResetMethod { get; set; }
@@ -41,7 +42,7 @@ namespace dexih.functions
         }
 
         /// <summary>
-        /// A name the describes the function.
+        /// A name that describes the function.
         /// </summary>
         public string FunctionName { get; set; }
 
@@ -79,6 +80,8 @@ namespace dexih.functions
 
         public EInvalidAction InvalidAction { get; set; } = EInvalidAction.Reject;
         
+	    public Filter.ECompare? CompareEnum { get; set; }
+	    
         /// <summary>
         /// Createa a new function from a "Delegate".
         /// </summary>
@@ -86,11 +89,11 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings) :
+        public TransformFunction(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings) :
             this(functionMethod.Target, functionMethod.GetMethodInfo(), inputMappings, targetColumn, outputMappings)
         {
         }
-
+	    
         /// <summary>
         /// Creates a new function from a class/method reference.
         /// </summary>
@@ -99,28 +102,9 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public Function(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public TransformFunction(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             FunctionName = methodName;
-            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), inputMappings, targetColumn, outputMappings);
-        }
-
-        /// <summary>
-        /// Creates a new function from a class/method reference.
-        /// </summary>
-        /// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
-        /// <param name="methodName">The name of the method to call.</param>
-        /// <param name="resetMethodName"></param>
-        /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
-        /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
-        /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        /// <param name="resultMethodName"></param>
-        public Function(Type targetType, string methodName, string resultMethodName, string resetMethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
-        {
-            FunctionName = methodName;
-            ResultMethod = targetType.GetMethod(resultMethodName);
-            ResetMethod = targetType.GetMethod(resetMethodName);
-
             Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), inputMappings, targetColumn, outputMappings);
         }
 
@@ -134,17 +118,14 @@ namespace dexih.functions
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
         /// <param name="resultMethodName"></param>
-        public Function(object target, string methodName, string resultMethodName, string resetMethodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public TransformFunction(object target, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
             
         {
             FunctionName = methodName;
-            ResultMethod = target.GetType().GetMethod(resultMethodName);
-            ResetMethod = target.GetType().GetMethod(resetMethodName);
-
             Initialize(target, target.GetType().GetMethod(methodName), inputMappings, targetColumn, outputMappings);
         }
 
-        public Function(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public TransformFunction(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             Initialize(target, functionMethod, inputMappings, targetColumn, outputMappings);
         }
@@ -152,6 +133,17 @@ namespace dexih.functions
         private void Initialize(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             FunctionMethod = functionMethod;
+
+	        var attribute = functionMethod.GetCustomAttribute<TransformFunctionAttribute>();
+
+	        ResetMethod = string.IsNullOrEmpty(attribute.ResetMethod)
+		        ? null
+		        : target.GetType().GetMethod(attribute.ResetMethod);
+
+	        ResultMethod = string.IsNullOrEmpty(attribute.ResultMethod)
+		        ? null
+		        : target.GetType().GetMethod(attribute.ResultMethod);
+
             ObjectReference = target;
 
             TargetColumn = targetColumn;
@@ -237,7 +229,7 @@ namespace dexih.functions
             }
         }
 
-        public Function() { }
+        public TransformFunction() { }
 
         public void SetVariableValues(string[] parametersValues)
         {
