@@ -89,7 +89,7 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public TransformFunction(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings) :
+        public TransformFunction(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, Dictionary<string, object> staticValues) :
             this(functionMethod.Target, functionMethod.GetMethodInfo(), inputMappings, targetColumn, outputMappings)
         {
         }
@@ -102,7 +102,7 @@ namespace dexih.functions
         /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
         /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
         /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public TransformFunction(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public TransformFunction(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, Dictionary<string, object> staticValues)
         {
             FunctionName = methodName;
             Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), inputMappings, targetColumn, outputMappings);
@@ -133,16 +133,21 @@ namespace dexih.functions
         private void Initialize(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             FunctionMethod = functionMethod;
-
+            
 	        var attribute = functionMethod.GetCustomAttribute<TransformFunctionAttribute>();
+            var targetType = target.GetType();
 
-	        ResetMethod = string.IsNullOrEmpty(attribute.ResetMethod)
-		        ? null
-		        : target.GetType().GetMethod(attribute.ResetMethod);
+            // Get the ResetMethod/ResultMethod which are used for aggregatate functions.
+            if (attribute != null)
+            {
+                ResetMethod = string.IsNullOrEmpty(attribute.ResetMethod)
+                    ? null
+                    : targetType.GetMethod(attribute.ResetMethod);
 
-	        ResultMethod = string.IsNullOrEmpty(attribute.ResultMethod)
-		        ? null
-		        : target.GetType().GetMethod(attribute.ResultMethod);
+                ResultMethod = string.IsNullOrEmpty(attribute.ResultMethod)
+                    ? null
+                    : targetType.GetMethod(attribute.ResultMethod);
+            }
 
             ObjectReference = target;
 

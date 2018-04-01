@@ -105,9 +105,9 @@ namespace dexih.transforms
                 return updateResult;
             }
 
-            _targetTable = targetTable;
-            _rejectTable = rejectTable;
-            _profileTable = profileTable;
+            _targetTable = targetTable.Copy(false, true);
+            _rejectTable = rejectTable?.Copy(false, true);
+            _profileTable = profileTable?.Copy(false, true);
 
             _inTransform = inTransform;
 
@@ -204,34 +204,7 @@ namespace dexih.transforms
             return setRunStatusResult;
         }
 
-        /// <summary>
-        /// This updates the transformWriter record when an attempt is made to return.
-        /// </summary>
-        /// <param name="returnValue"></param>
-        /// <param name="writerResult"></param>
-        /// <param name="cancelToken"></param>
-        /// <returns></returns>
-        private async Task<ReturnValue> returnUpdate(ReturnValue returnValue, TransformWriterResult writerResult, CancellationToken cancelToken)
-        {
-            var newReturn = new ReturnValue(returnValue.Success, returnValue.Message, returnValue.Exception);
-            if(cancelToken.IsCancellationRequested)
-            {
-                newReturn.Success = false;
-                newReturn.Message = "Job was cancelled";
-                await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Cancelled, newReturn);
-            }
-            else
-            {
-                if(!returnValue.Success)
-                {
-                    await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, newReturn);
-                }
-            }
-
-            return newReturn;
-        }
-
-        public async Task<ReturnValue> WriteStart(Transform inTransform, TransformWriterResult writerResult, CancellationToken cancelToken)
+        public async Task WriteStart(Transform inTransform, TransformWriterResult writerResult, CancellationToken cancellationToken)
         {
 
             if (_writeOpen)

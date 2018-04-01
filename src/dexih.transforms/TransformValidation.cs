@@ -175,14 +175,17 @@ namespace dexih.transforms
                             throw new TransformException($"The validation transform failed on the function {validation.FunctionName}.  {ex.Message}", ex);
                         }
 
-                        //if the validation is negative.  apply any output columns, and set a reject status
+                        //if the validation is false.  apply any output columns, and set a reject status
                         if (!validationResult)
                         {
 							rejectReason.AppendLine("function: " + validation.FunctionName + ", parameters: " + string.Join(",", validation.Inputs.Select(c => c.Name + "=" + (c.IsColumn ? c.Column.TableColumnName() : c.Value.ToString())).ToArray()) + ".");
 
                             // fail job immediately.
                             if (validation.InvalidAction == TransformFunction.EInvalidAction.Abend)
-                                throw new Exception(rejectReason.ToString());
+                            {
+                                var reason = $"The validation rule abended as the invalid action is set to abend.  " + rejectReason.ToString();
+                                throw new Exception(reason);
+                            }
 
                             //if the record is to be discarded, continue the loop and get the next source record.
                             if (validation.InvalidAction == TransformFunction.EInvalidAction.Discard)

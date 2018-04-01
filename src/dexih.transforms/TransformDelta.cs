@@ -25,7 +25,9 @@ namespace dexih.transforms
         {
             DeltaType = deltaType;
             SurrogateKey = surrogateKey;
-            CacheTable = targetTransform.CacheTable.Copy(true);
+
+            // create a copy of the target table without the schem or any deltaType = Ignore columns
+            CacheTable = targetTransform.CacheTable.Copy(true, true);
             AddDefaultRow = addDefaultRow;
 
             DoUpdate = false;

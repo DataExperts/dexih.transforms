@@ -86,8 +86,15 @@ namespace dexih.connections.sql
                     var bulkCopy = new SqlBulkCopy((SqlConnection) connection)
                     {
                         DestinationTableName = SqlTableName(table),
-                        BulkCopyTimeout = 60
+                        BulkCopyTimeout = 60,
+                        
                     };
+
+                    //Add column mapping to ensure unsupported columns (i.e. location datatype) are ignored.
+                    foreach(var column in table.Columns)
+                    {
+                        bulkCopy.ColumnMappings.Add(column.Name, column.Name);
+                    }
 
                     await bulkCopy.WriteToServerAsync(reader, cancellationToken);
 
