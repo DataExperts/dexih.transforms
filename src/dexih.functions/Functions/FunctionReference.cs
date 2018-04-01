@@ -50,7 +50,7 @@ namespace dexih.functions
         public TransformFunction GetTransformFunction(TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             var type = GetTransformType();
-            return new TransformFunction(type, FunctionMethodName, inputMappings, targetColumn, outputMappings);
+            return new TransformFunction(type, FunctionMethodName, inputMappings, targetColumn, outputMappings, null);
         }
 
         public TransformFunction GetTransformFunction(TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, bool detailed)
@@ -74,7 +74,7 @@ namespace dexih.functions
         public TransformFunction GetTransformFunction()
         {
             var type = GetTransformType();
-            return new TransformFunction(type, FunctionMethodName, null, null, null);
+            return new TransformFunction(type, FunctionMethodName, null, null, null, null);
         }
 
         public Type GetTransformType()

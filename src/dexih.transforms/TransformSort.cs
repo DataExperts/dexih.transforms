@@ -22,10 +22,10 @@ namespace dexih.transforms
 
         private readonly List<Sort> _sortFields;
 
-        public TransformSort() 
-		{
-			_sortFields = new List<Sort>();
-		}
+        public TransformSort()
+        {
+            _sortFields = new List<Sort>();
+        }
 
         public TransformSort(Transform inTransform, List<Sort> sortFields)
         {
@@ -170,31 +170,38 @@ namespace dexih.transforms
 
                 var greater = false;
 
-                if (x[i] is byte)
+                if ((x[i] == null || x[i] is DBNull) && (y[i] == null || y[i] is DBNull))
+                    continue;
+
+                if (x[i] == null || x[i] is DBNull)
+                    greater = false;
+                else if (y[i] == null || y[i] is DBNull)
+                    greater = true;
+                else if (x[i] is byte)
                     greater = (byte)x[i] > (byte)y[i];
-                if (x[i] is SByte)
+                else if (x[i] is SByte)
                     greater = (SByte)x[i] > (SByte)y[i];
-                if (x[i] is UInt16)
+                else if (x[i] is UInt16)
                     greater = (UInt16)x[i] > (UInt16)y[i];
-                if (x[i] is UInt32)
+                else if (x[i] is UInt32)
                     greater = (UInt32)x[i] > (UInt32)y[i];
-                if (x[i] is UInt64)
+                else if (x[i] is UInt64)
                     greater = (UInt64)x[i] > (UInt64)y[i];
-                if (x[i] is Int16)
+                else if (x[i] is Int16)
                     greater = (Int16)x[i] > (Int16)y[i];
-                if (x[i] is Int32)
+                else if (x[i] is Int32)
                     greater = (Int32)x[i] > (Int32)y[i];
-                if (x[i] is Int64)
+                else if (x[i] is Int64)
                     greater = (Int64)x[i] > (Int64)y[i];
-                if (x[i] is Decimal)
+                else if (x[i] is Decimal)
                     greater = (Decimal)x[i] > (Decimal)y[i];
-                if (x[i] is Double)
+                else if (x[i] is Double)
                     greater = (Double)x[i] > (Double)y[i];
-                if (x[i] is String)
+                else if (x[i] is String)
                     greater = String.CompareOrdinal((String)x[i], (String)y[i]) > 0;
-                if (x[i] is Boolean)
+                else if (x[i] is Boolean)
                     greater = (Boolean)x[i] && (Boolean)y[i];
-                if (x[i] is DateTime)
+                else if (x[i] is DateTime)
                     greater = (DateTime)x[i] > (DateTime)y[i];
 
                 if (SortDirections[i] == Sort.EDirection.Ascending)

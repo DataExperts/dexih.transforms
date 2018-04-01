@@ -372,27 +372,24 @@ namespace dexih.functions
         /// Creates a copy of the table, excluding cached data, and sort columns
         /// </summary>
         /// <returns></returns>
-        public Table Copy(bool removeSchema = false)
+        public Table Copy(bool removeSchema = false, bool removeIgnoreColumns = false)
         {
             var table = new Table(Name, Schema)
             {
                 Description = Description
             };
 
-            //if (ExtendedProperties != null)
-            //{
-            //    foreach (var key in ExtendedProperties.Keys)
-            //        table.SetExtendedProperty(key, ExtendedProperties[key]);
-            //}
-
             table.LogicalName = LogicalName;
 
             foreach (var column in Columns)
             {
-                var newCol = column.Copy();
-                if (removeSchema) newCol.ReferenceTable = null;
+                if (!removeIgnoreColumns || column.DeltaType != TableColumn.EDeltaType.IgnoreField)
+                {
+                    var newCol = column.Copy();
+                    if (removeSchema) newCol.ReferenceTable = null;
 
-                table.Columns.Add(newCol);
+                    table.Columns.Add(newCol);
+                }
             }
 
             return table;
