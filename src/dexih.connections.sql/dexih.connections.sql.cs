@@ -66,7 +66,7 @@ namespace dexih.connections.sql
             }
         }
 
-        protected string AddEscape(string value) => value.Replace("'", "''");
+         protected string AddEscape(string value) => value.Replace("'", "''");
 
 
         public abstract Task<DbConnection> NewConnection();
@@ -281,7 +281,7 @@ namespace dexih.connections.sql
         {
             switch (column.Aggregate)
             {
-                case SelectColumn.EAggregate.None: return AddDelimiter(column.Column.Name);
+                case null: return AddDelimiter(column.Column.Name);
                 case SelectColumn.EAggregate.Sum: return "sum(" + AddDelimiter(column.Column.Name) + ")";
                 case SelectColumn.EAggregate.Average: return "avg(" + AddDelimiter(column.Column.Name) + ")";
                 case SelectColumn.EAggregate.Min: return "min(" + AddDelimiter(column.Column.Name) + ")";

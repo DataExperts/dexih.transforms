@@ -406,7 +406,7 @@ namespace dexih.transforms
                                 }
                                 catch (Exception ex)
                                 {
-                                    throw new TransformException($"The join failed setting parameters on the condition {condition.FunctionName} with the parameter {input.Name}.  {ex.Message}.", ex, value);
+                                    throw new TransformException($"The join tansform {Name} failed setting parameters on the condition {condition.FunctionName} with the parameter {input.Name}.  {ex.Message}.", ex, value);
                                 }
                             }
 
@@ -428,7 +428,7 @@ namespace dexih.transforms
 							}							
 							catch (Exception ex)
                             {
-                                throw new TransformException($"The join failed calling the function {condition.FunctionName}.  {ex.Message}.", ex);
+                                throw new TransformException($"The join transform {Name} failed calling the function {condition.FunctionName}.  {ex.Message}.", ex);
                             }
                         }
 
@@ -459,7 +459,7 @@ namespace dexih.transforms
                                 _writeGroupPosition = 1;
                                 break;
                             default:
-                                throw new TransformException("The join transform failed due to an unkown join strategy "+ JoinDuplicateStrategy);
+                                throw new TransformException("The join transform failed due to an unknown join strategy "+ JoinDuplicateStrategy);
                         }
                     }
                     else

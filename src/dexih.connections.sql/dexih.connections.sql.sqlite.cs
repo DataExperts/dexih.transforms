@@ -474,18 +474,15 @@ namespace dexih.connections.sql
                     using (var cmd = CreateCommand(connection, @"PRAGMA table_info('" + table.Name + "')"))
                     using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
-
-                        //for the logical, just trim out any "
-                        table.LogicalName = table.Name.Replace("\"", "");
-
                         while (await reader.ReadAsync(cancellationToken))
                         {
-                            var col = new TableColumn();
-
-                            //add the basic properties
-                            col.Name = reader["name"].ToString();
-                            col.LogicalName = reader["name"].ToString();
-                            col.IsInput = false;
+                            var col = new TableColumn
+                            {
+                                //add the basic properties
+                                Name = reader["name"].ToString(),
+                                LogicalName = reader["name"].ToString(),
+                                IsInput = false
+                            };
 
                             var dataType = reader["type"].ToString().Split('(', ')');
                             col.DataType = ConvertSqlToTypeCode(dataType[0]);

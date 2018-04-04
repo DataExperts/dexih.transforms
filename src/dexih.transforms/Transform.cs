@@ -48,6 +48,7 @@ namespace dexih.transforms
             ColumnPairs = new List<ColumnPair>();
             JoinPairs = new List<JoinPair>();
             FilterPairs = new List<FilterPair>();
+            AggregatePairs = new List<AggregatePair>();
             Functions = new List<TransformFunction>();
             TransformTimer = new Stopwatch();
         }
@@ -83,6 +84,7 @@ namespace dexih.transforms
         public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
         public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
         public List<FilterPair> FilterPairs { get; set; } //fields pairs, used for simple filters
+        public List<AggregatePair> AggregatePairs { get; set; } //fields pairs, used for simple filters
         public TableColumn JoinSortField { get; set; }
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
 
@@ -931,7 +933,8 @@ namespace dexih.transforms
                 }
 
             }
-            catch (Exception ex) when (ex is OperationCanceledException || ex is DuplicateJoinKeyException)
+            // cancelled or transformexcpetion, bubble the exception up.
+            catch (Exception ex) when (ex is OperationCanceledException || ex is TransformException)
             {
                 IsReaderFinished = true;
                 throw;
@@ -939,7 +942,7 @@ namespace dexih.transforms
             catch (Exception ex)
             {
                 IsReaderFinished = true;
-                throw new TransformException($"Read record error. {ex.Message}", ex);
+                throw new TransformException($"The transform {Name} failed to process record. {ex.Message}", ex);
             }
 
 
@@ -956,7 +959,7 @@ namespace dexih.transforms
                 catch (Exception ex)
                 {
                     IsReaderFinished = true;
-                    throw new TransformException("There was an error comparing the incremental update column.  " + ex.Message, ex);
+                    throw new TransformException($"The transform {Name} failed comparing the incremental update column.  " + ex.Message, ex);
                 }
 
             }

@@ -214,7 +214,7 @@ namespace dexih.transforms
                         }
                         catch(Exception ex)
                         {
-                            throw new TransformException($"The row transform failed setting an input parameter on {rowFunction.FunctionName} parameter {input.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.TableColumnName()]);
+                            throw new TransformException($"The row transform {Name} failed setting an input parameter on {rowFunction.FunctionName} parameter {input.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.TableColumnName()]);
                         }
                     }
 
@@ -234,7 +234,7 @@ namespace dexih.transforms
 					}
                     catch(Exception ex)
                     {
-                        throw new TransformException($"The row transform failed calling the function {rowFunction.FunctionName}.  {ex.Message}.", ex);
+                        throw new TransformException($"The row transform {Name} failed calling the function {rowFunction.FunctionName}.  {ex.Message}.", ex);
                     }
 
                     //if the sequence finished.  reset and try again
@@ -255,7 +255,7 @@ namespace dexih.transforms
 						}
                         catch (Exception ex)
                         {
-                            throw new TransformException($"The row transform failed calling the function {rowFunction.FunctionName}.  {ex.Message}.", ex);
+                            throw new TransformException($"The row transform {Name} failed calling the function {rowFunction.FunctionName}.  {ex.Message}.", ex);
                         }
 
                         moreRows = false; //indicate the row generator finished current sequence and started again.

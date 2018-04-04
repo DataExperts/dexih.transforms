@@ -397,7 +397,7 @@ namespace dexih.transforms
 						}
 						catch (Exception ex)
 						{
-							throw new TransformException($"The mapping transform failed calling the function {mapping.FunctionName}.  {ex.Message}.", ex);
+							throw new TransformException($"The mapping transform {Name} failed calling the function {mapping.FunctionName}.  {ex.Message}.", ex);
 						}
 
 						if (mapping.Outputs != null)

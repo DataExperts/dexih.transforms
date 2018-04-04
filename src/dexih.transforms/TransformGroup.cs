@@ -19,10 +19,11 @@ namespace dexih.transforms
     {
         public TransformGroup() {  }
 
-        public TransformGroup(Transform inReader, List<ColumnPair> groupFields, List<TransformFunction> aggregates, bool passThroughColumns)
+        public TransformGroup(Transform inReader, List<ColumnPair> groupFields, List<TransformFunction> aggregates, List<AggregatePair> aggregatePairs, bool passThroughColumns)
         {
             GroupFields = groupFields;
             Aggregates = aggregates;
+            AggregatePairs = aggregatePairs;
             PassThroughColumns = passThroughColumns;
 
             SetInTransform(inReader);
@@ -70,7 +71,7 @@ namespace dexih.transforms
             var i = 0;
             if (GroupFields != null)
             {
-                _groupValues = new string[GroupFields.Count];
+                _groupValues = new object[GroupFields.Count];
                 _firstRecord = true;
 
                 foreach (var groupField in GroupFields)
@@ -81,6 +82,13 @@ namespace dexih.transforms
                     CacheTable.Columns.Add(column);
                     i++;
                 }
+            }
+
+            foreach(var aggregatePair in AggregatePairs)
+            {
+                var column = aggregatePair.TargetColumn.Copy();
+                CacheTable.Columns.Add(column);
+                i++;
             }
 
             foreach (var aggregate in Aggregates)
@@ -158,6 +166,11 @@ namespace dexih.transforms
 
         public override bool ResetTransform()
         {
+            foreach (var aggregate in AggregatePairs)
+            {
+                aggregate.Reset();
+            }
+
             foreach (var aggregate in Aggregates)
             {
                 aggregate.Reset();
@@ -221,7 +234,8 @@ namespace dexih.transforms
                         {
                             foreach (var groupField in GroupFields)
                             {
-                                _groupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
+                                // _groupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
+                                _groupValues[i] = PrimaryTransform[groupField.SourceColumn];
                                 i++;
                             }
                         }
@@ -232,12 +246,15 @@ namespace dexih.transforms
                         //if not first row, then check if the group values have changed from the previous row
                         if (GroupFields != null)
                         {
-                            newGroupValues = new string[GroupFields.Count];
+                            newGroupValues = new object[GroupFields.Count];
 
                             foreach (var groupField in GroupFields)
                             {
-                                newGroupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
-                                if ((string)newGroupValues[i] != (string)_groupValues[i] )
+                                //newGroupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
+                                newGroupValues[i] = PrimaryTransform[groupField.SourceColumn];
+                                if ((newGroupValues[i] == null && _groupValues != null) ||
+                                    (newGroupValues[i] != null && _groupValues == null) ||
+                                    !Equals(newGroupValues[i], _groupValues[i]) )
                                 {
                                     groupChanged = true;
                                 }
@@ -261,6 +278,12 @@ namespace dexih.transforms
 
                         if (PassThroughColumns == false)
                         {
+                            foreach(var aggregate in AggregatePairs)
+                            {
+                                newRow[i] = aggregate.GetValue();
+                                i++;
+                            }
+
                             foreach (var mapping in Aggregates)
                             {
                                 try
@@ -279,7 +302,7 @@ namespace dexih.transforms
                                 }
                                 catch(Exception ex)
                                 {
-                                    throw new TransformException($"The group transform failed, retrieving results.  {ex.Message}.", ex);
+                                    throw new TransformException($"The group transform {Name} failed on function {mapping.FunctionName}.  {ex.Message}.", ex);
                                 }
                             }
                         }
@@ -291,6 +314,13 @@ namespace dexih.transforms
                             foreach(var row in _passThroughValues)
                             {
                                 i = startColumn;
+
+                                foreach (var aggregate in AggregatePairs)
+                                {
+                                    row[i] = aggregate.GetValue();
+                                    i++;
+                                }
+
                                 foreach (var mapping in Aggregates)
                                 {
                                     try
@@ -309,7 +339,7 @@ namespace dexih.transforms
                                     } 
                                     catch(Exception ex)
                                     {
-                                        throw new TransformException($"The group transform failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
+                                        throw new TransformException($"The group transform {Name} failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
                                     }
                                 }
                                 index++;
@@ -330,8 +360,15 @@ namespace dexih.transforms
                         }
 
                         //reset the functions
+                        foreach(var aggregate in AggregatePairs)
+                        {
+                            aggregate.Reset();
+                        }
+
                         foreach (var mapping in Aggregates)
+                        {
                             mapping.Reset();
+                        }
 
                         //store the last groupvalues read to start the next grouping.
                         _groupValues = newGroupValues;
@@ -355,7 +392,13 @@ namespace dexih.transforms
 
                     }
 
-                    // update the aggregate values
+                    // update the aggregate pairs
+                    foreach (var aggregate in AggregatePairs)
+                    {
+                        aggregate.AddValue(PrimaryTransform[aggregate.SourceColumn]);
+                    }
+
+                    // update the aggregate functions
                     foreach (var mapping in Aggregates)
                     {
                         if (mapping.Inputs != null)
@@ -368,7 +411,7 @@ namespace dexih.transforms
                                 } 
                                 catch(Exception ex)
                                 {
-                                    throw new TransformException($"The group transform failed, setting in incompatible value to column {input.Column.Name}.  {ex.Message}.", ex, PrimaryTransform[input.Column]);
+                                    throw new TransformException($"The group transform {Name} failed setting an incompatible value to column {input.Column.Name}.  {ex.Message}.", ex, PrimaryTransform[input.Column]);
                                 }
                             }
                         }
@@ -385,7 +428,7 @@ namespace dexih.transforms
 						}
                         catch(Exception ex)
                         {
-                            throw new TransformException($"The group transform could not run the function {mapping.FunctionName} failed.  {ex.Message}.", ex);
+                            throw new TransformException($"The group transform {Name} failed running the function {mapping.FunctionName}.  {ex.Message}.", ex);
                         }
                     }
 
@@ -407,6 +450,13 @@ namespace dexih.transforms
                 }
                 if (PassThroughColumns == false)
                 {
+                    foreach(var aggregate in AggregatePairs)
+                    {
+                        newRow[i] = aggregate.GetValue();
+                        i++;
+
+                        aggregate.Reset();
+                    }
 
                     foreach (var mapping in Aggregates)
                     {
@@ -416,7 +466,7 @@ namespace dexih.transforms
                         }
                         catch(Exception ex)
                         {
-                            throw new TransformException($"The group transform failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
+                            throw new TransformException($"The group transform {Name} failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
                         }
                         i++;
 
@@ -439,6 +489,13 @@ namespace dexih.transforms
                     foreach (var row in _passThroughValues)
                     {
                         i = startColumn;
+
+                        foreach (var aggregate in AggregatePairs)
+                        {
+                            newRow[i] = aggregate.GetValue();
+                            i++;
+                        }
+
                         foreach (var mapping in Aggregates)
                         {
                             try
@@ -447,7 +504,7 @@ namespace dexih.transforms
                             }
                             catch (Exception ex)
                             {
-                                throw new TransformException($"The group transform failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
+                                throw new TransformException($"The group transform {Name} failed retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
                             }
 
                             i++;

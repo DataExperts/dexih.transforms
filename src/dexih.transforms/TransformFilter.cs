@@ -193,7 +193,7 @@ namespace dexih.transforms
                                 catch (Exception ex)
                                 {
                                     throw new TransformException(
-                                        $"The filter failed as the column {input.Column.TableColumnName()} has incompatible data values.  {ex.Message}.",
+                                        $"The filter transform {Name} failed as the column {input.Column.TableColumnName()} has incompatible data values.  {ex.Message}.",
                                         ex, PrimaryTransform[input.Column.TableColumnName()]);
                                 }
                             }
@@ -217,7 +217,7 @@ namespace dexih.transforms
                             catch (Exception ex)
                             {
                                 throw new TransformException(
-                                    $"The filter could not run the condition {condition.FunctionName} failed.  {ex.Message}.",
+                                    $"The filter transform {Name} failed running the condition {condition.FunctionName}.  {ex.Message}.",
                                     ex);
                             }
 

@@ -209,8 +209,8 @@ namespace dexih.connections.webservice
 				newRestFunction.Columns.Add(col);
 
                 var query = new SelectQuery();
-                query.Columns.Add(new SelectColumn(new TableColumn("Response"), SelectColumn.EAggregate.None));
-                query.Columns.Add(new SelectColumn(new TableColumn("ResponseSuccess"), SelectColumn.EAggregate.None));
+                query.Columns.Add(new SelectColumn(new TableColumn("Response")));
+                query.Columns.Add(new SelectColumn(new TableColumn("ResponseSuccess")));
                 query.Table = newRestFunction.Name;
                 query.Rows = 1;
 

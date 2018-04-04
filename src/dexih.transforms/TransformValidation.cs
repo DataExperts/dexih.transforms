@@ -156,7 +156,7 @@ namespace dexih.transforms
                             }
                             catch(Exception ex)
                             {
-								throw new TransformException($"The validation transform failed setting input parameters on the function {validation.FunctionName} parameter {input.Name} for column {input.Column.TableColumnName()}.  {ex.Message}", ex, PrimaryTransform[input.Column.TableColumnName()]);
+								throw new TransformException($"The validation transform {Name} failed setting input parameters on the function {validation.FunctionName} parameter {input.Name} for column {input.Column.TableColumnName()}.  {ex.Message}", ex, PrimaryTransform[input.Column.TableColumnName()]);
                             }
                         }
 
@@ -172,7 +172,7 @@ namespace dexih.transforms
 						}
                         catch(Exception ex)
                         {
-                            throw new TransformException($"The validation transform failed on the function {validation.FunctionName}.  {ex.Message}", ex);
+                            throw new TransformException($"The validation transform {Name} failed on the function {validation.FunctionName}.  {ex.Message}", ex);
                         }
 
                         //if the validation is false.  apply any output columns, and set a reject status
@@ -239,7 +239,7 @@ namespace dexih.transforms
                                                 }
                                                 catch(Exception ex)
                                                 {
-                                                    throw new TransformException($"The validation transform failed parsing output values on the function {validation.FunctionName} parameter {output.Name} column {col.Name}.  {ex.Message}", ex, output.Value);
+                                                    throw new TransformException($"The validation transform {Name} failed parsing output values on the function {validation.FunctionName} parameter {output.Name} column {col.Name}.  {ex.Message}", ex, output.Value);
                                                 }
                                             }
                                         }

@@ -343,7 +343,7 @@ namespace dexih.transforms
                     }
                     catch (Exception ex)
                     {
-                        throw new TransformException($"The delta transform failed as column {col.Name} contains incompatible values.", ex, ReferenceTransform[col.Name], newRow[targetOrdinal]);
+                        throw new TransformException($"The delta transform {Name} failed as column {col.Name} contains incompatible values.", ex, ReferenceTransform[col.Name], newRow[targetOrdinal]);
                     }
                 }
 
@@ -606,7 +606,7 @@ namespace dexih.transforms
                     }
                     catch(Exception ex)
                     {
-                        throw new TransformException($"The Delta failed as the surrogate key column is expected to have a numerical value.  {ex.Message}. ", ex,ReferenceTransform[_referenceSurrogateKeyOrdinal]);
+                        throw new TransformException($"The delta transform {Name} failed as the surrogate key column is expected to have a numerical value.  {ex.Message}. ", ex, ReferenceTransform[_referenceSurrogateKeyOrdinal]);
                     }
                 }
 
@@ -629,7 +629,7 @@ namespace dexih.transforms
                     }
                     catch(Exception ex)
                     {
-                        throw new TransformException($"The Delta failed as the column {_colIsCurrentField.Name} is expected to have a boolean value.  {ex.Message}.", ex, ReferenceTransform[_referenceIsValidOrdinal]);
+                        throw new TransformException($"The delta transform {Name} failed as the column {_colIsCurrentField.Name} is expected to have a boolean value.  {ex.Message}.", ex, ReferenceTransform[_referenceIsValidOrdinal]);
                     }
                 }
             }

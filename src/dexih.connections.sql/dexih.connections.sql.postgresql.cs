@@ -454,18 +454,17 @@ namespace dexih.connections.sql
                     using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
 
-                        //for the logical, just trim out any "
-                        table.LogicalName = table.Name.Replace("\"", "");
-
                         while (await reader.ReadAsync(cancellationToken))
                         {
-                            var col = new TableColumn();
+                            var col = new TableColumn
+                            {
+                                //add the basic properties
+                                Name = reader["column_name"].ToString(),
+                                LogicalName = reader["column_name"].ToString(),
+                                IsInput = false,
+                                DataType = ConvertSqlToTypeCode(reader["data_type"].ToString())
+                            };
 
-                            //add the basic properties
-                            col.Name = reader["column_name"].ToString();
-                            col.LogicalName = reader["column_name"].ToString();
-                            col.IsInput = false;
-                            col.DataType = ConvertSqlToTypeCode(reader["data_type"].ToString());
                             if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;

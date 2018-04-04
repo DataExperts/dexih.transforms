@@ -22,6 +22,7 @@ namespace dexih.functions
         public Table(string tableName, TableColumns columns, TableCache data) 
         {
             Name = tableName;
+            LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = columns;
             Data = data;
@@ -30,6 +31,7 @@ namespace dexih.functions
         public Table(string tableName, int maxRows, params TableColumn[] columns) 
         {
             Name = tableName;
+            LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = new TableColumns();
             foreach (var column in columns)
@@ -41,6 +43,7 @@ namespace dexih.functions
         public Table(string tableName, int maxRows, TableColumns columns)
         {
             Name = tableName;
+            LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = columns;
             Data = new TableCache(maxRows);
@@ -49,7 +52,8 @@ namespace dexih.functions
 		public Table(string tableName, int maxRows = 0)
 		{
 		    Name = tableName;
-			BaseTableName = CleanString(tableName);
+            LogicalName = DefaultLogicalName();
+            BaseTableName = CleanString(tableName);
 			Columns = new TableColumns();
 			Data = new TableCache(maxRows);
 		}
@@ -58,9 +62,24 @@ namespace dexih.functions
         {
             Name = tableName;
 			Schema = schema;
+            LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = new TableColumns();
             Data = new TableCache(maxRows);
+        }
+
+        protected string DefaultLogicalName()
+        {
+            var name = Name.Replace("\"", "");
+
+            if (string.IsNullOrEmpty(Schema))
+            {
+                return name;
+            }
+            else
+            {
+                return Schema + "." + name;
+            }
         }
 
         #endregion
@@ -475,7 +494,7 @@ namespace dexih.functions
         {
             return new SelectQuery
             {
-                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.DataType != ETypeCode.Unknown).Select(c => new SelectColumn(c, SelectColumn.EAggregate.None)).ToList(),
+                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.DataType != ETypeCode.Unknown).Select(c => new SelectColumn(c)).ToList(),
                 Table = Name,
                 Rows = rows
             };

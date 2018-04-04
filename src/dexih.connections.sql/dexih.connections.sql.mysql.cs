@@ -569,10 +569,6 @@ namespace dexih.connections.sql
                     using (var cmd = CreateCommand(connection, @"SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + DefaultDatabase + "' AND TABLE_NAME='" + table.Name + "'"))
                     using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
-
-                        //for the logical, just trim out any "
-                        table.LogicalName = table.Name.Replace("\"", "");
-
                         while (await reader.ReadAsync(cancellationToken))
                         {
                             var isSigned = reader["COLUMN_TYPE"].ToString().IndexOf("unsigned", StringComparison.Ordinal) > 0;

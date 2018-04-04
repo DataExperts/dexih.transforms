@@ -10,7 +10,7 @@ namespace dexih.functions.Query
         public SelectColumn(TableColumn column)
         {
             Column = column;
-            Aggregate = EAggregate.None;
+            Aggregate = null;
         }
 
         public SelectColumn(TableColumn column, EAggregate aggregate)
@@ -22,7 +22,7 @@ namespace dexih.functions.Query
         public SelectColumn(string columnName)
         {
             Column = new TableColumn(columnName);
-            Aggregate = EAggregate.None;
+            Aggregate = null;
         }
 
         public SelectColumn(string columnName, EAggregate aggregate)
@@ -34,7 +34,6 @@ namespace dexih.functions.Query
         [JsonConverter(typeof(StringEnumConverter))]
         public enum EAggregate
         {
-            None,
             Sum,
             Average,
             Min,
@@ -42,7 +41,7 @@ namespace dexih.functions.Query
             Count
         }
         public TableColumn Column { get; set; }
-        public EAggregate Aggregate { get; set; }
+        public EAggregate? Aggregate { get; set; }
 
     }
 }

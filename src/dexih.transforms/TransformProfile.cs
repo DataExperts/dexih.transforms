@@ -85,7 +85,7 @@ namespace dexih.transforms
                         } 
                         catch(Exception ex)
                         {
-                            throw new TransformException($"The profile failed setting inputs on the function {profile.FunctionName} parameter {input.Name} column {input.Column.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.Name]);
+                            throw new TransformException($"The profile transform {Name} failed setting inputs on the function {profile.FunctionName} parameter {input.Name} column {input.Column.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.Name]);
                         }
                     }
 
@@ -95,7 +95,7 @@ namespace dexih.transforms
                     }
                     catch (Exception ex)
                     {
-                        throw new TransformException($"The profile failed on the function {profile.FunctionName}.  {ex.Message}", ex);
+                        throw new TransformException($"The profile transform {Name} failed on the function {profile.FunctionName}.  {ex.Message}", ex);
                     }
                 }
 
@@ -115,7 +115,7 @@ namespace dexih.transforms
                     }
                     catch (Exception ex)
                     {
-                        throw new TransformException($"The profile failed getting the return value on the function {profile.FunctionName}.  {ex.Message}", ex);
+                        throw new TransformException($"The profile transform {Name} failed getting the return value on the function {profile.FunctionName}.  {ex.Message}", ex);
                     }
 
                     var row = new object[6];

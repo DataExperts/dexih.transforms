@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.XPath;
 using Dexih.Utils.Crypto;
@@ -327,6 +328,20 @@ namespace dexih.functions.BuiltIn
             return dateValue.Year;
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Only",
+            Description = "Extract Date Only from a date/time field")]
+        public DateTime DateOnly(DateTime dateValue)
+        {
+            return dateValue.Date;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Time Only",
+            Description = "Extract Time from a date/time field")]
+        public TimeSpan TimeOnly(DateTime dateValue)
+        {
+            return dateValue.TimeOfDay;
+        }
+
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Long Date String",
             Description =
                 "Converts the value of the current DateTime object to its equivalent long date string representation.")]
@@ -575,14 +590,14 @@ namespace dexih.functions.BuiltIn
             return Math.Truncate(value);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Decimal Functions", Name = "Add",
-            Description = "Adds two specified Decimal values.")]
-        public decimal Add(decimal value1, decimal value2)
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Add",
+            Description = "Adds two or more specified Decimal values.")]
+        public decimal Add(decimal value1, decimal[] value2)
         {
-            return value1 + value2;
+            return value1 + value2.Sum();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Decimal Functions", Name = "Ceiling",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Ceiling",
             Description =
                 "Returns the smallest integral value that is greater than or equal to the specified decimal number.")]
         public decimal Ceiling(decimal value)
@@ -590,46 +605,51 @@ namespace dexih.functions.BuiltIn
             return decimal.Ceiling(value);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Decimal Functions", Name = "Divide",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Divide",
             Description = "Divides two specified Decimal values.")]
         public decimal Divide(decimal value1, decimal value2)
         {
             return value1 / value2;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Decimal Functions", Name = "Floor",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Floor",
             Description = "Rounds a specified Decimal number to the closest integer toward negative infinity.")]
         public decimal Floor(decimal value)
         {
             return decimal.Floor(value);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Decimal Functions", Name = "Multiply",
-            Description = "Multiplies two specified Decimal values.")]
-        public decimal Multiply(decimal value1, decimal value2)
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Multiply",
+            Description = "Multiplies two or more specified Decimal values.")]
+        public decimal Multiply(decimal value1, decimal[] value2)
         {
-            return value1 * value2;
+            var returnValue = value1;
+            foreach(var value in value2)
+            {
+                returnValue *= value;
+            }
+            return returnValue;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Decimal Functions", Name = "Negate",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Negate",
             Description = "Returns the result of multiplying the specifiedDecimal value by negative one.")]
         public decimal Negate(decimal value)
         {
             return value * -1;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Decimal Functions", Name = "Remainder",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Remainder",
             Description = "Computes the remainder after dividing two Decimal values.")]
         public decimal Remainder(decimal value1, decimal value2)
         {
             return decimal.Remainder(value1, value2);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Decimal Functions", Name = "Subtract",
-            Description = "Subtracts one specified Decimal value from another.")]
-        public decimal Subtract(decimal value1, decimal value2)
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Subtract",
+            Description = "Subtracts one or more specified Decimal values from another.")]
+        public decimal Subtract(decimal value1, decimal[] value2)
         {
-            return value1 - value2;
+            return value1 - value2.Sum();
         }
 
        

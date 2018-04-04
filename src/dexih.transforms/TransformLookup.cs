@@ -139,25 +139,18 @@ namespace dexih.transforms
                 });
             }
 
-            try
+            var lookupResult = await ReferenceTransform.LookupRow(filters, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
+            if (lookupResult != null)
             {
-                var lookupResult = await ReferenceTransform.LookupRow(filters, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
-                if (lookupResult != null)
-                {
-                    _lookupCache = lookupResult.GetEnumerator();
+                _lookupCache = lookupResult.GetEnumerator();
 
-                    if (_lookupCache.MoveNext())
+                if (_lookupCache.MoveNext())
+                {
+                    var lookup = _lookupCache.Current;
+                    for (var i = 0; i < _referenceFieldCount; i++)
                     {
-                        var lookup = _lookupCache.Current;
-                        for (var i = 0; i < _referenceFieldCount; i++)
-                        {
-                            newRow[pos] = lookup[i];
-                            pos++;
-                        }
-                    }
-                    else
-                    {
-                        _lookupCache = null;
+                        newRow[pos] = lookup[i];
+                        pos++;
                     }
                 }
                 else
@@ -165,10 +158,9 @@ namespace dexih.transforms
                     _lookupCache = null;
                 }
             }
-            catch(Exception ex)
+            else
             {
-                throw new TransformException($"The lookup failed.  {ex.Message}.", ex);
-
+                _lookupCache = null;
             }
 
             return newRow;
