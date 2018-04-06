@@ -815,7 +815,37 @@ namespace dexih.functions.BuiltIn
             // Return the hexadecimal string.
             return sBuilder.ToString();
         }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Maximum Number",
+    Description = "Returns the highest value in the array ")]
+        public decimal MaxNumber(decimal[] value)
+        {
+            return value.Max();
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Minimum Number",
+            Description = "Returns the lowest value in the array ")]
+        public decimal MinNumber(decimal[] value)
+        {
+            return value.Min();
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Maximum Date",
+            Description = "Returns the highest date in the array ")]
+        public DateTime MaxDate(DateTime[] value)
+        {
+            return value.Max();
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Minimum Date",
+            Description = "Returns the lowest date in the array ")]
+        public DateTime MinNDate(DateTime[] value)
+        {
+            return value.Min();
+        }
+
     }
+
 }
 
  

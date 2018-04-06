@@ -228,7 +228,7 @@ namespace dexih.transforms
                     }
                     if (mapping.TargetColumn != null)
                     {
-                        var column = new TableColumn(mapping.TargetColumn.Name, mapping.ReturnType);
+                        var column = mapping.TargetColumn.Copy(); // new TableColumn(mapping.TargetColumn.Name, mapping.ReturnType);
                         CacheTable.Columns.Add(column);
 
                         i++;
@@ -240,7 +240,7 @@ namespace dexih.transforms
                         {
                             if (param.Column != null)
                             {
-                                var column = new TableColumn(param.Column.Name, param.DataType);
+                                var column = param.Column.Copy(); // new TableColumn(param.Column.Name, param.DataType);
                                 CacheTable.Columns.Add(column);
                                 i++;
                             }

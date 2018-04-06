@@ -302,6 +302,24 @@ namespace dexih.functions.BuiltIn
         {
             return DateTime.Now >= lowRange && DateTime.Now <= highRange;
         }
-        
+
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Range Intersect",
+            Description = "The two ranges (lowRange1-highRange1 & lowRange2-highRange2) intersect.")]
+        public bool NumericRangeIntersect(double lowRange1, double highRange1, double lowRange2, double highRange2)
+        {
+            var test1 = lowRange1 >= lowRange2 && lowRange1 <= highRange2;
+            var test2 = highRange1 >= lowRange2 && highRange1 <= highRange2;
+            return test1 || test2;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Date Range Intersect",
+    Description = "The two date ranges intersect (lowRange1-highRange1 & lowRange2-highRange2) intersect.")]
+        public bool DateRangeIntersect(DateTime lowRange1, DateTime highRange1, DateTime lowRange2, DateTime highRange2)
+        {
+            var test1 = lowRange1 >= lowRange2 && lowRange1 < highRange2;
+            var test2 = highRange1 > lowRange2 && highRange1 <= highRange2;
+            return test1 || test2;
+        }
+
     }
 }

@@ -448,13 +448,13 @@ namespace dexih.transforms
                             case EDuplicateStrategy.Abend:
                                 throw new DuplicateJoinKeyException("The join transform failed as the selected columns on the join table " + ReferenceTableAlias + " are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, _groupFields);
                             case EDuplicateStrategy.First:
-                                joinRow = _groupData[0];
+                                joinRow = _filterdGroupData[0];
                                 break;
                             case EDuplicateStrategy.Last:
-                                joinRow = _groupData.Last();
+                                joinRow = _filterdGroupData.Last();
                                 break;
                             case EDuplicateStrategy.All:
-                                joinRow = _groupData[0];
+                                joinRow = _filterdGroupData[0];
                                 _writeGroup = true;
                                 _writeGroupPosition = 1;
                                 break;

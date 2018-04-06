@@ -21,13 +21,13 @@ namespace dexih.transforms
     )]
     public sealed class TransformDelta : Transform
     {
-        public TransformDelta(Transform inReader, Transform targetTransform, EUpdateStrategy deltaType, long surrogateKey, bool addDefaultRow)
+        public TransformDelta(Transform inReader, Transform referenceTransform, EUpdateStrategy deltaType, long surrogateKey, bool addDefaultRow)
         {
             DeltaType = deltaType;
             SurrogateKey = surrogateKey;
 
             // create a copy of the target table without the schem or any deltaType = Ignore columns
-            CacheTable = targetTransform.CacheTable.Copy(true, true);
+            CacheTable = referenceTransform.CacheTable.Copy(true, true);
             AddDefaultRow = addDefaultRow;
 
             DoUpdate = false;
@@ -43,7 +43,7 @@ namespace dexih.transforms
             if (deltaType == EUpdateStrategy.AppendUpdateDeletePreserve || deltaType == EUpdateStrategy.AppendUpdatePreserve)
                 DoPreserve = true;
 
-            SetInTransform(inReader, targetTransform);
+            SetInTransform(inReader, referenceTransform);
         }
 
         [JsonConverter(typeof (StringEnumConverter))]
@@ -58,10 +58,13 @@ namespace dexih.transforms
             AppendUpdateDeletePreserve // inserts new records, updates existing records, (logically) deletes removed records.
         }
 
+        private readonly DateTime _defaultValidFromDate = new DateTime(1900, 01, 01);
+        private readonly DateTime _defaultValidToDate = new DateTime(2099, 12, 31, 23, 59, 59);
+
         private bool _firstRead;
         private bool _truncateComplete;
         private bool _defaultRowAdded;
-        private bool _targetOpen;
+        private bool _referenceOpen;
         private bool _primaryOpen;
 
         private TableColumn _colValidFrom;
@@ -80,6 +83,7 @@ namespace dexih.transforms
         private int _validationStatusOrdinal;
         private int _sourceSurrogateKeyOrdinal;
         private int _validFromOrdinal;
+        private int _validToOrdinal;
         private int _isCurrentOrdinal;
 
         private int _sourceValidFromOrdinal;
@@ -134,7 +138,7 @@ namespace dexih.transforms
             _defaultRowAdded = false;
             _truncateComplete = false;
             _primaryOpen = true;
-            _targetOpen = true;
+            _referenceOpen = true;
 
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
@@ -152,9 +156,9 @@ namespace dexih.transforms
             //preload the source-target ordinal mapping to improve performance.
             _sourceOrdinals = new List<int>();
             var columnCount = CacheTable.Columns.Count;
-            for (var targetOrdinal = 1; targetOrdinal < columnCount; targetOrdinal++)
+            for (var referenceOrdinal = 1; referenceOrdinal < columnCount; referenceOrdinal++)
             {
-                _sourceOrdinals.Add(PrimaryTransform.GetOrdinal(CacheTable.Columns[targetOrdinal].Name));
+                _sourceOrdinals.Add(PrimaryTransform.GetOrdinal(CacheTable.Columns[referenceOrdinal].Name));
             }
 
             return true;
@@ -219,6 +223,7 @@ namespace dexih.transforms
             }
 
             _validFromOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
+            _validToOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
             _isCurrentOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
 
             _sourceSurrogateKeyOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
@@ -234,29 +239,29 @@ namespace dexih.transforms
 
         }
 
-        private bool CompareFields(object sourceValue, TableColumn targetColumn, object targetValue)
+        private bool CompareFields(object sourceValue, TableColumn referenceColumn, object referenceValue)
         {
             var source = sourceValue;
-            var target = targetValue;
+            var reference = referenceValue;
 
             if (sourceValue is EncryptedObject sourceObject)
             {
-                switch (targetColumn.SecurityFlag)
+                switch (referenceColumn.SecurityFlag)
                 {
                     case TableColumn.ESecurityFlag.FastEncrypted:
-                        target = FastDecrypt(targetValue);
+                        reference = FastDecrypt(referenceValue);
                         source = sourceObject.OriginalValue; 
                         break;
                     case TableColumn.ESecurityFlag.StrongEncrypted:
-                        target = StrongDecrypt(targetValue);
+                        reference = StrongDecrypt(referenceValue);
                         source = sourceObject.OriginalValue; 
                         break;
                     case TableColumn.ESecurityFlag.OnWayHashed:
-                        return OneWayHashCompare(targetValue, sourceObject.OriginalValue);
+                        return OneWayHashCompare(referenceValue, sourceObject.OriginalValue);
                 }
             }
 
-            return Compare(targetColumn.DataType, source, target) == ECompareResult.Equal;
+            return Compare(referenceColumn.DataType, source, reference) == ECompareResult.Equal;
         }
 
 
@@ -331,10 +336,10 @@ namespace dexih.transforms
                 var isMatch = true;
                 foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
                 {
-                    var targetOrdinal = CacheTable.GetOrdinal(col.Name);
+                    var referenceOrdinal = CacheTable.GetOrdinal(col.Name);
                     try
                     {
-                        var result = CompareFields(ReferenceTransform[col.Name], col, newRow[targetOrdinal]);
+                        var result = CompareFields(ReferenceTransform[col.Name], col, newRow[referenceOrdinal]);
                         if (!result)
                         {
                             isMatch = false;
@@ -343,7 +348,7 @@ namespace dexih.transforms
                     }
                     catch (Exception ex)
                     {
-                        throw new TransformException($"The delta transform {Name} failed as column {col.Name} contains incompatible values.", ex, ReferenceTransform[col.Name], newRow[targetOrdinal]);
+                        throw new TransformException($"The delta transform {Name} failed as column {col.Name} contains incompatible values.", ex, ReferenceTransform[col.Name], newRow[referenceOrdinal]);
                     }
                 }
 
@@ -378,8 +383,8 @@ namespace dexih.transforms
                 {
                     foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey))
                     {
-                        var targetOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
-                        if (targetOrdinal > -1)
+                        var referenceOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
+                        if (referenceOrdinal > -1)
                         {
                             filters.Add(new Filter(col, Filter.ECompare.GreaterThanEqual, PrimaryTransform[col.Name]));
                         }
@@ -392,10 +397,10 @@ namespace dexih.transforms
                 {
                     ReferenceTransform.Dispose();
                     await ReferenceTransform.Open(AuditKey, query, cancellationToken);
-                    _targetOpen = await ReferenceRead(cancellationToken);
+                    _referenceOpen = await ReferenceRead(cancellationToken);
                 }
                 else
-                    _targetOpen = false;
+                    _referenceOpen = false;
             }
 
             //if row is marked reject, then just push it through.
@@ -426,34 +431,37 @@ namespace dexih.transforms
                 return returnValue;
             }
 
+            Object validFrom =  null;
+            var readReferenceIfChanged = false;
+
             //this loop continues when there are matching source target rows.
             while (true)
             {
                 //if the primary table has finished reading any remaining rows in the target will be deletes.
                 if (!_primaryOpen)
                 {
-                    if (!DoDelete || !_targetOpen)
+                    if (!DoDelete || !_referenceOpen)
                         return null; //not checking deletes, then finish.
                                      //if there are still more records in the target table, then everything else is a delete.
                     newRow = CreateDeleteRow();
-                    _targetOpen = await ReferenceRead(cancellationToken);
+                    _referenceOpen = await ReferenceRead(cancellationToken);
                     return newRow;
                 }
 
                 //check if the natrual key in the source & target are less/match/greater to determine operation
                 var compareResult = ECompareResult.Less;
 
-                if (!_targetOpen)
+                if (!_referenceOpen)
                 {
                     //if target reader has finished, theen the natrual key compare will always be not-equal.
                     compareResult = ECompareResult.Less;
                 }
                 else
                 {
-                    foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey || c.DeltaType == TableColumn.EDeltaType.ValidToDate))
+                    foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.NaturalKey))
                     {
-                        var targetOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
-                        if (targetOrdinal > -1)
+                        var referenceOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
+                        if (referenceOrdinal > -1)
                         {
                             try
                             {
@@ -468,23 +476,30 @@ namespace dexih.transforms
                         }
                     }
 
+                    if(compareResult != ECompareResult.Equal && readReferenceIfChanged)
+                    {
+                        _referenceOpen = await ReferenceRead(cancellationToken);
+                        readReferenceIfChanged = false;
+                        continue;
+                    }
                 }
+
+                readReferenceIfChanged = false;
 
                 //if the primary greater in sort order than the target, then the target row has been deleted.
                 if (compareResult == ECompareResult.Greater && DoDelete)
                 {
                     newRow = CreateDeleteRow();
-                    _targetOpen = await ReferenceRead(cancellationToken);
+                    _referenceOpen = await ReferenceRead(cancellationToken);
                     return newRow;
                 }
 
                 //if compare result is greater, and not checking deletes.  Move the target table to the next row and test again.
                 if (compareResult == ECompareResult.Greater)
                 {
-                    _targetOpen = await ReferenceRead(cancellationToken);
+                    _referenceOpen = await ReferenceRead(cancellationToken);
                     continue;
                 }
-
 
                 //if not checking deletes and not equal, than this is a new row.  
                 if (compareResult != ECompareResult.Equal)
@@ -494,13 +509,12 @@ namespace dexih.transforms
                 }
                 else
                 {
-
-                    //the final possibility, is the natrual key is a match, check for changed tracking columns
+                    //the final possibility, is the natrual key is a match, then check for a changed tracking column
                     var isMatch = true;
                     foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
                     {
-                        var targetOrdinal = ReferenceTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
-                        if (targetOrdinal > -1)
+                        var referenceOrdinal = PrimaryTransform.GetOrdinal(col.Name); //ignore any comparisons on columns that do not exist in source.
+                        if (referenceOrdinal > -1)
                         {
                             try
                             {
@@ -518,41 +532,57 @@ namespace dexih.transforms
                         }
                     }
 
-                    if (!isMatch)
-                    {
-                        //if the record has changed and preserve history is on, then there will be two output operations.
-                        if (DoPreserve)
-                        {
-                            //store this in the preserve field, so it is written on the next read operation.
-                            PreserveRow = CreateOutputRow('C');
-                            newRow = CreateDeleteRow(PreserveRow);
-                        }
-                        else
-                        {
-                            newRow = CreateOutputRow('U');
-
-                            //keep the surrogoate key, create date, and create audit.  update the rest.
-
-                            if (_colSurrogateKey != null)
-                                newRow[CacheTable.GetOrdinal(_colSurrogateKey.Name)] = ReferenceTransform[_referenceSurrogateKeyOrdinal];
-                            if (_colCreateAuditKey != null)
-                                newRow[CacheTable.GetOrdinal(_colCreateAuditKey.Name)] = ReferenceTransform[_referenceCreateAudit];
-                            if (_colCreateDate != null)
-                                newRow[CacheTable.GetOrdinal(_colCreateDate.Name)] = ReferenceTransform[_referenceCreateDate];
-                        }
-
-                        //move primary and target readers to the next record.
-                        _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
-                        _targetOpen = await ReferenceRead(cancellationToken);
-                    }
-                    else
+                    if (isMatch)
                     {
                         //if we have a full record match, then the record is to be skipped, and the next record read.
                         TransformRowsIgnored++;
+
                         _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
-                        _targetOpen = await ReferenceRead(cancellationToken);
+
+                        if (_primaryOpen && _colValidFrom != null)
+                        {
+                            var compareResult3 = Compare(_colValidFrom.DataType, PrimaryTransform[_colValidFrom.Name], ReferenceTransform[_colValidTo.Name]);
+                            if (compareResult3 == ECompareResult.Greater || compareResult3 == ECompareResult.Equal)
+                            {
+                                _referenceOpen = await ReferenceRead(cancellationToken);
+                            }
+                            else
+                            {
+                                // set a marker to read another record from the reference table if the natural key has changed.
+                                readReferenceIfChanged = true;
+                            }
+                        }
+                        else
+                        {
+                            _referenceOpen = await ReferenceRead(cancellationToken);
+                        }
+
                         continue; //continue the loop
                     }
+
+                    //if the record has changed and preserve history is on, then there will be two output operations.
+                    if (DoPreserve)
+                    {
+                        //store this in the preserve field, so it is written on the next read operation.
+                        PreserveRow = CreateOutputRow('C');
+                        newRow = CreateDeleteRow(PreserveRow);
+                    }
+                    else
+                    {
+                        newRow = CreateOutputRow('U');
+
+                        //keep the surrogate key, create date, and create audit.  update the rest.
+                        if (_colSurrogateKey != null)
+                            newRow[CacheTable.GetOrdinal(_colSurrogateKey.Name)] = ReferenceTransform[_referenceSurrogateKeyOrdinal];
+                        if (_colCreateAuditKey != null)
+                            newRow[CacheTable.GetOrdinal(_colCreateAuditKey.Name)] = ReferenceTransform[_referenceCreateAudit];
+                        if (_colCreateDate != null)
+                            newRow[CacheTable.GetOrdinal(_colCreateDate.Name)] = ReferenceTransform[_referenceCreateDate];
+                    }
+
+                    //move primary and target readers to the next record.
+                    _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
+                    _referenceOpen = await ReferenceRead(cancellationToken);
                 }
 
 
@@ -561,26 +591,36 @@ namespace dexih.transforms
                 if (PreserveRow == null && _primaryOpen && CompareNewRowPrevious(newRow))
                 {
                     //if the row is a match against the tracking keys then just ignore it.
-                    if (CompareNewRowPreviousValues(newRow))
-                        continue;
-                    //if the previous row is a match, and the tracking field values are different, then either updated it or ignore it.
-                    if (DoPreserve)
+                    if (CompareNewRowPreviousValues(newRow) || !DoPreserve)
                     {
-                        TransformRowsPreserved++;
-                        if (_isCurrentOrdinal >= 0)
-                            newRow[_isCurrentOrdinal] = false;
-                        newRow[0] = 'C';
-                    }
-                    else
-                    {
+                        if(validFrom == null && _validFromOrdinal >= 0)
+                        {
+                            validFrom = newRow[_validFromOrdinal];
+                        }
+
+                        TransformRowsIgnored++;
                         continue;
                     }
 
-                    for (var i = 1; i < _columnCount; i++)
+                    //if the previous row is a match, and the tracking field values are different, then add the row as a preserved row
+                    TransformRowsPreserved++;
+                    if (_isCurrentOrdinal >= 0)
                     {
-                        if (CacheTable.Columns[i].DeltaType == TableColumn.EDeltaType.IsCurrentField)
-                            newRow[i] = false;
+                        newRow[_isCurrentOrdinal] = false;
                     }
+
+                    if (validFrom != null && _validFromOrdinal >= 0)
+                    {
+                        newRow[_validFromOrdinal] = validFrom;
+                    }
+
+                    // if there is a 
+                    if (_validToOrdinal >= 0 && _sourceValidFromOrdinal > 0 && _sourceValidToOrdinal < 0)
+                    {
+                        newRow[_validToOrdinal] = PrimaryTransform[_sourceValidFromOrdinal];
+                    }
+
+                    newRow[0] = 'C';
                 }
 
                 return newRow;
@@ -661,13 +701,12 @@ namespace dexih.transforms
             //check if the natrual key in the source & target are less/match/greater to determine operation
             foreach (var col in _colNatrualKey)
             {
-
                 var sourceOrdinal = MatchingSourceOrdinal(col);
 
                 if (sourceOrdinal > -1)
                 {
-                    var targetOrdinal = CacheTable.GetOrdinal(col.Name);
-                    if(!Equals(PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]))
+                    var referenceOrdinal = CacheTable.GetOrdinal(col.Name);
+                    if(!Equals(PrimaryTransform[sourceOrdinal], newRow[referenceOrdinal]))
                         return false;
                 }
             }
@@ -679,15 +718,15 @@ namespace dexih.transforms
         {
             //the final possibility, is the natrual key is a match, check for changed tracking columns
             var isMatch = true;
-            foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField || c.DeltaType == TableColumn.EDeltaType.ValidFromDate || c.DeltaType == TableColumn.EDeltaType.ValidToDate))
+            foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField)) // || c.DeltaType == TableColumn.EDeltaType.ValidFromDate || c.DeltaType == TableColumn.EDeltaType.ValidToDate))
             {
                 var sourceOrdinal = MatchingSourceOrdinal(col);
                 if (sourceOrdinal > -1)
                 {
-                    var targetOrdinal = CacheTable.GetOrdinal(col.Name);
+                    var referenceOrdinal = CacheTable.GetOrdinal(col.Name);
                     try
                     {
-                        var result = Compare(col.DataType, PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
+                        var result = Compare(col.DataType, PrimaryTransform[sourceOrdinal], newRow[referenceOrdinal]);
 
                         if (result != ECompareResult.Equal)
                         {
@@ -697,8 +736,7 @@ namespace dexih.transforms
                     }
                     catch(Exception ex)
                     {
-                        throw new TransformException($"The delta transform failed comparing incompatible values on column {col.Name}.  {ex.Message}", PrimaryTransform[sourceOrdinal], newRow[targetOrdinal]);
-
+                        throw new TransformException($"The delta transform failed comparing incompatible values on column {col.Name}.  {ex.Message}", PrimaryTransform[sourceOrdinal], newRow[referenceOrdinal]);
                     }
                 }
             }
@@ -751,82 +789,82 @@ namespace dexih.transforms
             newRow[0] = operation;
 
             var timer = new Stopwatch();
-            for (var targetOrdinal = 1; targetOrdinal < _columnCount; targetOrdinal++)
+            for (var referenceOrdinal = 1; referenceOrdinal < _columnCount; referenceOrdinal++)
             {
                 //check if a matching source field exists (-1 will be returned if it doesn't)
-                var sourceOrdinal = _sourceOrdinals[targetOrdinal - 1];
+                var sourceOrdinal = _sourceOrdinals[referenceOrdinal - 1];
 
-                switch (CacheTable.Columns[targetOrdinal].DeltaType)
+                switch (CacheTable.Columns[referenceOrdinal].DeltaType)
                 {
                     case TableColumn.EDeltaType.ValidFromDate:
                         if (_sourceValidFromOrdinal == -1 && sourceOrdinal == -1)
-                            newRow[targetOrdinal] = _currentDateTime;
+                            newRow[referenceOrdinal] = _currentDateTime;
                         else if(sourceOrdinal >= 0)
-                            newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[sourceOrdinal];
                         else
-                            newRow[targetOrdinal] = PrimaryTransform[_sourceValidFromOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[_sourceValidFromOrdinal];
 
                         break;
                     case TableColumn.EDeltaType.ValidToDate:
                         if (_sourceValidToOrdinal == -1 && sourceOrdinal == -1)
-                            newRow[targetOrdinal] = new DateTime(2099, 12, 31, 23, 59, 59);
+                            newRow[referenceOrdinal] = _defaultValidToDate;
                         else if(sourceOrdinal >= 0)
-                            newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[sourceOrdinal];
                         else
-                            newRow[targetOrdinal] = PrimaryTransform[_sourceValidToOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[_sourceValidToOrdinal];
                         break;
                     case TableColumn.EDeltaType.CreateDate:
                     case TableColumn.EDeltaType.UpdateDate:
-                        newRow[targetOrdinal] = _currentDateTime;
+                        newRow[referenceOrdinal] = _currentDateTime;
                         break;
                     case TableColumn.EDeltaType.IsCurrentField:
                         if (_sourceIsCurrentOrdinal == -1 && sourceOrdinal == -1)
-                            newRow[targetOrdinal] = true;
+                            newRow[referenceOrdinal] = true;
                         else if (sourceOrdinal >= 0)
-                            newRow[targetOrdinal] = PrimaryTransform[_sourceIsCurrentOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[_sourceIsCurrentOrdinal];
                         else
-                            newRow[targetOrdinal] = PrimaryTransform[_sourceIsCurrentOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[_sourceIsCurrentOrdinal];
                         break;
                     case TableColumn.EDeltaType.SurrogateKey:
                         SurrogateKey++; //increment now that key has been used.
-                        newRow[targetOrdinal] = SurrogateKey;
+                        newRow[referenceOrdinal] = SurrogateKey;
                         break;
                     case TableColumn.EDeltaType.SourceSurrogateKey:
                         if (_colSurrogateKey == null && sourceOrdinal == -1)
-                            newRow[targetOrdinal] = 0;
+                            newRow[referenceOrdinal] = 0;
                         else if (sourceOrdinal >= 0)
-                            newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[sourceOrdinal];
                         else if (_sourceSurrogateKeyOrdinal == -1)
-                            newRow[targetOrdinal] = 0;
+                            newRow[referenceOrdinal] = 0;
                         else
-                            newRow[targetOrdinal] = PrimaryTransform[_sourceSurrogateKeyOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[_sourceSurrogateKeyOrdinal];
                         break;
                     case TableColumn.EDeltaType.CreateAuditKey:
                     case TableColumn.EDeltaType.UpdateAuditKey:
                     case TableColumn.EDeltaType.AzurePartitionKey:
-                        newRow[targetOrdinal] = AuditKey;
+                        newRow[referenceOrdinal] = AuditKey;
                         break;
                     case TableColumn.EDeltaType.IgnoreField:
                         //do nothing
                         break;
                     case TableColumn.EDeltaType.ValidationStatus:
                         if(_validationStatusOrdinal >= 0)
-                            newRow[targetOrdinal] = PrimaryTransform[_validationStatusOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[_validationStatusOrdinal];
                         break;
                     case TableColumn.EDeltaType.RejectedReason:
                         if (_rejectedReasonOrdinal >= 0)
-                            newRow[targetOrdinal] = PrimaryTransform[_rejectedReasonOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[_rejectedReasonOrdinal];
                         break;
                     default:
                         timer.Start();
 
                         if (sourceOrdinal > -1)
                         {
-                            newRow[targetOrdinal] = PrimaryTransform[sourceOrdinal];
+                            newRow[referenceOrdinal] = PrimaryTransform[sourceOrdinal];
                         }
                         else
                         {
-                            newRow[targetOrdinal] = CacheTable.Columns[targetOrdinal].DefaultValue;
+                            newRow[referenceOrdinal] = CacheTable.Columns[referenceOrdinal].DefaultValue;
                         }
                         timer.Stop();
                         break;
@@ -843,56 +881,56 @@ namespace dexih.transforms
             newRow[0] = 'C';
 
             var timer = new Stopwatch();
-            for (var targetOrdinal = 1; targetOrdinal < _columnCount; targetOrdinal++)
+            for (var referenceOrdinal = 1; referenceOrdinal < _columnCount; referenceOrdinal++)
             {
-                var targetColumn = CacheTable.Columns[targetOrdinal];
+                var referenceColumn = CacheTable.Columns[referenceOrdinal];
 
-                if (targetColumn != null)
+                if (referenceColumn != null)
                 {
-                    switch (targetColumn.DeltaType)
+                    switch (referenceColumn.DeltaType)
                     {
                         case TableColumn.EDeltaType.ValidFromDate:
-                            if (string.IsNullOrEmpty(targetColumn.DefaultValue))
-                                newRow[targetOrdinal] = new DateTime(1900, 01, 01);
+                            if (string.IsNullOrEmpty(referenceColumn.DefaultValue))
+                                newRow[referenceOrdinal] = _defaultValidFromDate;
                             else
-                                newRow[targetOrdinal] = targetColumn.DefaultValue;
+                                newRow[referenceOrdinal] = referenceColumn.DefaultValue;
                             break;
                         case TableColumn.EDeltaType.ValidToDate:
-                            if (string.IsNullOrEmpty(targetColumn.DefaultValue))
-                                newRow[targetOrdinal] = new DateTime(2099, 12, 31);
+                            if (string.IsNullOrEmpty(referenceColumn.DefaultValue))
+                                newRow[referenceOrdinal] = _defaultValidToDate;
                             else
-                                newRow[targetOrdinal] = targetColumn.DefaultValue;
+                                newRow[referenceOrdinal] = referenceColumn.DefaultValue;
                             break;
                         case TableColumn.EDeltaType.CreateDate:
                         case TableColumn.EDeltaType.UpdateDate:
-                            newRow[targetOrdinal] = _currentDateTime;
+                            newRow[referenceOrdinal] = _currentDateTime;
                             break;
                         case TableColumn.EDeltaType.IsCurrentField:
-                            newRow[targetOrdinal] = true;
+                            newRow[referenceOrdinal] = true;
                             break;
                         case TableColumn.EDeltaType.SurrogateKey:
                             SurrogateKey++; //increment now that key has been used.
-                            newRow[targetOrdinal] = 0;
+                            newRow[referenceOrdinal] = 0;
                             break;
                         case TableColumn.EDeltaType.SourceSurrogateKey:
-                            newRow[targetOrdinal] = 0;
+                            newRow[referenceOrdinal] = 0;
                             break;
                         case TableColumn.EDeltaType.CreateAuditKey:
                         case TableColumn.EDeltaType.UpdateAuditKey:
                         case TableColumn.EDeltaType.AzurePartitionKey:
-                            newRow[targetOrdinal] = AuditKey;
+                            newRow[referenceOrdinal] = AuditKey;
                             break;
                         case TableColumn.EDeltaType.IgnoreField:
                             //do nothing
                             break;
                         case TableColumn.EDeltaType.NaturalKey:
-                            if (string.IsNullOrWhiteSpace(targetColumn.DefaultValue))
-                                throw new Exception("A default column could not be created as the column \"" + targetColumn.Name + "\" is part of the natural key and has a default value of null.  Edit the target table columns and set the default value to a non-null value to continue.");
+                            if (string.IsNullOrWhiteSpace(referenceColumn.DefaultValue))
+                                throw new Exception("A default column could not be created as the column \"" + referenceColumn.Name + "\" is part of the natural key and has a default value of null.  Edit the target table columns and set the default value to a non-null value to continue.");
                             else
-                                newRow[targetOrdinal] = targetColumn.DefaultValue;
+                                newRow[referenceOrdinal] = referenceColumn.DefaultValue;
                             break;
                         default:
-                            newRow[targetOrdinal] = targetColumn.DefaultValue;
+                            newRow[referenceOrdinal] = referenceColumn.DefaultValue;
                             break;
                     }
                 }
@@ -949,7 +987,7 @@ namespace dexih.transforms
         public override bool ResetTransform()
         {
             _firstRead = true;
-            _targetOpen = true;
+            _referenceOpen = true;
             _primaryOpen = true;
             CurrentRowNumber = -1;
 
@@ -979,13 +1017,18 @@ namespace dexih.transforms
                     }
                     fields.Add(new Sort(primaryColumn));
                 }
-                var validTo = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
-                if (validTo != null)
+                var validFrom = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidFromDate);
+                if (validFrom != null)
                 {
-                    var primaryValidTo = PrimaryTransform.CacheTable.Columns[validTo.Name];
-                    if (primaryValidTo != null)
+                    var primaryValidFrom = PrimaryTransform.CacheTable.Columns[validFrom.Name];
+                    if(primaryValidFrom == null)
                     {
-                        fields.Add(new Sort(primaryValidTo));
+                        primaryValidFrom = PrimaryTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidFromDate);
+                    }
+
+                    if (primaryValidFrom != null)
+                    {
+                        fields.Add(new Sort(primaryValidFrom));
                     }
                 }
             }
@@ -1013,9 +1056,11 @@ namespace dexih.transforms
 //                    }
                     fields.Add(new Sort(col));
                 }
-                var validTo = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
-                if (validTo != null)
-                    fields.Add(new Sort(validTo));
+                var validFrom = ReferenceTransform.CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidFromDate);
+                if (validFrom != null)
+                {
+                    fields.Add(new Sort(validFrom));
+                }
             }
 
             return fields;
