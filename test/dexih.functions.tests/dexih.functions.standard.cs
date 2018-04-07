@@ -108,6 +108,10 @@ namespace dexih.functions.tests
         [InlineData("dexih.functions.BuiltIn.ConditionFunctions", "NumericRangeIntersect", new object[] { 1, 2, 3, 4 }, false)] //(1,2)(3,4) not intersect
         [InlineData("dexih.functions.BuiltIn.ConditionFunctions", "NumericRangeIntersect", new object[] { 1, 3, 3, 4 }, false)] //(1,3)(3,4) do intersect
         [InlineData("dexih.functions.BuiltIn.ConditionFunctions", "NumericRangeIntersect", new object[] { 1, 4, 3, 4 }, true)] //(1,4)(3,4) do intersect
+        [InlineData("dexih.functions.BuiltIn.CategorizeFunctions", "RangeCategorize", new object[] { 1, 1, 5, 10}, true)]
+        [InlineData("dexih.functions.BuiltIn.CategorizeFunctions", "RangeCategorize", new object[] { 11, 1, 5, 10 }, false)]
+        [InlineData("dexih.functions.BuiltIn.CategorizeFunctions", "DiscreteRangeCategorize", new object[] { 1, 1, 5, 10 }, true)]
+        [InlineData("dexih.functions.BuiltIn.CategorizeFunctions", "DiscreteRangeCategorize", new object[] { 11, 1, 5, 10 }, false)]
         [MemberData(nameof(OtherFunctions))]
         public void StandardFunctionTest(string typeName, string methodName, object[] parameters, object expectedResult)
         {
