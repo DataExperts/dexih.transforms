@@ -192,7 +192,12 @@ namespace dexih.transforms.tests
 
             var filters = new List<TransformFunction>();
 
-            var newFilter = new TransformFunction(new Func<int, bool>((value) => value < 0), new TableColumn[] { new TableColumn(data.GetName(0)) }, null, null);
+            var newFilter = new TransformFunction(
+                new Func<int, bool>((value) => value < 0), 
+                new TableColumn[] { new TableColumn(data.GetName(0)) }, 
+                null, 
+                null,
+                null);
             filters.Add(newFilter);
             transformFilter.Functions = filters;
             transformFilter.SetInTransform(data);

@@ -49,7 +49,7 @@ namespace dexih.connections.test
             await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
 
             ////if the write was a file.  move it back to the incoming directory to read it.
-            if(connection.DatabaseCategory == Connection.ECategory.File)
+            if(connection.DatabaseConnectionCategory == Connection.EConnectionCategory.File)
             {
                 var fileConnection = (ConnectionFlatFile)connection;
                 var filename = fileConnection.LastWrittenFile;
@@ -67,7 +67,7 @@ namespace dexih.connections.test
             {
                 selectQuery = new SelectQuery()
                 {
-                    Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("StringColumn"), SelectColumn.EAggregate.None) },
+                    Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("StringColumn")) },
                     Sorts = new List<Sort>() { new Sort { Column = new TableColumn("IntColumn"), Direction = Sort.EDirection.Descending } },
                     Rows = 1,
                     Table = "test_table"
@@ -193,7 +193,7 @@ namespace dexih.connections.test
                 await connection.DataWriterFinish(table);
 
                 ////if the write was a file.  move it back to the incoming directory to read it.
-                if(connection.DatabaseCategory == Connection.ECategory.File)
+                if(connection.DatabaseConnectionCategory == Connection.EConnectionCategory.File)
                 {
                     var fileConnection = (ConnectionFlatFile)connection;
                     var filename = fileConnection.LastWrittenFile;

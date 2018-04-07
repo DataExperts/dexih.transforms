@@ -73,7 +73,7 @@ namespace dexih.transforms.tests
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            await Assert.ThrowsAsync<DuplicateJoinKeyException>(async () => { while (await transformJoin.ReadAsync()) ; });
+            await Assert.ThrowsAsync<TransformException>(async () => { while (await transformJoin.ReadAsync()) ; });
 
         }
 
@@ -89,7 +89,7 @@ namespace dexih.transforms.tests
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            await Assert.ThrowsAsync<DuplicateJoinKeyException>(async () => { while (await transformJoin.ReadAsync()) ; });
+            await Assert.ThrowsAsync<TransformException>(async () => { while (await transformJoin.ReadAsync()) ; });
         }
         
         /// <summary>
@@ -168,7 +168,12 @@ namespace dexih.transforms.tests
             var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort>() { new Sort("StringColumn") });
             var conditions = new List<TransformFunction>();
             //create a condition to filter only when IsValid == true;
-            conditions.Add(new TransformFunction( new Func<bool, bool>((isValid) => isValid ), new TableColumn[] { new TableColumn("IsValid", ETypeCode.Boolean, "Join")}, null, null));
+            conditions.Add(new TransformFunction( 
+                new Func<bool, bool>((isValid) => isValid ), 
+                new TableColumn[] { new TableColumn("IsValid", ETypeCode.Boolean, "Join")}, 
+                null,
+                null,
+                null));
 
             var transformJoin = new TransformJoin(source, sortedJoinData, new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
@@ -310,7 +315,12 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateSortedTestData();
             var conditions = new List<TransformFunction>();
             //create a condition to filter only when IsValid == true;
-            conditions.Add(new TransformFunction(new Func<bool, bool>((isValid) => isValid), new TableColumn[] { new TableColumn("IsValid", ETypeCode.Boolean, "Join") }, null, null));
+            conditions.Add(new TransformFunction(
+                new Func<bool, bool>((isValid) => isValid), 
+                new TableColumn[] { new TableColumn("IsValid", ETypeCode.Boolean, "Join") }, 
+                null,
+                null,
+                null));
 
             var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
@@ -341,7 +351,9 @@ namespace dexih.transforms.tests
             conditions.Add(new TransformFunction(
                 new Func<int, int, bool>((source1, join) => source1 == (join - 1) ), 
                 new TableColumn[] { new TableColumn("IntColumn", ETypeCode.Int32),  new TableColumn("IntColumn", ETypeCode.Int32, "Join") }, 
-                null, null));
+                null,
+                null,
+                null));
 
             var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), null, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(8, transformJoin.FieldCount);
@@ -373,7 +385,9 @@ namespace dexih.transforms.tests
             conditions.Add(new TransformFunction(
                 new Func<int, int, bool>((source1, join) => source1 == (join - 1)),
                 new TableColumn[] { new TableColumn("IntColumn", ETypeCode.Int32), new TableColumn("IntColumn", ETypeCode.Int32, "Join") },
-                null, null));
+                null,
+                null,
+                null));
 
             var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), null, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(8, transformJoin.FieldCount);

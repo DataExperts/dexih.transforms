@@ -32,7 +32,12 @@ namespace dexih.transforms.tests
             //        new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123)
             //    }, null));
 
-            var transformFunction = new TransformFunction(new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()), new TableColumn[] { new TableColumn("StringColumn"), new TableColumn("number", ETypeCode.Int32) }, new TableColumn("CustomFunction"), null);
+            var transformFunction = new TransformFunction(
+                new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()), 
+                new TableColumn[] { new TableColumn("StringColumn"), new TableColumn("number", ETypeCode.Int32) }, 
+                new TableColumn("CustomFunction"), 
+                null,
+                null);
             transformFunction.Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
                     new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123) };
@@ -123,7 +128,12 @@ namespace dexih.transforms.tests
 
             for (var i = 0; i < data.FieldCount; i++)
             {
-                var newTransformFunction = new TransformFunction(new Func<object, object>((value) => value), new TableColumn[] { new TableColumn(data.GetName(i)) }, new TableColumn(data.GetName(i)), null);
+                var newTransformFunction = new TransformFunction(
+                    new Func<object, object>((value) => value), 
+                    new TableColumn[] { new TableColumn(data.GetName(i)) }, 
+                    new TableColumn(data.GetName(i)), 
+                    null,
+                    null);
                 columnMappings.Add(newTransformFunction);
             }
 

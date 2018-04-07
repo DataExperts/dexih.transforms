@@ -104,7 +104,10 @@ namespace dexih.functions.tests
         [InlineData("dexih.functions.BuiltIn.MapFunctions", "Truncate", new object[] { 6.4 }, (double)6)]
         [InlineData("dexih.functions.BuiltIn.ConditionFunctions", "IsIn", new object[] { "test2", "test1", "test2", "test3" }, true)]
         [InlineData("dexih.functions.BuiltIn.MapFunctions", "GetDistanceTo", new object[] { -38, -145, -34 ,- 151 }, 699082.1288)] //melbourne to sydney distance
-        [InlineData("dexih.functions.BuiltIn.ValidationFunctions", "MaxLength", new object[] { "abcdef", 5 }, false)] 
+        [InlineData("dexih.functions.BuiltIn.ValidationFunctions", "MaxLength", new object[] { "abcdef", 5 }, false)]
+        [InlineData("dexih.functions.BuiltIn.ConditionFunctions", "NumericRangeIntersect", new object[] { 1, 2, 3, 4 }, false)] //(1,2)(3,4) not intersect
+        [InlineData("dexih.functions.BuiltIn.ConditionFunctions", "NumericRangeIntersect", new object[] { 1, 3, 3, 4 }, false)] //(1,3)(3,4) do intersect
+        [InlineData("dexih.functions.BuiltIn.ConditionFunctions", "NumericRangeIntersect", new object[] { 1, 4, 3, 4 }, true)] //(1,4)(3,4) do intersect
         [MemberData(nameof(OtherFunctions))]
         public void StandardFunctionTest(string typeName, string methodName, object[] parameters, object expectedResult)
         {
@@ -148,7 +151,10 @@ namespace dexih.functions.tests
                     new object[] { "dexih.functions.BuiltIn.ConditionFunctions", "IsDateTimeEqual", new object[] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015") }, true },
                     new object[] { "dexih.functions.BuiltIn.ConditionFunctions", "IsDateBetween", new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("25 Sep 2015"), DateTime.Parse("27 Sep 2015") }, true },
                     new object[] { "dexih.functions.BuiltIn.ConditionFunctions", "IsDateBetweenInclusive", new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015") }, true },
-                    new object[] { "dexih.functions.BuiltIn.MapFunctions", "UnixTimeStampToDate", new object[] { 1518739200 }, new DateTime(2018, 2, 16, 0, 0, 0, 0, System.DateTimeKind.Utc).ToLocalTime() }
+                    new object[] { "dexih.functions.BuiltIn.MapFunctions", "UnixTimeStampToDate", new object[] { 1518739200 }, new DateTime(2018, 2, 16, 0, 0, 0, 0, System.DateTimeKind.Utc).ToLocalTime() },
+                    new object[] { "dexih.functions.BuiltIn.ConditionFunctions", "DateRangeIntersect", new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, false },
+                    new object[] { "dexih.functions.BuiltIn.ConditionFunctions", "DateRangeIntersect", new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, false },
+                    new object[] { "dexih.functions.BuiltIn.ConditionFunctions", "DateRangeIntersect", new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("29 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, true },
                 };
             }
         }

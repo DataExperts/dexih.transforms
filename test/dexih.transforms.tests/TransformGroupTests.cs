@@ -12,7 +12,7 @@ namespace dexih.transforms.tests
     {
 
         [Fact]
-        public async Task Group_Aggregates()
+        public async Task Group_Aggregates_Functions()
         {
             var source = Helpers.CreateUnSortedTestData();
 
@@ -51,7 +51,7 @@ namespace dexih.transforms.tests
             aggregates.Add(countdistinct);
             aggregates.Add(concat);
 
-            var transformGroup = new TransformGroup(source, null, aggregates, false);
+            var transformGroup = new TransformGroup(source, null, aggregates, null, false);
 
             Assert.Equal(7, transformGroup.FieldCount);
 
@@ -73,7 +73,7 @@ namespace dexih.transforms.tests
 
             var groupColumns = new List<ColumnPair>() { new ColumnPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
 
-            transformGroup = new TransformGroup(source, groupColumns, aggregates, false);
+            transformGroup = new TransformGroup(source, groupColumns, aggregates, null, false);
 
             counter = 0;
             while (await transformGroup.ReadAsync() == true)
@@ -97,6 +97,68 @@ namespace dexih.transforms.tests
                     Assert.Equal((double)10, transformGroup["Maximum"]);
                     Assert.Equal(2, transformGroup["Count"]);
                     Assert.Equal(1, transformGroup["CountDistinct"]);
+                }
+            }
+            Assert.Equal(10, counter);
+        }
+
+        [Fact]
+        public async Task Group_Aggregates_AggregatePairs()
+        {
+            var source = Helpers.CreateUnSortedTestData();
+
+            var aggregates = new List<AggregatePair>();
+
+            var intColumn = new TableColumn("IntColumn", ETypeCode.Int32);
+
+            aggregates.Add(new AggregatePair(intColumn, new TableColumn("Sum", ETypeCode.Double), functions.Query.SelectColumn.EAggregate.Sum));
+            aggregates.Add(new AggregatePair(intColumn, new TableColumn("Average", ETypeCode.Double), functions.Query.SelectColumn.EAggregate.Average));
+            aggregates.Add(new AggregatePair(intColumn, new TableColumn("Minimum", ETypeCode.Double), functions.Query.SelectColumn.EAggregate.Min));
+            aggregates.Add(new AggregatePair(intColumn, new TableColumn("Maximum", ETypeCode.Double), functions.Query.SelectColumn.EAggregate.Max));
+            aggregates.Add(new AggregatePair(intColumn, new TableColumn("Count", ETypeCode.Double), functions.Query.SelectColumn.EAggregate.Count));
+
+            var transformGroup = new TransformGroup(source, null, null, aggregates, false);
+
+            Assert.Equal(5, transformGroup.FieldCount);
+
+            var counter = 0;
+            while (await transformGroup.ReadAsync() == true)
+            {
+                counter = counter + 1;
+                Assert.Equal(55, transformGroup["Sum"]);
+                Assert.Equal(5.5, transformGroup["Average"]);
+                Assert.Equal(1, transformGroup["Minimum"]);
+                Assert.Equal(10, transformGroup["Maximum"]);
+                Assert.Equal(10L, transformGroup["Count"]);
+            }
+            Assert.Equal(1, counter);
+
+            //add a row to use for grouping.
+            source.Add(new object[] { "value10", 10, 10.1, "2015/01/10", 10, "Even" });
+
+            var groupColumns = new List<ColumnPair>() { new ColumnPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
+
+            transformGroup = new TransformGroup(source, groupColumns, null, aggregates, false);
+
+            counter = 0;
+            while (await transformGroup.ReadAsync() == true)
+            {
+                counter = counter + 1;
+                if (counter < 10)
+                {
+                    Assert.Equal(counter, transformGroup["Sum"]);
+                    Assert.Equal((double)counter, transformGroup["Average"]);
+                    Assert.Equal(counter, transformGroup["Minimum"]);
+                    Assert.Equal(counter, transformGroup["Maximum"]);
+                    Assert.Equal(1L, transformGroup["Count"]);
+                }
+                else
+                {
+                    Assert.Equal(20, transformGroup["Sum"]);
+                    Assert.Equal(10d, transformGroup["Average"]);
+                    Assert.Equal(10, transformGroup["Minimum"]);
+                    Assert.Equal(10, transformGroup["Maximum"]);
+                    Assert.Equal(2L, transformGroup["Count"]);
                 }
             }
             Assert.Equal(10, counter);
@@ -136,7 +198,7 @@ namespace dexih.transforms.tests
 
             var groupColumns = new List<ColumnPair>() { new ColumnPair(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)) };
 
-            var transformGroup = new TransformGroup(source, null, aggregates, true);
+            var transformGroup = new TransformGroup(source, null, aggregates, null, true);
 
             Assert.Equal(8, transformGroup.FieldCount);
 

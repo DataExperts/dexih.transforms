@@ -26,7 +26,7 @@ public class samples
             new TransformFunction(
                 new Func<string, bool>((value) => value != null), //function code
                 new[] { new TableColumn("PurchaseOrderNumber") },  //input column
-                null, null )
+                null, null, null )
             },
             null
         );
@@ -43,6 +43,7 @@ public class samples
                 Functions.GetFunction("dexih.functions.BuiltIn.AggregateFunctions", "Median").GetTransformFunction(new[] { new TableColumn("TotalDue") }, new TableColumn("DailyMedian"), null),
                 Functions.GetFunction("dexih.functions.BuiltIn.AggregateFunctions", "Sum").GetTransformFunction(new[] { new TableColumn("TotalDue") }, new TableColumn("DailyTotal"), null)
             },
+            null,
             true //Pass through colums = true will will pass through original fields/rows and merge in the aggregates
         );
 

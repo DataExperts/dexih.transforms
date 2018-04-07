@@ -60,16 +60,16 @@ namespace dexih.connections.test
             Assert.Equal(5, importTable.Columns.Count);
             
             Assert.Equal("IntColumn", importTable.Columns["IntColumn"].Name);
-            Assert.True(ETypeCode.Int32 == importTable.Columns["IntColumn"].Datatype || ETypeCode.Int64 == importTable.Columns["IntColumn"].Datatype);
+            Assert.True(ETypeCode.Int32 == importTable.Columns["IntColumn"].DataType || ETypeCode.Int64 == importTable.Columns["IntColumn"].DataType);
             Assert.Equal("StringColumn", importTable.Columns["StringColumn"].Name);
-            Assert.Equal(ETypeCode.String, importTable.Columns["StringColumn"].Datatype);
+            Assert.Equal(ETypeCode.String, importTable.Columns["StringColumn"].DataType);
             // commented date check as sqlite treats dates as string.  Value check below does the test adequately.
 //            Assert.Equal("DateColumn", importTable.Columns["DateColumn"].Name);
 //            Assert.Equal(ETypeCode.DateTime, importTable.Columns["DateColumn"].Datatype);
 //            Assert.Equal("DecimalColumn", importTable.Columns["DecimalColumn"].Name);
 //            Assert.Equal(ETypeCode.Decimal, importTable.Columns["DecimalColumn"].Datatype);
             Assert.Equal("GuidColumn", importTable.Columns["GuidColumn"].Name);
-            Assert.True(ETypeCode.String == importTable.Columns["GuidColumn"].Datatype || ETypeCode.Guid == importTable.Columns["GuidColumn"].Datatype);
+            Assert.True(ETypeCode.String == importTable.Columns["GuidColumn"].DataType || ETypeCode.Guid == importTable.Columns["GuidColumn"].DataType);
 
             // check rows can be read.
             var reader = connection.GetTransformReader(importTable);

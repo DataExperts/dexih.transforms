@@ -16,10 +16,11 @@ namespace dexih.transforms
         /// Sets the source and target mappings to the same column name
         /// </summary>
         /// <param name="sourceTargetColumn">Column Name</param>
-        public AggregatePair(TableColumn sourceTargetColumn)
+        public AggregatePair(TableColumn sourceTargetColumn, EAggregate aggregate = EAggregate.Sum)
         {
             SourceColumn = sourceTargetColumn;
             TargetColumn = sourceTargetColumn;
+            Aggregate = aggregate;
         }
 
         /// <summary>
@@ -27,10 +28,11 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="sourceColumn">Source Column Name</param>
         /// <param name="targetColumn">Target Column Name</param>
-        public AggregatePair(TableColumn sourceColumn, TableColumn targetColumn)
+        public AggregatePair(TableColumn sourceColumn, TableColumn targetColumn, EAggregate aggregate = EAggregate.Sum)
         {
             SourceColumn = sourceColumn;
             TargetColumn = targetColumn;
+            Aggregate = aggregate;
         }
 
         public TableColumn SourceColumn { get; set; }
@@ -44,6 +46,7 @@ namespace dexih.transforms
         public void Reset()
         {
             Value = null;
+            Count = 0;
         }
 
         public void AddValue(object value)
@@ -91,7 +94,7 @@ namespace dexih.transforms
                 case EAggregate.Sum:
                     return Value;
                 case EAggregate.Average:
-                    return Count == 0 ? 0 : DataType.Divide(SourceColumn.DataType, Value, Count);
+                    return Count == 0 ? 0 : DataType.Divide(TargetColumn.DataType, Value, Count);
             }
 
             return null;

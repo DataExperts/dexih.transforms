@@ -90,8 +90,8 @@ namespace dexih.transforms.tests
                 result.SetProperties(0, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                 var writeResult = await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
                 Assert.True(writeResult);
-            
-                target = new ReaderMemory(target.CacheTable, null);
+
+                target = memoryConnection.GetTransformReader(target.CacheTable); // new ReaderMemory(target.CacheTable, null);
 
                 //Set the target pointer back to the start and rerun.  Now 10 rows should be ignored.
                 source.SetRowNumber(0);
@@ -106,8 +106,8 @@ namespace dexih.transforms.tests
                     count++;
                 }
 
-                Assert.True(transformDelta.TotalRowsIgnored == 10);
-                Assert.True(count == 0);
+                Assert.Equal(10, transformDelta.TotalRowsIgnored);
+                Assert.Equal(0, count);
 
                 //change 3 rows. (first, middle, last)
                 target.CacheTable.Data[0][4] = 100;
@@ -207,7 +207,7 @@ namespace dexih.transforms.tests
                 var result = new TransformWriterResult();
                 result.SetProperties(0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
                await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
-               target = new ReaderMemory(target.CacheTable, null);
+                target = memoryConnection.GetTransformReader(target.CacheTable);
 
                 //run an append.  (only difference from reload is no truncate record at start.
                 transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);

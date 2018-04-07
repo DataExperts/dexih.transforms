@@ -149,6 +149,16 @@ namespace dexih.transforms
             return Task.FromResult<long>(maxIncrement);
         }
 
+        public TableCache GetTableData(Table table)
+        {
+            var returnTable = _tables[table.Name];
+            if(returnTable != null)
+            {
+                return returnTable.Data;
+            }
+            return null;
+        }
+
         public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
         {
             var reader = new ReaderMemory(_tables[table.Name], null);
@@ -221,7 +231,8 @@ namespace dexih.transforms
 
         public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
-            var reader = new ReaderMemory(table);
+            // var reader = new ReaderMemory(table);
+            var reader = new ReaderMemory(_tables[table.Name], null);
             return reader;
         }
 

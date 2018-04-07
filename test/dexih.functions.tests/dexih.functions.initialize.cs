@@ -13,7 +13,7 @@ namespace dexih.functions.tests
         public void FunctionFromDelegate()
         {
             //create a custom function
-            TransformFunction function1 = new TransformFunction(new Func<int, int, int>((i, j) => i + j), new TableColumn[] { new TableColumn("value1"), new TableColumn("value2") }, new TableColumn("Add"), null);
+            TransformFunction function1 = new TransformFunction(new Func<int, int, int>((i, j) => i + j), new TableColumn[] { new TableColumn("value1"), new TableColumn("value2") }, new TableColumn("Add"), null, null);
             Assert.True((Int32)function1.RunFunction(new object[] { 6, 2 }) == 8);
         }
 
@@ -21,7 +21,12 @@ namespace dexih.functions.tests
         public void FunctionFromMethod()
         {
             //create a custom function
-            TransformFunction function1 = new TransformFunction(this, "TestMethod", "", "", null, new TableColumn("test"), null);
+            TransformFunction function1 = new TransformFunction(
+                this, 
+                "TestMethod", 
+                null, 
+                new TableColumn("test"), 
+                null);
             Assert.True((Int32)function1.RunFunction(new object[] { 6, 2 }) == 8);
         }
 

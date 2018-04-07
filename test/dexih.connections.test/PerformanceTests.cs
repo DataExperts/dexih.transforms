@@ -36,7 +36,7 @@ namespace dexih.connections.test
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "column" + typeCode,
-                    Datatype = typeCode,
+                    DataType = typeCode,
                     MaxLength = 50,
                     DeltaType = TableColumn.EDeltaType.TrackingField
                 });
@@ -57,11 +57,11 @@ namespace dexih.connections.test
                 //load the rows with min and max values.
                 for (var j = 2; j < table.Columns.Count; j++)
                 {
-                    var dataType = DataType.GetType(table.Columns[j].Datatype);
+                    var dataType = DataType.GetType(table.Columns[j].DataType);
                     if (i % 2 == 0)
-                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].Datatype, 20);
+                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].DataType, 20);
                     else
-                        row[j] = connection.GetConnectionMinValue(table.Columns[j].Datatype);
+                        row[j] = connection.GetConnectionMinValue(table.Columns[j].DataType);
                 }
                 table.Data.Add(row);
                 buffer++;
@@ -89,7 +89,7 @@ namespace dexih.connections.test
                 {
                     for (var j = 2; j < table.Columns.Count; j++)
                     {
-                        Assert.Equal(connection.GetConnectionMaxValue(table.Columns[j].Datatype, 20), reader[j]);
+                        Assert.Equal(connection.GetConnectionMaxValue(table.Columns[j].DataType, 20), reader[j]);
                     }
                     
                 }
@@ -97,7 +97,7 @@ namespace dexih.connections.test
                 {
                     for (var j = 2; j < table.Columns.Count; j++)
                     {
-                        Assert.Equal(connection.GetConnectionMinValue(table.Columns[j].Datatype), reader[j]);
+                        Assert.Equal(connection.GetConnectionMinValue(table.Columns[j].DataType), reader[j]);
                     }
                     
                 }
@@ -123,7 +123,7 @@ namespace dexih.connections.test
                 for (var j = 2; j < table.Columns.Count; j++)
                 {
                     updateColumn = new QueryColumn(table.Columns[j],
-                        connection.GetConnectionMaxValue(table.Columns[j].Datatype));
+                        connection.GetConnectionMaxValue(table.Columns[j].DataType));
                     updateColumns.Add(updateColumn);
                 }
                 updateQueries.Add(new UpdateQuery()
@@ -218,7 +218,7 @@ namespace dexih.connections.test
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "column" + typeCode,
-                    Datatype = typeCode,
+                    DataType = typeCode,
                     MaxLength = 50,
                     DeltaType = TableColumn.EDeltaType.TrackingField
                 });
@@ -239,11 +239,11 @@ namespace dexih.connections.test
                 //load the rows with random values.
                 for (var j = 2; j < table.Columns.Count; j++)
                 {
-                    var dataType = DataType.GetType(table.Columns[j].Datatype);
+                    var dataType = DataType.GetType(table.Columns[j].DataType);
                     if (i % 2 == 0)
-                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].Datatype);
+                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].DataType);
                     else
-                        row[j] = connection.GetConnectionMinValue(table.Columns[j].Datatype);
+                        row[j] = connection.GetConnectionMinValue(table.Columns[j].DataType);
                 }
                 table.Data.Add(row);
                 buffer++;

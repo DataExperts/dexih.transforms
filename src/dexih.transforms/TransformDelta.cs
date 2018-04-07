@@ -92,8 +92,9 @@ namespace dexih.transforms
 
         private int _referenceSurrogateKeyOrdinal;
         private int _referenceIsValidOrdinal;
-        private int _referenceCreateAudit;
-        private int _referenceCreateDate;
+        private int _referenceCreateAuditOrdinal;
+        private int _referenceCreateDateOrginal;
+        private int _referenceValidToOridinal;
 
         private int _columnCount;
 
@@ -234,8 +235,9 @@ namespace dexih.transforms
 
             _referenceIsValidOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
             _referenceSurrogateKeyOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SurrogateKey);
-            _referenceCreateAudit = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateAuditKey);
-            _referenceCreateDate = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateDate);
+            _referenceCreateAuditOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateAuditKey);
+            _referenceCreateDateOrginal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateDate);
+            _referenceValidToOridinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
 
         }
 
@@ -539,9 +541,9 @@ namespace dexih.transforms
 
                         _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
 
-                        if (_primaryOpen && _colValidFrom != null)
+                        if (_primaryOpen && _sourceValidFromOrdinal >= 0 && _referenceValidToOridinal >=0)
                         {
-                            var compareResult3 = Compare(_colValidFrom.DataType, PrimaryTransform[_colValidFrom.Name], ReferenceTransform[_colValidTo.Name]);
+                            var compareResult3 = Compare(_colValidFrom.DataType, PrimaryTransform[_sourceValidFromOrdinal], ReferenceTransform[_referenceValidToOridinal]);
                             if (compareResult3 == ECompareResult.Greater || compareResult3 == ECompareResult.Equal)
                             {
                                 _referenceOpen = await ReferenceRead(cancellationToken);
@@ -575,9 +577,9 @@ namespace dexih.transforms
                         if (_colSurrogateKey != null)
                             newRow[CacheTable.GetOrdinal(_colSurrogateKey.Name)] = ReferenceTransform[_referenceSurrogateKeyOrdinal];
                         if (_colCreateAuditKey != null)
-                            newRow[CacheTable.GetOrdinal(_colCreateAuditKey.Name)] = ReferenceTransform[_referenceCreateAudit];
+                            newRow[CacheTable.GetOrdinal(_colCreateAuditKey.Name)] = ReferenceTransform[_referenceCreateAuditOrdinal];
                         if (_colCreateDate != null)
-                            newRow[CacheTable.GetOrdinal(_colCreateDate.Name)] = ReferenceTransform[_referenceCreateDate];
+                            newRow[CacheTable.GetOrdinal(_colCreateDate.Name)] = ReferenceTransform[_referenceCreateDateOrginal];
                     }
 
                     //move primary and target readers to the next record.
@@ -627,7 +629,7 @@ namespace dexih.transforms
             }
         }
 
-        //reads reference rows, ignoring any rows where iscurrent = false and the surrogateKey = 0
+        //reads reference rows, ignoring any rows where iscurrent = false and the surrogateKey = 0, or validfrom == validto
         private async Task<bool> ReferenceRead(CancellationToken cancellationToken)
         {
             while (await ReferenceTransform.ReadAsync(cancellationToken))
