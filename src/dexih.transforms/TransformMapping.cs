@@ -147,20 +147,20 @@ namespace dexih.transforms
 	        return null;
         }
 	    
-	    public TableColumn TranslateSourceColumn(TableColumn sourceColumn)
+	    public TableColumn[] TranslateSourceColumn(TableColumn sourceColumn)
 	    {
 		    if (sourceColumn == null)
 			    return null;
 	        
 		    if (MapFields != null)
 		    {
-			    var mapping = MapFields.SingleOrDefault(c => c.SourceColumn.TableColumnName() == sourceColumn.TableColumnName()) ??
-			                  MapFields.SingleOrDefault(c => c.SourceColumn.Name == sourceColumn.Name);
+                var mapping = MapFields.Where(c => c.SourceColumn.TableColumnName() == sourceColumn.TableColumnName());
+                if (mapping.Count() == 0)
+                {
+                    mapping = MapFields.Where(c => c.SourceColumn.Name == sourceColumn.Name);
+                }
 
-			    if (mapping != null)
-			    {
-				    return mapping.TargetColumn.Copy();
-			    }
+                return mapping.Select(c => c.TargetColumn.Copy()).ToArray();
 		    }
 
 		    if(PassThroughColumns)
@@ -168,11 +168,11 @@ namespace dexih.transforms
 			    var column = CacheTable.Columns.SingleOrDefault(c => c.Name == sourceColumn.Name);
 			    if (column != null)
 			    {
-				    return column.Copy();
+				    return new[] { column.Copy() };
 			    }
 		    }
 
-		    return null;
+            return new TableColumn[0];
 	    }
 	    
 
@@ -311,10 +311,13 @@ namespace dexih.transforms
 
 				    foreach (var sortField in PrimaryTransform.SortFields)
 				    {
-					    var newColumn = TranslateSourceColumn(sortField.Column);
-					    if (newColumn != null)
+					    var newColumns = TranslateSourceColumn(sortField.Column);
+					    if (newColumns.Count() > 0)
 					    {
-						    sortFields.Add(new Sort(newColumn, sortField.Direction));
+                            foreach (var newColumn in newColumns)
+                            {
+                                sortFields.Add(new Sort(newColumn, sortField.Direction));
+                            }
 					    }
 					    else
 					    {
@@ -330,7 +333,6 @@ namespace dexih.transforms
 			    }
 		    }
 	    }
-
 
         public override bool ResetTransform()
         {

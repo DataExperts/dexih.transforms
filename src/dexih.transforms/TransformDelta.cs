@@ -575,11 +575,19 @@ namespace dexih.transforms
 
                         //keep the surrogate key, create date, and create audit.  update the rest.
                         if (_colSurrogateKey != null)
+                        {
                             newRow[CacheTable.GetOrdinal(_colSurrogateKey.Name)] = ReferenceTransform[_referenceSurrogateKeyOrdinal];
+                        }
+
                         if (_colCreateAuditKey != null)
+                        {
                             newRow[CacheTable.GetOrdinal(_colCreateAuditKey.Name)] = ReferenceTransform[_referenceCreateAuditOrdinal];
+                        }
+
                         if (_colCreateDate != null)
+                        {
                             newRow[CacheTable.GetOrdinal(_colCreateDate.Name)] = ReferenceTransform[_referenceCreateDateOrginal];
+                        }
                     }
 
                     //move primary and target readers to the next record.
@@ -623,6 +631,11 @@ namespace dexih.transforms
                     }
 
                     newRow[0] = 'C';
+                }
+
+                if (validFrom != null && _validFromOrdinal >= 0)
+                {
+                    newRow[_validFromOrdinal] = validFrom;
                 }
 
                 return newRow;

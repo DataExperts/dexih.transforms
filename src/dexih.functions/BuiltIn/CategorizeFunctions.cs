@@ -30,7 +30,7 @@ namespace dexih.functions.BuiltIn
             {
                 if (value < range[i])
                 {
-                    rangeString = $"{range[i - 1] - range[i]}";
+                    rangeString = $"{range[i - 1]} - {range[i]}";
                     rangeLow = range[i - 1];
                     rangeHigh = range[i];
                     return true;
@@ -64,10 +64,10 @@ namespace dexih.functions.BuiltIn
 
             for (var i = 1; i < range.Length; i++)
             {
-                var highRange = range.Length == i ? range[i] : range[i - 1];
+                var highRange = range.Length == i ? range[i] : range[i];
                 if (value <= highRange)
                 {
-                    rangeString = $"{range[i - 1] - (highRange)}";
+                    rangeString = $"{range[i - 1]} - {highRange}";
                     rangeLow = range[i - 1];
                     rangeHigh = highRange;
                     return true;
