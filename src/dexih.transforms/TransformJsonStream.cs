@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using dexih.functions;
+using Dexih.Utils.Crypto;
 using Newtonsoft.Json;
 
 namespace dexih.transforms
@@ -29,7 +30,7 @@ namespace dexih.transforms
         private bool _first;
         object[] valuesArray;
 
-        public TransformJsonStream(DbDataReader reader, long maxRows = -1)
+        public TransformJsonStream(string name, DbDataReader reader, long maxRows = -1)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
@@ -42,8 +43,9 @@ namespace dexih.transforms
             _hasRows = true;
             _first = true;
 
+            _streamWriter.Write("{\"name\": \"" + System.Web.HttpUtility.JavaScriptStringEncode(name) + "\"");
 
-            _streamWriter.Write("{\"columns\": ");
+            _streamWriter.Write(", \"columns\": ");
 
             // if this is a transform, then use the dataTypes from the cache table
             if (reader is Transform transform)

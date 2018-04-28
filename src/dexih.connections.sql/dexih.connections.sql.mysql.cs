@@ -534,7 +534,7 @@ namespace dexih.connections.sql
 							{
 								Name = reader[0].ToString(),
 							};
-							tableList.Add(table);;
+							tableList.Add(table);
                         }
                     }
 

@@ -192,7 +192,7 @@ namespace dexih.connections.dexih
                 {
                     var tables = result["value"];
                     var tableList = tables.ToObject<List<Table>>();
-                    return tableList; ;
+                    return tableList;
                 }
                 else
                 {

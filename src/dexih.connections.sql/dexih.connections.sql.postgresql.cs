@@ -416,7 +416,7 @@ namespace dexih.connections.sql
                                 Name = reader["table_name"].ToString(),
                                 Schema = reader["table_schema"].ToString(),
                             };
-                            tableList.Add(table); ;
+                            tableList.Add(table);
                         }
                     }
 

@@ -52,10 +52,7 @@ namespace dexih.transforms.Poco
             }  
         }
 
-        public T this[int index]
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public T this[int index] => throw new NotImplementedException();
 
         public int Count { get; }
         public Task<int> CountAsync(CancellationToken cancellationToken)

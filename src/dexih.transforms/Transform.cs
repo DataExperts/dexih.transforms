@@ -685,7 +685,7 @@ namespace dexih.transforms
             if (CacheMethod == ECacheMethod.PreLoadCache)
             {
                 //preload all records.
-                while (await ReadAsync(cancellationToken)) ;
+                while (await ReadAsync(cancellationToken)) continue;
 
                 if(duplicateStrategy == EDuplicateStrategy.First)
                 {
@@ -750,7 +750,7 @@ namespace dexih.transforms
                         else
                         {
                             // if the lookup is multiple records, scan entire dataset.
-                            while (await ReadAsync(cancellationToken)) ;
+                            while (await ReadAsync(cancellationToken)) continue;
                             lookupResult = CacheTable.LookupMultipleRows(filters);
 
                         }
@@ -791,7 +791,7 @@ namespace dexih.transforms
                     {
                         throw new TransformException("The lookup row failed as multiple rows were returned at the duplicate strategy is to abend when this happens.");
                     }
-                    return lookupResult; ;
+                    return lookupResult;
             }
 
             return null;
