@@ -408,7 +408,7 @@ namespace dexih.connections.sql
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i.ToString();
                                     param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
-                                    param.Size = -1;
+                                    // param.Size = -1;
 
                                     // GUID's get parameterized as binary.  So need to explicitly convert to string.
                                     if (query.UpdateColumns[i].Column.DataType == ETypeCode.Guid)
@@ -618,31 +618,29 @@ namespace dexih.connections.sql
         {
             try
             {
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = table.UseQuery ? table.QueryString : BuildSelectQuery(table, query);
-                    DbDataReader reader;
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = table.UseQuery ? table.QueryString : BuildSelectQuery(table, query);
+                DbDataReader reader;
 
-                    try
-                    {
-                        reader = await cmd.ExecuteReaderAsync(cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
+                try
+                {
+                    reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
 #if DEBUG
-                        throw new ConnectionException($"The reader for table {table.Name} returned failed.  {ex.Message}.  The command was: {cmd.CommandText}", ex);
+                    throw new ConnectionException($"The reader for table {table.Name} returned failed.  {ex.Message}.  The command was: {cmd.CommandText}", ex);
 #else
                         throw new ConnectionException($"The reader for table {table.Name} returned failed.  {ex.Message}", ex);
 #endif
-                    }
-
-                    if (reader == null)
-                    {
-                        throw new ConnectionException($"The reader for table {table.Name} returned null.");
-                    }
-
-                    return reader;
                 }
+
+                if (reader == null)
+                {
+                    throw new ConnectionException($"The reader for table {table.Name} returned null.");
+                }
+                return reader;
+
             }
             catch (Exception ex)
             {
