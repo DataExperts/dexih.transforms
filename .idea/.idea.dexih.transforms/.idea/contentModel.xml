@@ -162,6 +162,7 @@
           <e p="bin" t="ExcludeRecursive" />
           <e p="BuiltIn" t="Include">
             <e p="AggregateFunctions.cs" t="Include" />
+            <e p="CategorizeFunctions.cs" t="Include" />
             <e p="ConditionFunctions.cs" t="Include" />
             <e p="MapFunctions.cs" t="Include" />
             <e p="ProfileFunctions.cs" t="Include" />
@@ -182,9 +183,9 @@
           <e p="FlatFile.cs" t="Include" />
           <e p="FunctionExceptions.cs" t="Include" />
           <e p="Functions" t="Include">
-            <e p="Function.cs" t="Include" />
             <e p="FunctionAttribute.cs" t="Include" />
             <e p="FunctionParameter.cs" t="Include" />
+            <e p="FunctionReference.cs" t="Include" />
             <e p="Functions.cs" t="Include" />
           </e>
           <e p="obj" t="ExcludeRecursive">
@@ -226,6 +227,12 @@
           <e p="Connection.cs" t="Include" />
           <e p="ConnectionFlatFile.cs" t="Include" />
           <e p="ConnectionMemory.cs" t="Include" />
+          <e p="Connections" t="Include">
+            <e p="ConnectionAttribute.cs" t="Include" />
+            <e p="ConnectionReference.cs" t="Include" />
+            <e p="Connections.cs" t="Include" />
+            <e p="ConnectionsExceptions.cs" t="Include" />
+          </e>
           <e p="dexih.transforms.csproj" t="IncludeRecursive" />
           <e p="EncryptedObject.cs" t="Include" />
           <e p="Exceptions" t="Include">
@@ -235,7 +242,11 @@
             <e p="TransformWriterExceptions.cs" t="Include" />
           </e>
           <e p="FileEnum.cs" t="Include" />
-          <e p="Mapping.cs" t="Include" />
+          <e p="Mappings" t="Include">
+            <e p="Aggregate.cs" t="Include" />
+            <e p="Filter.cs" t="Include" />
+            <e p="Mapping.cs" t="Include" />
+          </e>
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netstandard2.0" t="Include">
@@ -277,6 +288,12 @@
           <e p="TransformProfile.cs" t="Include" />
           <e p="TransformQuery.cs" t="Include" />
           <e p="TransformRows.cs" t="Include" />
+          <e p="Transforms" t="Include">
+            <e p="TransformAttribute.cs" t="Include" />
+            <e p="TransformReference.cs" t="Include" />
+            <e p="Transforms.cs" t="Include" />
+            <e p="TransformsExceptions.cs" t="Include" />
+          </e>
           <e p="TransformSort.cs" t="Include" />
           <e p="TransformValidation.cs" t="Include" />
           <e p="TransformWriter.cs" t="Include" />

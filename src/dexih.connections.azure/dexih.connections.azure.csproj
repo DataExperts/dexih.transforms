@@ -20,7 +20,6 @@
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.1.1" />
   </ItemGroup>
 </Project>
