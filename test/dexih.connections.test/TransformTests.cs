@@ -85,7 +85,7 @@ namespace dexih.connections.test
             TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
 
             writerResult = new TransformWriterResult();
-            await connection.InitializeAudit(writerResult, 0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
+            await connection.InitializeAudit(writerResult, 0, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
             var writeAllResult = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
             Assert.True(writeAllResult, writerResult.Message);

@@ -60,7 +60,11 @@ namespace dexih.connections.azure
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
-                    return new DateTime(1800, 01, 02, 0, 0, 0, 0);
+                    return new DateTime(1800, 01, 02, 0, 0, 0, 0, DateTimeKind.Utc);
+                case ETypeCode.Double:
+                    return -1E+100;
+                case ETypeCode.Single:
+                    return -1E+37F;
                 default:
                     return GetDataTypeMinValue(typeCode);
             }
@@ -71,8 +75,15 @@ namespace dexih.connections.azure
         {
             switch (typeCode)
             {
+                case ETypeCode.DateTime:
+                    return DateTime.MaxValue.ToUniversalTime();
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
+                case ETypeCode.Double:
+                    return 1E+100;
+                case ETypeCode.Single:
+                    return 1E+37F;
+
                 default:
                     return GetDataTypeMaxValue(typeCode, length);
             }
@@ -178,11 +189,11 @@ namespace dexih.connections.azure
             }
             catch (StorageException ex)
             {
-                throw new ConnectionException($"Error writing to Azure Storage table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".");
+                throw new ConnectionException($"Error writing to Azure Storage table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".", ex);
             }
             catch (Exception ex)
             {
-                throw new ConnectionException("Error writing to Azure Storage table: " + table.Name + ".  Error: " + ex.Message);
+                throw new ConnectionException("Error writing to Azure Storage table: " + table.Name + ".  Error: " + ex.Message, ex);
             }
         }
 
@@ -767,12 +778,12 @@ namespace dexih.connections.azure
                     return Convert.ToDouble(value);
                 case ETypeCode.Single:
                     return Convert.ToSingle(value);
+                case ETypeCode.DateTime:
                 case ETypeCode.String:
 				case ETypeCode.Text:
 				case ETypeCode.Json:
 				case ETypeCode.Xml:
                 case ETypeCode.Boolean:
-                case ETypeCode.DateTime:
                 case ETypeCode.Guid:
                     return value;
                 case ETypeCode.Decimal:

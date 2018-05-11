@@ -505,10 +505,10 @@ namespace dexih.connections.excel
 		    foreach (var filter in filters)
 		    {
 			    var column1Value = filter.Column1 == null
-				    ? null
+				    ? filter.Value1
 				    : worksheet.GetValue(row, headerOrdinals[filter.Column1.Name]);
 			    var column2Value = filter.Column2 == null
-				    ? null
+				    ? filter.Value2
 				    : worksheet.GetValue(row, headerOrdinals[filter.Column2.Name]);
 
 			    if (isFirst)

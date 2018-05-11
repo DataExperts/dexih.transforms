@@ -193,6 +193,11 @@ namespace dexih.connections.azure
                         rows.Add(GetRow(currentEntity));
                     }
 
+                    if(continuationToken == null)
+                    {
+                        break;
+                    }
+
                     result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                     if (!result.Any())
                     {
