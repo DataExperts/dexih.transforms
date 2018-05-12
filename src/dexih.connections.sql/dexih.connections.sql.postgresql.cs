@@ -12,6 +12,7 @@ using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.sql
 {
@@ -675,48 +676,48 @@ namespace dexih.connections.sql
 
         }
 
-        public static NpgsqlTypes.NpgsqlDbType GetSqlDbType(ETypeCode typeCode)
+        private (NpgsqlTypes.NpgsqlDbType type, object value) GetSqlDbType(ETypeCode typeCode, Object value)
         {
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return NpgsqlTypes.NpgsqlDbType.Smallint;
+                    return (NpgsqlTypes.NpgsqlDbType.Smallint, value);
                 case ETypeCode.SByte:
-                    return NpgsqlTypes.NpgsqlDbType.Smallint;
+                    return (NpgsqlTypes.NpgsqlDbType.Smallint, value);
                 case ETypeCode.UInt16:
-                    return NpgsqlTypes.NpgsqlDbType.Integer;
+                    return (NpgsqlTypes.NpgsqlDbType.Integer, DataType.TryParse(ETypeCode.Int32, value));
                 case ETypeCode.UInt32:
-                    return NpgsqlTypes.NpgsqlDbType.Bigint;
+                    return (NpgsqlTypes.NpgsqlDbType.Bigint, DataType.TryParse(ETypeCode.Int64, value));
                 case ETypeCode.UInt64:
-                    return NpgsqlTypes.NpgsqlDbType.Bigint;
+                    return (NpgsqlTypes.NpgsqlDbType.Bigint, DataType.TryParse(ETypeCode.Int64, value));
                 case ETypeCode.Int16:
-                    return NpgsqlTypes.NpgsqlDbType.Smallint;
+                    return (NpgsqlTypes.NpgsqlDbType.Smallint, value);
                 case ETypeCode.Int32:
-                    return NpgsqlTypes.NpgsqlDbType.Integer;
+                    return (NpgsqlTypes.NpgsqlDbType.Integer, value);
                 case ETypeCode.Int64:
-                    return NpgsqlTypes.NpgsqlDbType.Bigint;
+                    return (NpgsqlTypes.NpgsqlDbType.Bigint, value);
                 case ETypeCode.Decimal:
-                    return NpgsqlTypes.NpgsqlDbType.Numeric;
+                    return (NpgsqlTypes.NpgsqlDbType.Numeric, value);
                 case ETypeCode.Double:
-                    return NpgsqlTypes.NpgsqlDbType.Double;
+                    return (NpgsqlTypes.NpgsqlDbType.Double, value);
                 case ETypeCode.Single:
-                    return NpgsqlTypes.NpgsqlDbType.Double;
+                    return (NpgsqlTypes.NpgsqlDbType.Double, DataType.TryParse(ETypeCode.Double, value));
                 case ETypeCode.String:
-                    return NpgsqlTypes.NpgsqlDbType.Varchar;
+                    return (NpgsqlTypes.NpgsqlDbType.Varchar, value);
 				case ETypeCode.Text:
-					return NpgsqlTypes.NpgsqlDbType.Text;
+					return (NpgsqlTypes.NpgsqlDbType.Text, value);
                 case ETypeCode.Boolean:
-                    return NpgsqlTypes.NpgsqlDbType.Boolean;
+                    return (NpgsqlTypes.NpgsqlDbType.Boolean, value);
                 case ETypeCode.DateTime:
-                    return NpgsqlTypes.NpgsqlDbType.Timestamp;
+                    return (NpgsqlTypes.NpgsqlDbType.Timestamp, value);
                 case ETypeCode.Time:
-                    return NpgsqlTypes.NpgsqlDbType.Time;
+                    return (NpgsqlTypes.NpgsqlDbType.Time, value);
                 case ETypeCode.Guid:
-                    return NpgsqlTypes.NpgsqlDbType.Varchar;
+                    return (NpgsqlTypes.NpgsqlDbType.Varchar, value.ToString());
                 case ETypeCode.Binary:
-                    return NpgsqlTypes.NpgsqlDbType.Bytea;
+                    return (NpgsqlTypes.NpgsqlDbType.Bytea, value);
                 default:
-                    return NpgsqlTypes.NpgsqlDbType.Varchar;
+                    return (NpgsqlTypes.NpgsqlDbType.Varchar, value);
             }
         }
 
@@ -760,10 +761,11 @@ namespace dexih.connections.sql
                                 for (var i = 0; i < query.UpdateColumns.Count; i++)
                                 {
                                     var param = cmd.CreateParameter();
-                                    param.ParameterName = "@col" + i.ToString();
-                                    param.NpgsqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType);
+                                    param.ParameterName = "@col" + i;
+                                    var converted = GetSqlDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Value);
+                                    param.NpgsqlDbType = converted.type;
                                     param.Size = -1;
-                                    param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value : query.UpdateColumns[i].Value;
+                                    param.Value = converted.value??DBNull.Value;
                                     cmd.Parameters.Add(param);
                                     parameters[i] = param;
                                 }
