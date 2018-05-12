@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Npgsql;
-using System.Data;
-using dexih.functions;
-using System.Data.Common;
 using System.Threading;
-using static Dexih.Utils.DataType.DataType;
+using System.Threading.Tasks;
+using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
-using Dexih.Utils.DataType;
+using Npgsql;
+using NpgsqlTypes;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.sql
 {
@@ -70,7 +70,7 @@ namespace dexih.connections.sql
                 case ETypeCode.DateTime:
                     return new DateTime(9999, 12, 31, 23, 59, 59, 999);
                 default:
-                    return Dexih.Utils.DataType.DataType.GetDataTypeMaxValue(typeCode, length);
+                    return GetDataTypeMaxValue(typeCode, length);
             }
         }
 
@@ -164,9 +164,6 @@ namespace dexih.connections.sql
                         throw new ConnectionException($"The sql query failed [{command.CommandText}].  {ex.Message}", ex);
                     }
                 }
-
-                return;
-
             }
             catch (Exception ex)
             {
@@ -294,7 +291,7 @@ namespace dexih.connections.sql
                         returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
                     break;
                 default:
-                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql insert statement.");
+                    throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");
             }
 
             return returnValue;
@@ -366,8 +363,6 @@ namespace dexih.connections.sql
                 }
 
                 DefaultDatabase = databaseName;
-
-                return;
             }
             catch (Exception ex)
             {
@@ -412,10 +407,10 @@ namespace dexih.connections.sql
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {
-                            var table = new Table()
+                            var table = new Table
                             {
                                 Name = reader["table_name"].ToString(),
-                                Schema = reader["table_schema"].ToString(),
+                                Schema = reader["table_schema"].ToString()
                             };
                             tableList.Add(table);
                         }
@@ -516,18 +511,14 @@ namespace dexih.connections.sql
             {
                 return null;
             }
-            else
+
+            var parsed = int.TryParse(value.ToString(), out var result);
+            if (parsed)
             {
-                var parsed = int.TryParse(value.ToString(), out var result);
-                if (parsed)
-                {
-                    return result;
-                }
-                else
-                {
-                    return null;
-                }
+                return result;
             }
+
+            return null;
         }
 
 
@@ -590,8 +581,6 @@ namespace dexih.connections.sql
                         await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
                 }
-
-                return;
             }
             catch (Exception ex)
             {
@@ -612,7 +601,7 @@ namespace dexih.connections.sql
 
                 long identityValue = 0;
 
-                using (var connection = await NewConnection())
+                using (var connection = (NpgsqlConnection) await NewConnection())
                 {
                     var insert = new StringBuilder();
                     var values = new StringBuilder();
@@ -630,11 +619,11 @@ namespace dexih.connections.sql
                             for (var i = 0; i < query.InsertColumns.Count; i++)
                             {
                                 insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
-                                values.Append("@col" + i.ToString() + ",");
+                                values.Append("@col" + i + ",");
                             }
 
-                            var insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
-                                values.Remove(values.Length - 1, 1).ToString() + "); " + autoIncrementSql;
+                            var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                values.Remove(values.Length - 1, 1) + "); " + autoIncrementSql;
 
                             try
                             {
@@ -646,9 +635,13 @@ namespace dexih.connections.sql
                                     for (var i = 0; i < query.InsertColumns.Count; i++)
                                     {
                                         var param = cmd.CreateParameter();
-                                        param.ParameterName = "@col" + i.ToString();
-                                        param.Value = query.InsertColumns[i].Value == null ? DBNull.Value : query.InsertColumns[i].Value;
+                                        param.ParameterName = "@col" + i;
+                                        var converted = GetSqlDbType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Value);
+                                        param.NpgsqlDbType = converted.type;
+                                        param.Size = -1;
+                                        param.Value = converted.value??DBNull.Value;
                                         cmd.Parameters.Add(param);
+
                                     }
 
                                     var identity = await cmd.ExecuteScalarAsync(cancellationToken);
@@ -676,48 +669,48 @@ namespace dexih.connections.sql
 
         }
 
-        private (NpgsqlTypes.NpgsqlDbType type, object value) GetSqlDbType(ETypeCode typeCode, Object value)
+        private (NpgsqlDbType type, object value) GetSqlDbType(ETypeCode typeCode, Object value)
         {
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return (NpgsqlTypes.NpgsqlDbType.Smallint, value);
+                    return (NpgsqlDbType.Smallint, value);
                 case ETypeCode.SByte:
-                    return (NpgsqlTypes.NpgsqlDbType.Smallint, value);
+                    return (NpgsqlDbType.Smallint, value);
                 case ETypeCode.UInt16:
-                    return (NpgsqlTypes.NpgsqlDbType.Integer, DataType.TryParse(ETypeCode.Int32, value));
+                    return (NpgsqlDbType.Integer, TryParse(ETypeCode.Int32, value));
                 case ETypeCode.UInt32:
-                    return (NpgsqlTypes.NpgsqlDbType.Bigint, DataType.TryParse(ETypeCode.Int64, value));
+                    return (NpgsqlDbType.Bigint, TryParse(ETypeCode.Int64, value));
                 case ETypeCode.UInt64:
-                    return (NpgsqlTypes.NpgsqlDbType.Bigint, DataType.TryParse(ETypeCode.Int64, value));
+                    return (NpgsqlDbType.Bigint, TryParse(ETypeCode.Int64, value));
                 case ETypeCode.Int16:
-                    return (NpgsqlTypes.NpgsqlDbType.Smallint, value);
+                    return (NpgsqlDbType.Smallint, value);
                 case ETypeCode.Int32:
-                    return (NpgsqlTypes.NpgsqlDbType.Integer, value);
+                    return (NpgsqlDbType.Integer, value);
                 case ETypeCode.Int64:
-                    return (NpgsqlTypes.NpgsqlDbType.Bigint, value);
+                    return (NpgsqlDbType.Bigint, value);
                 case ETypeCode.Decimal:
-                    return (NpgsqlTypes.NpgsqlDbType.Numeric, value);
+                    return (NpgsqlDbType.Numeric, value);
                 case ETypeCode.Double:
-                    return (NpgsqlTypes.NpgsqlDbType.Double, value);
+                    return (NpgsqlDbType.Double, value);
                 case ETypeCode.Single:
-                    return (NpgsqlTypes.NpgsqlDbType.Double, DataType.TryParse(ETypeCode.Double, value));
+                    return (NpgsqlDbType.Double, TryParse(ETypeCode.Double, value));
                 case ETypeCode.String:
-                    return (NpgsqlTypes.NpgsqlDbType.Varchar, value);
+                    return (NpgsqlDbType.Varchar, value);
 				case ETypeCode.Text:
-					return (NpgsqlTypes.NpgsqlDbType.Text, value);
+					return (NpgsqlDbType.Text, value);
                 case ETypeCode.Boolean:
-                    return (NpgsqlTypes.NpgsqlDbType.Boolean, value);
+                    return (NpgsqlDbType.Boolean, value);
                 case ETypeCode.DateTime:
-                    return (NpgsqlTypes.NpgsqlDbType.Timestamp, value);
+                    return (NpgsqlDbType.Timestamp, value);
                 case ETypeCode.Time:
-                    return (NpgsqlTypes.NpgsqlDbType.Time, value);
+                    return (NpgsqlDbType.Time, value);
                 case ETypeCode.Guid:
-                    return (NpgsqlTypes.NpgsqlDbType.Varchar, value.ToString());
+                    return (NpgsqlDbType.Varchar, value.ToString());
                 case ETypeCode.Binary:
-                    return (NpgsqlTypes.NpgsqlDbType.Bytea, value);
+                    return (NpgsqlDbType.Bytea, value);
                 default:
-                    return (NpgsqlTypes.NpgsqlDbType.Varchar, value);
+                    return (NpgsqlDbType.Varchar, value);
             }
         }
 
@@ -745,7 +738,7 @@ namespace dexih.connections.sql
                             var count = 0;
                             foreach (var column in query.UpdateColumns)
                             {
-                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count.ToString() + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
+                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
                                 count++;
                             }
                             sql.Remove(sql.Length - 1, 1); //remove last comma
@@ -757,7 +750,6 @@ namespace dexih.connections.sql
                                 cmd.Transaction = transaction;
                                 cmd.CommandText = sql.ToString();
 
-                                var parameters = new NpgsqlParameter[query.UpdateColumns.Count];
                                 for (var i = 0; i < query.UpdateColumns.Count; i++)
                                 {
                                     var param = cmd.CreateParameter();
@@ -767,7 +759,6 @@ namespace dexih.connections.sql
                                     param.Size = -1;
                                     param.Value = converted.value??DBNull.Value;
                                     cmd.Parameters.Add(param);
-                                    parameters[i] = param;
                                 }
 
                                 try
