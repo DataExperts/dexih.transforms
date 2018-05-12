@@ -274,7 +274,7 @@ namespace dexih.connections.test
 
             var writer = new TransformWriter();
             var writerResult = new TransformWriterResult();
-            await connection.InitializeAudit(writerResult, 0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target",
+            await connection.InitializeAudit(writerResult, 0, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target",
                 TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
             Assert.NotNull(writerResult);
 

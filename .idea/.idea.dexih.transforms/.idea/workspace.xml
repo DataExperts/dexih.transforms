@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" afterPath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -39,16 +39,6 @@
                     <marker date="1517309007041" expanded="true" signature="721:889" ph="{...}" />
                     <marker date="1517309007041" expanded="true" signature="995:1150" ph="{...}" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="FunctionExceptions.cs" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/dexih.functions/FunctionExceptions.cs">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="825">
-                  <caret line="55" column="40" lean-forward="false" selection-start-line="55" selection-start-column="40" selection-end-line="55" selection-end-column="40" />
-                  <folding />
                 </state>
               </provider>
             </entry>
@@ -164,7 +154,7 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="dexih.connections.sql.postgresql.cs" pinned="false" current-in-tab="true">
+          <file leaf-file-name="dexih.connections.sql.postgresql.cs" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="7888">
@@ -274,6 +264,49 @@
                     <marker date="1526095303797" expanded="true" signature="31821:31984" ph="{...}" />
                     <marker date="1526095303797" expanded="true" signature="32037:32215" ph="{...}" />
                     <marker date="1526095303797" expanded="true" signature="32392:32522" ph="{...}" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="PerformanceTests.cs" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="1435">
+                  <caret line="289" column="87" lean-forward="true" selection-start-line="289" selection-start-column="87" selection-end-line="289" selection-end-column="87" />
+                  <folding>
+                    <marker date="1526095841003" expanded="false" signature="6:332" ph="..." />
+                    <marker date="1526095841003" expanded="true" signature="366:11713" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="402:11711" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="417:561" ph="/// Perfromance tests should run in around 1 minute.  ... " />
+                    <marker date="1526095841003" expanded="true" signature="653:7439" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="1164:1564" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="1335:1548" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="1823:2945" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="2096:2465" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="2582:2931" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="3184:3860" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="3230:3511" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="3314:3472" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="3543:3820" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="3627:3781" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="4065:4991" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="4446:4690" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="4759:4975" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="5212:5563" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="5360:5486" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="5947:6314" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="6036:6300" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="6107:6241" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="6463:6834" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="7450:7594" ph="/// Perfromance tests should run in around 1 minute.  ... " />
+                    <marker date="1526095841003" expanded="true" signature="7702:11705" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="8088:8154" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="8314:8714" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="8485:8698" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="8921:10010" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="9166:9531" ph="{...}" />
+                    <marker date="1526095841003" expanded="true" signature="9648:9996" ph="{...}" />
                   </folding>
                 </state>
               </provider>
@@ -829,7 +862,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.functions/File/FileConfiguration.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/File/FileHandlerText.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Interfaces/IAggregateFunction.cs" />
@@ -880,6 +912,7 @@
         <option value="$PROJECT_DIR$/src/dexih.functions/Functions/Function.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" />
       </list>
     </option>
   </component>
@@ -927,6 +960,17 @@
               <item name="dexih.transforms (19 projects)" type="977d5f41:SolutionExplorerNodeRider" />
               <item name="src" type="977d5f41:SolutionExplorerNodeRider" />
               <item name="dexih.connections.sql" type="977d5f41:SolutionExplorerNodeRider" />
+            </path>
+            <path>
+              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
+              <item name="dexih.transforms (19 projects)" type="977d5f41:SolutionExplorerNodeRider" />
+              <item name="test" type="977d5f41:SolutionExplorerNodeRider" />
+            </path>
+            <path>
+              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
+              <item name="dexih.transforms (19 projects)" type="977d5f41:SolutionExplorerNodeRider" />
+              <item name="test" type="977d5f41:SolutionExplorerNodeRider" />
+              <item name="dexih.connections.test" type="977d5f41:SolutionExplorerNodeRider" />
             </path>
           </expand>
           <select />
@@ -1146,7 +1190,7 @@
       <workItem from="1520984784049" duration="43474000" />
       <workItem from="1526007068863" duration="2171000" />
       <workItem from="1526036526717" duration="5213000" />
-      <workItem from="1526091203932" duration="2041000" />
+      <workItem from="1526091203932" duration="2523000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1330,11 +1374,18 @@
       <option name="project" value="LOCAL" />
       <updated>1526087477479</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="fixe postgres insert type conversion">
+      <created>1526095369435</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1526095369435</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="255551000" />
+    <option name="totallyTimeSpent" value="256033000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1347,11 +1398,12 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1141" y="-2160" width="3840" height="2160" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32809225" sideWeight="0.489011" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Errors In Solution" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.037760418" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24265403" sideWeight="0.19921875" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Unit Tests" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24265403" sideWeight="0.80078125" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Unit Tests" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24265403" sideWeight="0.80078125" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13554503" sideWeight="0.48645833" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932934" sideWeight="0.49285713" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1423,7 +1475,8 @@
     <MESSAGE value="fix sftp" />
     <MESSAGE value="filter improve.  updated all dependencies." />
     <MESSAGE value="fixe postgres type conversion" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixe postgres type conversion" />
+    <MESSAGE value="fixe postgres insert type conversion" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixe postgres insert type conversion" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1613,7 +1666,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/dexih.functions/Interfaces/IRowsFunction.cs" />
     <entry file="file://$PROJECT_DIR$/src/dexih.functions/Interfaces/IValidationFunction.cs" />
     <entry file="file://$PROJECT_DIR$/src/dexih.functions/Interfaces/IConditionFunction.cs" />
     <entry file="file://$PROJECT_DIR$/src/dexih.functions/Parameter.cs">
@@ -2548,6 +2600,47 @@
             <marker date="1526095303797" expanded="true" signature="31821:31984" ph="{...}" />
             <marker date="1526095303797" expanded="true" signature="32037:32215" ph="{...}" />
             <marker date="1526095303797" expanded="true" signature="32392:32522" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1435">
+          <caret line="289" column="87" lean-forward="true" selection-start-line="289" selection-start-column="87" selection-end-line="289" selection-end-column="87" />
+          <folding>
+            <marker date="1526095841003" expanded="false" signature="6:332" ph="..." />
+            <marker date="1526095841003" expanded="true" signature="366:11713" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="402:11711" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="417:561" ph="/// Perfromance tests should run in around 1 minute.  ... " />
+            <marker date="1526095841003" expanded="true" signature="653:7439" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="1164:1564" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="1335:1548" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="1823:2945" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="2096:2465" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="2582:2931" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="3184:3860" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="3230:3511" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="3314:3472" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="3543:3820" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="3627:3781" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="4065:4991" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="4446:4690" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="4759:4975" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="5212:5563" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="5360:5486" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="5947:6314" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="6036:6300" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="6107:6241" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="6463:6834" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="7450:7594" ph="/// Perfromance tests should run in around 1 minute.  ... " />
+            <marker date="1526095841003" expanded="true" signature="7702:11705" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="8088:8154" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="8314:8714" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="8485:8698" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="8921:10010" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="9166:9531" ph="{...}" />
+            <marker date="1526095841003" expanded="true" signature="9648:9996" ph="{...}" />
           </folding>
         </state>
       </provider>
