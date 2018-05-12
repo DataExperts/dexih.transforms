@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fix test">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" afterPath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -273,7 +272,7 @@
             <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="1435">
-                  <caret line="289" column="87" lean-forward="true" selection-start-line="289" selection-start-column="87" selection-end-line="289" selection-end-column="87" />
+                  <caret line="289" column="87" lean-forward="false" selection-start-line="289" selection-start-column="87" selection-end-line="289" selection-end-column="87" />
                   <folding>
                     <marker date="1526095841003" expanded="false" signature="6:332" ph="..." />
                     <marker date="1526095841003" expanded="true" signature="366:11713" ph="{...}" />
@@ -585,8 +584,8 @@
           <file leaf-file-name="UnitTests.cs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="555">
-                  <caret line="48" column="34" lean-forward="false" selection-start-line="48" selection-start-column="34" selection-end-line="48" selection-end-column="34" />
+                <state relative-caret-position="1365">
+                  <caret line="102" column="18" lean-forward="false" selection-start-line="102" selection-start-column="18" selection-end-line="102" selection-end-column="18" />
                   <folding>
                     <marker date="1526091554974" expanded="false" signature="6:313" ph="..." />
                     <marker date="1526091554974" expanded="true" signature="347:11784" ph="{...}" />
@@ -1190,7 +1189,7 @@
       <workItem from="1520984784049" duration="43474000" />
       <workItem from="1526007068863" duration="2171000" />
       <workItem from="1526036526717" duration="5213000" />
-      <workItem from="1526091203932" duration="2523000" />
+      <workItem from="1526091203932" duration="3222000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1381,11 +1380,18 @@
       <option name="project" value="LOCAL" />
       <updated>1526095369435</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="fix test">
+      <created>1526095857431</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1526095857431</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="256033000" />
+    <option name="totallyTimeSpent" value="256732000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1476,7 +1482,8 @@
     <MESSAGE value="filter improve.  updated all dependencies." />
     <MESSAGE value="fixe postgres type conversion" />
     <MESSAGE value="fixe postgres insert type conversion" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixe postgres insert type conversion" />
+    <MESSAGE value="fix test" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2458,39 +2465,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="555">
-          <caret line="48" column="34" lean-forward="false" selection-start-line="48" selection-start-column="34" selection-end-line="48" selection-end-column="34" />
-          <folding>
-            <marker date="1526091554974" expanded="false" signature="6:313" ph="..." />
-            <marker date="1526091554974" expanded="true" signature="347:11784" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="376:11782" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="458:11775" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="916:1453" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="1688:2230" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="2536:2927" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="3084:3938" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="3163:3504" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="3977:5426" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="4152:4550" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="4804:5145" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="5546:6340" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="5625:5999" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="6379:8758" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="6500:6666" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="6970:7257" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="7564:8101" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="7655:7885" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="8343:8526" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="8799:10292" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="9418:9837" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="10339:11764" ph="{...}" />
-            <marker date="1526091554974" expanded="true" signature="10650:11717" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7888">
@@ -2607,7 +2581,7 @@
     <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1435">
-          <caret line="289" column="87" lean-forward="true" selection-start-line="289" selection-start-column="87" selection-end-line="289" selection-end-column="87" />
+          <caret line="289" column="87" lean-forward="false" selection-start-line="289" selection-start-column="87" selection-end-line="289" selection-end-column="87" />
           <folding>
             <marker date="1526095841003" expanded="false" signature="6:332" ph="..." />
             <marker date="1526095841003" expanded="true" signature="366:11713" ph="{...}" />
@@ -2641,6 +2615,39 @@
             <marker date="1526095841003" expanded="true" signature="8921:10010" ph="{...}" />
             <marker date="1526095841003" expanded="true" signature="9166:9531" ph="{...}" />
             <marker date="1526095841003" expanded="true" signature="9648:9996" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1365">
+          <caret line="102" column="18" lean-forward="false" selection-start-line="102" selection-start-column="18" selection-end-line="102" selection-end-column="18" />
+          <folding>
+            <marker date="1526091554974" expanded="false" signature="6:313" ph="..." />
+            <marker date="1526091554974" expanded="true" signature="347:11784" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="376:11782" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="458:11775" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="916:1453" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="1688:2230" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="2536:2927" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="3084:3938" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="3163:3504" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="3977:5426" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="4152:4550" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="4804:5145" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="5546:6340" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="5625:5999" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="6379:8758" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="6500:6666" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="6970:7257" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="7564:8101" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="7655:7885" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="8343:8526" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="8799:10292" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="9418:9837" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="10339:11764" ph="{...}" />
+            <marker date="1526091554974" expanded="true" signature="10650:11717" ph="{...}" />
           </folding>
         </state>
       </provider>
