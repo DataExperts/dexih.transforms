@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fix test">
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.mysql.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.mysql.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.postgresql.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -548,8 +544,8 @@
           <file leaf-file-name="UnitTests.cs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="211">
-                  <caret line="122" column="16" lean-forward="false" selection-start-line="122" selection-start-column="16" selection-end-line="122" selection-end-column="16" />
+                <state relative-caret-position="1336">
+                  <caret line="197" column="48" lean-forward="true" selection-start-line="197" selection-start-column="48" selection-end-line="197" selection-end-column="48" />
                   <folding>
                     <marker date="1526097141699" expanded="false" signature="6:313" ph="..." />
                     <marker date="1526097141699" expanded="true" signature="347:11784" ph="{...}" />
@@ -1560,7 +1556,7 @@
       <workItem from="1526036526717" duration="5213000" />
       <workItem from="1526091203932" duration="3452000" />
       <workItem from="1526430244187" duration="148000" />
-      <workItem from="1526430426241" duration="2966000" />
+      <workItem from="1526430426241" duration="3057000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1758,11 +1754,18 @@
       <option name="project" value="LOCAL" />
       <updated>1526095857431</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="added bulk load to postgres database.&#10;fixed transoform rows where functions return multiple params.">
+      <created>1526433595340</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1526433595340</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="260076000" />
+    <option name="totallyTimeSpent" value="260167000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1775,11 +1778,12 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1141" y="-2137" width="3840" height="2137" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32809225" sideWeight="0.489011" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Errors In Solution" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11953125" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24503632" sideWeight="0.21328124" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Unit Tests" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24503632" sideWeight="0.7867187" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Unit Tests" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24503632" sideWeight="0.7867187" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932934" sideWeight="0.49285713" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13554503" sideWeight="0.48645833" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1853,7 +1857,8 @@
     <MESSAGE value="fixe postgres type conversion" />
     <MESSAGE value="fixe postgres insert type conversion" />
     <MESSAGE value="fix test" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix test" />
+    <MESSAGE value="added bulk load to postgres database.&#10;fixed transoform rows where functions return multiple params." />
+    <option name="LAST_COMMIT_MESSAGE" value="added bulk load to postgres database.&#10;fixed transoform rows where functions return multiple params." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -3127,39 +3132,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="122" column="16" lean-forward="false" selection-start-line="122" selection-start-column="16" selection-end-line="122" selection-end-column="16" />
-          <folding>
-            <marker date="1526097141699" expanded="false" signature="6:313" ph="..." />
-            <marker date="1526097141699" expanded="true" signature="347:11784" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="376:11782" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="458:11775" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="916:1453" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="1688:2230" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="2536:2927" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="3084:3938" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="3163:3504" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="3977:5426" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="4152:4550" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="4804:5145" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="5546:6340" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="5625:5999" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="6379:8758" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="6500:6666" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="6970:7257" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="7564:8101" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="7655:7885" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="8343:8526" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="8799:10292" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="9418:9837" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="10339:11764" ph="{...}" />
-            <marker date="1526097141699" expanded="true" signature="10650:11717" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.mysql.tests.cs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="705">
@@ -3319,6 +3291,39 @@
             <marker date="1526433494568" expanded="true" signature="33810:33973" ph="{...}" />
             <marker date="1526433494568" expanded="true" signature="34026:34204" ph="{...}" />
             <marker date="1526433494568" expanded="true" signature="34381:34511" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1336">
+          <caret line="197" column="48" lean-forward="true" selection-start-line="197" selection-start-column="48" selection-end-line="197" selection-end-column="48" />
+          <folding>
+            <marker date="1526097141699" expanded="false" signature="6:313" ph="..." />
+            <marker date="1526097141699" expanded="true" signature="347:11784" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="376:11782" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="458:11775" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="916:1453" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="1688:2230" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="2536:2927" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="3084:3938" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="3163:3504" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="3977:5426" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="4152:4550" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="4804:5145" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="5546:6340" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="5625:5999" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="6379:8758" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="6500:6666" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="6970:7257" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="7564:8101" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="7655:7885" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="8343:8526" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="8799:10292" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="9418:9837" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="10339:11764" ph="{...}" />
+            <marker date="1526097141699" expanded="true" signature="10650:11717" ph="{...}" />
           </folding>
         </state>
       </provider>
