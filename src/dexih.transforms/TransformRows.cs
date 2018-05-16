@@ -198,13 +198,18 @@ namespace dexih.transforms
                     }
                 }
 
-                var functionColumn = i + RowFunctions.Count - 1; //use the FunctionColumn variable to track the column number as we are going in reverse through the rowfunctions.
+                // get the number of output columns for the row functions.
+                var rowFunctionColumns = RowFunctions.Sum(c => c.Outputs.Count(o => o.Column != null));
+
+                var functionColumn = i + rowFunctionColumns; //use the FunctionColumn variable to track the column number as we are going in reverse through the rowfunctions.
 
                 // Run the row generators functions in reverse as the lowest one will repeat, until finished and then cascade up.
                 for (var j = RowFunctions.Count - 1; j >= 0; j--)
                 {
                     moreRows = true;
                     var rowFunction = RowFunctions[j];
+                    functionColumn -= rowFunction.Outputs.Count(o => o.Column != null);
+                    
 
                     foreach (var input in rowFunction.Inputs.Where(c => c.IsColumn))
                     {
@@ -263,13 +268,10 @@ namespace dexih.transforms
 
                     if (rowFunction.Outputs != null)
                     {
-                        foreach (var output in rowFunction.Outputs)
+                        var columnNumber = functionColumn;
+                        foreach (var output in rowFunction.Outputs.Where(c=>c.Column != null))
                         {
-                            if (output.Column != null)
-                            {
-                                newRow[functionColumn] = output.Value;
-                                functionColumn = functionColumn + 1;
-                            }
+                            newRow[columnNumber++] = output.Value;
                         }
                     }
 
@@ -280,7 +282,7 @@ namespace dexih.transforms
 
                 _firstRecord = false;
 
-                i = i + RowFunctions.Count;
+                i = i + rowFunctionColumns;
 
                 if (PassThroughColumns)
                 {

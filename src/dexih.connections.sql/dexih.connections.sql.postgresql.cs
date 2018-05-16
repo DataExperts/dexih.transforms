@@ -73,6 +73,56 @@ namespace dexih.connections.sql
                     return GetDataTypeMaxValue(typeCode, length);
             }
         }
+        
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var fieldCount = reader.FieldCount;
+                var copyCommand = new StringBuilder();
+
+                copyCommand.Append($"COPY {SqlTableName(table)} (");
+                for (var i = 0; i < fieldCount; i++)
+                {
+                    copyCommand.Append(AddDelimiter(reader.GetName(i)) + (i == fieldCount - 1 ? "" : ","));
+                }
+
+                copyCommand.Append(") FROM STDIN (FORMAT BINARY)");
+
+                using (var connection = (NpgsqlConnection) await NewConnection())
+                using (var writer = connection.BeginBinaryImport(copyCommand.ToString()))
+                {
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        writer.StartRow();
+
+                        for (var i = 0; i < fieldCount; i++)
+                        {
+                            var converted = GetSqlDbType(table.Columns[i].DataType, reader[i]);
+
+                            if (converted.value == null || converted.value == DBNull.Value)
+                            {
+                                writer.WriteNull();
+                            }
+                            else
+                            {
+                                writer.Write(converted.value, converted.type);
+                            }
+                        }
+                    }
+
+                    writer.Complete();
+                }
+            }
+            catch (PostgresException ex)
+            {
+                throw new ConnectionException($"Postgres bulk insert into table {table.Name} failed. {ex.Message} at {ex.Where}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Postgres bulk insert into table {table.Name} failed. {ex.Message}", ex);
+            }
+        }
 
         public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {
@@ -694,7 +744,7 @@ namespace dexih.connections.sql
                 case ETypeCode.Double:
                     return (NpgsqlDbType.Double, value);
                 case ETypeCode.Single:
-                    return (NpgsqlDbType.Double, TryParse(ETypeCode.Double, value));
+                    return (NpgsqlDbType.Real, value);
                 case ETypeCode.String:
                     return (NpgsqlDbType.Varchar, value);
 				case ETypeCode.Text:

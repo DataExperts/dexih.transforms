@@ -170,7 +170,7 @@ namespace dexih.connections.sql
 #if DEBUG
                                     throw new ConnectionException("Error running following sql command: " + insert.ToString(0, 500), ex);
 #else
-                                    throw;
+                                    throw new ConnectionException("Error running following sql command", ex);
 #endif                                
                                 }
                             

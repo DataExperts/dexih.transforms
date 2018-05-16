@@ -57,7 +57,6 @@ namespace dexih.transforms
         public bool UseConnectionString { get; set; }
         public string ConnectionString { get; set; }
 
-
         #endregion
 
         #region Abstracts
@@ -82,7 +81,7 @@ namespace dexih.transforms
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
 
         public bool AllowAllPaths { get; set; } = true;
-        public string[] AllowedPaths { get; set; } = null; // list of paths the connection can use (flat file connections only).
+        public string[] AllowedPaths { get; set; } // list of paths the connection can use (flat file connections only).
         
         //Functions required for managed connection
         public abstract Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken);
