@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using System.Threading.Tasks;
 using System.Data;
-using dexih.functions;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Threading;
-using MySql.Data.MySqlClient;
 using System.Linq;
-using static Dexih.Utils.DataType.DataType;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using MySql.Data.MySqlClient;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.sql
 {
@@ -76,7 +74,7 @@ namespace dexih.connections.sql
                 case ETypeCode.Single:
                     return 1E+37F;
                 default:
-                    return Dexih.Utils.DataType.DataType.GetDataTypeMaxValue(typeCode, length);
+                    return GetDataTypeMaxValue(typeCode, length);
             }
         }
 	    
@@ -91,7 +89,7 @@ namespace dexih.connections.sql
                 case ETypeCode.Single:
                     return -1E+37F;
                 default:
-                    return Dexih.Utils.DataType.DataType.GetDataTypeMinValue(typeCode);
+                    return GetDataTypeMinValue(typeCode);
             }
         }
 
@@ -265,10 +263,7 @@ namespace dexih.connections.sql
                         throw new ConnectionException($"The create table query failed.  {ex.Message}");
 					}
 				}
-
-                return;
-
-			}
+            }
             catch (Exception ex)
             {
                 throw new ConnectionException($"Create table failed. {ex.Message}", ex);
@@ -465,8 +460,7 @@ namespace dexih.connections.sql
             }
             catch (Exception ex)
             {
-                if(connection != null)
-                    connection.Dispose();
+                connection?.Dispose();
                 throw new ConnectionException($"MySql connection failed. {ex.Message}", ex);
             }
         }
@@ -484,8 +478,6 @@ namespace dexih.connections.sql
                 }
 
                 DefaultDatabase = databaseName;
-
-                return;
             }
             catch (Exception ex)
             {
@@ -530,9 +522,9 @@ namespace dexih.connections.sql
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {
-							var table = new Table()
+							var table = new Table
 							{
-								Name = reader[0].ToString(),
+								Name = reader[0].ToString()
 							};
 							tableList.Add(table);
                         }
@@ -632,18 +624,14 @@ namespace dexih.connections.sql
 			{
 				return null;
 			}
-			else 
-			{
-				var parsed = int.TryParse(value.ToString(), out var result);
-				if(parsed) 
-				{
-					return result;
-				}
-				else 
-				{
-					return null;
-				}
-			}
+
+		    var parsed = int.TryParse(value.ToString(), out var result);
+		    if(parsed) 
+		    {
+		        return result;
+		    }
+
+		    return null;
 		}
 
 
@@ -722,8 +710,6 @@ namespace dexih.connections.sql
                         await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
                 }
-
-                return;
             }
             catch(Exception ex)
             {
@@ -765,11 +751,11 @@ namespace dexih.connections.sql
                             for (var i = 0; i < query.InsertColumns.Count; i++)
                             {
                                 insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
-                                values.Append("@col" + i.ToString() + ",");
+                                values.Append("@col" + i + ",");
                             }
 
-                            var insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
-                                values.Remove(values.Length - 1, 1).ToString() + "); " + autoIncrementSql;
+                            var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                values.Remove(values.Length - 1, 1) + "); " + autoIncrementSql;
 
                             try
                             {
@@ -781,7 +767,7 @@ namespace dexih.connections.sql
                                     for (var i = 0; i < query.InsertColumns.Count; i++)
                                     {
                                         var param = cmd.CreateParameter();
-                                        param.ParameterName = "@col" + i.ToString();
+                                        param.ParameterName = "@col" + i;
                                         param.Value = query.InsertColumns[i].Value == null ? DBNull.Value : query.InsertColumns[i].Value;
                                         cmd.Parameters.Add(param);
                                     }
@@ -871,7 +857,6 @@ namespace dexih.connections.sql
                         }
                         transaction.Commit();
                     }
-
                 }
             }
             catch (Exception ex)

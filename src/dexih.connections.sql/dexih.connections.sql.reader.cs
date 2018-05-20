@@ -9,6 +9,7 @@ using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
+using Oracle.ManagedDataAccess.Client;
 
 namespace dexih.connections.sql
 {
@@ -52,7 +53,6 @@ namespace dexih.connections.sql
 
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
                 _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, query, cancellationToken);
-
 
                 _fieldCount = _sqlReader.FieldCount;
                 _fieldOrdinals = new List<int>();

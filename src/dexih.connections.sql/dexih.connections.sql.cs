@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
-using System.Data.Common;
+using dexih.functions.Query;
 using dexih.transforms;
-using System.Threading;
-using System.Diagnostics;
+using dexih.transforms.Exceptions;
 using Dexih.Utils.CopyProperties;
 using static Dexih.Utils.DataType.DataType;
-using dexih.transforms.Exceptions;
-using dexih.functions.Query;
 
 namespace dexih.connections.sql
 {
@@ -54,16 +54,14 @@ namespace dexih.connections.sql
             return newName;
         }
 
-        protected string SqlTableName(Table table)
+        protected virtual string SqlTableName(Table table)
         {
             if (!string.IsNullOrEmpty(table.Schema))
             {
                 return AddDelimiter(table.Schema) + "." + AddDelimiter(table.Name);
             }
-            else
-            {
-                return AddDelimiter(table.Name);
-            }
+
+            return AddDelimiter(table.Name);
         }
 
          protected string AddEscape(string value) => value.Replace("'", "''");
@@ -120,10 +118,10 @@ namespace dexih.connections.sql
                     for (var i = 0; i < fieldCount; i++)
                     {
                         insert.Append(AddDelimiter(reader.GetName(i)) + ",");
-                        values.Append("@col" + i.ToString() + ",");
+                        values.Append("@col" + i + ",");
                     }
 
-                    var insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " + values.Remove(values.Length - 1, 1).ToString() + ");";
+                    var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " + values.Remove(values.Length - 1, 1) + ");";
 
                     using (var transaction = connection.BeginTransaction())
                     {
@@ -136,7 +134,7 @@ namespace dexih.connections.sql
                             for (var i = 0; i < fieldCount; i++)
                             {
                                 var param = cmd.CreateParameter();
-                                param.ParameterName = "@col" + i.ToString();
+                                param.ParameterName = "@col" + i;
                                 cmd.Parameters.Add(param);
                                 parameters[i] = param;
                             }
@@ -250,8 +248,6 @@ namespace dexih.connections.sql
                         command.CommandText = createSql.ToString();
                         await command.ExecuteNonQueryAsync(cancellationToken);
                     }
-
-                    return;
                 }
             }
             catch (Exception ex)
@@ -329,43 +325,39 @@ namespace dexih.connections.sql
         {
             if (filters == null || filters.Count == 0)
                 return "";
-            else
+            var sql = new StringBuilder();
+            sql.Append("where ");
+
+            foreach (var filter in filters)
             {
+                if (filter.Column1 != null)
+                    sql.Append(" " + AddDelimiter(filter.Column1.Name) + " ");
+                else
+                    sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value1) + " ");
 
-                var sql = new StringBuilder();
-                sql.Append("where ");
+                sql.Append(GetSqlCompare(filter.Operator));
 
-                foreach (var filter in filters)
+                if (filter.Column2 != null)
+                    sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");
+                else
                 {
-                    if (filter.Column1 != null)
-                        sql.Append(" " + AddDelimiter(filter.Column1.Name) + " ");
-                    else
-                        sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value1) + " ");
-
-                    sql.Append(GetSqlCompare(filter.Operator));
-
-                    if (filter.Column2 != null)
-                        sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");
-                    else
+                    if (filter.Value2.GetType().IsArray)
                     {
-                        if (filter.Value2.GetType().IsArray)
-                        {
-                            var array = new List<string>();
-                            foreach (var value in (Array)filter.Value2)
-                                array.Add(value.ToString());
-                            sql.Append(" (" + string.Join(",", array.Select(c => GetSqlFieldValueQuote(filter.CompareDataType, c))) + ") ");
-                        }
-                        else
-                            sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value2) + " ");
+                        var array = new List<string>();
+                        foreach (var value in (Array)filter.Value2)
+                            array.Add(value.ToString());
+                        sql.Append(" (" + string.Join(",", array.Select(c => GetSqlFieldValueQuote(filter.CompareDataType, c))) + ") ");
                     }
-
-                    sql.Append(filter.AndOr.ToString());
+                    else
+                        sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value2) + " ");
                 }
 
-                sql.Remove(sql.Length - 3, 3); //remove last or/and
-
-                return sql.ToString();
+                sql.Append(filter.AndOr.ToString());
             }
+
+            sql.Remove(sql.Length - 3, 3); //remove last or/and
+
+            return sql.ToString();
         }
 
         public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
@@ -390,7 +382,7 @@ namespace dexih.connections.sql
                             var count = 0;
                             foreach (var column in query.UpdateColumns)
                             {
-                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count.ToString() + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
+                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
                                 count++;
                             }
                             sql.Remove(sql.Length - 1, 1); //remove last comma
@@ -406,7 +398,7 @@ namespace dexih.connections.sql
                                 for (var i = 0; i < query.UpdateColumns.Count; i++)
                                 {
                                     var param = cmd.CreateParameter();
-                                    param.ParameterName = "@col" + i.ToString();
+                                    param.ParameterName = "@col" + i;
                                     param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
                                     // param.Size = -1;
 
@@ -553,8 +545,6 @@ namespace dexih.connections.sql
                     {
                         throw new ConnectionException($"The truncate query failed. {ex.Message}", ex);
                     }
-
-                    return;
                 }
             }
             catch (Exception ex)
@@ -594,12 +584,12 @@ namespace dexih.connections.sql
 
                     for (var i = 0; i < reader.FieldCount; i++)
                     {
-                        var col = new TableColumn()
+                        var col = new TableColumn
                         {
                             Name = reader.GetName(i),
                             LogicalName = reader.GetName(i),
                             DataType = GetTypeCode(reader.GetFieldType(i)),
-                            DeltaType = TableColumn.EDeltaType.TrackingField,
+                            DeltaType = TableColumn.EDeltaType.TrackingField
                         };
                         newTable.Columns.Add(col);
                     }

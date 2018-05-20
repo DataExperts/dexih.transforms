@@ -33,6 +33,7 @@ namespace dexih.connections.test
                 new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value1" ),
                 new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21) ),
                 new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1 ),
+                new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), true ),
                 new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), guid )
             });
 
@@ -46,7 +47,7 @@ namespace dexih.connections.test
                 sqlTable = new Table("SqlTest")
                 {
                     UseQuery = true,
-                    QueryString = $"select * from {table.Name}"
+                    QueryString = $"select * from \"{table.Name}\""
                 };
             }
             else
@@ -57,7 +58,7 @@ namespace dexih.connections.test
             // check the columns can be imported.
             var importTable = await connection.GetSourceTableInfo(sqlTable, CancellationToken.None);
 
-            Assert.Equal(5, importTable.Columns.Count);
+            Assert.Equal(6, importTable.Columns.Count);
             
             Assert.Equal("IntColumn", importTable.Columns["IntColumn"].Name);
             Assert.True(ETypeCode.Int32 == importTable.Columns["IntColumn"].DataType || ETypeCode.Int64 == importTable.Columns["IntColumn"].DataType);

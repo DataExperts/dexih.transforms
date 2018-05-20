@@ -31,8 +31,10 @@ namespace dexih.connections.test
 
             foreach (ETypeCode typeCode in Enum.GetValues(typeof(ETypeCode)))
             {
-                if (typeCode == ETypeCode.Binary && connection.CanUseBinary) continue;
+                // if (typeCode == ETypeCode.Guid && !connection.CanUseBinary) continue;
 
+                if(typeCode != ETypeCode.Binary) continue;
+                
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "column" + typeCode,
@@ -70,7 +72,6 @@ namespace dexih.connections.test
                 {
                     //start a datawriter and insert the test data
                     await connection.DataWriterStart(table);
-
                     await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
 
                     table.Data.Clear();
@@ -81,7 +82,13 @@ namespace dexih.connections.test
             //count rows using reader
             var count = 0;
             var reader = connection.GetTransformReader(table);
-            await reader.Open(0, null, CancellationToken.None);
+            var sortQuery = new SelectQuery()
+            {
+                Sorts = new List<Sort>() {new Sort("SurrogateKey")},
+                Table = table.Name
+            };
+            
+            await reader.Open(0, sortQuery, CancellationToken.None);
 
             while (await reader.ReadAsync())
             {
@@ -214,7 +221,8 @@ namespace dexih.connections.test
             foreach (ETypeCode typeCode in Enum.GetValues(typeof(ETypeCode)))
             {
                 if (typeCode == ETypeCode.Binary && connection.CanUseBinary) continue;
-
+                if(typeCode != ETypeCode.Binary) continue;
+                
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "column" + typeCode,
@@ -241,7 +249,7 @@ namespace dexih.connections.test
                 {
                     var dataType = DataType.GetType(table.Columns[j].DataType);
                     if (i % 2 == 0)
-                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].DataType);
+                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].DataType, 20);
                     else
                         row[j] = connection.GetConnectionMinValue(table.Columns[j].DataType);
                 }

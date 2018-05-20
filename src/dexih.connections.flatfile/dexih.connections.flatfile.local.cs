@@ -32,7 +32,7 @@ namespace dexih.connections.flatfile
     {
         public string FilePath()
         {
-            var path = Path.Combine(Server ,DefaultDatabase ?? "");
+            var path = Path.Combine(Server ?? "" ,DefaultDatabase ?? "");
             ValidatePath(path);
             return path;
         }
@@ -51,6 +51,11 @@ namespace dexih.connections.flatfile
         /// <exception cref="ForbiddenPathException"></exception>
         private void ValidatePath(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ForbiddenPathException($"An empty path is forbidden.  Path must start with a '/' or 'c:\\'.'.", path);
+            }
+            
             //check the path starts with a / or \ or c:\
             if (!(path.StartsWith("/") || path.StartsWith("\\") || (char.IsLetter(path[0]) && path[1] == ':')))
             {

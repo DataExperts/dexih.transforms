@@ -29,7 +29,10 @@ namespace dexih.connections.test
             TransformWriterResult writerResult = new TransformWriterResult();
             await connection.InitializeAudit(writerResult, 0, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
-            await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
+            var writeRecords = await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
+
+            Assert.True(writeRecords, $"WriteAllRecords failed with message {writerResult.Message}.  Details:{writerResult.ExceptionDetails}");
+            
 
             //check database can sort 
             if (connection.CanSort)

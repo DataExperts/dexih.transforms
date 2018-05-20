@@ -102,7 +102,7 @@ namespace dexih.transforms
             var updateResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Started, null, null, cancellationToken);
             if (!updateResult)
             {
-                return updateResult;
+                return false;
             }
 
             _targetTable = targetTable.Copy(false, true);

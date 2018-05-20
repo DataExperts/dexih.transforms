@@ -138,7 +138,7 @@ namespace dexih.transforms.Poco
                 var column = Table.Columns[mapping.Position];
                 if (column.DeltaType != TableColumn.EDeltaType.AutoIncrement)
                 {
-                    var value = DataType.TryParse(column.DataType, mapping.PropertyInfo.GetValue(item));
+                    var value = TryParse(column.DataType, mapping.PropertyInfo.GetValue(item));
                     var queryColumn = new QueryColumn(column, value);
                     columns.Add(queryColumn);
                 }
