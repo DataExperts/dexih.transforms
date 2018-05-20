@@ -2,23 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.oracle.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.mysql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.mysql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.reader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sql/dexih.connections.sql.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/dexih.connections.test.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/dexih.connections.test.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/dexih.transforms.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/dexih.transforms.tests.csproj" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -201,7 +185,7 @@
           <file leaf-file-name="dexih.connectionsl.sql.oracle.cs" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connectionsl.sql.oracle.cs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="900">
+                <state relative-caret-position="68">
                   <caret line="77" column="24" lean-forward="true" selection-start-line="77" selection-start-column="24" selection-end-line="77" selection-end-column="24" />
                   <folding>
                     <marker date="1526817654890" expanded="false" signature="6:504" ph="..." />
@@ -670,7 +654,7 @@
               <file leaf-file-name="PerformanceTests.cs" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="266">
+                    <state relative-caret-position="78">
                       <caret line="222" column="16" selection-start-line="222" selection-start-column="16" selection-end-line="222" selection-end-column="16" />
                       <folding>
                         <marker date="1526817654887" expanded="false" signature="6:332" ph="..." />
@@ -1014,11 +998,9 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" fullScreen="true">
-    <option name="x" value="-1141" />
-    <option name="y" value="-2160" />
-    <option name="width" value="3840" />
-    <option name="height" value="2160" />
+  <component name="ProjectFrameBounds" extendedState="6" fullScreen="true">
+    <option name="width" value="836" />
+    <option name="height" value="1050" />
   </component>
   <component name="ProjectView">
     <navigator currentView="SolutionExplorer" proportions="" version="1">
@@ -1293,7 +1275,7 @@
       <workItem from="1526700779210" duration="972000" />
       <workItem from="1526773452830" duration="2553000" />
       <workItem from="1526785169731" duration="897000" />
-      <workItem from="1526791905685" duration="20940000" />
+      <workItem from="1526791905685" duration="21088000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1512,11 +1494,18 @@
       <option name="project" value="LOCAL" />
       <updated>1526433630378</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="added oracle provider">
+      <created>1526817671733</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1526817671734</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="326103000" />
+    <option name="totallyTimeSpent" value="326251000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1528,19 +1517,19 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1141" y="-2160" width="3840" height="2160" extended-state="0" />
+    <frame x="0" y="0" width="836" height="1050" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.489011" weight="0.32809225" />
-      <window_info anchor="right" id="Errors In Solution" order="3" visible="true" weight="0.05390625" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.29427084" side_tool="true" visible="true" weight="0.34867173" />
-      <window_info anchor="bottom" id="Unit Tests" order="9" sideWeight="0.7057292" visible="true" weight="0.34867173" />
+      <window_info anchor="right" id="Errors In Solution" order="3" visible="true" weight="0.24760765" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.29545453" side_tool="true" visible="true" weight="0.30861723" />
+      <window_info anchor="bottom" id="Unit Tests" order="9" sideWeight="0.70454544" visible="true" weight="0.30861723" />
       <window_info anchor="bottom" id="Database Changes" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="3" sideWeight="0.48645833" weight="0.13554503" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.49285713" weight="0.32932934" />
       <window_info anchor="bottom" id="Terminal" order="11" />
       <window_info anchor="bottom" id="NuGet" order="8" sideWeight="0.63072914" weight="0.35056925" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.10364583" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.47607654" />
       <window_info anchor="bottom" id="Docker" order="14" show_stripe_button="false" />
       <window_info anchor="bottom" id="Build" order="13" sideWeight="0.3841146" weight="0.32163188" />
       <window_info anchor="right" id="Database" order="4" />
@@ -1610,7 +1599,8 @@
     <MESSAGE value="fixe postgres insert type conversion" />
     <MESSAGE value="fix test" />
     <MESSAGE value="added bulk load to postgres database.&#10;fixed transoform rows where functions return multiple params." />
-    <option name="LAST_COMMIT_MESSAGE" value="added bulk load to postgres database.&#10;fixed transoform rows where functions return multiple params." />
+    <MESSAGE value="added oracle provider" />
+    <option name="LAST_COMMIT_MESSAGE" value="added oracle provider" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -3378,7 +3368,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/dexih.connections.sql/dexih.connectionsl.sql.oracle.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="900">
+        <state relative-caret-position="68">
           <caret line="77" column="24" lean-forward="true" selection-start-line="77" selection-start-column="24" selection-end-line="77" selection-end-column="24" />
           <folding>
             <marker date="1526817654890" expanded="false" signature="6:504" ph="..." />
