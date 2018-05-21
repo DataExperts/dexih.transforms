@@ -296,6 +296,8 @@ namespace dexih.connections.sql
                 case ETypeCode.Boolean:
                     var v = (bool) TryParse(ETypeCode.Boolean, value);
                     return v ? "1" : "0";
+                case ETypeCode.Binary:
+                    return "'" + TryParse(ETypeCode.String, value) + "'";
                 default:
                     throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");
             }

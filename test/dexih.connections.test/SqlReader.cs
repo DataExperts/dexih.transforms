@@ -47,7 +47,7 @@ namespace dexih.connections.test
                 sqlTable = new Table("SqlTest")
                 {
                     UseQuery = true,
-                    QueryString = $"select * from \"{table.Name}\""
+                    QueryString = $"select * from {table.Name}"
                 };
             }
             else
