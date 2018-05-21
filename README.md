@@ -35,9 +35,9 @@
 
 |Package|Nuget Link|
 |---|---|
-|Connections Restful Web Services|[![][nuget-connections-restful-img]][nuget-connections-restful]|
-|Connections Excel|[![][nuget-connections-excel-img]][nuget-connections-excel]|
-|Connections Integration Hub|[![][nuget-connections-dexih-img]][nuget-connections-dexih]|
+|Restful Web Services|[![][nuget-connections-restful-img]][nuget-connections-restful]|
+|Excel|[![][nuget-connections-excel-img]][nuget-connections-excel]|
+|Integration Hub|[![][nuget-connections-dexih-img]][nuget-connections-dexih]|
 ---
 
 [build]:     https://ci.appveyor.com/project/dataexperts/dexih-transforms
@@ -93,7 +93,7 @@ This library provides .net developers the ability to implement read, transform, 
 
 The key features are:
 * Built in .net core, and cross-platform tested on Windows, OSX and Linux platforms.
-* Support for reading/writing to mutliple data points:
+* Provides a uniform view for a set of heterogenous data sources.  These include:
     * Sql Databases
     * NoSql Databases - Azure Storage Tables.
     * Rest based web services.
@@ -106,7 +106,7 @@ The key features are:
 * CDC (change data capture) capabilities that can:
     * Detect updates, deletes in target data and apply changes.
     * Preserve change history by maintaining row versions on target tables.
-* Apply data validation/rejejection though column level validation and rejection rules.
+* Apply data validation/rejection though column level validation and rejection rules.
 * Auto capture data profiling statistics and column distribution analysis.
 
 This library can be used as a foundation for applications that need process small or high volumes of data such as:
@@ -116,17 +116,15 @@ This library can be used as a foundation for applications that need process smal
 
 ## How does it work?
 
-There are three key aspects involved in building a transforms.  These are:
+The library consists of the following primary classes:
 
-* Reader
-* Tranforms
-* Writer
-
-The transforms work by chaining `transform` objects together and then reading data from the end of the chain as a `DbDataReader` object.  Using the DbDataReader means that these can be used in conjuction with any databases (or other libraries) that send or receive `DbDataReader`. 
+* **Readers** - Connects to, and retrieves underlying data.
+* **Tranforms** - Prepares and processes data as needed.  Transforms can be chained together as many times as needed to perform more complex data processing.
+* **Writer** - Writes the data out to the final destination.
 
 ## Using the Readers
 
-The readers are used to start the data chain, and implement the `transform` class.  The `transform` objects can be used to feed data into subsequent transforms, or used independently as a DbDataReader.
+The readers are used to start the data chain, and implement the `transform` class.  The `transform` objects can be used to feed data into subsequent transforms, or used independently as a `DbDataReader`.
 
 ### Reading from a class (POCO Reader)
 
