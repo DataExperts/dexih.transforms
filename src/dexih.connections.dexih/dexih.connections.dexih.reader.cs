@@ -23,7 +23,8 @@ namespace dexih.connections.dexih
     {
         private bool _isOpen = false;
 
-        private int[] _columnOrdinals;
+        // private int[] _columnOrdinals;
+
 		private string _dataUrl;
         
         private FileHandlerBase _fileHandler;
@@ -145,33 +146,33 @@ namespace dexih.connections.dexih
 
         }
         
-        private object[] ConvertRow(IReadOnlyList<object> row)
-        {
-            var newRow = new object[_columnOrdinals.Length];
+        //private object[] ConvertRow(IReadOnlyList<object> row)
+        //{
+        //    var newRow = new object[_columnOrdinals.Length];
             
-            for(var i = 0; i < _columnOrdinals.Length; i++)
-            {
-                if(row[_columnOrdinals[i]] is JToken)
-                {
-                    newRow[i] = DBNull.Value;
-                    continue;
-                }
+        //    for(var i = 0; i < _columnOrdinals.Length; i++)
+        //    {
+        //        if(row[_columnOrdinals[i]] is JToken)
+        //        {
+        //            newRow[i] = DBNull.Value;
+        //            continue;
+        //        }
 
-                switch(CacheTable.Columns[i].DataType)
-                {
-                    case ETypeCode.Guid:
-                        newRow[i] = Guid.Parse(row[_columnOrdinals[i]].ToString());
-                        break;
-                   default:
-                       newRow[i] = row[_columnOrdinals[i]];
-                       break;
-                }
+        //        switch(CacheTable.Columns[i].DataType)
+        //        {
+        //            case ETypeCode.Guid:
+        //                newRow[i] = Guid.Parse(row[_columnOrdinals[i]].ToString());
+        //                break;
+        //           default:
+        //               newRow[i] = row[_columnOrdinals[i]];
+        //               break;
+        //        }
 
-            }
+        //    }
 
-            return newRow;
+        //    return newRow;
 
-        }
+        //}
         
         public class DataModel
         {

@@ -51,8 +51,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            long valueInt64;
-            if (long.TryParse(sValue, out valueInt64))
+            if (long.TryParse(sValue, out long valueInt64))
             {
                 if (_dictionary.ContainsKey("Int64"))
                     _dictionary["Int64"]++;
@@ -61,8 +60,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            double valueDouble;
-            if (double.TryParse(sValue, out valueDouble))
+            if (double.TryParse(sValue, out double valueDouble))
             {
                 if (_dictionary.ContainsKey("Double"))
                     _dictionary["Double"]++;
@@ -71,8 +69,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            float valueFloat;
-            if (float.TryParse(sValue, out valueFloat))
+            if (float.TryParse(sValue, out float valueFloat))
             {
                 if (_dictionary.ContainsKey("Float"))
                     _dictionary["Float"]++;
@@ -81,8 +78,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            DateTime valueDateTime;
-            if (DateTime.TryParse(sValue, out valueDateTime))
+            if (DateTime.TryParse(sValue, out DateTime valueDateTime))
             {
                 if (_dictionary.ContainsKey("DateTime"))
                     _dictionary["DateTime"]++;
@@ -139,9 +135,11 @@ namespace dexih.functions.BuiltIn
         {
             if (DetailedResults)
             {
-                distribution = new Dictionary<string, int>();
-                distribution.Add("Nulls", _intValue);
-                distribution.Add("Non Nulls", _recordCount - _intValue);
+                distribution = new Dictionary<string, int>
+                {
+                    { "Nulls", _intValue },
+                    { "Non Nulls", _recordCount - _intValue }
+                };
             }
             else
                 distribution = null;
@@ -159,9 +157,11 @@ namespace dexih.functions.BuiltIn
         {
             if (DetailedResults)
             {
-                distribution = new Dictionary<string, int>();
-                distribution.Add("Blanks", _intValue);
-                distribution.Add("Non Blanks", _recordCount - _intValue);
+                distribution = new Dictionary<string, int>
+                {
+                    { "Blanks", _intValue },
+                    { "Non Blanks", _recordCount - _intValue }
+                };
             }
             else
                 distribution = null;
@@ -171,9 +171,10 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Profile, Category = "Profile", Name = "Zeros", Description = "Find the percentage of zero value columns.", ResultMethod = nameof(ZerosResult), ResetMethod = nameof(Reset))]
         public void Zeros(string value)
         {
-            decimal number;
-            if (value != null && decimal.TryParse(value, out number))
+            if (value != null && decimal.TryParse(value, out decimal number))
+            {
                 if (number == 0) _intValue++;
+            }
             _recordCount++;
         }
 
@@ -181,9 +182,11 @@ namespace dexih.functions.BuiltIn
         {
             if (DetailedResults)
             {
-                distribution = new Dictionary<string, int>();
-                distribution.Add("Zeros", _intValue);
-                distribution.Add("Non Zeros", _recordCount - _intValue);
+                distribution = new Dictionary<string, int>
+                {
+                    { "Zeros", _intValue },
+                    { "Non Zeros", _recordCount - _intValue }
+                };
             }
             else
                 distribution = null;
@@ -228,10 +231,9 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Profile, Category = "Profile", Name = "Maximum Value", Description = "Find the maximum numerical value.", ResultMethod = nameof(MaxValueResult), ResetMethod = nameof(Reset))]
         public void MaxValue(string value)
         {
-            double number;
             _recordCount++;
 
-            if (value != null &&  double.TryParse(value, out number))
+            if (value != null &&  double.TryParse(value, out double number))
             {
                 if (_objectValue == null || Convert.ToDouble(_objectValue) < number)
                 {

@@ -69,12 +69,13 @@ namespace dexih.connections.sftp
 
             Task.Run(() =>
             {
-//                _log.Debug("Disposing _client");
+                //                _log.Debug("Disposing _client");
 
-                var timer = new System.Timers.Timer();
-
-                timer.Interval = 2000;
-                timer.AutoReset = false;
+                var timer = new System.Timers.Timer
+                {
+                    Interval = 2000,
+                    AutoReset = false
+                };
 
                 timer.Elapsed += (s, e) =>
                 {

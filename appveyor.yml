@@ -23,9 +23,21 @@ test_script:
 - cd test\dexih.connections.azure.tests
 - '"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start'
 - dotnet test 
-# - cd ..\dexih.connections.flatfile.tests
+- cd ..\dexih.connections.flatfile.tests
+- dotnet test 
+# - cd ..\dexih.connections.ftp.tests
 # - dotnet test 
-- cd ..\dexih.connections.sql.tests
+# - cd ..\dexih.connections.sftp.tests
+# - dotnet test 
+- cd ..\dexih.connections.mysql.tests
+- dotnet test 
+# - cd ..\dexih.connections.oracle.tests
+# - dotnet test 
+- cd ..\dexih.connections.postgressql.tests
+- dotnet test 
+- cd ..\dexih.connections.sqlite.tests
+- dotnet test 
+- cd ..\dexih.connections.sqlerver.tests
 - dotnet test 
 - cd ..\dexih.connections.excel.tests
 - dotnet test 

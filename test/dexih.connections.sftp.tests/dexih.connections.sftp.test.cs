@@ -1,23 +1,21 @@
 ﻿using dexih.connections.test;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace dexih.connections.ftp
+namespace dexih.connections.sftp
 {
-    public class ConnectionFtpFlatFileTests
+    public class ConnectionSftpFlatFileTests
     {
-        public ConnectionFlatFileFtp GetConnection()
+        public ConnectionFlatFileSftp GetConnection()
         {
-            var serverName = Convert.ToString(Configuration.AppSettings["FlatFileFtp:ServerName"]);
-            var userName = Convert.ToString(Configuration.AppSettings["FlatFileFtp:UserName"]);
-            var password = Convert.ToString(Configuration.AppSettings["FlatFileFtp:Password"]);
+            var serverName = Convert.ToString(Configuration.AppSettings["FlatFileSftp:ServerName"]);
+            var userName = Convert.ToString(Configuration.AppSettings["FlatFileSftp:UserName"]);
+            var password = Convert.ToString(Configuration.AppSettings["FlatFileSftp:Password"]);
             if (serverName == "")
                 return null;
 
-            var connection  = new ConnectionFlatFileFtp()
+            var connection  = new ConnectionFlatFileSftp()
             {
                 Name = "Test Connection",
                 Server = serverName,

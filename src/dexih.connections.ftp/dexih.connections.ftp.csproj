@@ -1,6 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Description>Data transformation and anaytics library - Ftp Connections &amp; Readers</Description>
+    <AssemblyTitle>Data Experts Group - Ftp Connections</AssemblyTitle>
+    <VersionPrefix>0.3.1</VersionPrefix>
+    <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>dexih.connections.ftp</AssemblyName>
+    <PackageId>dexih.connections.ftp</PackageId>
+    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
+    <PackageReleaseNotes>Refer to the project url (https://github.com/dataexperts/dexih.transforms) for documentation and raising issues</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />

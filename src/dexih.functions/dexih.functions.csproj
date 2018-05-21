@@ -7,8 +7,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.functions</AssemblyName>
     <PackageId>dexih.functions</PackageId>
-    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Poco;Data Processing;</PackageTags>
-    <PackageReleaseNotes>Note: This project is still in a beta stage.  There will may be future breaking changes as new versions are released.</PackageReleaseNotes>
+    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
+    <PackageReleaseNotes>Refer to the project url (https://github.com/dataexperts/dexih.transforms) for documentation and raising issues</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>

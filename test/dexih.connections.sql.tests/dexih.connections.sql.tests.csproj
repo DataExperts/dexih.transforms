@@ -11,7 +11,6 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\dexih.connections.sql\dexih.connections.sql.csproj" />
     <ProjectReference Include="..\dexih.connections.test\dexih.connections.test.csproj">
     </ProjectReference>
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />

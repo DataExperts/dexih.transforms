@@ -33,14 +33,16 @@ namespace dexih.transforms.tests
             //    }, null));
 
             var transformFunction = new TransformFunction(
-                new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()), 
-                new TableColumn[] { new TableColumn("StringColumn"), new TableColumn("number", ETypeCode.Int32) }, 
-                new TableColumn("CustomFunction"), 
+                new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()),
+                new TableColumn[] { new TableColumn("StringColumn"), new TableColumn("number", ETypeCode.Int32) },
+                new TableColumn("CustomFunction"),
                 null,
-                null);
-            transformFunction.Inputs = new dexih.functions.Parameter[] {
+                null)
+            {
+                Inputs = new dexih.functions.Parameter[] {
                     new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
-                    new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123) };
+                    new dexih.functions.Parameter("number", ETypeCode.Int32, false, 123) }
+            };
             Mappings.Add(transformFunction);
 
             transformFunction = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "Substring").GetTransformFunction();
@@ -51,8 +53,10 @@ namespace dexih.transforms.tests
                     new dexih.functions.Parameter("start", ETypeCode.Int32, false, 3) };
             Mappings.Add(transformFunction);
 
-            var MappingColumn = new List<ColumnPair>();
-            MappingColumn.Add(new ColumnPair(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)));
+            var MappingColumn = new List<ColumnPair>
+            {
+                new ColumnPair(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime))
+            };
 
             transformMapping = new TransformMapping(Source, false, MappingColumn, Mappings);
 
@@ -80,8 +84,10 @@ namespace dexih.transforms.tests
         public async Task MappingPerformancePassthrough(int rows)
         {
             var data = Helpers.CreateLargeTable(rows);
-            var transformMapping = new TransformMapping();
-            transformMapping.PassThroughColumns = true;
+            var transformMapping = new TransformMapping
+            {
+                PassThroughColumns = true
+            };
             transformMapping.SetInTransform(data);
 
             var count = 0;

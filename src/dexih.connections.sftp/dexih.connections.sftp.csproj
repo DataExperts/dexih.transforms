@@ -1,7 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Description>Data transformation and anaytics library - Sftp Connection and Readers</Description>
+    <AssemblyTitle>Data Experts Group - SFTP Connections</AssemblyTitle>
+    <VersionPrefix>0.3.1</VersionPrefix>
+    <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
+    <AssemblyName>dexih.connections.sftp</AssemblyName>
+    <PackageId>dexih.connections.sftp</PackageId>
+    <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
+    <PackageReleaseNotes>Refer to the project url (https://github.com/dataexperts/dexih.transforms) for documentation and raising issues</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
     <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />

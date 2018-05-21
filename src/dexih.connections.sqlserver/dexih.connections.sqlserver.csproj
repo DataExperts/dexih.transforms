@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Description>Data transformation and anaytics library - Connections to a Data Experts Integration Hub</Description>
-    <AssemblyTitle>Data Experts Group - Integration Hub Connection</AssemblyTitle>
+    <Description>Data transformation and anaytics library - SqlServer Connection and reader.</Description>
+    <AssemblyTitle>Data Experts Group - SqlServer Connection</AssemblyTitle>
     <VersionPrefix>0.3.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>dexih.connections.dexih</AssemblyName>
-    <PackageId>dexih.connections.dexih</PackageId>
+    <AssemblyName>dexih.connections.sqlserver</AssemblyName>
+    <PackageId>dexih.connections.sqlserver</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
     <PackageReleaseNotes>Refer to the project url (https://github.com/dataexperts/dexih.transforms) for documentation and raising issues</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
@@ -14,8 +15,13 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.5.0-rc1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
+
 </Project>

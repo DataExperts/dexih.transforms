@@ -6,7 +6,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-public class samples
+public class Samples
 {
 
     public async Task FirstTransform(SqlConnection sourceConnection, SqlConnection targetConnection)

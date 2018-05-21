@@ -175,9 +175,11 @@ namespace dexih.connections.azure
                 var cTable = tableClient.GetTableReference(CacheTable.Name);
 
                 //Read the key fields from the table
-                var tableQuery = new TableQuery();
-                tableQuery.SelectColumns = CacheTable.Columns.Select(c=>c.Name).ToArray();
-                tableQuery.FilterString = _connection.BuildFilterString(filters);
+                var tableQuery = new TableQuery
+                {
+                    SelectColumns = CacheTable.Columns.Select(c => c.Name).ToArray(),
+                    FilterString = _connection.BuildFilterString(filters)
+                };
                 tableQuery.Take(1000);
 
                 var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, null);

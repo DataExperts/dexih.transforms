@@ -53,19 +53,20 @@ namespace dexih.transforms.tests
         {
             var Table = CreateProfileTestData();
 
-            var profiles = new List<TransformFunction>();
-
-            profiles.Add(GetProfileReference(true, "BestDataType", "StringColumn"));
-            profiles.Add(GetProfileReference(true, "BestDataType", "IntColumn"));
-            profiles.Add(GetProfileReference(true, "BestDataType", "DecimalColumn"));
-            profiles.Add(GetProfileReference(true, "BestDataType", "DateColumn"));
-            profiles.Add(GetProfileReference(true, "Nulls", "NullsBlanksColumn"));
-            profiles.Add(GetProfileReference(true, "Blanks", "NullsBlanksColumn"));
-            profiles.Add(GetProfileReference(true, "Zeros", "ZerosColumn"));
-            profiles.Add(GetProfileReference(true, "MaxLength", "MaxLengthColumn"));
-            profiles.Add(GetProfileReference(true, "MaxValue", "MaxValueColumn"));
-            profiles.Add(GetProfileReference(true, "DistinctValues", "DistinctValuesColumn"));
-            profiles.Add(GetProfileReference(true, "Patterns", "PatternsColumn"));
+            var profiles = new List<TransformFunction>
+            {
+                GetProfileReference(true, "BestDataType", "StringColumn"),
+                GetProfileReference(true, "BestDataType", "IntColumn"),
+                GetProfileReference(true, "BestDataType", "DecimalColumn"),
+                GetProfileReference(true, "BestDataType", "DateColumn"),
+                GetProfileReference(true, "Nulls", "NullsBlanksColumn"),
+                GetProfileReference(true, "Blanks", "NullsBlanksColumn"),
+                GetProfileReference(true, "Zeros", "ZerosColumn"),
+                GetProfileReference(true, "MaxLength", "MaxLengthColumn"),
+                GetProfileReference(true, "MaxValue", "MaxValueColumn"),
+                GetProfileReference(true, "DistinctValues", "DistinctValuesColumn"),
+                GetProfileReference(true, "Patterns", "PatternsColumn")
+            };
 
             var transformProfile = new TransformProfile(Table, profiles);
 

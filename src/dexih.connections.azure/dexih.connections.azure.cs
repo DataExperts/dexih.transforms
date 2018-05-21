@@ -356,9 +356,11 @@ namespace dexih.connections.azure
 
 
                 //The new datatable that will contain the table schema
-                var table = new Table(originalTable.Name);
-                table.LogicalName = originalTable.Name;
-                table.Description = "";
+                var table = new Table(originalTable.Name)
+                {
+                    LogicalName = originalTable.Name,
+                    Description = ""
+                };
 
                 var cloudTable = connection.GetTableReference(table.Name);
                 var query = new TableQuery().Take(1);
@@ -923,10 +925,11 @@ namespace dexih.connections.azure
                 foreach (var query in queries)
                 {
                     //Read the key fields from the table
-                    var tableQuery = new TableQuery();
-
-                    //select all columns
-                    tableQuery.SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.Name != "PartitionKey" && c.Name != "RowKey").Select(c => c.Name)).ToList());
+                    var tableQuery = new TableQuery
+                    {
+                        //select all columns
+                        SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.Name != "PartitionKey" && c.Name != "RowKey").Select(c => c.Name)).ToList())
+                    };
 
                     //the rowkey is the same as the surrogate key, so add this to the filter string if the surrogate key is used.
                     if (surrogateKeyColumn != null)
@@ -1039,9 +1042,11 @@ namespace dexih.connections.azure
                     }
 
                     //Read the key fields from the table
-                    var tableQuery = new TableQuery();
-                    tableQuery.SelectColumns = new[] { "PartitionKey", "RowKey" };
-                    tableQuery.FilterString = BuildFilterString(query.Filters);
+                    var tableQuery = new TableQuery
+                    {
+                        SelectColumns = new[] { "PartitionKey", "RowKey" },
+                        FilterString = BuildFilterString(query.Filters)
+                    };
                     //TableResult = TableReference.ExecuteQuery(TableQuery);
 
                     TableContinuationToken continuationToken = null;
@@ -1088,9 +1093,11 @@ namespace dexih.connections.azure
                 var cTable = connection.GetTableReference(table.Name);
 
                 //Read the key fields from the table
-                var tableQuery = new TableQuery();
-                tableQuery.SelectColumns = query.Columns.Select(c => c.Column.Name).ToArray();
-                tableQuery.FilterString = BuildFilterString(query.Filters);
+                var tableQuery = new TableQuery
+                {
+                    SelectColumns = query.Columns.Select(c => c.Column.Name).ToArray(),
+                    FilterString = BuildFilterString(query.Filters)
+                };
                 tableQuery.Take(1);
 
                 TableContinuationToken continuationToken = null;
