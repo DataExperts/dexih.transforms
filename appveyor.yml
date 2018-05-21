@@ -37,7 +37,7 @@ test_script:
 - dotnet test 
 - cd ..\dexih.connections.sqlite.tests
 - dotnet test 
-- cd ..\dexih.connections.sqlerver.tests
+- cd ..\dexih.connections.sqlserver.tests
 - dotnet test 
 - cd ..\dexih.connections.excel.tests
 - dotnet test 
