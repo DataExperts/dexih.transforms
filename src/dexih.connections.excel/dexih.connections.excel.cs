@@ -12,6 +12,7 @@ using OfficeOpenXml.FormulaParsing.Utilities;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using OfficeOpenXml.DataValidation;
 
 namespace dexih.connections.excel
 {
@@ -50,7 +51,7 @@ namespace dexih.connections.excel
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
         public override bool CanAggregate => false;
-	    public override bool CanUseBinary => true;
+	    public override bool CanUseBinary => false;
 	    public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
 
@@ -245,7 +246,12 @@ namespace dexih.connections.excel
 
                             if (dataType == ETypeCode.Unknown || dataType == ETypeCode.Int64)
                             {
-                                if (value.IsNumeric())
+	                            if (value is bool)
+	                            {
+		                            dataType = ETypeCode.Boolean;
+		                            continue;
+	                            }
+                                else if (value.IsNumeric())
                                 {
                                     if (Math.Abs((Double)value % 1) <= (Double.Epsilon * 100))
                                     {
