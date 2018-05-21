@@ -5,16 +5,39 @@
 
 ## Nuget Packages
 
+### Base Libraries ###
+
 |Package|Nuget Link|
 |---|---|
 |Transforms - (Start here) The base transforms library, table caching, and a basic connection.|[![][nuget-transforms-img]][nuget-transforms]|
 |Functions - Standard functions, data type conversations and other support libraries for the transforms.|[![][nuget-functions-img]][nuget-functions]|
-|Connections Sql - Connections for Sql Server and Sqlite.|[![][nuget-connections-sql-img]][nuget-connections-sql]|
-|Connections FlatFile - Connections for various types of delimited flat files.|[![][nuget-connections-flatfile-img]][nuget-connections-flatfile]|
-|Connections Azure - Connections Azure Table Storage and Azure File Storage.|[![][nuget-connections-azure-img]][nuget-connections-azure]|
-|Connections Restful - Connection to source data from Rest based web services.|[![][nuget-connections-restful-img]][nuget-connections-restful]|
-|Connections Excel - Connection to source data from Excel files.|[![][nuget-connections-excel-img]][nuget-connections-excel]|
-|Connections Integration Hub - Connection to source data form hubs in the Dex Integration Hub.|[![][nuget-connections-dexih-img]][nuget-connections-dexih]|
+
+### SQL Connections ###
+|Package|Nuget Link|
+|---|---|
+|Sql Server|[![][nuget-connections-sqlserver-img]][nuget-connections-sqlserver]|
+|Postgres Sql|[![][nuget-connections-postgressql-img]][nuget-connections-postgressql]|
+|Sqlite|[![][nuget-connections-sqlite-img]][nuget-connections-sqlite]|
+|MySql|[![][nuget-connections-mysql-img]][nuget-connections-mysql]|
+|Oracle|[![][nuget-connections-oracle-img]][nuget-connections-oracle]|
+
+
+### Flat File Connections ###
+
+|Package|Nuget Link|
+|---|---|
+|Local flat files|[![][nuget-connections-flatfile-img]][nuget-connections-flatfile]|
+|FTP flat files|[![][nuget-connections-ftp-img]][nuget-connections-ftp]|
+|SFTP flat files|[![][nuget-connections-sftp-img]][nuget-connections-sftp]|
+|Azure Storage flat files|[![][nuget-connections-azure-img]][nuget-connections-azure]|
+
+### Other Connections ###
+
+|Package|Nuget Link|
+|---|---|
+|Connections Restful Web Services|[![][nuget-connections-restful-img]][nuget-connections-restful]|
+|Connections Excel|[![][nuget-connections-excel-img]][nuget-connections-excel]|
+|Connections Integration Hub|[![][nuget-connections-dexih-img]][nuget-connections-dexih]|
 ---
 
 [build]:     https://ci.appveyor.com/project/dataexperts/dexih-transforms
@@ -23,18 +46,44 @@
 [nuget-transforms-img]: https://badge.fury.io/nu/dexih.transforms.svg
 [nuget-functions]:     https://www.nuget.org/packages/dexih.functions/
 [nuget-functions-img]: https://badge.fury.io/nu/dexih.functions.svg
-[nuget-connections-sql]:     https://www.nuget.org/packages/dexih.connections.sql/
-[nuget-connections-sql-img]: https://badge.fury.io/nu/dexih.connections.sql.svg
+
+[nuget-connections-sqlserver]:     https://www.nuget.org/packages/dexih.connections.sqlserver/
+[nuget-connections-sqlserver-img]: https://badge.fury.io/nu/dexih.connections.sqlserver.svg
+
+[nuget-connections-postgressql]:     https://www.nuget.org/packages/dexih.connections.postgressql/
+[nuget-connections-postgressql-img]: https://badge.fury.io/nu/dexih.connections.postgressql.svg
+
+[nuget-connections-mysql]:     https://www.nuget.org/packages/dexih.connections.mysql/
+[nuget-connections-mysql-img]: https://badge.fury.io/nu/dexih.connections.mysql.svg
+
+[nuget-connections-oracle]:     https://www.nuget.org/packages/dexih.connections.oracle/
+[nuget-connections-oracle-img]: https://badge.fury.io/nu/dexih.connections.oracle.svg
+
+[nuget-connections-sqlite]:     https://www.nuget.org/packages/dexih.connections.sqlite/
+[nuget-connections-sqlite-img]: https://badge.fury.io/nu/dexih.connections.sqlite.svg
+
 [nuget-connections-flatfile]:     https://www.nuget.org/packages/dexih.connections.flatfile/
 [nuget-connections-flatfile-img]: https://badge.fury.io/nu/dexih.connections.flatfile.svg
+
+[nuget-connections-ftp]:     https://www.nuget.org/packages/dexih.connections.ftp/
+[nuget-connections-ftp-img]: https://badge.fury.io/nu/dexih.connections.ftp.svg
+
+[nuget-connections-sftp]:     https://www.nuget.org/packages/dexih.connections.sftp/
+[nuget-connections-sftp-img]: https://badge.fury.io/nu/dexih.connections.sftp.svg
+
+
 [nuget-connections-azure]:     https://www.nuget.org/packages/dexih.connections.azure/
 [nuget-connections-azure-img]: https://badge.fury.io/nu/dexih.connections.azure.svg
+
 [nuget-connections-restful]:     https://www.nuget.org/packages/dexih.connections.webservice.restful/
 [nuget-connections-restful-img]: https://badge.fury.io/nu/dexih.connections.webservice.restful.svg
+
 [nuget-connections-excel]:     https://www.nuget.org/packages/dexih.connections.excel/
 [nuget-connections-excel-img]: https://badge.fury.io/nu/dexih.connections.excel.svg
+
 [nuget-connections-dexih]:     https://www.nuget.org/packages/dexih.connections.dexih/
 [nuget-connections-dexih-img]: https://badge.fury.io/nu/dexih.connections.dexih.svg
+
 [dex-img]: http://dataexpertsgroup.com/img/dex_web_logo.png
 [dex]: https://dataexpertsgroup.com
 
@@ -45,10 +94,10 @@ This library provides .net developers the ability to implement read, transform, 
 The key features are:
 * Built in .net core, and cross-platform tested on Windows, OSX and Linux platforms.
 * Support for reading/writing to mutliple data points:
-    * Sql Databases - Sql Server, MySql, PostrgreSql & Sqlite
+    * Sql Databases
     * NoSql Databases - Azure Storage Tables.
     * Rest based web services.
-    * Text files of varying formats.
+    * Text files of varying formats (locally and via SFTP or FTP)
     * Excel files.
     * Directly from in memory POCO (Plain Old CLR Objects).
 * Data functions that enable on the fly field encryption, json/xml parsing, text parsing, and geographical calculations.
