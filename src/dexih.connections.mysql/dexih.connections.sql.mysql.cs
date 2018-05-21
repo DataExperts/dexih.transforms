@@ -396,6 +396,9 @@ namespace dexih.connections.sql
 					else
                         returnValue = "TIME_FORMAT('" + MySqlHelper.EscapeString((string)value) + "', '%H:%i:%s.%f')";
 					break;
+                case ETypeCode.Binary:
+                    returnValue = "X'" + TryParse(ETypeCode.String, value) +"'";
+                    break;
                 default:
                     throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");
             }

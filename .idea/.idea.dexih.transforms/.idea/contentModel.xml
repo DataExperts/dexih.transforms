@@ -107,6 +107,42 @@
             </e>
           </e>
         </e>
+        <e p="dexih.connections.mysql" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.mysql.csproj" t="IncludeRecursive" />
+          <e p="dexih.connections.sql.mysql.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netstandard2.0" t="Include">
+                <e p="dexih.connections.mysql.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.connections.oracle" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.oracle.csproj" t="IncludeRecursive" />
+          <e p="dexih.connectionsl.sql.oracle.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netstandard2.0" t="Include">
+                <e p="dexih.connections.oracle.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.connections.postgressql" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.postgressql.csproj" t="IncludeRecursive" />
+          <e p="dexih.connections.sql.postgresql.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netstandard2.0" t="Include">
+                <e p="dexih.connections.postgressql.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
         <e p="dexih.connections.sftp" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.connections.flatfile.sftp.cs" t="Include" />
@@ -121,26 +157,28 @@
           <e p="SftpClientWrapper.cs" t="Include" />
           <e p="SftpStream.cs" t="Include" />
         </e>
-        <e p="dexih.connections.sql" t="IncludeRecursive">
+        <e p="dexih.connections.sqlite" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
-          <e p="dexih.connections.sql.cs" t="Include" />
-          <e p="dexih.connections.sql.csproj" t="IncludeRecursive" />
-          <e p="dexih.connections.sql.mysql.cs" t="Include" />
-          <e p="dexih.connections.sql.postgresql.cs" t="Include" />
-          <e p="dexih.connections.sql.reader.cs" t="Include" />
           <e p="dexih.connections.sql.sqlite.cs" t="Include" />
-          <e p="dexih.connections.sql.sqlserver.cs" t="Include" />
-          <e p="dexih.connectionsl.sql.oracle.cs" t="Include" />
+          <e p="dexih.connections.sqlite.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netstandard2.0" t="Include">
-                <e p="dexih.connections.sql.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.connections.sqlite.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
           </e>
-          <e p="project.lock.json" t="Include" />
-          <e p="Properties" t="Include">
-            <e p="AssemblyInfo.cs" t="Include" />
+        </e>
+        <e p="dexih.connections.sqlserver" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.sql.sqlserver.cs" t="Include" />
+          <e p="dexih.connections.sqlserver.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netstandard2.0" t="Include">
+                <e p="dexih.connections.sqlserver.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
           </e>
         </e>
         <e p="dexih.connections.webservice.restful" t="IncludeRecursive">
@@ -209,7 +247,6 @@
             <e p="UpdateQuery.cs" t="Include" />
           </e>
           <e p="Retry.cs" t="Include" />
-          <e p="StandardFunctions.cs" t="Include" />
           <e p="StandardProfiles.cs" t="Include" />
           <e p="Table" t="Include">
             <e p="File.cs" t="Include" />
@@ -234,6 +271,8 @@
             <e p="Connections.cs" t="Include" />
             <e p="ConnectionsExceptions.cs" t="Include" />
           </e>
+          <e p="dexih.connections.sql.cs" t="Include" />
+          <e p="dexih.connections.sql.reader.cs" t="Include" />
           <e p="dexih.transforms.csproj" t="IncludeRecursive" />
           <e p="EncryptedObject.cs" t="Include" />
           <e p="Exceptions" t="Include">
@@ -340,8 +379,6 @@
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.connections.flatfile.tests.cs" t="Include" />
           <e p="dexih.connections.flatfile.tests.csproj" t="IncludeRecursive" />
-          <e p="dexih.connections.ftp.tests.cs" t="Include" />
-          <e p="dexih.connections.sftp.test.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netcoreapp2.0" t="Include">
@@ -355,26 +392,102 @@
             <e p="AssemblyInfo.cs" t="Include" />
           </e>
         </e>
-        <e p="dexih.connections.sql.tests" t="IncludeRecursive">
+        <e p="dexih.connections.ftp.tests" t="IncludeRecursive">
           <e p="appsettings.json" t="Include" />
           <e p="bin" t="ExcludeRecursive" />
-          <e p="dexih.connections.mysql.tests.cs" t="Include" />
-          <e p="dexih.connections.oracle.tests.cs" t="Include" />
-          <e p="dexih.connections.postgreSql.tests.cs" t="Include" />
-          <e p="dexih.connections.sql.tests.csproj" t="IncludeRecursive" />
-          <e p="dexih.connections.sqlite.tests.cs" t="Include" />
-          <e p="dexih.connections.sqlserver.tests.cs" t="Include" />
+          <e p="dexih.connections.ftp.tests.cs" t="Include" />
+          <e p="dexih.connections.ftp.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netcoreapp2.0" t="Include">
-                <e p="dexih.connections.sql.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.sql.tests.Program.cs" t="Include" />
+                <e p="dexih.connections.ftp.tests.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.connections.ftp.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
-          <e p="project.lock.json" t="Include" />
-          <e p="Properties" t="Include">
-            <e p="AssemblyInfo.cs" t="Include" />
+        </e>
+        <e p="dexih.connections.mysql.tests" t="IncludeRecursive">
+          <e p="appsettings.json" t="Include" />
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.mysql.tests.cs" t="Include" />
+          <e p="dexih.connections.mysql.tests.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.0" t="Include">
+                <e p="dexih.connections.mysql.tests.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.connections.mysql.tests.Program.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.connections.oracle.tests" t="IncludeRecursive">
+          <e p="appsettings.json" t="Include" />
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.oracle.tests.cs" t="Include" />
+          <e p="dexih.connections.oracle.tests.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.0" t="Include">
+                <e p="dexih.connections.oracle.tests.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.connections.oracle.tests.Program.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.connections.postgressql.tests" t="IncludeRecursive">
+          <e p="appsettings.json" t="Include" />
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.postgreSql.tests.cs" t="Include" />
+          <e p="dexih.connections.postgressql.tests.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.0" t="Include">
+                <e p="dexih.connections.postgressql.tests.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.connections.postgressql.tests.Program.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.connections.sftp.tests" t="IncludeRecursive">
+          <e p="appsettings.json" t="Include" />
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.sftp.test.cs" t="Include" />
+          <e p="dexih.connections.sftp.tests.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.0" t="Include">
+                <e p="dexih.connections.sftp.tests.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.connections.sftp.tests.Program.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.connections.sqlite.tests" t="IncludeRecursive">
+          <e p="appsettings.json" t="Include" />
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.sqlite.tests.cs" t="Include" />
+          <e p="dexih.connections.sqlite.tests.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.0" t="Include">
+                <e p="dexih.connections.sqlite.tests.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.connections.sqlite.tests.Program.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.connections.sqlserver.tests" t="IncludeRecursive">
+          <e p="appsettings.json" t="Include" />
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.sqlserver.tests.cs" t="Include" />
+          <e p="dexih.connections.sqlserver.tests.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.0" t="Include">
+                <e p="dexih.connections.sqlserver.tests.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.connections.sqlserver.tests.Program.cs" t="Include" />
+              </e>
+            </e>
           </e>
         </e>
         <e p="dexih.connections.test" t="IncludeRecursive">

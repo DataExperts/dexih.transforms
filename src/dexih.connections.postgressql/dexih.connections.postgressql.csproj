@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - PostgresSql Connection and reader.</Description>
     <AssemblyTitle>Data Experts Group - PostgresSql Connection</AssemblyTitle>
-    <VersionPrefix>0.3.1</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.connections.postgressql</AssemblyName>

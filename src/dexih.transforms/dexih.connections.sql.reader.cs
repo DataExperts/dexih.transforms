@@ -113,8 +113,7 @@ namespace dexih.connections.sql
                     {
                         try
                         {
-                            row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].DataType,
-                                _sqlReader[i]);
+                            row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].DataType, _sqlReader[i]);
                         }
                         catch (Exception ex)
                         {

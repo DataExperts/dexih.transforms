@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Data transformation and analytics library - supporting functions.  See the project url for more details.</Description>
     <AssemblyTitle>Data Experts Group - Supporting Functions</AssemblyTitle>
-    <VersionPrefix>0.3.1</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.functions</AssemblyName>
@@ -26,7 +26,7 @@
     <PackageReference Include="CsvHelper" Version="7.1.0" />
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.60" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.7" />
-    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.17" />
+    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.18" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
     </PackageReference>

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - MySql Connection and reader.</Description>
     <AssemblyTitle>Data Experts Group - MySql Connection</AssemblyTitle>
-    <VersionPrefix>0.3.1</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.connections.mysql</AssemblyName>
