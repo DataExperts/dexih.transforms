@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Azure Storage Table and FlatFile Storage</Description>
     <AssemblyTitle>Data Experts Group - Azure Connections</AssemblyTitle>
-    <VersionPrefix>0.3.1</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.connections.azure</AssemblyName>
@@ -20,6 +20,6 @@
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WindowsAzure.Storage" Version="9.1.1" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.2.0" />
   </ItemGroup>
 </Project>

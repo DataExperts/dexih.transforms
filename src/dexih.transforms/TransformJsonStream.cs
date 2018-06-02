@@ -24,11 +24,11 @@ namespace dexih.transforms
         private readonly MemoryStream _memoryStream;
         private readonly StreamWriter _streamWriter;
         private long _position;
-        private long _maxRows;
+        private readonly long _maxRows;
         private long _rowCount;
         private bool _hasRows;
         private bool _first;
-        object[] valuesArray;
+        private readonly object[] _valuesArray;
 
         public TransformJsonStream(string name, DbDataReader reader, long maxRows = -1)
         {
@@ -61,7 +61,7 @@ namespace dexih.transforms
                 }
             }
             
-            valuesArray = new object[reader.FieldCount];
+            _valuesArray = new object[reader.FieldCount];
 
             _streamWriter.Write(", \"data\": [");
             _memoryStream.Position = 0;
@@ -119,9 +119,9 @@ namespace dexih.transforms
                         return 0;
                     }
 
-                    _reader.GetValues(valuesArray);
+                    _reader.GetValues(_valuesArray);
 
-                    var row = JsonConvert.SerializeObject(valuesArray);
+                    var row = JsonConvert.SerializeObject(_valuesArray);
 
                     await _streamWriter.WriteAsync(row);
 

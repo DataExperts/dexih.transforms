@@ -9,9 +9,9 @@ namespace dexih.transforms
     public class TransformCsvStream : Stream
     {
         private const int BufferSize = 50000;
-        private DbDataReader _reader;
-        private MemoryStream _memoryStream;
-        private StreamWriter _streamWriter;
+        private readonly DbDataReader _reader;
+        private readonly MemoryStream _memoryStream;
+        private readonly StreamWriter _streamWriter;
         private long _position;
         
 
@@ -56,7 +56,7 @@ namespace dexih.transforms
             return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
         }
 
-        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if(!_reader.HasRows && _memoryStream.Position >= _memoryStream.Length)
             {

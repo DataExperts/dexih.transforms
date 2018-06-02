@@ -1100,16 +1100,14 @@ namespace dexih.connections.azure
                 };
                 tableQuery.Take(1);
 
-                TableContinuationToken continuationToken = null;
                 try
                 {
-                    var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancellationToken);
+                    var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, null, null, null, cancellationToken);
 
                     if (cancellationToken.IsCancellationRequested)
                     {
                         throw new ConnectionException("Execute scalar cancelled.");
                     }
-                    continuationToken = result.ContinuationToken;
 
                     object value;
                     //get the result value

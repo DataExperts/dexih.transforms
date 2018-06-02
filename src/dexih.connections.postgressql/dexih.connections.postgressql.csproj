@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>Data transformation and anaytics library - PostgresSql Connection and reader.</Description>
     <AssemblyTitle>Data Experts Group - PostgresSql Connection</AssemblyTitle>
@@ -15,13 +14,10 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="4.0.0-rc1" />
+    <PackageReference Include="Npgsql" Version="4.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
-
 </Project>

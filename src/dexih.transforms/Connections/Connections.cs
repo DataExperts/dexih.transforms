@@ -8,7 +8,7 @@ using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {
-    public class Connections
+    public static class Connections
     {
          public static ConnectionReference GetConnection(string className, string assemblyName = null)
         {

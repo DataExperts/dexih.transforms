@@ -122,9 +122,20 @@ The library consists of the following primary classes:
 * **Tranforms** - Prepares and processes data as needed.  Transforms can be chained together as many times as needed to perform more complex data processing.
 * **Writer** - Writes the data out to the final destination.
 
+## Why not just use SQL / Linq and Entity Framework?
+
+The transformations in this library work best when used in conjunction with optimised SQL queries, however Sql has limits in many areas of data processing.  The transform library can provide the following benefits:
+
+* Analytic calculations that are difficult to carry out using SQL.  For example statistical calculations such as median, moving average are very difficult to accomplish with SQL.
+* Row pivoting functions can be used to easily translate structures such as Xml and Json into tabular data.
+* Join data from multiple data sources.  For example you can join datasets on the fly from different databases, or connect to csv files, web services, or no-sql databases.
+* Reduce workloads on databases can avoid database locking and performance problems on operational databases.
+* Building reusable functions and logic that can be applied across multiple databases and database types.
+
+
 ## Using the Readers
 
-The readers are used to start the data chain, and implement the `transform` class.  The `transform` objects can be used to feed data into subsequent transforms, or used independently as a `DbDataReader`.
+The readers are used to start (or join into) the data chain.
 
 ### Reading from a class (POCO Reader)
 
@@ -165,13 +176,13 @@ public class CreatePocoReader
 {
     public void Create()
     {
-        var books = CreatBooksData();
+        var books = CreateBooksData();
         var reader = new ReaderPoco<BookClass>(books);
 
         DisplayReader(reader);
     }
     
-    public List<BookClass> CreatBooksData()
+    public List<BookClass> CreateBooksData()
     {
         var books = new List<BookClass>();
         
@@ -196,7 +207,76 @@ public class CreatePocoReader
 }
 ```
 
-### Reading from an existing DbDataReader
+### Memory Reader
+
+A memory reader uses a `table` object populated with data.  The following sample creates a memory reader:
+
+```csharp
+//Create the table class
+var table = new Table("test", 0,
+    new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
+    new TableColumn("SortColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField)
+            );
+
+//Populate the table with some data
+    table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 );
+    table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
+    table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8 );
+    table.AddRow("value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7 );
+    table.AddRow("value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6 );
+
+//Initialize the ReaderMemory, with an indicator that the "StringColumn" is sorted
+var reader = new ReaderMemory(table);
+
+```
+
+###Row Creator Reader
+
+A row creator, is a simple reader that generates a sequence of numbers.  This can be used to generate test data, or dimensions such as a date dimension that requires a fixed sequence of values.The following sample creates a row generator reader:
+
+```csharp
+//Create a sequence of rows from 1, 1000 incrementing by 2
+var rowCreator = new ReaderRowCreator(1, 1000, 2);
+```
+
+###Using Connection Readers
+
+The dexih.connections can be used to generate a reader from various type of sources, dependent on the connection being used.  See the documentation for each individual connection for specifics.  
+
+The following example uses the `ConnectionSqlite` to read from a local sqlite database table.
+
+```csharp
+//Create a connection to sqlite
+var connection = new ConnectionSqlite()
+{
+    Name = "Test Connection",
+    NtAuthentication = true,
+    ServerName = "c:\\data\database.sqlite"
+};
+
+//get the table structure.
+var tableResult = connection.GetSourceTableInfo("SalesTable");
+if(!table.Success)
+    throw new Exception("Could not retrieve table information");
+var table = tableResult.Value;
+
+//create a new connection to the database.
+var newConnection = connection.NewConnection();
+
+var readerResult = connection.GetDatabaseReader(table, newConnection);
+
+if(!readerResult.Success)
+   throw new Exception("Reader issue: " + readerResult.Message);
+
+//new instance of the reader
+var reader = readerResult.Value;
+
+```
+
+### Reading using an existing DbDataReader
 
 If you've already have a DbDataReader object, then the following will translate this into a transform object:
 
@@ -240,7 +320,7 @@ public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetC
             StandardFunctions.GetFunctionReference("Median", new[] { "TotalDue" }, "DailyMedian", null),
             StandardFunctions.GetFunctionReference("Sum", new[] { "TotalDue" }, "DailyTotal", null)
         },
-        true //Pass through colums = true will will pass through original fields/rows and merge in the aggregates
+        true //Pass through column = true will will pass through original fields/rows and merge in the aggregates
     );
 
     using (var bulkCopy = new SqlBulkCopy(targetConnection))
@@ -251,19 +331,9 @@ public void FirstTransform(SqlConnection sourceConnection, SqlConnection targetC
 }
 ```
 
-## Why not just use SQL / Linq and Entity Framework?
-
-The transformations in this library generally work best when used in conjunction with optimised SQL queries, however Sql has limits in many areas of data processing.  The transform library can provide the following benefits:
-
-* Analytic calculations that are difficult to carry out using SQL.  For example statistical calculations such as median, moving average are very difficult to accomplish with SQL.
-* Row pivoting functions can be used to easily translate structures such as Xml and Json into tabular data.
-* Join data from multiple data sources.  For example you can join  datasets on the fly from different databases, or connect to csv files, web services, or no-sql databases.
-* Reduce workloads on databases can avoid database locking and performance problems when sourcing data from operational databases.
-* Building reusable functions and logic that can be applied across multiple databases and database types.
-
 ## The Transform Class
 
-The *transform* class is a feature rich implementation of the DbDataReader class that leverages all the benefits of the DbDataReader, whilst extending the functionality to allow for more advanced data integration.
+The *transform* class is a implementation of the DbDataReader class that leverages all the benefits of the DbDataReader, whilst extending the functionality to allow for more advanced data integration.
 
 ### Basics
 
@@ -294,7 +364,7 @@ The *transform* class enhances the `DbDataReader` class by providing a built-in 
 #### Caching Settings
 
 The transform can store a cache of records already read.  By default the cache is off.  There are two types of caching options.  
-* *OnDemandCache* - Will retain records that have been read by the `ReadAsync()` or `LookupRow()` function.  Whenever the `LookupRow` function is called the transform will first check the cache for the row, and if not found ask the underlying conneciton for the row.
+* *OnDemandCache* - Will retain records that have been read by the `ReadAsync()` or `LookupRow()` function.  Whenever the `LookupRow` function is called the transform will first check the cache for the row, and if not found ask the underlying connection for the row.
 * *PreLoadCache* - Will load all records into memory the first time the `LookupRow` function is called.  It will then only refer to the cache when retrieving additional records.
 
 The transform can also set a maximum cache size, which causes the transform to store the last *n* rows.  This can be useful to manage memory usage on large tables, and store rows when a commit fails.
@@ -325,6 +395,7 @@ The lookup function applies the following logic to retrive a record:
 The following connections support direct lookups:
 * ConnectionSqlite
 * ConnectionSql
+* Connection
 * ConnectionAzure
 * ConnectionWebServiceRestful
 * ConnectionWebServiceSoap
@@ -367,104 +438,13 @@ Transforms can be chained together to create a complete data transformation.
 A transform chain should use to the following pattern:
 
 1.  Start with a `reader`
-2.  Chain together the general transforms as required to produce the neccessary data transformation.
+2.  Chain together the general transforms as required to produce the required data transformation.
 3.  End the chain with an optional `validation transform`, followed by a `delta transform`
-4.  The end point can either be read directly as a DbReader would be read (i.e. iterating through the `ReadAsync()` function) or the `TransformWriter` class can be used to write the result set to a connection.
-
-#### Creating a Reader
-
-A reader is the start point of a data transformation chain.  The following method can be used to create a reader.
-
-***Memory Reader***
-
-A memory reader uses a `table` object populated with data.  The following sample creates a memory reader:
-
-```csharp
-//Create the table class
-Table table = new Table("test", 0,
-    new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-    new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-    new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
-    new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
-    new TableColumn("SortColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField)
-            );
-
-//Populate the table with some data
-    table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 );
-    table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
-    table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8 );
-    table.AddRow("value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7 );
-    table.AddRow("value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6 );
-
-//Initialize the ReaderMemory, with an indicator that the "StringColumn" is sorted
-ReaderMemory reader = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") } );
-
-```
-
-***Row Creator Reader***
-
-A row generator reader, is a simple reader that generates a sequence of numbers.  This can be used to generate test data, or dimensions such as a date dimension that requires a fixed sequence of values.The following sample creates a row generator reader:
-
-```csharp
-//Create a sequence of rows from 1, 1000 incrementing by 2
-ReaderRowCreator rowCreator = new ReaderRowCreator(1, 1000, 2);
-```
-
-***Using a standard DbDataReader***
-
-Most standard database connections in .Net can be used to generate a DbDataReader object.  Any standard DbDataReader can be used as a data source for a transformation chain by using the `ReaderDbDataReader` class.
-
-The following example uses a Sql Server table to start a transformation chain:
-
-```csharp
-// Retrieve the data from the database
-using(var sqlConnection = new SqlConnection("Data Source=(localDb)\11.0;Trusted_Connection=True;Initial Catalog=AdventureWorks2012"))
-using(SqlCommand sqlCommand = new SqlCommand("select * from Sales.SalesOrderHeader ", sqlConnection))
-using(DbDataReader sqlReader = sqlCommand.ExecuteReader())
-{
-// Load the Dbreader into the ReaderDbDataReader which will start the transform chain.
-ReaderDbDataReader reader = new ReaderDbDataReader(sqlReader);
-
-}
-```
-
-***Using the built in dexih.connections***
-
-The dexih.connections can be used to generate a reader from various type of sources, dependent on the connection being used.  See the documentation for each individual connection for specifics.  
-
-The following example uses the `ConnectionSqlite` to read from a local sqlite database table.
-
-```csharp
-//Create a connection to sqlite
-var connection = new ConnectionSqlite()
-{
-    Name = "Test Connection",
-    NtAuthentication = true,
-    ServerName = "c:\\data\database.sqlite"
-};
-
-//get the table structure.
-var tableResult = connection.GetSourceTableInfo("SalesTable");
-if(!table.Success)
-    throw new Exception("Could not retrieve table information");
-var table = tableResult.Value;
-
-//create a new connection to the database.
-var newConnection = connection.NewConnection();
-
-var readerResult = connection.GetDatabaseReader(table, newConnection);
-
-if(!readerResult.Success)
-   throw new Exception("Reader issue: " + readerResult.Message);
-
-//new instance of the reader
-var reader = readerResult.Value;
-
-```
+4.  The end point can either be read directly as a DbReader (i.e. iterating through the `ReadAsync()` function) or the `TransformWriter` class can be used to write the result set to a connection.
 
 ###Creating the Transforms
 
-After creating a `reader` transform to start the transformation, the next step is to chain the transforms together to perform the desired data processing.
+After creating a `reader` to start the transformation, the next step is to chain the transforms together to perform the desired data processing.
 
 The following example assumes a `reader` has already been created, and then chains a sort and mapping transform together.
 
@@ -480,7 +460,7 @@ var mappingTransform = new TransformMapping(sortTransform, mappingFields, null);
 //read the data using mappingTransform.ReadAsync();
 ```
 
-###Delivering the data###
+###Delivering the data
 
 Saving or publishing data can be done using the functions that support DbDataReader (such as the SqlBulk) or using the `TransformWriter` class.
 
@@ -549,6 +529,7 @@ The following is a short description of the built-in transforms:
 | Mapping  | Maps source fields to target fields using simple source-target mappings or advanced calculations using mapping functions.  |
 | Row  | Using a row function, translates values into rows.  This can be used to pivot values, or to parse JSON/XML fields into data rows.  |
 | Sort  | Sorts the dataset by one or more columns and an ascending or descending order. |
+| Concatenate | Concatenates the rows of two data stream together (this is similar to sql UNION)|
 | Profile | Generates statistics a dataset, without impacting the dataset (meaning it can be inserted anywhere statistics are required).  The built in profile functions allow for detection of string patterns, data types, uniqueness et.
 | Validation | The validation transform automatically checks the fitness of incoming data, against configurable validation rules, and the data type of the data.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
 | Delta | Compares the incoming dataset, against another dataset, produces a delta, and generates a set of audit data.  The delta has a number of update strategies that can be configured, including update/delete detection and history preservation.  In a data warehouse this can be used to generate [type 2 slowly changing dimensions](https://en.wikipedia.org/wiki/Slowly_changing_dimension).
@@ -651,7 +632,7 @@ Function.Inputs = new dexih.functions.Parameter[] {
         new dexih.functions.Parameter("JunkColumn", ETypeCode.String, true, null, "StringColumn" ),
         new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk") };
 
-//use the NotCondition property to change the funciton to `not equal`.
+//use the NotCondition property to change the function to `not equal`.
 Function.NotCondition = true
 
 //add the function to the conditions list
@@ -665,7 +646,7 @@ TransformFilter TransformFilter = new TransformFilter(InTransform, Conditions);
 
 Sorts the dataset by one or more columns and an ascending or descending order.
 
-The following exmaple sorts the incoming data by Column1 (ascending) and Column2 (descending).
+The following example sorts the incoming data by Column1 (ascending) and Column2 (descending).
 
 ```csharp
 
@@ -762,14 +743,14 @@ TransformJoin transformJoin = new TransformJoin(
 
 ###Lookup Transform
 
-The lookup transform is simliar to the join transform in that it performs a `left outer join` type of operation on a primary and secondary dataset.  The differences are:
+The lookup transform is similar to the join transform in that it performs a `left outer join` type of operation on a primary and secondary dataset.  The differences are:
 
-* The lookup transform can perform direct lookups to the underlying connection.  For example if the underlying connection is a database, the lookup will execute a database lookup repeatedly for each primary row.  If the connection is a web serivce it will call the web service function repeatedly for each primary row.  
+* The lookup transform can perform direct lookups to the underlying connection.  For example if the underlying connection is a database, the lookup will execute a database lookup repeatedly for each primary row.  If the connection is a web service it will call the web service function repeatedly for each primary row.  
 * The lookup transform can utilize a cache on demand process.  This means that after a single lookup is completed, the value can stay in cache for future lookups.  
 * The lookup can use more complex operations through functions, whereas the join can only perform `equal` operations.
 * The lookup can not be used against connections where the secondary table does not support a direct lookup (i.e. flat files).
 
-The lookup is best used when calling functions or when the reference table is very large.  For example calling function to retrive stock price at a precice time.
+The lookup is best used when calling functions or when the reference table is very large.  For example calling function to retrieve stock price at a precise time.
 
 ###Group Transform
 
@@ -777,7 +758,7 @@ The group transform can be used perform an `SQL like` group by process, or to ru
 
 This example shows how to use the group transform to perform a simple `sum` function against the `product` column of the dataset.
 
-```cshparp
+```csharp
 //create primary table
 Table primaryTable = new Table("Sales", 0,
     new TableColumn("Product", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
@@ -837,6 +818,6 @@ The profile transform generates statistics a dataset, without impacting the prim
 
 ###Validation Transform 
 
-The validation transform automatically checks the fitness of incoming data.  The validation transform performans automatic testswill automatically the data types of incoming data, and ens, against configurable validation rules, and the data type of the data.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
+The validation transform automatically checks the fitness of incoming data.  The validation transform automatically tests the data types of incoming data against configurable validation rules.  Where data does not pass the validation, it can be cleaned, or marked for rejection.
 | Delta | Compares the incoming dataset, against another dataset, produces a delta, and generates a set of audit data.  The delta has a number of update strategies that can be configured, including update/delete detection and history preservation.  In a data warehouse this can be used to generate [type 2 slowly changing dimensions](https://en.wikipedia.org/wiki/Slowly_changing_dimension).
 
