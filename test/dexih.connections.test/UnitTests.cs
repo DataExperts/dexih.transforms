@@ -32,7 +32,8 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value1" ),
                     new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
                     new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), true ),
-                    new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1 ),
+                    new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Double), 1.1 ),
+                    new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1m ),
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() )
             });
 
@@ -44,7 +45,8 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value2" ),
                     new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), false ),
                     new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
-                    new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.2 ),
+                    new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Double), 1.1 ),
+                    new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.2m ),
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() )
             });
 

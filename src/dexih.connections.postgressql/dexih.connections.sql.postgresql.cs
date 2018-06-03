@@ -724,9 +724,9 @@ namespace dexih.connections.sql
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return (NpgsqlDbType.Smallint, value);
+                    return (NpgsqlDbType.Smallint, TryParse(ETypeCode.Int16, value));
                 case ETypeCode.SByte:
-                    return (NpgsqlDbType.Smallint, value);
+                    return (NpgsqlDbType.Smallint, TryParse(ETypeCode.Int16, value));
                 case ETypeCode.UInt16:
                     return (NpgsqlDbType.Integer, TryParse(ETypeCode.Int32, value));
                 case ETypeCode.UInt32:
@@ -734,33 +734,33 @@ namespace dexih.connections.sql
                 case ETypeCode.UInt64:
                     return (NpgsqlDbType.Bigint, TryParse(ETypeCode.Int64, value));
                 case ETypeCode.Int16:
-                    return (NpgsqlDbType.Smallint, value);
+                    return (NpgsqlDbType.Smallint, TryParse(ETypeCode.Int16, value));
                 case ETypeCode.Int32:
-                    return (NpgsqlDbType.Integer, value);
+                    return (NpgsqlDbType.Integer, TryParse(ETypeCode.Int32, value));
                 case ETypeCode.Int64:
-                    return (NpgsqlDbType.Bigint, value);
+                    return (NpgsqlDbType.Bigint, TryParse(ETypeCode.Int64, value));
                 case ETypeCode.Decimal:
-                    return (NpgsqlDbType.Numeric, value);
+                    return (NpgsqlDbType.Numeric, TryParse(ETypeCode.Decimal, value));
                 case ETypeCode.Double:
-                    return (NpgsqlDbType.Double, value);
+                    return (NpgsqlDbType.Double, TryParse(ETypeCode.Double, value));
                 case ETypeCode.Single:
-                    return (NpgsqlDbType.Real, value);
+                    return (NpgsqlDbType.Real, TryParse(ETypeCode.Single, value));
                 case ETypeCode.String:
-                    return (NpgsqlDbType.Varchar, value);
+                    return (NpgsqlDbType.Varchar, TryParse(ETypeCode.String, value));
 				case ETypeCode.Text:
-					return (NpgsqlDbType.Text, value);
+					return (NpgsqlDbType.Text, TryParse(ETypeCode.Text, value));
                 case ETypeCode.Boolean:
-                    return (NpgsqlDbType.Boolean, value);
+                    return (NpgsqlDbType.Boolean, TryParse(ETypeCode.Boolean, value));
                 case ETypeCode.DateTime:
-                    return (NpgsqlDbType.Timestamp, value);
+                    return (NpgsqlDbType.Timestamp, TryParse(ETypeCode.DateTime, value));
                 case ETypeCode.Time:
-                    return (NpgsqlDbType.Time, value);
+                    return (NpgsqlDbType.Time, TryParse(ETypeCode.Time, value));
                 case ETypeCode.Guid:
                     return (NpgsqlDbType.Varchar, value.ToString());
                 case ETypeCode.Binary:
                     return (NpgsqlDbType.Bytea, value);
                 default:
-                    return (NpgsqlDbType.Varchar, value);
+                    return (NpgsqlDbType.Varchar, TryParse(ETypeCode.Int64, value));
             }
         }
 
