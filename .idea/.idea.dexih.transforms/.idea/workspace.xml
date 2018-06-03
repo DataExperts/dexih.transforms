@@ -3,10 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -49,7 +45,7 @@
       <file leaf-file-name="dexih.connections.sql.postgresql.cs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="996">
+            <state relative-caret-position="1455">
               <caret line="111" column="21" selection-start-line="111" selection-start-column="21" selection-end-line="111" selection-end-column="21" />
               <folding>
                 <marker date="1528000672284" expanded="false" signature="6:372" ph="..." />
@@ -174,11 +170,10 @@
       <file leaf-file-name="PerformanceTests.cs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="407">
+            <state relative-caret-position="1200">
               <caret line="92" column="31" selection-start-line="92" selection-start-column="31" selection-end-line="92" selection-end-column="31" />
               <folding>
                 <marker date="1526883158762" expanded="false" signature="6:332" ph="..." />
-                <marker date="1526883158762" expanded="true" signature="366:11989" ph="{...}" />
                 <marker date="1526883158762" expanded="true" signature="402:11987" ph="{...}" />
                 <marker date="1526883158762" expanded="true" signature="417:561" ph="/// Perfromance tests should run in around 1 minute.  ... " />
                 <marker date="1526883158762" expanded="true" signature="653:7636" ph="{...}" />
@@ -218,7 +213,7 @@
       <file leaf-file-name="UnitTests.cs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1011">
+            <state relative-caret-position="2775">
               <caret line="196" column="57" selection-start-line="196" selection-start-column="57" selection-end-line="196" selection-end-column="57" />
               <folding>
                 <marker date="1527999533236" expanded="false" signature="6:313" ph="..." />
@@ -253,7 +248,7 @@
       <file leaf-file-name="dexih.connections.postgreSql.tests.cs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="952">
+            <state relative-caret-position="960">
               <caret line="72" column="41" selection-start-line="72" selection-start-column="41" selection-end-line="72" selection-end-column="41" />
               <folding>
                 <marker date="1526883158757" expanded="false" signature="6:210" ph="..." />
@@ -280,7 +275,6 @@
               <caret line="61" column="26" selection-start-line="61" selection-start-column="26" selection-end-line="61" selection-end-column="26" />
               <folding>
                 <marker date="1528000064728" expanded="false" signature="6:234" ph="..." />
-                <marker date="1528000064728" expanded="true" signature="268:4547" ph="{...}" />
                 <marker date="1528000064728" expanded="true" signature="275:357" ph="/// Tests using sql in the table as a source. ... " />
                 <marker date="1528000064728" expanded="true" signature="389:4545" ph="{...}" />
                 <marker date="1528000064728" expanded="true" signature="470:4539" ph="{...}" />
@@ -667,22 +661,6 @@
               <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
               <item name="dexih.transforms (29 projects)" type="977d5f41:SolutionExplorerNodeRider" />
             </path>
-            <path>
-              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
-              <item name="dexih.transforms (29 projects)" type="977d5f41:SolutionExplorerNodeRider" />
-              <item name="src" type="977d5f41:SolutionExplorerNodeRider" />
-            </path>
-            <path>
-              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
-              <item name="dexih.transforms (29 projects)" type="977d5f41:SolutionExplorerNodeRider" />
-              <item name="test" type="977d5f41:SolutionExplorerNodeRider" />
-            </path>
-            <path>
-              <item name="" type="13324e5d:SolutionExplorerViewPane$ProjectViewPaneTreeStructure$createRoot$1" />
-              <item name="dexih.transforms (29 projects)" type="977d5f41:SolutionExplorerNodeRider" />
-              <item name="test" type="977d5f41:SolutionExplorerNodeRider" />
-              <item name="dexih.connections.test" type="977d5f41:SolutionExplorerNodeRider" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -907,7 +885,8 @@
       <workItem from="1526868363070" duration="3107000" />
       <workItem from="1526879185029" duration="5495000" />
       <workItem from="1527987838379" duration="804000" />
-      <workItem from="1527997845631" duration="2646000" />
+      <workItem from="1527997845631" duration="2682000" />
+      <workItem from="1528001507730" duration="153000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1154,11 +1133,18 @@
       <option name="project" value="LOCAL" />
       <updated>1526882541007</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="fix issue with postgres numeric conversion">
+      <created>1528001137014</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1528001137015</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="339627000" />
+    <option name="totallyTimeSpent" value="339816000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1170,12 +1156,13 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1141" y="-2160" width="3840" height="2160" extended-state="6" />
+    <frame x="-1141" y="-2137" width="3840" height="2137" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.489011" weight="0.32809225" />
       <window_info anchor="right" id="Errors In Solution" order="3" visible="true" weight="0.05390625" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5127604" side_tool="true" visible="true" weight="0.2670778" />
-      <window_info active="true" anchor="bottom" id="Unit Tests" order="9" sideWeight="0.48723957" visible="true" weight="0.2670778" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5130208" side_tool="true" visible="true" weight="0.26999515" />
+      <window_info active="true" anchor="bottom" id="Unit Tests" order="9" sideWeight="0.48697916" visible="true" weight="0.26999515" />
       <window_info anchor="bottom" id="Database Changes" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="3" sideWeight="0.48645833" weight="0.13554503" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.49285713" weight="0.32932934" />
@@ -1183,7 +1170,6 @@
       <window_info anchor="bottom" id="NuGet" order="8" sideWeight="0.6304687" weight="0.3504605" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.10364583" />
       <window_info anchor="bottom" id="Docker" order="14" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Build" order="13" sideWeight="0.38385418" weight="0.32137662" />
       <window_info anchor="right" id="Database" order="4" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25387728" />
       <window_info anchor="bottom" id="Debug" order="4" sideWeight="0.7289063" weight="0.3462998" />
@@ -1194,6 +1180,7 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Cvs" order="5" weight="0.25" />
+      <window_info anchor="bottom" id="Build" order="13" sideWeight="0.38385418" weight="0.32137662" />
       <window_info anchor="bottom" id="Find" order="2" sideWeight="0.493895" weight="0.32914045" />
     </layout>
   </component>
@@ -1230,7 +1217,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added MySql support" />
     <MESSAGE value="Add Sql Query capability to table" />
     <MESSAGE value="Fixed GetPreview function for null query." />
     <MESSAGE value="Update realtimequeue test with higher timeout." />
@@ -1255,7 +1241,8 @@
     <MESSAGE value="added binary support to mysql" />
     <MESSAGE value="fixed test" />
     <MESSAGE value="fix excel issue with boolean" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix excel issue with boolean" />
+    <MESSAGE value="fix issue with postgres numeric conversion" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix issue with postgres numeric conversion" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1998,7 +1985,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="996">
+        <state relative-caret-position="1455">
           <caret line="111" column="21" selection-start-line="111" selection-start-column="21" selection-end-line="111" selection-end-column="21" />
           <folding>
             <marker date="1528000672284" expanded="false" signature="6:372" ph="..." />
@@ -2121,11 +2108,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="407">
+        <state relative-caret-position="1200">
           <caret line="92" column="31" selection-start-line="92" selection-start-column="31" selection-end-line="92" selection-end-column="31" />
           <folding>
             <marker date="1526883158762" expanded="false" signature="6:332" ph="..." />
-            <marker date="1526883158762" expanded="true" signature="366:11989" ph="{...}" />
             <marker date="1526883158762" expanded="true" signature="402:11987" ph="{...}" />
             <marker date="1526883158762" expanded="true" signature="417:561" ph="/// Perfromance tests should run in around 1 minute.  ... " />
             <marker date="1526883158762" expanded="true" signature="653:7636" ph="{...}" />
@@ -2182,7 +2168,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1011">
+        <state relative-caret-position="2775">
           <caret line="196" column="57" selection-start-line="196" selection-start-column="57" selection-end-line="196" selection-end-column="57" />
           <folding>
             <marker date="1527999533236" expanded="false" signature="6:313" ph="..." />
@@ -2215,7 +2201,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="952">
+        <state relative-caret-position="960">
           <caret line="72" column="41" selection-start-line="72" selection-start-column="41" selection-end-line="72" selection-end-column="41" />
           <folding>
             <marker date="1526883158757" expanded="false" signature="6:210" ph="..." />
@@ -2240,7 +2226,6 @@
           <caret line="61" column="26" selection-start-line="61" selection-start-column="26" selection-end-line="61" selection-end-column="26" />
           <folding>
             <marker date="1528000064728" expanded="false" signature="6:234" ph="..." />
-            <marker date="1528000064728" expanded="true" signature="268:4547" ph="{...}" />
             <marker date="1528000064728" expanded="true" signature="275:357" ph="/// Tests using sql in the table as a source. ... " />
             <marker date="1528000064728" expanded="true" signature="389:4545" ph="{...}" />
             <marker date="1528000064728" expanded="true" signature="470:4539" ph="{...}" />

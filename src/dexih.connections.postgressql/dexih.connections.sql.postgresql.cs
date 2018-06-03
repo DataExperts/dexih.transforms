@@ -760,7 +760,7 @@ namespace dexih.connections.sql
                 case ETypeCode.Binary:
                     return (NpgsqlDbType.Bytea, value);
                 default:
-                    return (NpgsqlDbType.Varchar, TryParse(ETypeCode.Int64, value));
+                    return (NpgsqlDbType.Varchar, TryParse(ETypeCode.String, value));
             }
         }
 
