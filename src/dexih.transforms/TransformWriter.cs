@@ -132,7 +132,7 @@ namespace dexih.transforms
             {
                 if (firstRead)
                 {
-                    var runStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Running, null, null, cancellationToken);
+                    var runStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Running, null, null, CancellationToken.None);
                     if (!runStatusResult)
                     {
                         return false;
@@ -147,7 +147,7 @@ namespace dexih.transforms
                     {
                         var message = $"The transform writer failed writing data.  {writeTask.Exception?.Message}";
 						var newException = new TransformWriterException(message, writeTask.Exception);
-                        await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, cancellationToken);
+                        await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, CancellationToken.None);
                         return false;
                     }
                 }
@@ -156,7 +156,7 @@ namespace dexih.transforms
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    var runStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Cancelled, null, null, cancellationToken);
+                    var runStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Cancelled, null, null, CancellationToken.None);
                     return runStatusResult;
                 }
             }
@@ -169,7 +169,7 @@ namespace dexih.transforms
             {
                 var message = $"The transform writer failed to finish.  {ex.Message}";
 				var newException = new TransformWriterException(message, ex);
-                await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, cancellationToken);
+                await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, CancellationToken.None);
                 return false;
             }
 
@@ -194,13 +194,13 @@ namespace dexih.transforms
                     {
                         var message = $"Failed to save profile results.  {ex.Message}";
 						var newException = new TransformWriterException(message, ex);
-						await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, cancellationToken);
+						await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, CancellationToken.None);
                         return false;
                     }
                 }
             }
 
-            var setRunStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished, null, null, cancellationToken);
+            var setRunStatusResult = await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished, null, null, CancellationToken.None);
             return setRunStatusResult;
         }
 
