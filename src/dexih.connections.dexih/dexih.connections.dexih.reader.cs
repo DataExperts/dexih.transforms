@@ -28,11 +28,14 @@ namespace dexih.connections.dexih
 		private string _dataUrl;
         
         private FileHandlerBase _fileHandler;
-        private Object[] _baseRow;
+        private object[] _baseRow;
+
+        private ConnectionDexih _dexihConnection;
 
         public ReaderDexih(Connection connection, Table table)
         {
             ReferenceConnection = connection;
+            _dexihConnection = (ConnectionDexih) connection;
             CacheTable = table;
         }
 
@@ -54,6 +57,9 @@ namespace dexih.connections.dexih
                     throw new ConnectionException("The information hub connection is already open.");
                 }
 
+                var downloadUrl = await _dexihConnection.GetDownloadUrl();
+                var intanceId = await _dexihConnection.GetRemoteAgentInstanceId();
+
                 // call the central web server to requet the query start.
                 var message = Json.SerializeObject(new
                 {
@@ -62,11 +68,12 @@ namespace dexih.connections.dexih
                     TableName = CacheTable.Name,
                     TableSchema = CacheTable.Schema,
                     Query = query,
+                    DownloadUrl = downloadUrl,
+                    InstanceId = intanceId
                 }, "");
-
+                
                 var content = new StringContent(message, Encoding.UTF8, "application/json");
-				var response = await ((ConnectionDexih)ReferenceConnection).HttpPost("OpenTableQuery", content, true);
-
+				var response = await _dexihConnection.HttpPost("OpenTableQuery", content);
 
                 if ((bool)response["success"])
                 {
@@ -92,7 +99,7 @@ namespace dexih.connections.dexih
                     }
 
                     var responseStream = await response2.Content.ReadAsStreamAsync();
-                    FileConfiguration config = new FileConfiguration();
+                    var config = new FileConfiguration();
                     _fileHandler = new FileHandlerText(CacheTable, config);
                     await _fileHandler.SetStream(responseStream, null);
 

@@ -10,14 +10,15 @@ using System.Threading;
 using System.Net;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using dexih.repository;
 
 namespace dexih.connections.dexih
 {
     [Connection(
         ConnectionCategory = EConnectionCategory.Hub,
         Name = "Information Hub", 
-        Description = "A link to another Information Hub instance",
-        DatabaseDescription = "Database Name",
+        Description = "A link to shared data in another hub",
+        DatabaseDescription = "Hub Name",
         ServerDescription = "Information Hub Url",
         AllowsConnectionString = false,
         AllowsSql = false,
@@ -47,6 +48,11 @@ namespace dexih.connections.dexih
         public override bool DynamicTableCreation => false;
         public override string DatabaseTypeName => "Dexih Hub";
         public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.Hub;
+        
+        private readonly HttpClient _httpClient = new HttpClient();
+        private bool _isAuthenticated = false;
+        private DexihActiveAgent _activeAgent;
+        private DownloadUrl _downloadUrl;
 
         private string ServerUrl()
         {
@@ -55,45 +61,32 @@ namespace dexih.connections.dexih
             return url;
         }
 
-		public async Task<JObject> HttpPost(string function, HttpContent content, bool authenticate)
+		public async Task<JObject> HttpPost(string function, HttpContent content, bool skipLogin = false)
 		{
-            try
-            {
-                HttpClientHandler handler;
-                if (authenticate)
+		    try
+		    {
+                if (!_isAuthenticated && !skipLogin)
                 {
-                    var loginCookie = await Login();
-
-                    handler = new HttpClientHandler()
-                    {
-                        CookieContainer = loginCookie
-                    };
-                }
-                else
-                {
-                    var cookies = new CookieContainer();
-                    handler = new HttpClientHandler()
-                    {
-                        CookieContainer = cookies
-                    };
+                    await Login();
                 }
 
-                //Login to the web server to receive an authenicated cookie.
-                using (var httpClient = new HttpClient(handler))
-                {
-                    try
-                    {
-                        var response = await httpClient.PostAsync(ServerUrl() + "Reader/" + function, content);
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        var result = JObject.Parse(responseString);
-                        return result;
-                    }
-                    catch (HttpRequestException ex)
-                    {
-                        throw new ConnectionException($"Could not connect to server {Server}. {ex.Message}", ex);
-                    }
-                }
-            }
+		        try
+		        {
+		            var url = ServerUrl() + "Reader/" + function;
+		            var response = await _httpClient.PostAsync(url, content);
+		            var responseString = await response.Content.ReadAsStringAsync();
+		            var result = JObject.Parse(responseString);
+		            return result;
+		        }
+		        catch (HttpRequestException ex)
+		        {
+		            throw new ConnectionException($"Could not connect to server {Server}\n. {ex.Message}", ex);
+		        }
+		    }
+		    catch (ConnectionException)
+		    {
+		        throw;
+		    }
             catch(Exception ex)
             {
                 throw new ConnectionException($"Http post failed. {ex.Message}", ex);
@@ -104,51 +97,94 @@ namespace dexih.connections.dexih
 		/// Logs into the dexih instance and returns the cookiecontainer which can be used to authenticate future requests.
 		/// </summary>
 		/// <returns>The login.</returns>
-		private async Task<CookieContainer> Login()
+		private async Task Login()
 		{
             try
             {
-                var cookies = new CookieContainer();
-                var handler = new HttpClientHandler()
+                //Login to the web server, which will allow future connections to be authenticated.
+                var content = new FormUrlEncodedContent(new[]
                 {
-                    CookieContainer = cookies
-                };
+                    new KeyValuePair<string, string>("User", Username),
+                    new KeyValuePair<string, string>("Password", Password),
+                    new KeyValuePair<string, string>("HubName", DefaultDatabase)
+                });
 
-                //Login to the web server to receive an authenicated cookie.
-                using (var httpClient = new HttpClient(handler))
+                HttpResponseMessage response;
+                try
                 {
-                    var content = new FormUrlEncodedContent(new[]
-                    {
-                        new KeyValuePair<string, string>("User", Username),
-                        new KeyValuePair<string, string>("Password", Password)
-                    });
-
-                    HttpResponseMessage response;
-                    try
-                    {
-                        response = await httpClient.PostAsync(ServerUrl() + "Reader/Login", content);
-                    }
-                    catch (HttpRequestException ex)
-                    {
-                        throw new ConnectionException($"Could not connect to server {Server}. {ex.Message}", ex);
-                    }
-
-                    var responseString = await response.Content.ReadAsStringAsync();
-                    var result = JObject.Parse(responseString);
+                    var result = await HttpPost("Login", content, true);
                     if ((bool)result["success"])
                     {
-                        return handler.CookieContainer;
+                        var agents = result["value"];
+                        _activeAgent = agents.ToObject<DexihActiveAgent>();
+                        _isAuthenticated = true;
                     }
                     else
                     {
-                        throw new ConnectionException($"User authentication error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
+                        throw new ConnectionException($"Error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
                     }
                 }
+                catch (HttpRequestException ex)
+                {
+                    throw new ConnectionException($"Could not connect to server {Server}. {ex.Message}", ex);
+                }
+
+
             }
             catch(Exception ex)
             {
-                throw new ConnectionException($"Login failed. {ex.Message}", ex);
+                throw new ConnectionException($"Login failed.\n{ex.Message}", ex);
             }
+        }
+        
+        public async Task<string> GetRemoteAgentInstanceId()
+        {
+            if (!_isAuthenticated)
+            {
+                await Login();
+            }
+            
+            if (_activeAgent == null)
+            {
+                throw new ConnectionException($"There is no remote agent available for the hub {DefaultDatabase}.");
+            }
+
+            return _activeAgent.InstanceId;
+        }
+
+        public async Task<DownloadUrl> GetDownloadUrl()
+        {
+            if (!_isAuthenticated)
+            {
+                await Login();
+            }
+
+            if (_activeAgent == null)
+            {
+                throw new ConnectionException($"There is no remote agent available for the hub {DefaultDatabase}.");
+            }
+
+            if (_downloadUrl == null)
+            {
+                if (_activeAgent.DownloadUrls.Length == 0)
+                {
+                    throw new ConnectionException($"There are no download urls available for the remoate agent {_activeAgent.Name}.");
+                }
+
+                foreach (var downloadUrl in _activeAgent.DownloadUrls)
+                {
+                    var response = await _httpClient.GetAsync(downloadUrl.Url + "/ping");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _downloadUrl = downloadUrl;
+                        return downloadUrl;
+                    }
+                }
+
+                throw new ConnectionException($"Could not connect with any of the download urls for the remoate agent {_activeAgent.Name}.");
+            }
+
+            return _downloadUrl;
         }
 
         public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
@@ -160,7 +196,7 @@ namespace dexih.connections.dexih
         {
             try
             {
-                var result = await HttpPost("GetHubs", null, true);
+                var result = await HttpPost("GetHubs", null);
                 if ((bool)result["success"])
                 {
                     var hubs = result["value"];
@@ -187,7 +223,7 @@ namespace dexih.connections.dexih
                     new KeyValuePair<string, string>("HubName", DefaultDatabase)
                 });
 
-                var result = await HttpPost("GetTables", content, true);
+                var result = await HttpPost("GetTables", content);
                 if ((bool)result["success"])
                 {
                     var tables = result["value"];
@@ -201,7 +237,7 @@ namespace dexih.connections.dexih
             }
             catch(Exception ex)
             {
-                throw new ConnectionException($"Get table list failed. {ex.Message}", ex);
+                throw new ConnectionException($"Get table list failed.\n{ex.Message}", ex);
             }
         }
 
@@ -224,7 +260,7 @@ namespace dexih.connections.dexih
                     new KeyValuePair<string, string>("TableName", importTable.Name),
 				});
 
-				var result = await HttpPost("GetTableInfo", content, true);
+				var result = await HttpPost("GetTableInfo", content);
                 if ((bool)result["success"])
                 {
                     var table = result["value"].ToObject<Table>();
@@ -237,7 +273,7 @@ namespace dexih.connections.dexih
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Get source table information for table {importTable.Name} failed. {ex.Message}", ex);
+                throw new ConnectionException($"Get source table information for table {importTable.Name} failed.\n{ex.Message}", ex);
             }
         }
 
