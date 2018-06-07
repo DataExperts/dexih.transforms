@@ -7,10 +7,8 @@ using System.Data.Common;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Threading;
-using System.Net;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using dexih.repository;
 
 namespace dexih.connections.dexih
 {
@@ -116,7 +114,11 @@ namespace dexih.connections.dexih
                     if ((bool)result["success"])
                     {
                         var agents = result["value"];
-                        _activeAgent = agents.ToObject<DexihActiveAgent>();
+                        if (agents != null)
+                        {
+                            _activeAgent = agents.ToObject<DexihActiveAgent>();
+                        }
+
                         _isAuthenticated = true;
                     }
                     else

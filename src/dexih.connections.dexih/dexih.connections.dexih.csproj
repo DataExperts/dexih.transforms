@@ -15,7 +15,6 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Dexih.App.Operations\src\dexih.repository\dexih.repository.csproj" />
     <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
