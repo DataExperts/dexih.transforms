@@ -270,6 +270,8 @@
             <e p="ConnectionReference.cs" t="Include" />
             <e p="Connections.cs" t="Include" />
             <e p="ConnectionsExceptions.cs" t="Include" />
+            <e p="DexihActiveAgent.cs" t="Include" />
+            <e p="DownloadUrl.cs" t="Include" />
           </e>
           <e p="dexih.connections.sql.cs" t="Include" />
           <e p="dexih.connections.sql.reader.cs" t="Include" />

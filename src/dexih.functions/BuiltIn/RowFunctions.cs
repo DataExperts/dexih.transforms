@@ -188,7 +188,19 @@ namespace dexih.functions.BuiltIn
 
             var property = (JProperty) item;
             name = property.Name;
-            value = item.Values().FirstOrDefault()?.ToString();
+
+            var count = item.Values().Count();
+            if (count == 0)
+            {
+                value = null;
+            } else if (count == 1)
+            {
+                value = item.Values().FirstOrDefault()?.ToString();
+            }
+            else
+            {
+                value = item.Children().FirstOrDefault()?.ToString();
+            }
             return true;
         }
     }

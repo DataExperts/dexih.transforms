@@ -84,7 +84,7 @@ namespace dexih.functions.File
                         }
                         var col = new TableColumn
                         {
-                            Name = value.Name,
+                            Name = value.Path,
                             IsInput = false,
                             LogicalName = value.Name,
                             DataType = dataType,
