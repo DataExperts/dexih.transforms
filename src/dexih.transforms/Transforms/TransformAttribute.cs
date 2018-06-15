@@ -1,5 +1,4 @@
 ﻿using System;
-using Dexih.Utils.CopyProperties;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 

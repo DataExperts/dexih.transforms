@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml.XPath;
-using dexih.functions;
-using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.BuiltIn
 {

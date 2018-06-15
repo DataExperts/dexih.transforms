@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using dexih.functions;
-using Dexih.Utils.Crypto;
 using Newtonsoft.Json;
 
 namespace dexih.transforms
@@ -34,8 +30,7 @@ namespace dexih.transforms
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
-            _streamWriter = new StreamWriter(_memoryStream);
-            _streamWriter.AutoFlush = true;
+            _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
             _position = 0;
 
             _maxRows = maxRows <= 0 ? long.MaxValue : maxRows;

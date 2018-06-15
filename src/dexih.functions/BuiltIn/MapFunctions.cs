@@ -762,7 +762,7 @@ namespace dexih.functions.BuiltIn
             var previousPos = 0;
             var result = new string[positions.Length];
 
-            for (int i = 0; i < positions.Length; i++)
+            for (var i = 0; i < positions.Length; i++)
             {
                 result[i] = value.Substring(previousPos, positions[i] - previousPos);
                 previousPos = positions[i];

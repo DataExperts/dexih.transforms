@@ -463,9 +463,11 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 {
 
-                    var table = new Table(originalTable.Name);
-
-                    table.Description = ""; //sqllite doesn't have table descriptions.
+                    var table = new Table(originalTable.Name)
+                    {
+                        //sqllite doesn't have table descriptions.
+                        Description = ""
+                    };
 
                     //The new datatable that will contain the table schema
                     table.Columns.Clear();
@@ -647,8 +649,10 @@ namespace dexih.connections.sql
 
                                     for (var i = 0; i < query.InsertColumns.Count; i++)
                                     {
-                                        var param = new SqliteParameter(); // cmd.CreateParameter();
-                                        param.ParameterName = "@col" + i.ToString();
+                                        var param = new SqliteParameter
+                                        {
+                                            ParameterName = "@col" + i.ToString()
+                                        }; // cmd.CreateParameter();
 
                                         // sqlite writes guids as binary, so need logic to convert to string first.
                                         if (query.InsertColumns[i].Column.DataType == ETypeCode.Guid)

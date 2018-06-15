@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.transforms.Exceptions;
-using Renci.SshNet;
 
 namespace dexih.connections.sftp
 {

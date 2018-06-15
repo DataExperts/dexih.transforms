@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace dexih.transforms
+﻿namespace dexih.transforms
 {
     public class DexihActiveAgent
     {

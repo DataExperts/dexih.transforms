@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reflection;
-using dexih.functions.Query;
 
 namespace dexih.transforms
 {

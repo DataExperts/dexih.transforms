@@ -329,14 +329,14 @@ namespace dexih.connections.sql
                     returnValue = "'" + AddEscape(value.ToString()) + "'";
                     break;
                 case ETypeCode.DateTime:
-                    if (value is DateTime)
-                        returnValue = "to_timestamp('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
+                    if (value is DateTime time)
+                        returnValue = "to_timestamp('" + AddEscape(time.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
                     else
                         returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
                     break;
                 case ETypeCode.Time:
-                    if (value is TimeSpan)
-                        returnValue = "to_timestamp('" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
+                    if (value is TimeSpan span)
+                        returnValue = "to_timestamp('" + AddEscape(span.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
                     else
                         returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
                     break;

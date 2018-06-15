@@ -1,8 +1,5 @@
 ﻿using dexih.functions;
 using Dexih.Utils.DataType;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using static dexih.functions.Query.SelectColumn;
 
 namespace dexih.transforms

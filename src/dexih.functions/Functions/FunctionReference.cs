@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Dynamic;
 using System.Reflection;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;

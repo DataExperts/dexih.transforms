@@ -19,8 +19,7 @@ namespace dexih.transforms
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
-            _streamWriter = new StreamWriter(_memoryStream);
-            _streamWriter.AutoFlush = true;
+            _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
             _position = 0;
 
             //write the file header.

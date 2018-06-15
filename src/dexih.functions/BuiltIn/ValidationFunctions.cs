@@ -1,6 +1,4 @@
-﻿using dexih.functions;
-
-namespace dexih.functions.BuiltIn
+﻿namespace dexih.functions.BuiltIn
 {
     public class ValidationFunctions
     {

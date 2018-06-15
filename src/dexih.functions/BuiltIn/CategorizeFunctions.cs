@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 
 namespace dexih.functions.BuiltIn
 {
@@ -64,9 +61,9 @@ namespace dexih.functions.BuiltIn
 
             for (var i = 1; i < range.Length; i++)
             {
-                var highRange = range.Length == i ? range[i] : range[i];
-                if (value <= highRange)
+                if (value <= range[i] || range.Length == i)
                 {
+                    var highRange = range.Length == i ? (long?) null : range[i];
                     rangeString = $"{range[i - 1]} - {highRange}";
                     rangeLow = range[i - 1];
                     rangeHigh = highRange;

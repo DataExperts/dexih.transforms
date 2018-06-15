@@ -12,7 +12,6 @@ using OfficeOpenXml.FormulaParsing.Utilities;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using OfficeOpenXml.DataValidation;
 
 namespace dexih.connections.excel
 {

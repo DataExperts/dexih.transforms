@@ -226,7 +226,7 @@ namespace dexih.transforms
                 {
                     //more records in both, then compare the rows and take the next in sort order.
                     
-                    bool usePrimary = true;
+                    var usePrimary = true;
                     
                     for (var i = 0; i < _primarySortOrdinals.Count; i++)
                     {

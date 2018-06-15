@@ -136,7 +136,7 @@ namespace dexih.connections.webservice
         public override bool CanLookupRowDirect { get; } = true;
 
         /// <inheritdoc />
-        public async override Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        public override async Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
             return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters, cancellationToken);
          }

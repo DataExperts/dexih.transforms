@@ -72,7 +72,7 @@ namespace dexih.functions.File
                     nodes = nodes.Current.SelectChildren(XPathNodeType.All);
                 }
 
-                Dictionary<string, int> columnCounts = new Dictionary<string, int>();
+                var columnCounts = new Dictionary<string, int>();
 
                
                 while(nodes.MoveNext())

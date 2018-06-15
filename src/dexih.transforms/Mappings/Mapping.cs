@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-using dexih.functions;
-using dexih.functions.Query;
-using static dexih.functions.Query.SelectColumn;
+﻿using dexih.functions;
 
 namespace dexih.transforms
 {

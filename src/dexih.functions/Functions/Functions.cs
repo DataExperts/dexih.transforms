@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace dexih.functions
 {

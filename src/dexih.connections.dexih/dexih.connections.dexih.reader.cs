@@ -1,8 +1,5 @@
 ﻿using dexih.transforms;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -15,7 +12,6 @@ using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.Crypto;
 using Dexih.Utils.MessageHelpers;
-using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.dexih
 {

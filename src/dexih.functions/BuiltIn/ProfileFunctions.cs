@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using dexih.functions;
 
 namespace dexih.functions.BuiltIn
 {
@@ -51,7 +50,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            if (long.TryParse(sValue, out long valueInt64))
+            if (long.TryParse(sValue, out var valueInt64))
             {
                 if (_dictionary.ContainsKey("Int64"))
                     _dictionary["Int64"]++;
@@ -60,7 +59,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            if (double.TryParse(sValue, out double valueDouble))
+            if (double.TryParse(sValue, out var valueDouble))
             {
                 if (_dictionary.ContainsKey("Double"))
                     _dictionary["Double"]++;
@@ -69,7 +68,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            if (float.TryParse(sValue, out float valueFloat))
+            if (float.TryParse(sValue, out var valueFloat))
             {
                 if (_dictionary.ContainsKey("Float"))
                     _dictionary["Float"]++;
@@ -78,7 +77,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            if (DateTime.TryParse(sValue, out DateTime valueDateTime))
+            if (DateTime.TryParse(sValue, out var valueDateTime))
             {
                 if (_dictionary.ContainsKey("DateTime"))
                     _dictionary["DateTime"]++;
@@ -171,7 +170,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Profile, Category = "Profile", Name = "Zeros", Description = "Find the percentage of zero value columns.", ResultMethod = nameof(ZerosResult), ResetMethod = nameof(Reset))]
         public void Zeros(string value)
         {
-            if (value != null && decimal.TryParse(value, out decimal number))
+            if (value != null && decimal.TryParse(value, out var number))
             {
                 if (number == 0) _intValue++;
             }
@@ -233,7 +232,7 @@ namespace dexih.functions.BuiltIn
         {
             _recordCount++;
 
-            if (value != null &&  double.TryParse(value, out double number))
+            if (value != null &&  double.TryParse(value, out var number))
             {
                 if (_objectValue == null || Convert.ToDouble(_objectValue) < number)
                 {

@@ -40,7 +40,7 @@ namespace dexih.transforms
             CacheTable.Data.Clear();
 
             var row = new object[CacheTable.Columns.Count];
-            for(int i =0; i < CacheTable.Columns.Count; i++)
+            for(var i =0; i < CacheTable.Columns.Count; i++)
             {
                 var column = CacheTable.Columns[i];
                 if (query?.Filters != null)

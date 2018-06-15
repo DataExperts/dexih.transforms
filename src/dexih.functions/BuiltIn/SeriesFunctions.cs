@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using dexih.functions;
 
 namespace dexih.functions.BuiltIn
 {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -11,9 +10,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
-using Newtonsoft.Json.Schema;
 using Oracle.ManagedDataAccess.Client;
-using Oracle.ManagedDataAccess.Types;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.sql

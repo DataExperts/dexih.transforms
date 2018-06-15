@@ -5,7 +5,6 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
-using dexih.transforms.Exceptions;
 using dexih.transforms.Transforms;
 
 namespace dexih.transforms

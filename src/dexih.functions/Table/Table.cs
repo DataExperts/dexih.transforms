@@ -395,10 +395,10 @@ namespace dexih.functions
         {
             var table = new Table(Name, Schema)
             {
-                Description = Description
+                Description = Description,
+                LogicalName = LogicalName
             };
 
-            table.LogicalName = LogicalName;
 
             foreach (var column in Columns)
             {

@@ -70,12 +70,14 @@ namespace dexih.transforms
 
                 foreach(var columnDetail in columnSchema)
                 {
-                    var column = new TableColumn();
-                    column.Name = columnDetail.ColumnName;
-                    column.DataType = Dexih.Utils.DataType.DataType.GetTypeCode(columnDetail.DataType);
-                    column.MaxLength = columnDetail.ColumnSize;
-                    column.Scale = columnDetail.NumericScale;
-                    column.Precision = columnDetail.NumericPrecision;
+                    var column = new TableColumn
+                    {
+                        Name = columnDetail.ColumnName,
+                        DataType = Dexih.Utils.DataType.DataType.GetTypeCode(columnDetail.DataType),
+                        MaxLength = columnDetail.ColumnSize,
+                        Scale = columnDetail.NumericScale,
+                        Precision = columnDetail.NumericPrecision
+                    };
                 }
             }
 #endif

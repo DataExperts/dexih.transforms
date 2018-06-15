@@ -1,7 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
-using Dexih.Utils.DataType;
 using Dexih.Utils.CopyProperties;
 
 namespace dexih.functions

@@ -156,7 +156,7 @@ namespace dexih.connections.sql
                                 throw new ConnectionException($"The generated sql was too large to execute.  The size was {(insert.Length + row.Length)} and the maximum supported by MySql is {MaxSqlSize}.  To fix this, either reduce the fields being used or increase the `max_allow_packet` variable in the MySql database.");
                             }
 
-                            using (MySqlCommand cmd = new MySqlCommand(insert.ToString(), (MySqlConnection)connection))
+                            using (var cmd = new MySqlCommand(insert.ToString(), (MySqlConnection)connection))
                             {
                                 cmd.CommandType = CommandType.Text;
                                 try

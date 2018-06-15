@@ -169,12 +169,14 @@ namespace dexih.functions
                     throw new Exception("The input parameters could not be intialized as there are " + inputMappings.Length + " input mappings, however the function only has " + inputParameters.Length + " input parameters.");
                 }
 
-                Inputs[i] = new Parameter();
-                Inputs[i].Column = inputMappings[i];
-                Inputs[i].Name = inputParameters[parameterCount].Name;
-                Inputs[i].IsColumn = true;
+	            Inputs[i] = new Parameter
+	            {
+		            Column = inputMappings[i],
+		            Name = inputParameters[parameterCount].Name,
+		            IsColumn = true
+	            };
 
-                var parameterType = inputParameters[parameterCount].ParameterType;
+	            var parameterType = inputParameters[parameterCount].ParameterType;
                 Inputs[i].IsArray = parameterType.IsArray;
                 if(parameterType.IsArray)
                     Inputs[i].DataType = GetTypeCode(parameterType.GetElementType());
@@ -212,11 +214,13 @@ namespace dexih.functions
                         throw new Exception("The output parameters could not be intialized as there are " + outputMappings.Length + " output mappings, however the function only has " + outputParameters.Length + " output parameters.");
                     }
 
-                    Outputs[i] = new Parameter();
-                    Outputs[i].Column = outputMappings[i];
-                    Outputs[i].Name = outputParameters[parameterCount].Name;
+	                Outputs[i] = new Parameter
+	                {
+		                Column = outputMappings[i],
+		                Name = outputParameters[parameterCount].Name
+	                };
 
-                    var parameterType = outputParameters[parameterCount].ParameterType.GetElementType();
+	                var parameterType = outputParameters[parameterCount].ParameterType.GetElementType();
                     Outputs[i].IsArray = parameterType.IsArray;
                     if (parameterType.IsArray)
                         Outputs[i].DataType = GetTypeCode(parameterType.GetElementType());
