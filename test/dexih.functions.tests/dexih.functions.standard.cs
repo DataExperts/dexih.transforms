@@ -319,6 +319,7 @@ namespace dexih.functions.tests
             //Get a rows that exists.
             var function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "JsonValues").GetTransformFunction(); 
             var param = new object[] { "{ 'value1': '1', 'value2' : '2', 'value3': '3', 'array' : {'v1' : '1', 'v2' : '2'} }", "value1", "value2", "value3", "array", "badvalue" };
+            
             Assert.False((bool)function.RunFunction(param, new string[] { "value1", "value2", "value3", "array", "badvalue" }));
             Assert.Equal("1", (string)function.Outputs[0].Value);
             Assert.Equal("2", (string)function.Outputs[1].Value);

@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace dexih.transforms
 {
+    
+    /// <summary>
+    /// Converts a DbDataReader into an output csv stream
+    /// </summary>
     public class TransformCsvStream : Stream
     {
         private const int BufferSize = 50000;

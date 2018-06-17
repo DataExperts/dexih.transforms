@@ -15,7 +15,7 @@ namespace dexih.transforms
     {
         public ReaderDbDataReader() { }
 
-        public List<Sort> _sortFields;
+        private readonly List<Sort> _sortFields;
 
         /// <summary>
         /// Initialises a transform source.  
@@ -112,13 +112,7 @@ namespace dexih.transforms
             return true;
         }
 
-        public override List<Sort> SortFields
-        {
-            get
-            {
-                return _sortFields;
-            }
-        }
+        public override List<Sort> SortFields => _sortFields;
 
         public override bool ResetTransform()
         {
@@ -127,7 +121,7 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            var success = await InReader.ReadAsync();
+            var success = await InReader.ReadAsync(cancellationToken);
             object[] newRow;
             if (success)
             {

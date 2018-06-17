@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace dexih.transforms
 {
     /// <summary>
-    /// Creates a reader the uses the filter to populate a single row defined by the filters passed to it.  
+    /// Creates a reader that uses the filter to populate a single row defined by the filters passed to it.  
     /// This is used for datalink with a source that is a lookup.
     /// </summary>
     public class ReaderDynamic : Transform

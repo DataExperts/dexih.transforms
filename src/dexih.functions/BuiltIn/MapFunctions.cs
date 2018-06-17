@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.XPath;
 using Dexih.Utils.Crypto;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.BuiltIn
@@ -699,9 +701,12 @@ namespace dexih.functions.BuiltIn
             }
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "JSON", Name = "JSONValues",
-            Description =
-                "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.")]
+        [TransformFunction(
+            FunctionType = EFunctionType.Map, 
+            Category = "JSON", 
+            Name = "JSONValues",
+            Description = "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.")
+        ]
         public bool JsonValues(string json, string[] jsonPaths, out string[] values)
         {
             try

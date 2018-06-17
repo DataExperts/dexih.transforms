@@ -149,17 +149,17 @@ namespace dexih.transforms
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("The Seek function is not supported.");
         }
 
         public override void SetLength(long value)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("The SetLength function is not supported.");
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("The Write function is not supported.");
         }
     }
 }
