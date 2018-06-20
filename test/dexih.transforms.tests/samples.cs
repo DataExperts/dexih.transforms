@@ -26,7 +26,7 @@ public class Samples
             new TransformFunction(
                 new Func<string, bool>((value) => value != null), //function code
                 new[] { new TableColumn("PurchaseOrderNumber") },  //input column
-                null, null, null )
+                null, null )
             },
             null
         );

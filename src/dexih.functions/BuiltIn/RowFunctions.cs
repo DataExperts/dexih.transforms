@@ -15,6 +15,11 @@ namespace dexih.functions.BuiltIn
         private XPathNodeIterator _cacheXmlNodeList;
         private JToken[] _cacheJsonTokens;
 
+        /// <summary>
+        /// Used by row transform, contains the parameters used in the array.
+        /// </summary>
+        public Parameter[] ArrayParameters { get; set; }
+
 
         public bool Reset()
         {
@@ -82,7 +87,7 @@ namespace dexih.functions.BuiltIn
         
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "ColumnsToRows",
             Description = "Columns into rows.", ResetMethod = nameof(Reset))]
-        public bool ColumnsToRows(string[] column, out string item)
+        public bool ColumnsToRows(string[] column, out string columnName, out string item)
         {
             if (_cacheInt == null)
             {
@@ -96,10 +101,12 @@ namespace dexih.functions.BuiltIn
             if (_cacheInt > column.Length - 1)
             {
                 item = "";
+                columnName = "";
                 return false;
             }
 
             item = column[(int) _cacheInt];
+            columnName = ArrayParameters[(int) _cacheInt].Column?.Name;
             return true;
         }
 

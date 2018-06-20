@@ -32,14 +32,22 @@ namespace dexih.functions.File
             _fileRowNumberOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileRowNumber);
            
         }
-        public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream data)
+        public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream stream)
         {
+            var streamReader = new StreamReader(stream);
+            
+            //skip the header records as specified.
+            for (var i = 0; i < _fileConfiguration.SkipHeaderRows && !streamReader.EndOfStream; i++)
+            {
+                await streamReader.ReadLineAsync();
+            }
+            
             string[] headers;
             if (_fileConfiguration.HasHeaderRecord)
             {
                 try
                 {
-                    using (var csv = new CsvReader(new StreamReader(data), _fileConfiguration))
+                    using (var csv = new CsvReader(streamReader, _fileConfiguration))
                     {
                         await csv.ReadAsync();
                         csv.ReadHeader();
@@ -54,7 +62,7 @@ namespace dexih.functions.File
             else
             {
                 // if no header row specified, then just create a series column names "column001, column002 ..."
-                using (var csv = new CsvReader(new StreamReader(data), _fileConfiguration))
+                using (var csv = new CsvReader(streamReader, _fileConfiguration))
                 {
                     await csv.ReadAsync();
                     headers = Enumerable.Range(0, csv.Context.HeaderRecord.Length).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
@@ -102,15 +110,21 @@ namespace dexih.functions.File
         {
             _currentFileRowNumber = 0;
             _filters = filters;
-            var streamReder = new StreamReader(stream);
-            
+            var streamReader = new StreamReader(stream);
+
             if (_fileConfiguration != null)
             {
-                _csvReader = new CsvReader(streamReder, _fileConfiguration);
+                //skip the header records as specified.
+                for (var i = 0; i < _fileConfiguration.SkipHeaderRows && !streamReader.EndOfStream; i++)
+                {
+                    await streamReader.ReadLineAsync();
+                }
+
+                _csvReader = new CsvReader(streamReader, _fileConfiguration);
             } 
             else 
             {
-                _csvReader = new CsvReader(streamReder);
+                _csvReader = new CsvReader(streamReader);
             }
             
             _csvOrdinalMappings = new Dictionary<int, (int position, Type dataType)>();
@@ -165,6 +179,10 @@ namespace dexih.functions.File
                 {
                     var mapping = _csvOrdinalMappings[colPos];
                     row[colPos] = _csvReader.GetField(mapping.dataType, mapping.position);
+                    if (_fileConfiguration.SetWhiteSpaceCellsToNull && row[colPos] is string && string.IsNullOrWhiteSpace((string)row[colPos]))
+                    {
+                        row[colPos] = null;
+                    }
                 }
 
                 if (_fileRowNumberOrdinal >= 0)

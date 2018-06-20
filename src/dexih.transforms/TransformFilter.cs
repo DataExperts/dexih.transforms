@@ -138,6 +138,18 @@ namespace dexih.transforms
                             var value1 = PrimaryTransform[_filterColumn1Ordinals[i]];
                             var value2 = FilterPairs[i].Column2 == null ? FilterPairs[i].FilterValue : PrimaryTransform[_filterColumn2Ordinals[i]];
 
+                            if (FilterPairs[i].Compare == Filter.ECompare.IsNotNull)
+                            {
+                                showRecord = value1 != null && !(value1 is DBNull);
+                                continue;
+                            }
+
+                            if (FilterPairs[i].Compare == Filter.ECompare.IsNull)
+                            {
+                                showRecord = value1 == null || value1 is DBNull;
+                                continue;
+                            }
+
                             var compare = DataType.Compare(FilterPairs[i].Column1.DataType, value1, value2);
 
                             switch (FilterPairs[i].Compare)

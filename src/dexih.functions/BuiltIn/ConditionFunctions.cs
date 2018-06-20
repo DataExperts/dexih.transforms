@@ -72,13 +72,28 @@ namespace dexih.functions.BuiltIn
             return DateTime.TryParse(value, out result);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Null",
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Is Null",
             Description = "Value is null")]
-        public bool IsNull(string value)
+        public bool IsNull(object value)
         {
-            return value == null;
+            return value == null || value is DBNull;
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Is Null Or Empty",
+            Description = "Value is null or any empty string")]
+        public bool IsNullOrEmpty(string value)
+        {
+            return string.IsNullOrEmpty(value);
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Is Null Or Whitespace",
+            Description = "Value is null or a string with only whitespaces")]
+        public bool IsNullOrWhitespace(string value)
+        {
+            return string.IsNullOrWhiteSpace(value);
+        }
+
+        
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Between",
             Description = "Value is between the specified values but not equal to them.")]
         public bool IsBetween(double value, double lowRange, double highRange)
@@ -221,7 +236,7 @@ namespace dexih.functions.BuiltIn
             return !(dateValue.DayOfWeek == DayOfWeek.Saturday || dateValue.DayOfWeek == DayOfWeek.Sunday);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Functions", Name = "IsIn",
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "IsIn",
             Description = "Value is one of the elements in an array")]
         public bool IsIn(string value, string[] compareTo)
         {

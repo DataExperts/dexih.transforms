@@ -81,45 +81,44 @@ namespace dexih.functions
         public EInvalidAction InvalidAction { get; set; } = EInvalidAction.Reject;
         
 	    public Filter.ECompare? CompareEnum { get; set; }
-	    
-        /// <summary>
-        /// Createa a new function from a "Delegate".
-        /// </summary>
-        /// <param name="functionMethod">Reference to the function that will be executed.</param>
-        /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
-        /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
-        /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public TransformFunction(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, Dictionary<string, object> staticValues) :
+
+	    /// <summary>
+	    /// Createa a new function from a "Delegate".
+	    /// </summary>
+	    /// <param name="functionMethod">Reference to the function that will be executed.</param>
+	    /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
+	    /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
+	    /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
+	    /// <param name="staticValues"></param>
+	    public TransformFunction(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings) :
             this(functionMethod.Target, functionMethod.GetMethodInfo(), inputMappings, targetColumn, outputMappings)
         {
         }
-	    
-        /// <summary>
-        /// Creates a new function from a class/method reference.
-        /// </summary>
-        /// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
-        /// <param name="methodName">The name of the method to call.</param>
-        /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
-        /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
-        /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        public TransformFunction(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, Dictionary<string, object> staticValues)
+
+	    /// <summary>
+	    /// Creates a new function from a class/method reference.
+	    /// </summary>
+	    /// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
+	    /// <param name="methodName">The name of the method to call.</param>
+	    /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
+	    /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
+	    /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
+	    /// <param name="staticValues"></param>
+	    public TransformFunction(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             FunctionName = methodName;
             Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), inputMappings, targetColumn, outputMappings);
         }
 
-        /// <summary>
-        /// Creates a new function from a class/method reference.
-        /// </summary>
-        /// <param name="target">An instantiated instance of the class containing the method.  Ensure a new instance of Target is created for each function to avoid issues with cached data.</param>
-        /// <param name="methodName">The name of the method to call.</param>
-        /// <param name="resetMethodName"></param>
-        /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
-        /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
-        /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-        /// <param name="resultMethodName"></param>
-        public TransformFunction(object target, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
-            
+	    /// <summary>
+	    /// Creates a new function from a class/method reference.
+	    /// </summary>
+	    /// <param name="target">An instantiated instance of the class containing the method.  Ensure a new instance of Target is created for each function to avoid issues with cached data.</param>
+	    /// <param name="methodName">The name of the method to call.</param>
+	    /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
+	    /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
+	    /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
+	    public TransformFunction(object target, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
         {
             FunctionName = methodName;
             Initialize(target, target.GetType().GetMethod(methodName), inputMappings, targetColumn, outputMappings);
@@ -154,6 +153,7 @@ namespace dexih.functions
             TargetColumn = targetColumn;
 
             ReturnType = GetTypeCode(FunctionMethod.ReturnType);
+	        
             var inputParameters = functionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
 
             if (inputMappings == null)
@@ -178,7 +178,8 @@ namespace dexih.functions
 
 	            var parameterType = inputParameters[parameterCount].ParameterType;
                 Inputs[i].IsArray = parameterType.IsArray;
-                if(parameterType.IsArray)
+
+	            if(parameterType.IsArray)
                     Inputs[i].DataType = GetTypeCode(parameterType.GetElementType());
                 else
                     Inputs[i].DataType = GetTypeCode(parameterType);
@@ -321,6 +322,7 @@ namespace dexih.functions
 
         public object Invoke()
         {
+	        
 			try
 			{
 				var mappingFunction = FunctionMethod;

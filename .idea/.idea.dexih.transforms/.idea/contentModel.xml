@@ -7,6 +7,7 @@
     <e p="$USER_HOME$/Library/Caches/Rider2018.1/resharper-host/local/Transient/ReSharperHost/v12/SolutionCaches/_dexih.transforms.-909103707.00" t="ExcludeRecursive" />
     <e p="$PROJECT_DIR$" t="IncludeFlat">
       <e p="dexih.transforms.sln" t="IncludeFlat" />
+      <e p="ext" t="Include" />
       <e p="packages" t="ExcludeRecursive" />
       <e p="samples" t="Include">
         <e p="FunctionExamples" t="IncludeRecursive">

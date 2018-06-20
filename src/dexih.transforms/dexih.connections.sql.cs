@@ -268,6 +268,8 @@ namespace dexih.connections.sql
                 case Filter.ECompare.LessThanEqual: return "<=";
                 case Filter.ECompare.NotEqual: return "!=";
                 case Filter.ECompare.IsIn: return "IN";
+                case Filter.ECompare.IsNull: return "is null";
+                case Filter.ECompare.IsNotNull: return "is not null";
                 default:
                     return "";
             }
@@ -337,7 +339,7 @@ namespace dexih.connections.sql
 
                 sql.Append(GetSqlCompare(filter.Operator));
 
-                if (filter.Column2 != null)
+                if (filter.Column2 != null && filter.Operator != Filter.ECompare.IsNull && filter.Operator != Filter.ECompare.IsNotNull)
                     sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");
                 else
                 {

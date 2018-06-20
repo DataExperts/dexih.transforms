@@ -196,7 +196,6 @@ namespace dexih.transforms.tests
                 new Func<int, bool>((value) => value < 0), 
                 new TableColumn[] { new TableColumn(data.GetName(0)) }, 
                 null, 
-                null,
                 null);
             filters.Add(newFilter);
             transformFilter.Functions = filters;

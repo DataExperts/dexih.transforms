@@ -36,7 +36,6 @@ namespace dexih.transforms.tests
                 new Func<string, int, string>((StringColumn, number) => StringColumn + number.ToString()),
                 new TableColumn[] { new TableColumn("StringColumn"), new TableColumn("number", ETypeCode.Int32) },
                 new TableColumn("CustomFunction"),
-                null,
                 null)
             {
                 Inputs = new dexih.functions.Parameter[] {
@@ -138,7 +137,6 @@ namespace dexih.transforms.tests
                     new Func<object, object>((value) => value), 
                     new TableColumn[] { new TableColumn(data.GetName(i)) }, 
                     new TableColumn(data.GetName(i)), 
-                    null,
                     null);
                 columnMappings.Add(newTransformFunction);
             }

@@ -173,7 +173,6 @@ namespace dexih.transforms.tests
                 new Func<bool, bool>((isValid) => isValid),
                 new TableColumn[] { new TableColumn("IsValid", ETypeCode.Boolean, "Join") },
                 null,
-                null,
                 null)
             };
 
@@ -322,7 +321,6 @@ namespace dexih.transforms.tests
                 new Func<bool, bool>((isValid) => isValid),
                 new TableColumn[] { new TableColumn("IsValid", ETypeCode.Boolean, "Join") },
                 null,
-                null,
                 null)
             };
 
@@ -356,7 +354,6 @@ namespace dexih.transforms.tests
                 new TransformFunction(
                 new Func<int, int, bool>((source1, join) => source1 == (join - 1)),
                 new TableColumn[] { new TableColumn("IntColumn", ETypeCode.Int32), new TableColumn("IntColumn", ETypeCode.Int32, "Join") },
-                null,
                 null,
                 null)
             };
@@ -392,7 +389,6 @@ namespace dexih.transforms.tests
                 new TransformFunction(
                 new Func<int, int, bool>((source1, join) => source1 == (join - 1)),
                 new TableColumn[] { new TableColumn("IntColumn", ETypeCode.Int32), new TableColumn("IntColumn", ETypeCode.Int32, "Join") },
-                null,
                 null,
                 null)
             };

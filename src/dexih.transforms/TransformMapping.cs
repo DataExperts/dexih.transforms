@@ -155,7 +155,7 @@ namespace dexih.transforms
 		    if (MapFields != null)
 		    {
                 var mapping = MapFields.Where(c => c.SourceColumn.TableColumnName() == sourceColumn.TableColumnName());
-                if (mapping.Count() == 0)
+                if (!mapping.Any())
                 {
                     mapping = MapFields.Where(c => c.SourceColumn.Name == sourceColumn.Name);
                 }
@@ -312,7 +312,7 @@ namespace dexih.transforms
 				    foreach (var sortField in PrimaryTransform.SortFields)
 				    {
 					    var newColumns = TranslateSourceColumn(sortField.Column);
-					    if (newColumns.Count() > 0)
+					    if (newColumns.Any())
 					    {
                             foreach (var newColumn in newColumns)
                             {

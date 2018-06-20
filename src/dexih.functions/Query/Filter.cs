@@ -1,7 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 using System.Collections;
+using CsvHelper;
 
 namespace dexih.functions.Query
 {
@@ -105,7 +107,9 @@ namespace dexih.functions.Query
             LessThan,
             LessThanEqual,
             NotEqual,
-            IsIn
+            IsIn,
+            IsNull,
+            IsNotNull
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
@@ -141,6 +145,16 @@ namespace dexih.functions.Query
                     }
                 }
                 return false;
+            }
+
+            if (Operator == ECompare.IsNull)
+            {
+                return value1 == null || value1 is DBNull;
+            }
+
+            if (Operator == ECompare.IsNotNull)
+            {
+                return value1 != null && !(value1 is DBNull);
             }
 
             var compareResult = Compare(CompareDataType, value1, value2);

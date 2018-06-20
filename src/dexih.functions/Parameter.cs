@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 
@@ -28,18 +30,19 @@ namespace dexih.functions
             ETypeCode parameterType, 
             bool isColumn = false, 
             object value = null, 
-            TableColumn column = null, 
-            bool isArray = false)
+            TableColumn column = null,
+            bool isArray = false
+            )
         {
             Name = name;
             DataType = parameterType;
-            IsArray = isArray;
             if (value != null)
             {
                 SetValue(value);
             }
             Column = column;
             IsColumn = isColumn;
+            IsArray = isArray;
         }
 
         /// <summary>
@@ -53,7 +56,6 @@ namespace dexih.functions
             DataType = parameterType;
             IsColumn = true;
             Column = column;
-            IsColumn = true;
         }
 
         public Parameter(ETypeCode parameterType, string columnName)
@@ -62,8 +64,8 @@ namespace dexih.functions
             DataType = parameterType;
             IsColumn = true;
             Column = new TableColumn(columnName);
-            IsColumn = true;
         }
+
 
         /// <summary>
         /// Name for the parameter.  This name must be used when referencing parameters in custom functions.
@@ -80,8 +82,9 @@ namespace dexih.functions
         /// Indicates if the parameter is a column (vs a hard coded value)
         /// </summary>
         public bool IsColumn { get; set; }
-        public bool IsArray { get; set; }
         public TableColumn Column { get; set; }
+
+        public bool IsArray { get; set; }
 
         /// <summary>
         /// The returned value.
@@ -95,12 +98,7 @@ namespace dexih.functions
         /// <param name="input"></param>
         public void SetValue(object input)
         {
-            if (IsArray)
-            {
-                Value = input;
-                return;
-            }
-            if (input == null || Equals(input, "")) // || string.IsNullOrEmpty(input.ToString()))
+            if (input == null || Equals(input, ""))
 			{
 				Value = input;
 			}
