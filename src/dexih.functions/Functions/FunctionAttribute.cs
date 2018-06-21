@@ -14,7 +14,7 @@ namespace dexih.functions
         
         public string ResultMethod { get; set; }
         public string ResetMethod { get; set; }
-        
+        public string ImportMethod { get; set; }
     }
 
     public class TransformFunctionParameter : Attribute

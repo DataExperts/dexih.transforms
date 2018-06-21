@@ -26,6 +26,7 @@ namespace dexih.functions
         public MethodInfo FunctionMethod { get; set; }
         public MethodInfo ResetMethod { get; set; }
         public MethodInfo ResultMethod { get; set; }
+	    public MethodInfo ImportMethod { get; set; }
         public object ObjectReference { get; set; }
 
         private object _returnValue;
@@ -146,6 +147,10 @@ namespace dexih.functions
                 ResultMethod = string.IsNullOrEmpty(attribute.ResultMethod)
                     ? null
                     : targetType.GetMethod(attribute.ResultMethod);
+
+	            ImportMethod = string.IsNullOrEmpty(attribute.ImportMethod)
+		            ? null
+		            : targetType.GetMethod(attribute.ImportMethod);
             }
 
             ObjectReference = target;
@@ -592,7 +597,7 @@ namespace dexih.functions
                 object[] parameters;
 
                 //if the result method has an "index" as the first parameter, then add the index
-                if (ResultMethod.GetParameters().Count() > 0 && ResultMethod.GetParameters()[0].Name == "index")
+                if (ResultMethod.GetParameters().Any() && ResultMethod.GetParameters()[0].Name == "index")
                 {
                     parameters = new object[outputsCount + 1];
                     parameters[0] = index;
@@ -683,6 +688,24 @@ namespace dexih.functions
                 throw new FunctionException($"The ResetMethod on the function {FunctionName} failed.  " + ex.Message, ex);
             }
         }
+
+	    public string[] Import(object[] values)
+	    {
+		    try
+		    {
+			    if (ImportMethod != null)
+			    {
+				    return (string[]) ImportMethod.Invoke(ObjectReference, values);
+			    }
+			    
+			    throw new FunctionException($"There is no import function for {FunctionName}.");
+			    
+		    }
+		    catch(Exception ex)
+		    {
+			    throw new FunctionException($"The ImportMethod on the function {FunctionName} failed.  " + ex.Message, ex);
+		    }
+	    }
 
         public string FunctionDetail()
         {

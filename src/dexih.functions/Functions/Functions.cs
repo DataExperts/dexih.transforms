@@ -77,6 +77,7 @@ namespace dexih.functions
                     FunctionMethodName = method.Name,
                     ResetMethodName = attribute.ResetMethod,
                     ResultMethodName = attribute.ResultMethod,
+                    ImportMethodName = attribute.ImportMethod,
                     IsStandardFunction = true,
                     DetailedFlagName = detailedPropertyName,
                     Compare = compareAttribute?.Compare,

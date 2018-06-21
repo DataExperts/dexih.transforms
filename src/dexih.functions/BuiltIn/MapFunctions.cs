@@ -705,7 +705,8 @@ namespace dexih.functions.BuiltIn
             FunctionType = EFunctionType.Map, 
             Category = "JSON", 
             Name = "JSONValues",
-            Description = "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.")
+            Description = "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.",
+            ImportMethod = nameof(JsonValuesImport))
         ]
         public bool JsonValues(string json, string[] jsonPaths, out string[] values)
         {
@@ -738,6 +739,19 @@ namespace dexih.functions.BuiltIn
                 values = new string[jsonPaths.Length];
                 return false;
             }
+        }
+
+        public string[] JsonValuesImport(string json)
+        {
+            var result = JToken.Parse(json);
+            var values = new List<string>();
+
+            foreach (var path in result.Children())
+            {
+                values.Add(path.Path);
+            }
+
+            return values.ToArray();
         }
 
 

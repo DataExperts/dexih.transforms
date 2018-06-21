@@ -25,6 +25,7 @@ namespace dexih.functions
         public string FunctionMethodName { get; set; }
         public string ResultMethodName { get; set; }
         public string ResetMethodName { get; set; }
+        public string ImportMethodName { get; set; }
         
         /// <summary>
         /// Used for profiling functions, indicates the property use to switch detailed results on/off.
