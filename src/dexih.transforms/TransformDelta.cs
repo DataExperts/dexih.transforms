@@ -95,6 +95,7 @@ namespace dexih.transforms
         private int _referenceCreateAuditOrdinal;
         private int _referenceCreateDateOrginal;
         private int _referenceValidToOridinal;
+        private int _referenceValidFromOridinal;
 
         private int _columnCount;
 
@@ -228,9 +229,10 @@ namespace dexih.transforms
             _isCurrentOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
 
             _sourceSurrogateKeyOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
-            _sourceValidFromOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
-            _sourceValidToOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
+            _sourceValidFromOrdinal = GetSourceColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
+            _sourceValidToOrdinal = GetSourceColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
             _sourceIsCurrentOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
+
             _columnCount = CacheTable.Columns.Count;
 
             _referenceIsValidOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
@@ -238,7 +240,24 @@ namespace dexih.transforms
             _referenceCreateAuditOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateAuditKey);
             _referenceCreateDateOrginal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateDate);
             _referenceValidToOridinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
+            _referenceValidFromOridinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
 
+        }
+
+        public int GetSourceColumnOrdinal(TableColumn.EDeltaType deltaType)
+        {
+            var sourceOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(deltaType);
+            // if the source ValidFrom was not found on delta type, use the target table valid from and attempt to match on name.
+            if (sourceOrdinal < 0)
+            {
+                var targetColumn = CacheTable.GetDeltaColumn(deltaType);
+                if (targetColumn != null)
+                {
+                    sourceOrdinal = PrimaryTransform.CacheTable.GetOrdinal(targetColumn.Name);
+                }
+            }
+
+            return sourceOrdinal;
         }
 
         private bool CompareFields(object sourceValue, TableColumn referenceColumn, object referenceValue)
@@ -511,6 +530,18 @@ namespace dexih.transforms
                 }
                 else
                 {
+                    // if the source row has a valid from less than the target row, then ignore the source row.
+                    if (_sourceValidFromOrdinal >= 0 && _referenceValidFromOridinal >= 0)
+                    {
+                        var compare = Compare(_colValidFrom.DataType, PrimaryTransform[_sourceValidFromOrdinal], ReferenceTransform[_referenceValidFromOridinal]);
+                        if (compare == ECompareResult.Less)
+                        {
+                            _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
+                            TransformRowsIgnored++;
+                            continue;
+                        }
+                    }
+                    
                     //the final possibility, is the natrual key is a match, then check for a changed tracking column
                     var isMatch = true;
                     foreach (var col in CacheTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField))
@@ -624,11 +655,11 @@ namespace dexih.transforms
                         newRow[_validFromOrdinal] = validFrom;
                     }
 
-                    // if there is a 
-                    if (_validToOrdinal >= 0 && _sourceValidFromOrdinal > 0 && _sourceValidToOrdinal < 0)
+                    // if there is a valid_from mapped form the source, map it to the valid_to when preserving the records.
+                    if (_validToOrdinal >= 0 && _sourceValidFromOrdinal >= 0 && _sourceValidToOrdinal < 0)
                     {
                         newRow[_validToOrdinal] = PrimaryTransform[_sourceValidFromOrdinal];
-                    }
+                    } else if(_validToOrdinal >=0 && _validFromOrdinal >= 0)
 
                     newRow[0] = 'C';
                 }
