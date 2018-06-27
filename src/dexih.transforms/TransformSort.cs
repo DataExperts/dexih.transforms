@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Threading;
 using dexih.functions.Query;
@@ -130,6 +131,11 @@ namespace dexih.transforms
 
         public override string Details()
         {
+            if (_sortFields == null)
+            {
+                return "";
+            }
+            
             return "Sort: "+ string.Join(",", _sortFields?.Select(c=> c.Column + " " + c.Direction.ToString()).ToArray());
         }
 

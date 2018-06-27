@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
     /// <summary>
-    /// Applies the maximum "Rows" and "Filters" functions of a SelectQuery object.
-    /// This is intended to sit on top of non-sql connections to provide query type of functions.
+    /// Applies the maximum "Rows", "Filters", and "Sort" components of a SelectQuery object.
+    /// This is intended to sit on top of non-sql connections to provide simple queries.
+    /// 
     /// TODO: Extend this to include groups,sorts
     /// 
     /// </summary>
@@ -29,62 +32,79 @@ namespace dexih.transforms
 
         public List<TransformFunction> Conditions
         {
-            get
-            {
-                return Functions;
-            }
-            set
-            {
-                Functions = value;
-            }
+            get => Functions;
+            set => Functions = value;
         }
 
         public override bool InitializeOutputFields()
         {
-            CacheTable = PrimaryTransform.CacheTable.Copy();
+            if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
+            {
+                CacheTable = new Table(PrimaryTransform.CacheTable.Name);
+                _fieldOrdinals = new List<int>();
+
+                foreach (var column in _selectQuery.Columns)
+                {
+                    CacheTable.Columns.Add(column.Column);
+                    var ordinal = PrimaryTransform.CacheTable.GetOrdinal(column.Column.Name);
+                    if (ordinal < 0)
+                    {
+                        throw new TransformException($"The select column {column.Column.Name} could not be found.");
+                    }
+                    _fieldOrdinals.Add(ordinal);
+                }
+            }
+            else
+            {
+                CacheTable = PrimaryTransform.CacheTable.Copy();
+                _fieldOrdinals = Enumerable.Range(0, CacheTable.Columns.Count).ToList();
+            }
+
             CacheTable.Name = "Query";
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             return true;
         }
 
+        private List<int> _fieldOrdinals;
+
         public override bool RequiresSort => false;
         public override bool PassThroughColumns => true;
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
-            if(query != null)
+            var pushQuery = new SelectQuery();
+
+            if (query == null && _selectQuery != null)
             {
-                // if a selectquery is included in the open, then merge the two.
-                if(_selectQuery == null)
+                pushQuery.Rows = _selectQuery.Rows;
+                pushQuery.Filters = _selectQuery.Filters;
+                pushQuery.Sorts = _selectQuery.Sorts;
+            }
+            else if(query != null)
+            {
+                pushQuery.Rows = _selectQuery.Rows < query.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : query.Rows;
+
+                pushQuery.Filters = query.Filters;
+                if (_selectQuery?.Filters != null)
                 {
-                    _selectQuery = query;
+                    pushQuery.Filters.AddRange(_selectQuery.Filters);
+                }
+
+                if (_selectQuery?.Sorts != null && _selectQuery.Sorts.Count > 0)
+                {
+                    pushQuery.Sorts = _selectQuery.Sorts;
                 }
                 else
                 {
-                    if(query.Rows > 0 && _selectQuery.Rows > 0 && query.Rows < _selectQuery.Rows)
-                    {
-                        _selectQuery.Rows = query.Rows;
-                    }
-                    if(query.Filters != null)
-                    {
-                        if(_selectQuery.Filters == null)
-                        {
-                            _selectQuery.Filters = query.Filters;
-                        }
-                        else
-                        {
-                            _selectQuery.Filters.Concat(query.Filters);
-                        }
-
-                    }
+                    pushQuery.Sorts = query.Sorts;
                 }
             }
             _rowCount = 0;
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);
             return returnValue;
         }
 
@@ -133,13 +153,20 @@ namespace dexih.transforms
 
                 } while (await PrimaryTransform.ReadAsync(cancellationToken));
             }
+            else
+            {
+                showRecord = true;
+            }
 
             object[] newRow;
 
             if (showRecord)
             {
-                newRow = new object[FieldCount];
-                PrimaryTransform.GetValues(newRow);
+                newRow = new object[_fieldOrdinals.Count];
+                for(var i = 0; i < _fieldOrdinals.Count; i++)
+                {
+                    newRow[i] = PrimaryTransform.GetValue(_fieldOrdinals[i]);
+                }
             }
             else
                 newRow = null;
@@ -159,7 +186,7 @@ namespace dexih.transforms
 
         public override List<Sort> RequiredSortFields()
         {
-            return null;
+            return _selectQuery?.Sorts;
         }
 
         public override List<Sort> RequiredReferenceSortFields()

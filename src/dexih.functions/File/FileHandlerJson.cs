@@ -69,51 +69,77 @@ namespace dexih.functions.File
                 
                 foreach (var child in tokens)
                 {
+                    columns.AddRange(GetColumns(child));
+                }
+            }
+            return columns;
+        }
 
-                    if (child.Type == JTokenType.Property)
+        private IEnumerable<TableColumn> GetColumns(JToken jToken)
+        {
+            var columns = new List<TableColumn>();
+
+            if (jToken.Type == JTokenType.Property)
+            {
+                var value = (JProperty) jToken;
+
+                if (value.Value.Type == JTokenType.Property || value.Value.Type == JTokenType.Object)
+                {
+                    foreach (var child in value.Value.Children())
                     {
-                        var value = (JProperty)child;
-                        DataType.ETypeCode dataType;
-                        if (value.Value.Type == JTokenType.Array || value.Value.Type == JTokenType.Object || value.Value.Type == JTokenType.Property)
-                        {
-                            dataType = DataType.ETypeCode.Json;
-                        }
-                        else
-                        {
-                            dataType = DataType.GetTypeCode(value.Value.Type);
-                        }
-                        var col = new TableColumn
-                        {
-                            Name = value.Path,
-                            IsInput = false,
-                            LogicalName = value.Name,
-                            DataType = dataType,
-                            DeltaType = TableColumn.EDeltaType.ResponseSegment,
-                            MaxLength = null,
-                            Description = "Json value of the " + value.Path + " path",
-                            AllowDbNull = true,
-                            IsUnique = false
-                        };
-                        columns.Add(col);
+                        columns.AddRange(GetColumns(child));
+                    }
+                }
+                else
+                {
+                    DataType.ETypeCode dataType;
+                    if (value.Value.Type == JTokenType.Array)
+                    {
+                        dataType = DataType.ETypeCode.Json;
                     }
                     else
                     {
-                        var col = new TableColumn
-                        {
-                            Name = child.Path,
-                            IsInput = false,
-                            LogicalName = child.Path,
-                            DataType = DataType.ETypeCode.Json,
-                            DeltaType = TableColumn.EDeltaType.ResponseSegment,
-                            MaxLength = null,
-                            Description = "Json from the " + child.Path + " path",
-                            AllowDbNull = true,
-                            IsUnique = false
-                        };
-                        columns.Add(col);
+                        dataType = DataType.GetTypeCode(value.Value.Type);
                     }
+
+                    var path = value.Path;
+                    if (!string.IsNullOrEmpty(_rowPath) && path.StartsWith(_rowPath))
+                    {
+                        path = path.Substring(_rowPath.Length);
+                    }
+
+                    var col = new TableColumn
+                    {
+                        Name = path,
+                        IsInput = false,
+                        LogicalName = value.Name,
+                        DataType = dataType,
+                        DeltaType = TableColumn.EDeltaType.ResponseSegment,
+                        MaxLength = null,
+                        Description = "Json value of the " + value.Path + " path",
+                        AllowDbNull = true,
+                        IsUnique = false
+                    };
+                    columns.Add(col);    
                 }
             }
+            else
+            {
+                var col = new TableColumn
+                {
+                    Name = jToken.Path,
+                    IsInput = false,
+                    LogicalName = jToken.Path,
+                    DataType = DataType.ETypeCode.Json,
+                    DeltaType = TableColumn.EDeltaType.ResponseSegment,
+                    MaxLength = null,
+                    Description = "Json from the " + jToken.Path + " path",
+                    AllowDbNull = true,
+                    IsUnique = false
+                };
+                columns.Add(col);
+            }
+
             return columns;
         }
 

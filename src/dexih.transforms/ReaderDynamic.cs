@@ -68,8 +68,6 @@ namespace dexih.transforms
 
         #endregion
 
-        public override bool CanLookupRowDirect { get; } = true;
-
         public override bool InitializeOutputFields()
         {
             return true;
@@ -98,5 +96,11 @@ namespace dexih.transforms
         }
 
         public override bool IsClosed => CurrentRowNumber >= CacheTable.Data.Count;
+        
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        {
+            AuditKey = auditKey;
+            return Task.FromResult(true);
+        }
     }
 }

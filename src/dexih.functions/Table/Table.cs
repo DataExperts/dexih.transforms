@@ -146,7 +146,7 @@ namespace dexih.functions
 
         public TableCache Data { get; set; }
 
-        public TableColumns Columns { get; protected set; }
+        public TableColumns Columns { get; set; }
 
 		// public Dictionary<string, string> ExtendedProperties { get; set; }
 

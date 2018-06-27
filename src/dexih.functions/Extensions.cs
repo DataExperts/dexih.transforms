@@ -18,5 +18,25 @@ namespace dexih.functions
         {
             return dict.TryGetValue(key, out var value) ? value : defaultValue;
         }
+
+        /// <summary>
+        /// Checks if an object is null or a blank string
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool ObjectIsNullOrBlank(this object value)
+        {
+            if (value is null)
+            {
+                return true;
+            }
+
+            if (value is string s && string.IsNullOrWhiteSpace(s))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

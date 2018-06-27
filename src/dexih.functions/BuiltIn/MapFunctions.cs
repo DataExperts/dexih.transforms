@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Xml.XPath;
 using Dexih.Utils.Crypto;
-using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.BuiltIn
@@ -744,14 +743,27 @@ namespace dexih.functions.BuiltIn
         public string[] JsonValuesImport(string json)
         {
             var result = JToken.Parse(json);
-            var values = new List<string>();
+            var values = JsonValueImportRecurse(result);
+            return values.ToArray();
+        }
 
-            foreach (var path in result.Children())
+        private List<string> JsonValueImportRecurse(JToken jToken)
+        {
+            var values = new List<string>();
+            
+            foreach (var child in jToken.Children())
             {
-                values.Add(path.Path);
+                if (child.Type == JTokenType.Object || child.Type == JTokenType.Property)
+                {
+                    values.AddRange((JsonValueImportRecurse(child)));
+                }
+                else
+                {
+                    values.Add(child.Path);
+                }
             }
 
-            return values.ToArray();
+            return values;
         }
 
 
@@ -810,7 +822,7 @@ namespace dexih.functions.BuiltIn
             Description = "Convert an integer based unix timestamp to a datetime")]
         public DateTime UnixTimeStampToDate(long unixTimeStamp)
         {
-            var origDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            var origDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             var convertedDate = origDate.AddSeconds(unixTimeStamp).ToLocalTime();
             return convertedDate;
         }

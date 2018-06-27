@@ -307,7 +307,27 @@ namespace dexih.connections.sql
             sql.Append(" " + SqlFromAttribute(table) + " ");
 
             if (query?.Filters != null)
+            {
+                var filters = new List<Filter>();
+                if (query?.Filters != null && query.Filters.Any() )
+                {
+                    filters.AddRange(query.Filters);
+                }
+
+                var inputColumns = table.Columns.Where(c => c.IsInput && !c.DefaultValue.ObjectIsNullOrBlank()).ToArray();
+                if (inputColumns.Any())
+                {
+                    foreach (var inputColumn in inputColumns)
+                    {
+                        var filter = new Filter(inputColumn, Filter.ECompare.IsEqual, inputColumn.DefaultValue);
+                        filters.Add(filter);
+                    }
+                    sql.Append(BuildFiltersString(filters));
+                }
+
                 sql.Append(BuildFiltersString(query.Filters));
+            }
+
 
             if (query?.Groups?.Count > 0)
             {
@@ -332,6 +352,11 @@ namespace dexih.connections.sql
 
             foreach (var filter in filters)
             {
+                if (filter.Value1 == null && filter.Column1 == null)
+                {
+                    throw new ConnectionException("The filter has no values or columns specified for the primary value.");
+                }
+
                 if (filter.Column1 != null)
                     sql.Append(" " + AddDelimiter(filter.Column1.Name) + " ");
                 else
@@ -339,19 +364,29 @@ namespace dexih.connections.sql
 
                 sql.Append(GetSqlCompare(filter.Operator));
 
-                if (filter.Column2 != null && filter.Operator != Filter.ECompare.IsNull && filter.Operator != Filter.ECompare.IsNotNull)
-                    sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");
-                else
+                if (filter.Operator != Filter.ECompare.IsNull && filter.Operator != Filter.ECompare.IsNotNull)
                 {
-                    if (filter.Value2.GetType().IsArray)
+                    if (filter.Value2 == null && filter.Column2 == null)
                     {
-                        var array = new List<string>();
-                        foreach (var value in (Array)filter.Value2)
-                            array.Add(value.ToString());
-                        sql.Append(" (" + string.Join(",", array.Select(c => GetSqlFieldValueQuote(filter.CompareDataType, c))) + ") ");
+                        throw new ConnectionException("The filter has no values or columns specified for the compare value.  Use the IsNull operation to compare to null rows.");
                     }
+
+                    if (filter.Column2 != null)
+                        sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");
                     else
-                        sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value2) + " ");
+                    {
+                        if (filter.Value2.GetType().IsArray)
+                        {
+                            var array = new List<string>();
+                            foreach (var value in (Array) filter.Value2)
+                                array.Add(value.ToString());
+                            sql.Append(" (" + string.Join(",",
+                                           array.Select(c => GetSqlFieldValueQuote(filter.CompareDataType, c))) +
+                                       ") ");
+                        }
+                        else
+                            sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value2) + " ");
+                    }
                 }
 
                 sql.Append(filter.AndOr.ToString());

@@ -283,7 +283,7 @@ namespace dexih.connections.webservice
             {
                 if (column.DefaultValue != null)
                 {
-                    uri = uri.Replace("{" + column.Name + "}", column.DefaultValue);
+                    uri = uri.Replace("{" + column.Name + "}", column.DefaultValue.ToString());
                 }
             }
 

@@ -165,6 +165,11 @@ namespace dexih.functions.BuiltIn
         public bool JsonPivotElementToRows(string json, string jsonPath, int maxItems, out string name,
             out string value)
         {
+            if (string.IsNullOrEmpty(json))
+            {
+                throw new FunctionException("The json value contained no data.");
+            }
+            
             if (_cacheJsonTokens == null)
             {
                 var results = JToken.Parse(json);

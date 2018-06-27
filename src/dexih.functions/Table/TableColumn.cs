@@ -147,7 +147,7 @@ namespace dexih.functions
 
 	    public bool? IsUnicode { get; set; }
 
-		public string DefaultValue { get; set; }
+		public object DefaultValue { get; set; }
 
 		public bool IsUnique { get; set; }
 

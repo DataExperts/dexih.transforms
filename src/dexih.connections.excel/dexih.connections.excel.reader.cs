@@ -154,6 +154,9 @@ namespace dexih.connections.excel
             }
         }
 
-        public override bool CanLookupRowDirect { get; } = false;
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException("Direct lookup not supported with excel files.");
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using dexih.transforms;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -184,16 +185,9 @@ namespace dexih.connections.dexih
         }
 
 
-		public override bool CanLookupRowDirect { get; } = false;
-
-        /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <returns></returns>
-        //public override async Task<ReturnValue<object[]>> LookupRowDirect(List<Filter> filters)
-        //{
-         //   return await ((ConnectionDexih) ReferenceConnection).LookupRow(CacheTable, filters);
-         //}
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException("Direct lookup not supported with dexih connections.");
+        }
     }
 }

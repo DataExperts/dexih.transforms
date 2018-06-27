@@ -205,20 +205,11 @@ namespace dexih.transforms
             }
 
         }
-
-
-        public override bool CanLookupRowDirect { get; } = false;
-
-        /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <param name="duplicateStrategy"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public override Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             throw new NotSupportedException("Direct lookup not supported with flat files.");
         }
+
     }
 }

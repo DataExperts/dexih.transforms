@@ -113,7 +113,7 @@ namespace dexih.connections.webservice
 
                 }
 
-                var rows = await LookupRowDirect(_filter, EDuplicateStrategy.All, cancellationToken);
+                var rows = await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, _filter, cancellationToken);
                 if(rows != null && rows.Any())
                 {
                     _cachedRows = rows.GetEnumerator();
@@ -131,14 +131,11 @@ namespace dexih.connections.webservice
             }
         }
 
-
-
-        public override bool CanLookupRowDirect { get; } = true;
-
-        /// <inheritdoc />
-        public override async Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        public override async Task<bool> InitializeLookup(long auditKey,SelectQuery query, CancellationToken cancellationToken)
         {
-            return await ((ConnectionRestful) ReferenceConnection).LookupRow(CacheTable, filters, cancellationToken);
-         }
+            Reset();
+            return await Open(auditKey, query, cancellationToken);
+        }
+
     }
 }

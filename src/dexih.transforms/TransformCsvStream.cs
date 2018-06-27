@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace dexih.transforms
 {
@@ -27,16 +29,39 @@ namespace dexih.transforms
             _position = 0;
 
             //write the file header.
-            var s = new string[reader.FieldCount];
-            for (var j = 0; j < reader.FieldCount; j++)
+            // if this is a transform, then use the dataTypes from the cache table
+            if (reader is Transform transform)
             {
-                s[j] = reader.GetName(j);
-                if (s[j].Contains("\"")) //replace " with ""
-                    s[j] = s[j].Replace("\"", "\"\"");
-                if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
-                    s[j] = "\"" + s[j] + "\"";
+                var s = new string[transform.CacheTable.Columns.Count];
+                for (var j = 0; j < transform.CacheTable.Columns.Count; j++)
+                {
+                    s[j] = transform.CacheTable.Columns[j].LogicalName;
+                    if (string.IsNullOrEmpty(s[j]))
+                    {
+                        s[j] = transform.CacheTable.Columns[j].Name;
+                    }
+                    
+                    if (s[j].Contains("\"")) //replace " with ""
+                        s[j] = s[j].Replace("\"", "\"\"");
+                    if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
+                        s[j] = "\"" + s[j] + "\"";
+                }
+                _streamWriter.WriteLine(string.Join(",", s));
             }
-            _streamWriter.WriteLine(string.Join(",", s));
+            else
+            {
+                var s = new string[reader.FieldCount];
+                for (var j = 0; j < reader.FieldCount; j++)
+                {
+                    s[j] = reader.GetName(j);
+                    if (s[j].Contains("\"")) //replace " with ""
+                        s[j] = s[j].Replace("\"", "\"\"");
+                    if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
+                        s[j] = "\"" + s[j] + "\"";
+                }
+                _streamWriter.WriteLine(string.Join(",", s));
+            }
+
             _memoryStream.Position = 0;
         }
         public override bool CanRead => true;

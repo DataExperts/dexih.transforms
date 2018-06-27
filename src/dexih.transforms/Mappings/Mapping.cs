@@ -4,6 +4,9 @@ namespace dexih.transforms
 {
     public class ColumnPair
     {
+        public ColumnPair()
+        {}
+        
         /// <summary>
         /// Sets the source and target mappings to the same column name
         /// </summary>

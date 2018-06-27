@@ -164,55 +164,10 @@ namespace dexih.connections.azure
             return row;
         }
 
-        public override bool CanLookupRowDirect { get; } = true;
-
-        /// <inheritdoc />
-        public override async Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        public override async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-            try
-            {
-                var tableClient = _connection.GetCloudTableClient();
-                var cTable = tableClient.GetTableReference(CacheTable.Name);
-
-                //Read the key fields from the table
-                var tableQuery = new TableQuery
-                {
-                    SelectColumns = CacheTable.Columns.Select(c => c.Name).ToArray(),
-                    FilterString = _connection.BuildFilterString(filters)
-                };
-                tableQuery.Take(1000);
-
-                var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, null);
-                var continuationToken = result.ContinuationToken;
-
-                var rows = new List<object[]>();
-
-                while (true)
-                {
-                    for (var i = 0; i < result.Count(); i++)
-                    {
-                        var currentEntity = result.ElementAt(_currentReadRow);
-                        rows.Add(GetRow(currentEntity));
-                    }
-
-                    if(continuationToken == null)
-                    {
-                        break;
-                    }
-
-                    result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
-                    if (!result.Any())
-                    {
-                        break;
-                    }
-                }
-
-                return rows;
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException("The azure table lookup failed due to the following error: " + ex.Message, ex);
-            }
+            Reset();
+            return await Open(auditKey, query, cancellationToken);
         }
     }
 }

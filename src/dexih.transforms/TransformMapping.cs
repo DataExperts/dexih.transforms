@@ -44,7 +44,7 @@ namespace dexih.transforms
 	        set => ColumnPairs = value;
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -178,7 +178,6 @@ namespace dexih.transforms
 
         public override bool InitializeOutputFields()
         {
-            var i = 0;
             CacheTable = new Table("Mapping");
 
             if (MapFields != null)
@@ -187,19 +186,37 @@ namespace dexih.transforms
 
                 foreach (var mapField in MapFields)
                 {
-                    var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn];
+	                if (mapField.SourceColumn == null && mapField.TargetColumn == null)
+	                {
+		                continue;
+	                }
 
-                    if(column == null)
-                    {
-                        throw new Exception("The mapping " + mapField.SourceColumn.Name + " to " + mapField.TargetColumn.Name + " could not be completed, as the source field was missing.");
-                    }
-					var columnCopy = column.Copy();
-					columnCopy.Name = mapField.TargetColumn.Name;
-					CacheTable.Columns.Add(columnCopy);
-                    
-	                //store an mapFieldOrdinal to improve performance.
-                    _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn));
-                    i++;
+	                // if there is no sourcecolumn specified, map the field with no source.  The defaultValue will be used to populate this field.
+	                if (mapField.SourceColumn == null)
+	                {
+		                
+		                var columnCopy = mapField.TargetColumn.Copy();
+		                CacheTable.Columns.Add(columnCopy);
+		                _mapFieldOrdinals.Add(-1);
+	                }
+	                else
+	                {
+		                var column = PrimaryTransform.CacheTable.Columns[mapField.SourceColumn];
+
+		                if (column == null)
+		                {
+			                throw new Exception("The mapping " + mapField.SourceColumn.Name + " to " +
+			                                    mapField.TargetColumn.Name +
+			                                    " could not be completed, as the source field was missing.");
+		                }
+
+		                var columnCopy = column.Copy();
+		                columnCopy.Name = mapField.TargetColumn.Name;
+		                CacheTable.Columns.Add(columnCopy);
+
+		                //store an mapFieldOrdinal to improve performance.
+		                _mapFieldOrdinals.Add(PrimaryTransform.GetOrdinal(mapField.SourceColumn));
+	                }
                 }
             }
 
@@ -230,8 +247,6 @@ namespace dexih.transforms
                     {
                         var column = mapping.TargetColumn.Copy(); // new TableColumn(mapping.TargetColumn.Name, mapping.ReturnType);
                         CacheTable.Columns.Add(column);
-
-                        i++;
                     }
 
                     if (mapping.Outputs != null)
@@ -242,7 +257,6 @@ namespace dexih.transforms
                             {
                                 var column = param.Column.Copy(); // new TableColumn(param.Column.Name, param.DataType);
                                 CacheTable.Columns.Add(column);
-                                i++;
                             }
                         }
                     }
@@ -275,7 +289,7 @@ namespace dexih.transforms
                     if (mapping == null)
                     {
                         //if passthrough column is on, and none of the function mappings override the target field then it is included.
-                        if (PassThroughColumns && !Functions.Any(c => c.TargetColumn?.Name == t.Column.Name || c.Inputs.Any(d => d.Column?.Name == t.Column.Name)))
+                        if (PassThroughColumns && Functions != null && !Functions.Any(c => c.TargetColumn?.Name == t.Column.Name || c.Inputs.Any(d => d.Column?.Name == t.Column.Name)))
                         {
                             fields.Add(t);
                         }
@@ -358,7 +372,15 @@ namespace dexih.transforms
 				{
 					foreach (var mapField in _mapFieldOrdinals)
 					{
-						newRow[i] = PrimaryTransform[mapField];
+						if (mapField == -1)
+						{
+							newRow[i] = CacheTable.Columns[i].DefaultValue;
+						}
+						else
+						{
+							newRow[i] = PrimaryTransform[mapField];
+						}
+
 						i = i + 1;
 					}
 				}

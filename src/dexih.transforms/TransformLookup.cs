@@ -124,21 +124,21 @@ namespace dexih.transforms
             }
 
             //set the values for the lookup
-            var filters = new List<Filter>();
-            for (var i = 0; i < JoinPairs.Count; i++)
+            var selectQuery = new SelectQuery();
+            foreach (var joinPair in JoinPairs)
             {
-                var value = JoinPairs[i].SourceColumn == null ? JoinPairs[i].JoinValue : PrimaryTransform[JoinPairs[i].SourceColumn];
+                var value = joinPair.SourceColumn == null ? joinPair.JoinValue : PrimaryTransform[joinPair.SourceColumn];
 
-                filters.Add(new Filter
+                selectQuery.Filters.Add(new Filter
                 {
-                    Column1 = JoinPairs[i].JoinColumn,
+                    Column1 = joinPair.JoinColumn,
                     CompareDataType = ETypeCode.String,
                     Operator = Filter.ECompare.IsEqual,
                     Value2 = value
                 });
             }
 
-            var lookupResult = await ReferenceTransform.LookupRow(filters, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
+            var lookupResult = await ReferenceTransform.Lookup(selectQuery, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
             if (lookupResult != null)
             {
                 _lookupCache = lookupResult.GetEnumerator();

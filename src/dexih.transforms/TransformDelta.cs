@@ -936,13 +936,13 @@ namespace dexih.transforms
                     switch (referenceColumn.DeltaType)
                     {
                         case TableColumn.EDeltaType.ValidFromDate:
-                            if (string.IsNullOrEmpty(referenceColumn.DefaultValue))
+                            if (referenceColumn.DefaultValue.ObjectIsNullOrBlank())
                                 newRow[referenceOrdinal] = _defaultValidFromDate;
                             else
                                 newRow[referenceOrdinal] = referenceColumn.DefaultValue;
                             break;
                         case TableColumn.EDeltaType.ValidToDate:
-                            if (string.IsNullOrEmpty(referenceColumn.DefaultValue))
+                            if (referenceColumn.DefaultValue.ObjectIsNullOrBlank())
                                 newRow[referenceOrdinal] = _defaultValidToDate;
                             else
                                 newRow[referenceOrdinal] = referenceColumn.DefaultValue;
@@ -970,7 +970,7 @@ namespace dexih.transforms
                             //do nothing
                             break;
                         case TableColumn.EDeltaType.NaturalKey:
-                            if (string.IsNullOrWhiteSpace(referenceColumn.DefaultValue))
+                            if (referenceColumn.DefaultValue.ObjectIsNullOrBlank())
                                 throw new Exception("A default column could not be created as the column \"" + referenceColumn.Name + "\" is part of the natural key and has a default value of null.  Edit the target table columns and set the default value to a non-null value to continue.");
                             else
                                 newRow[referenceOrdinal] = referenceColumn.DefaultValue;

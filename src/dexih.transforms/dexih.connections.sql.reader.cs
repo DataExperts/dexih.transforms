@@ -140,41 +140,12 @@ namespace dexih.connections.sql
                 throw new ConnectionException($"Read record failed. {ex.Message}", ex);
             }
         }
-
-        public override bool CanLookupRowDirect { get; } = true;
-
-        /// <inheritdoc />
-        public override async Task<ICollection<object[]>> LookupRowDirect(List<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        
+        public override async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-            try
-            {
-                var query = new SelectQuery()
-                {
-                    Columns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => new SelectColumn(c)).ToList(),
-                    Filters = filters,
-                };
-
-                using (var connection = await ((ConnectionSql)ReferenceConnection).NewConnection())
-                {
-                    using (var reader = await ReferenceConnection.GetDatabaseReader(CacheTable, connection, query, cancellationToken))
-                    {
-                        var rows = new List<object[]>();
-
-                        while (await reader.ReadAsync(cancellationToken))
-                        {
-                            var values = new object[CacheTable.Columns.Count];
-                            reader.GetValues(values);
-                            rows.Add(values);
-                        }
-
-                        return rows;
-                    }
-                }
-            }
-            catch(Exception ex)
-            {
-                throw new ConnectionException($"Lookup direct row failed. {ex.Message}", ex);
-            }
+            Reset();
+            return await Open(auditKey, query, cancellationToken);
         }
+
     }
 }
