@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Xml.XPath;
 using Dexih.Utils.Crypto;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace dexih.functions.BuiltIn
 {
@@ -765,7 +767,102 @@ namespace dexih.functions.BuiltIn
 
             return values;
         }
+        
+        [TransformFunction(
+            FunctionType = EFunctionType.Map, 
+            Category = "JSON", 
+            Name = "JsonArrayToColumns",
+            Description = "Pivots a json array into column values. ",
+            ImportMethod = nameof(JsonArrayToColumnsImport))
+        ]
+        public bool JsonArrayToColumns(string json, string jsonPath, string columnPath, string valuePath, string[] columns, out string[] values)
+        {
+            try
+            {
+                var results = JToken.Parse(json);
 
+                JToken array;
+                if (string.IsNullOrEmpty(jsonPath))
+                {
+                    array = results;
+                }
+                else
+                {
+                    array = results.SelectToken(jsonPath);
+                }
+
+                if (array.Type == JTokenType.Property || array.Type == JTokenType.Object)
+                {
+                    array = array.FirstOrDefault();
+                }
+
+                if (array.Type != JTokenType.Array)
+                {
+                    throw new FunctionException($"The jsonPath {jsonPath} did not point to a json array.");
+                }
+                
+                var keyValues = new Dictionary<string, string>();
+
+                foreach (var item in array.AsJEnumerable())
+                {
+                    keyValues.Add(item.SelectToken(columnPath).ToString(), item.SelectToken(valuePath).ToString());
+                }
+
+                values = new string[columns.Length];
+                for(var i = 0; i < columns.Length; i++)
+                {
+                    if (keyValues.ContainsKey(columns[i]))
+                    {
+                        values[i] = keyValues[columns[i]];
+                    }
+                }
+
+                return true;
+            }
+            catch(Exception ex)
+            {
+                values = new string[columns.Length];
+                return false;
+            }
+        }
+
+        public string[] JsonArrayToColumnsImport(string json, string jsonPath, string columnPath)
+        {
+            var results = JToken.Parse(json);
+
+            JToken array;
+            if (string.IsNullOrEmpty(jsonPath))
+            {
+                array = results;
+            }
+            else
+            {
+                array = results.SelectToken(jsonPath);
+            }
+
+            if (array.Type == JTokenType.Property || array.Type == JTokenType.Object)
+            {
+                array = array.FirstOrDefault();
+            }
+
+            if (array.Type != JTokenType.Array)
+            {
+                throw new FunctionException($"The jsonPath {jsonPath} did not point to a json array.");
+            }
+                
+            var columns = new List<string>();
+
+            foreach (var item in array.AsJEnumerable())
+            {
+                var column = item.SelectToken(columnPath).ToString();
+                if (!string.IsNullOrEmpty(column))
+                {
+                    columns.Add(column);
+                }
+            }
+
+            return columns.ToArray();
+        }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "GetDistanceTo",
             Description = "The distance in meters between two Geographical Coordinates. ")]

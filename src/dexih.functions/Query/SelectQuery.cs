@@ -24,7 +24,6 @@ namespace dexih.functions.Query
         /// Used for flatfiles to specify only a specific filename
         /// </summary>
         public string FileName { get; set; }
-        
         public EFlatFilePath Path { get; set; }
         
     }
