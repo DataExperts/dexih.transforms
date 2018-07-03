@@ -221,16 +221,20 @@ namespace dexih.connections.test
             {
                 //run a lookup query.
                 var filters = new List<Filter> { new Filter("IntColumn", Filter.ECompare.IsEqual, 5) };
+                var query = new SelectQuery()
+                {
+                    Filters = filters
+                };
 
                 //should return value5
                 var reader = connection.GetTransformReader(table);
 
-                if (reader.CanLookupRowDirect)
-                {
+                //if (reader.CanLookupRowDirect)
+                //{
                     var openResult = await reader.Open(0, null, CancellationToken.None);
                     Assert.True(openResult, "Open Reader");
 
-                    var returnLookup = await reader.LookupRow(filters, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+                    var returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
                     Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "LookupValue :" + returnLookup.First()[0]);
 
                     //run lookup again with caching set.
@@ -238,9 +242,9 @@ namespace dexih.connections.test
                     openResult = await reader.Open(0, null, CancellationToken.None);
                     Assert.True(openResult, "Open Reader");
                     reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
-                    returnLookup = await reader.LookupRow(filters, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+                    returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
                     Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "Select count - value :" + returnLookup.First()[0]);
-                }
+                //}
 
                 reader.Close();
             }

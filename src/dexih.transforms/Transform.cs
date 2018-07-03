@@ -358,14 +358,23 @@ namespace dexih.transforms
         private string EncryptionKey { get; set; }
 
         /// <summary>
-        /// Sets the method for the transform to encrypt data.  If encryption method is set to encrypt, then all columns with the SecurityFlag set will be encrypted or hashed as specified.  If encryption method is set to decrypt when columns with the security flag set to encrypt will be decrypted (note: hashed columns are one-way and cannot be decrypted.).
+        /// Sets the method for the transform to encrypt data.  
+        /// If encryption method is set to encrypt, then all columns with the SecurityFlag set will be encrypted or hashed as specified.  
+        /// If encryption method is set to decrypt then columns with the security flag set to encrypt will be decrypted (note: hashed columns are one-way and cannot be decrypted.).
         /// </summary>
         /// <param name="encryptionMethod"></param>
         /// <param name="key"></param>
         public void SetEncryptionMethod(EEncryptionMethod encryptionMethod, string key)
         {
-            EncryptionMethod = encryptionMethod;
-            EncryptionKey = key;
+            if(CacheTable.Columns.Any(c => c.SecurityFlag != ESecurityFlag.None))
+            {
+                EncryptionMethod = EEncryptionMethod.NoEncryption;
+            }
+            else
+            {
+                EncryptionMethod = encryptionMethod;
+                EncryptionKey = key;
+            }
 
             PrimaryTransform?.SetEncryptionMethod(encryptionMethod, key);
             ReferenceTransform?.SetEncryptionMethod(encryptionMethod, key);
@@ -1106,7 +1115,7 @@ namespace dexih.transforms
                 if (ordinal < 0)
                     throw new Exception("The column " + name + " could not be found in the table.");
 
-                return GetValue(GetOrdinal(name));
+                return GetValue(ordinal);
             }
         }
         public override object this[int ordinal] => GetValue(ordinal);

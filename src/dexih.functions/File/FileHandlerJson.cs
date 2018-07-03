@@ -143,7 +143,7 @@ namespace dexih.functions.File
             return columns;
         }
 
-        public override async Task SetStream(Stream stream, ICollection<Filter> filters)
+        public override async Task SetStream(Stream stream, SelectQuery selectQuery)
         {
             var reader = new StreamReader(stream);
             var jsonString = await reader.ReadToEndAsync();

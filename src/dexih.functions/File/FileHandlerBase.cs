@@ -15,7 +15,7 @@ namespace dexih.functions.File
         /// <returns></returns>
         public abstract Task<ICollection<TableColumn>> GetSourceColumns(Stream stream);
 
-        public abstract Task SetStream(Stream stream, ICollection<Filter> filters);
+        public abstract Task SetStream(Stream stream, SelectQuery selectQuery);
 
         public abstract Task<object[]> GetRow(object[] baseRow);
 
@@ -32,52 +32,6 @@ namespace dexih.functions.File
             }
 
             return rows;
-        }
-
-        /// <summary>
-        /// Tests is a row should be filtered based on the filters provided.  
-        /// </summary>
-        /// <param name="row"></param>
-        /// <param name="filters"></param>
-        /// <param name="table"></param>
-        /// <returns>true = don't filter, false = filtered</returns>
-        protected bool EvaluateRowFilter(IReadOnlyList<object> row, ICollection<Filter> filters, Table table)
-        {
-            if (filters != null && filters.Count > 0)
-            {
-                var filterResult = true;
-                var isFirst = true;
-
-                foreach (var filter in filters)
-                {
-                    var column1Value = filter.Column1 == null
-                        ? null
-                        : row[table.GetOrdinal(filter.Column1.Name)];
-                    var column2Value = filter.Column2 == null
-                        ? null
-                        : row[table.GetOrdinal(filter.Column2.Name)];
-
-                    if (isFirst)
-                    {
-                        filterResult = filter.Evaluate(column1Value, column2Value);
-                        isFirst = false;
-                    }
-                    else if (filter.AndOr == Filter.EAndOr.And)
-                    {
-                        filterResult = filterResult && filter.Evaluate(column1Value, column2Value);
-                    }
-                    else
-                    {
-                        filterResult = filterResult || filter.Evaluate(column1Value, column2Value);
-                    }
-                }
-
-                return filterResult;
-            }
-            else
-            {
-                return true;
-            }
         }
 
         public virtual void Dispose()

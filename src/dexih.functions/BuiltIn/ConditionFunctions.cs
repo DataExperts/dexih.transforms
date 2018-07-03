@@ -9,43 +9,43 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Less Than",
             Description = "Less than")]
         [TransformFunctionCompare(Compare = Filter.ECompare.LessThan)]
-        public bool LessThan(double value, double compare)
+        public bool LessThan(object value, object compare)
         {
-            return value < compare;
+            return ((IComparable)value).CompareTo(compare) < 0;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Less Than/Equal",
             Description = "Less than or Equal")]
         [TransformFunctionCompare(Compare = Filter.ECompare.LessThanEqual)]
-        public bool LessThanEqual(double value, double compare)
+        public bool LessThanEqual(object value, object compare)
         {
-            return value <= compare;
+            return ((IComparable)value).CompareTo(compare) <= 0;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Greater Than",
             Description = "Greater than")]
         [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThan)]
-        public bool GreaterThan(double value, double compare)
+        public bool GreaterThan(object value, object compare)
         {
-            return value > compare;
+            return ((IComparable)value).CompareTo(compare) > 0;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition",
             Name = "Greater Than/Equal", Description = "Greater or Equal")]
         [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThanEqual)]
-        public bool GreaterThanEqual(double value, double compare)
+        public bool GreaterThanEqual(object value, object compare)
         {
-            return value >= compare;
+            return ((IComparable)value).CompareTo(compare) >= 0;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Strings Equal",
             Description = "The list of string values are equal.")]
         [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
-        public bool IsEqual(string[] values)
+        public bool IsEqual(object[] values)
         {
             for (var i = 1; i < values.Length; i++)
             {
-                if (values[0] != values[i]) return false;
+                if (!object.Equals(values[0], values[i])) return false;
             }
 
             return true;
@@ -96,16 +96,16 @@ namespace dexih.functions.BuiltIn
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Between",
             Description = "Value is between the specified values but not equal to them.")]
-        public bool IsBetween(double value, double lowRange, double highRange)
+        public bool IsBetween(object value, object lowRange, object highRange)
         {
-            return value > lowRange && value < highRange;
+            return GreaterThan(value, lowRange) && LessThan(value, highRange);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition",
             Name = "Is Between Inclusive", Description = "Value is equal or between the specified values")]
-        public bool IsBetweenInclusive(double value, double lowRange, double highRange)
+        public bool IsBetweenInclusive(object value, object lowRange, object highRange)
         {
-            return value >= lowRange && value <= highRange;
+            return GreaterThanEqual(value, lowRange) && LessThanEqual(value, highRange);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition",
@@ -238,11 +238,17 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "IsIn",
             Description = "Value is one of the elements in an array")]
-        public bool IsIn(string value, string[] compareTo)
+        public bool IsIn(object value, object[] compareTo)
         {
             var returnValue = false;
             foreach (var t in compareTo)
-                returnValue = returnValue | value == t;
+            {
+                returnValue = object.Equals(value, t);
+                if(returnValue)
+                {
+                    break;
+                }
+            }
             return returnValue;
         }
         
@@ -289,19 +295,19 @@ namespace dexih.functions.BuiltIn
             Description = "Is the specified value equal to true.")]
         public bool IsTrue(bool value) => value;
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Is Date Between",
-            Description = "Date is between the start/end date")]
-        public bool IsDateBetween(DateTime value, DateTime lowRange, DateTime highRange)
-        {
-            return value > lowRange && value < highRange;
-        }
+        //[TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Is Date Between",
+        //    Description = "Date is between the start/end date")]
+        //public bool IsDateBetween(DateTime value, DateTime lowRange, DateTime highRange)
+        //{
+        //    return value > lowRange && value < highRange;
+        //}
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition",
-            Name = "Is Date Between(inclusive)", Description = "Date is equal or between the start/end date")]
-        public bool IsDateBetweenInclusive(DateTime value, DateTime lowRange, DateTime highRange)
-        {
-            return value >= lowRange && value <= highRange;
-        }
+        //[TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition",
+        //    Name = "Is Date Between(inclusive)", Description = "Date is equal or between the start/end date")]
+        //public bool IsDateBetweenInclusive(DateTime value, DateTime lowRange, DateTime highRange)
+        //{
+        //    return value >= lowRange && value <= highRange;
+        //}
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Is Now Between Dates",
             Description = "The date now is between start/end date ")]
@@ -320,25 +326,25 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Range Intersect",
             Description = "The two ranges (lowRange1-highRange1 & lowRange2-highRange2) intersect.")]
-        public bool NumericRangeIntersect(double lowRange1, double highRange1, double lowRange2, double highRange2)
+        public bool RangeIntersect(object lowRange1, object highRange1, object lowRange2, object highRange2)
         {
             //var test1 = lowRange1 >= lowRange2 && lowRange1 < highRange2;
             //var test2 = highRange1 > lowRange2 && highRange1 <= highRange2;
             //return test1 || test2;
 
-            return lowRange1 < highRange2 && lowRange2 < highRange1;
+            return LessThan(lowRange1, highRange2) && LessThan(lowRange2, highRange1);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Date Range Intersect",
-    Description = "The two date ranges intersect (lowRange1-highRange1 & lowRange2-highRange2) intersect.")]
-        public bool DateRangeIntersect(DateTime lowRange1, DateTime highRange1, DateTime lowRange2, DateTime highRange2)
-        {
-            // var test1 = lowRange1 >= lowRange2 && lowRange1 < highRange2;
-            // var test2 = highRange1 > lowRange2 && highRange1 <= highRange2;
-            // return test1 || test2;
+    //    [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Date Range Intersect",
+    //Description = "The two date ranges intersect (lowRange1-highRange1 & lowRange2-highRange2) intersect.")]
+    //    public bool DateRangeIntersect(DateTime lowRange1, DateTime highRange1, DateTime lowRange2, DateTime highRange2)
+    //    {
+    //        // var test1 = lowRange1 >= lowRange2 && lowRange1 < highRange2;
+    //        // var test2 = highRange1 > lowRange2 && highRange1 <= highRange2;
+    //        // return test1 || test2;
 
-            return lowRange1 < highRange2 && lowRange2 < highRange1;
-        }
+    //        return lowRange1 < highRange2 && lowRange2 < highRange1;
+    //    }
 
     }
 }

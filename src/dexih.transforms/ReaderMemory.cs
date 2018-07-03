@@ -12,6 +12,8 @@ namespace dexih.transforms
     /// </summary>
     public class ReaderMemory : Transform
     {
+        private SelectQuery _selectQuery;
+
         public override ECacheMethod CacheMethod
         {
             get => ECacheMethod.PreLoadCache;
@@ -28,6 +30,13 @@ namespace dexih.transforms
             Reset();
 
             SortFields = sortFields;
+        }
+
+        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        {
+            _selectQuery = query;
+
+            return Task.FromResult(true);
         }
 
         public override List<Sort> SortFields { get; }
@@ -58,9 +67,14 @@ namespace dexih.transforms
         protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             CurrentRowNumber++;
-            if (CurrentRowNumber < CacheTable.Data.Count)
+            while(CurrentRowNumber < CacheTable.Data.Count)
             {
                 var row = CacheTable.Data[CurrentRowNumber];
+                var filtered = _selectQuery.EvaluateRowFilter(row, CacheTable);
+                if(filtered)
+                {
+                    continue;
+                }
                 return Task.FromResult<object[]>(row);
             }
             return Task.FromResult<object[]>(null);

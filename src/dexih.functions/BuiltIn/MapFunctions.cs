@@ -655,9 +655,6 @@ namespace dexih.functions.BuiltIn
             return value1 - value2.Sum();
         }
 
-       
-
-
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Xml", Name = "XPathValues",
             Description = "Parses an xml string into a series of xpath results.")]
         public bool XPathValues(string xml, string[] xPaths, out string[] values)

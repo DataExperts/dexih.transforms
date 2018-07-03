@@ -23,7 +23,7 @@ namespace dexih.transforms
 
         private readonly int _fileNameOrdinal;
 
-        private ICollection<Filter> _filters;
+        private SelectQuery _selectQuery;
 
         private readonly bool _previewMode;
 
@@ -69,6 +69,7 @@ namespace dexih.transforms
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
+            _selectQuery = query;
 
             if (_isOpen)
             {
@@ -92,8 +93,6 @@ namespace dexih.transforms
                 throw new ConnectionException($"There are no matching files in the incoming directory.");
             }
 
-            _filters = query?.Filters;
-
             var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
             if (_fileNameOrdinal >= 0)
             {
@@ -102,7 +101,7 @@ namespace dexih.transforms
 
             try
             {
-                await _fileHandler.SetStream(fileStream, _filters);
+                await _fileHandler.SetStream(fileStream, query);
             }
             catch (Exception ex)
             {
@@ -178,7 +177,7 @@ namespace dexih.transforms
                             {
                                 _baseRow[_fileNameOrdinal] = _files.Current.FileName;
                             }
-                            await _fileHandler.SetStream(fileStream, _filters);
+                            await _fileHandler.SetStream(fileStream, _selectQuery);
                         }
                         catch (Exception ex)
                         {

@@ -12,7 +12,7 @@ namespace dexih.functions.File
     public class FileHandlerText : FileHandlerBase, IDisposable
     {
         private Table _table;
-        private ICollection<Filter> _filters;
+        private SelectQuery _selectQuery;
         private readonly FileConfiguration _fileConfiguration;
         
         private CsvReader _csvReader;
@@ -106,10 +106,10 @@ namespace dexih.functions.File
             return columns;
         }
 
-        public override async Task SetStream(Stream stream, ICollection<Filter> filters)
+        public override async Task SetStream(Stream stream, SelectQuery selectQuery)
         {
             _currentFileRowNumber = 0;
-            _filters = filters;
+            _selectQuery = selectQuery;
             var streamReader = new StreamReader(stream);
 
             if (_fileConfiguration != null)
@@ -190,7 +190,7 @@ namespace dexih.functions.File
                     row[_fileRowNumberOrdinal] = _currentFileRowNumber;
                 }
 
-                if (EvaluateRowFilter(row, _filters, _table))
+                if (_selectQuery.EvaluateRowFilter(row, _table))
                 {
                     return row;
                 }

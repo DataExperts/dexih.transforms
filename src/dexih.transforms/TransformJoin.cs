@@ -545,48 +545,14 @@ namespace dexih.transforms
             {
                 for (var i = 0; i < x.Length; i++)
                 {
-                    var greater = false;
+                    var compareResult = ((IComparable)x[i]).CompareTo((IComparable)y[i]);
 
-                    if (Equals(x[i], y[i])) continue;
-
-                    if ((x[i] == null || x[i] is DBNull) && (y[i] == null || y[i] is DBNull))
+                    if (compareResult == 0)
+                    {
                         continue;
+                    }
 
-                    if (x[i] == null || x[i] is DBNull)
-                        greater = false;
-                    else if (y[i] == null || y[i] is DBNull)
-                        greater = true;
-                    else if (x[i] is byte)
-                        greater = (byte)x[i] > (byte)y[i];
-                    else if (x[i] is SByte)
-                        greater = (SByte)x[i] > (SByte)y[i];
-                    else if (x[i] is UInt16)
-                        greater = (UInt16)x[i] > (UInt16)y[i];
-                    else if (x[i] is UInt32)
-                        greater = (UInt32)x[i] > (UInt32)y[i];
-                    else if (x[i] is UInt64)
-                        greater = (UInt64)x[i] > (UInt64)y[i];
-                    else if (x[i] is Int16)
-                        greater = (Int16)x[i] > (Int16)y[i];
-                    else if (x[i] is Int32)
-                        greater = (Int32)x[i] > (Int32)y[i];
-                    else if (x[i] is Int64)
-                        greater = (Int64)x[i] > (Int64)y[i];
-                    else if (x[i] is Decimal)
-                        greater = (Decimal)x[i] > (Decimal)y[i];
-                    else if (x[i] is Double)
-                        greater = (Double)x[i] > (Double)y[i];
-                    else if (x[i] is String)
-                        greater = String.Compare((String)x[i], (String)y[i]) > 0;
-                    else if (x[i] is Boolean)
-                        greater = (Boolean)x[i] == false && (Boolean)y[i];
-                    else if (x[i] is DateTime)
-                        greater = (DateTime)x[i] > (DateTime)y[i];
-
-                    if (greater)
-                        return 1;
-                    else
-                        return -1;
+                    return compareResult;
                 }
                 return 0;
             }

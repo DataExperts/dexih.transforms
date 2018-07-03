@@ -985,46 +985,20 @@ namespace dexih.transforms
             return newRow;
         }
 
-        public class JoinKeyComparer : IComparer<object[]>
+        private class JoinKeyComparer : IComparer<object[]>
         {
             public int Compare(object[] x, object[] y)
             {
                 for (var i = 0; i < x.Length; i++)
                 {
-                    if (object.Equals(x[i], y[i])) continue;
+                    var compareResult = ((IComparable)x[i]).CompareTo((IComparable)y[i]);
 
-                    var greater = false;
+                    if (compareResult == 0)
+                    {
+                        continue;
+                    }
 
-                    if (x[i] is byte)
-                        greater = (byte)x[i] > (byte)y[i];
-                    if (x[i] is sbyte)
-                        greater = (sbyte)x[i] > (sbyte)y[i];
-                    if (x[i] is ushort)
-                        greater = (ushort)x[i] > (ushort)y[i];
-                    if (x[i] is uint)
-                        greater = (uint)x[i] > (uint)y[i];
-                    if (x[i] is ulong)
-                        greater = (ulong)x[i] > (ulong)y[i];
-                    if (x[i] is short)
-                        greater = (short)x[i] > (short)y[i];
-                    if (x[i] is int)
-                        greater = (int)x[i] > (int)y[i];
-                    if (x[i] is long)
-                        greater = (long)x[i] > (long)y[i];
-                    if (x[i] is decimal)
-                        greater = (decimal)x[i] > (decimal)y[i];
-                    if (x[i] is double)
-                        greater = (double)x[i] > (double)y[i];
-                    if (x[i] is string)
-                        greater = string.CompareOrdinal((string)x[i], (string)y[i]) > 0;
-                    if (x[i] is bool)
-                        greater = (bool)x[i] == false && (bool)y[i];
-                    if (x[i] is DateTime)
-                        greater = (DateTime)x[i] > (DateTime)y[i];
-
-                    if (greater)
-                        return 1;
-                    return -1;
+                    return compareResult;
                 }
                 return 0;
             }

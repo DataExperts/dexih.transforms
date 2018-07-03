@@ -132,7 +132,7 @@ namespace dexih.functions.File
             return Task.FromResult((ICollection<TableColumn>)columns);
         }
 
-        public override Task SetStream(Stream stream, ICollection<Filter> filters)
+        public override Task SetStream(Stream stream, SelectQuery selectQuery)
         {
             var xPathDocument = new XPathDocument(stream);
             var xPathNavigator = xPathDocument.CreateNavigator();
