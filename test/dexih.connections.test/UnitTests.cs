@@ -209,7 +209,7 @@ namespace dexih.connections.test
                 }
 
                 //check the table loaded 10 rows successully
-                Transform reader = connection.GetTransformReader(table);
+                Transform reader = connection.GetTransformReader(table, true);
                 int count = 0;
                 var openResult = await reader.Open(0, null, CancellationToken.None);
                 Assert.True(openResult, "Open Reader");
@@ -227,10 +227,10 @@ namespace dexih.connections.test
                 };
 
                 //should return value5
-                var reader = connection.GetTransformReader(table);
+                var reader = connection.GetTransformReader(table, true);
 
-                //if (reader.CanLookupRowDirect)
-                //{
+//                if (reader.CanLookupRowDirect)
+//                {
                     var openResult = await reader.Open(0, null, CancellationToken.None);
                     Assert.True(openResult, "Open Reader");
 
@@ -244,7 +244,7 @@ namespace dexih.connections.test
                     reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
                     returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
                     Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "Select count - value :" + returnLookup.First()[0]);
-                //}
+                // }
 
                 reader.Close();
             }

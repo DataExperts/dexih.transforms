@@ -71,7 +71,7 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
         public override bool PassThroughColumns => true;
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -104,7 +104,7 @@ namespace dexih.transforms
             }
             _rowCount = 0;
 
-            var returnValue = await PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);
+            var returnValue = PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);
             return returnValue;
         }
 

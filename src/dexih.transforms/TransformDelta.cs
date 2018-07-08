@@ -166,13 +166,13 @@ namespace dexih.transforms
             return true;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
             if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
             {
-                var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+                var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
                 return returnValue;
                 }
             else
@@ -182,7 +182,7 @@ namespace dexih.transforms
 
                 query.Sorts = RequiredSortFields();
 
-                var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+                var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
                 return returnValue;
             }
 

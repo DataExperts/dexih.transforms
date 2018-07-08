@@ -35,6 +35,9 @@ namespace dexih.connections.webservice.restful.tests
             var table = await connection.GetSourceTableInfo("get", CancellationToken.None);
             Assert.True(table.Columns.GetOrdinal("args") >= 0);
             Assert.True(table.Columns.GetOrdinal("headers") >= 0);
+            Assert.True(table.Columns.GetOrdinal("headers.Accept") >= 0);
+            Assert.True(table.Columns.GetOrdinal("headers.Connection") >= 0);
+            Assert.True(table.Columns.GetOrdinal("headers.Host") >= 0);
             Assert.True(table.Columns.GetOrdinal("origin") >= 0);
             Assert.True(table.Columns.GetOrdinal("url") >= 0);
 

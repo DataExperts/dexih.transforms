@@ -50,7 +50,7 @@ namespace dexih.transforms
         private int[] _filterColumn2Ordinals;
 
         
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -114,7 +114,7 @@ namespace dexih.transforms
                 }
             }
             
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
             return returnValue;
         }
 

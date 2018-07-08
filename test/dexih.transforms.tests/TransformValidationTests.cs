@@ -15,13 +15,14 @@ namespace dexih.transforms.tests
 
         public TransformValidationTests(ITestOutputHelper output)
         {
-            this._output = output;
+            _output = output;
         }
 
         [Fact]
         public async Task Validations_unit()
         {
             var table = Helpers.CreateValidationTestData();
+            table.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
             //set a validatoin that rejects all.
             var validations = new List<TransformFunction>();

@@ -11,7 +11,6 @@ namespace dexih.transforms.tests
 {
     public class TransformDeltaTests
     {
-
         [Fact]
         public async Task RunDeltaTest_reload()
         {
@@ -25,13 +24,14 @@ namespace dexih.transforms.tests
             //run a reload.  
             var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.Reload, 0, false);
             await transformDelta.ReadAsync();
-            Assert.True((char)transformDelta["Operation"] == 'T');
+            Assert.True((char) transformDelta["Operation"] == 'T');
 
             var count = 0;
-            while (await transformDelta.ReadAsync()) {
-                Assert.True((char)transformDelta["Operation"] == 'C');
-                Assert.True((Int64)transformDelta["SurrogateKey"] == count+1);
-                Assert.True((Int32)transformDelta["IntColumn"] == count + 1);
+            while (await transformDelta.ReadAsync())
+            {
+                Assert.True((char) transformDelta["Operation"] == 'C');
+                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
                 count++;
             }
@@ -45,221 +45,238 @@ namespace dexih.transforms.tests
             count = 0;
             while (await transformDelta.ReadAsync())
             {
-                Assert.True((char)transformDelta["Operation"] == 'C');
-                Assert.True((Int64)transformDelta["SurrogateKey"] == count + 1);
-                Assert.True((Int32)transformDelta["IntColumn"] == count + 1);
+                Assert.True((char) transformDelta["Operation"] == 'C');
+                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
                 count++;
             }
 
             Assert.True(count == 10);
-
         }
 
         [Fact]
         public async Task RunDeltaTest_update()
         {
-                var source = Helpers.CreateUnSortedTestData();
+            var source = Helpers.CreateUnSortedTestData();
+            source.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
-                var targetTable = source.CacheTable.Copy();
-                targetTable.AddAuditColumns();
+            var targetTable = source.CacheTable.Copy();
+            targetTable.AddAuditColumns();
 
-                Transform target = new ReaderMemory(targetTable);
+            Transform target = new ReaderMemory(targetTable);
 
-                //run an update load with nothing in the target, which will result in 10 rows created.
-                var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
-                transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            //run an update load with nothing in the target, which will result in 10 rows created.
+            var transformDelta =
+                new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
+            transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
-                var count = 0;
-                while (await transformDelta.ReadAsync())
-                {
-                    Assert.True((char)transformDelta["Operation"] == 'C');
-                    Assert.True((long)transformDelta["SurrogateKey"] == count + 1);
-                    Assert.True((int)transformDelta["IntColumn"] == count + 1);
+            var count = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                Assert.True((char) transformDelta["Operation"] == 'C');
+                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
-                    count++;
-                }
-                Assert.Equal(10, count);
+                count++;
+            }
 
-                transformDelta.SetRowNumber(0);
+            Assert.Equal(10, count);
 
-                //write result to a memory table
-                var memoryConnection = new ConnectionMemory();
-                var writer = new TransformWriter();
-                var result = new TransformWriterResult();
-                result.SetProperties(0, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
-                var writeResult = await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
-                Assert.True(writeResult);
+            transformDelta.SetRowNumber(0);
 
-                target = memoryConnection.GetTransformReader(target.CacheTable); // new ReaderMemory(target.CacheTable, null);
+            //write result to a memory table
+            var memoryConnection = new ConnectionMemory();
+            var writer = new TransformWriter();
+            var result = new TransformWriterResult();
+            result.SetProperties(0, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null,
+                TransformWriterResult.ETriggerMethod.Manual, "Test");
+            var writeResult = await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection,
+                CancellationToken.None);
+            Assert.True(writeResult);
 
-                //Set the target pointer back to the start and rerun.  Now 10 rows should be ignored.
-                source.SetRowNumber(0);
-                target.SetRowNumber(0);
+            target = memoryConnection
+                .GetTransformReader(target.CacheTable); // new ReaderMemory(target.CacheTable, null);
+            target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
-                //run an append.  (only difference from reload is no truncate record at start.
-                transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
+            //Set the target pointer back to the start and rerun.  Now 10 rows should be ignored.
+            source.SetRowNumber(0);
+            target.SetRowNumber(0);
 
-                count = 0;
-                while (await transformDelta.ReadAsync())
-                {
-                    count++;
-                }
+            //run an append.  (only difference from reload is no truncate record at start.
+            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
 
-                Assert.Equal(10, transformDelta.TotalRowsIgnored);
-                Assert.Equal(0, count);
+            count = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                count++;
+            }
 
-                //change 3 rows. (first, middle, last)
-                target.CacheTable.Data[0][4] = 100;
-                target.CacheTable.Data[5][4] = 200;
-                target.CacheTable.Data[9][4] = 300;
+            Assert.Equal(10, transformDelta.TotalRowsIgnored);
+            Assert.Equal(0, count);
 
-                //add a duplicate in the source
-                var row = new object[target.CacheTable.Columns.Count];
-                target.CacheTable.Data[9].CopyTo(row, 0);
-                target.CacheTable.Data.Add(row);
+            //change 3 rows. (first, middle, last) to similate target table data changes
+            target.CacheTable.Data[0][4] = 100;
+            target.CacheTable.Data[5][4] = 200;
+            target.CacheTable.Data[9][4] = 300;
 
-                transformDelta.Reset();
+            //add a duplicate in the source
+            var row = new object[target.CacheTable.Columns.Count];
+            target.CacheTable.Data[9].CopyTo(row, 0);
+            target.CacheTable.Data.Add(row);
 
-                count = 0;
-                while (await transformDelta.ReadAsync())
-                {
-                    count++;
-                    Assert.True((char)transformDelta["Operation"] == 'U');
-                }
+            transformDelta.Reset();
 
-                Assert.True(count == 3);
+            count = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                count++;
+                Assert.True((char) transformDelta["Operation"] == 'U');
+            }
 
-                //delete rows from the target, which should trigger two creates.
-                target.CacheTable.Data.RemoveAt(1);
-                target.CacheTable.Data.RemoveAt(7);
+            Assert.True(count == 3);
 
-                transformDelta.Reset();
+            //delete rows from the target, which should trigger two creates.
+            target.CacheTable.Data.RemoveAt(1);
+            target.CacheTable.Data.RemoveAt(7);
 
-                count = 0;
-                var rowsCreated = 0;
-                var rowsUpdated = 0;
-                while (await transformDelta.ReadAsync())
-                {
-                    rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
-                    rowsUpdated += (char)transformDelta["Operation"] == 'U' ? 1 : 0;
-                    count++;
-                }
+            transformDelta.Reset();
 
-                Assert.True(rowsCreated == 2);
-                Assert.True(rowsUpdated == 3);
-                Assert.True(count == 5);
+            count = 0;
+            var rowsCreated = 0;
+            var rowsUpdated = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                rowsCreated += (char) transformDelta["Operation"] == 'C' ? 1 : 0;
+                rowsUpdated += (char) transformDelta["Operation"] == 'U' ? 1 : 0;
+                count++;
+            }
 
-                //delete rows from the source, which should not cause any change as delete detection is not on.
-                source.CacheTable.Data.RemoveAt(9);
-                source.CacheTable.Data.RemoveAt(0); //this is the row that was updated, so update now = 2
+            Assert.Equal(2, rowsCreated);
+            Assert.Equal(3, rowsUpdated);
+            Assert.Equal(5, count);
 
-                transformDelta.Reset();
+            //delete rows from the source, which should not cause any change as delete detection is not on.
+            source.CacheTable.Data.RemoveAt(9);
+            source.CacheTable.Data.RemoveAt(0); //this is the row that was updated, so update now = 2
 
-                count = 0;
-                rowsCreated = 0;
-                rowsUpdated = 0;
-                while (await transformDelta.ReadAsync())
-                {
-                    rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
-                    rowsUpdated += (char)transformDelta["Operation"] == 'U' ? 1 : 0;
-                    count++;
-                }
+            transformDelta.Reset();
 
-                Assert.True(rowsCreated == 1);
-                Assert.True(rowsUpdated == 2);
-                Assert.True(count == 3);
+            count = 0;
+            rowsCreated = 0;
+            rowsUpdated = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                rowsCreated += (char) transformDelta["Operation"] == 'C' ? 1 : 0;
+                rowsUpdated += (char) transformDelta["Operation"] == 'U' ? 1 : 0;
+                count++;
+            }
+
+            Assert.True(rowsCreated == 1);
+            Assert.True(rowsUpdated == 2);
+            Assert.True(count == 3);
         }
 
         [Fact]
         public async Task RunDeltaTest_updatePreserve()
         {
-               var source = Helpers.CreateUnSortedTestData();
+            var source = Helpers.CreateUnSortedTestData();
+            source.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
-               var targetTable = source.CacheTable.Copy();
-               targetTable.AddAuditColumns();
+            var targetTable = source.CacheTable.Copy();
+            targetTable.AddAuditColumns();
 
-               long surrrogateKey = 0;
+            long surrrogateKey = 0;
 
-               Transform target = new ReaderMemory(targetTable);
+            Transform target = new ReaderMemory(targetTable);
+            target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
-                //run an update load with nothing in the target.  
-                var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve, surrrogateKey, false);
-               transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            //run an update load with nothing in the target.  
+            var transformDelta = new TransformDelta(source, target,
+                TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve, surrrogateKey, false);
+            transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
-               var count = 0;
-               while (await transformDelta.ReadAsync())
-               {
-                   Assert.True((char)transformDelta["Operation"] == 'C');
-                   Assert.True((Int64)transformDelta["SurrogateKey"] == count + 1);
-                   Assert.True((Int32)transformDelta["IntColumn"] == count + 1);
+            var count = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                Assert.True((char) transformDelta["Operation"] == 'C');
+                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
-                   count++;
-               }
-               Assert.True(count == 10);
-               surrrogateKey = transformDelta.SurrogateKey;
+                count++;
+            }
 
-               transformDelta.SetRowNumber(0);
+            Assert.True(count == 10);
+            surrrogateKey = transformDelta.SurrogateKey;
 
-                //write result to a memory table
-                var memoryConnection = new ConnectionMemory();
-               var writer = new TransformWriter();
-                var result = new TransformWriterResult();
-                result.SetProperties(0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
-               await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
-                target = memoryConnection.GetTransformReader(target.CacheTable);
+            transformDelta.SetRowNumber(0);
 
-                //run an append.  (only difference from reload is no truncate record at start.
-                transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
+            //write result to a memory table
+            var memoryConnection = new ConnectionMemory();
+            var writer = new TransformWriter();
+            var result = new TransformWriterResult();
+            result.SetProperties(0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null,
+                TransformWriterResult.ETriggerMethod.Manual, "Test");
+            await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection,
+                CancellationToken.None);
+            target = memoryConnection.GetTransformReader(target.CacheTable);
+            target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
-               count = 0;
-               while (await transformDelta.ReadAsync())
-               {
-                   count++;
-               }
+            //run an append.  (only difference from reload is no truncate record at start.
+            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,
+                surrrogateKey, false);
 
-               //change 3 rows. (first, middle, last)
-               target.CacheTable.Data[0][4] = 100;
-               target.CacheTable.Data[5][4] = 200;
-               target.CacheTable.Data[9][4] = 300;
+            count = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                count++;
+            }
 
-                //add a duplicate in the source
-                var row = new object[target.CacheTable.Columns.Count];
-               target.CacheTable.Data[9].CopyTo(row, 0);
-               target.CacheTable.Data.Add(row);
+            //change 3 rows. (first, middle, last)
+            target.CacheTable.Data[0][4] = 100;
+            target.CacheTable.Data[5][4] = 200;
+            target.CacheTable.Data[9][4] = 300;
 
-               transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
-               transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            //add a duplicate in the source
+            var row = new object[target.CacheTable.Columns.Count];
+            target.CacheTable.Data[9].CopyTo(row, 0);
+            target.CacheTable.Data.Add(row);
 
-               count = 0;
-               var rowsCreated = 0;
-               while (await transformDelta.ReadAsync())
-               {
-                   rowsCreated += (char)transformDelta["Operation"] == 'C' ? 1 : 0;
-                   count++;
-               }
+            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,
+                surrrogateKey, false);
+            transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
-               Assert.True(rowsCreated == 3);
-               Assert.True(transformDelta.TotalRowsPreserved == 3);
-               Assert.True(count == 6);
+            count = 0;
+            var rowsCreated = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                rowsCreated += (char) transformDelta["Operation"] == 'C' ? 1 : 0;
+                count++;
+            }
 
-                //run the delta again.  this should ignore all 10 records.
-                transformDelta.SetRowNumber(0);
-                result = new TransformWriterResult();
-                result.SetProperties( 0, 1, "DataLink", 30, 40, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
-               await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection,CancellationToken.None);
-               target = new ReaderMemory(target.CacheTable, null);
-               transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
+            Assert.Equal(3, rowsCreated);
+            Assert.Equal(3, transformDelta.TotalRowsPreserved);
+            Assert.Equal(6, count);
 
-               count = 0;
-               while (await transformDelta.ReadAsync())
-               {
-                   count++;
-               }
+            //run the delta again.  this should ignore all 10 records.
+            transformDelta.SetRowNumber(0);
+            result = new TransformWriterResult();
+            result.SetProperties(0, 1, "DataLink", 30, 40, "Test", 1, "Source", 2, "Target", null, null,
+                TransformWriterResult.ETriggerMethod.Manual, "Test");
+            await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection,
+                CancellationToken.None);
+            target = memoryConnection.GetTransformReader(target.CacheTable);
+            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,
+                surrrogateKey, false);
 
-               Assert.True(transformDelta.TotalRowsIgnored == 10);
-               Assert.True(count == 0);
+            count = 0;
+            while (await transformDelta.ReadAsync())
+            {
+                count++;
+            }
 
+            Assert.Equal(10, transformDelta.TotalRowsIgnored);
+            Assert.Equal(0, count );
         }
 
 
@@ -379,17 +396,18 @@ namespace dexih.transforms.tests
             var transformDelta = new TransformDelta(source, target, updateStrategy, 1, false);
 
             var count = 0;
-            while(await transformDelta.ReadAsync())
+            while (await transformDelta.ReadAsync())
             {
                 count++;
             }
 
             //appendupdate and appenddelete will merge all rows in to one.  
-            if(updateStrategy == TransformDelta.EUpdateStrategy.AppendUpdate || updateStrategy == TransformDelta.EUpdateStrategy.AppendUpdateDelete)
+            if (updateStrategy == TransformDelta.EUpdateStrategy.AppendUpdate ||
+                updateStrategy == TransformDelta.EUpdateStrategy.AppendUpdateDelete)
                 Assert.True(count == 1);
             //reload has one extract row which is the truncate row.
             else if (updateStrategy == TransformDelta.EUpdateStrategy.Reload)
-                Assert.True(count == rows+1);
+                Assert.True(count == rows + 1);
             else
                 Assert.True(count == rows);
 

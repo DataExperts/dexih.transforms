@@ -15,14 +15,14 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task Lookup_With_PreloadCache()
         {
-            var TestTransform = Helpers.CreateSortedTestData();
+            var testTransform = Helpers.CreateSortedTestData();
 
-            var filters = new List<Filter>() { new Filter("StringColumn", Filter.ECompare.IsEqual, "value04") };
             var query = new SelectQuery()
             {
-                Filters = filters
+                Filters = new List<Filter>() { new Filter("StringColumn", Filter.ECompare.IsEqual, "value04") }
             };
-            var row = await TestTransform.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+            
+            var row = await testTransform.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
 
             Assert.True((string)row.First()[0] == "value04", "Correct row not found");
         }

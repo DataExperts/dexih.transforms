@@ -227,7 +227,7 @@ namespace dexih.transforms
                 else
                 {
                     // reverse the compare result if the sort order is to be decending.
-                    return compareResult < 1 ? 1 : 0;
+                    return -compareResult;
                 }
             }
             return 0;

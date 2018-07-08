@@ -172,6 +172,7 @@ namespace dexih.functions.Query
                 case ECompare.LessThanEqual:
                     return compareResult == ECompareResult.Less || compareResult == ECompareResult.Equal;
                 case ECompare.NotEqual:
+                    return compareResult != ECompareResult.Equal;
                 case ECompare.IsIn:
                     return compareResult == ECompareResult.Equal;
                 default:

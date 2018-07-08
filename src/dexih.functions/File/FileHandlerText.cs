@@ -190,7 +190,7 @@ namespace dexih.functions.File
                     row[_fileRowNumberOrdinal] = _currentFileRowNumber;
                 }
 
-                if (_selectQuery.EvaluateRowFilter(row, _table))
+                if (_selectQuery == null || _selectQuery.EvaluateRowFilter(row, _table))
                 {
                     return row;
                 }

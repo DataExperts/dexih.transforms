@@ -207,7 +207,8 @@ namespace dexih.transforms
         
         public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-            throw new NotSupportedException("Direct lookup not supported with flat files.");
+            Reset();
+            return Open(auditKey, query, cancellationToken);
         }
 
     }

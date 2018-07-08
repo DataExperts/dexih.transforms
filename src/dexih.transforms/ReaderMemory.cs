@@ -10,23 +10,31 @@ namespace dexih.transforms
     /// <summary>
     /// A source transform that uses a prepopulated Table as an input.
     /// </summary>
-    public class ReaderMemory : Transform
+    public sealed class ReaderMemory : Transform
     {
         private SelectQuery _selectQuery;
+        private readonly TableCache _data;
+        private int _currentRow;
+        
+        // flag used to indicate if the cache has loaded, so no more records will be loaded 
+        // after resets and row repositisons.
+        private bool _cacheLoaded = false;
 
-        public override ECacheMethod CacheMethod
-        {
-            get => ECacheMethod.PreLoadCache;
-            protected set =>
-                throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
-        }
+//        public override ECacheMethod CacheMethod
+//        {
+//            get => ECacheMethod.NoCache;
+//            protected set =>
+//                throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
+//        }
 
         #region Constructors
 
         public ReaderMemory(Table dataTable, List<Sort> sortFields = null)
         {
-            CacheTable = dataTable;
-            CacheTable.OutputSortFields = sortFields;
+            CacheTable = new Table(dataTable.Name, dataTable.Columns, new TableCache()) {OutputSortFields = sortFields};
+
+            _data = dataTable.Data;
+            
             Reset();
 
             SortFields = sortFields;
@@ -43,7 +51,7 @@ namespace dexih.transforms
 
         public void Add(object[] values)
         {
-            CacheTable.Data.Add(values);
+            _data.Add(values);
         }
 
         #endregion
@@ -60,26 +68,39 @@ namespace dexih.transforms
 
         public override bool ResetTransform()
         {
-            CurrentRowNumber = -1;
+            _currentRow = -1;
             return true;
         }
 
         protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            CurrentRowNumber++;
-            while(CurrentRowNumber < CacheTable.Data.Count)
+            _currentRow++;
+            while(!_cacheLoaded && _currentRow < _data.Count)
             {
-                var row = CacheTable.Data[CurrentRowNumber];
-                var filtered = _selectQuery.EvaluateRowFilter(row, CacheTable);
-                if(filtered)
+                var row = _data[_currentRow];
+                var filtered = _selectQuery?.EvaluateRowFilter(row, CacheTable)?? true;
+                if(!filtered)
                 {
+                    _currentRow++;
                     continue;
                 }
-                return Task.FromResult<object[]>(row);
+                return Task.FromResult(row);
             }
+
+            if (CacheMethod != ECacheMethod.NoCache)
+            {
+                _cacheLoaded = true;
+            }
+
             return Task.FromResult<object[]>(null);
         }
 
-        public override bool IsClosed => CurrentRowNumber >= CacheTable.Data.Count;
+        public override bool IsClosed => _currentRow >= _data.Count;
+        
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        {
+            Reset();
+            return Open(auditKey, query, cancellationToken);
+        }
     }
 }

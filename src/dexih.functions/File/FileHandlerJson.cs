@@ -85,10 +85,25 @@ namespace dexih.functions.File
 
                 if (value.Value.Type == JTokenType.Property || value.Value.Type == JTokenType.Object)
                 {
+                    var col = new TableColumn
+                    {
+                        Name = value.Path,
+                        IsInput = false,
+                        LogicalName = value.Name,
+                        DataType = DataType.ETypeCode.Json,
+                        DeltaType = TableColumn.EDeltaType.ResponseSegment,
+                        MaxLength = null,
+                        Description = "Json value of the " + value.Path + " path",
+                        AllowDbNull = true,
+                        IsUnique = false
+                    };
+                    columns.Add(col); 
+                    
                     foreach (var child in value.Value.Children())
                     {
                         columns.AddRange(GetColumns(child));
                     }
+
                 }
                 else
                 {

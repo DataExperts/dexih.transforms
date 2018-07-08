@@ -141,10 +141,11 @@ namespace dexih.connections.sql
             }
         }
         
-        public override async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             Reset();
-            return await Open(auditKey, query, cancellationToken);
+            Dispose();
+            return Open(auditKey, query, cancellationToken);
         }
 
     }

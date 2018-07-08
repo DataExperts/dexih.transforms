@@ -43,10 +43,10 @@ namespace dexih.functions.Query
                 foreach (var filter in Filters)
                 {
                     var column1Value = filter.Column1 == null
-                        ? null
+                        ? filter.Value1
                         : row[table.GetOrdinal(filter.Column1.Name)];
                     var column2Value = filter.Column2 == null
-                        ? null
+                        ? filter.Value2
                         : row[table.GetOrdinal(filter.Column2.Name)];
 
                     if (isFirst)

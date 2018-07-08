@@ -606,6 +606,7 @@ namespace dexih.transforms
                 _isFirstRead = true;
                 IsCacheFull = false;
                 IsReaderFinished = false;
+                // CacheTable.Data.Clear();
                 CurrentRowNumber = -1;
 
                 //reset stats.

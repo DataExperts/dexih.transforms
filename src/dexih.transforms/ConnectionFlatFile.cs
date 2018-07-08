@@ -46,8 +46,6 @@ namespace dexih.transforms
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => true;
 
-        
-
         public override string DatabaseTypeName => "Flat Files";
         public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.File;
 

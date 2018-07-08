@@ -10,76 +10,73 @@ namespace dexih.transforms.tests
 {
     public class TransformSortTests
     {
-        [Fact]
-        public async Task RunSingleColumnsSorts()
+        [Theory]
+        [InlineData("StringColumn", Sort.EDirection.Ascending, "IntColumn")]
+        [InlineData("StringColumn", Sort.EDirection.Descending, "SortColumn")]
+        [InlineData("IntColumn", Sort.EDirection.Ascending, "IntColumn")]
+        [InlineData("IntColumn", Sort.EDirection.Descending, "SortColumn")]
+        [InlineData("DecimalColumn", Sort.EDirection.Ascending, "IntColumn")]
+        [InlineData("DecimalColumn", Sort.EDirection.Descending, "SortColumn")]
+        [InlineData("DecimalColumn", Sort.EDirection.Descending, "SortColumn")]
+        [InlineData("DateColumn", Sort.EDirection.Ascending, "IntColumn")]
+        [InlineData("DateColumn", Sort.EDirection.Descending, "SortColumn")]
+        public async Task RunSingleColumnSort(string column, Sort.EDirection direction, string checkColumn)
         {
-            await RunSingleColumnSort("StringColumn", Sort.EDirection.Ascending, "IntColumn");
-            await RunSingleColumnSort("StringColumn", Sort.EDirection.Descending, "SortColumn");
-            await RunSingleColumnSort("IntColumn", Sort.EDirection.Ascending, "IntColumn");
-            await RunSingleColumnSort("IntColumn", Sort.EDirection.Descending, "SortColumn");
-            await RunSingleColumnSort("DecimalColumn", Sort.EDirection.Ascending, "IntColumn");
-            await RunSingleColumnSort("DecimalColumn", Sort.EDirection.Descending, "SortColumn");
-            await RunSingleColumnSort("DateColumn", Sort.EDirection.Ascending, "IntColumn");
-            await RunSingleColumnSort("DateColumn", Sort.EDirection.Descending, "SortColumn");
-        }
+            var source = Helpers.CreateUnSortedTestData();
+            var transformSort = new TransformSort(source, new List<Sort> { new Sort(column, direction ) });
+            var sortCount = 1;
 
-        private async Task RunSingleColumnSort(string column, Sort.EDirection direction, string checkColumn)
-        {
-            var Source = Helpers.CreateUnSortedTestData();
-            var TransformSort = new TransformSort(Source, new List<Sort> { new Sort(column, direction ) });
-            var SortCount = 1;
+            Assert.Equal(6, transformSort.FieldCount);
 
-            Assert.Equal(6, TransformSort.FieldCount);
-
-            while (await TransformSort.ReadAsync() == true)
+            while (await transformSort.ReadAsync())
             {
-                Assert.Equal(SortCount, TransformSort[checkColumn]);
-                SortCount++;
+                Assert.Equal(sortCount, transformSort[checkColumn]);
+                sortCount++;
             }
         }
 
         [Fact]
         public async Task  RunDoubleColumnSort()
         {
-            var Source = Helpers.CreateUnSortedTestData();
-            var TransformSort = new TransformSort(Source, new List <Sort> { new Sort("GroupColumn"), new Sort("IntColumn") });
+            var source = Helpers.CreateUnSortedTestData();
+            var transformSort = new TransformSort(source, new List <Sort> { new Sort("GroupColumn"), new Sort("IntColumn") });
 
-            Assert.Equal(6, TransformSort.FieldCount);
+            Assert.Equal(6, transformSort.FieldCount);
 
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 2);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 4);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 6);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 8);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 10);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 1);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 3);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 5);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 7);
-            Assert.True(await TransformSort.ReadAsync());
-            Assert.True((int)TransformSort["IntColumn"] == 9);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 2);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 4);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 6);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 8);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 10);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 1);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 3);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 5);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 7);
+            Assert.True(await transformSort.ReadAsync());
+            Assert.True((int)transformSort["IntColumn"] == 9);
 
         }
 
         [Fact]
         public async Task SortLargeTable()
         {
-            var Source = Helpers.CreateLargeTable(100000);
-            var TransformSort = new TransformSort(Source, new List <Sort> { new Sort("random", Sort.EDirection.Ascending) });
-            TransformSort.SetInTransform(Source);
+            var source = Helpers.CreateLargeTable(100000);
+            var transformSort = new TransformSort(source, new List <Sort> { new Sort("random", Sort.EDirection.Ascending) });
+            transformSort.SetInTransform(source);
 
             var previousValue = "";
-            while (await TransformSort.ReadAsync() == true)
+            while (await transformSort.ReadAsync())
             {
-                var value = (string)TransformSort["random"];
+                var value = (string)transformSort["random"];
                 Assert.True(String.Compare( previousValue, value) <= 0 );
             }
         }

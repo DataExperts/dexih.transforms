@@ -143,7 +143,7 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -165,7 +165,7 @@ namespace dexih.transforms
 
             query.Sorts = requiredSorts;
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
             return returnValue;
         }
 
