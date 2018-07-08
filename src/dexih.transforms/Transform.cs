@@ -908,6 +908,15 @@ namespace dexih.transforms
             }
         }
 
+        /// <summary>
+        /// Used to allow connections to close files and other objects after a lookup is complete.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool FinalizeLookup()
+        {
+            return true;
+        }
+
 
 //        /// <summary>
 //        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.

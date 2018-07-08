@@ -14,8 +14,9 @@ namespace dexih.functions.File
         private Table _table;
         private SelectQuery _selectQuery;
         private readonly FileConfiguration _fileConfiguration;
-        
+
         private CsvReader _csvReader;
+        private Stream _stream;
 
         private readonly int _fileRowNumberOrdinal;
 
@@ -108,6 +109,7 @@ namespace dexih.functions.File
 
         public override async Task SetStream(Stream stream, SelectQuery selectQuery)
         {
+            _stream = stream;
             _currentFileRowNumber = 0;
             _selectQuery = selectQuery;
             var streamReader = new StreamReader(stream);
@@ -201,6 +203,7 @@ namespace dexih.functions.File
         public override void Dispose()
         {
             _csvReader?.Dispose();
+            _stream?.Dispose();
         }
     }
 }

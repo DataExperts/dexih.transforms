@@ -231,16 +231,16 @@ namespace dexih.connections.test
 
 //                if (reader.CanLookupRowDirect)
 //                {
-                    var openResult = await reader.Open(0, null, CancellationToken.None);
-                    Assert.True(openResult, "Open Reader");
+                    // var openResult = await reader.Open(0, null, CancellationToken.None);
+                    // Assert.True(openResult, "Open Reader");
 
                     var returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
                     Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "LookupValue :" + returnLookup.First()[0]);
 
                     //run lookup again with caching set.
                     reader = connection.GetTransformReader(table);
-                    openResult = await reader.Open(0, null, CancellationToken.None);
-                    Assert.True(openResult, "Open Reader");
+                    // var openResult = await reader.Open(0, null, CancellationToken.None);
+                    // Assert.True(openResult, "Open Reader");
                     reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
                     returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
                     Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "Select count - value :" + returnLookup.First()[0]);

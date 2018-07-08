@@ -211,5 +211,12 @@ namespace dexih.transforms
             return Open(auditKey, query, cancellationToken);
         }
 
+        public override bool FinalizeLookup()
+        {
+            Close();
+            return true;
+        }
+
+
     }
 }
