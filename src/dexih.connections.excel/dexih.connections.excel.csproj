@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Excel Connection and reader.</Description>
     <AssemblyTitle>Data Experts Group - Excel Connection</AssemblyTitle>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.connections.excel</AssemblyName>
