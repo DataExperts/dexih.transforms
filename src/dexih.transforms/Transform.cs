@@ -366,13 +366,19 @@ namespace dexih.transforms
         /// <param name="key"></param>
         public void SetEncryptionMethod(EEncryptionMethod encryptionMethod, string key)
         {
-            if(CacheTable.Columns.Any(c => c.SecurityFlag != ESecurityFlag.None))
+            if(CacheTable.Columns.All(c => c.SecurityFlag == ESecurityFlag.None))
             {
                 EncryptionMethod = EEncryptionMethod.NoEncryption;
             }
             else
             {
                 EncryptionMethod = encryptionMethod;
+
+                if (EncryptionMethod == EEncryptionMethod.EncryptDecryptSecureFields && string.IsNullOrEmpty(key))
+                {
+                    throw new TransformException("The encryption could not be enabled as there is no encryption key set.");
+                }
+
                 EncryptionKey = key;
             }
 
@@ -395,31 +401,37 @@ namespace dexih.transforms
 
         protected string FastEncrypt(object value)
         {
+            if (value is null) return null;
             return EncryptString.Encrypt(value.ToString(), EncryptionKey, 5);
         }
 
         protected string FastDecrypt(object value)
         {
+            if (value is null) return null;
             return EncryptString.Decrypt(value.ToString(), EncryptionKey, 5);
         }
         
         protected string StrongEncrypt(object value)
         {
+            if (value is null) return null;
             return EncryptString.Encrypt(value.ToString(), EncryptionKey, 1000);
         }
 
         protected string StrongDecrypt(object value)
         {
+            if (value is null) return null;
             return EncryptString.Decrypt(value.ToString(), EncryptionKey, 1000);
         }
 
         protected string OneWayHash(object value)
         {
+            if (value is null) return null;
             return HashString.CreateHash(value.ToString());
         }
 
         protected bool OneWayHashCompare(object hashedValue, object value)
         {
+            if (value is null) return false;
             return HashString.ValidateHash(value.ToString(), hashedValue.ToString());
         }
         
@@ -448,6 +460,9 @@ namespace dexih.transforms
                                 break;
                             case ESecurityFlag.FastDecrypt:
                                 row[i] = new EncryptedObject(row[i], FastDecrypt(row[i]));
+                                break;
+                            case ESecurityFlag.Hide:
+                                row[i] = null;
                                 break;
                         }
                     }
