@@ -178,7 +178,8 @@ namespace dexih.transforms
         /// Propulates the writerResult with a initial values, and writes the status to the database table.
         /// </summary>
         /// <param name="writreResult"></param>
-        /// <param name="subScriptionKey"></param>
+        /// <param name="hubKey"></param>
+        /// <param name="connectionKey"></param>
         /// <param name="auditType"></param>
         /// <param name="referenceKey"></param>
         /// <param name="parentAuditKey"></param>
@@ -191,7 +192,7 @@ namespace dexih.transforms
         /// <param name="triggerInfo"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task InitializeAudit(TransformWriterResult writreResult, long subScriptionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancellationToken)
+        public virtual async Task InitializeAudit(TransformWriterResult writreResult, long hubKey, long connectionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancellationToken)
         {
             var picoTable = new PocoTable<TransformWriterResult>();
 
@@ -207,10 +208,10 @@ namespace dexih.transforms
             else
             {
                 //get the last audit result for this reference to collect previous run information
-                previousResult = await GetPreviousResult(subScriptionKey, referenceKey, CancellationToken.None);
+                previousResult = await GetPreviousResult(hubKey, connectionKey, referenceKey, CancellationToken.None);
             }
 
-            writreResult.SetProperties(subScriptionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, triggerMethod, triggerInfo);
+            writreResult.SetProperties(hubKey, connectionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, triggerMethod, triggerInfo);
             await picoTable.ExecuteInsert(this, writreResult, cancellationToken);
         }
 
@@ -268,9 +269,9 @@ namespace dexih.transforms
         }
 
 
-        public virtual async Task<TransformWriterResult> GetPreviousResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetPreviousResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -278,9 +279,9 @@ namespace dexih.transforms
             return results[0];
         }
 
-        public virtual async Task<TransformWriterResult> GetPreviousSuccessResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetPreviousSuccessResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -288,9 +289,9 @@ namespace dexih.transforms
             return results[0];
         }
 
-        public virtual async Task<TransformWriterResult> GetCurrentResult(long hubKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetCurrentResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken)
         {
-            var results = await GetTransformWriterResults(hubKey, new long[] { referenceKey }, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -298,22 +299,22 @@ namespace dexih.transforms
             return results[0];
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetPreviousResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetPreviousResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
+            return await GetTransformWriterResults(hubKey, connectionKey, referenceKeys, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetPreviousSuccessResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetPreviousSuccessResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
+            return await GetTransformWriterResults(hubKey, connectionKey, referenceKeys, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetCurrentResults(long hubKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetCurrentResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken)
         {
-            return await GetTransformWriterResults(hubKey, referenceKeys, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
+            return await GetTransformWriterResults(hubKey, connectionKey, referenceKeys, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetTransformWriterResults(long? hubKey, long[] referenceKeys, string auditType, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetTransformWriterResults(long? hubKey, long connectionKey, long[] referenceKeys, string auditType, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken)
         {
             Transform reader = null;
             var watch = new Stopwatch();
@@ -350,10 +351,12 @@ namespace dexih.transforms
             var writerResults = await pocoReader.ToListAsync(reader, rows, cancellationToken);
 
             foreach(var result in writerResults)
-            { 
+            {
+                result.AuditConnectionKey = connectionKey;
+                
                 if(childItems)
                 {
-                    result.ChildResults = await GetTransformWriterResults(hubKey, null, null, null, null, previousResult, previousSuccessResult, currentResult, null, 0, result.AuditKey, false, cancellationToken);
+                    result.ChildResults = await GetTransformWriterResults(hubKey, connectionKey, null, null, null, null, previousResult, previousSuccessResult, currentResult, null, 0, result.AuditKey, false, cancellationToken);
                 }
 
                 if (cancellationToken.IsCancellationRequested)

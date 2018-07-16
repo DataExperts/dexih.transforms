@@ -30,12 +30,13 @@ namespace dexih.transforms
 
         }
 
-        public void SetProperties(long hubKey, long auditKey, string auditType, long referenceKey,
+        public void SetProperties(long hubKey, long auditConnectionKey, long auditKey, string auditType, long referenceKey,
             long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName,
             long targetTableKey, string targetTableName, Connection auditConnection,
             TransformWriterResult lastSuccessfulResult, ETriggerMethod triggerMethod, string triggerInfo)
         {
             HubKey = hubKey;
+            AuditConnectionKey = auditConnectionKey;
             AuditKey = auditKey;
             AuditType = auditType;
             ReferenceKey = referenceKey;
@@ -110,6 +111,12 @@ namespace dexih.transforms
         public string TargetTableName { get; set; }
 
         public long HubKey { get; set; }
+        
+        /// <summary>
+        /// The reference to the connection use for auditing (such as profile data).
+        /// </summary>
+        [PocoColumn(Skip = true)]
+        public long AuditConnectionKey { get; set; }
 
         [PocoColumn(Skip = true)]
         public long LastRowTotal { get; set; }

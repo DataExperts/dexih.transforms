@@ -8,7 +8,7 @@ namespace dexih.functions
 {
     public class Functions
     {
-        public static FunctionReference GetFunction(string className, string methodName, string assemblyName = null)
+        public static (Type type, MethodInfo method) GetFunctionMethod(string className, string methodName, string assemblyName = null)
         {
             Type type;
 
@@ -39,7 +39,19 @@ namespace dexih.functions
                 throw new FunctionNotFoundException($"The method {methodName} was not found in the type {className}.");
             }
 
-            var function = GetFunction(type, method);
+            return (type, method);
+        }
+        
+        public static FunctionReference GetFunction(string className, string methodName, string assemblyName = null)
+        {
+            var functionMethod = GetFunctionMethod(className, methodName, assemblyName);
+
+            if (functionMethod.method == null)
+            {
+                throw new FunctionNotFoundException($"The method {methodName} was not found in the type {className}.");
+            }
+
+            var function = GetFunction(functionMethod.type, functionMethod.method);
             function.FunctionAssemblyName = assemblyName;
 
             return function;
