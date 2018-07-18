@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Dexih.Utils.CopyProperties;
@@ -8,9 +9,18 @@ namespace dexih.transforms.Transforms
 {
     public class Transforms
     {
+        public static (string path, string pattern)[] SearchPaths()
+        {
+            return new[]
+            {
+                (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "dexih.transforms*.dll"),
+                (Path.Combine(Directory.GetCurrentDirectory(), "plugins", "transforms"), "*.dll")
+            };
+        }
+        
         public static TransformReference GetTransform(string className, string assemblyName = null)
         {
-            Type type;
+            Type type = null;
 
             if (string.IsNullOrEmpty(assemblyName))
             {
@@ -18,13 +28,19 @@ namespace dexih.transforms.Transforms
             }
             else
             {
-                var assembly = Assembly.Load(assemblyName);
-
-                if (assembly == null)
+                foreach (var path in SearchPaths())
                 {
-                    throw new TransformnNotFoundException($"The assembly {assemblyName} was not found.");
+                    if (Directory.Exists(path.path))
+                    {
+                        var fileName = Path.Combine(path.path, assemblyName);
+                        if (File.Exists(fileName))
+                        {
+                            var assembly = Assembly.LoadFile(fileName);
+                            type = assembly.GetType(className);
+                            break;
+                        }
+                    }
                 }
-                type = assembly.GetType(className);
             }
 
             if (type == null)
@@ -54,19 +70,28 @@ namespace dexih.transforms.Transforms
 
         public static List<TransformReference> GetAllTransforms()
         {
-            var types = AppDomain.CurrentDomain.GetAssemblies().Where(c=>c.FullName.StartsWith("dexih.transforms"))
-                .SelectMany(s => s.GetTypes());
-
             var transforms = new List<TransformReference>();
             
-            foreach (var type in types)
+            foreach (var path in SearchPaths())
             {
-                var transform = GetTransform(type);
-                if (transform != null)
+                if (Directory.Exists(path.path))
                 {
-                    transforms.Add(transform);
+                    foreach (var file in Directory.GetFiles(path.path, path.pattern))
+                    {
+                        var assembly = Assembly.LoadFile(file);
+                        foreach (var type in assembly.GetTypes())
+                        {
+                            var transform = GetTransform(type);
+                            if (transform != null)
+                            {
+                                transform.TransformAssemblyName = Path.GetFileName(file);
+                                transforms.Add(transform);
+                            }
+                        }
+                    }
                 }
             }
+
             return transforms;
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Dexih.Utils.DataType;
@@ -8,9 +9,18 @@ namespace dexih.functions
 {
     public class Functions
     {
+        public static (string path, string pattern)[] SearchPaths()
+        {
+            return new[]
+            {
+                (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "dexih.functions*.dll"),
+                (Path.Combine(Directory.GetCurrentDirectory(), "plugins", "functions"), "*.dll")
+            };
+        }
+        
         public static (Type type, MethodInfo method) GetFunctionMethod(string className, string methodName, string assemblyName = null)
         {
-            Type type;
+            Type type = null;
 
             if (string.IsNullOrEmpty(assemblyName))
             {
@@ -18,13 +28,19 @@ namespace dexih.functions
             }
             else
             {
-                var assembly = Assembly.Load(assemblyName);
-
-                if (assembly == null)
+                foreach (var path in SearchPaths())
                 {
-                    throw new FunctionNotFoundException($"The assembly {assemblyName} was not found.");
+                    if (Directory.Exists(path.path))
+                    {
+                        var fileName = Path.Combine(path.path, assemblyName);
+                        if (System.IO.File.Exists(fileName))
+                        {
+                            var assembly = Assembly.LoadFile(fileName);
+                            type = assembly.GetType(className);
+                            break;
+                        }
+                    }
                 }
-                type = assembly.GetType(className);
             }
 
             if (type == null)
@@ -156,23 +172,32 @@ namespace dexih.functions
 
         public static List<FunctionReference> GetAllFunctions()
         {
-            var types = AppDomain.CurrentDomain.GetAssemblies().Where(c=>c.FullName.StartsWith("dexih.functions"))
-                .SelectMany(s => s.GetTypes());
+            var functions = new List<FunctionReference>();
 
-            var methods = new List<FunctionReference>();
-            
-            foreach (var type in types)
+            foreach (var path in SearchPaths())
             {
-                foreach (var method in type.GetMethods())
+                if (Directory.Exists(path.path))
                 {
-                   var function = GetFunction(type, method);
-                   if(function != null)
-                   {
-                        methods.Add(function);
+                    foreach (var file in Directory.GetFiles(path.path, path.pattern))
+                    {
+                        var assembly = Assembly.LoadFile(file);
+                        foreach (var type in assembly.GetTypes())
+                        {
+                            foreach (var method in type.GetMethods())
+                            {
+                                var function = GetFunction(type, method);
+                                if (function != null)
+                                {
+                                    function.FunctionAssemblyName = Path.GetFileName(file);
+                                    functions.Add(function);
+                                }
+                            }
+                        }
                     }
                 }
             }
-            return methods;
+
+            return functions;
         }
     }
 }

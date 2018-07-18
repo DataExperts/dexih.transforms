@@ -10,9 +10,18 @@ namespace dexih.transforms
 {
     public static class Connections
     {
-         public static ConnectionReference GetConnection(string className, string assemblyName = null)
+        public static (string path, string pattern)[] SearchPaths()
         {
-            Type type;
+            return new[]
+            {
+                (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "dexih.connections.*.dll"),
+                (Path.Combine(Directory.GetCurrentDirectory(), "plugins", "connections"), "*.dll")
+            };
+        }
+         
+        public static ConnectionReference GetConnection(string className, string assemblyName = null)
+        {
+            Type type = null;
 
             if (string.IsNullOrEmpty(assemblyName))
             {
@@ -20,19 +29,24 @@ namespace dexih.transforms
             }
             else
             {
-                var pathName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), assemblyName);
-                var assembly = Assembly.LoadFile(pathName);
-
-                if (assembly == null)
+                foreach (var path in SearchPaths())
                 {
-                    throw new ConnectionNotFoundException($"The assembly {assemblyName} was not found.");
+                    if (Directory.Exists(path.path))
+                    {
+                        var fileName = Path.Combine(path.path, assemblyName);
+                        if (File.Exists(fileName))
+                        {
+                            var assembly = Assembly.LoadFile(fileName);
+                            type = assembly.GetType(className);
+                            break;
+                        }
+                    }
                 }
-                type = assembly.GetType(className);
             }
 
             if (type == null)
             {
-                throw new ConnectionNotFoundException($"The type {className} was not found.");
+                throw new ConnectionNotFoundException($"The type {className} was not found in assembly {assemblyName}.");
             }
 
             var connection = GetConnection(type);
@@ -58,27 +72,24 @@ namespace dexih.transforms
 
         public static List<ConnectionReference> GetAllConnections()
         {
-            var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var files = Directory.GetFiles(path, "dexih.connections.*.dll");
-
-            var pluginsPath = Path.Combine(path, "plugins", "connections");
-            if (Directory.Exists(pluginsPath))
-            {
-                files = files.Concat(Directory.GetFiles(pluginsPath, "*.dll")).ToArray();
-            }
-            
             var connections = new List<ConnectionReference>();
 
-            foreach (var file in Directory.GetFiles(path, "dexih.connections.*.dll"))
+            foreach (var path in SearchPaths())
             {
-                var assembly = Assembly.LoadFile(file);
-                foreach (var type in assembly.GetTypes())
+                if (Directory.Exists(path.path))
                 {
-                    var connection = GetConnection(type);
-                    if (connection != null)
+                    foreach (var file in Directory.GetFiles(path.path, path.pattern))
                     {
-                        connection.ConnectionAssemblyName = file.Substring(path.Length+1);
-                        connections.Add(connection);
+                        var assembly = Assembly.LoadFile(file);
+                        foreach (var type in assembly.GetTypes())
+                        {
+                            var connection = GetConnection(type);
+                            if (connection != null)
+                            {
+                                connection.ConnectionAssemblyName = Path.GetFileName(file);
+                                connections.Add(connection);
+                            }
+                        }
                     }
                 }
             }
