@@ -80,13 +80,19 @@ namespace dexih.transforms
                 {
                     foreach (var file in Directory.GetFiles(path.path, path.pattern))
                     {
-                        var assembly = Assembly.LoadFile(file);
+                        var assembly = Assembly.LoadFrom(file);
+                        var assemblyName = Path.GetFileName(file);
+                        if (assemblyName == Path.GetFileName(Assembly.GetExecutingAssembly().Location))
+                        {
+                            assemblyName = null;
+                        }
+                        
                         foreach (var type in assembly.GetTypes())
                         {
                             var connection = GetConnection(type);
                             if (connection != null)
                             {
-                                connection.ConnectionAssemblyName = Path.GetFileName(file);
+                                connection.ConnectionAssemblyName = assemblyName;
                                 connections.Add(connection);
                             }
                         }

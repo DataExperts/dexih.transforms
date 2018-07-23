@@ -78,13 +78,18 @@ namespace dexih.transforms.Transforms
                 {
                     foreach (var file in Directory.GetFiles(path.path, path.pattern))
                     {
-                        var assembly = Assembly.LoadFile(file);
+                        var assembly = Assembly.LoadFrom(file);
+                        var assemblyName = Path.GetFileName(file);
+                        if (assemblyName == Path.GetFileName(Assembly.GetExecutingAssembly().Location))
+                        {
+                            assemblyName = null;
+                        }
                         foreach (var type in assembly.GetTypes())
                         {
                             var transform = GetTransform(type);
                             if (transform != null)
                             {
-                                transform.TransformAssemblyName = Path.GetFileName(file);
+                                transform.TransformAssemblyName = assemblyName;
                                 transforms.Add(transform);
                             }
                         }

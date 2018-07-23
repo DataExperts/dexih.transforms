@@ -180,15 +180,23 @@ namespace dexih.functions
                 {
                     foreach (var file in Directory.GetFiles(path.path, path.pattern))
                     {
-                        var assembly = Assembly.LoadFile(file);
-                        foreach (var type in assembly.GetTypes())
+                        var assembly = Assembly.LoadFrom(file);
+                        var types = assembly.GetTypes();
+                        // var types = AppDomain.CurrentDomain.GetAssemblies().Where(c=>c.FullName.StartsWith("dexih.functions")).SelectMany(s => s.GetTypes());
+
+                        var assemblyName = Path.GetFileName(file);
+                        if (assemblyName == Path.GetFileName(Assembly.GetExecutingAssembly().Location))
+                        {
+                            assemblyName = null;
+                        }
+                        foreach (var type in types)
                         {
                             foreach (var method in type.GetMethods())
                             {
                                 var function = GetFunction(type, method);
                                 if (function != null)
                                 {
-                                    function.FunctionAssemblyName = Path.GetFileName(file);
+                                    function.FunctionAssemblyName = assemblyName;
                                     functions.Add(function);
                                 }
                             }
@@ -199,5 +207,26 @@ namespace dexih.functions
 
             return functions;
         }
+        
+//        public static List<FunctionReference> GetAllFunctions()
+//        {
+//            var types = AppDomain.CurrentDomain.GetAssemblies().Where(c=>c.FullName.StartsWith("dexih.functions"))
+//                .SelectMany(s => s.GetTypes());
+//
+//            var methods = new List<FunctionReference>();
+//            
+//            foreach (var type in types)
+//            {
+//                foreach (var method in type.GetMethods())
+//                {
+//                    var function = GetFunction(type, method);
+//                    if(function != null)
+//                    {
+//                        methods.Add(function);
+//                    }
+//                }
+//            }
+//            return methods;
+//        }
     }
 }
