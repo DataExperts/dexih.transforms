@@ -493,6 +493,29 @@ namespace dexih.connections.sql
                     //The new datatable that will contain the table schema
                     table.Columns.Clear();
 
+                    List<string> pkColumns = new List<string>();
+                    
+                    // get primary key columns
+                    using(var cmd = CreateCommand(connection, $@"
+SELECT               
+  pg_attribute.attname as name
+FROM pg_index, pg_class, pg_attribute, pg_namespace 
+WHERE 
+  pg_class.oid = '{table.Name}'::regclass AND 
+  indrelid = pg_class.oid AND 
+  nspname = '{schema}' AND 
+  pg_class.relnamespace = pg_namespace.oid AND 
+  pg_attribute.attrelid = pg_class.oid AND 
+  pg_attribute.attnum = any(pg_index.indkey)
+ AND indisprimary"))
+                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    {
+                        while (await reader.ReadAsync(cancellationToken))
+                        {
+                            pkColumns.Add(reader.GetString(0));
+                        }
+                    }
+
                     // The schema table 
                     using (var cmd = CreateCommand(connection, @"
                          select * from information_schema.columns where table_schema = '" + schema + "' and table_name = '" + table.Name + "'"
@@ -517,11 +540,14 @@ namespace dexih.connections.sql
                             }
                             else
                             {
-                                //add the primary key
-                                //if (Convert.ToBoolean(reader["PrimaryKey"]) == true)
-                                //    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
-                                //else
-                                col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                if (pkColumns.Contains(col.Name))
+                                {
+                                    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                }
+                                else
+                                {
+                                    col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                }
                             }
 
                             if (col.DataType == ETypeCode.String)

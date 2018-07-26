@@ -12,15 +12,12 @@
     <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>  
-</PropertyGroup>
-
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="0.42.2" />
+    <PackageReference Include="MySqlConnector" Version="0.42.3" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
-
 </Project>
