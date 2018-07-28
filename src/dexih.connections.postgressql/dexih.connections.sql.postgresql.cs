@@ -497,17 +497,13 @@ namespace dexih.connections.sql
                     
                     // get primary key columns
                     using(var cmd = CreateCommand(connection, $@"
-SELECT               
-  pg_attribute.attname as name
-FROM pg_index, pg_class, pg_attribute, pg_namespace 
-WHERE 
-  pg_class.oid = '{table.Name}'::regclass AND 
-  indrelid = pg_class.oid AND 
-  nspname = '{schema}' AND 
-  pg_class.relnamespace = pg_namespace.oid AND 
-  pg_attribute.attrelid = pg_class.oid AND 
-  pg_attribute.attnum = any(pg_index.indkey)
- AND indisprimary"))
+SELECT
+c.column_name
+FROM
+information_schema.table_constraints tc 
+JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) 
+JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
+where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.table_name = '{table.Name}'"))
                     using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
