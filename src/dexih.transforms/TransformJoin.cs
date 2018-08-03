@@ -7,6 +7,7 @@ using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using dexih.transforms.Transforms;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -545,14 +546,15 @@ namespace dexih.transforms
             {
                 for (var i = 0; i < x.Length; i++)
                 {
-                    var compareResult = ((IComparable)x[i]).CompareTo((IComparable)y[i]);
+                    var compareResult = DataType.Compare(null, x[i], y[i]);
+                    // var compareResult = ((IComparable)x[i]).CompareTo((IComparable)y[i]);
 
-                    if (compareResult == 0)
+                    if (compareResult == DataType.ECompareResult.Equal)
                     {
                         continue;
                     }
 
-                    return compareResult;
+                    return (int)compareResult;
                 }
                 return 0;
             }

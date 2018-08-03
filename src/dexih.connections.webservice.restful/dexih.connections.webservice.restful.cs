@@ -185,7 +185,7 @@ namespace dexih.connections.webservice
 					Name = "ResponseError",
 					IsInput = false,
 					LogicalName = "ResponseError",
-					DataType = ETypeCode.Boolean,
+					DataType = ETypeCode.String,
 					DeltaType = TableColumn.EDeltaType.Error,
 					MaxLength = null,
 					Description = "Error message calling the web service.",
@@ -199,7 +199,7 @@ namespace dexih.connections.webservice
 					Name = "Url",
 					IsInput = false,
 					LogicalName = "Url",
-					DataType = ETypeCode.Boolean,
+					DataType = ETypeCode.String,
 					DeltaType = TableColumn.EDeltaType.Url,
 					MaxLength = null,
 					Description = "Url used to call the web service.",
@@ -216,45 +216,41 @@ namespace dexih.connections.webservice
 
                 if (newRestFunction.Columns.Count > 0)
                 {
-                    var data = await GetPreview(newRestFunction, query, cancellationToken);
-                    var reader = data.Data;
+	                var response = await GetWebServiceResponse(newRestFunction, query?.Filters, cancellationToken);
 
-					var row = reader[0];
-					var success = (bool)row[newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseSuccess)];
-					if(!success) {
-						var url = (string)row[newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Url)];
-						var error = (string)row[newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Error)];
+	                if (!response.isSuccess)
+	                {
+		                throw new ConnectionException($"The web service called failed with response {response.statusCode}.  Url used: {response.url}");
+	                }
 
-						throw new ConnectionException($"The web service called failed.  Url used: {url}.  Response Error:  {error}.");
+	                var dataStream = response.response;
+
+
+					ICollection<TableColumn> fileColumns = null;
+
+					switch (newRestFunction.FormatType)
+					{
+						case ETypeCode.Json:
+							var jsonHandler = new FileHandlerJson(restFunction, rowPath);
+							fileColumns = await jsonHandler.GetSourceColumns(dataStream);
+							break;
+						case ETypeCode.Xml:
+							var xmlHandler = new FileHandlerXml(restFunction, rowPath);
+							fileColumns = await xmlHandler.GetSourceColumns(dataStream);
+							break;
+						case ETypeCode.Text:
+							var textHandler = new FileHandlerText(restFunction, restFunction.FileConfiguration);
+							fileColumns = await textHandler.GetSourceColumns(dataStream);
+							break;
 					}
 
-					var dataString = (string)row[newRestFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData)];
-
-                    var byteArray = Encoding.ASCII.GetBytes( dataString );
-                    var dataStream = new MemoryStream( byteArray ); 
- 
-
-                    ICollection<TableColumn> fileColumns = null;
-
-                    if (newRestFunction.FormatType == ETypeCode.Json)
-                    {
-                        var jsonHandler = new FileHandlerJson(restFunction, rowPath);
-                        fileColumns = await jsonHandler.GetSourceColumns(dataStream);
-                    }
-
-                    if (newRestFunction.FormatType == ETypeCode.Xml)
-                    {
-                        var xmlHandler = new FileHandlerXml(restFunction, rowPath);
-                        fileColumns = await xmlHandler.GetSourceColumns(dataStream);
-                    }
-
-                    if (fileColumns != null)
-                    {
-                        foreach (var column in fileColumns)
-                        {
-                            newRestFunction.Columns.Add(column);
-                        }
-                    }
+					if (fileColumns != null)
+					{
+						foreach (var column in fileColumns)
+						{
+							newRestFunction.Columns.Add(column);
+						}
+					}
                 }
 
                 return newRestFunction;
@@ -388,14 +384,19 @@ namespace dexih.connections.webservice
 				{
 					FileHandlerBase fileHanlder = null;
 
-					if (restFunction.FormatType == ETypeCode.Json)
+					switch (restFunction.FormatType)
 					{
-						fileHanlder = new FileHandlerJson(restFunction, restFunction.RowPath);
-					}
-
-					if (restFunction.FormatType == ETypeCode.Xml)
-					{
-						fileHanlder = new FileHandlerXml(restFunction, restFunction.RowPath);
+						case ETypeCode.Text:
+							fileHanlder = new FileHandlerText(restFunction, restFunction.FileConfiguration);
+							break;
+						case ETypeCode.Json:
+							fileHanlder = new FileHandlerJson(restFunction, restFunction.RowPath);
+							break;
+						case ETypeCode.Xml:
+							fileHanlder = new FileHandlerXml(restFunction, restFunction.RowPath);
+							break;
+						default:
+							throw new ArgumentOutOfRangeException();
 					}
 
 					if (fileHanlder != null)
@@ -442,7 +443,6 @@ namespace dexih.connections.webservice
             catch(Exception ex)
             {
                 throw new ConnectionException($"Initialize table {table.Name} failed. {ex.Message}", ex);
-
             }
         }
 

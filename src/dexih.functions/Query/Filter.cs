@@ -39,6 +39,24 @@ namespace dexih.functions.Query
 
             return filter;
         }
+        
+        /// <summary>
+        /// Sets a simple filter comparing a column against a static value.
+        /// </summary>
+        /// <param name="column1">Column name from incoming data</param>
+        /// <param name="operator1">Comparison Operator</param>
+        /// <param name="column2">Column to compare with</param>
+        public Filter(TableColumn column1, ECompare operator1, TableColumn column2)
+        {
+            Column1 = column1;
+            Operator = operator1;
+            Column2 = column2;
+
+            if (Column2 == null)
+                CompareDataType = ETypeCode.String;
+            else
+                CompareDataType = column2.DataType;
+        }
 
         /// <summary>
         /// Sets a simple filter comparing a column against a static value.

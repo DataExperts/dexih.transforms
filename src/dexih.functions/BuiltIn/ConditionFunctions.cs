@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.BuiltIn
 {
@@ -11,7 +12,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunctionCompare(Compare = Filter.ECompare.LessThan)]
         public bool LessThan(object value, object compare)
         {
-            return ((IComparable)value).CompareTo(compare) < 0;
+            return DataType.Compare(null, value, compare) == DataType.ECompareResult.Less;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Less Than/Equal",
@@ -19,7 +20,8 @@ namespace dexih.functions.BuiltIn
         [TransformFunctionCompare(Compare = Filter.ECompare.LessThanEqual)]
         public bool LessThanEqual(object value, object compare)
         {
-            return ((IComparable)value).CompareTo(compare) <= 0;
+            var compareResult = DataType.Compare(null, value, compare);
+            return compareResult == DataType.ECompareResult.Less || compareResult == DataType.ECompareResult.Equal;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Greater Than",
@@ -27,7 +29,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThan)]
         public bool GreaterThan(object value, object compare)
         {
-            return ((IComparable)value).CompareTo(compare) > 0;
+            return DataType.Compare(null, value, compare) == DataType.ECompareResult.Greater;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition",
@@ -35,7 +37,8 @@ namespace dexih.functions.BuiltIn
         [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThanEqual)]
         public bool GreaterThanEqual(object value, object compare)
         {
-            return ((IComparable)value).CompareTo(compare) >= 0;
+            var compareResult = DataType.Compare(null, value, compare);
+            return compareResult == DataType.ECompareResult.Greater || compareResult == DataType.ECompareResult.Equal;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Strings Equal",

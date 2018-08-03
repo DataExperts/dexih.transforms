@@ -9,7 +9,6 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using dexih.repository;
 
 namespace dexih.connections.dexih
 {
@@ -32,7 +31,7 @@ namespace dexih.connections.dexih
     )]
     public class ConnectionDexih : Connection
     {
-        public override string ServerHelp => "The URI for the Integration Hub";
+        public override string ServerHelp => "The URI for the Information Hub";
         public override string DefaultDatabaseHelp => "Hub Name";
         public override bool AllowNtAuth => false;
         public override bool AllowUserPass => true;

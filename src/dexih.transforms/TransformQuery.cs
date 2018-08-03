@@ -19,7 +19,7 @@ namespace dexih.transforms
     /// </summary>
     public class TransformQuery : Transform
     {
-        private SelectQuery _selectQuery;
+        private readonly SelectQuery _selectQuery;
         private long _rowCount;
 
         public TransformQuery() { }

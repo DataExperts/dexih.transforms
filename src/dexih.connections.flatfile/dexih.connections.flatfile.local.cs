@@ -23,9 +23,9 @@ namespace dexih.connections.flatfile
         AllowsManagedConnection = false,
         AllowsSourceConnection = true,
         AllowsTargetConnection = true,
-        AllowsUserPassword = true,
+        AllowsUserPassword = false,
         AllowsWindowsAuth = false,
-        RequiresDatabase = true,
+        RequiresDatabase = false,
         RequiresLocalStorage = true
     )]
     public class ConnectionFlatFileLocal : ConnectionFlatFile

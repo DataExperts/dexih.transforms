@@ -85,6 +85,7 @@ namespace dexih.transforms
         private int _validFromOrdinal;
         private int _validToOrdinal;
         private int _isCurrentOrdinal;
+        private int _versionOrdinal;
 
         private int _sourceValidFromOrdinal;
         private int _sourceValidToOrdinal;
@@ -92,6 +93,7 @@ namespace dexih.transforms
 
         private int _referenceSurrogateKeyOrdinal;
         private int _referenceIsValidOrdinal;
+        private int _referenceVersionOrdinal;
         private int _referenceCreateAuditOrdinal;
         private int _referenceCreateDateOrginal;
         private int _referenceValidToOridinal;
@@ -227,6 +229,7 @@ namespace dexih.transforms
             _validFromOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
             _validToOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
             _isCurrentOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
+            _versionOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Version);
 
             _sourceSurrogateKeyOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
             _sourceValidFromOrdinal = GetSourceColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
@@ -236,6 +239,7 @@ namespace dexih.transforms
             _columnCount = CacheTable.Columns.Count;
 
             _referenceIsValidOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
+            _referenceVersionOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Version);
             _referenceSurrogateKeyOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SurrogateKey);
             _referenceCreateAuditOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateAuditKey);
             _referenceCreateDateOrginal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateDate);
@@ -599,6 +603,11 @@ namespace dexih.transforms
                         //store this in the preserve field, so it is written on the next read operation.
                         PreserveRow = CreateOutputRow('C');
                         newRow = CreateDeleteRow(PreserveRow);
+                        
+                        if (_versionOrdinal >= 0)
+                        {
+                            PreserveRow[_versionOrdinal] = (dynamic)newRow[_versionOrdinal] + 1;
+                        }
                     }
                     else
                     {
@@ -870,6 +879,9 @@ namespace dexih.transforms
                             newRow[referenceOrdinal] = PrimaryTransform[_sourceIsCurrentOrdinal];
                         else
                             newRow[referenceOrdinal] = PrimaryTransform[_sourceIsCurrentOrdinal];
+                        break;
+                    case TableColumn.EDeltaType.Version:
+                        newRow[referenceOrdinal] = 1;
                         break;
                     case TableColumn.EDeltaType.SurrogateKey:
                         SurrogateKey++; //increment now that key has been used.

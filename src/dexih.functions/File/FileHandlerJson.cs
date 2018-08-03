@@ -34,6 +34,8 @@ namespace dexih.functions.File
         
         public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream stream)
         {
+            var restFunction = (WebService) _table;
+            
             var reader = new StreamReader(stream);
             var jsonString = await reader.ReadToEndAsync();
             JToken content;
@@ -66,16 +68,19 @@ namespace dexih.functions.File
                 {
                     tokens = content.SelectTokens(_rowPath).First().Children();
                 }
-                
-                foreach (var child in tokens)
+
+                if (restFunction.MaxImportLevels > 0)
                 {
-                    columns.AddRange(GetColumns(child));
+                    foreach (var child in tokens)
+                    {
+                        columns.AddRange(GetColumns(child, 0, restFunction.MaxImportLevels));
+                    }
                 }
             }
             return columns;
         }
 
-        private IEnumerable<TableColumn> GetColumns(JToken jToken)
+        private IEnumerable<TableColumn> GetColumns(JToken jToken, int currentLevel, int maxLevels)
         {
             var columns = new List<TableColumn>();
 
@@ -97,11 +102,14 @@ namespace dexih.functions.File
                         AllowDbNull = true,
                         IsUnique = false
                     };
-                    columns.Add(col); 
-                    
-                    foreach (var child in value.Value.Children())
+                    columns.Add(col);
+
+                    if (currentLevel < maxLevels)
                     {
-                        columns.AddRange(GetColumns(child));
+                        foreach (var child in value.Value.Children())
+                        {
+                            columns.AddRange(GetColumns(child, currentLevel+1, maxLevels));
+                        }
                     }
 
                 }

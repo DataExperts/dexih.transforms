@@ -131,7 +131,7 @@ namespace dexih.transforms
 		        var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.TableColumnName() == targetColumn.TableColumnName()) ??
 		                      MapFields.SingleOrDefault(c => c.TargetColumn.Name == targetColumn.Name);
 
-		        if (mapping != null)
+		        if (mapping?.SourceColumn != null)
 		        {
 			        return mapping.SourceColumn.Copy();
 		        }
@@ -154,10 +154,10 @@ namespace dexih.transforms
 	        
 		    if (MapFields != null)
 		    {
-                var mapping = MapFields.Where(c => c.SourceColumn.TableColumnName() == sourceColumn.TableColumnName());
+                var mapping = MapFields.Where(c => c.SourceColumn != null && c.SourceColumn.TableColumnName() == sourceColumn.TableColumnName()).ToArray();
                 if (!mapping.Any())
                 {
-                    mapping = MapFields.Where(c => c.SourceColumn.Name == sourceColumn.Name);
+                    mapping = MapFields.Where(c => c.SourceColumn != null && c.SourceColumn.Name == sourceColumn.Name).ToArray();
                 }
 
                 return mapping.Select(c => c.TargetColumn.Copy()).ToArray();

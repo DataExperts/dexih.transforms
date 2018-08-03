@@ -89,7 +89,7 @@ namespace dexih.transforms.tests
             var memoryConnection = new ConnectionMemory();
             var writer = new TransformWriter();
             var result = new TransformWriterResult();
-            result.SetProperties(0, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null,
+            result.SetProperties(0, 10, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null,
                 TransformWriterResult.ETriggerMethod.Manual, "Test");
             var writeResult = await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection,
                 CancellationToken.None);
@@ -177,6 +177,12 @@ namespace dexih.transforms.tests
             Assert.True(count == 3);
         }
 
+        // checks a datetime is within 1 second of the current.
+        private bool DateIsNearCurrent(DateTime value)
+        {
+            return value > DateTime.Now.AddSeconds(-1) && value < DateTime.Now;
+        }
+
         [Fact]
         public async Task RunDeltaTest_updatePreserve()
         {
@@ -192,45 +198,51 @@ namespace dexih.transforms.tests
             target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
             //run an update load with nothing in the target.  
-            var transformDelta = new TransformDelta(source, target,
-                TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve, surrrogateKey, false);
+            var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve, surrrogateKey, false);
             transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
             var count = 0;
+
+            var createDateMin = DateTime.Now;
+            
             while (await transformDelta.ReadAsync())
             {
                 Assert.True((char) transformDelta["Operation"] == 'C');
                 Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
                 Assert.True((int) transformDelta["IntColumn"] == count + 1);
+                Assert.True((int) transformDelta["Version"] == 1);
+                Assert.True(DateIsNearCurrent((DateTime) transformDelta["CreateDate"]));
+                Assert.True(DateIsNearCurrent((DateTime) transformDelta["UpdateDate"]));
+                Assert.True((bool) transformDelta["IsCurrent"]);
 
                 count++;
             }
 
-            Assert.True(count == 10);
+            var createDateMax = DateTime.Now;
+
+            Assert.Equal(10, count);
             surrrogateKey = transformDelta.SurrogateKey;
 
             transformDelta.SetRowNumber(0);
 
-            //write result to a memory table
+            // write result to a memory table
             var memoryConnection = new ConnectionMemory();
             var writer = new TransformWriter();
             var result = new TransformWriterResult();
-            result.SetProperties(0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null,
-                TransformWriterResult.ETriggerMethod.Manual, "Test");
-            await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection,
-                CancellationToken.None);
+            result.SetProperties(0, 1, 2, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
+            await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
             target = memoryConnection.GetTransformReader(target.CacheTable);
             target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
             //run an append.  (only difference from reload is no truncate record at start.
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,
-                surrrogateKey, false);
+            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
 
             count = 0;
             while (await transformDelta.ReadAsync())
             {
                 count++;
             }
+            Assert.Equal(0, count );
 
             //change 3 rows. (first, middle, last)
             target.CacheTable.Data[0][4] = 100;
@@ -242,15 +254,29 @@ namespace dexih.transforms.tests
             target.CacheTable.Data[9].CopyTo(row, 0);
             target.CacheTable.Data.Add(row);
 
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,
-                surrrogateKey, false);
+            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
             transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
             count = 0;
             var rowsCreated = 0;
             while (await transformDelta.ReadAsync())
             {
-                rowsCreated += (char) transformDelta["Operation"] == 'C' ? 1 : 0;
+                if ((char) transformDelta["Operation"] == 'C')
+                {
+                    rowsCreated += 1;    
+                    Assert.Equal(surrrogateKey + rowsCreated, (long) transformDelta["SurrogateKey"]);
+                    Assert.Equal(2, (int) transformDelta["Version"]);
+                    Assert.True(DateIsNearCurrent((DateTime) transformDelta["UpdateDate"]));
+                    Assert.True(DateIsNearCurrent((DateTime) transformDelta["CreateDate"]));
+                }
+                
+                if((char) transformDelta["Operation"] == 'U')
+                {
+                    Assert.True(((DateTime) transformDelta["CreateDate"]) >= createDateMin && ((DateTime) transformDelta["CreateDate"]) <= createDateMax);
+                    Assert.Equal(1, (int) transformDelta["Version"]);
+                    Assert.False((bool) transformDelta["IsCurrent"]);
+                }
+                
                 count++;
             }
 
@@ -261,13 +287,10 @@ namespace dexih.transforms.tests
             //run the delta again.  this should ignore all 10 records.
             transformDelta.SetRowNumber(0);
             result = new TransformWriterResult();
-            result.SetProperties(0, 1, "DataLink", 30, 40, "Test", 1, "Source", 2, "Target", null, null,
-                TransformWriterResult.ETriggerMethod.Manual, "Test");
-            await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection,
-                CancellationToken.None);
+            result.SetProperties(0, 1, 2, "DataLink", 30, 40, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
+            await writer.WriteAllRecords(result, transformDelta, target.CacheTable, memoryConnection, CancellationToken.None);
             target = memoryConnection.GetTransformReader(target.CacheTable);
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,
-                surrrogateKey, false);
+            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
 
             count = 0;
             while (await transformDelta.ReadAsync())

@@ -211,6 +211,8 @@
             <e p="ValidationFunctions.cs" t="Include" />
           </e>
           <e p="dexih.functions.csproj" t="IncludeRecursive" />
+          <e p="DexihActiveAgent.cs" t="Include" />
+          <e p="DownloadUrl.cs" t="Include" />
           <e p="Extensions.cs" t="Include" />
           <e p="File" t="Include">
             <e p="FileConfiguration.cs" t="Include" />
@@ -248,7 +250,6 @@
             <e p="UpdateQuery.cs" t="Include" />
           </e>
           <e p="Retry.cs" t="Include" />
-          <e p="StandardProfiles.cs" t="Include" />
           <e p="Table" t="Include">
             <e p="File.cs" t="Include" />
             <e p="Table.cs" t="Include" />
@@ -271,8 +272,6 @@
             <e p="ConnectionReference.cs" t="Include" />
             <e p="Connections.cs" t="Include" />
             <e p="ConnectionsExceptions.cs" t="Include" />
-            <e p="DexihActiveAgent.cs" t="Include" />
-            <e p="DownloadUrl.cs" t="Include" />
           </e>
           <e p="dexih.connections.sql.cs" t="Include" />
           <e p="dexih.connections.sql.reader.cs" t="Include" />

@@ -60,6 +60,7 @@ namespace dexih.functions
             CreateAuditKey,
             UpdateAuditKey,
             IsCurrentField,
+	        Version,
             NaturalKey,
             TrackingField,
             NonTrackingField,

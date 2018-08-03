@@ -25,7 +25,7 @@ namespace dexih.connections.sftp
         AllowsTargetConnection = true,
         AllowsUserPassword = true,
         AllowsWindowsAuth = false,
-        RequiresDatabase = true,
+        RequiresDatabase = false,
         RequiresLocalStorage = false
     )]
     public class ConnectionFlatFileSftp : ConnectionFlatFile

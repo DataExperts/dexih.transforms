@@ -186,7 +186,7 @@ namespace dexih.transforms
         /// <param name="primaryTransform">The primary input transform</param>
         /// <param name="referenceTransform">The secondary input, such as join table, target table, lookup table etc.</param>
         /// <returns></returns>
-        public virtual bool SetInTransform(Transform primaryTransform, Transform referenceTransform = null)
+        public bool SetInTransform(Transform primaryTransform, Transform referenceTransform = null)
         {
             PrimaryTransform = primaryTransform;
             ReferenceTransform = referenceTransform;
@@ -224,7 +224,7 @@ namespace dexih.transforms
 
             InitializeOutputFields();
             Reset();
-
+            
             //IsReader indicates if this is a base transform.
             IsReader = primaryTransform == null ? true : false;
             if (primaryTransform != null)
@@ -1116,10 +1116,13 @@ namespace dexih.transforms
         }
 
         public override int FieldCount => CacheTable.Columns.Count;
-        
-		public override int GetOrdinal(string name) => CacheTable.GetOrdinal(name);
 
-		public int GetOrdinal(TableColumn column)
+        public override int GetOrdinal(string name)
+        {
+            return CacheTable.GetOrdinal(name);
+        }
+
+        public int GetOrdinal(TableColumn column)
 		{
 			var ordinal = GetOrdinal(column.TableColumnName());
 			if (ordinal < 0)
@@ -1130,9 +1133,12 @@ namespace dexih.transforms
 			return ordinal;
 		}
 
-		public override string GetName(int i) => CacheTable.Columns[i].Name;
-        
-		public override object this[string name]
+        public override string GetName(int i)
+        {
+            return CacheTable.Columns[i].Name;
+        }
+
+        public override object this[string name]
         {
             get
             {
@@ -1232,15 +1238,18 @@ namespace dexih.transforms
         {
             return GetValue(i)?.ToString()??"";
         }
+
         public override object GetValue(int i)
         {
             if (i < CurrentRow.Length)
             {
                 return CurrentRow[i];
             }
-            throw new ArgumentOutOfRangeException($"The GetValue failed as the column at position {i} was greater than the number of columns {CurrentRow.Length}.");
+
+            throw new ArgumentOutOfRangeException(
+                $"The GetValue failed as the column at position {i} was greater than the number of columns {CurrentRow.Length}.");
         }
-        
+
         public override int GetValues(object[] values)
         {
             if (values.Length > CurrentRow.Length)
@@ -1257,7 +1266,7 @@ namespace dexih.transforms
 
             return values.GetLength(0);
         }
-        
+
         public override bool IsDBNull(int i)
         {
             return GetValue(i) is DBNull;

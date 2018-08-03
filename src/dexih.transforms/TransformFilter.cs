@@ -85,12 +85,7 @@ namespace dexih.transforms
                     }
                     else
                     {
-                        var filter = new Filter()
-                        {
-                            Column1 = filterPair.Column1,
-                            Operator = filterPair.Compare,
-                            Column2 = filterPair.Column2
-                        };
+                        var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Column2);
                         query.Filters.Add(filter);
                     }
                 }

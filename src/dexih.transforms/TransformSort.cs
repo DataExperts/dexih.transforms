@@ -47,7 +47,7 @@ namespace dexih.transforms
         public override bool PassThroughColumns => true;
 
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -172,17 +172,17 @@ namespace dexih.transforms
         {
             for (var i = 0; i < x.Length; i++)
             {
+                if ((x[i] == null || x[i] is DBNull) && (y[i] == null || y[i] is DBNull))
+                {
+                    continue;
+                }                
+                
                 var compareResult = ((IComparable)x[i]).CompareTo((IComparable)y[i]);
 
 
                 //if (object.Equals(x[i], y[i])) continue;
 
                 //var greater = false;
-
-                if ((x[i] == null || x[i] is DBNull) && (y[i] == null || y[i] is DBNull))
-                {
-                    continue;
-                }
 
                 //if (x[i] == null || x[i] is DBNull)
                 //    greater = false;

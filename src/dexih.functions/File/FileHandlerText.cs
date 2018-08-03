@@ -19,6 +19,7 @@ namespace dexih.functions.File
         private Stream _stream;
 
         private readonly int _fileRowNumberOrdinal;
+        private readonly int _responseDataOrdinal;
 
         private Dictionary<int, (int position, Type dataType)> _csvOrdinalMappings;
 
@@ -31,6 +32,8 @@ namespace dexih.functions.File
             _fileConfiguration = fileConfiguration;
             
             _fileRowNumberOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileRowNumber);
+            _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
+
            
         }
         public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream stream)
@@ -174,6 +177,11 @@ namespace dexih.functions.File
             {
                 var row = new object[baseRow.Length];
                 Array.Copy(baseRow, row, baseRow.Length);
+                
+                if (_responseDataOrdinal >= 0)
+                {
+                    row[_responseDataOrdinal] = _csvReader.Context.RawRecord;
+                }
 
                 _currentFileRowNumber++;
 

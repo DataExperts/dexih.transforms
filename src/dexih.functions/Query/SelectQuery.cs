@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace dexih.functions.Query
 {
@@ -45,6 +46,7 @@ namespace dexih.functions.Query
                     var column1Value = filter.Column1 == null
                         ? filter.Value1
                         : row[table.GetOrdinal(filter.Column1.Name)];
+                    
                     var column2Value = filter.Column2 == null
                         ? filter.Value2
                         : row[table.GetOrdinal(filter.Column2.Name)];

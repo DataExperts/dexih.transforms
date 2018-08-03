@@ -1,5 +1,6 @@
 ﻿using dexih.functions.Query;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -150,13 +151,7 @@ namespace dexih.functions
 
 		// public Dictionary<string, string> ExtendedProperties { get; set; }
 
-        public TableColumn this[string columnName]
-        {
-            get
-            {
-                return Columns[columnName];
-            }
-         }
+        public TableColumn this[string columnName] => Columns[columnName];
 
         //public string GetExtendedProperty(string name)
         //{
@@ -310,40 +305,64 @@ namespace dexih.functions
             var colUpdateDate = GetDeltaColumn(TableColumn.EDeltaType.UpdateDate);
             var colSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
             var colIsCurrentField = GetDeltaColumn(TableColumn.EDeltaType.IsCurrentField);
-            var colSourceSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
+            var colVersionField = GetDeltaColumn(TableColumn.EDeltaType.Version);
             var colCreateAuditKey = GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
             var colUpdateAuditKey = GetDeltaColumn(TableColumn.EDeltaType.UpdateAuditKey);
-            var colRejectedReason = GetDeltaColumn(TableColumn.EDeltaType.RejectedReason);
+//            var colSourceSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
+//            var colRejectedReason = GetDeltaColumn(TableColumn.EDeltaType.RejectedReason);
 
             if (colValidFrom == null)
             {
                 colValidFrom = new TableColumn("ValidFromDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidFromDate };
                 Columns.Add(colValidFrom);
             }
+            
             if (colValidTo == null)
             {
                 colValidTo = new TableColumn("ValidToDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidToDate };
                 Columns.Add(colValidTo);
             }
+            
             if (colCreateDate == null)
             {
                 colCreateDate = new TableColumn("CreateDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.CreateDate };
                 Columns.Add(colCreateDate);
             }
+            
             if (colUpdateDate == null)
             {
                 colUpdateDate = new TableColumn("UpdateDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.UpdateDate };
                 Columns.Add(colUpdateDate);
             }
+            
             if (colSurrogateKey == null)
             {
                 colSurrogateKey = new TableColumn("SurrogateKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.SurrogateKey };
                 Columns.Add(colSurrogateKey);
             }
+
             if (colIsCurrentField == null)
             {
                 colIsCurrentField = new TableColumn("IsCurrent", ETypeCode.Boolean) { DeltaType = TableColumn.EDeltaType.IsCurrentField };
                 Columns.Add(colIsCurrentField);
+            }
+
+            if (colVersionField == null)
+            {
+                colVersionField = new TableColumn("Version", ETypeCode.Int32) { DeltaType = TableColumn.EDeltaType.Version };
+                Columns.Add(colVersionField);
+            }
+            
+            if (colCreateAuditKey == null)
+            {
+                colCreateAuditKey = new TableColumn("CreateAuditKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.CreateAuditKey };
+                Columns.Add(colCreateAuditKey);
+            }
+
+            if (colUpdateAuditKey == null)
+            {
+                colUpdateAuditKey = new TableColumn("UpdateAuditKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.UpdateAuditKey };
+                Columns.Add(colUpdateAuditKey);
             }
         }
 

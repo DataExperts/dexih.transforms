@@ -358,9 +358,20 @@ namespace dexih.connections.sql
                 }
 
                 if (filter.Column1 != null)
-                    sql.Append(" " + AddDelimiter(filter.Column1.Name) + " ");
+                {
+                    if (filter.Column1.IsInput)
+                    {
+                        sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Column1.DefaultValue) + " ");
+                    }
+                    else
+                    {
+                        sql.Append(" " + AddDelimiter(filter.Column1.Name) + " ");    
+                    }
+                }
                 else
+                {
                     sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value1) + " ");
+                }
 
                 sql.Append(GetSqlCompare(filter.Operator));
 
@@ -372,10 +383,17 @@ namespace dexih.connections.sql
                     }
 
                     if (filter.Column2 != null)
-                        sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");
+                        if (filter.Column2.IsInput)
+                        {
+                            sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Column2.DefaultValue) + " ");
+                        }
+                        else
+                        {
+                            sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");    
+                        }
                     else
                     {
-                        if (filter.Value2.GetType().IsArray)
+                        if (filter.Value2 != null && filter.Value2.GetType().IsArray)
                         {
                             var array = new List<string>();
                             foreach (var value in (Array) filter.Value2)
@@ -385,7 +403,9 @@ namespace dexih.connections.sql
                                        ") ");
                         }
                         else
+                        {
                             sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value2) + " ");
+                        }
                     }
                 }
 
@@ -405,8 +425,6 @@ namespace dexih.connections.sql
                 {
 
                     var sql = new StringBuilder();
-
-                    var rows = 0;
 
                     using (var transaction = connection.BeginTransaction())
                     {
@@ -458,7 +476,7 @@ namespace dexih.connections.sql
 
                                 try
                                 {
-                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
+                                    await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 }
                                 catch (Exception ex)
                                 {

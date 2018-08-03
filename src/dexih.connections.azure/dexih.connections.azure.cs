@@ -104,14 +104,14 @@ namespace dexih.connections.azure
             return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,254}$");
         }
 
-        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {
             try
             {
                 var connection = GetCloudTableClient();
                 var cTable = connection.GetTableReference(table.Name);
 
-                var exists = await cTable.ExistsAsync(null, null, cancellationToken);
+                var exists = cTable.ExistsAsync(null, null, cancellationToken);
 
                 return exists;
             }
@@ -197,7 +197,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public async Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
+        public Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
         {
             var connection = GetCloudTableClient();
             var cloudTable = connection.GetTableReference(targetTableName);
@@ -226,7 +226,7 @@ namespace dexih.connections.azure
 
                 batchOperation.Insert(entity);
             }
-            await cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken);
+            return cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken);
         }
 
 
@@ -617,12 +617,12 @@ namespace dexih.connections.azure
             return filterString;
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, CancellationToken cancellationToken)
         {
             try
             {
                 var connection = GetCloudTableClient();
-                await CreateTable(table, true, cancellationToken);
+                return CreateTable(table, true, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -633,7 +633,7 @@ namespace dexih.connections.azure
 
         public override Task<Table> InitializeTable(Table table, int position)
         {
-            if (!table.Columns.Any(c => c.DeltaType == TableColumn.EDeltaType.AzurePartitionKey))
+            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.AzurePartitionKey))
             {
                 //partion key uses the AuditKey which allows bulk load, and can be used as an incremental checker.
                 table.Columns.Add(new TableColumn()
@@ -652,7 +652,7 @@ namespace dexih.connections.azure
                 });
             }
 
-            if (!table.Columns.Any(c => c.DeltaType == TableColumn.EDeltaType.AzureRowKey))
+            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.AzureRowKey))
             {
                 //add the special columns for managed tables.
                 table.Columns.Add(new TableColumn()
@@ -670,7 +670,7 @@ namespace dexih.connections.azure
                 });
             }
 
-            if (!table.Columns.Any(c => c.DeltaType == TableColumn.EDeltaType.TimeStamp))
+            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.TimeStamp))
             {
 
                 //add the special columns for managed tables.

@@ -1,4 +1,5 @@
-﻿using static Dexih.Utils.DataType.DataType;
+﻿using dexih.functions.File;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
@@ -12,11 +13,8 @@ namespace dexih.functions
 		/// For example: stream/{rows}
 		/// </summary>
 		public string RestfulUri { 
-            get
-            {
-                return _resetfulUri;
-            }
-            set
+            get => _resetfulUri;
+			set
             {
                 if(!string.IsNullOrEmpty(value) && value[0] == '/')
                 {
@@ -31,7 +29,16 @@ namespace dexih.functions
 		public string RowPath { get; set; }
 
         public ETypeCode FormatType { get; set; } = ETypeCode.Json;
+		
+		// for text files
+		public FileConfiguration FileConfiguration { get; set; } = new FileConfiguration();
 
+
+		/// <summary>
+		/// Maximum levels to recurse through structured data when importing columns.
+		/// </summary>
+		public int MaxImportLevels { get; set; } = 1;
+	
 		public void AddInputParameter(string name, string defaultValue = null)
 		{
 			if (Columns.GetOrdinal(name) >= 0)

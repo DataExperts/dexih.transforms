@@ -27,7 +27,7 @@ namespace dexih.connections.ftp
         AllowsTargetConnection = true,
         AllowsUserPassword = true,
         AllowsWindowsAuth = false,
-        RequiresDatabase = true,
+        RequiresDatabase = false,
         RequiresLocalStorage = false
     )]
     public class ConnectionFlatFileFtp : ConnectionFlatFile

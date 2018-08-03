@@ -341,7 +341,7 @@ namespace dexih.connections.sql
                         returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
                     break;
                 default:
-                    throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");
+                    throw new Exception("The datatype " + type + " is not compatible with the sql statement.");
             }
 
             return returnValue;
