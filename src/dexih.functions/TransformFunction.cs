@@ -91,8 +91,8 @@ namespace dexih.functions
 	    /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
 	    /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
 	    /// <param name="staticValues"></param>
-	    public TransformFunction(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings) :
-            this(functionMethod.Target, functionMethod.GetMethodInfo(), inputMappings, targetColumn, outputMappings)
+	    public TransformFunction(Delegate functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, GlobalVariables globalVariables) :
+            this(functionMethod.Target, functionMethod.GetMethodInfo(), inputMappings, targetColumn, outputMappings, globalVariables)
         {
         }
 
@@ -105,10 +105,10 @@ namespace dexih.functions
 	    /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
 	    /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
 	    /// <param name="staticValues"></param>
-	    public TransformFunction(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+	    public TransformFunction(Type targetType, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, GlobalVariables globalVariables)
         {
             FunctionName = methodName;
-            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), inputMappings, targetColumn, outputMappings);
+            Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), inputMappings, targetColumn, outputMappings, globalVariables);
         }
 
 	    /// <summary>
@@ -119,18 +119,18 @@ namespace dexih.functions
 	    /// <param name="inputMappings">The input column names to be mapped in the transform.</param>
 	    /// <param name="targetColumn">The column for the return value of the function to be mapped to.</param>
 	    /// <param name="outputMappings">The columns for any "out" parameters in the function to be mapped to.</param>
-	    public TransformFunction(object target, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+	    public TransformFunction(object target, string methodName, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, GlobalVariables globalVariables)
         {
             FunctionName = methodName;
-            Initialize(target, target.GetType().GetMethod(methodName), inputMappings, targetColumn, outputMappings);
+            Initialize(target, target.GetType().GetMethod(methodName), inputMappings, targetColumn, outputMappings, globalVariables);
         }
 
-        public TransformFunction(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public TransformFunction(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, GlobalVariables globalVariables)
         {
-            Initialize(target, functionMethod, inputMappings, targetColumn, outputMappings);
+            Initialize(target, functionMethod, inputMappings, targetColumn, outputMappings, globalVariables);
         }
 
-        private void Initialize(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        private void Initialize(object target, MethodInfo functionMethod, TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, GlobalVariables globalVariables)
         {
             FunctionMethod = functionMethod;
             
@@ -153,6 +153,14 @@ namespace dexih.functions
 		            : targetType.GetMethod(attribute.ImportMethod);
             }
 
+	        // sets the global variables to the object if the property exists.
+	        var globalProperty = targetType.GetProperty("GlobalVariables");
+	        if (globalProperty != null)
+	        {
+		        globalProperty.SetValue(target, globalVariables);
+	        }
+
+	        
             ObjectReference = target;
 
             TargetColumn = targetColumn;

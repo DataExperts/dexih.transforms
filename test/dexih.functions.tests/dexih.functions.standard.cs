@@ -259,7 +259,68 @@ namespace dexih.functions.tests
                 maxFunction.Reset();
             }
         }
+        
+        [Fact]
+        public void FastEncryptTest()
+        {
+            var globalVariables = new GlobalVariables("abc");
+            const string value = "encrypt this";
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "FastEncrypt").GetTransformFunction(globalVariables);
+            var encrypted = function.RunFunction(new object[] {value});
 
+            function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "FastDecrypt").GetTransformFunction(globalVariables);
+            var decrypted = function.RunFunction(new[] {encrypted});
+
+            Assert.Equal(value, decrypted);
+        }
+
+        [Fact]
+        public void StrongEncryptTest()
+        {
+            var globalVariables = new GlobalVariables("abc");
+            const string value = "encrypt this";
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "StrongEncrypt").GetTransformFunction(globalVariables);
+            var encrypted = function.RunFunction(new object[] {value});
+
+            function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "StrongDecrypt").GetTransformFunction(globalVariables);
+            var decrypted = function.RunFunction(new[] {encrypted});
+
+            Assert.Equal(value, decrypted);
+        }
+        
+        [Fact]
+        public void EncryptTest()
+        {
+            const string value = "encrypt this";
+            const string key = "abc";
+            const int iterations = 10;
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "Encrypt").GetTransformFunction();
+            var encrypted = function.RunFunction(new object[] {value, key, iterations});
+
+            function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "Decrypt").GetTransformFunction();
+            var decrypted = function.RunFunction(new [] {encrypted, key, iterations});
+
+            Assert.Equal(value, decrypted);
+        }
+        
+        [Fact]
+        public void HashTest()
+        {
+            const string value = "hash this";
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "SecureHash").GetTransformFunction();
+            var hashed = function.RunFunction(new object[] {value});
+
+            function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "ValidateSecureHash").GetTransformFunction();
+            var passed = function.RunFunction(new [] {value, hashed});
+
+            Assert.Equal(true, passed);
+            
+            //check hash fails with different value.
+            passed = function.RunFunction(new [] {"hash thiS", hashed});
+            Assert.Equal(false, passed);
+
+        }
+        
         [Fact]
         public void CountTest()
         {

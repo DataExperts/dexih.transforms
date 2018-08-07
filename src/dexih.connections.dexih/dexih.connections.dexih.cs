@@ -107,7 +107,6 @@ namespace dexih.connections.dexih
                     new KeyValuePair<string, string>("HubName", DefaultDatabase)
                 });
 
-                HttpResponseMessage response;
                 try
                 {
                     var result = await HttpPost("Login", content, true);

@@ -18,6 +18,8 @@ namespace dexih.functions.BuiltIn
 
     public class MapFunctions
     {
+        public GlobalVariables GlobalVariables { get; set; }
+        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Concatenate",
             Description = "Concatenates multiple string fields.")]
         public string Concat([TransformFunctionParameter(Description = "Array of Values to Concatenate")] string[] values)
@@ -411,32 +413,60 @@ namespace dexih.functions.BuiltIn
         {
             return DateTime.UtcNow;
         }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Encrypt",
-            Description = "Encrypts the string using the key string.")]
-        public string Encrypt(string value, string key)
+        
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Manual Encrypt",
+            Description = "Encrypts the string using the key string.  More iterations = stronger/slower")]
+        public string Encrypt(string value, string key, int iterations)
         {
-            return EncryptString.Encrypt(value, key, 1000);
+            return EncryptString.Encrypt(value, key, iterations);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Decrypt",
-            Description = "Decrypts the string using the key string.")]
-        public string Decrypt(string value, string key)
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Manual Decrypt",
+            Description = "Decrypts the string using the key string and iteractions.  More iterations = stronger/slower encrypt.")]
+        public string Decrypt(string value, string key, int iterations)
         {
-            return EncryptString.Decrypt(value, key, 1000);
+            return EncryptString.Decrypt(value, key, iterations);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "CreateHash",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Strong Encrypt",
+            Description = "Strong Encrypts the string.")]
+        public string StrongEncrypt(string value)
+        {
+            return EncryptString.Encrypt(value, GlobalVariables?.EncryptionKey, 1000);
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Strong Decrypt",
+            Description = "Strong Decrypts the string.")]
+        public string StrongDecrypt(string value)
+        {
+            return EncryptString.Decrypt(value, GlobalVariables?.EncryptionKey, 1000);
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Fast Encrypt",
+            Description = "Fast Encrypts the string.")]
+        public string FastEncrypt(string value)
+        {
+            return EncryptString.Encrypt(value, GlobalVariables?.EncryptionKey, 5);
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Fast Decrypt",
+            Description = "Fast Decrypts the string.")]
+        public string FastDecrypt(string value)
+        {
+            return EncryptString.Decrypt(value, GlobalVariables?.EncryptionKey, 5);
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Secure Hash",
             Description =
-                "Creates a random-salted, hash of the string.  This is strong encryption and can only be validated using the ValidateHash function.")]
-        public string CreateSaltedHash(string value)
+                "Creates a random-salted, SHA256 hash of the string.  This is secure and can be used for passwords and other sensative data.  This can only be validated using the Validate Hash function.")]
+        public string SecureHash(string value)
         {
             return HashString.CreateHash(value);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "ValidateHash",
-            Description = "Validates a value against a Hash created using the CreateHash function.")]
-        public bool ValidateSaltedHash(string value, string hash)
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Validate Secure Hash",
+            Description = "Validates a value created from the Secure Hash function.")]
+        public bool ValidateSecureHash(string value, string hash)
         {
             return HashString.ValidateHash(value, hash);
         }

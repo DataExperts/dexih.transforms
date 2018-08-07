@@ -14,7 +14,7 @@ namespace dexih.transforms.tests
     {
         private TransformFunction GetProfileReference(bool detailed, string methodName, string column)
         {
-            var function = Functions.GetFunction("dexih.functions.BuiltIn.ProfileFunctions", methodName).GetTransformFunction(new[] { new TableColumn(column) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") }, detailed);
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.ProfileFunctions", methodName).GetTransformFunction(new[] { new TableColumn(column) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") }, detailed, new GlobalVariables(null));
             return function;
         }
         public static ReaderMemory CreateProfileTestData()

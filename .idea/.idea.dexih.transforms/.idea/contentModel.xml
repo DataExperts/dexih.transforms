@@ -229,6 +229,7 @@
             <e p="FunctionParameter.cs" t="Include" />
             <e p="FunctionReference.cs" t="Include" />
             <e p="Functions.cs" t="Include" />
+            <e p="GlobalVariables.cs" t="Include" />
           </e>
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">

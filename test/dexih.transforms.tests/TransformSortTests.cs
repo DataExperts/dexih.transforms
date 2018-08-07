@@ -16,7 +16,7 @@ namespace dexih.transforms.tests
         [InlineData("IntColumn", Sort.EDirection.Ascending, "IntColumn")]
         [InlineData("IntColumn", Sort.EDirection.Descending, "SortColumn")]
         [InlineData("DecimalColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("DecimalColumn", Sort.EDirection.Descending, "SortColumn")]
+        [InlineData("DecimalColumn", Sort.EDirection.Ascending, "SortColumn")]
         [InlineData("DecimalColumn", Sort.EDirection.Descending, "SortColumn")]
         [InlineData("DateColumn", Sort.EDirection.Ascending, "IntColumn")]
         [InlineData("DateColumn", Sort.EDirection.Descending, "SortColumn")]

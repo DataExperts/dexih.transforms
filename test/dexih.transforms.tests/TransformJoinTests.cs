@@ -173,7 +173,7 @@ namespace dexih.transforms.tests
                 new Func<bool, bool>((isValid) => isValid),
                 new TableColumn[] { new TableColumn("IsValid", ETypeCode.Boolean, "Join") },
                 null,
-                null)
+                null, new GlobalVariables(null))
             };
 
             var transformJoin = new TransformJoin(source, sortedJoinData, new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -321,7 +321,7 @@ namespace dexih.transforms.tests
                 new Func<bool, bool>((isValid) => isValid),
                 new TableColumn[] { new TableColumn("IsValid", ETypeCode.Boolean, "Join") },
                 null,
-                null)
+                null, new GlobalVariables(null))
             };
 
             var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), new List<JoinPair>() { new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -355,7 +355,7 @@ namespace dexih.transforms.tests
                 new Func<int, int, bool>((source1, join) => source1 == (join - 1)),
                 new TableColumn[] { new TableColumn("IntColumn", ETypeCode.Int32), new TableColumn("IntColumn", ETypeCode.Int32, "Join") },
                 null,
-                null)
+                null, new GlobalVariables(null))
             };
 
             var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), null, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -390,7 +390,7 @@ namespace dexih.transforms.tests
                 new Func<int, int, bool>((source1, join) => source1 == (join - 1)),
                 new TableColumn[] { new TableColumn("IntColumn", ETypeCode.Int32), new TableColumn("IntColumn", ETypeCode.Int32, "Join") },
                 null,
-                null)
+                null, new GlobalVariables(null))
             };
 
             var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), null, conditions, Transform.EDuplicateStrategy.Abend, null, "Join");

@@ -32,6 +32,8 @@ namespace dexih.functions
         /// </summary>
         public string DetailedFlagName { get; set; }
         
+        public string EncryptionKeyName { get; set; }
+        
         /// <summary>
         /// Used to map a filter equivalent operator
         /// </summary>
@@ -47,13 +49,13 @@ namespace dexih.functions
         public FunctionParameter[] ResultInputParameters { get; set; }
         public FunctionParameter[] ResultOutputParameters { get; set; }
 
-        public TransformFunction GetTransformFunction(TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings)
+        public TransformFunction GetTransformFunction(TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, GlobalVariables globalVariables)
         {
             var type = GetTransformType();
-            return new TransformFunction(type, FunctionMethodName, inputMappings, targetColumn, outputMappings);
+            return new TransformFunction(type, FunctionMethodName, inputMappings, targetColumn, outputMappings, globalVariables);
         }
 
-        public TransformFunction GetTransformFunction(TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, bool detailed)
+        public TransformFunction GetTransformFunction(TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, bool detailed, GlobalVariables globalVariables)
         {
             var type = GetTransformType();
             var obj = Activator.CreateInstance(type);
@@ -68,13 +70,13 @@ namespace dexih.functions
                 property.SetValue(obj, detailed);
             }
             
-            return new TransformFunction(obj, FunctionMethodName, inputMappings, targetColumn, outputMappings);
+            return new TransformFunction(obj, FunctionMethodName, inputMappings, targetColumn, outputMappings, globalVariables);
         }
 
-        public TransformFunction GetTransformFunction()
+        public TransformFunction GetTransformFunction(GlobalVariables globalVariables = null)
         {
             var type = GetTransformType();
-            return new TransformFunction(type, FunctionMethodName, null, null, null);
+            return new TransformFunction(type, FunctionMethodName, null, null, null, globalVariables);
         }
 
         public Type GetTransformType()

@@ -40,4 +40,9 @@ namespace dexih.functions
     {
         
     }
+
+    public class EncryptionKeyFlagAttribute : Attribute
+    {
+        
+    }
 }

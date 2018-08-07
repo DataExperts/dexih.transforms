@@ -85,12 +85,18 @@ namespace dexih.functions
                 }
 
                 string detailedPropertyName = null;
+                string encryionKeyPropertyName = null;
 
                 foreach (var prop in type.GetProperties())
                 {
                     if (prop.GetCustomAttribute(typeof(TransformFunctionDetailedFlagAttribute)) != null)
                     {
                         detailedPropertyName = prop.Name;
+                    }
+
+                    if (prop.GetCustomAttribute(typeof(EncryptionKeyFlagAttribute)) != null)
+                    {
+                        encryionKeyPropertyName = prop.Name;
                     }
                 }
                 
@@ -108,6 +114,7 @@ namespace dexih.functions
                     ImportMethodName = attribute.ImportMethod,
                     IsStandardFunction = true,
                     DetailedFlagName = detailedPropertyName,
+                    EncryptionKeyName = encryionKeyPropertyName,
                     Compare = compareAttribute?.Compare,
                     ReturnType = DataType.GetTypeCode(method.ReturnType),
                     ResultReturnType = resultMethod == null ? (DataType.ETypeCode?) null : DataType.GetTypeCode(resultMethod.ReturnType),

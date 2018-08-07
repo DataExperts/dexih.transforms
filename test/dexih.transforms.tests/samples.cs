@@ -26,7 +26,7 @@ public class Samples
             new TransformFunction(
                 new Func<string, bool>((value) => value != null), //function code
                 new[] { new TableColumn("PurchaseOrderNumber") },  //input column
-                null, null )
+                null, null, new GlobalVariables(null) )
             },
             null
         );
@@ -40,8 +40,8 @@ public class Samples
             },
             new List<TransformFunction>()
             {
-                Functions.GetFunction("dexih.functions.BuiltIn.AggregateFunctions", "Median").GetTransformFunction(new[] { new TableColumn("TotalDue") }, new TableColumn("DailyMedian"), null),
-                Functions.GetFunction("dexih.functions.BuiltIn.AggregateFunctions", "Sum").GetTransformFunction(new[] { new TableColumn("TotalDue") }, new TableColumn("DailyTotal"), null)
+                Functions.GetFunction("dexih.functions.BuiltIn.AggregateFunctions", "Median").GetTransformFunction(new[] { new TableColumn("TotalDue") }, new TableColumn("DailyMedian"), null, new GlobalVariables(null)),
+                Functions.GetFunction("dexih.functions.BuiltIn.AggregateFunctions", "Sum").GetTransformFunction(new[] { new TableColumn("TotalDue") }, new TableColumn("DailyTotal"), null, new GlobalVariables(null))
             },
             null,
             true //Pass through colums = true will will pass through original fields/rows and merge in the aggregates

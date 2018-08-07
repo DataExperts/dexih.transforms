@@ -105,7 +105,7 @@ namespace dexih.connections.sftp
                                         {
                                             socket.Dispose();
                                         }
-                                        catch (Exception ex)
+                                        catch (Exception)
                                         {
 //                                            _log.Debug("Exception disposing _socket", ex);
                                         }
@@ -145,7 +145,7 @@ namespace dexih.connections.sftp
                             }
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
 //                        _log.Debug($"Exception in Timer event handler", ex);
                     }
