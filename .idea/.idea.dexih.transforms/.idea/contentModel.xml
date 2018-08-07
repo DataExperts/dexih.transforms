@@ -19,7 +19,7 @@
           <e p="CreatePocoReader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netcoreapp2.0" t="Include">
+              <e p="netcoreapp2.1" t="Include">
                 <e p="ReaderExamples.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -370,7 +370,7 @@
           <e p="dexih.connections.excel.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netcoreapp2.0" t="Include">
+              <e p="netcoreapp2.1" t="Include">
                 <e p="dexih.connections.excel.tests.AssemblyInfo.cs" t="Include" />
                 <e p="dexih.connections.excel.tests.Program.cs" t="Include" />
               </e>
@@ -541,7 +541,7 @@
           <e p="dexih.functions.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netcoreapp2.0" t="Include">
+              <e p="netcoreapp2.1" t="Include">
                 <e p="dexih.functions.tests.AssemblyInfo.cs" t="Include" />
                 <e p="dexih.functions.tests.Program.cs" t="Include" />
               </e>

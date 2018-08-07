@@ -1,15 +1,23 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.tests
 {
     public class FunctionStandardFunctions
     {
+        private readonly ITestOutputHelper _output;
+
+        public FunctionStandardFunctions(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+        
         [Theory]
         [InlineData(ETypeCode.Boolean, "abc", false)]
         [InlineData(ETypeCode.Boolean, "true", true)]
@@ -318,6 +326,46 @@ namespace dexih.functions.tests
             //check hash fails with different value.
             passed = function.RunFunction(new [] {"hash thiS", hashed});
             Assert.Equal(false, passed);
+        }
+        
+        [Fact]
+        public void SHA1Test()
+        {
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "CreateSHA1").GetTransformFunction();
+            var sha1 = function.RunFunction(new object[] {"sha this"});
+            var sha1a = function.RunFunction(new [] {"sha this"});
+
+            // check same value hashed the same.
+            Assert.Equal(sha1, sha1a);
+
+            var sha1b = function.RunFunction(new [] {"sha thiS"});
+
+            // check different value hashed the differently.
+            Assert.NotEqual(sha1, sha1b);
+
+
+            // uncomment below for tests on much larger string.
+            
+//            // sha a very large string
+//            var random = new Random();
+//            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//            
+//            Span<char> largeString = Enumerable.Repeat(chars, 1_000_000_000).Select(s => s[random.Next(s.Length)]).ToArray();
+//            
+//            var timer = Stopwatch.StartNew();
+//            var bigsha = function.RunFunction(new object[] {largeString.ToString()});
+//            timer.Stop();
+//            _output.WriteLine($"SHA of large string value {bigsha}, and ran in {timer.ElapsedMilliseconds} ms.");
+//
+//            // largeString[999999999] = ' ';
+//            largeString[0] = 'a';
+//            
+//            timer = Stopwatch.StartNew();
+//            var bigsha2 = function.RunFunction(new object[] {largeString.ToString()});
+//            timer.Stop();
+//            _output.WriteLine($"SHA of large string value {bigsha2}, and ran in {timer.ElapsedMilliseconds} ms.");
+//            
+//            Assert.NotEqual(bigsha, bigsha2);
 
         }
         

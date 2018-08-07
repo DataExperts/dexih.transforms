@@ -823,7 +823,7 @@ namespace dexih.functions.BuiltIn
                     array = array.FirstOrDefault();
                 }
 
-                if (array.Type != JTokenType.Array)
+                if (array == null || array.Type != JTokenType.Array)
                 {
                     throw new FunctionException($"The jsonPath {jsonPath} did not point to a json array.");
                 }
@@ -846,7 +846,7 @@ namespace dexih.functions.BuiltIn
 
                 return true;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 values = new string[columns.Length];
                 return false;
@@ -872,7 +872,7 @@ namespace dexih.functions.BuiltIn
                 array = array.FirstOrDefault();
             }
 
-            if (array.Type != JTokenType.Array)
+            if (array == null || array.Type != JTokenType.Array)
             {
                 throw new FunctionException($"The jsonPath {jsonPath} did not point to a json array.");
             }
@@ -951,24 +951,27 @@ namespace dexih.functions.BuiltIn
             return convertedDate;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Create SHA1 Hash",
-            Description = "Creates a hash based on the SHA1 algorithm.")]
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Create SHA1/Hash",
+            Description = "Creates a sha1 hash of the value.  This will (virtually) always be unique for any different value.")]
         public string CreateSHA1(string value)
         {
+            
             var bytes = Encoding.UTF8.GetBytes(value);
-            var sha1 = System.Security.Cryptography.SHA1.Create();
-            var hash = sha1.ComputeHash(bytes);
-            // Loop through each byte of the hashed data 
-            // and format each one as a hexadecimal string.
-            var sBuilder = new StringBuilder();
-
-            for (var i = 0; i < hash.Length; i++)
+            using (var sha1 = System.Security.Cryptography.SHA1.Create())
             {
-                sBuilder.Append(hash[i].ToString("x2"));
-            }
+                var hash = sha1.ComputeHash(bytes);
+                // Loop through each byte of the hashed data 
+                // and format each one as a hexadecimal string.
+                var sBuilder = new StringBuilder();
 
-            // Return the hexadecimal string.
-            return sBuilder.ToString();
+                for (var i = 0; i < hash.Length; i++)
+                {
+                    sBuilder.Append(hash[i].ToString("x2"));
+                }
+
+                // Return the hexadecimal string.
+                return sBuilder.ToString();
+            }
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Maximum Number",
