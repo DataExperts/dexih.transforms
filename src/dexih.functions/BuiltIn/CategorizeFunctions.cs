@@ -1,11 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace dexih.functions.BuiltIn
 {
     public class CategorizeFunctions
     {
         [TransformFunction(FunctionType = EFunctionType.Map, 
-            Category = "Categorize Functions", 
+            Category = "Categorize", 
             Name = "Range Categorize",
         Description = "Sorts a value into a specified range.  Range array should be sorted list of ranges.  Returns true if in the range, and rangeString low-high.")]
         public bool RangeCategorize(double value, double[] range, out double? rangeLow, out double? rangeHigh, out string rangeString)
@@ -40,8 +41,52 @@ namespace dexih.functions.BuiltIn
             return false;
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Map, 
+            Category = "Categorize", 
+            Name = "Interval Categorize",
+            Description = "Categorizes values into intervals starting with the low and ending with the high value.  Returns true if value within specified range, otherwise false.")]
+        public bool IntervalCategorize(double value, long interval, long? lowValue, long? highValue, out double? rangeLow, out double? rangeHigh, out string rangeString)
+        {
+            if(interval == 0)
+            {
+                throw new FunctionException("The interval specified must be a non-zero value.");
+            }
+
+            if (lowValue >= highValue)
+            {
+                throw new FunctionException("The low value must be lower than the high value.");
+            }
+
+            if (value < lowValue)
+            {
+                rangeString = $"< {lowValue}";
+                rangeLow = null;
+                rangeHigh = lowValue;
+                return false;
+            }
+
+            if (value > highValue)
+            {
+                rangeString = $"< {highValue}";
+                rangeLow = null;
+                rangeHigh = lowValue;
+                return false;
+            }
+
+            rangeLow = ( Math.Floor((value - lowValue??0) / interval) * interval) + lowValue;
+            rangeHigh = rangeLow + interval;
+
+            if (rangeHigh > highValue)
+            {
+                rangeHigh = highValue;
+            }
+
+            rangeString = $"{rangeLow} - {rangeHigh}";
+            return true;
+        }
+        
         [TransformFunction(FunctionType = EFunctionType.Map,
-            Category = "Categorize Functions",
+            Category = "Categorize",
             Name = "Discrete Range Categorize",
         Description = "Sorts a value into a specified range using discrete (integer) values.  Range array should be sorted list of ranges.  Returns true if in the range, and rangeString low-high.")]
         public bool DiscreteRangeCategorize(long value, long[] range, out long? rangeLow, out long? rangeHigh, out string rangeString)

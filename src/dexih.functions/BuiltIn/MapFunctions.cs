@@ -20,21 +20,21 @@ namespace dexih.functions.BuiltIn
     {
         public GlobalVariables GlobalVariables { get; set; }
         
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Concatenate",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Concatenate",
             Description = "Concatenates multiple string fields.")]
         public string Concat([TransformFunctionParameter(Description = "Array of Values to Concatenate")] string[] values)
         {
             return string.Concat(values);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Index Of",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Index Of",
             Description = "The zero-based index of the first occurrence of the specified string in this field.")]
         public int IndexOf(string value, string search)
         {
             return value.IndexOf(search, StringComparison.Ordinal);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Insert",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Insert",
             Description =
                 "Returns a new string in which a specified string is inserted at a specified index position in this instance.")]
         public string Insert(string value, int startIndex, string insertString)
@@ -42,7 +42,7 @@ namespace dexih.functions.BuiltIn
             return value.Insert(startIndex, insertString);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Join",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Join",
             Description =
                 "Concatenates all the elements of a string array, using the specified separator between each element.")]
         public string Join(string separator, string[] values)
@@ -51,7 +51,7 @@ namespace dexih.functions.BuiltIn
         }
 
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Pad Left",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Pad Left",
             Description =
                 "Returns a new string that right-aligns the characters in this instance by padding them with spaces on the left, for a specified total length.")]
         public string PadLeft(string value, int width, string paddingChar)
@@ -59,7 +59,7 @@ namespace dexih.functions.BuiltIn
             return value.PadLeft(width, paddingChar[0]);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Pad Right",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Pad Right",
             Description =
                 "Returns a new string that left-aligns the characters in this string by padding them with spaces on the right, for a specified total length.")]
         public string PadRight(string value, int width, string paddingChar)
@@ -67,7 +67,7 @@ namespace dexih.functions.BuiltIn
             return value.PadRight(width, paddingChar[0]);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Remove",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Remove",
             Description =
                 "Returns a new string in which a specified number of characters in the current instance beginning at a specified position have been deleted.")]
         public string Remove(string value, int startIndex, int count)
@@ -75,7 +75,7 @@ namespace dexih.functions.BuiltIn
             return value.Remove(startIndex, count);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Replace",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Replace",
             Description =
                 "Returns a new string in which all occurrences of a specified string in the current instance are replaced with another specified string.")]
         public string Replace(string value, string oldValue, string newValue)
@@ -92,7 +92,7 @@ namespace dexih.functions.BuiltIn
             return value.Replace(oldValue, newValue);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Split",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Split",
             Description = "Splits a string into multiple return fields that are based on the characters in an array.")]
         public int Split(string value, string separator, int count, out string[] result)
         {
@@ -106,7 +106,7 @@ namespace dexih.functions.BuiltIn
             return result.Length;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Substring",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Substring",
             Description =
                 "Retrieves a substring from this instance. The substring starts at a specified character position and has a specified length.")]
         public string Substring(string stringValue, int start, int length)
@@ -117,28 +117,28 @@ namespace dexih.functions.BuiltIn
             return stringValue.Substring(start, length);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "To Lowercase",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "To Lowercase",
             Description = "Returns a copy of this string converted to lowercase.")]
         public string ToLower(string value)
         {
             return value.ToLower();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "To Uppercase",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "To Uppercase",
             Description = "Returns a copy of this string converted to uppercase.")]
         public string ToUpper(string value)
         {
             return value.ToUpper();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Trim",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Trim",
             Description = "Removes all leading and trailing white-space characters from the current field.")]
         public string Trim(string value)
         {
             return value.Trim();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Trim End",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Trim End",
             Description =
                 "Removes all leading and trailing occurrences of a set of characters specified in an array from the current field.")]
         public string TrimEnd(string value)
@@ -146,7 +146,7 @@ namespace dexih.functions.BuiltIn
             return value.TrimEnd();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Trim Start",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Trim Start",
             Description =
                 "Removes all trailing occurrences of a set of characters specified in an array from the current field.")]
         public string TrimStart(string value)
@@ -154,14 +154,14 @@ namespace dexih.functions.BuiltIn
             return value.TrimStart();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Length",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Length",
             Description = "Return the length of the string.")]
         public int Length(string value)
         {
             return value.Length;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "WordCount",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Word Count",
             Description = "Returns the number of words in the string.")]
         public int WordCount(string value)
         {
@@ -177,7 +177,7 @@ namespace dexih.functions.BuiltIn
             return c;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "WordExtract",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Word Extract",
             Description = "Returns the nth word (starting from 0) in the string.")]
         public string WordExtract(string value, int wordNumber)
         {
@@ -252,7 +252,7 @@ namespace dexih.functions.BuiltIn
             return dateValue.AddSeconds(addValue);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "AddYears",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Add Years",
             Description =
                 "Returns a new DateTime that adds the specified number of years to the value of this instance.")]
         public DateTime AddYears(DateTime dateValue, int addValue)
@@ -260,7 +260,7 @@ namespace dexih.functions.BuiltIn
             return dateValue.AddYears(addValue);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "DaysInMonth",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Days in Month",
             Description = "Returns the number of days in the specified month and year.")]
         public int DaysInMonth(DateTime dateValue)
         {
@@ -312,14 +312,14 @@ namespace dexih.functions.BuiltIn
             return dateValue.Month;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "ShortMonth",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Short Month",
             Description = "A three letter value of the month (e.g. Jan, Feb, Mar).")]
         public string ShortMonth(DateTime dateValue)
         {
             return CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(dateValue.Month);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "LongMonth",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Long Month",
             Description = "The full name of the month.")]
         public string LongMonth(DateTime dateValue)
         {
@@ -520,7 +520,7 @@ namespace dexih.functions.BuiltIn
             return Math.Cosh(value);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "DivRem",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Divide Remainder",
             Description =
                 "Calculates the quotient of two 32-bit signed integers and also returns the remainder in an output parameter.")]
         public int DivRem(int dividend, int divisor, out int remainder)
@@ -553,7 +553,7 @@ namespace dexih.functions.BuiltIn
             return Math.Log(value);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Log10",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Log(10)",
             Description = "Returns the base 10 logarithm of a specified number.")]
         public double Log10(double value)
         {
@@ -685,7 +685,7 @@ namespace dexih.functions.BuiltIn
             return value1 - value2.Sum();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Xml", Name = "XPathValues",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Xml", Name = "XPath Values",
             Description = "Parses an xml string into a series of xpath results.")]
         public bool XPathValues(string xml, string[] xPaths, out string[] values)
         {
@@ -732,7 +732,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(
             FunctionType = EFunctionType.Map, 
             Category = "JSON", 
-            Name = "JSONValues",
+            Name = "JSON Values",
             Description = "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.",
             ImportMethod = nameof(JsonValuesImport))
         ]
@@ -798,7 +798,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(
             FunctionType = EFunctionType.Map, 
             Category = "JSON", 
-            Name = "JsonArrayToColumns",
+            Name = "Json Array To Columns",
             Description = "Pivots a json array into column values. ",
             ImportMethod = nameof(JsonArrayToColumnsImport))
         ]
@@ -891,7 +891,7 @@ namespace dexih.functions.BuiltIn
             return columns.ToArray();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "GetDistanceTo",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Get Distance To",
             Description = "The distance in meters between two Geographical Coordinates. ")]
         public double GetDistanceTo(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
         {
@@ -910,7 +910,7 @@ namespace dexih.functions.BuiltIn
         }
 
       
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Split Fixed Width",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Split Fixed Width",
             Description = "Splits a string based on the string positions specified.")]
         public string[] SplitFixedWidth(string value, int[] positions)
         {
@@ -951,7 +951,7 @@ namespace dexih.functions.BuiltIn
             return convertedDate;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String Functions", Name = "Create SHA1/Hash",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Create SHA1/Hash",
             Description = "Creates a sha1 hash of the value.  This will (virtually) always be unique for any different value.")]
         public string CreateSHA1(string value)
         {

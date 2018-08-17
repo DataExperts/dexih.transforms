@@ -123,9 +123,11 @@ namespace dexih.transforms
 	    /// <returns></returns>
         public TableColumn TranslateTargetColumn(TableColumn targetColumn)
         {
-            if (targetColumn == null)
-                return null;
-	        
+	        if (targetColumn == null)
+	        {
+		        return null;
+	        }
+
 	        if (MapFields != null)
 	        {
 		        var mapping = MapFields.SingleOrDefault(c => c.TargetColumn.TableColumnName() == targetColumn.TableColumnName()) ??
@@ -139,9 +141,11 @@ namespace dexih.transforms
 
 	        if(PassThroughColumns)
 	        {
-		        var column = CacheTable.Columns.SingleOrDefault(c => c.Name == targetColumn.Name);
+		        var column = PrimaryTransform.CacheTable.Columns.SingleOrDefault(c => c.Name == targetColumn.Name);
 		        if (column != null)
+		        {
 			        return targetColumn;
+		        }
 	        }
 
 	        return null;

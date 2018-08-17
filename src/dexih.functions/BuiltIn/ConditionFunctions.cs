@@ -239,7 +239,7 @@ namespace dexih.functions.BuiltIn
             return !(dateValue.DayOfWeek == DayOfWeek.Saturday || dateValue.DayOfWeek == DayOfWeek.Sunday);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "IsIn",
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Is In",
             Description = "Value is one of the elements in an array")]
         public bool IsIn(object value, object[] compareTo)
         {

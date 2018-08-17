@@ -60,7 +60,7 @@ namespace dexih.functions.BuiltIn
             return sum / denominator;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Series", Name = "Highest Value since ", Description = "Provides the last date that had a higher value than this.", ResultMethod = nameof(HighestSinceResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Series", Name = "Highest Value Since ", Description = "Provides the last date that had a higher value than this.", ResultMethod = nameof(HighestSinceResult), ResetMethod = nameof(Reset))]
         public void HighestSince(DateTime series, double value)
         {
             if (_cacheSeriesList == null)

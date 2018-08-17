@@ -61,7 +61,7 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "SplitColumnToRows",
+        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "Split Column To Rows",
             Description = "Split a delimited value into rows.", ResetMethod = nameof(Reset))]
         public bool SplitColumnToRows(string separator, string value, int maxItems, out string item)
         {
@@ -85,7 +85,7 @@ namespace dexih.functions.BuiltIn
             return true;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "ColumnsToRows",
+        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "Columns To Rows",
             Description = "Columns into rows.", ResetMethod = nameof(Reset))]
         public bool ColumnsToRows(string[] column, out string columnName, out string item)
         {
@@ -110,7 +110,7 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "XPathNodesToRows",
+        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "XPath Nodes To Rows",
             Description = "Split an XPath query into multiple rows", ResetMethod = nameof(Reset))]
         public bool XPathNodesToRows(string xml, string xPath, int maxItems, out string node)
         {
@@ -134,7 +134,7 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "JSONElementsToRows",
+        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "JSON Elements To Rows",
             Description = "Split a JSON array into separate rows", ResetMethod = nameof(Reset))]
 
         public bool JsonElementsToRows(string json, string jsonPath, int maxItems, out string item)
@@ -160,7 +160,7 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "JsonPivotElementToRows",
+        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "Json Pivot Element To Rows",
             Description = "Splits the properties of a Json element into rows containing the property name and value.", ResetMethod = nameof(Reset))]
         public bool JsonPivotElementToRows(string json, string jsonPath, int maxItems, out string name,
             out string value)
