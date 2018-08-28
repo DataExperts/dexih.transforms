@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Xml.XPath;
+using dexih.functions.Parameter;
 using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.BuiltIn
@@ -18,7 +19,7 @@ namespace dexih.functions.BuiltIn
         /// <summary>
         /// Used by row transform, contains the parameters used in the array.
         /// </summary>
-        public Parameter[] ArrayParameters { get; set; }
+        public Parameter.Parameter[] ArrayParameters { get; set; }
 
 
         public bool Reset()
@@ -81,7 +82,7 @@ namespace dexih.functions.BuiltIn
                 return false;
             }
 
-            item = _cacheArray[(int) _cacheInt];
+            item = _cacheArray[_cacheInt.Value];
             return true;
         }
         
@@ -105,8 +106,17 @@ namespace dexih.functions.BuiltIn
                 return false;
             }
 
-            item = column[(int) _cacheInt];
-            columnName = ArrayParameters[(int) _cacheInt].Column?.Name;
+            item = column[_cacheInt.Value];
+
+            if (ArrayParameters[_cacheInt.Value] is ParameterColumn parameterColumn)
+            {
+                columnName = parameterColumn.Column.Name;
+            }
+            else
+            {
+                throw new FunctionException($"The parameter {ArrayParameters[(int) _cacheInt].Name} is not using a column input.");                
+            }
+            
             return true;
         }
 

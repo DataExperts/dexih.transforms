@@ -10,6 +10,7 @@ using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Text;
+using dexih.functions.Mappings;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using dexih.functions.Query;
@@ -45,11 +46,11 @@ namespace dexih.transforms
         protected Transform()
         {
             //intialize standard objects.
-            ColumnPairs = new List<ColumnPair>();
-            JoinPairs = new List<JoinPair>();
-            FilterPairs = new List<FilterPair>();
-            AggregatePairs = new List<AggregatePair>();
-            Functions = new List<TransformFunction>();
+//            ColumnPairs = new List<ColumnPair>();
+//            JoinPairs = new List<Join>();
+//            FilterPairs = new List<FilterPair>();
+//            AggregatePairs = new List<AggregatePair>();
+//            Functions = new List<TransformFunction>();
             TransformTimer = new Stopwatch();
         }
 
@@ -79,16 +80,19 @@ namespace dexih.transforms
         /// </summary>
         public Transform ReferenceTransform { get; set; }
 
-        // Generic transform contains properties for a list of Functions, Fields and simple Mappings 
-        public List<TransformFunction> Functions { get; set; } //functions used for complex mapping, conditions.
-        public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
-        public List<JoinPair> JoinPairs { get; set; } //fields pairs, used for table and service joins.
-        public List<FilterPair> FilterPairs { get; set; } //fields pairs, used for simple filters
-        public List<AggregatePair> AggregatePairs { get; set; } //fields pairs, used for simple filters
+        // Generic transform contains properties for a list of Functions, Fields and simple Mappings
+        public Mappings Mappings { get; set; }
+
+//        public List<TransformFunction> Functions { get; set; } //functions used for complex mapping, conditions.
+//        public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
+//        public List<Join> JoinPairs { get; set; } //fields pairs, used for table and service joins.
+//        public List<FilterPair> FilterPairs { get; set; } //fields pairs, used for simple filters
+//        public List<AggregatePair> AggregatePairs { get; set; } //fields pairs, used for simple filters
+
         public TableColumn JoinSortField { get; set; }
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
 
-        public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
+//        public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
         public virtual List<Sort> SortFields => PrimaryTransform?.SortFields; //indicates fields for the sort transform.
 
         public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
@@ -221,6 +225,8 @@ namespace dexih.transforms
                     }
                 }
             }
+
+            Mappings?.Initialize(primaryTransform.CacheTable, referenceTransform?.CacheTable);
 
             InitializeOutputFields();
             Reset();

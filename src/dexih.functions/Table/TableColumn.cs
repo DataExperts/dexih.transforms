@@ -332,5 +332,21 @@ namespace dexih.functions
 
             return ETypeCode.String;
         }
+
+	    /// <summary>
+	    /// Compare the column 
+	    /// </summary>
+	    /// <param name="other"></param>
+	    /// <returns></returns>
+	    public bool Compare(TableColumn other)
+	    {
+		    if (other == null)
+		    {
+			    return false;
+		    }
+
+		    return TableColumnName() == other.TableColumnName() ||
+		           Name == other.Name;
+	    }
     }
 }

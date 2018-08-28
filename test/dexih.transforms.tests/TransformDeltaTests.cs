@@ -1,8 +1,5 @@
-﻿using dexih.functions;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -449,7 +446,7 @@ namespace dexih.transforms.tests
         {
             if (transform != null)
             {
-                Trace.WriteLine(transform.Details() + " performance: " + transform.TransformTimerTicks().ToString());
+                Trace.WriteLine(transform.Details() + " performance: " + transform.TransformTimerTicks());
                 WriteTransformPerformance(transform.PrimaryTransform);
                 WriteTransformPerformance(transform.ReferenceTransform);
             }

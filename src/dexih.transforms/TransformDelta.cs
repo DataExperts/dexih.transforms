@@ -119,8 +119,6 @@ namespace dexih.transforms
 
         private DateTime _currentDateTime;
 
-        public override bool PassThroughColumns => true;
-
         public override bool InitializeOutputFields()
         {
             if (ReferenceTransform == null)

@@ -200,9 +200,29 @@ namespace dexih.functions.BuiltIn
             if (value.Length > 2) c++;
             return c == 0 || c <= wordNumber ? "" : value.Substring(start, i - start);
         }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date", Name = "To Date",
+            Description =
+                "Return boolean if the value is a valid date.  If the date is value the result parameter contains the converted date.")]
+        public bool ToDate(string value, out DateTime result)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                result = DateTime.MinValue;
+                return false;
+            }
 
+            return DateTime.TryParse(value, out result);
+        }
 
- 
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Create Date",
+            Description =
+                "Returns a new DateTime from seperate year,month,day,hour,minute,second values.")]
+        public DateTime CreateDate(object year, object month, object day, object hour, object minute, object second)
+        {
+            return DateTime.Parse(
+                $"{year ?? DateTime.Now.Year}-{month ?? 1}-{day ?? 1} {hour ?? 0}:{minute ?? 0}:{second ?? 0}");
+        }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Add Days",
             Description =
@@ -925,6 +945,8 @@ namespace dexih.functions.BuiltIn
 
             return result;
         }
+        
+        
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Age(Years from now)",
             Description = "The age (now) in years from the date.")]

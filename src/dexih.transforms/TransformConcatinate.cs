@@ -43,7 +43,6 @@ namespace dexih.transforms
         private bool _firstRead;
 
       public override bool RequiresSort => false;
-        public override bool PassThroughColumns => true;
         // public override List<Sort> SortFields => new List<Sort>();
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)

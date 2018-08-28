@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
+using dexih.functions.Parameter;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json;
@@ -13,6 +15,9 @@ namespace dexih.functions
         Map, Condition, Aggregate, Rows, Validate, Profile
     }
     
+    /// <summary>
+    /// Function reference contains details of a standard function
+    /// </summary>
     public class FunctionReference
     {
         public EFunctionType FunctionType { get; set; }
@@ -42,20 +47,23 @@ namespace dexih.functions
         public bool IsStandardFunction { get; set; }
 
         public DataType.ETypeCode ReturnType { get; set; }
-        public DataType.ETypeCode? ResultReturnType { get; set; }
-        
         public FunctionParameter[] InputParameters { get; set; }
         public FunctionParameter[] OutputParameters { get; set; }
-        public FunctionParameter[] ResultInputParameters { get; set; }
-        public FunctionParameter[] ResultOutputParameters { get; set; }
 
-        public TransformFunction GetTransformFunction(TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, GlobalVariables globalVariables)
+        public TransformFunction GetTransformFunction(GlobalVariables globalVariables = null)
         {
             var type = GetTransformType();
-            return new TransformFunction(type, FunctionMethodName, inputMappings, targetColumn, outputMappings, globalVariables);
+
+            return new TransformFunction(type, FunctionMethodName, globalVariables);
         }
 
-        public TransformFunction GetTransformFunction(TableColumn[] inputMappings, TableColumn targetColumn, TableColumn[] outputMappings, bool detailed, GlobalVariables globalVariables)
+//        public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables)
+//        {
+//            var type = GetTransformType();
+//            return new TransformFunction(type, FunctionMethodName, parameters, globalVariables);
+//        }
+
+        public TransformFunction GetTransformFunction(GlobalVariables globalVariables, bool detailed)
         {
             var type = GetTransformType();
             var obj = Activator.CreateInstance(type);
@@ -70,14 +78,14 @@ namespace dexih.functions
                 property.SetValue(obj, detailed);
             }
             
-            return new TransformFunction(obj, FunctionMethodName, inputMappings, targetColumn, outputMappings, globalVariables);
+            return new TransformFunction(obj, FunctionMethodName, globalVariables);
         }
 
-        public TransformFunction GetTransformFunction(GlobalVariables globalVariables = null)
-        {
-            var type = GetTransformType();
-            return new TransformFunction(type, FunctionMethodName, null, null, null, globalVariables);
-        }
+//        public TransformFunction GetTransformFunction()
+//        {
+//            var type = GetTransformType();
+//            return new TransformFunction(type, FunctionMethodName, null, null, null, globalVariables);
+//        }
 
         public Type GetTransformType()
         {
@@ -99,7 +107,7 @@ namespace dexih.functions
 
             return type;
         }
-    }
-    
 
+
+    }
 }

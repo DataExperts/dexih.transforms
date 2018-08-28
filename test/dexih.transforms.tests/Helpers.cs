@@ -1,7 +1,7 @@
-﻿using dexih.functions;
-using dexih.functions.Query;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using dexih.functions;
+using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms.tests
@@ -29,7 +29,7 @@ namespace dexih.transforms.tests
             table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2 );
             table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1);
 
-            var adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") } );
+            var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") } );
             adapter.Reset();
             return adapter;
         }
@@ -78,7 +78,7 @@ namespace dexih.transforms.tests
             table.AddRow("value08", 8, "lookup8" );
             table.AddRow("value09", 9, "lookup9" );
 
-            var adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") });
+            var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
             adapter.Reset();
             return adapter;
         }
@@ -98,7 +98,7 @@ namespace dexih.transforms.tests
             table.AddRow("value08", 8, "lookup8" );
             table.AddRow("value09", 9, "lookup9" );
 
-            var adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") });
+            var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
             adapter.Reset();
             return adapter;
         }
@@ -157,7 +157,7 @@ namespace dexih.transforms.tests
                 new TableColumn("DecimalColumn", ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("DateColumn", ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
-                new TableColumn("RejectReason", ETypeCode.Int32, TableColumn.EDeltaType.RejectedReason)
+                new TableColumn("RejectReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason)
             );
 
             table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, "");
@@ -171,7 +171,7 @@ namespace dexih.transforms.tests
             table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, "");
             table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1, "");
 
-            var adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") });
+            var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
             adapter.Reset();
             return adapter;
         }
@@ -182,7 +182,7 @@ namespace dexih.transforms.tests
             var table = new Table("test");
 
             for (var i = 0; i < 10; i++)
-                table.Columns.Add(new TableColumn("column" + i.ToString(), ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey));
+                table.Columns.Add(new TableColumn("column" + i, ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey));
 
             table.Columns.Add(new TableColumn("random", ETypeCode.String, TableColumn.EDeltaType.TrackingField) );
 

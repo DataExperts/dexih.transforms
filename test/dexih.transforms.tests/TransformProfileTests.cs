@@ -1,22 +1,41 @@
-﻿using dexih.functions;
-using dexih.functions.Query;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
+using dexih.functions;
+using dexih.functions.Query;
 using Xunit;
 using static Dexih.Utils.DataType.DataType;
+using dexih.functions.BuiltIn;
+using dexih.functions.Mappings;
+using dexih.functions.Parameter;
 
 namespace dexih.transforms.tests
 {
     public class TransformProfileTests
     {
-        private TransformFunction GetProfileReference(bool detailed, string methodName, string column)
+        private Mapping GetProfileReference(bool detailed, string methodName, string column)
         {
-            var function = Functions.GetFunction("dexih.functions.BuiltIn.ProfileFunctions", methodName).GetTransformFunction(new[] { new TableColumn(column) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") }, detailed, new GlobalVariables(null));
-            return function;
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.ProfileFunctions", methodName).GetTransformFunction(null, true);
+            var parameters = new Parameters()
+            {
+                Inputs = new Parameter[]
+                {
+                    new ParameterColumn(column, ETypeCode.String)
+                },
+                ResultReturnParameter = new ParameterOutputColumn("Result", ETypeCode.String),
+                ResultOutputs = new Parameter[]
+                {
+                    new ParameterOutputColumn("Distribution", ETypeCode.Unknown),
+                }
+            };
+
+            var mappings = new MapFunction(function, parameters);
+            return mappings;
+
+//            new[] { new TableColumn(column) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") }, detailed, new GlobalVariables(null));
+//            return function;
         }
+        
         public static ReaderMemory CreateProfileTestData()
         {
             var table = new Table("test", 0,
@@ -43,7 +62,7 @@ namespace dexih.transforms.tests
             table.Data.Add(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), "not null", 2, "ab", 1, "value1", "1234a" });
             table.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), "not null", 2.1, "ab", -1, "value1", "12335" });
 
-            var Adapter = new ReaderMemory(table, new List<Sort>() { new Sort("StringColumn") });
+            var Adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
             Adapter.Reset();
             return Adapter;
         }
@@ -51,26 +70,41 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task ProfileTest()
         {
-            var Table = CreateProfileTestData();
+            var table = CreateProfileTestData();
 
-            var profiles = new List<TransformFunction>
+//            var profiles = new List<TransformFunction>
+//            {
+//                GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "StringColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "IntColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "DecimalColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "DateColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.Nulls), "NullsBlanksColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.Blanks), "NullsBlanksColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.Zeros), "ZerosColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.MaxLength), "MaxLengthColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.MaxValue), "MaxValueColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.DistinctValues), "DistinctValuesColumn"),
+//                GetProfileReference(true, nameof(ProfileFunctions.Patterns), "PatternsColumn")
+//            };
+            
+            var mappings = new Mappings()
             {
-                GetProfileReference(true, "BestDataType", "StringColumn"),
-                GetProfileReference(true, "BestDataType", "IntColumn"),
-                GetProfileReference(true, "BestDataType", "DecimalColumn"),
-                GetProfileReference(true, "BestDataType", "DateColumn"),
-                GetProfileReference(true, "Nulls", "NullsBlanksColumn"),
-                GetProfileReference(true, "Blanks", "NullsBlanksColumn"),
-                GetProfileReference(true, "Zeros", "ZerosColumn"),
-                GetProfileReference(true, "MaxLength", "MaxLengthColumn"),
-                GetProfileReference(true, "MaxValue", "MaxValueColumn"),
-                GetProfileReference(true, "DistinctValues", "DistinctValuesColumn"),
-                GetProfileReference(true, "Patterns", "PatternsColumn")
+                GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "StringColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "IntColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "DecimalColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "DateColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.Nulls), "NullsBlanksColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.Blanks), "NullsBlanksColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.Zeros), "ZerosColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.MaxLength), "MaxLengthColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.MaxValue), "MaxValueColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.DistinctValues), "DistinctValuesColumn"),
+                GetProfileReference(true, nameof(ProfileFunctions.Patterns), "PatternsColumn")
             };
 
-            var transformProfile = new TransformProfile(Table, profiles);
+            var transformProfile = new TransformProfile(table, mappings);
 
-            //read all records in the tranform profile
+            //read all records in the transform profile
             var count = 0;
             while(await transformProfile.ReadAsync())
             {
@@ -84,7 +118,7 @@ namespace dexih.transforms.tests
             var detailCount = 0;
             while(await profileResults.ReadAsync())
             {
-                if ((bool)profileResults["IsSummary"] == true)
+                if ((bool)profileResults["IsSummary"])
                 {
                     switch ((string)profileResults["ColumnName"])
                     {
@@ -101,7 +135,7 @@ namespace dexih.transforms.tests
                             Assert.Equal("DateTime", (string)profileResults["Value"]);
                             break;
                         case "NullsBlanksColumn":
-                            var value = decimal.Parse(((string)profileResults["Value"]).TrimEnd(new char[] { '%', ' ' })) / 100M;
+                            var value = decimal.Parse(((string)profileResults["Value"]).TrimEnd('%', ' ')) / 100M;
                             if ((string)profileResults["Profile"] == "Nulls")
                             {
                                 Assert.Equal(0.2M, value);

@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions.Mappings;
 using Xunit;
 using static Dexih.Utils.DataType.DataType;
 
@@ -274,7 +275,8 @@ namespace dexih.connections.test
 
             //count rows using reader
             var transform = connection.GetTransformReader(table);
-            transform = new TransformMapping(transform, true, null, null);
+            var mappings = new Mappings(true);
+            transform = new TransformMapping(transform, mappings);
             transform = new TransformValidation(transform, null, false);
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, false);
 

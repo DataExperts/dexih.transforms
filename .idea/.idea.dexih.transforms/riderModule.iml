@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="RIDER_MODULE" version="4">
   <component name="NewModuleRootManager">
+    <content url="file:///1a51093d" />
     <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.3.1/build/netcoreapp1.0/xunit.runner.reporters.netcoreapp10.dll" />
     <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.3.1/build/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll" />
     <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.3.1/build/netcoreapp1.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll" />
+    <content url="file://$USER_HOME$/Library/Caches/Rider2018.2/extResources" />
+    <content url="file://$APPLICATION_CONFIG_DIR$/consoles/db" />
+    <content url="file://$APPLICATION_CONFIG_DIR$/extensions" />
     <content url="file://$MODULE_DIR$/../.." />
+    <content url="file://$MODULE_DIR$/../../../dexih.utils.datatype/src/Dexih.Utils.DataType" />
+    <content url="file:///app" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

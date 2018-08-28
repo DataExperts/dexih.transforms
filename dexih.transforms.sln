@@ -71,6 +71,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.sftp.test
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{DA48DBC9-1181-4043-B5F7-89609F317814}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dexih.Utils.DataType", "..\dexih.utils.datatype\src\Dexih.Utils.DataType\Dexih.Utils.DataType.csproj", "{04FD5447-5A11-4B61-98CD-E581124078F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -429,6 +431,18 @@ Global
 		{158DACDD-255A-4182-8F63-EBB8D9B1AF01}.Release|x64.Build.0 = Release|Any CPU
 		{158DACDD-255A-4182-8F63-EBB8D9B1AF01}.Release|x86.ActiveCfg = Release|Any CPU
 		{158DACDD-255A-4182-8F63-EBB8D9B1AF01}.Release|x86.Build.0 = Release|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Debug|x64.Build.0 = Debug|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Debug|x86.Build.0 = Debug|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Release|x64.ActiveCfg = Release|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Release|x64.Build.0 = Release|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Release|x86.ActiveCfg = Release|Any CPU
+		{04FD5447-5A11-4B61-98CD-E581124078F5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -463,6 +477,7 @@ Global
 		{A461B22F-2498-4CD0-88CA-C5103671D26E} = {4712A230-9747-4447-B4C5-022006511342}
 		{72159588-5D70-4861-916C-AEBF1B52A307} = {4712A230-9747-4447-B4C5-022006511342}
 		{158DACDD-255A-4182-8F63-EBB8D9B1AF01} = {4712A230-9747-4447-B4C5-022006511342}
+		{04FD5447-5A11-4B61-98CD-E581124078F5} = {DA48DBC9-1181-4043-B5F7-89609F317814}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5BB1D6C4-C2EC-45ED-AB2E-F43CD8D84EA3}

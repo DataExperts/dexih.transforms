@@ -30,12 +30,6 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
 
-        public List<TransformFunction> Conditions
-        {
-            get => Functions;
-            set => Functions = value;
-        }
-
         public override bool InitializeOutputFields()
         {
             if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
@@ -69,7 +63,6 @@ namespace dexih.transforms
         private List<int> _fieldOrdinals;
 
         public override bool RequiresSort => false;
-        public override bool PassThroughColumns => true;
 
         public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {

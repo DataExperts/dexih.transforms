@@ -1,12 +1,12 @@
-﻿using dexih.functions;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions;
+using dexih.functions.BuiltIn;
+using dexih.functions.Mappings;
+using dexih.functions.Parameter;
 using dexih.functions.Query;
-using Dexih.Utils.DataType;
 using Xunit;
 using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
@@ -19,34 +19,34 @@ namespace dexih.transforms.tests
 
         public TransformFilterTests(ITestOutputHelper output)
         {
-            this._output = output;
+            _output = output;
         }
 
         [Theory]
-        [InlineData("StringColumn", DataType.ETypeCode.String, "value01", Filter.ECompare.IsEqual, 1)]
-        [InlineData("StringColumn", DataType.ETypeCode.String, "value01", Filter.ECompare.NotEqual, 9)]
-        [InlineData("StringColumn", DataType.ETypeCode.String, "value02", Filter.ECompare.GreaterThan, 8)]
-        [InlineData("StringColumn", DataType.ETypeCode.String, "value02", Filter.ECompare.GreaterThanEqual, 9)]
-        [InlineData("StringColumn", DataType.ETypeCode.String, "value02", Filter.ECompare.LessThan, 1)]
-        [InlineData("StringColumn", DataType.ETypeCode.String, "value02", Filter.ECompare.LessThanEqual, 2)]
-        [InlineData("IntColumn", DataType.ETypeCode.Int32, 1, Filter.ECompare.IsEqual, 1)]
-        [InlineData("IntColumn", DataType.ETypeCode.Int32, 1, Filter.ECompare.NotEqual, 9)]
-        [InlineData("IntColumn", DataType.ETypeCode.Int32, 2, Filter.ECompare.GreaterThan, 8)]
-        [InlineData("IntColumn", DataType.ETypeCode.Int32, 2, Filter.ECompare.GreaterThanEqual, 9)]
-        [InlineData("IntColumn", DataType.ETypeCode.Int32, 2, Filter.ECompare.LessThan, 1)]
-        [InlineData("IntColumn", DataType.ETypeCode.Int32, 2, Filter.ECompare.LessThanEqual, 2)]
+        [InlineData("StringColumn", ETypeCode.String, "value01", Filter.ECompare.IsEqual, 1)]
+        [InlineData("StringColumn", ETypeCode.String, "value01", Filter.ECompare.NotEqual, 9)]
+        [InlineData("StringColumn", ETypeCode.String, "value02", Filter.ECompare.GreaterThan, 8)]
+        [InlineData("StringColumn", ETypeCode.String, "value02", Filter.ECompare.GreaterThanEqual, 9)]
+        [InlineData("StringColumn", ETypeCode.String, "value02", Filter.ECompare.LessThan, 1)]
+        [InlineData("StringColumn", ETypeCode.String, "value02", Filter.ECompare.LessThanEqual, 2)]
+        [InlineData("IntColumn", ETypeCode.Int32, 1, Filter.ECompare.IsEqual, 1)]
+        [InlineData("IntColumn", ETypeCode.Int32, 1, Filter.ECompare.NotEqual, 9)]
+        [InlineData("IntColumn", ETypeCode.Int32, 2, Filter.ECompare.GreaterThan, 8)]
+        [InlineData("IntColumn", ETypeCode.Int32, 2, Filter.ECompare.GreaterThanEqual, 9)]
+        [InlineData("IntColumn", ETypeCode.Int32, 2, Filter.ECompare.LessThan, 1)]
+        [InlineData("IntColumn", ETypeCode.Int32, 2, Filter.ECompare.LessThanEqual, 2)]
         [MemberData(nameof(FilterPairDateTests))]
-        public async Task FilterPairs(string columnName, DataType.ETypeCode dataType, object filterValue, Filter.ECompare filterCompare, int expctedRows)
+        public async Task FilterPairs(string columnName, ETypeCode dataType, object filterValue, Filter.ECompare filterCompare, int expctedRows)
         {
             var table = Helpers.CreateSortedTestData();
 
-            var joinPairs = new List<FilterPair>
+            var mappings = new Mappings()
             {
-                new FilterPair(new TableColumn(columnName, dataType), filterValue, filterCompare)
+                new MapFilter(new TableColumn(columnName, dataType), filterValue, filterCompare)
             };
 
             // set a junk filter that filters
-            var transformFilter = new TransformFilter(table, null, joinPairs);
+            var transformFilter = new TransformFilter(table, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
 
             Assert.Equal(5, transformFilter.FieldCount);
@@ -61,12 +61,12 @@ namespace dexih.transforms.tests
 
         public static IEnumerable<object[]> FilterPairDateTests => new[]
         {
-            new object[] { "DateColumn", DataType.ETypeCode.DateTime, Convert.ToDateTime("2015/01/01"), Filter.ECompare.IsEqual, 1},
-            new object[] { "DateColumn", DataType.ETypeCode.DateTime, Convert.ToDateTime("2015/01/01"), Filter.ECompare.NotEqual, 9},
-            new object[] { "DateColumn", DataType.ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.GreaterThan, 8},
-            new object[] { "DateColumn", DataType.ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.GreaterThanEqual, 9},
-            new object[] { "DateColumn", DataType.ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.LessThan, 1},
-            new object[] { "DateColumn", DataType.ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.LessThanEqual, 2},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/01"), Filter.ECompare.IsEqual, 1},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/01"), Filter.ECompare.NotEqual, 9},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.GreaterThan, 8},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.GreaterThanEqual, 9},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.LessThan, 1},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.LessThanEqual, 2}
         };
 
         [Fact]
@@ -75,14 +75,25 @@ namespace dexih.transforms.tests
             var table = Helpers.CreateSortedTestData();
 
             //set a filter that filters all
-            var conditions = new List<TransformFunction>();
-            var function = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", "IsEqual").GetTransformFunction();
-            function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null,  new TableColumn("StringColumn"), isArray: true  ),
-                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "junk", isArray: true ) };
-            conditions.Add(function);
+            var function = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", nameof(ConditionFunctions.IsEqual)).GetTransformFunction();
+            var parameters = new Parameters()
+            {
+                Inputs = new List<Parameter>()
+                {
+                    new ParameterArray("Compare", ETypeCode.String, new Parameter[]
+                    {
+                        new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
+                        new ParameterValue("Compare", ETypeCode.String, "junk")
+                    })
+                },
+            };
+            
+            var mappings = new Mappings()
+            {
+                new MapFunction(function, parameters)
+            };
 
-            var transformFilter = new TransformFilter(table, conditions, null);
+            var transformFilter = new TransformFilter(table, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
 
             Assert.Equal(5, transformFilter.FieldCount);
@@ -95,18 +106,23 @@ namespace dexih.transforms.tests
             Assert.Equal(0, count);
 
             //set a filter than filters to 1 row.
-            conditions = new List<TransformFunction>();
-            function = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", "IsEqual").GetTransformFunction();
-            function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("StringColumn", ETypeCode.String, true, null,  new TableColumn("StringColumn"), isArray: true ),
-                    new dexih.functions.Parameter("Compare", ETypeCode.String, false, "value03", isArray: true ) };
-            conditions.Add(function);
+            parameters = new Parameters()
+            {
+                Inputs = new List<Parameter>()
+                {
+                    new ParameterArray("Compare", ETypeCode.String, new Parameter[]
+                    {
+                        new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
+                        new ParameterValue("Compare", ETypeCode.String, "value03")
+                    })
+                }
+            };
 
-            transformFilter.Conditions = conditions;
+            transformFilter.Mappings = new Mappings { new MapFunction(function, parameters) };
             transformFilter.Reset();
 
             count = 0;
-            while (await transformFilter.ReadAsync() == true)
+            while (await transformFilter.ReadAsync())
             {
                 count = count + 1;
                 if (count == 1)
@@ -115,50 +131,61 @@ namespace dexih.transforms.tests
             Assert.Equal(1, count);
 
             // use the "IN" function to filter 3 rows.
-            conditions = new List<TransformFunction>();
+            //set a filter than filters to 1 row.
             function = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", "IsIn").GetTransformFunction();
-            function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("Value", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
-                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value03", isArray: true) ,
-                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value05", isArray: true) ,
-                    new dexih.functions.Parameter("CompareTo", ETypeCode.String, false, "value07", isArray: true) };
-
-            conditions.Add(function);
-            transformFilter.Conditions = conditions;
+            parameters = new Parameters()
+            {
+                Inputs = new List<Parameter>()
+                {
+                    new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
+                    new ParameterArray("CompareTo", ETypeCode.String, new Parameter[]
+                    {
+                        new ParameterValue("CompareTo", ETypeCode.String, "value03"),
+                        new ParameterValue("CompareTo", ETypeCode.String, "value05"),
+                        new ParameterValue("CompareTo", ETypeCode.String, "value07")
+                    })
+                }
+            };
+            transformFilter.Mappings = new Mappings { new MapFunction(function, parameters) };
             table.Reset();
             transformFilter.SetInTransform(table);
 
             count = 0;
-            while (await transformFilter.ReadAsync() == true)
+            while (await transformFilter.ReadAsync())
             {
                 count = count + 1;
             }
             Assert.Equal(3, count);
 
             // create a mapping, and use the filter after the calculation.
-            var mappings = new List<TransformFunction>();
             function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "Substring").GetTransformFunction();
-            function.TargetColumn = new TableColumn("Substring");
-            function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("name", ETypeCode.String, true, null,  new TableColumn("StringColumn") ),
-                    new dexih.functions.Parameter("start", ETypeCode.Int32, false, 5),
-                    new dexih.functions.Parameter("end", ETypeCode.Int32, false, 50) };
-            mappings.Add(function);
-
+            parameters = new Parameters()
+            {
+                Inputs = new List<Parameter>()
+                {
+                    new ParameterColumn("name", new TableColumn("StringColumn")),
+                    new ParameterValue("start", ETypeCode.Int32, 5),
+                    new ParameterValue("end", ETypeCode.Int32, 50),
+                },
+                ReturnParameter = new ParameterOutputColumn("return", new TableColumn("Substring"))
+            };
             table.Reset();
-            var transformMapping = new TransformMapping(table, false, null, mappings);
-
-            conditions = new List<TransformFunction>();
+            var transformMapping = new TransformMapping(table, new Mappings { new MapFunction(function, parameters) });
+            
             function = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", "LessThan").GetTransformFunction();
-            function.Inputs = new dexih.functions.Parameter[] {
-                    new dexih.functions.Parameter("Substring", ETypeCode.Int32, true, null,  new TableColumn("Substring") ),
-                    new dexih.functions.Parameter("Compare", ETypeCode.Int32, false, 5) };
-            conditions.Add(function);
-            transformFilter.Conditions = conditions;
+            parameters = new Parameters()
+            {
+                Inputs = new List<Parameter>()
+                {
+                    new ParameterColumn("Substring", new TableColumn("Substring", ETypeCode.Int32)),
+                    new ParameterValue("Compare", ETypeCode.Int32, 5),
+                },
+            };
+            transformFilter.Mappings = new Mappings { new MapFunction(function, parameters) };
             transformFilter.SetInTransform(transformMapping);
 
             count = 0;
-            while (await transformFilter.ReadAsync() == true)
+            while (await transformFilter.ReadAsync())
             {
                 count = count + 1;
             }
@@ -188,18 +215,21 @@ namespace dexih.transforms.tests
         public async Task FilterPerformanceFilterAll(int rows)
         {
             var data = Helpers.CreateLargeTable(rows);
-            var transformFilter = new TransformFilter();
+            
+            var function = new TransformFunction(new Func<int, bool>(value => value < 0), null);
 
-            var filters = new List<TransformFunction>();
+            var mappings = new Mappings()
+            {
+                new MapFunction(function, new Parameters()
+                {
+                    Inputs = new List<Parameter>()
+                    {
+                        new ParameterColumn("value", new TableColumn(data.GetName(0), ETypeCode.Int32))
+                    }
+                })
+            };
 
-            var newFilter = new TransformFunction(
-                new Func<int, bool>((value) => value < 0), 
-                new TableColumn[] { new TableColumn(data.GetName(0)) }, 
-                null, 
-                null, new GlobalVariables(null));
-            filters.Add(newFilter);
-            transformFilter.Functions = filters;
-            transformFilter.SetInTransform(data);
+            var transformFilter = new TransformFilter(data, mappings);
 
             var count = 0;
             while (await transformFilter.ReadAsync())

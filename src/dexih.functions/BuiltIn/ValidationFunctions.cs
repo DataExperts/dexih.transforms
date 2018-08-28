@@ -1,4 +1,6 @@
-﻿namespace dexih.functions.BuiltIn
+﻿using Dexih.Utils.DataType;
+
+namespace dexih.functions.BuiltIn
 {
     public class ValidationFunctions
     {
@@ -50,12 +52,24 @@
             return true;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Maximum Value", Description = "Checks if the number is greater than the value, and sets to the value when true.")]
-        public bool MaxValue(decimal value, decimal maxValue, out decimal adjustedValue)
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Maximum Value", Description = "Checks if the number is greater than the value, and sets to the adjusted value when true.")]
+        public bool MaxValue(object value, object maxValue, out object adjustedValue)
         {
-            if (value > maxValue)
+            if (DataType.Compare(null, value, maxValue) == DataType.ECompareResult.Greater)
             {
                 adjustedValue = maxValue;
+                return false;
+            }
+            adjustedValue = value;
+            return true;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Minimum Value", Description = "Checks if the number is less than the value, and sets to the adjusted value when true.")]
+        public bool MinValue(object value, object minValue, out object adjustedValue)
+        {
+            if (DataType.Compare(null, value, minValue) == DataType.ECompareResult.Less)
+            {
+                adjustedValue = minValue;
                 return false;
             }
             adjustedValue = value;

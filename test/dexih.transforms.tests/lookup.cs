@@ -1,11 +1,8 @@
-﻿using dexih.functions;
-using dexih.functions.Query;
-using dexih.transforms;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions.Query;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -17,9 +14,9 @@ namespace dexih.transforms.tests
         {
             var testTransform = Helpers.CreateSortedTestData();
 
-            var query = new SelectQuery()
+            var query = new SelectQuery
             {
-                Filters = new List<Filter>() { new Filter("StringColumn", Filter.ECompare.IsEqual, "value04") }
+                Filters = new List<Filter> { new Filter("StringColumn", Filter.ECompare.IsEqual, "value04") }
             };
             
             var row = await testTransform.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);

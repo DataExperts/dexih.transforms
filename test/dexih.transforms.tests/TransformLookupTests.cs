@@ -1,12 +1,9 @@
-﻿using dexih.transforms;
-using dexih.functions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions;
+using dexih.functions.Mappings;
 using Xunit;
-using dexih.transforms.Exceptions;
 
 namespace dexih.transforms.tests
 {
@@ -17,16 +14,22 @@ namespace dexih.transforms.tests
         public async Task Lookup()
         {
             var source = Helpers.CreateSortedTestData();
-            var joinPairs = new List<JoinPair>()
-            {
-                new JoinPair(new TableColumn("StringColumn"), new TableColumn("StringColumn"))
-            }; 
-            var transformLookup = new TransformLookup(
-                source, 
-                Helpers.CreateUnSortedJoinData(), 
-                joinPairs, 
-                "Lookup");
+//            var joinPairs = new List<Join>
+//            {
+//                new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn"))
+//            }; 
+//            var transformLookup = new TransformLookup(
+//                source, 
+//                Helpers.CreateUnSortedJoinData(), 
+//                joinPairs, 
+//                "Lookup");
 
+            var mappings = new Mappings()
+            {
+                new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))
+            };
+            var transformLookup = new TransformLookup(source, Helpers.CreateUnSortedJoinData(), mappings, "Lookup");
+                
             Assert.Equal(8, transformLookup.FieldCount);
 
             await transformLookup.Open(1, null, CancellationToken.None);

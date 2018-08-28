@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Threading;
+using dexih.functions.Mappings;
 using dexih.functions.Query;
 using dexih.transforms.Transforms;
 
@@ -28,10 +29,18 @@ namespace dexih.transforms
             _sortFields = new List<Sort>();
         }
 
+        public TransformSort(Transform inTransform, Mappings mappings)
+        {
+            Mappings = mappings;
+            SetInTransform(inTransform);
+            
+            _sortFields = Mappings.OfType<MapSort>().Select(c => new Sort(c.InputColumn, c.Direction)).ToList();
+        }
+
         public TransformSort(Transform inTransform, List<Sort> sortFields)
         {
-            _sortFields = sortFields;
             SetInTransform(inTransform);
+            _sortFields = sortFields;
         }
 
         public override bool InitializeOutputFields()
@@ -44,8 +53,6 @@ namespace dexih.transforms
         }
 
         public override bool RequiresSort => false;
-        public override bool PassThroughColumns => true;
-
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {

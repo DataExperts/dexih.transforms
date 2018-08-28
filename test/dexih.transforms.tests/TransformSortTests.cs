@@ -1,9 +1,9 @@
-﻿using dexih.functions;
-using dexih.functions.Query;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using dexih.functions;
+using dexih.functions.Mappings;
+using dexih.functions.Query;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -16,7 +16,6 @@ namespace dexih.transforms.tests
         [InlineData("IntColumn", Sort.EDirection.Ascending, "IntColumn")]
         [InlineData("IntColumn", Sort.EDirection.Descending, "SortColumn")]
         [InlineData("DecimalColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("DecimalColumn", Sort.EDirection.Ascending, "SortColumn")]
         [InlineData("DecimalColumn", Sort.EDirection.Descending, "SortColumn")]
         [InlineData("DateColumn", Sort.EDirection.Ascending, "IntColumn")]
         [InlineData("DateColumn", Sort.EDirection.Descending, "SortColumn")]
@@ -34,6 +33,32 @@ namespace dexih.transforms.tests
                 sortCount++;
             }
         }
+        
+        [Theory]
+        [InlineData("StringColumn", Sort.EDirection.Ascending, "IntColumn")]
+        [InlineData("StringColumn", Sort.EDirection.Descending, "SortColumn")]
+        [InlineData("IntColumn", Sort.EDirection.Ascending, "IntColumn")]
+        [InlineData("IntColumn", Sort.EDirection.Descending, "SortColumn")]
+        [InlineData("DecimalColumn", Sort.EDirection.Ascending, "IntColumn")]
+        [InlineData("DecimalColumn", Sort.EDirection.Descending, "SortColumn")]
+        [InlineData("DateColumn", Sort.EDirection.Ascending, "IntColumn")]
+        [InlineData("DateColumn", Sort.EDirection.Descending, "SortColumn")]
+        public async Task RunSingleColumnSort2(string column, Sort.EDirection direction, string checkColumn)
+        {
+            var source = Helpers.CreateUnSortedTestData();
+            var mappings = new Mappings() {new MapSort(new TableColumn(column), direction)};
+            var transformSort = new TransformSort(source, mappings);
+            var sortCount = 1;
+
+            Assert.Equal(6, transformSort.FieldCount);
+
+            while (await transformSort.ReadAsync())
+            {
+                Assert.Equal(sortCount, transformSort[checkColumn]);
+                sortCount++;
+            }
+        }
+
 
         [Fact]
         public async Task  RunDoubleColumnSort()

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Mappings;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Transforms;
@@ -19,13 +20,9 @@ namespace dexih.transforms
     {
         public TransformGroup() {  }
 
-        public TransformGroup(Transform inReader, List<ColumnPair> groupFields, List<TransformFunction> aggregates, List<AggregatePair> aggregatePairs, bool passThroughColumns)
+        public TransformGroup(Transform inReader, Mappings mappings)
         {
-            GroupFields = groupFields;
-            Aggregates = aggregates;
-            AggregatePairs = aggregatePairs;
-            PassThroughColumns = passThroughColumns;
-
+            Mappings = mappings;
             SetInTransform(inReader);
         }
 
@@ -34,121 +31,128 @@ namespace dexih.transforms
 
         private object[] _groupValues;
 
-        private List<object[]> _passThroughValues;
-        private int _passThroughStartIndex;
-        private int _passThroughIndex;
-        private int _passThroughCount;
-        private object[] _nextPassThroughRow;
+        private Queue<object[]> _passThroughValues;
+//        private List<object[]> _passThroughValues;
+//        private int _passThroughStartIndex;
+//        private int _passThroughIndex;
+//        private int _passThroughCount;
+//        private object[] _nextPassThroughRow;
 
-        public List<ColumnPair> GroupFields
-        {
-            get
-            {
-                return ColumnPairs;
-            }
-            set
-            {
-                ColumnPairs = value;
-            }
-        }
+//        private MapGroup[] _groupFields;
+//        private MapAggregate[] _aggregates;
+//        private MapFunction[] _aggregateFunctions;
 
-        public List<TransformFunction> Aggregates
-        {
-            get
-            {
-                return Functions;
-            }
-            set
-            {
-                Functions = value;
-            }
-        }
+//        public List<ColumnPair> GroupFields
+//        {
+//            get
+//            {
+//                return ColumnPairs;
+//            }
+//            set
+//            {
+//                ColumnPairs = value;
+//            }
+//        }
+//
+//        public List<TransformFunction> _aggregateFunctions
+//        {
+//            get
+//            {
+//                return Functions;
+//            }
+//            set
+//            {
+//                Functions = value;
+//            }
+//        }
 
         public override bool InitializeOutputFields()
         {
-            CacheTable = new Table("Group");
+            CacheTable = Mappings.Initialize(PrimaryTransform.CacheTable);
+//            _groupFields = Mappings.OfType<MapGroup>().ToArray();
+//            _aggregates = Mappings.OfType<MapAggregate>().ToArray();
+//            _aggregateFunctions = Mappings.OfType<MapFunction>().ToArray();
+//            _groupValues = new object[_groupFields.Length];
+            
+//            CacheTable = new Table("Group");
 
-            var i = 0;
-            if (GroupFields != null)
-            {
-                _groupValues = new object[GroupFields.Count];
-                _firstRecord = true;
-
-                foreach (var groupField in GroupFields)
-                {
-                    var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn].Copy();
-                    column.ReferenceTable = "";
-                    column.Name = groupField.TargetColumn.Name;
-                    CacheTable.Columns.Add(column);
-                    i++;
-                }
-            }
-
-            if (AggregatePairs != null)
-            {
-                foreach (var aggregatePair in AggregatePairs)
-                {
-                    var column = aggregatePair.TargetColumn.Copy();
-                    CacheTable.Columns.Add(column);
-                    i++;
-                }
-            }
-
-            if (Aggregates != null)
-            {
-                foreach (var aggregate in Aggregates)
-                {
-                    var column = new TableColumn(aggregate.TargetColumn.Name, aggregate.ReturnType);
-                    CacheTable.Columns.Add(column);
-                    i++;
-
-                    if (aggregate.Outputs != null)
-                    {
-                        foreach (var param in aggregate.Outputs)
-                        {
-                            var paramColumn = new TableColumn(param.Column.Name, param.DataType);
-                            CacheTable.Columns.Add(paramColumn);
-                            i++;
-                        }
-                    }
-                }
-            }
-
-            //if passthrough is set-on load any unused columns to the output.
-            if (PassThroughColumns)
-            {
-                _passThroughStartIndex = i;
-
-                foreach (var column in PrimaryTransform.CacheTable.Columns)
-                {
-                    if (!CacheTable.Columns.ContainsMatching(column))
-                        CacheTable.Columns.Add(column.Copy());
-                }
-            }
-
-            if(GroupFields != null)
-                CacheTable.OutputSortFields = GroupFields.Select(c => new Sort { Column = c.TargetColumn, Direction = Sort.EDirection.Ascending }).ToList();
+//            var i = 0;
+//            if (GroupFields != null)
+//            {
+//                _groupValues = new object[GroupFields.Count];
+//                _firstRecord = true;
+//
+//                foreach (var groupField in GroupFields)
+//                {
+//                    var column = PrimaryTransform.CacheTable.Columns[groupField.SourceColumn].Copy();
+//                    column.ReferenceTable = "";
+//                    column.Name = groupField.TargetColumn.Name;
+//                    CacheTable.Columns.Add(column);
+//                    i++;
+//                }
+//            }
+//
+//            if (_aggregates != null)
+//            {
+//                foreach (var aggregatePair in _aggregates)
+//                {
+//                    var column = aggregatePair.TargetColumn.Copy();
+//                    CacheTable.Columns.Add(column);
+//                    i++;
+//                }
+//            }
+//
+//            if (_aggregateFunctions != null)
+//            {
+//                foreach (var aggregate in _aggregateFunctions)
+//                {
+//                    if (aggregate.TargetColumn != null)
+//                    {
+//                        var column = new TableColumn(aggregate.TargetColumn.Name, aggregate.ReturnType);
+//                        CacheTable.Columns.Add(column);
+//                        i++;
+//                    }
+//
+//                    if (aggregate.Outputs != null)
+//                    {
+//                        foreach (var param in aggregate.Outputs)
+//                        {
+//                            var paramColumn = new TableColumn(param.Column.Name, param.DataType);
+//                            CacheTable.Columns.Add(paramColumn);
+//                            i++;
+//                        }
+//                    }
+//                }
+//            }
+//
+//            //if passthrough is set-on load any unused columns to the output.
+//            if (PassThroughColumns)
+//            {
+//                _passThroughStartIndex = i;
+//
+//                foreach (var column in PrimaryTransform.CacheTable.Columns)
+//                {
+//                    if (!CacheTable.Columns.ContainsMatching(column))
+//                        CacheTable.Columns.Add(column.Copy());
+//                }
+//            }
+//
+//            if(GroupFields != null)
+//                CacheTable.OutputSortFields = GroupFields.Select(c => new Sort { Column = c.TargetColumn, Direction = Sort.EDirection.Ascending }).ToList();
 
             return true;
         }
 
-        public override bool RequiresSort
-        {
-            get
-            {
-                if (GroupFields == null || GroupFields.Count == 0)
-                    return false;
-                else
-                    return true;
-            }
-        }
+        public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
-        public override Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
             if (query == null)
+            {
                 query = new SelectQuery();
+            }
 
             var requiredSorts = RequiredSortFields();
 
@@ -172,21 +176,23 @@ namespace dexih.transforms
 
         public override bool ResetTransform()
         {
-            if (AggregatePairs != null)
-            {
-                foreach (var aggregate in AggregatePairs)
-                {
-                    aggregate.Reset();
-                }
-            }
-
-            if (Aggregates != null)
-            {
-                foreach (var aggregate in Aggregates)
-                {
-                    aggregate.Reset();
-                }
-            }
+            Mappings.Reset();
+            
+//            if (_aggregates != null)
+//            {
+//                foreach (var aggregate in _aggregates)
+//                {
+//                    aggregate.Reset();
+//                }
+//            }
+//
+//            if (_aggregateFunctions != null)
+//            {
+//                foreach (var aggregate in _aggregateFunctions)
+//                {
+//                    aggregate.Reset();
+//                }
+//            }
 
             _firstRecord = true;
             _lastRecord = true;
@@ -196,209 +202,255 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            object[] newRow = null;
+            object[] outputRow ;
 
             //if there are records in the passthrough cache, then empty them out before getting new records.
-            if (PassThroughColumns)
+            if (Mappings.PassThroughColumns)
             {
                 if(_firstRecord)
                 {
-                    _passThroughValues = new List<object[]>();
+                    _passThroughValues = new Queue<object[]>();
                 }
-                else if (_passThroughIndex > 0 && _passThroughIndex < _passThroughCount)
+                else if( _passThroughValues.Count > 0)
                 {
-                    newRow = _passThroughValues[_passThroughIndex];
-                    _passThroughIndex++;
-                    return newRow;
+                    outputRow = _passThroughValues.Dequeue();
+                    return outputRow;
                 }
                 //if all rows have been iterated through, reset the cache and add the stored row for the next group 
-                else if(_passThroughIndex >= _passThroughCount && _firstRecord == false && _lastRecord == false)
+                else if(_firstRecord == false && _lastRecord == false)
                 {
-                    _passThroughValues.Clear();
-                    _passThroughValues.Add(_nextPassThroughRow);
+                    //_passThroughValues.Clear();
+                    //_passThroughValues.Add(_nextPassThroughRow);
+                    
+                    //reset the aggregate functions
+                    Mappings.Reset();
+                    
+                    //populate the parameters with the current row.
+                    Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
                 }
             }
+           
 
-            newRow = new object[FieldCount];
+            outputRow = new object[FieldCount];
 
-            int i;
             var groupChanged = false;
             object[] newGroupValues = null;
 
             if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
             {
                 if (_lastRecord) //return false is all record have been written.
+                {
                     return null;
+                }
             }
             else
             {
                 do
                 {
                     _lastRecord = false;
-                    i = 0;
+                    
+
+                    // get group values without modifying mapping values
+                    newGroupValues = Mappings.GetGroupValues(PrimaryTransform.CurrentRow);
 
                     //if it's the first record then the groupvalues are being set for the first time.
                     if (_firstRecord)
                     {
                         groupChanged = false;
                         _firstRecord = false;
-                        if (GroupFields != null)
-                        {
-                            foreach (var groupField in GroupFields)
-                            {
-                                // _groupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
-                                _groupValues[i] = PrimaryTransform[groupField.SourceColumn];
-                                i++;
-                            }
-                        }
-                        newGroupValues = _groupValues;
+                        _groupValues = newGroupValues;
+//                        foreach (var groupField in _groupFields)
+//                        {
+//                            // _groupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
+//                            // _groupValues[i] = PrimaryTransform[groupField.SourceColumn];
+//                            _groupValues[i] = groupField.GetInputValue();
+//                            i++;
+//                        }
+//                        newGroupValues = _groupValues;
                     }
                     else
                     {
                         //if not first row, then check if the group values have changed from the previous row
-                        if (GroupFields != null)
+                        for (var i = 0; i < newGroupValues.Length; i++)
                         {
-                            newGroupValues = new object[GroupFields.Count];
-
-                            foreach (var groupField in GroupFields)
+                            if (newGroupValues[i] == null && _groupValues != null ||
+                                (newGroupValues[i] != null && _groupValues == null) ||
+                                !Equals(newGroupValues[i], _groupValues[i]) )
                             {
-                                //newGroupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
-                                newGroupValues[i] = PrimaryTransform[groupField.SourceColumn];
-                                if ((newGroupValues[i] == null && _groupValues != null) ||
-                                    (newGroupValues[i] != null && _groupValues == null) ||
-                                    !Equals(newGroupValues[i], _groupValues[i]) )
-                                {
-                                    groupChanged = true;
-                                }
-                                i++;
+                                groupChanged = true;
+                                break;
                             }
                         }
+                        
+                        //if not first row, then check if the group values have changed from the previous row
+                        //newGroupValues = new object[_groupFields.Length];
+
+//                        foreach (var groupField in _groupFields)
+//                        {
+//                            //newGroupValues[i] = PrimaryTransform[groupField.SourceColumn]?.ToString() ?? "";
+//                            //newGroupValues[i] = PrimaryTransform[groupField.SourceColumn];
+//                            newGroupValues[i] = groupField.GetInputValue();
+//                            
+//                            if ((newGroupValues[i] == null && _groupValues != null) ||
+//                                (newGroupValues[i] != null && _groupValues == null) ||
+//                                !Equals(newGroupValues[i], _groupValues[i]) )
+//                            {
+//                                groupChanged = true;
+//                            }
+//                            i++;
+//                        }
                     }
 
                     //if the group values have changed, write out the previous group values.
                     if (groupChanged)
                     {
-                        i = 0;
-
-                        if (GroupFields != null)
+                        if (Mappings.PassThroughColumns)
                         {
-                            for(; i < GroupFields.Count; i++)
-                            {
-                                newRow[i] = _groupValues[i];
-                            }
-                        }
-
-                        if (PassThroughColumns == false)
-                        {
-                            if (AggregatePairs != null)
-                            {
-                                foreach (var aggregate in AggregatePairs)
-                                {
-                                    newRow[i] = aggregate.GetValue();
-                                    i++;
-                                }
-                            }
-
-                            if (Aggregates != null)
-                            {
-                                foreach (var mapping in Aggregates)
-                                {
-                                    try
-                                    {
-                                        newRow[i] = mapping.ReturnValue(0);
-                                        i++;
-
-                                        if (mapping.Outputs != null)
-                                        {
-                                            foreach (var output in mapping.Outputs)
-                                            {
-                                                newRow[i] = output.Value;
-                                                i++;
-                                            }
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        throw new TransformException($"The group transform {Name} failed on function {mapping.FunctionName}.  {ex.Message}.", ex);
-                                    }
-                                }
-                            }
-                        }
-                        //for passthrough, write out the aggregated values to the cached passthrough set
-                        else
-                        {
+//                            //the first row of the next group has been read, so this is to store it until ready to write out.
+//                            _nextPassThroughRow = newRow;
+//                            _passThroughIndex = 0;
+//                            _passThroughCount = _passThroughValues.Count; 
+                            
                             var index = 0;
-                            var startColumn = i;
                             foreach(var row in _passThroughValues)
                             {
-                                i = startColumn;
-
-                                if (AggregatePairs != null)
-                                {
-                                    foreach (var aggregate in AggregatePairs)
-                                    {
-                                        row[i] = aggregate.GetValue();
-                                        i++;
-                                    }
-                                }
-
-                                if (Aggregates != null)
-                                {
-                                    foreach (var mapping in Aggregates)
-                                    {
-                                        try
-                                        {
-                                            row[i] = mapping.ReturnValue(index);
-                                            i++;
-
-                                            if (mapping.Outputs != null)
-                                            {
-                                                foreach (var output in mapping.Outputs)
-                                                {
-                                                    row[i] = output.Value;
-                                                    i++;
-                                                }
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            throw new TransformException($"The group transform {Name} failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
-                                        }
-                                    }
-                                }
+                                Mappings.ProcessAggregateRow(index, row);
                                 index++;
                             }
-
-                            //the first row of the next group has been read, so this is to store it until ready to write out.
-                            _nextPassThroughRow = new object[FieldCount];
-                            for (var j = 0; j< newGroupValues.Length; j++)
-                                _nextPassThroughRow[j] = newGroupValues[j];
-
-                            for (var j = _passThroughStartIndex; j < FieldCount; j++)
-                                _nextPassThroughRow[j] = PrimaryTransform[GetName(j)];
-
+                            
                             ////set the first cached row to current
-                            newRow = _passThroughValues[0];
-                            _passThroughIndex = 1;
-                            _passThroughCount = _passThroughValues.Count;
-                        }
+                            outputRow = _passThroughValues.Dequeue();
 
-                        //reset the functions
-                        if (AggregatePairs != null)
-                        {
-                            foreach (var aggregate in AggregatePairs)
-                            {
-                                aggregate.Reset();
-                            }
                         }
+                        else
+                        {
+                            Mappings.ProcessOutputRow(outputRow);
+                            Mappings.ProcessAggregateRow(0, outputRow);
+                            Mappings.Reset();
+                            Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                        }
+                        
+//                        i = 0;
+//
+//                        if (_groupFields != null)
+//                        {
+//                            for(; i < _groupFields.Count(); i++)
+//                            {
+//                                newRow[i] = _groupValues[i];
+//                            }
+//                        }
+//
+//                        if (Mappings.PassThroughColumns == false)
+//                        {
+//                            if (_aggregates != null)
+//                            {
+//                                foreach (var aggregate in _aggregates)
+//                                {
+//                                    newRow[i] = aggregate.GetValue();
+//                                    i++;
+//                                }
+//                            }
+//
+//                            if (_aggregateFunctions != null)
+//                            {
+//                                foreach (var mapping in _aggregateFunctions)
+//                                {
+//                                    try
+//                                    {
+//                                        newRow[i] = mapping.ReturnValue(0);
+//                                        i++;
+//
+//                                        if (mapping.Outputs != null)
+//                                        {
+//                                            foreach (var output in mapping.Outputs)
+//                                            {
+//                                                newRow[i] = output.Value;
+//                                                i++;
+//                                            }
+//                                        }
+//                                    }
+//                                    catch (Exception ex)
+//                                    {
+//                                        throw new TransformException($"The group transform {Name} failed on function {mapping.FunctionName}.  {ex.Message}.", ex);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        //for passthrough, write out the aggregated values to the cached passthrough set
+//                        else
+//                        {
+//                            var index = 0;
+//                            var startColumn = i;
+//                            foreach(var row in _passThroughValues)
+//                            {
+//                                i = startColumn;
+//
+//                                if (_aggregates != null)
+//                                {
+//                                    foreach (var aggregate in _aggregates)
+//                                    {
+//                                        row[i] = aggregate.GetValue();
+//                                        i++;
+//                                    }
+//                                }
+//
+//                                if (_aggregateFunctions != null)
+//                                {
+//                                    foreach (var mapping in _aggregateFunctions)
+//                                    {
+//                                        try
+//                                        {
+//                                            row[i] = mapping.ReturnValue(index);
+//                                            i++;
+//
+//                                            if (mapping.Outputs != null)
+//                                            {
+//                                                foreach (var output in mapping.Outputs)
+//                                                {
+//                                                    row[i] = output.Value;
+//                                                    i++;
+//                                                }
+//                                            }
+//                                        }
+//                                        catch (Exception ex)
+//                                        {
+//                                            throw new TransformException($"The group transform {Name} failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
+//                                        }
+//                                    }
+//                                }
+//                                index++;
+//                            }
+//
+//                            //the first row of the next group has been read, so this is to store it until ready to write out.
+//                            _nextPassThroughRow = new object[FieldCount];
+//                            for (var j = 0; j< newGroupValues.Length; j++)
+//                                _nextPassThroughRow[j] = newGroupValues[j];
+//
+//                            for (var j = _passThroughStartIndex; j < FieldCount; j++)
+//                                _nextPassThroughRow[j] = PrimaryTransform[GetName(j)];
+//
+//                            ////set the first cached row to current
+//                            newRow = _passThroughValues[0];
+//                            _passThroughIndex = 1;
+//                            _passThroughCount = _passThroughValues.Count;
+//                        }
 
-                        if (Aggregates != null)
-                        {
-                            foreach (var mapping in Aggregates)
-                            {
-                                mapping.Reset();
-                            }
-                        }
+//                        //reset the functions
+//                        if (_aggregates != null)
+//                        {
+//                            foreach (var aggregate in _aggregates)
+//                            {
+//                                aggregate.Reset();
+//                            }
+//                        }
+//
+//                        if (_aggregateFunctions != null)
+//                        {
+//                            foreach (var mapping in _aggregateFunctions)
+//                            {
+//                                mapping.Reset();
+//                            }
+//                        }
 
                         //store the last groupvalues read to start the next grouping.
                         _groupValues = newGroupValues;
@@ -406,67 +458,73 @@ namespace dexih.transforms
                     }
                     else
                     {
-                        if (PassThroughColumns)
+                        // if the group has not changed, process the input row
+                        Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                        
+                        if (Mappings.PassThroughColumns)
                         {
                             //create a cached current row.  this will be output when the group has changed.
-                            var cacheRow = new object[newRow.Length];
-                            if (_groupValues != null)
-                            {
-                                for (var j = 0; j < _groupValues.Length; j++)
-                                    cacheRow[j] = _groupValues[j];
-                            }
-                            for (var j = _passThroughStartIndex; j < FieldCount; j++)
-                                cacheRow[j] = PrimaryTransform[GetName(j)];
-                            _passThroughValues.Add(cacheRow);
+                            var cacheRow = new object[outputRow.Length];
+                            Mappings.ProcessOutputRow(cacheRow);
+                            _passThroughValues.Enqueue(cacheRow);
+                            
+//                            if (_groupValues != null)
+//                            {
+//                                for (var j = 0; j < _groupValues.Length; j++)
+//                                    cacheRow[j] = _groupValues[j];
+//                            }
+//                            for (var j = _passThroughStartIndex; j < FieldCount; j++)
+//                                cacheRow[j] = PrimaryTransform[GetName(j)];
+//                            _passThroughValues.Add(cacheRow);
                         }
 
                     }
 
-                    // update the aggregate pairs
-                    if (AggregatePairs != null)
-                    {
-                        foreach (var aggregate in AggregatePairs)
-                        {
-                            aggregate.AddValue(PrimaryTransform[aggregate.SourceColumn]);
-                        }
-                    }
-
-                    // update the aggregate functions
-                    if (Aggregates != null)
-                    {
-                        foreach (var mapping in Aggregates)
-                        {
-                            if (mapping.Inputs != null)
-                            {
-                                foreach (var input in mapping.Inputs.Where(c => c.IsColumn))
-                                {
-                                    try
-                                    {
-                                        input.SetValue(PrimaryTransform[input.Column]);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        throw new TransformException($"The group transform {Name} failed setting an incompatible value to column {input.Column.Name}.  {ex.Message}.", ex, PrimaryTransform[input.Column]);
-                                    }
-                                }
-                            }
-
-                            try
-                            {
-                                var invokeresult = mapping.Invoke();
-                            }
-                            catch (FunctionIgnoreRowException)
-                            {
-                                //TODO: Issue that some of the aggregate values may be calculated prior to the ignorerow being set.  
-                                TransformRowsIgnored++;
-                                continue;
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new TransformException($"The group transform {Name} failed running the function {mapping.FunctionName}.  {ex.Message}.", ex);
-                            }
-                        }
-                    }
+//                    // update the aggregate pairs
+//                    if (_aggregates != null)
+//                    {
+//                        foreach (var aggregate in _aggregates)
+//                        {
+//                            aggregate.AddValue(PrimaryTransform[aggregate.SourceColumn]);
+//                        }
+//                    }
+//
+//                    // update the aggregate functions
+//                    if (_aggregateFunctions != null)
+//                    {
+//                        foreach (var mapping in _aggregateFunctions)
+//                        {
+//                            if (mapping.Inputs != null)
+//                            {
+//                                foreach (var input in mapping.Inputs.Where(c => c.IsColumn))
+//                                {
+//                                    try
+//                                    {
+//                                        input.SetValue(PrimaryTransform[input.Column]);
+//                                    }
+//                                    catch (Exception ex)
+//                                    {
+//                                        throw new TransformException($"The group transform {Name} failed setting an incompatible value to column {input.Column.Name}.  {ex.Message}.", ex, PrimaryTransform[input.Column]);
+//                                    }
+//                                }
+//                            }
+//
+//                            try
+//                            {
+//                                var invokeresult = mapping.Invoke();
+//                            }
+//                            catch (FunctionIgnoreRowException)
+//                            {
+//                                //TODO: Issue that some of the aggregate values may be calculated prior to the ignorerow being set.  
+//                                TransformRowsIgnored++;
+//                                continue;
+//                            }
+//                            catch (Exception ex)
+//                            {
+//                                throw new TransformException($"The group transform {Name} failed running the function {mapping.FunctionName}.  {ex.Message}.", ex);
+//                            }
+//                        }
+//                    }
 
                     if (groupChanged)
                         break;
@@ -476,123 +534,128 @@ namespace dexih.transforms
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
-                i = 0;
-                if (GroupFields != null)
+                // Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+//                i = 0;
+//                if (_groupFields != null)
+//                {
+//                    for(; i < _groupFields.Count(); i++)
+//                    {
+//                        newRow[i] = _groupValues[i];
+//                    }
+//                }
+                
+                if (Mappings.PassThroughColumns == false)
                 {
-                    for(; i < GroupFields.Count; i++)
-                    {
-                        newRow[i] = _groupValues[i];
-                    }
-                }
-                if (PassThroughColumns == false)
-                {
-                    if (AggregatePairs != null)
-                    {
-                        foreach (var aggregate in AggregatePairs)
-                        {
-                            newRow[i] = aggregate.GetValue();
-                            i++;
-
-                            aggregate.Reset();
-                        }
-                    }
-
-                    if (Aggregates != null)
-                    {
-                        foreach (var mapping in Aggregates)
-                        {
-                            try
-                            {
-                                newRow[i] = mapping.ReturnValue(0);
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new TransformException($"The group transform {Name} failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
-                            }
-                            i++;
-
-                            if (mapping.Outputs != null)
-                            {
-                                foreach (var output in mapping.Outputs)
-                                {
-                                    newRow[i] = output.Value;
-                                    i++;
-                                }
-                            }
-                            mapping.Reset();
-                        }
-                    }
+                    Mappings.ProcessAggregateRow(0, outputRow);
+                    
+//                    if (_aggregates != null)
+//                    {
+//                        foreach (var aggregate in _aggregates)
+//                        {
+//                            newRow[i] = aggregate.GetValue();
+//                            i++;
+//
+//                            aggregate.Reset();
+//                        }
+//                    }
+//
+//                    if (_aggregateFunctions != null)
+//                    {
+//                        foreach (var mapping in _aggregateFunctions)
+//                        {
+//                            try
+//                            {
+//                                newRow[i] = mapping.ReturnValue(0);
+//                            }
+//                            catch (Exception ex)
+//                            {
+//                                throw new TransformException($"The group transform {Name} failed, retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
+//                            }
+//                            i++;
+//
+//                            if (mapping.Outputs != null)
+//                            {
+//                                foreach (var output in mapping.Outputs)
+//                                {
+//                                    newRow[i] = output.Value;
+//                                    i++;
+//                                }
+//                            }
+//                            mapping.Reset();
+//                        }
+//                    }
                 }
                 else
                 {
                     //for passthrough, write out the aggregated values to the cached passthrough set
                     var index = 0;
-                    var startColumn = i;
+                    //var startColumn = i;
                     foreach (var row in _passThroughValues)
                     {
-                        i = startColumn;
-
-                        if (AggregatePairs != null)
-                        {
-                            foreach (var aggregate in AggregatePairs)
-                            {
-                                newRow[i] = aggregate.GetValue();
-                                i++;
-                            }
-                        }
-
-                        if (Aggregates != null)
-                        {
-                            foreach (var mapping in Aggregates)
-                            {
-                                try
-                                {
-                                    row[i] = mapping.ReturnValue(index);
-                                }
-                                catch (Exception ex)
-                                {
-                                    throw new TransformException($"The group transform {Name} failed retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
-                                }
-
-                                i++;
-
-                                if (mapping.Outputs != null)
-                                {
-                                    foreach (var output in mapping.Outputs)
-                                    {
-                                        row[i] = output.Value;
-                                        i++;
-                                    }
-                                }
-                            }
-                        }
+                        Mappings.ProcessAggregateRow(index, row);
+                        
+//                        i = startColumn;
+//
+//                        if (_aggregates != null)
+//                        {
+//                            foreach (var aggregate in _aggregates)
+//                            {
+//                                newRow[i] = aggregate.GetValue();
+//                                i++;
+//                            }
+//                        }
+//
+//                        if (_aggregateFunctions != null)
+//                        {
+//                            foreach (var mapping in _aggregateFunctions)
+//                            {
+//                                try
+//                                {
+//                                    row[i] = mapping.ReturnValue(index);
+//                                }
+//                                catch (Exception ex)
+//                                {
+//                                    throw new TransformException($"The group transform {Name} failed retrieving results from function {mapping.FunctionName}.  {ex.Message}.", ex);
+//                                }
+//
+//                                i++;
+//
+//                                if (mapping.Outputs != null)
+//                                {
+//                                    foreach (var output in mapping.Outputs)
+//                                    {
+//                                        row[i] = output.Value;
+//                                        i++;
+//                                    }
+//                                }
+//                            }
+//                        }
                         index++;
                     }
+                    
+                    outputRow = _passThroughValues.Dequeue();
 
                     //set the first cached row to current
-                    newRow = _passThroughValues[0];
-                    _passThroughIndex = 1;
-                    _passThroughCount = _passThroughValues.Count;
+//                    outputRow = _passThroughValues[0];
+//                    _passThroughIndex = 1;
+//                    _passThroughCount = _passThroughValues.Count;
                 }
 
                 _groupValues = newGroupValues;
                 _lastRecord = true;
             }
-            return newRow;
+            return outputRow;
 
         }
 
         public override string Details()
         {
-            return "Group: " + ( PassThroughColumns ? "All columns passed through, " : "") + "Grouped Columns:" + (GroupFields?.Count.ToString() ?? "Nill") + ", Series/Aggregate Functions:" + (Functions?.Count.ToString() ?? "Nil");
+            return "Group: " + ( Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Mapped Columns:" + (Mappings.Count());
         }
 
         public override List<Sort> RequiredSortFields()
         {
-            if (GroupFields == null)
-                return null;
-            else
-                return GroupFields.Select(c=> new Sort { Column = c.SourceColumn, Direction = Sort.EDirection.Ascending }).ToList();
+            return Mappings.OfType<MapGroup>().Select(c=> new Sort { Column = c.InputColumn, Direction = Sort.EDirection.Ascending }).ToList();
         }
 
         public override List<Sort> RequiredReferenceSortFields()

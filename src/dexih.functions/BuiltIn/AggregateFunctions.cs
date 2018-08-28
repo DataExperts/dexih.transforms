@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.BuiltIn
 {
@@ -14,9 +16,10 @@ namespace dexih.functions.BuiltIn
         private double? _cacheDouble;
         private DateTime? _cacheDate;
         private string _cacheString;
-        private Dictionary<string, string> _cacheStringDictionary;
+        private Dictionary<object, object> _cacheDictionary;
         private List<object> _cacheList;
         private StringBuilder _cacheStringBuilder;
+        private object _cacheObject;
 
         public bool Reset()
         {
@@ -24,14 +27,23 @@ namespace dexih.functions.BuiltIn
             _cacheDouble = null;
             _cacheDate = null;
             _cacheString = null;
-            _cacheStringDictionary = null;
+            _cacheDictionary = null;
             _cacheList = null;
-            _cacheStringDictionary = null;
+            _cacheDictionary = null;
             _cacheStringBuilder = null;
+            _cacheObject = null;
             return true;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(SumResult), ResetMethod = nameof(Reset))]
+        public string StringResult([TransformFunctionIndex] int index) => _cacheString;
+        public int IntResult([TransformFunctionIndex] int index) => _cacheInt??0;
+        public double DoubleResult([TransformFunctionIndex] int index) => _cacheDouble??0;
+        public DateTime? DateResult([TransformFunctionIndex] int index) => _cacheDate;
+        public double? NullDoubleResult([TransformFunctionIndex] int index) => _cacheDouble;
+        public object ObjectResult([TransformFunctionIndex] int index) => _cacheObject;
+
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(DoubleResult), ResetMethod = nameof(Reset))]
         public void Sum(double value)
         {
             
@@ -39,13 +51,7 @@ namespace dexih.functions.BuiltIn
             _cacheDouble = _cacheDouble + value;
         }
 
-        public double SumResult([TransformFunctionIndex]int index)
-        {
-            if (_cacheDouble == null)
-                return 0;
-
-            return (double)_cacheDouble;
-        }
+       
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Average", Description = "Average of the values", ResultMethod = nameof(AverageResult), ResetMethod = nameof(Reset))]
         public void Average(double value)
         {
@@ -62,74 +68,92 @@ namespace dexih.functions.BuiltIn
             return (double)_cacheDouble / (double)_cacheInt;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(MinResult), ResetMethod = nameof(Reset))]
-        public void Min(double value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
+        public void Min(object value)
         {
-            if (_cacheDouble == null) _cacheDouble = value;
-            else if (value < _cacheDouble) _cacheDouble = value;
-        }
-        public double? MinResult([TransformFunctionIndex]int index)
-        {
-            return _cacheDouble;
+            if (_cacheObject == null) _cacheObject = value;
+            else if (DataType.Compare(null, value, (_cacheObject)) == DataType.ECompareResult.Less) _cacheObject = value;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Maximum", Description = "Maximum Value", ResultMethod = nameof(MaxResult), ResetMethod = nameof(Reset))]
-        public void Max(double value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Maximum", Description = "Maximum Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
+        public void Max(object value)
         {
-            if (_cacheDouble == null) _cacheDouble = value;
-            else if (value > _cacheDouble) _cacheDouble = value;
-        }
-        public double? MaxResult([TransformFunctionIndex]int index)
-        {
-            return _cacheDouble;
-        }
-        
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First", Description = "First Value", ResultMethod = nameof(FirstResult), ResetMethod = nameof(Reset))]
-        public void First(string value)
-        {
-            if (_cacheString == null) _cacheString = value;
+            if (_cacheObject == null) _cacheObject = value;
+            else if (DataType.Compare(null, value, (_cacheObject)) == DataType.ECompareResult.Greater) _cacheObject = value;
         }
 
-        public string FirstResult([TransformFunctionIndex]int index)
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First", Description = "First Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
+        public void First(object value)
         {
-            return _cacheString;
+            if (_cacheObject == null) _cacheObject = value;
         }
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last", Description = "Last Value", ResultMethod = nameof(LastResult), ResetMethod = nameof(Reset))]
-        public void Last(string value)
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last", Description = "Last Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
+        public void Last(object value)
         {
-            _cacheString = value;
+            _cacheObject = value;
         }
-        public string LastResult([TransformFunctionIndex]int index)
-        {
-            return _cacheString;
-        }
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count", Description = "Number of records", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset))]
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count", Description = "Number of records", ResultMethod = nameof(IntResult), ResetMethod = nameof(Reset))]
         public void Count()
         {
             if (_cacheInt == null) _cacheInt = 1;
             else _cacheInt = _cacheInt + 1;
         }
 
-        public int CountResult([TransformFunctionIndex]int index)
+       
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountTrue", Description = "Count where the value is true", ResultMethod = nameof(IntResult), ResetMethod = nameof(Reset))]
+        public void CountTrue(bool value)
         {
-            if (_cacheInt == null)
-                return 0;
-
-            return (int)_cacheInt;
+            
+            if (_cacheInt == null) _cacheInt = 0;
+            if (value)
+            {
+                _cacheInt = _cacheInt + 1;
+            }
         }
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountFalse", Description = "Count where the value is false", ResultMethod = nameof(IntResult), ResetMethod = nameof(Reset))]
+        public void CountFalse(bool value)
+        {
+            
+            if (_cacheInt == null) _cacheInt = 0;
+            if (!value)
+            {
+                _cacheInt = _cacheInt + 1;
+            }
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountEqual", Description = "Count where the values are equal", ResultMethod = nameof(IntResult), ResetMethod = nameof(Reset))]
+        public void CountEqual(object[] values)
+        {
+            
+            if (_cacheInt == null) _cacheInt = 0;
+
+            for (var i = 1; i < values.Length; i++)
+            {
+                if (!object.Equals(values[0], values[i])) return;
+            }
+
+            _cacheInt = _cacheInt + 1;
+        }
+
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count Distinct", Description = "Number if distinct values", ResultMethod = nameof(CountDistinctResult), ResetMethod = nameof(Reset))]
-        public void CountDistinct(string value)
+        public void CountDistinct(object value)
         {
-            if (_cacheStringDictionary == null) _cacheStringDictionary = new Dictionary<string, string>();
+            if (_cacheDictionary == null) _cacheDictionary = new Dictionary<object, object>();
             if (value == null) value = NullPlaceHolder; //dictionary can't use nulls, so substitute null values.
-            if (_cacheStringDictionary.ContainsKey(value) == false)
-                _cacheStringDictionary.Add(value, null);
+            if (_cacheDictionary.ContainsKey(value) == false)
+                _cacheDictionary.Add(value, null);
         }
+        
         public int CountDistinctResult([TransformFunctionIndex]int index)
         {
-            return _cacheStringDictionary.Keys.Count;
+            return _cacheDictionary.Keys.Count;
         }
+        
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Concatenate Aggregate", Description = "Returns concatenated string of repeating values.", ResultMethod = nameof(ConcatAggResult), ResetMethod = nameof(Reset))]
         public void ConcatAgg(string value, string delimiter)
         {
@@ -141,6 +165,7 @@ namespace dexih.functions.BuiltIn
             else
                 _cacheStringBuilder.Append(delimiter + value);
         }
+        
         public string ConcatAggResult([TransformFunctionIndex]int index)
         {
             return _cacheStringBuilder.ToString();
@@ -206,51 +231,64 @@ namespace dexih.functions.BuiltIn
             return sd;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "MinimumDate", Description = "Minimum Date", ResultMethod = nameof(MinDateResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "MinimumDate", Description = "Minimum Date", ResultMethod = nameof(DateResult), ResetMethod = nameof(Reset))]
         public void MinDate(DateTime value)
         {
             if (_cacheDate == null) _cacheDate = value;
             else if (value < _cacheDate) _cacheDate = value;
         }
 
-        public DateTime? MinDateResult([TransformFunctionIndex]int index)
-        {
-            return _cacheDate;
-        }
-        
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "MaximumDate", Description = "Maximum Date", ResultMethod = nameof(MaxDateResult), ResetMethod = nameof(Reset))]
+       
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "MaximumDate", Description = "Maximum Date", ResultMethod = nameof(DateResult), ResetMethod = nameof(Reset))]
         public void MaxDate(DateTime value)
         {
             if (_cacheDate == null) _cacheDate = value;
             else if (value > _cacheDate) _cacheDate = value;
         }
         
-        public DateTime? MaxDateResult([TransformFunctionIndex]int index)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First When", Description = "First resultValue when the condition = conditionValue", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
+        public void FirstWhen(object condition, object conditionValue, object resultValue)
         {
-            return _cacheDate;
+            if (Equals(condition, conditionValue) && _cacheObject == null)
+            {
+                _cacheObject = resultValue;
+            }
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First When", Description = "First resultValue when the condition = conditionValue", ResultMethod = nameof(FirstWhenResult), ResetMethod = nameof(Reset))]
-        public void FirstWhen(string condition, string conditionValue, string resultValue)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last When", Description = "Last resultValue when the condition = conditionValue", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
+        public void LastWhen(object condition, object conditionValue, object resultValue)
         {
-            if (condition == conditionValue && _cacheString == null)
-                _cacheString = resultValue;
-        }
-        public string FirstWhenResult([TransformFunctionIndex]int index)
-        {
-            return _cacheString;
-        }
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last When", Description = "Last resultValue when the condition = conditionValue", ResultMethod = nameof(LastWhenResult), ResetMethod = nameof(Reset))]
-        public void LastWhen(string condition, string conditionValue, string resultValue)
-        {
-            if (condition == conditionValue)
-                _cacheString = resultValue;
+            if (Equals(condition, conditionValue))
+            {
+                _cacheObject = resultValue;
+            }
         }
 
-        public string LastWhenResult([TransformFunctionIndex]int index)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Pivot to Columns", 
+            Description = "Pivots the labelColum and valueColumn into seperate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset))]
+        public void PivotToColumns(string labelColumn, object valueColumn, object[] labels)
         {
-            return _cacheString;
+            if (_cacheDictionary == null)
+            {
+                _cacheDictionary = new Dictionary<object, object>();
+                foreach (var label in labels)
+                {
+                    _cacheDictionary.Add(label, null);
+                }
+            }
+
+            if (_cacheDictionary.ContainsKey(labelColumn))
+            {
+                _cacheDictionary[labelColumn] = valueColumn;
+            }
         }
 
+        public bool PivotToColumnsResult([TransformFunctionIndex] int index, out object[] values)
+        {
+            values = _cacheDictionary.Values.ToArray();
+            return !values.Contains(null);
+        }
+
+        
     }
 }

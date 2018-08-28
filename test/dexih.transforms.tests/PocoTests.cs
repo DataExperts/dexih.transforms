@@ -26,7 +26,7 @@ namespace dexih.transforms.tests
                     count++;
                     Assert.Equal("value" + count.ToString().PadLeft(2, '0'), item.StringColumn);
                     Assert.Equal(count, item.IntColumn);
-                    Assert.Equal((DateTime) Convert.ToDateTime("2015-01-" + count.ToString()), item.TheDate);
+                    Assert.Equal(Convert.ToDateTime("2015-01-" + count), item.TheDate);
                 }
 
                 Assert.Equal(10, count);
@@ -49,7 +49,7 @@ namespace dexih.transforms.tests
                     count++;
                     Assert.Equal("value" + count.ToString().PadLeft(2, '0'), item.StringColumn);
                     Assert.Equal(count, item.IntColumn);
-                    Assert.Equal((DateTime) Convert.ToDateTime("2015-01-" + count.ToString()), item.TheDate);
+                    Assert.Equal(Convert.ToDateTime("2015-01-" + count), item.TheDate);
                 }
 
                 Assert.Equal(10, count);
@@ -74,7 +74,7 @@ namespace dexih.transforms.tests
                 count++;
                 Assert.Equal("value" + count.ToString().PadLeft(2, '0'), item.StringColumn);
                 Assert.Equal(count, item.IntColumn);
-                Assert.Equal((DateTime)Convert.ToDateTime("2015-01-" + count.ToString()), item.TheDate);
+                Assert.Equal(Convert.ToDateTime("2015-01-" + count), item.TheDate);
             }
             
             Assert.Equal(10, count);
@@ -88,7 +88,7 @@ namespace dexih.transforms.tests
             {
                 new SamplePocoClass("column1", 1, new DateTime(2000, 01, 02)),
                 new SamplePocoClass("column2", 2, new DateTime(2000, 01, 03)),
-                new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04)),
+                new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04))
             };
             
             var pocoReader = new PocoReader<SamplePocoClass>(items);
@@ -112,7 +112,7 @@ namespace dexih.transforms.tests
             {
                 new SamplePocoClass("column1", 1, new DateTime(2000, 01, 02)),
                 new SamplePocoClass("column2", 2, new DateTime(2000, 01, 03)),
-                new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04)),
+                new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04))
             };
 
             var pocoTable = new PocoTable<SamplePocoClass>();
@@ -145,7 +145,7 @@ namespace dexih.transforms.tests
             {
                 new SamplePocoClass("column1", 1, new DateTime(2000, 01, 02)),
                 new SamplePocoClass("column2", 2, new DateTime(2000, 01, 03)),
-                new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04)),
+                new SamplePocoClass("column3", 3, new DateTime(2000, 01, 04))
             };
 
             var pocoTable = new PocoTable<SamplePocoClass>();

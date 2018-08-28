@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -16,7 +13,7 @@ namespace dexih.transforms.tests
             Assert.Equal(5, Table.FieldCount);
 
             var count = 0;
-            while (await Table.ReadAsync() == true)
+            while (await Table.ReadAsync())
             {
                 count = count + 1;
                 Assert.Equal(Table[1], count);

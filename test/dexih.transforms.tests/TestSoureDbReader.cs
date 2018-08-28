@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Xunit;
@@ -20,7 +18,7 @@ namespace dexih.transforms.tests
 
             for (var i = 0; i < 10; i++)
             {
-                var sql = "INSERT INTO [test_data] values ('value" + i.ToString().PadLeft(2, '0') + "', " + i.ToString() + ", '2001-01-" + (i+1).ToString().PadLeft(2, '0') + "');";
+                var sql = "INSERT INTO [test_data] values ('value" + i.ToString().PadLeft(2, '0') + "', " + i + ", '2001-01-" + (i+1).ToString().PadLeft(2, '0') + "');";
                 cmd = new SqliteCommand(sql, connection);
                 cmd.ExecuteNonQuery();
             }

@@ -116,9 +116,10 @@ namespace dexih.functions
                     DetailedFlagName = detailedPropertyName,
                     EncryptionKeyName = encryionKeyPropertyName,
                     Compare = compareAttribute?.Compare,
-                    ReturnType = DataType.GetTypeCode(method.ReturnType),
-                    ResultReturnType = resultMethod == null ? (DataType.ETypeCode?) null : DataType.GetTypeCode(resultMethod.ReturnType),
                     FunctionClassName = type.FullName,
+                    
+                    ReturnType =  DataType.GetTypeCode((resultMethod??method).ReturnType),
+                    
                     InputParameters = method.GetParameters().Where(c => !c.IsOut).Select(p =>
                     {
                         var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
@@ -131,7 +132,7 @@ namespace dexih.functions
                             IsArray = p.ParameterType.IsArray
                         };
                     }).ToArray(),
-                    OutputParameters = method.GetParameters().Where(c => c.IsOut).Select(p =>
+                    OutputParameters = (resultMethod??method).GetParameters().Where(c => c.IsOut).Select(p =>
                     {
                         var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
                         return new FunctionParameter()
@@ -141,32 +142,6 @@ namespace dexih.functions
                             Description = paramAttribute?.Description,
                             DataType = DataType.GetTypeCode(p.ParameterType.GetElementType().IsArray ? p.ParameterType.GetElementType().GetElementType() : p.ParameterType.GetElementType()),
                             IsArray = p.ParameterType.GetElementType().IsArray
-                        };
-                    }).ToArray(),
-                    ResultInputParameters = resultMethod?.GetParameters().Where(c => !c.IsOut).Select(p =>
-                    {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
-                        var indexAttribute = p.GetCustomAttribute<TransformFunctionIndex>();
-                        return new FunctionParameter()
-                        {
-                            ParameterName = p.Name,
-                            Name = paramAttribute?.Name?? p.Name,
-                            Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType.IsArray ? p.ParameterType.GetElementType() : p.ParameterType),
-                            IsArray = p.ParameterType.IsArray,
-                            IsIndex = indexAttribute != null
-                        };
-                    }).ToArray(),
-                    ResultOutputParameters  = resultMethod?.GetParameters().Where(c => c.IsOut).Select(p =>
-                    {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
-                        return new FunctionParameter()
-                        {
-                            ParameterName = p.Name,
-                            Name = paramAttribute?.Name?? p.Name,
-                            Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType.GetElementType().IsArray ? p.ParameterType.GetElementType().GetElementType() : p.ParameterType.GetElementType()),
-                            IsArray = p.ParameterType.GetElementType().IsArray,
                         };
                     }).ToArray(),
                 };

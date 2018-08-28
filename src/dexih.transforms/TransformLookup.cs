@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Mappings;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Transforms;
@@ -29,9 +31,10 @@ namespace dexih.transforms
 
         public TransformLookup() { }
 
-        public TransformLookup(Transform primaryTransform, Transform joinTransform, List<JoinPair> joinPairs, string referenceTableAlias)
+        public TransformLookup(Transform primaryTransform, Transform joinTransform, Mappings mappings, string referenceTableAlias)
         {
-            JoinPairs = joinPairs;
+            Mappings = mappings;
+            //JoinPairs = joinPairs;
             ReferenceTableAlias = referenceTableAlias;
 
             SetInTransform(primaryTransform, joinTransform);
@@ -77,8 +80,6 @@ namespace dexih.transforms
 
 
         public override bool RequiresSort => false;
-        public override bool PassThroughColumns => true;
-
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
@@ -124,19 +125,30 @@ namespace dexih.transforms
             }
 
             //set the values for the lookup
+            Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+            
+            // create a select query with filters set to the values of the current row
             var selectQuery = new SelectQuery();
-            foreach (var joinPair in JoinPairs)
+            selectQuery.Filters = Mappings.OfType<MapJoin>().Select(c => new Filter()
             {
-                var value = joinPair.SourceColumn == null ? joinPair.JoinValue : PrimaryTransform[joinPair.SourceColumn];
-
-                selectQuery.Filters.Add(new Filter
-                {
-                    Column1 = joinPair.JoinColumn,
-                    CompareDataType = ETypeCode.String,
-                    Operator = Filter.ECompare.IsEqual,
-                    Value2 = value
-                });
-            }
+                Column1 = c.JoinColumn,
+                CompareDataType = ETypeCode.String,
+                Operator = Filter.ECompare.IsEqual,
+                Value2 = c.GetInputValue()
+            }).ToList();
+            
+//            foreach (var joinPair in JoinPairs)
+//            {
+//                var value = joinPair.SourceColumn == null ? joinPair.JoinValue : PrimaryTransform[joinPair.SourceColumn];
+//
+//                selectQuery.Filters.Add(new Filter
+//                {
+//                    Column1 = joinPair.JoinColumn,
+//                    CompareDataType = ETypeCode.String,
+//                    Operator = Filter.ECompare.IsEqual,
+//                    Value2 = value
+//                });
+//            }
 
             var lookupResult = await ReferenceTransform.Lookup(selectQuery, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
             if (lookupResult != null)
@@ -172,7 +184,7 @@ namespace dexih.transforms
 
         public override string Details()
         {
-            return "Lookup Service";
+            return "Lookup";
         }
 
         public override List<Sort> RequiredSortFields()
