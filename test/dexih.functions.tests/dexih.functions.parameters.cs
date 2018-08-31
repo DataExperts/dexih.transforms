@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using dexih.functions;
 using dexih.functions.Parameter;
 using Dexih.Utils.DataType;
@@ -64,13 +65,13 @@ namespace dexih.transforms.tests
         [InlineData(DataType.ETypeCode.DateTime, "31 january 2015", true)]
         public void ParameterArray_Tests(DataType.ETypeCode dataType, object value, bool expectedSuccess)
         {
-            var parameters = new Parameter[2];
-            parameters[0] = new ParameterValue("p1", DataType.ETypeCode.String, "abc");
+            var parameters = new List<Parameter>();
+            parameters.Add(new ParameterValue("p1", DataType.ETypeCode.String, "abc"));
             
             var table = new Table("Test");
             var column = new TableColumn("test", dataType);
             table.Columns.Add(column);
-            parameters[1] = new ParameterColumn("p2", column);
+            parameters.Add(new ParameterColumn("p2", column));
 
             var parameterArray = new ParameterArray("p2", DataType.ETypeCode.String, parameters);
             parameterArray.InitializeOrdinal(table);
@@ -99,11 +100,11 @@ namespace dexih.transforms.tests
             table.Columns.Add(column2);
             table.Columns.Add(column3);
 
-            var inputs = new Parameter[3];
-            inputs[0] = new ParameterValue("p1", DataType.ETypeCode.String, "static");
-            inputs[1] = new ParameterColumn("p2", column1);
-            var arrayParameters = new Parameter[] {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};
-            inputs[2] = new ParameterArray("p3", DataType.ETypeCode.String, arrayParameters);
+            var inputs = new List<Parameter>();
+            inputs.Add(new ParameterValue("p1", DataType.ETypeCode.String, "static"));
+            inputs.Add(new ParameterColumn("p2", column1));
+            var arrayParameters = new List<Parameter>() {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};
+            inputs.Add(new ParameterArray("p3", DataType.ETypeCode.String, arrayParameters));
 
             var parameters = new Parameters();
             parameters.Inputs = inputs;
@@ -138,7 +139,7 @@ namespace dexih.transforms.tests
             var returnParameter = new ParameterColumn("return", returnColumn);
             var outputs = new Parameter[2];
             outputs[0] = new ParameterColumn("p2", column1);
-            var arrayParameters = new Parameter[] {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};
+            var arrayParameters = new List<Parameter>() {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};
             outputs[1] = new ParameterArray("p3", DataType.ETypeCode.String, arrayParameters);
 
             var parameters = new Parameters();

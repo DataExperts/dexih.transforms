@@ -21,6 +21,12 @@ namespace dexih.functions
     {
         public string Name { get; set; }
         public string Description { get; set; }
+
+        /// <summary>
+        /// Identifies an array parameter is a twin with an output array parameter.
+        /// This means the matching arrays should have the same length.
+        /// </summary>
+        public string TwinParameterName { get; set; }
     }
 
     public class TransformFunctionCompareAttribute : Attribute

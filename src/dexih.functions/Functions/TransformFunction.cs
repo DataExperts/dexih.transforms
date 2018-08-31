@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using dexih.functions.Parameter;
 using dexih.functions.Query;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -78,8 +79,8 @@ namespace dexih.functions
 		/// </summary>
 		/// <param name="functionMethod">Reference to the function that will be executed.</param>
 		/// <param name="parameters"></param>
-		public TransformFunction(Delegate functionMethod, GlobalVariables globalVariables) :
-			this(functionMethod.Target, functionMethod.GetMethodInfo(), globalVariables)
+		public TransformFunction(Delegate functionMethod, Parameters parameters, GlobalVariables globalVariables) :
+			this(functionMethod.Target, functionMethod.GetMethodInfo(), parameters, globalVariables)
 		{
 		}
 
@@ -89,10 +90,10 @@ namespace dexih.functions
 		/// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
 		/// <param name="methodName">The name of the method to call.</param>
 		/// <param name="parameters"></param>
-		public TransformFunction(Type targetType, string methodName, GlobalVariables globalVariables)
+		public TransformFunction(Type targetType, string methodName, Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionName = methodName;
-			Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), globalVariables);
+			Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), parameters, globalVariables);
 		}
 
 		/// <summary>
@@ -101,18 +102,19 @@ namespace dexih.functions
 		/// <param name="target">An instantiated instance of the class containing the method.  Ensure a new instance of Target is created for each function to avoid issues with cached data.</param>
 		/// <param name="methodName">The name of the method to call.</param>
 		/// <param name="parameters"></param>
-		public TransformFunction(object target, string methodName, GlobalVariables globalVariables)
+		/// <param name="globalVariables"></param>
+		public TransformFunction(object target, string methodName, Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionName = methodName;
-			Initialize(target, target.GetType().GetMethod(methodName), globalVariables);
+			Initialize(target, target.GetType().GetMethod(methodName), parameters, globalVariables);
 		}
 
-		public TransformFunction(object target, MethodInfo functionMethod, GlobalVariables globalVariables)
+		public TransformFunction(object target, MethodInfo functionMethod, Parameters parameters, GlobalVariables globalVariables)
 		{
-			Initialize(target, functionMethod, globalVariables);
+			Initialize(target, functionMethod, parameters, globalVariables);
 		}
 
-		private void Initialize(object target, MethodInfo functionMethod, GlobalVariables globalVariables)
+		private void Initialize(object target, MethodInfo functionMethod, Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionMethod = functionMethod;
 			GlobalVariables = globalVariables;
@@ -120,7 +122,7 @@ namespace dexih.functions
 			var attribute = functionMethod.GetCustomAttribute<TransformFunctionAttribute>();
 			var targetType = target.GetType();
 
-			// Get the ResetMethod/ResultMethod which are used for aggregatate functions.
+			// Get the ResetMethod/ResultMethod which are used for aggregate functions.
 			if (attribute != null)
 			{
 				ResetMethod = string.IsNullOrEmpty(attribute.ResetMethod)
@@ -141,6 +143,13 @@ namespace dexih.functions
 			if (GlobalVariables != null && globalProperty != null)
 			{
 				globalProperty.SetValue(target, GlobalVariables);
+			}
+			
+			// sets the array parameters of the object if the property exists.
+			var parametersProperty = targetType.GetProperty("Parameters");
+			if (parameters != null && parametersProperty != null)
+			{
+				parametersProperty.SetValue(target, parameters);
 			}
 
 			ObjectReference = target;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using dexih.functions.BuiltIn;
 using dexih.functions.Mappings;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
@@ -178,19 +179,22 @@ namespace dexih.functions.tests
             
             var outputTable = new Table("output");
             
-            var function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "Concat");
-            var transformFunction = function.GetTransformFunction(null);
-            var parameters = new Parameters();
-            parameters.Inputs = new List<Parameter.Parameter>()
+            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Concat));
+            var transformFunction = function.GetTransformFunction();
+            var parameters = new Parameters
             {
-                new ParameterArray("input", DataType.ETypeCode.String, new Parameter.Parameter[]
+                Inputs = new List<Parameter.Parameter>()
                 {
-                    new ParameterColumn("values", inputColumn1),
-                    new ParameterColumn("values", inputColumn2),
-                })
+                    new ParameterArray("input", DataType.ETypeCode.String,
+                        new List<Parameter.Parameter>()
+                        {
+                            new ParameterColumn("values", inputColumn1),
+                            new ParameterColumn("values", inputColumn2),
+                        })
+                },
+                ReturnParameter = new ParameterOutputColumn("return", outputColumn)
             };
-            parameters.ReturnParameter = new ParameterColumn("return", outputColumn);
-            
+
             // map a value
             var mapFunction = new MapFunction(transformFunction, parameters);
             mapFunction.InitializeInputOrdinals(inputTable);
@@ -198,9 +202,38 @@ namespace dexih.functions.tests
 
             var outputRow = new object[1];
             mapFunction.ProcessInputRow(inputRow);
-            mapFunction.ProcessResultRow(0, outputRow);
+            mapFunction.ProcessOutputRow(outputRow);
 
             Assert.Equal("aaabbb", outputRow[0]);
+        }
+        
+        [Fact]
+        public void Mapping_Series()
+        {
+            var inputColumn = new TableColumn("day", DataType.ETypeCode.DateTime);
+            
+            var outputColumn = new TableColumn("output");
+            var inputRow = new object[] {new DateTime(2018, 1,1, 12, 12, 12), };
+            
+            var inputTable = new Table("input");
+            inputTable.Columns.Add(inputColumn);
+            
+            var outputTable = new Table("output");
+
+            var mapSeries = new MapSeries(inputColumn, outputColumn, ESeriesGrain.Day);
+            
+            mapSeries.InitializeInputOrdinals(inputTable);
+            mapSeries.AddOutputColumns(outputTable);
+
+            var outputRow = new object[1];
+            mapSeries.ProcessInputRow(inputRow);
+            mapSeries.ProcessOutputRow(outputRow);
+
+            // series value should have the non day elements removed.
+            Assert.Equal(new DateTime(2018, 1,1, 0, 0, 0), outputRow[0]);
+
+            var nextValue = mapSeries.NextValue(1);
+            Assert.Equal(new DateTime(2018, 1,2, 0, 0, 0), nextValue);
         }
     }
 }

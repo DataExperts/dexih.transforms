@@ -75,12 +75,12 @@ namespace dexih.transforms.tests
             var table = Helpers.CreateSortedTestData();
 
             //set a filter that filters all
-            var function = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", nameof(ConditionFunctions.IsEqual)).GetTransformFunction();
+            var function = Functions.GetFunction(typeof(ConditionFunctions).FullName, nameof(ConditionFunctions.IsEqual)).GetTransformFunction();
             var parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
                 {
-                    new ParameterArray("Compare", ETypeCode.String, new Parameter[]
+                    new ParameterArray("Compare", ETypeCode.String, new List<Parameter>
                     {
                         new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
                         new ParameterValue("Compare", ETypeCode.String, "junk")
@@ -110,7 +110,7 @@ namespace dexih.transforms.tests
             {
                 Inputs = new List<Parameter>()
                 {
-                    new ParameterArray("Compare", ETypeCode.String, new Parameter[]
+                    new ParameterArray("Compare", ETypeCode.String, new List<Parameter>
                     {
                         new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
                         new ParameterValue("Compare", ETypeCode.String, "value03")
@@ -132,13 +132,13 @@ namespace dexih.transforms.tests
 
             // use the "IN" function to filter 3 rows.
             //set a filter than filters to 1 row.
-            function = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", "IsIn").GetTransformFunction();
+            function = Functions.GetFunction(typeof(ConditionFunctions).FullName, nameof(ConditionFunctions.IsIn)).GetTransformFunction();
             parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
                 {
                     new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
-                    new ParameterArray("CompareTo", ETypeCode.String, new Parameter[]
+                    new ParameterArray("CompareTo", ETypeCode.String, new List<Parameter>
                     {
                         new ParameterValue("CompareTo", ETypeCode.String, "value03"),
                         new ParameterValue("CompareTo", ETypeCode.String, "value05"),
@@ -158,7 +158,7 @@ namespace dexih.transforms.tests
             Assert.Equal(3, count);
 
             // create a mapping, and use the filter after the calculation.
-            function = Functions.GetFunction("dexih.functions.BuiltIn.MapFunctions", "Substring").GetTransformFunction();
+            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring)).GetTransformFunction();
             parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
@@ -172,7 +172,7 @@ namespace dexih.transforms.tests
             table.Reset();
             var transformMapping = new TransformMapping(table, new Mappings { new MapFunction(function, parameters) });
             
-            function = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", "LessThan").GetTransformFunction();
+            function = Functions.GetFunction(typeof(ConditionFunctions).FullName, nameof(ConditionFunctions.LessThan)).GetTransformFunction();
             parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
@@ -216,7 +216,7 @@ namespace dexih.transforms.tests
         {
             var data = Helpers.CreateLargeTable(rows);
             
-            var function = new TransformFunction(new Func<int, bool>(value => value < 0), null);
+            var function = new TransformFunction(new Func<int, bool>(value => value < 0), null, null);
 
             var mappings = new Mappings()
             {

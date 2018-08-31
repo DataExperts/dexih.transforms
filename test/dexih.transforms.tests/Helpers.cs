@@ -176,6 +176,8 @@ namespace dexih.transforms.tests
             return adapter;
         }
 
+
+
         public static ReaderMemory CreateLargeTable(int rows)
         {
             object[] row;

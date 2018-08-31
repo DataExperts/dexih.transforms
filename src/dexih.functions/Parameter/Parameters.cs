@@ -9,22 +9,22 @@ namespace dexih.functions.Parameter
     public class Parameters
     {
         public Parameter ReturnParameter { get; set; }
-        public ICollection<Parameter> Inputs { get; set; }
-        public ICollection<Parameter> Outputs { get; set; }
-        public ICollection<Parameter> ResultInputs { get; set; }
-        public ICollection<Parameter> ResultOutputs { get; set; }
+        public IList<Parameter> Inputs { get; set; }
+        public IList<Parameter> Outputs { get; set; }
+        public IList<Parameter> ResultInputs { get; set; }
+        public IList<Parameter> ResultOutputs { get; set; }
         public Parameter ResultReturnParameter { get; set; }
 
         public Parameters()
         {
         }
         
-        public Parameters(ICollection<Parameter> inputs, Table table, Table joinTable = null)
+        public Parameters(IList<Parameter> inputs, Table table, Table joinTable = null)
         {
             InitializeInputs(inputs, table);
         }
 
-        public void InitializeInputs(ICollection<Parameter> inputs, Table table, Table joinTable = null)
+        public void InitializeInputs(IList<Parameter> inputs, Table table, Table joinTable = null)
         {
             Inputs = inputs;
             InitializeInputOrdinals(table, joinTable);            
@@ -49,7 +49,7 @@ namespace dexih.functions.Parameter
             }    
         }
 
-        public void InitializeOutputs(Parameter returnParameter, ICollection<Parameter> outputs, Table table)
+        public void InitializeOutputs(Parameter returnParameter, IList<Parameter> outputs, Table table)
         {
             Outputs = outputs;
             ReturnParameter = returnParameter;

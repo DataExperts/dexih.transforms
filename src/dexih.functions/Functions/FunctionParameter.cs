@@ -10,5 +10,6 @@ namespace dexih.functions
         public DataType.ETypeCode DataType { get; set; }
         public bool IsArray { get; set; }
         public bool IsIndex { get; set; }
+        public string TwinParameterName { get; set; }
     }
 }

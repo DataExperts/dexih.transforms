@@ -266,7 +266,7 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Pivot to Columns", 
             Description = "Pivots the labelColum and valueColumn into seperate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset))]
-        public void PivotToColumns(string labelColumn, object valueColumn, object[] labels)
+        public void PivotToColumns(string labelColumn, object valueColumn, [TransformFunctionParameter(TwinParameterName = "values")] object[] labels)
         {
             if (_cacheDictionary == null)
             {

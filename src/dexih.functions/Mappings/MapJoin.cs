@@ -7,12 +7,20 @@ namespace dexih.functions.Mappings
 {
     public class MapJoin: Mapping
     {
-         public MapJoin(TableColumn inputColumn, TableColumn joinColumn)
+        public MapJoin(TableColumn inputColumn, TableColumn joinColumn)
         {
             InputColumn = inputColumn;
             JoinColumn = joinColumn;
         }
-        
+
+        public MapJoin(object inputValue, TableColumn inputColumn, object joinValue, TableColumn joinColumn)
+        {
+            InputValue = inputValue;
+            InputColumn = inputColumn;
+            JoinValue = joinValue;
+            JoinColumn = joinColumn;
+        }
+
         public TableColumn InputColumn { get; set; }
         public TableColumn JoinColumn { get; set; }
         public Object InputValue { get; set; }

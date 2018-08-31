@@ -8,14 +8,21 @@ namespace dexih.functions.Parameter
 {
     public class ParameterArray : Parameter
     {
-	    public ParameterArray(string name, ETypeCode dataType, Parameter[] parameters)
+	    public ParameterArray(string name, ETypeCode dataType)
+	    {
+		    Name = name;
+		    DataType = dataType;
+		    Parameters = new List<Parameter>();
+	    }
+	    
+	    public ParameterArray(string name, ETypeCode dataType, List<Parameter> parameters)
 	    {
 		    Name = name;
 		    DataType = dataType;
 		    Parameters = parameters;
 	    }
         
-	    public ICollection<Parameter> Parameters;
+	    public List<Parameter> Parameters;
 
 	    public override object Value
 	    {
@@ -134,7 +141,7 @@ namespace dexih.functions.Parameter
 
 	    public override Parameter Copy()
 	    {
-		    return new ParameterArray(Name, DataType, Parameters.Select(c => c.Copy()).ToArray());
+		    return new ParameterArray(Name, DataType, Parameters.Select(c => c.Copy()).ToList());
 	    }
     }
 }

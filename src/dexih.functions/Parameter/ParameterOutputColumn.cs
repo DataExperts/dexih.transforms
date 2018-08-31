@@ -21,7 +21,18 @@ namespace dexih.functions.Parameter
         )
         {
             Name = name;
-            DataType = column.DataType;
+            DataType = column?.DataType ?? Dexih.Utils.DataType.DataType.ETypeCode.Unknown;
+            Column = column;
+        }
+
+        public ParameterOutputColumn(
+            string name, 
+            DataType.ETypeCode dataType,
+            TableColumn column
+        )
+        {
+            Name = name;
+            DataType = dataType;
             Column = column;
         }
 
@@ -41,6 +52,12 @@ namespace dexih.functions.Parameter
 
         public override void InitializeOrdinal(Table table, Table joinTable = null)
         {
+            if (Column == null)
+            {
+                _rowOrdinal = -1;
+                return;
+            }
+            
             _rowOrdinal = table.GetOrdinal(Column);
             if (_rowOrdinal < 0)
             {
@@ -56,6 +73,11 @@ namespace dexih.functions.Parameter
 
         public override void PopulateRowData(object value, object[] data, object[] joinRow = null)
         {
+            if (_rowOrdinal < 0)
+            {
+                return;
+            }
+
             SetValue(value);
             data[_rowOrdinal] = Value;
         }

@@ -132,7 +132,8 @@ namespace dexih.functions.Mappings
         {
             throw new NotSupportedException();
         }
-
+        
+      
         public override void Reset()
         {
             return;

@@ -24,6 +24,17 @@ namespace dexih.functions.Parameter
             DataType = column.DataType;
             Column = column;
         }
+        
+        public ParameterColumn(
+            string name, 
+            DataType.ETypeCode dataType,
+            TableColumn column
+        )
+        {
+            Name = name;
+            DataType = dataType;
+            Column = column;
+        }
 
         public ParameterColumn(string columName, DataType.ETypeCode dataType)
         {

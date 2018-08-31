@@ -15,7 +15,7 @@ namespace dexih.transforms.tests
     {
         private Mapping GetProfileReference(bool detailed, string methodName, string column)
         {
-            var function = Functions.GetFunction("dexih.functions.BuiltIn.ProfileFunctions", methodName).GetTransformFunction(null, true);
+            var function = Functions.GetFunction(typeof(ProfileFunctions).FullName, methodName).GetTransformFunction(null, null);
             var parameters = new Parameters()
             {
                 Inputs = new Parameter[]

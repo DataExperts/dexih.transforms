@@ -61,6 +61,7 @@ namespace dexih.functions.Mappings
 
         public override void Reset()
         {
+            _rowData = null;
         }
 
     }

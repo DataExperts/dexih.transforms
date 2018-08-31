@@ -188,7 +188,7 @@ namespace dexih.transforms.tests
             {
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
                 new MapFunction(
-                    new TransformFunction(new Func<bool, bool>(isValid => isValid), null),
+                    new TransformFunction(new Func<bool, bool>(isValid => isValid), null, null),
                     new Parameters()
                     {
                         Inputs = new List<Parameter>() {new ParameterJoinColumn("IsValid", ETypeCode.Boolean)}
@@ -374,7 +374,7 @@ namespace dexih.transforms.tests
             {
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
                 new MapFunction(
-                    new TransformFunction(new Func<bool, bool>(isValid => isValid), null),
+                    new TransformFunction(new Func<bool, bool>(isValid => isValid), null, null),
                     new Parameters()
                     {
                         Inputs = new List<Parameter>() {new ParameterJoinColumn("IsValid", ETypeCode.Boolean)}
@@ -420,7 +420,7 @@ namespace dexih.transforms.tests
             var mappings = new Mappings
             {
                 new MapFunction(
-                    new TransformFunction(new Func<int, int, bool>((source1, join) => source1 == join - 1), null),
+                    new TransformFunction(new Func<int, int, bool>((source1, join) => source1 == join - 1), null, null),
                     new Parameters()
                     {
                         Inputs = new List<Parameter>()
@@ -471,7 +471,7 @@ namespace dexih.transforms.tests
             var mappings = new Mappings
             {
                 new MapFunction(
-                    new TransformFunction(new Func<int, int, bool>((source1, join) => source1 == join - 1), null),
+                    new TransformFunction(new Func<int, int, bool>((source1, join) => source1 == join - 1), null, null),
                     new Parameters()
                     {
                         Inputs = new List<Parameter>()

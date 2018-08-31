@@ -48,7 +48,7 @@ namespace dexih.functions.BuiltIn
         {
             for (var i = 1; i < values.Length; i++)
             {
-                if (!object.Equals(values[0], values[i])) return false;
+                if (!Equals(values[0], values[i])) return false;
             }
 
             return true;
@@ -266,7 +266,7 @@ namespace dexih.functions.BuiltIn
             var returnValue = false;
             foreach (var t in compareTo)
             {
-                returnValue = object.Equals(value, t);
+                returnValue = Equals(value, t);
                 if(returnValue)
                 {
                     break;

@@ -19,16 +19,6 @@ namespace dexih.functions.Mappings
             Parameters = parameters;
         }
         
-        public MapFunction(TransformFunction function, params string[] columnNames)
-        {
-            Function = function;
-            Parameters = new Parameters();
-            foreach (var column in columnNames)
-            {
-                var parameter = new ParameterColumn(column, new TableColumn(column));
-            }
-        }
-
         public TransformFunction Function { get; set; }
         public Parameters Parameters { get; set; }
 
@@ -64,9 +54,13 @@ namespace dexih.functions.Mappings
                 
             return true;
         }
-        
+
         public override void Reset()
         {
+            ReturnValue = null;
+            _outputs = null;
+            ResultReturnValue = null;
+            _resultOutputs = null;
             Function.Reset();
         }
 
@@ -90,7 +84,7 @@ namespace dexih.functions.Mappings
             }
         }
 
-        public MapFunction Copy()
+        public virtual MapFunction Copy()
         {
             var mapFunction = new MapFunction()
             {

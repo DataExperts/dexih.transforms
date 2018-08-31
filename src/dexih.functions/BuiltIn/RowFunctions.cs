@@ -19,7 +19,7 @@ namespace dexih.functions.BuiltIn
         /// <summary>
         /// Used by row transform, contains the parameters used in the array.
         /// </summary>
-        public Parameter.Parameter[] ArrayParameters { get; set; }
+        public Parameters Parameters { get; set; }
 
 
         public bool Reset()
@@ -108,13 +108,19 @@ namespace dexih.functions.BuiltIn
 
             item = column[_cacheInt.Value];
 
-            if (ArrayParameters[_cacheInt.Value] is ParameterColumn parameterColumn)
+            if (Parameters?.Inputs == null)
+            {
+                throw new FunctionException($"The parameters.inputs was not set in the row function.");                
+            }
+            
+
+            if (Parameters.Inputs[0] is ParameterArray parameterArray && parameterArray.Parameters[_cacheInt.Value] is ParameterColumn parameterColumn)
             {
                 columnName = parameterColumn.Column.Name;
             }
             else
             {
-                throw new FunctionException($"The parameter {ArrayParameters[(int) _cacheInt].Name} is not using a column input.");                
+                throw new FunctionException($"The parameter {Parameters.Inputs[(int) _cacheInt].Name} is not using a column input.");                
             }
             
             return true;

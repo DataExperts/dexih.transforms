@@ -40,6 +40,8 @@ namespace dexih.functions.Mappings
 
         public abstract object GetInputValue(object[] row = null);
 
+        public virtual void ProcessFillerRow(object[] fillerRow, object seriesValue) {}
+
         /// <summary>
         /// Run a reset (if needed) of the mapping.
         /// </summary>

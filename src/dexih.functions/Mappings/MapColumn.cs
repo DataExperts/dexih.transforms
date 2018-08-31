@@ -24,21 +24,29 @@ namespace dexih.functions.Mappings
             OutputColumn = outputColumn;
         }
 
+        public MapColumn(object inputValue, TableColumn inputColumn, TableColumn outputColumn)
+        {
+            InputValue = inputValue;
+            InputColumn = inputColumn;
+            OutputColumn = outputColumn;
+        }
+
+        
         public object InputValue;
         public TableColumn InputColumn;
         public TableColumn OutputColumn;
 
-        private int _inputOrdinal = -1;
-        private int _outputOrdinal = -1;
+        protected int InputOrdinal = -1;
+        protected int OutputOrdinal = -1;
 
-        private object[] _rowData;
+        protected object[] RowData;
 
         public override void InitializeInputOrdinals(Table table, Table joinTable = null)
         {
             if (InputColumn != null)
             {
-                _inputOrdinal = table.GetOrdinal(InputColumn);
-                if (_inputOrdinal < 0 && InputValue == null)
+                InputOrdinal = table.GetOrdinal(InputColumn);
+                if (InputOrdinal < 0 && InputValue == null)
                 {
                     InputValue = InputColumn.DefaultValue;
                 }
@@ -47,43 +55,43 @@ namespace dexih.functions.Mappings
 
         public override void AddOutputColumns(Table table)
         {
-            _outputOrdinal = AddOutputColumn(table, OutputColumn);
+            OutputOrdinal = AddOutputColumn(table, OutputColumn);
         }
 
         public override bool ProcessInputRow(object[] rowData, object[] joinRow = null)
         {
-            _rowData = rowData;
+            RowData = rowData;
             return true;
         }
 
         public override void ProcessOutputRow(object[] data)
         {
-            if (_inputOrdinal == -1)
-            {
-                data[_outputOrdinal] = InputValue;
-            }
-            else
-            {
-                data[_outputOrdinal] = _rowData[_inputOrdinal];    
-            }
+            data[OutputOrdinal] = GetInputValue();
         }
 
         public override void ProcessResultRow(int index, object[] row) {}
         
         public override object GetInputValue(object[] row = null)
         {
-            if (_inputOrdinal == -1)
+            if (InputOrdinal == -1 )
             {
                 return InputValue;
             }
             else
             {
-                return row == null ? _rowData[_inputOrdinal] : row[_inputOrdinal];    
+                return row == null ? RowData[InputOrdinal] : row[InputOrdinal];    
             }        
+        }
+
+        public override void ProcessFillerRow(object[] fillerRow, object seriesValue)
+        {
+            fillerRow[InputOrdinal] = RowData[InputOrdinal];
         }
 
         public override void Reset()
         {
+            RowData = null;
+            InputValue = null;
         }
 
     }

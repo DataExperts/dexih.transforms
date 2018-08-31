@@ -46,15 +46,19 @@ namespace dexih.functions
         
         public bool IsStandardFunction { get; set; }
 
-        public DataType.ETypeCode ReturnType { get; set; }
+        public DataType.ETypeCode? ReturnType { get; set; }
         public FunctionParameter[] InputParameters { get; set; }
         public FunctionParameter[] OutputParameters { get; set; }
 
-        public TransformFunction GetTransformFunction(GlobalVariables globalVariables = null)
+        public DataType.ETypeCode? ResultReturnType { get; set; }
+        public FunctionParameter[] ResultInputParameters { get; set; }
+        public FunctionParameter[] ResultOutputParameters { get; set; }
+
+        public TransformFunction GetTransformFunction(Parameters parameters = null, GlobalVariables globalVariables = null)
         {
             var type = GetTransformType();
 
-            return new TransformFunction(type, FunctionMethodName, globalVariables);
+            return new TransformFunction(type, FunctionMethodName, parameters, globalVariables);
         }
 
 //        public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables)
@@ -63,7 +67,7 @@ namespace dexih.functions
 //            return new TransformFunction(type, FunctionMethodName, parameters, globalVariables);
 //        }
 
-        public TransformFunction GetTransformFunction(GlobalVariables globalVariables, bool detailed)
+        public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables, bool detailed)
         {
             var type = GetTransformType();
             var obj = Activator.CreateInstance(type);
@@ -78,7 +82,7 @@ namespace dexih.functions
                 property.SetValue(obj, detailed);
             }
             
-            return new TransformFunction(obj, FunctionMethodName, globalVariables);
+            return new TransformFunction(obj, FunctionMethodName, parameters, globalVariables);
         }
 
 //        public TransformFunction GetTransformFunction()

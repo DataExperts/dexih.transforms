@@ -118,8 +118,7 @@ namespace dexih.functions
                     Compare = compareAttribute?.Compare,
                     FunctionClassName = type.FullName,
                     
-                    ReturnType =  DataType.GetTypeCode((resultMethod??method).ReturnType),
-                    
+                    ReturnType = method.ReturnType == typeof(void) ? (DataType.ETypeCode?) null : DataType.GetTypeCode(method.ReturnType),
                     InputParameters = method.GetParameters().Where(c => !c.IsOut).Select(p =>
                     {
                         var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
@@ -129,10 +128,11 @@ namespace dexih.functions
                             Name = paramAttribute?.Name?? p.Name,
                             Description = paramAttribute?.Description,
                             DataType = DataType.GetTypeCode(p.ParameterType.IsArray ? p.ParameterType.GetElementType() : p.ParameterType),
-                            IsArray = p.ParameterType.IsArray
+                            IsArray = p.ParameterType.IsArray,
+                            TwinParameterName = paramAttribute?.TwinParameterName
                         };
                     }).ToArray(),
-                    OutputParameters = (resultMethod??method).GetParameters().Where(c => c.IsOut).Select(p =>
+                    OutputParameters = method.GetParameters().Where(c => c.IsOut).Select(p =>
                     {
                         var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
                         return new FunctionParameter()
@@ -141,7 +141,35 @@ namespace dexih.functions
                             Name = paramAttribute?.Name?? p.Name,
                             Description = paramAttribute?.Description,
                             DataType = DataType.GetTypeCode(p.ParameterType.GetElementType().IsArray ? p.ParameterType.GetElementType().GetElementType() : p.ParameterType.GetElementType()),
-                            IsArray = p.ParameterType.GetElementType().IsArray
+                            IsArray = p.ParameterType.GetElementType().IsArray,
+                            TwinParameterName = paramAttribute?.TwinParameterName
+                        };
+                    }).ToArray(),
+                    ResultReturnType = (resultMethod == null ||resultMethod.ReturnType == typeof(void)) ? (DataType.ETypeCode?) null :  DataType.GetTypeCode(resultMethod.ReturnType),
+                    ResultInputParameters = resultMethod?.GetParameters().Where(c => !c.IsOut && c.Name != "index").Select(p =>
+                    {
+                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
+                        return new FunctionParameter()
+                        {
+                            ParameterName = p.Name,
+                            Name = paramAttribute?.Name?? p.Name,
+                            Description = paramAttribute?.Description,
+                            DataType = DataType.GetTypeCode(p.ParameterType.IsArray ? p.ParameterType.GetElementType() : p.ParameterType),
+                            IsArray = p.ParameterType.IsArray,
+                            TwinParameterName = paramAttribute?.TwinParameterName
+                        };
+                    }).ToArray(),
+                    ResultOutputParameters = resultMethod?.GetParameters().Where(c => c.IsOut).Select(p =>
+                    {
+                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
+                        return new FunctionParameter()
+                        {
+                            ParameterName = p.Name,
+                            Name = paramAttribute?.Name?? p.Name,
+                            Description = paramAttribute?.Description,
+                            DataType = DataType.GetTypeCode(p.ParameterType.GetElementType().IsArray ? p.ParameterType.GetElementType().GetElementType() : p.ParameterType.GetElementType()),
+                            IsArray = p.ParameterType.GetElementType().IsArray,
+                            TwinParameterName = paramAttribute?.TwinParameterName
                         };
                     }).ToArray(),
                 };

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -9,15 +10,26 @@ namespace dexih.functions.Mappings
 {
     public class Mappings : List<Mapping>
     {
-        public Mappings(bool passThroughColumns = true)
+        public Mappings(bool passThroughColumns = true, bool groupRows = false)
         {
             PassThroughColumns = passThroughColumns;
+            GroupRows = groupRows;
+        }
+
+        private bool _doPassThroughColumns;
+        
+        /// <summary>
+        /// Pass through any unmapped columns (if groupRows is true, passthrough will be set to false)
+        /// </summary>
+        public bool PassThroughColumns {
+            get => _doPassThroughColumns && !GroupRows;
+            set => _doPassThroughColumns = value;
         }
         
         /// <summary>
-        /// Pass through any unmapped columns
+        /// (Group transform only) group rows together.  If false, original grain will be used.
         /// </summary>
-        public bool PassThroughColumns { get; set; }
+        public bool GroupRows { get; set; }
 
         private List<TableColumn> _passthroughColumns;
 
@@ -143,17 +155,62 @@ namespace dexih.functions.Mappings
         /// </summary>
         /// <param name="row"></param>
         /// <returns></returns>
-        public object[] GetGroupValues(object[] row)
+        public object[] GetGroupValues(object[] row = null)
         {
-            var mapGroup = this.OfType<MapGroup>().ToArray();
-            var groups = mapGroup.Select(c=>c.GetInputValue(row)).ToArray();
+            var groups = this.OfType<MapGroup>().Select(c=>c.GetInputValue(row)).ToArray();
             return groups;
+        }
+        
+        /// <summary>
+        /// Returns the series value + count
+        /// </summary>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        public object GetSeriesValue(int count, object[] row = null)
+        {
+            var series = this.OfType<MapSeries>().FirstOrDefault()?.NextValue(count, row);
+            return series;
+        }
+
+        public void CreateFillerRow(object[] row, object[] fillerRow, object seriesValue)
+        {
+            foreach (var map in this)
+            {
+                map.ProcessFillerRow(fillerRow, seriesValue);
+                
+            }
+        }
+
+        /// <summary>
+        /// Creates an empty output row with any series values advanced by the count.
+        /// </summary>
+        /// <param name="count"></param>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        public void ProcessNextSeriesOutput(int count, object[] row = null)
+        {
+            foreach (var map in this)
+            {
+                if (map is MapSeries mapSeries)
+                {
+                    mapSeries.ProcessNextValueOutput(count, row);
+                }
+
+                if (map is MapGroup)
+                {
+                    map.ProcessOutputRow(row);
+                }
+
+//                if (map is MapFunction || map is MapAggregate)
+//                {
+//                    map.ProcessResultRow(0, row);
+//                }
+            }
         }
 
         /// <summary>
         /// Returns an array containing only the group field values for the join table.
         /// </summary>
-        /// <param name="row"></param>
         /// <returns></returns>
         public object[] GetJoinPrimaryKey()
         {

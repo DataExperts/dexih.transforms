@@ -53,6 +53,7 @@ namespace dexih.functions.BuiltIn
                 sum += _cacheSeriesList[i].Value;
                 denominator++;
             }
+            
 
             //return the result.
             if (denominator == 0)

@@ -33,7 +33,7 @@ namespace dexih.transforms.tests
             {
                 Inputs = new List<Parameter>()
                 {
-                    new ParameterArray("Compare", ETypeCode.String, new Parameter[]
+                    new ParameterArray("Compare", ETypeCode.String, new List<Parameter>
                     {
                         new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
                         new ParameterValue("Compare", ETypeCode.String, "junk")
@@ -123,7 +123,6 @@ namespace dexih.transforms.tests
             Assert.Equal(8, transformValidation.FieldCount);
 
             var passCount = 0;
-            var rejectCount = 0;
             while (await transformValidation.ReadAsync())
             {
                 Assert.Equal('C', transformValidation["Operation"]);

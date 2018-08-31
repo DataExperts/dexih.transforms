@@ -977,6 +977,10 @@ namespace dexih.functions.BuiltIn
             Description = "Creates a sha1 hash of the value.  This will (virtually) always be unique for any different value.")]
         public string CreateSHA1(string value)
         {
+            if (value == null)
+            {
+                return null;
+            }
             
             var bytes = Encoding.UTF8.GetBytes(value);
             using (var sha1 = System.Security.Cryptography.SHA1.Create())

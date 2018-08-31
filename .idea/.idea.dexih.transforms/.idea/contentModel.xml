@@ -207,6 +207,7 @@
           <e p="bin" t="ExcludeRecursive" />
           <e p="BuiltIn" t="Include">
             <e p="AggregateFunctions.cs" t="Include" />
+            <e p="CacheFunctions.cs" t="Include" />
             <e p="CategorizeFunctions.cs" t="Include" />
             <e p="ConditionFunctions.cs" t="Include" />
             <e p="MapFunctions.cs" t="Include" />
@@ -250,6 +251,7 @@
             <e p="MapJoin.cs" t="Include" />
             <e p="Mapping.cs" t="Include" />
             <e p="Mappings.cs" t="Include" />
+            <e p="MapSeries.cs" t="Include" />
             <e p="MapSort.cs" t="Include" />
             <e p="MapValidation.cs" t="Include" />
           </e>
@@ -281,6 +283,7 @@
             <e p="UpdateQuery.cs" t="Include" />
           </e>
           <e p="Retry.cs" t="Include" />
+          <e p="SymbolExtensions.cs" t="Include" />
           <e p="Table" t="Include">
             <e p="File.cs" t="Include" />
             <e p="Table.cs" t="Include" />
@@ -608,6 +611,7 @@
           <e p="TransformLookupTests.cs" t="Include" />
           <e p="TransformMappingTests.cs" t="Include" />
           <e p="TransformProfileTests.cs" t="Include" />
+          <e p="TransformRowTests.cs" t="Include" />
           <e p="TransformSortTests.cs" t="Include" />
           <e p="TransformValidationTests.cs" t="Include" />
         </e>
