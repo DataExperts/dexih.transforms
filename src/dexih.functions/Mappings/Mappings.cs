@@ -176,8 +176,7 @@ namespace dexih.functions.Mappings
         {
             foreach (var map in this)
             {
-                map.ProcessFillerRow(fillerRow, seriesValue);
-                
+                map.ProcessFillerRow(row, fillerRow, seriesValue);
             }
         }
 
@@ -254,12 +253,30 @@ namespace dexih.functions.Mappings
             return DataType.ECompareResult.Equal;
         }
 
-        public bool ProcessInputData(object[] row, object[] joinRow = null)
+        public bool ProcessInputData(object[] row)
+        {
+            return ProcessInputData(new FunctionVariables(), row, null);
+        }
+
+        public bool ProcessInputData(object[] row, object[] joinRow)
+        {
+            return ProcessInputData(new FunctionVariables(), row, joinRow);
+        }
+
+        /// <summary>
+        /// Run the processing for a new input row
+        /// </summary>
+        /// <param name="functionVariables"></param>
+        /// <param name="row"></param>
+        /// <param name="joinRow"></param>
+        /// <returns></returns>
+        public bool ProcessInputData(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             var result = true;
+            
             foreach (var mapping in this)
             {
-                result = result && mapping.ProcessInputRow(row, joinRow);
+                result = result && mapping.ProcessInputRow(functionVariables, row, joinRow);
             }
 
             _rowData = row;
@@ -283,20 +300,22 @@ namespace dexih.functions.Mappings
             }
         }
 
-        public void ProcessAggregateRow(int index, object[] row)
+        public void ProcessAggregateRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
             foreach (var mapping in this)
             {
-                mapping.ProcessResultRow(index, row);
+                mapping.ProcessResultRow(functionVariables, row, functionType);
             }
         }
+        
+        public void Reset(EFunctionType functionType)
+        {
+            foreach (var mapping in this)
+            {
+                mapping.Reset(functionType);
+            }
+        }
+        
 
-        public void Reset()
-        {
-            foreach (var mapping in this)
-            {
-                mapping.Reset();
-            }
-        }
     }
 }

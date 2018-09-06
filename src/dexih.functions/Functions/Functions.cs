@@ -18,7 +18,7 @@ namespace dexih.functions
             };
         }
         
-        public static (Type type, MethodInfo method) GetFunctionMethod(string className, string methodName, string assemblyName = null)
+        public static Type GetFunctionType(string className, string assemblyName = null)
         {
             Type type = null;
 
@@ -47,6 +47,13 @@ namespace dexih.functions
             {
                 throw new FunctionNotFoundException($"The type {className} was not found.");
             }
+
+            return type;
+        }
+        
+        public static (Type type, MethodInfo method) GetFunctionMethod(string className, string methodName, string assemblyName = null)
+        {
+            var type = GetFunctionType(className, assemblyName);
 
             var method = type.GetMethod(methodName);
 
@@ -119,9 +126,13 @@ namespace dexih.functions
                     FunctionClassName = type.FullName,
                     
                     ReturnType = method.ReturnType == typeof(void) ? (DataType.ETypeCode?) null : DataType.GetTypeCode(method.ReturnType),
-                    InputParameters = method.GetParameters().Where(c => !c.IsOut).Select(p =>
+                    InputParameters = method.GetParameters().Where(c =>
                     {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
+                        var variable = c.GetCustomAttribute<TransformFunctionVariableAttribute>();
+                        return !c.IsOut && variable == null;
+                    }).Select(p =>
+                    {
+                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameterAttribute>();
                         return new FunctionParameter()
                         {
                             ParameterName = p.Name,
@@ -129,12 +140,14 @@ namespace dexih.functions
                             Description = paramAttribute?.Description,
                             DataType = DataType.GetTypeCode(p.ParameterType.IsArray ? p.ParameterType.GetElementType() : p.ParameterType),
                             IsArray = p.ParameterType.IsArray,
-                            TwinParameterName = paramAttribute?.TwinParameterName
+                            TwinParameterName = paramAttribute?.TwinParameterName,
+                            ListOfValues = EnumValues(p),
+                            DefaultValue = DefaultValue(p)
                         };
                     }).ToArray(),
                     OutputParameters = method.GetParameters().Where(c => c.IsOut).Select(p =>
                     {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
+                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameterAttribute>();
                         return new FunctionParameter()
                         {
                             ParameterName = p.Name,
@@ -142,13 +155,18 @@ namespace dexih.functions
                             Description = paramAttribute?.Description,
                             DataType = DataType.GetTypeCode(p.ParameterType.GetElementType().IsArray ? p.ParameterType.GetElementType().GetElementType() : p.ParameterType.GetElementType()),
                             IsArray = p.ParameterType.GetElementType().IsArray,
-                            TwinParameterName = paramAttribute?.TwinParameterName
+                            TwinParameterName = paramAttribute?.TwinParameterName,
+                            ListOfValues = EnumValues(p)
                         };
                     }).ToArray(),
                     ResultReturnType = (resultMethod == null ||resultMethod.ReturnType == typeof(void)) ? (DataType.ETypeCode?) null :  DataType.GetTypeCode(resultMethod.ReturnType),
-                    ResultInputParameters = resultMethod?.GetParameters().Where(c => !c.IsOut && c.Name != "index").Select(p =>
+                    ResultInputParameters = resultMethod?.GetParameters().Where(c =>
                     {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
+                        var variable = c.GetCustomAttribute<TransformFunctionVariableAttribute>();
+                        return !c.IsOut && variable == null;
+                    }).Select(p =>
+                    {
+                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameterAttribute>();
                         return new FunctionParameter()
                         {
                             ParameterName = p.Name,
@@ -156,12 +174,14 @@ namespace dexih.functions
                             Description = paramAttribute?.Description,
                             DataType = DataType.GetTypeCode(p.ParameterType.IsArray ? p.ParameterType.GetElementType() : p.ParameterType),
                             IsArray = p.ParameterType.IsArray,
-                            TwinParameterName = paramAttribute?.TwinParameterName
+                            TwinParameterName = paramAttribute?.TwinParameterName,
+                            ListOfValues = EnumValues(p),
+                            DefaultValue = DefaultValue(p)
                         };
                     }).ToArray(),
                     ResultOutputParameters = resultMethod?.GetParameters().Where(c => c.IsOut).Select(p =>
                     {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameter>();
+                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameterAttribute>();
                         return new FunctionParameter()
                         {
                             ParameterName = p.Name,
@@ -169,7 +189,8 @@ namespace dexih.functions
                             Description = paramAttribute?.Description,
                             DataType = DataType.GetTypeCode(p.ParameterType.GetElementType().IsArray ? p.ParameterType.GetElementType().GetElementType() : p.ParameterType.GetElementType()),
                             IsArray = p.ParameterType.GetElementType().IsArray,
-                            TwinParameterName = paramAttribute?.TwinParameterName
+                            TwinParameterName = paramAttribute?.TwinParameterName,
+                            ListOfValues = EnumValues(p)
                         };
                     }).ToArray(),
                 };
@@ -178,6 +199,31 @@ namespace dexih.functions
             }
 
             return null;
+        }
+
+        // convert enum to list of values
+        private static string[] EnumValues(ParameterInfo p)
+        {
+            if (p.ParameterType.IsEnum)
+            {
+                return Enum.GetNames(p.ParameterType);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private static object DefaultValue(ParameterInfo p)
+        {
+            if (p.ParameterType.IsEnum)
+            {
+                return p.DefaultValue?.ToString();
+            }
+            else
+            {
+                return p.DefaultValue;
+            }
         }
 
         public static List<FunctionReference> GetAllFunctions()

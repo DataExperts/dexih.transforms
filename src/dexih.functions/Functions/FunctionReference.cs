@@ -12,7 +12,7 @@ namespace dexih.functions
     [JsonConverter(typeof(StringEnumConverter))]
     public enum EFunctionType
     {
-        Map, Condition, Aggregate, Rows, Validate, Profile
+        Map, Condition, Aggregate, Series, Rows, Validate, Profile
     }
     
     /// <summary>
@@ -56,8 +56,7 @@ namespace dexih.functions
 
         public TransformFunction GetTransformFunction(Parameters parameters = null, GlobalVariables globalVariables = null)
         {
-            var type = GetTransformType();
-
+            var type = Functions.GetFunctionType(FunctionClassName, FunctionAssemblyName); 
             return new TransformFunction(type, FunctionMethodName, parameters, globalVariables);
         }
 
@@ -69,7 +68,7 @@ namespace dexih.functions
 
         public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables, bool detailed)
         {
-            var type = GetTransformType();
+            var type = Functions.GetFunctionType(FunctionClassName, FunctionAssemblyName); 
             var obj = Activator.CreateInstance(type);
 
             if (!string.IsNullOrEmpty(DetailedFlagName))
@@ -91,26 +90,26 @@ namespace dexih.functions
 //            return new TransformFunction(type, FunctionMethodName, null, null, null, globalVariables);
 //        }
 
-        public Type GetTransformType()
-        {
-            Type type;
-            if (string.IsNullOrEmpty(FunctionAssemblyName))
-            {
-                type = Assembly.GetExecutingAssembly().GetType(FunctionClassName);
-            }
-            else
-            {
-                var assembly = Assembly.Load(FunctionAssemblyName);
-
-                if (assembly == null)
-                {
-                    throw new FunctionNotFoundException($"The assembly {FunctionAssemblyName} was not found.");
-                }
-                type = assembly.GetType(FunctionClassName);
-            }
-
-            return type;
-        }
+//        public Type GetTransformType()
+//        {
+//            Type type;
+//            if (string.IsNullOrEmpty(FunctionAssemblyName))
+//            {
+//                type = Assembly.GetExecutingAssembly().GetType(FunctionClassName);
+//            }
+//            else
+//            {
+//                var assembly = Assembly.Load(FunctionAssemblyName);
+//
+//                if (assembly == null)
+//                {
+//                    throw new FunctionNotFoundException($"The assembly {FunctionAssemblyName} was not found.");
+//                }
+//                type = assembly.GetType(FunctionClassName);
+//            }
+//
+//            return type;
+//        }
 
 
     }

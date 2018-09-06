@@ -29,6 +29,8 @@ namespace dexih.functions
 		public MethodInfo ResultMethod { get; set; }
 		public MethodInfo ImportMethod { get; set; }
 		public object ObjectReference { get; set; }
+		
+		public EFunctionType FunctionType { get; set; }
 
 		private object _returnValue;
 
@@ -47,11 +49,6 @@ namespace dexih.functions
 		/// A name that describes the function.
 		/// </summary>
 		public string FunctionName { get; set; }
-
-//		/// <summary>
-//		/// Parameters for the function.
-//		/// </summary>
-//		public Parameters Parameters { get; set; }
 
 		/// <summary>
 		/// Action to take if there is an error in the function.
@@ -125,6 +122,8 @@ namespace dexih.functions
 			// Get the ResetMethod/ResultMethod which are used for aggregate functions.
 			if (attribute != null)
 			{
+				FunctionType = attribute.FunctionType;
+
 				ResetMethod = string.IsNullOrEmpty(attribute.ResetMethod)
 					? null
 					: targetType.GetMethod(attribute.ResetMethod);
@@ -153,646 +152,101 @@ namespace dexih.functions
 			}
 
 			ObjectReference = target;
-
-//            TargetColumn = targetColumn;
-//
-//            ReturnType = GetTypeCode(FunctionMethod.ReturnType);
-//	        
-//            var inputParameters = functionMethod.GetParameters().Where(c => !c.IsOut).ToArray();
-//
-//            if (inputMappings == null)
-//                inputMappings = new TableColumn[inputParameters.Length];
-//
-//            Inputs = new Parameters();
-//
-//            var parameterCount = 0;
-//            for (var i = 0; i < inputMappings.Length; i++)
-//            {
-//                if (parameterCount > inputParameters.Length)
-//                {
-//                    throw new Exception("The input parameters could not be intialized as there are " + inputMappings.Length + " input mappings, however the function only has " + inputParameters.Length + " input parameters.");
-//                }
-//	            
-//
-//	            Inputs[i] = new Parameter
-//	            {
-//		            Columns = new [] { inputMappings[i]},
-//		            Name = inputParameters[parameterCount].Name,
-//		            IsColumn = true
-//	            };
-//
-//	            var parameterType = inputParameters[parameterCount].ParameterType;
-//                Inputs[i].IsArray = parameterType.IsArray;
-//
-//	            if(parameterType.IsArray)
-//                    Inputs[i].DataType = GetTypeCode(parameterType.GetElementType());
-//                else
-//                    Inputs[i].DataType = GetTypeCode(parameterType);
-//
-//	            parameterCount++;
-//
-//	            //if (Inputs[i].DataType == ETypeCode.Unknown)
-//	            //{
-//	            //    throw new Exception("The datatype: " + inputParameters[i].GetType().ToString() + " for parameter " + inputParameters[i].Name + " is not a supported datatype.");
-//	            //}
-//
-//	            //when an array is found in a method, all parameters are mapped to this.  
-//	            // if (!parameterType.IsArray) parameterCount++;
-//            }
-//
-//            ParameterInfo[] outputParameters;
-//
-//            if (ResultMethod == null)
-//                outputParameters = functionMethod.GetParameters().Where(c => c.IsOut).ToArray();
-//            else
-//                outputParameters = ResultMethod.GetParameters().Where(c => c.IsOut).ToArray();
-//
-//            parameterCount = 0;
-//            if (outputParameters.Length > 0)
-//            {
-//                Outputs = new Parameter[outputParameters.Length];
-//
-//                if (outputMappings == null)
-//                    outputMappings = new TableColumn[outputParameters.Length];
-//
-//                for (var i = 0; i < outputMappings.Length; i++)
-//                {
-//                    if (parameterCount > inputParameters.Length)
-//                    {
-//                        throw new Exception("The output parameters could not be intialized as there are " + outputMappings.Length + " output mappings, however the function only has " + outputParameters.Length + " output parameters.");
-//                    }
-//
-//	                Outputs[i] = new Parameter
-//	                {
-//		                Columns = new [] { outputMappings[i]},
-//		                Name = outputParameters[parameterCount].Name
-//	                };
-//
-//	                var parameterType = outputParameters[parameterCount].ParameterType.GetElementType();
-//	                if (parameterType == null)
-//	                {
-//		                throw new Exception($"Could not determine the parameter type for parameter at position {parameterCount}.");
-//	                }
-//	                
-//                    Outputs[i].IsArray = parameterType.IsArray;
-//                    
-//	                if (parameterType.IsArray)
-//                        Outputs[i].DataType = GetTypeCode(parameterType.GetElementType());
-//                    else
-//                        Outputs[i].DataType = GetTypeCode(parameterType);
-//
-//	                parameterCount++;
-//
-//	                //if (Outputs[i].DataType == ETypeCode.Unknown)
-//	                //{
-//	                //    throw new Exception("The datatype: " + outputParameters[i].GetType().ToString() + " for parameter " + outputParameters[i].Name + " is not a supported datatype.");
-//	                //}
-//
-//	                //when an array is found in a method, all parameters are mapped to this.  
-//	                // if (!parameterType.IsArray) parameterCount++;
-//                }
-//            }
 		}
 
 		public TransformFunction()
 		{
 		}
 
-//        public void SetVariableValues(string[] parametersValues)
-//        {
-//            if (Inputs.Length != parametersValues.Length)
-//            {
-//                throw new FunctionInvalidParametersException($"The number of inputs parameters of {parametersValues.Length} does not match expected {Inputs.Length} input values.");
-//            }
-//
-//            for (var i = 0; i < Inputs.Length; i++)
-//            {
-//                try
-//                {
-//                    Inputs[i].SetValue(parametersValues[i]);
-//                } catch(Exception ex)
-//                {
-//#if DEBUG
-//                    throw new AggregateException($"The input parameter {Inputs[i].Name} with value {parametersValues[i]} could not be set.  " + ex.Message, ex);
-//#else
-//                    throw new AggregateException($"The input parameter {Inputs[i].Name} could not be set.  " + ex.Message, ex); //don't include values in the release version as this might be a sensative value.
-//#endif
-//                }
-//            }
-//        }
-
-//        public object RunFunction(object[] values, string[] outputNames = null)
-//        {
-//            //first add array parameters to the inputs field.
-////            if(Inputs.Length > 0 && Inputs[Inputs.Length - 1].IsArray)
-////            {
-////                var newInputs = new Parameter[values.Length];
-////                for (var i = 0; i < Inputs.Length; i++)
-////                    newInputs[i] = Inputs[i];
-////
-////                for(var i = Inputs.Length; i< values.Length; i++)
-////                {
-////                    newInputs[i] = new Parameter { DataType = Inputs[Inputs.Length - 1].DataType, IsArray = true };
-////                }
-////
-////                Inputs = newInputs;
-////            }
-////
-////            if(outputNames != null)
-////            {
-////                var newOutputs = new Parameter[outputNames.Length];
-////                for (var i = 0; i < Outputs.Length; i++)
-////                    newOutputs[i] = Outputs[i];
-////
-////                for (var i = Outputs.Length; i < outputNames.Length; i++)
-////                {
-////                    newOutputs[i] = new Parameter { Name = outputNames[i], DataType = Outputs[Outputs.Length - 1].DataType, IsArray = true };
-////                }
-////
-////                Outputs = newOutputs;
-////            }
-//
-//
-//	        var inputs = FunctionMethod.ReturnParameter
-//            if (values.Length != Inputs.Length )
-//            {
-//                throw new FunctionInvalidParametersException($"The number of inputs parameters of {values.Length} does not match expected {Inputs.Length} input values.");
-//            }
-//            for (var i = 0; i < values.Length; i++)
-//            {
-//                try
-//                {
-//                    Inputs[i].SetValue(values[i]);
-//                }
-//                catch (Exception ex)
-//                {
-//#if DEBUG
-//                    throw new AggregateException($"The input parameter {Inputs[i].Name} with value {values[i]} could not be set.  " + ex.Message, ex);
-//#else
-//                    throw new AggregateException($"The input parameter {Inputs[i].Name} could not be set.  " + ex.Message, ex); //don't include values in the release version as this might be a sensative value.
-//#endif
-//                }
-//            }
-//
-//            return Invoke();
-//        }
-
-
-		public object Invoke(object[] inputParameters)
+		private (object[] parameters, int outputPos) SetParameters(ParameterInfo[] functionParameters, FunctionVariables functionVariables, object[] inputParameters)
 		{
-			var outputs = new object[0];
-			return Invoke(inputParameters, out outputs);
+			var parameters = new object[functionParameters.Length];
+			var outputPos = -1;
+
+			var inputPosition = 0;
+			var pos = 0;
+			foreach (var parameter in functionParameters)
+			{
+				if (parameter.IsOut)
+				{
+					outputPos = pos;
+					break;
+				}
+
+				if (inputPosition >= functionParameters.Length)
+				{
+					pos++;
+					continue;
+				}
+				
+				var variable = functionParameters[pos].GetCustomAttribute<TransformFunctionVariableAttribute>();
+				if (variable is null)
+				{
+					if (functionParameters[pos].ParameterType.IsEnum)
+					{
+						if (inputParameters[inputPosition] is string stringValue)
+						{
+							parameters[pos] = Enum.Parse(functionParameters[pos].ParameterType, stringValue);
+						}
+					}
+					else
+					{
+						parameters[pos] = inputParameters[inputPosition];	
+					}
+
+					pos++;
+					inputPosition++;
+				}
+				else
+				{
+					parameters[pos++] = functionVariables.GetVariable(variable.FunctionParameter);
+				}
+			}
+
+			return (parameters, outputPos);
+		}
+
+
+		public object Invoke(FunctionVariables functionVariables, object[] inputParameters)
+		{
+			return Invoke(functionVariables, inputParameters, out _);
 		}
 		
-		public object Invoke(object[] inputParameters, out object[] outputs)
+		public object Invoke(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
-			// convert inputParameters
-			var outParams = FunctionMethod.GetParameters().Count(c => c.IsOut);
-			outputs = new object[outParams];
+			var parameters = SetParameters(FunctionMethod.GetParameters(), functionVariables, inputParameters);
 
-			var parameters = inputParameters.Concat(outputs).ToArray();
-			
-			_returnValue = FunctionMethod.Invoke(ObjectReference, parameters);
+			_returnValue = FunctionMethod.Invoke(ObjectReference, parameters.parameters);
 
-			outputs = parameters.Skip(inputParameters.Length).ToArray();
-			
-			return _returnValue;
-		}
-
-//		public object Invoke(out object[] outputs)
-//		{
-//			try
-//			{
-//				// confirm if function contains null inputs.
-//				var nullInputFound = Parameters.ContainsNullInput(OnNull == EErrorAction.Abend);
-//
-//				// if ignore null inputs is on, raise an exception which will trigger an ignore 
-//				if (nullInputFound && OnNull == EErrorAction.Ignore)
-//				{
-//					throw new FunctionIgnoreRowException();
-//				}
-//
-//				// get the prameters.  If there is a resultmethod then do not include the output variables (these are part of the result function).
-//				var parameters = Parameters.GetFunctionData(true, ResultMethod == null);
-//
-//				_returnValue = FunctionMethod.Invoke(ObjectReference, parameters);
-//
-//				if (Parameters.ReturnParameter.DataType == ETypeCode.Boolean && NotCondition)
-//				{
-//					_returnValue = !(bool?) _returnValue;
-//				}
-//				
-//				outputs = 
-//
-//				return _returnValue;
-//			}
-//			catch (FunctionIgnoreRowException)
-//			{
-//				throw;
-//			}
-//			catch (Exception ex)
-//			{
-//				// based on onerror setting, either return null or rethrow the error.
-//				switch (OnError)
-//				{
-//					case EErrorAction.Abend:
-//						throw new FunctionException($"The function {FunctionName} failed.  " + ex.Message, ex);
-//					case EErrorAction.Ignore:
-//						throw new FunctionIgnoreRowException();
-//					default:
-//						return null;
-//				}
-//			}
-//		}
-
-//        public object Invoke()
-//        {
-//	        
-//			try
-//			{
-//				var mappingFunction = FunctionMethod;
-//				
-//				var inputsCount = Inputs?.Length ?? 0;
-//				var outputsCount = 0;
-//				if (ResultMethod == null)
-//					outputsCount = Outputs?.Length ?? 0;
-//
-//				var parameters = new object[inputsCount + outputsCount];
-//
-//				var parameterNumber = 0;
-//
-//				var nullInputFound = false;
-//
-////				List<object> arrayValues = null;
-////				var arrayType = ETypeCode.String;
-//				for (var i = 0; i < inputsCount; i++)
-//				{
-//					//FYI: this code will only accommodate for array being last parameter.
-////					if (Inputs != null && Inputs[i].IsArray)
-////					{
-////						if (arrayValues == null)
-////						{
-////							arrayValues = new List<object>();
-////							arrayType = Inputs[i].DataType;
-////						}
-////
-////						try
-////						{
-////							var parseValue = TryParse(Inputs[i].DataType, Inputs[i].Value);
-////
-////							if (parseValue == null)
-////							{
-////								if (OnNull == EErrorAction.Abend)
-////								{
-////									throw new FunctionNullValueException($"The input parameter {Inputs[i].Name} has a null value, and the function is set to abend on nulls.");
-////								}
-////								if (OnNull == EErrorAction.Ignore)
-////								{
-////									throw new FunctionIgnoreRowException();
-////								}
-////								nullInputFound = true;
-////							}
-////
-////							arrayValues.Add(parseValue);
-////						}
-////						catch (Exception ex)
-////						{
-////#if DEBUG
-////							throw new AggregateException($"The input parameter {Inputs[i].Name} with value {Inputs[i].Value} could not be parsed.  " + ex.Message, ex);
-////#else
-////                        throw new AggregateException($"The input parameter {Inputs[i].Name} could not be parsed.  " + ex.Message, ex);
-////#endif
-////						}
-////					}
-////					else
-////					{
-//						parameters[parameterNumber] = Inputs?[i].Value;
-//						if (parameters[parameterNumber] == null || parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
-//
-//						if (parameters[parameterNumber] == null)
-//						{
-//							if (OnNull == EErrorAction.Abend)
-//							{
-//								throw new FunctionException($"The input parameter {Inputs[i].Name} has a null value, and the function is set to abend on nulls.");
-//							}
-//							if (OnNull == EErrorAction.Ignore)
-//							{
-//								throw new FunctionIgnoreRowException();
-//							}
-//
-//							nullInputFound = true;
-//						}
-//
-//						parameterNumber++;
-////					}
-//				}
-//
-////				if (arrayValues != null)
-////				{
-////					try
-////					{
-////						//convert the values and load them into the parameter array.
-////						switch (arrayType)
-////						{
-////							case ETypeCode.Byte:
-////								parameters[parameterNumber] = arrayValues.Select(c => (byte)c).ToArray();
-////								break;
-////							case ETypeCode.SByte:
-////								parameters[parameterNumber] = arrayValues.Select(c => (sbyte)c).ToArray();
-////								break;
-////							case ETypeCode.UInt16:
-////								parameters[parameterNumber] = arrayValues.Select(c => (ushort)c).ToArray();
-////								break;
-////							case ETypeCode.UInt32:
-////								parameters[parameterNumber] = arrayValues.Select(c => (uint)c).ToArray();
-////								break;
-////							case ETypeCode.UInt64:
-////								parameters[parameterNumber] = arrayValues.Select(c => (ulong)c).ToArray();
-////								break;
-////							case ETypeCode.Int16:
-////								parameters[parameterNumber] = arrayValues.Select(c => (short)c).ToArray();
-////								break;
-////							case ETypeCode.Int32:
-////								parameters[parameterNumber] = arrayValues.Select(c => (int)c).ToArray();
-////								break;
-////							case ETypeCode.Int64:
-////								parameters[parameterNumber] = arrayValues.Select(c => (long)c).ToArray();
-////								break;
-////							case ETypeCode.Decimal:
-////								parameters[parameterNumber] = arrayValues.Select(c => (decimal)c).ToArray();
-////								break;
-////							case ETypeCode.Double:
-////								parameters[parameterNumber] = arrayValues.Select(c => (double)c).ToArray();
-////								break;
-////							case ETypeCode.Single:
-////								parameters[parameterNumber] = arrayValues.Select(c => (float)c).ToArray();
-////								break;
-////							case ETypeCode.String:
-////								parameters[parameterNumber] = arrayValues.Select(c => (string)c).ToArray();
-////								break;
-////							case ETypeCode.Boolean:
-////								parameters[parameterNumber] = arrayValues.Select(c => (bool)c).ToArray();
-////								break;
-////							case ETypeCode.DateTime:
-////								parameters[parameterNumber] = arrayValues.Select(c => (DateTime)c).ToArray();
-////								break;
-////							case ETypeCode.Time:
-////								parameters[parameterNumber] = arrayValues.Select(c => (DateTime)c).ToArray();
-////								break;
-////							case ETypeCode.Guid:
-////								parameters[parameterNumber] = arrayValues.Select(c => (Guid)c).ToArray();
-////								break;
-////							case ETypeCode.Unknown:
-////							default:
-////								parameters[parameterNumber] = arrayValues.ToArray();
-////								break;
-////						}
-////					}
-////					catch (Exception ex)
-////					{
-////#if DEBUG
-////						throw new AggregateException($"The input array with values {string.Join(",", arrayValues)} could not be converted.  " + ex.Message, ex);
-////#else
-////                    throw new AggregateException($"The input array could not be converted.  " + ex.Message, ex);
-////#endif
-////
-////					}
-////					parameterNumber++;
-////				}
-//
-//				var outputParameterNumber = parameterNumber;
-//
-//				//if there is no resultfunction, then this function will require the output parameters
-//				if (ResultMethod == null)
-//				{
-////					arrayValues = null;
-//					for (var i = 0; i < outputsCount; i++)
-//					{
-//						//FYI: this code will only accommodate for array being last parameter.
-////						if (Outputs != null && Outputs[i].IsArray)
-////						{
-////							if (arrayValues == null) arrayValues = new List<object>();
-////							arrayValues.Add(null);
-////						}
-////						else
-////						{
-//							parameters[parameterNumber] = Outputs?[i].Value;
-//							if (parameters[parameterNumber] != null && parameters[parameterNumber] is DBNull) parameters[parameterNumber] = null;
-//
-//							parameterNumber++;
-////						}
-//					}
-//
-////					if (arrayValues != null)
-////					{
-////						//parameters[parameterNumber] = arrayValues.Select(c => c.ToString()).ToArray();
-////						parameters[parameterNumber] = new string[arrayValues.Count];
-////						parameterNumber++;
-////					}
-//				}
-//
-//				// Array.Resize(ref parameters, parameterNumber);
-//
-//				// execute the function.
-//				if (nullInputFound && OnNull == EErrorAction.Null)
-//				{
-//					_returnValue = null;
-//				}
-//				else
-//				{
-//					_returnValue = mappingFunction.Invoke(ObjectReference, parameters);
-//				}
-//
-//				if (ResultMethod == null)
-//				{
-//					var arrayNumber = 0;
-//					for (var i = 0; i < outputsCount; i++)
-//					{
-//
-//						try
-//						{
-//
-////							if (Outputs != null && Outputs[i].IsArray)
-////							{
-////								var parametersArray = (object[])parameters[outputParameterNumber];
-////								if (parametersArray == null)
-////									Outputs[i].SetValue(DBNull.Value);
-////								else
-////									Outputs[i].SetValue(arrayNumber >= parametersArray.Length ? DBNull.Value : parametersArray[arrayNumber]);
-////
-////								arrayNumber++;
-////							}
-////							else
-////							{
-//								Outputs[i].SetValue(parameters[outputParameterNumber]);
-//								outputParameterNumber++;
-////							}
-//
-//						}
-//						catch (Exception ex)
-//						{
-//#if DEBUG
-//							throw new AggregateException($"The function {FunctionName} with the return parameter {Outputs[i].Name} with value {parameters[outputParameterNumber]} could not be converted.  " + ex.Message, ex);
-//#else
-//                        throw new AggregateException($"The function {FunctionName} with the return parameter {Outputs[i].Name} could not be converted.  " + ex.Message, ex);
-//#endif
-//						}
-//					}
-//				}
-//
-//				if (ReturnType == ETypeCode.Boolean && NotCondition)
-//				{
-//					_returnValue = !(bool?) _returnValue;
-//				}
-//
-//				return _returnValue;
-//			}
-//			catch(FunctionIgnoreRowException)
-//			{
-//				throw;
-//			}
-//			catch(Exception ex)
-//			{
-//				// based on onerror setting, either return null or rethrow the error.
-//				switch (OnError)
-//				{
-//					case EErrorAction.Abend:
-//						throw new FunctionException($"The function {FunctionName} failed.  " + ex.Message, ex);
-//					case EErrorAction.Ignore:
-//						throw new FunctionIgnoreRowException();
-//					default:
-//						return null;
-//				}
-//			}
-//        }
-
-		public object ReturnValue(int? index, out object[] outputs)
-		{
-			var outParams = ResultMethod.GetParameters().Count(c => c.IsOut);
-
-			object[] parameters;
-			int outputsPos;
-			
-
-			// if the aggregate function contains an index parameter as first parmaeter, add this to the parameters data.
-			if (ResultMethod.GetParameters().Any() && ResultMethod.GetParameters()[0].Name == "index")
+			if (parameters.outputPos >= 0)
 			{
-				parameters = new object[outParams + 1];
-				parameters[0] = index;
-				outputsPos = 1;
+				outputs = parameters.parameters.Skip(parameters.outputPos).ToArray();
 			}
 			else
 			{
-				parameters = new object[outParams];
-				outputsPos = 0;
+				outputs = new object[0];
 			}
-
-			_returnValue = ResultMethod.Invoke(ObjectReference, parameters);
-
-			outputs = parameters.Skip(outputsPos).ToArray();
-
+			
 			return _returnValue;
 		}
 		
-//        /// <summary>
-//        /// Get the return value from an aggregate function.  
-//        /// </summary>
-//        /// <param name="index">Index represents result row number within the grouping, and is used for series functions that return multiple results from one aggregation.</param>
-//        /// <returns></returns>
-//        public object ReturnValue(int? index = 0)
-//        {
-//            if (ResultMethod != null)
-//            {
-//	            // if the aggregate function contains an index parameter as first parmaeter, add this to the parameters data.
-//	            if (!(ResultMethod.GetParameters().Any() && ResultMethod.GetParameters()[0].Name == "index"))
-//	            {
-//		            index = null;
-//	            }
-//
-//	            var parameters = Parameters.GetFunctionData(false, true, index);
-//	            _returnValue = ResultMethod.Invoke(ObjectReference, parameters);
-//	            
-////                var outputsCount = Outputs?.Length ?? 0;
-////                int indexAdjust;
-////                object[] parameters;
-////
-////                //if the result method has an "index" as the first parameter, then add the index
-////                if (ResultMethod.GetParameters().Any() && ResultMethod.GetParameters()[0].Name == "index")
-////                {
-////                    parameters = new object[outputsCount + 1];
-////                    parameters[0] = index;
-////                    indexAdjust = 1;
-////                }
-////                else
-////                {
-////                    parameters = new object[outputsCount];
-////                    indexAdjust = 0;
-////                }
-////
-////                List<object> arrayValues = null;
-////                for (var i = 0; i < outputsCount; i++)
-////                {
-////                    //FYI: this code will only accommodate for array being last parameter.
-//////                    if (Outputs != null && Outputs[i].IsArray)
-//////                    {
-//////                        if (arrayValues == null) arrayValues = new List<object>();
-//////                        arrayValues.Add(null);
-//////                    }
-//////                    else
-//////                    {
-////                        parameters[i + indexAdjust] = null; 
-//////                    }
-////                }
-////
-//////                if (arrayValues != null)
-//////                {
-//////                    parameters[outputsCount + indexAdjust] = arrayValues.Select(c => Convert.ChangeType(c, Type.GetType("System." + Outputs.Last().DataType)));
-//////                }
-////
-////                _returnValue = ResultMethod.Invoke(ObjectReference, parameters);
-////
-////                var arrayNumber = 0;
-////                for (var i = 0; i < outputsCount; i++)
-////                {
-//////                    if (Outputs != null && Outputs[i].IsArray)
-//////                    {
-//////                        var array = (object[])parameters[i + indexAdjust];
-//////                        try
-//////                        {
-//////                            Outputs[i].SetValue(arrayNumber >= array.Length ? DBNull.Value : array[arrayNumber]);
-//////                        }
-//////                        catch (Exception ex)
-//////                        {
-//////#if DEBUG
-//////                            throw new AggregateException($"The function {FunctionName} with the output array {Outputs[i].Name} with values {string.Join(",", array)} could not be converted.  " + ex.Message, ex);
-//////#else
-//////                            throw new AggregateException($"The function {FunctionName} with the output array {Outputs[i].Name} could not be converted.  " + ex.Message, ex);
-//////#endif
-//////                        }
-//////                        arrayNumber++;
-//////                    }
-//////                    else
-//////                    {
-////                        try
-////                        {
-////                            Outputs[i].SetValue(parameters[i + indexAdjust]);
-////                        }
-////                        catch (Exception ex)
-////                        {
-////#if DEBUG
-////                            throw new AggregateException($"The function {FunctionName} with the output parameter {Outputs[i].Name} with value {parameters[i + indexAdjust]} could not be converted.  " + ex.Message, ex);
-////#else
-////                                throw new AggregateException($"The function {FunctionName} with the output parameter {Outputs[i].Name} could not be converted.  " + ex.Message, ex);
-////#endif
-////
-////                        }
-////
-//////                    }
-////                }
-//            }
-//
-//            return _returnValue;
-//        }
+		public object ReturnValue(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		{
+			var parameters = SetParameters(ResultMethod.GetParameters(), functionVariables, inputParameters);
+			
+			_returnValue = ResultMethod.Invoke(ObjectReference, parameters.parameters);
+
+			if (parameters.outputPos >= 0)
+			{
+				outputs = parameters.parameters.Skip(parameters.outputPos).ToArray();
+			}
+			else
+			{
+				outputs = new object[0];
+			}
+
+			return _returnValue;
+		}
 
         public void Reset()
         {

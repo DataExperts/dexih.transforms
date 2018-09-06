@@ -34,10 +34,10 @@ namespace dexih.functions.Mappings
             _outputOrdinal = table.Columns.Count - 1;
         }
 
-        public override bool ProcessInputRow(object[] rowData, object[] joinRow = null)
+        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             Count++;
-            var value = _inputOrdinal == -1 ? InputColumn.DefaultValue : rowData[_inputOrdinal];
+            var value = _inputOrdinal == -1 ? InputColumn.DefaultValue : row[_inputOrdinal];
             
             if(Value == null && value != null)
             {
@@ -49,7 +49,11 @@ namespace dexih.functions.Mappings
                 {
                     case SelectColumn.EAggregate.Sum:
                     case SelectColumn.EAggregate.Average:
-                        Value = DataType.Add(InputColumn.DataType, Value ?? 0, value);
+                        if (value != null)
+                        {
+                            Value = DataType.Add(InputColumn.DataType, Value ?? 0, value);
+                        }
+
                         break;
                     case SelectColumn.EAggregate.Min:
                         var compare = DataType.Compare(InputColumn.DataType, value, Value);
@@ -76,24 +80,28 @@ namespace dexih.functions.Mappings
             return;
         }
 
-        public override void ProcessResultRow(int index, object[] row)
+        public override void ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
-            object value = null;
-            switch (Aggregate)
+            if (functionType == EFunctionType.Aggregate)
             {
-                case SelectColumn.EAggregate.Count:
-                    value = Count;
-                    break;
-                case SelectColumn.EAggregate.Max:
-                case SelectColumn.EAggregate.Min:
-                case SelectColumn.EAggregate.Sum:
-                    value = Value;
-                    break;
-                case SelectColumn.EAggregate.Average:
-                    value = Count == 0 ? 0 : DataType.Divide(OutputColumn.DataType, Value, Count);
-                    break;
+                object value = null;
+                switch (Aggregate)
+                {
+                    case SelectColumn.EAggregate.Count:
+                        value = Count;
+                        break;
+                    case SelectColumn.EAggregate.Max:
+                    case SelectColumn.EAggregate.Min:
+                    case SelectColumn.EAggregate.Sum:
+                        value = Value;
+                        break;
+                    case SelectColumn.EAggregate.Average:
+                        value = Count == 0 ? 0 : DataType.Divide(OutputColumn.DataType, Value, Count);
+                        break;
+                }
+
+                row[_outputOrdinal] = value;
             }
-            row[_outputOrdinal] = value;        
         }
 
 
@@ -102,10 +110,13 @@ namespace dexih.functions.Mappings
             throw new NotSupportedException();
         }
 
-        public override void Reset()
+        public override void Reset(EFunctionType functionType)
         {
-            Value = null;
-            Count = 0;
+            if (functionType == EFunctionType.Aggregate)
+            {
+                Value = null;
+                Count = 0;
+            }
         }
     }
 }

@@ -35,12 +35,12 @@ namespace dexih.functions.BuiltIn
             return true;
         }
         
-        public string StringResult([TransformFunctionIndex] int index) => _cacheString;
-        public int IntResult([TransformFunctionIndex] int index) => _cacheInt??0;
-        public double DoubleResult([TransformFunctionIndex] int index) => _cacheDouble??0;
-        public DateTime? DateResult([TransformFunctionIndex] int index) => _cacheDate;
-        public double? NullDoubleResult([TransformFunctionIndex] int index) => _cacheDouble;
-        public object ObjectResult([TransformFunctionIndex] int index) => _cacheObject;
+        public string StringResult() => _cacheString;
+        public int IntResult() => _cacheInt??0;
+        public double DoubleResult() => _cacheDouble??0;
+        public DateTime? DateResult() => _cacheDate;
+        public double? NullDoubleResult() => _cacheDouble;
+        public object ObjectResult() => _cacheObject;
 
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(DoubleResult), ResetMethod = nameof(Reset))]
@@ -60,7 +60,7 @@ namespace dexih.functions.BuiltIn
             _cacheDouble = _cacheDouble + value;
             _cacheInt = _cacheInt + 1;
         }
-        public double AverageResult([TransformFunctionIndex]int index)
+        public double AverageResult()
         {
             if (_cacheDouble == null || _cacheInt == null || _cacheInt == 0)
                 return 0;
@@ -149,7 +149,7 @@ namespace dexih.functions.BuiltIn
                 _cacheDictionary.Add(value, null);
         }
         
-        public int CountDistinctResult([TransformFunctionIndex]int index)
+        public int CountDistinctResult()
         {
             return _cacheDictionary.Keys.Count;
         }
@@ -166,7 +166,7 @@ namespace dexih.functions.BuiltIn
                 _cacheStringBuilder.Append(delimiter + value);
         }
         
-        public string ConcatAggResult([TransformFunctionIndex]int index)
+        public string ConcatAggResult([TransformFunctionVariable(EFunctionVariable.Index)]int index)
         {
             return _cacheStringBuilder.ToString();
         }
@@ -177,7 +177,7 @@ namespace dexih.functions.BuiltIn
             if (_cacheList == null) _cacheList = new List<object>();
             _cacheList.Add(value);
         }
-        public double MedianResult([TransformFunctionIndex]int index)
+        public double MedianResult()
         {
             if (_cacheList == null)
                 return 0;
@@ -201,9 +201,9 @@ namespace dexih.functions.BuiltIn
             Variance(value);
         }
 
-        public double StdDevResult([TransformFunctionIndex]int index)
+        public double StdDevResult()
         {
-            var sd = Math.Sqrt(VarianceResult(index));
+            var sd = Math.Sqrt(VarianceResult());
             return sd;
         }
         
@@ -219,7 +219,7 @@ namespace dexih.functions.BuiltIn
             _cacheDouble += value;
         }
 
-        public double VarianceResult([TransformFunctionIndex]int index)
+        public double VarianceResult()
         {
             if (_cacheList == null || _cacheInt == null || _cacheInt == 0 || _cacheDouble == null || _cacheDouble == 0 )
                 return 0;
@@ -282,11 +282,38 @@ namespace dexih.functions.BuiltIn
                 _cacheDictionary[labelColumn] = valueColumn;
             }
         }
-
-        public bool PivotToColumnsResult([TransformFunctionIndex] int index, out object[] values)
+        
+        public bool PivotToColumnsResult(out object[] values)
         {
             values = _cacheDictionary.Values.ToArray();
             return !values.Contains(null);
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Percent of Total", Description = "The percentage total in the group.", ResultMethod = nameof(PercentTotalResult), ResetMethod = nameof(Reset))]
+        public void PercentTotal(double value)
+        {
+            if (_cacheList == null)
+            {
+                _cacheList = new List<object>();
+                _cacheDouble = 0;
+            }
+            _cacheDouble += value;
+            _cacheList.Add(value);        
+        }
+
+        public enum EPercentFormat
+        {
+            AsDecimal,
+            AsPercent
+        }
+
+        public double PercentTotalResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, EPercentFormat percentFormat = EPercentFormat.AsPercent)
+        {
+            if (_cacheList == null || _cacheDouble == null)
+                return 0;
+
+            var percent = (double)_cacheList[index] / _cacheDouble.Value;
+            return percentFormat == EPercentFormat.AsDecimal ? percent : percent * 100;
         }
 
         

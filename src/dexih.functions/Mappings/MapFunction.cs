@@ -38,14 +38,14 @@ namespace dexih.functions.Mappings
             Parameters.InitializeOutputOrdinals(table);
         }
 
-        public override bool ProcessInputRow(object[] row, object[] joinRow = null)
+        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             Parameters.SetFromRow(row, joinRow);
 
             //gets the parameters.
             var parameters = Parameters.GetFunctionParameters();
             
-            ReturnValue = Function.Invoke(parameters, out _outputs);
+            ReturnValue = Function.Invoke(functionVariables, parameters, out _outputs);
             
             if (ReturnValue != null && ReturnValue is bool boolReturn)
             {
@@ -55,15 +55,17 @@ namespace dexih.functions.Mappings
             return true;
         }
 
-        public override void Reset()
+        public override void Reset(EFunctionType functionType)
         {
-            ReturnValue = null;
-            _outputs = null;
-            ResultReturnValue = null;
-            _resultOutputs = null;
-            Function.Reset();
+            if (Function.FunctionType == functionType)
+            {
+                ReturnValue = null;
+                _outputs = null;
+                ResultReturnValue = null;
+                _resultOutputs = null;
+                Function.Reset();
+            }
         }
-
 
         public override object GetInputValue(object[] row = null)
         {
@@ -75,15 +77,16 @@ namespace dexih.functions.Mappings
             Parameters.SetFunctionResult(ReturnValue, _outputs, data);
         }
         
-        public override void ProcessResultRow(int index, object[] row)
+        public override void ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
-            if (Function.ResultMethod != null)
+            if (Function.FunctionType == functionType && Function.ResultMethod != null)
             {
-                ResultReturnValue = Function.ReturnValue(index, out _resultOutputs);
+                var parameters = Parameters.GetResultFunctionParameters();
+                ResultReturnValue = Function.ReturnValue(functionVariables, parameters, out _resultOutputs);
                 Parameters.SetResultFunctionResult(ResultReturnValue, _resultOutputs, row);
             }
         }
-
+        
         public virtual MapFunction Copy()
         {
             var mapFunction = new MapFunction()

@@ -22,8 +22,9 @@ namespace dexih.functions.Mappings
         /// </summary>
         /// <param name="row"></param>
         /// <param name="joinRow"></param>
+        /// <param name="seriesValue"></param>
         /// <returns>0 filters or joins match, -1 row lessthan joinRow, 1 row greater than joinRow--></returns>
-        public abstract bool ProcessInputRow(object[] row, object[] joinRow = null);
+        public abstract bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null);
 
         /// <summary>
         /// Gets the mapping result, and updates the row.
@@ -31,22 +32,26 @@ namespace dexih.functions.Mappings
         /// <param name="row">The output row to populate</param>
         public abstract void ProcessOutputRow(object[] row);
 
+        public abstract object GetInputValue(object[] row = null);
+
         /// <summary>
         /// Runs any aggregate functions, and populates the aggregate results.
         /// </summary>
         /// <param name="index">The row within the current group for aggregate functions.</param>
         /// <param name="row">The output row to populate</param>
-        public abstract void ProcessResultRow(int index, object[] row);
+        public virtual void ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        {
+        }
 
-        public abstract object GetInputValue(object[] row = null);
-
-        public virtual void ProcessFillerRow(object[] fillerRow, object seriesValue) {}
+        public virtual void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue) {}
 
         /// <summary>
         /// Run a reset (if needed) of the mapping.
         /// </summary>
-        public abstract void Reset();
-        
+        public virtual void Reset(EFunctionType functionType)
+        {
+        }
+
         public int AddOutputColumn(Table table, TableColumn column)
         {
             var ordinal = table.GetOrdinal(column);

@@ -113,7 +113,6 @@ namespace dexih.functions.BuiltIn
                 throw new FunctionException($"The parameters.inputs was not set in the row function.");                
             }
             
-
             if (Parameters.Inputs[0] is ParameterArray parameterArray && parameterArray.Parameters[_cacheInt.Value] is ParameterColumn parameterColumn)
             {
                 columnName = parameterColumn.Column.Name;

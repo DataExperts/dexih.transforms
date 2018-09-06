@@ -1,91 +1,186 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO.Compression;
+using dexih.functions.Query;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.BuiltIn
 {
+    public class SeriesValue
+    {
+        public SeriesValue(object series, double value, SelectColumn.EAggregate aggregate)
+        {
+            Series = series;
+            Value = value;
+            Count = 1;
+            Aggregate = aggregate;
+        }
+        
+        public object Series { get; set; }
+        public double Value { get; set; }
+        public int Count { get; set; }
+        public SelectColumn.EAggregate Aggregate { get; set; }
+
+        public void AddValue(double value)
+        {
+            Count++;
+            
+            switch (Aggregate)
+            {
+                case SelectColumn.EAggregate.Sum:
+                case SelectColumn.EAggregate.Average:
+                    Value += value;
+                    break;
+                case SelectColumn.EAggregate.Min:
+                    if (value < Value)
+                    {
+                        Value = value;
+                    }
+                    break;
+                case SelectColumn.EAggregate.Max:
+                    if (value > Value)
+                    {
+                        Value = value;
+                    }
+                    break;
+                case SelectColumn.EAggregate.Count:
+                    break;
+                case SelectColumn.EAggregate.First:
+                    break;
+                case SelectColumn.EAggregate.Last:
+                    Value = value;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(Aggregate), Aggregate, null);
+            }
+        }
+
+        public double Result()
+        {
+            if (Aggregate == SelectColumn.EAggregate.Average)
+            {
+                return Value / Count;
+            }
+
+            return Value;
+        }
+    }
+    
     public class SeriesFunctions
     {
         //The cache parameters are used by the functions to maintain a state during a transform process.
-        private List<KeyValuePair<DateTime, double>> _cacheSeriesList;
-        private Dictionary<string, int> _cacheIntDictionary;
-
+        private OrderedDictionary _cacheSeries;
+        
         public bool Reset()
         {
-            _cacheSeriesList = null;
-            _cacheIntDictionary = null;
+            _cacheSeries?.Clear();
             return true;
         }
-        
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Series", Name = "Moving Average", Description = "Calculates the average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset))]
-        public void MovingAverage(DateTime series, double value, int preCount, int postCount)
+
+        private void AddSeries(object series, double value, SelectColumn.EAggregate duplicateAggregate)
         {
-            if (_cacheSeriesList == null)
+            if (_cacheSeries == null)
             {
-                _cacheIntDictionary = new Dictionary<string, int> {{"PreCount", preCount}, {"PostCount", preCount}};
-                _cacheSeriesList = new List<KeyValuePair<DateTime, double>>();
+                _cacheSeries = new OrderedDictionary();
             }
-            _cacheSeriesList.Add(new KeyValuePair<DateTime, double>(series, value));
+
+            if (_cacheSeries.Contains(series))
+            {
+                var current = (SeriesValue) _cacheSeries[series];
+                current.AddValue(value);
+            }
+            else
+            {
+                _cacheSeries.Add(series, new SeriesValue(series, value, duplicateAggregate));
+            }
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Moving Average", Description = "Calculates the average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset))]
+        public void MovingAverage([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
+        {
+            AddSeries(series, value, duplicateAggregate);
         }
 
-        public double MovingAverageResult([TransformFunctionIndex]int index)
+        public double MovingAverageResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int preCount, int postCount)
         {
-            var lowDate = _cacheSeriesList[index].Key.AddDays(-_cacheIntDictionary["PreCount"]);
-            var highDate = _cacheSeriesList[index].Key.AddDays(_cacheIntDictionary["PostCount"]);
-            var valueCount = _cacheSeriesList.Count;
+            var lowIndex = index < preCount ? 0 : index - preCount;
+            var valueCount = _cacheSeries.Count;
+            var highIndex = (postCount + index) > valueCount ? valueCount : postCount + index;
 
             double sum = 0;
-            var denominator = 0;
+            var denominator = highIndex - lowIndex;
 
-            //loop backwards from the index to sum the before items.
-            for (var i = index; i >= 0; i--)
+            for (var i = lowIndex; i < highIndex; i++)
             {
-                if (_cacheSeriesList[i].Key < lowDate)
-                    break;
-                sum += _cacheSeriesList[i].Value;
-                denominator++;
+                sum += ((SeriesValue)_cacheSeries[i]).Result();
             }
-
-            //loop forwards from the index+1 to sum the after items.
-            for (var i = index + 1; i < valueCount; i++)
-            {
-                if (_cacheSeriesList[i].Key > highDate)
-                    break;
-                sum += _cacheSeriesList[i].Value;
-                denominator++;
-            }
-            
 
             //return the result.
             if (denominator == 0)
+            {
                 return 0;
+            }
+
             return sum / denominator;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Series", Name = "Highest Value Since ", Description = "Provides the last date that had a higher value than this.", ResultMethod = nameof(HighestSinceResult), ResetMethod = nameof(Reset))]
-        public void HighestSince(DateTime series, double value)
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Highest Value Since ", Description = "Return the last period that had a higher value than this.", ResultMethod = nameof(HighestSinceResult), ResetMethod = nameof(Reset))]
+        public void HighestSince([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
         {
-            if (_cacheSeriesList == null)
-            {
-                _cacheSeriesList = new List<KeyValuePair<DateTime, double>>();
-            }
-            _cacheSeriesList.Add(new KeyValuePair<DateTime, double>(series, value));
+            AddSeries(series, value, duplicateAggregate);
         }
 
-        public DateTime HighestSinceResult([TransformFunctionIndex]int index, out double value)
+        public object HighestSinceResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, out int count, out double value)
         {
             var i = index - 1;
-            var currentValue = _cacheSeriesList[index].Value;
+            var currentValue = ((SeriesValue)_cacheSeries[index]).Result();
             while (i > 0)
             {
-                if (_cacheSeriesList[i].Value > currentValue)
+                var checkValue = ((SeriesValue)_cacheSeries[i]).Result();
+                if (checkValue > currentValue)
                 {
-                    value = _cacheSeriesList[i].Value;
-                    return _cacheSeriesList[i].Key;
+                    value = checkValue;
+                    count = index - i;
+                    return ((SeriesValue) _cacheSeries[i]).Series;
                 }
                 i--;
             }
-            value = _cacheSeriesList[index].Value;
-            return _cacheSeriesList[index].Key;
+            
+            // if no value found, the current value is the highest.
+            value = ((SeriesValue) _cacheSeries[index]).Result();
+            count = 0;
+            return ((SeriesValue) _cacheSeries[index]).Series;
         }
+        
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Highest Value Since ", Description = "Return the last period that had a lower value than this.", ResultMethod = nameof(LowestSinceResult), ResetMethod = nameof(Reset))]
+        public void LowestSince([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
+        {
+            AddSeries(series, value, duplicateAggregate);
+        }
+
+        public object LowestSinceResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, out int count, out double value)
+        {
+            var i = index - 1;
+            var currentValue = ((SeriesValue)_cacheSeries[index]).Result();
+            while (i > 0)
+            {
+                var checkValue = ((SeriesValue)_cacheSeries[i]).Result();
+                if (checkValue < currentValue)
+                {
+                    value = checkValue;
+                    count = index - i;
+                    return ((SeriesValue) _cacheSeries[i]).Series;
+                }
+                i--;
+            }
+            
+            // if no value found, the current value is the highest.
+            value = ((SeriesValue) _cacheSeries[index]).Result();
+            count = 0;
+            return ((SeriesValue) _cacheSeries[index]).Series;
+        }
+        
+        
     }
 }

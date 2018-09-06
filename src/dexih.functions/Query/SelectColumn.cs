@@ -38,7 +38,9 @@ namespace dexih.functions.Query
             Average,
             Min,
             Max,
-            Count
+            Count,
+            First,
+            Last
         }
         public TableColumn Column { get; set; }
         public EAggregate? Aggregate { get; set; }

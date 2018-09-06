@@ -66,7 +66,7 @@ namespace dexih.functions.Mappings
             return;
         }
 
-        public override bool ProcessInputRow(object[] row, object[] joinRow = null)
+        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             var value1 = _column1Ordinal == -1 ? Value1 : row[_column1Ordinal];
             var value2 = _column2Ordinal == -1 ? Value2 : row[_column2Ordinal];
@@ -123,22 +123,12 @@ namespace dexih.functions.Mappings
             return;
         }
 
-        public override void ProcessResultRow(int index, object[] row)
-        {
-            return;
-        }
-
         public override object GetInputValue(object[] row = null)
         {
             throw new NotSupportedException();
         }
         
       
-        public override void Reset()
-        {
-            return;
-        }
-
         public MapFilter Copy()
         {
             var filter = new MapFilter()

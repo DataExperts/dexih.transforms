@@ -6,6 +6,7 @@ using dexih.functions.BuiltIn;
 using dexih.functions.Mappings;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 using Xunit;
 using static Dexih.Utils.DataType.DataType;
 
@@ -224,9 +225,54 @@ namespace dexih.transforms.tests
             }
             Assert.Equal(10, counter);
         }
+        
+        [Fact]
+        public async Task Group_SeriesTests_DuplicateRows()
+        {
+            var table = new Table("test", 0,
+                new TableColumn("StringColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField)
+            );
+
+            // data with gaps in the date sequence.
+            table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 );
+            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
+            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
+
+            var source = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") } );
+            source.Reset();
+
+            var mappings = new Mappings(false, true);
+
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction();
+            
+            var parameters = new Parameters()
+            {
+                Inputs = new Parameter[]
+                {
+                    new ParameterColumn("DateColumn", ETypeCode.DateTime),
+                    new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("PreCount", ETypeCode.Int32, 3),
+                    new ParameterValue("PostCount", ETypeCode.Int32, 3)
+                },
+                ResultReturnParameter = new ParameterOutputColumn("MAvg", ETypeCode.Double)
+            };
+            
+            mappings.Add(new MapFunction(mavg, parameters));
+
+            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day));
+            
+            var transformGroup = new TransformGroup(source, mappings);
+
+            // second row is a duplicate, so this should fail
+            await Assert.ThrowsAsync<TransformException>(async () => await transformGroup.ReadAsync());
+        }
 
         [Fact]
-        public async Task Group_SeriesTests()
+        public async Task Group_SeriesTests2()
         {
             var source = Helpers.CreateSortedTestData();
 

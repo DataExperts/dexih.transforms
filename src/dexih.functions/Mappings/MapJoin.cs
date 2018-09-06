@@ -73,7 +73,7 @@ namespace dexih.functions.Mappings
             return;
         }
 
-        public override bool ProcessInputRow(object[] row, object[] joinRow)
+        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow)
         {
             if (row != null)
             {
@@ -140,11 +140,7 @@ namespace dexih.functions.Mappings
             return;
         }
 
-        public override void ProcessResultRow(int index, object[] row)
-        {
-            return;
-        }
-        
+       
         public override object GetInputValue(object[] row = null)
         {
             if (_column1Ordinal == -1)
@@ -173,10 +169,6 @@ namespace dexih.functions.Mappings
             }
         }
 
-        public override void Reset()
-        {
-            return;
-        }
 
     }
 }

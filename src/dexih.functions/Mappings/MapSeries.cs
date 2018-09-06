@@ -1,5 +1,6 @@
 ﻿using System;
 using dexih.functions;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -21,23 +22,43 @@ namespace dexih.functions.Mappings
     
     public class MapSeries: MapColumn
     {
-        public MapSeries(TableColumn inputColumn, TableColumn outputColumn, ESeriesGrain seriesGrain)
+        public MapSeries(TableColumn inputColumn, TableColumn outputColumn, ESeriesGrain seriesGrain, bool seriesFill, object seriesStart, object seriesFinish)
         {
             InputColumn = inputColumn;
             OutputColumn = outputColumn;
             SeriesGrain = seriesGrain;
+            SeriesFill = seriesFill;
+            SeriesStart = seriesStart;
+            SeriesFinish = seriesFinish;
         }
 
-        public MapSeries(TableColumn inputColumn, ESeriesGrain seriesGrain)
+        public MapSeries(TableColumn inputColumn, ESeriesGrain seriesGrain, bool seriesFill, object seriesStart, object seriesFinish)
         {
             InputColumn = inputColumn;
             OutputColumn = inputColumn;
             SeriesGrain = seriesGrain;
+            SeriesGrain = seriesGrain;
+            SeriesFill = seriesFill;
+            SeriesStart = seriesStart;
+            SeriesFinish = seriesFinish;
         }
 
 
         public ESeriesGrain SeriesGrain { get; set; }
         public DayOfWeek StartOfWeek { get; set; } = DayOfWeek.Sunday;
+        public bool SeriesFill { get; set; }
+        public object SeriesStart { get; set; }
+        public object SeriesFinish { get; set; }
+
+        public object GetSeriesStart()
+        {
+            return DataType.TryParse(InputColumn.DataType, SeriesStart);
+        }
+
+        public object GetSeriesFinish()
+        {
+            return DataType.TryParse(InputColumn.DataType, SeriesFinish);
+        }
 
         public override object GetInputValue(object[] row = null)
         {
@@ -111,7 +132,12 @@ namespace dexih.functions.Mappings
         public object NextValue(int count, object[] row = null)
         {
             var value = GetInputValue(row);
+            return CalculateNextValue(value, count);
             
+        }
+
+        public object CalculateNextValue(object value, int count)
+        {
             if (value is DateTime dateValue)
             {
                 switch (SeriesGrain)
@@ -155,8 +181,9 @@ namespace dexih.functions.Mappings
                         return valueLong + count;
                 }
             }
-            
+
             throw new Exception($"Can not create a series grain of {SeriesGrain} on data type {value.GetType().Name}.");
+
         }
 
         public void ProcessNextValueOutput(int count, object[] row)
@@ -165,7 +192,7 @@ namespace dexih.functions.Mappings
             row[OutputOrdinal] = value;
         }
 
-        public override void ProcessFillerRow(object[] fillerRow, object seriesValue)
+        public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
         {
             fillerRow[InputOrdinal] = seriesValue;
         }

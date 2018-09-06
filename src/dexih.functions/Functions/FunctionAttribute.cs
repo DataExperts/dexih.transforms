@@ -17,7 +17,7 @@ namespace dexih.functions
         public string ImportMethod { get; set; }
     }
 
-    public class TransformFunctionParameter : Attribute
+    public class TransformFunctionParameterAttribute : Attribute
     {
         public string Name { get; set; }
         public string Description { get; set; }
@@ -37,18 +37,21 @@ namespace dexih.functions
         public Filter.ECompare Compare { get; set; }
     }
 
-    public class TransformFunctionIndex : Attribute
+    public class TransformFunctionVariableAttribute : Attribute
     {
-        
-    }
+        public EFunctionVariable FunctionParameter { get; set; }
 
+        public TransformFunctionVariableAttribute(EFunctionVariable functionParameter)
+        {
+            FunctionParameter = functionParameter;
+        }
+    }
+    
     public class TransformFunctionDetailedFlagAttribute : Attribute
     {
-        
     }
 
     public class EncryptionKeyFlagAttribute : Attribute
     {
-        
     }
 }

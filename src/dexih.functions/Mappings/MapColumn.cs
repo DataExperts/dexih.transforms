@@ -58,9 +58,9 @@ namespace dexih.functions.Mappings
             OutputOrdinal = AddOutputColumn(table, OutputColumn);
         }
 
-        public override bool ProcessInputRow(object[] rowData, object[] joinRow = null)
+        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
-            RowData = rowData;
+            RowData = row;
             return true;
         }
 
@@ -68,8 +68,6 @@ namespace dexih.functions.Mappings
         {
             data[OutputOrdinal] = GetInputValue();
         }
-
-        public override void ProcessResultRow(int index, object[] row) {}
         
         public override object GetInputValue(object[] row = null)
         {
@@ -83,15 +81,15 @@ namespace dexih.functions.Mappings
             }        
         }
 
-        public override void ProcessFillerRow(object[] fillerRow, object seriesValue)
+        public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
         {
-            fillerRow[InputOrdinal] = RowData[InputOrdinal];
+            fillerRow[InputOrdinal] = row != null ? row[InputOrdinal] : RowData[InputOrdinal];
         }
 
-        public override void Reset()
+        public override void Reset(EFunctionType functionType)
         {
-            RowData = null;
-            InputValue = null;
+//            RowData = null;
+//            InputValue = null;
         }
 
     }

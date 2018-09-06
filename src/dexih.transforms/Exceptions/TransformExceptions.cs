@@ -32,13 +32,13 @@ namespace dexih.transforms.Exceptions
             get
             {
 #if DEBUG
-                if (Data == null)
+                if (Values == null)
                 {
                     return base.Message;
                 }
                 else
                 {
-                    return base.Message + ".  Data values: " + string.Join(",", Data);
+                    return base.Message + ".  Data values: " + string.Join(",", Values);
                 }
 #else
                 return base.Message;

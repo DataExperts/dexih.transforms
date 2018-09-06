@@ -35,17 +35,15 @@ namespace dexih.functions.Mappings
         {
         }
 
-        public override bool ProcessInputRow(object[] rowData, object[] joinRow = null)
+        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
-            _rowData = rowData;
+            _rowData = row;
             return true;
         }
 
         public override void ProcessOutputRow(object[] data) 
         {
         }
-
-        public override void ProcessResultRow(int index, object[] row) {}
 
         public override object GetInputValue(object[] row = null)
         {
@@ -59,7 +57,7 @@ namespace dexih.functions.Mappings
             }        
         }
 
-        public override void Reset()
+        public override void Reset(EFunctionType functionType)
         {
             _rowData = null;
         }

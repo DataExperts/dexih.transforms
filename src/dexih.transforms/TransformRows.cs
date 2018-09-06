@@ -83,7 +83,7 @@ namespace dexih.transforms
 
         public override bool ResetTransform()
         {
-            Mappings.Reset();
+            Mappings.Reset(EFunctionType.Rows);
             _firstRecord = true;
             return true;
         }

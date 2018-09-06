@@ -513,7 +513,7 @@ namespace dexih.transforms
                         var matchFound = true;
                         foreach (var mapFunction in Mappings.OfType<MapFunction>())
                         {
-                            matchFound = mapFunction.ProcessInputRow(PrimaryTransform.CurrentRow, row);
+                            matchFound = mapFunction.ProcessInputRow(new FunctionVariables(), PrimaryTransform.CurrentRow, row);
                             if (!matchFound)
                             {
                                 break;

@@ -11,5 +11,8 @@ namespace dexih.functions
         public bool IsArray { get; set; }
         public bool IsIndex { get; set; }
         public string TwinParameterName { get; set; }
+        
+        public string[] ListOfValues { get; set; }
+        public object DefaultValue { get; set; }
     }
 }

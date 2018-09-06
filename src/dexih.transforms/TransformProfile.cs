@@ -120,7 +120,7 @@ namespace dexih.transforms
                     // object profileResult = null;
                     try
                     {
-                        profile.ProcessResultRow(0, profileRow);
+                        profile.ProcessResultRow(new FunctionVariables(), profileRow, EFunctionType.Profile);
                         // profileResult = profile.ReturnValue;
                     }
                     catch (Exception ex)
