@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
 using Newtonsoft.Json;
@@ -206,6 +207,16 @@ namespace dexih.functions
 			return (parameters, outputPos);
 		}
 
+		public object Invoke(object[] inputParameters)
+		{
+			return Invoke(new FunctionVariables(), inputParameters, out _);
+		}
+
+		public object Invoke(object[] inputParameters, out object[] outputs)
+		{
+			return Invoke(new FunctionVariables(), inputParameters, out outputs);
+		}
+
 
 		public object Invoke(FunctionVariables functionVariables, object[] inputParameters)
 		{
@@ -228,6 +239,11 @@ namespace dexih.functions
 			}
 			
 			return _returnValue;
+		}
+
+		public object ReturnValue(object[] inputParameters, out object[] outputs)
+		{
+			return ReturnValue(new FunctionVariables(), inputParameters, out outputs);
 		}
 		
 		public object ReturnValue(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)

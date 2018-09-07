@@ -1,12 +1,10 @@
 ﻿using System;
+using dexih.functions.Exceptions;
 
 namespace dexih.transforms.Exceptions
 {
-    public class TransformException : Exception
+    public class TransformException : FunctionException
     {
-#if DEBUG
-        public object[] Values { get; set; }
-#endif
 
         public TransformException()
         {
@@ -26,24 +24,6 @@ namespace dexih.transforms.Exceptions
 #if DEBUG
             Values = values;
 #endif 
-        }
-
-        public override string Message {
-            get
-            {
-#if DEBUG
-                if (Values == null)
-                {
-                    return base.Message;
-                }
-                else
-                {
-                    return base.Message + ".  Data values: " + string.Join(",", Values);
-                }
-#else
-                return base.Message;
-#endif
-            }
         }
     }
 }

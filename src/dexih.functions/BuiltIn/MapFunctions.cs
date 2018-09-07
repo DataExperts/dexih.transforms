@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Xml.XPath;
+using dexih.functions.Exceptions;
 using Dexih.Utils.Crypto;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;

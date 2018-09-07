@@ -77,13 +77,13 @@ namespace dexih.functions.Mappings
             }
             else
             {
-                return row == null ? RowData[InputOrdinal] : row[InputOrdinal];    
+                return row == null ? RowData?[InputOrdinal] : row[InputOrdinal];    
             }        
         }
 
         public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
         {
-            fillerRow[InputOrdinal] = row != null ? row[InputOrdinal] : RowData[InputOrdinal];
+            fillerRow[InputOrdinal] = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];   
         }
 
         public override void Reset(EFunctionType functionType)

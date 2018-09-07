@@ -1,4 +1,5 @@
 ﻿using System;
+using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

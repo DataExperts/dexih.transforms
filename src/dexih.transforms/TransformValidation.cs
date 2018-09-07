@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Text;
 using System.Threading;
+using dexih.functions.Exceptions;
 using dexih.functions.Mappings;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;

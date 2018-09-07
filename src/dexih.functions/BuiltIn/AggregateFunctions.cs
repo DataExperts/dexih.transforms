@@ -166,7 +166,7 @@ namespace dexih.functions.BuiltIn
                 _cacheStringBuilder.Append(delimiter + value);
         }
         
-        public string ConcatAggResult([TransformFunctionVariable(EFunctionVariable.Index)]int index)
+        public string ConcatAggResult()
         {
             return _cacheStringBuilder.ToString();
         }
@@ -265,7 +265,7 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Pivot to Columns", 
-            Description = "Pivots the labelColum and valueColumn into seperate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset))]
+            Description = "Pivots the labelColum and valueColumn into separate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset))]
         public void PivotToColumns(string labelColumn, object valueColumn, [TransformFunctionParameter(TwinParameterName = "values")] object[] labels)
         {
             if (_cacheDictionary == null)
@@ -315,6 +315,8 @@ namespace dexih.functions.BuiltIn
             var percent = (double)_cacheList[index] / _cacheDouble.Value;
             return percentFormat == EPercentFormat.AsDecimal ? percent : percent * 100;
         }
+        
+
 
         
     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
+using dexih.functions.Exceptions;
 using dexih.functions.Mappings;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;

@@ -33,13 +33,6 @@ namespace dexih.functions
         public string ImportMethodName { get; set; }
         
         /// <summary>
-        /// Used for profiling functions, indicates the property use to switch detailed results on/off.
-        /// </summary>
-        public string DetailedFlagName { get; set; }
-        
-        public string EncryptionKeyName { get; set; }
-        
-        /// <summary>
         /// Used to map a filter equivalent operator
         /// </summary>
         public Filter.ECompare? Compare { get; set; }
@@ -66,23 +59,23 @@ namespace dexih.functions
 //            return new TransformFunction(type, FunctionMethodName, parameters, globalVariables);
 //        }
 
-        public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables, bool detailed)
-        {
-            var type = Functions.GetFunctionType(FunctionClassName, FunctionAssemblyName); 
-            var obj = Activator.CreateInstance(type);
-
-            if (!string.IsNullOrEmpty(DetailedFlagName))
-            {
-                var property = type.GetProperty(DetailedFlagName);
-                if (property == null)
-                {
-                    throw new FunctionException($"The detailed flag property {DetailedFlagName} could not be found in in the type {FunctionClassName}.");
-                }
-                property.SetValue(obj, detailed);
-            }
-            
-            return new TransformFunction(obj, FunctionMethodName, parameters, globalVariables);
-        }
+//        public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables, bool detailed)
+//        {
+//            var type = Functions.GetFunctionType(FunctionClassName, FunctionAssemblyName); 
+//            var obj = Activator.CreateInstance(type);
+//
+//            if (!string.IsNullOrEmpty(DetailedFlagName))
+//            {
+//                var property = type.GetProperty(DetailedFlagName);
+//                if (property == null)
+//                {
+//                    throw new FunctionException($"The detailed flag property {DetailedFlagName} could not be found in in the type {FunctionClassName}.");
+//                }
+//                property.SetValue(obj, detailed);
+//            }
+//            
+//            return new TransformFunction(obj, FunctionMethodName, parameters, globalVariables);
+//        }
 
 //        public TransformFunction GetTransformFunction()
 //        {

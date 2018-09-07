@@ -15,7 +15,7 @@ namespace dexih.functions.tests
             //create a custom function
             var globalVariable = new GlobalVariables(null);
             TransformFunction function1 = new TransformFunction(new Func<int, int, int>((i, j) => i + j), null, globalVariable);
-            Assert.True((int)function1.Invoke(new object[] { 6, 2 }) == 8);
+            Assert.True((int)function1.Invoke(new FunctionVariables(), new object[] { 6, 2 }) == 8);
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace dexih.functions.tests
                 nameof(TestMethod), 
                  null,
                 globalVariable);
-            Assert.True((int)function1.Invoke(new object[] { 6, 2 }) == 8);
+            Assert.True((int)function1.Invoke(new FunctionVariables(),new object[] { 6, 2 }) == 8);
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace dexih.functions.tests
         {
             //create a custom function
             TransformFunction function1 = new TransformFunction(this, this.GetType().GetMethod(nameof(TestMethod)), null, new GlobalVariables(null));
-            Assert.True((int)function1.Invoke(new object[] { 6, 2 }) == 8);
+            Assert.True((int)function1.Invoke(new FunctionVariables(),new object[] { 6, 2 }) == 8);
         }
 
         public int TestMethod(int a, int b) => a + b;

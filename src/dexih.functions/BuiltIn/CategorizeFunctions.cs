@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using dexih.functions.Exceptions;
 
 namespace dexih.functions.BuiltIn
 {

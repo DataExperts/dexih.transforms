@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using dexih.functions.BuiltIn;
 using Xunit;
 using Xunit.Abstractions;
@@ -171,7 +172,7 @@ namespace dexih.functions.tests
                     transformFunction.Invoke(new object[] { i });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(0, out _);
+                var aggregateResult = transformFunction.ReturnValue(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 if(aggregateResult is double)
@@ -199,10 +200,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < data.Length; i++)
                 {
-                    transformFunction.Invoke(new object[] { data[i] });
+                    transformFunction.Invoke(new[] { data[i] });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(0, out _);
+                var aggregateResult = transformFunction.ReturnValue(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 Assert.Equal(expectedResult, aggregateResult);
@@ -229,7 +230,7 @@ namespace dexih.functions.tests
                     transformFunction.Invoke(new[] { new[] { data1[i], data2[i]} });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(0, out _);
+                var aggregateResult = transformFunction.ReturnValue(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 Assert.Equal(expectedResult, aggregateResult);
@@ -252,10 +253,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < data.Length; i++)
                 {
-                    transformFunction.Invoke(new object[] { data[i] });
+                    transformFunction.Invoke(new[] { data[i] });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(0, out _);
+                var aggregateResult = transformFunction.ReturnValue(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 Assert.Equal(expectedResult, aggregateResult);
@@ -278,10 +279,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < data1.Length; i++)
                 {
-                    transformFunction.Invoke(new object[] { data1[i], data2[i], data1 });
+                    transformFunction.Invoke(new[] { data1[i], data2[i], data1 });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(0, out var outputs);
+                var aggregateResult = transformFunction.ReturnValue(null, out var outputs);
                 Assert.True((bool)aggregateResult);
 
                 var result = (object[]) outputs[0];
@@ -309,10 +310,10 @@ namespace dexih.functions.tests
                 {
                     var value = i % 2;
 
-                    var functionResult = transformFunction.Invoke(new object[] { test, value, i });
+                    var functionResult = transformFunction.Invoke(new[] { test, value, i });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(0, out _);
+                var aggregateResult = transformFunction.ReturnValue(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 if (aggregateResult is double aggregateResultDouble)
@@ -342,8 +343,8 @@ namespace dexih.functions.tests
                     var maxFunctionResult = maxFunction.Invoke(new object[] { baseDate.AddDays(i) });
                 }
 
-                var minResult = minFunction.ReturnValue(0, out _);
-                var maxResult = maxFunction.ReturnValue(0, out _);
+                var minResult = minFunction.ReturnValue(null, out _);
+                var maxResult = maxFunction.ReturnValue(null, out _);
                 Assert.NotNull(minResult);
                 Assert.NotNull(maxResult);
                 Assert.Equal(baseDate, (DateTime)minResult);
@@ -464,10 +465,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 1; i <= 10; i++)
                 {
-                    var functionResult = function.Invoke(new object[] { });
+                    var functionResult = function.Invoke(new FunctionVariables(),new object[] { });
                 }
 
-                var aggregateResult = function.ReturnValue(0, out _);
+                var aggregateResult = function.ReturnValue(new FunctionVariables(), null, out _);
                 Assert.NotNull(aggregateResult);
                 Assert.Equal(10, aggregateResult);
 
@@ -484,10 +485,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 1; i <= 10; i++)
                 {
-                    var functionResult = function.Invoke(new object[] { i.ToString(), "," });
+                    var functionResult = function.Invoke(new FunctionVariables(),new object[] { i.ToString(), "," });
                 }
 
-                var aggregateResult = function.ReturnValue(0, out _);
+                var aggregateResult = function.ReturnValue(new FunctionVariables(), null, out _);
                 Assert.NotNull(aggregateResult);
                 Assert.Equal("1,2,3,4,5,6,7,8,9,10", aggregateResult);
 
@@ -516,7 +517,7 @@ namespace dexih.functions.tests
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.JsonValues)).GetTransformFunction(); 
             var param = new object[] { "{ 'value1': '1', 'value2' : '2', 'value3': '3', 'array' : {'v1' : '1', 'v2' : '2'} }", new [] { "value1", "value2", "value3", "array", "badvalue" }};
             
-            Assert.False((bool)function.Invoke(param, out var outputs));
+            Assert.False((bool)function.Invoke(new FunctionVariables(), param, out var outputs));
             var result = (object[]) outputs[0];;
             Assert.Equal("1", result[0]);
             Assert.Equal("2", result[1]);
@@ -555,7 +556,7 @@ namespace dexih.functions.tests
             //Use a for loop to simulate gen sequence.
             var function = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.SplitColumnToRows)).GetTransformFunction();
             var param = new object[] { "|", "|value2|value3||value5||", 6 };
-            var compare = new string[] { "", "value2", "value3", "", "value5", "", "" };
+            var compare = new[] { "", "value2", "value3", "", "value5", "", "" };
             for (var i = 0; i < 6; i++)
             {
                 Assert.True((bool)function.Invoke(param, out var outputs));
@@ -618,6 +619,61 @@ namespace dexih.functions.tests
 
             //last value should be false as the sequence has been exceeded.
             Assert.False((bool)function.Invoke(param));
+        }
+        
+        [Fact]
+        public void GroupFunction_ParentChildFlatten()
+        {
+            var data = new[]
+            {
+                new object[] {"MGR1", null},
+                new object[] {"EMP1", "MGR1"},
+                new object[] {"EMP2", "MGR1"},
+                new object[] {"EMP3", "MGR2"},
+                new object[] {"MGR2", "MGR1"},
+                new object[] {"EMP4", "MGR2"},
+                new object[] {"EMP5", "EMP4"},
+                new object[] {"EMP6", "EMP5"},
+            };
+
+            var expected = new[]
+            {
+                new object[] {"MGR1", 0, new object[] { "MGR1", null, null, null, null}},
+                new object[] {"EMP1", 1, new object[] { "MGR1", "EMP1", null, null, null}},
+                new object[] {"EMP2", 1, new object[] { "MGR1", "EMP2", null, null, null}},
+                new object[] {"EMP3", 2, new object[] { "MGR1", "MGR2", "EMP3", null, null}},
+                new object[] {"MGR2", 1, new object[] { "MGR1", "MGR2", null, null, null}},
+                new object[] {"EMP4", 2, new object[] { "MGR1", "MGR2", "EMP4", null, null}},
+                new object[] {"EMP5", 3, new object[] { "MGR1", "MGR2", "EMP4", "EMP5", null}},
+                new object[] {"EMP6", 4, new object[] { "MGR1", "MGR2", "EMP4", "EMP5", "EMP6"}},
+            };
+
+            // run function for each data row
+            var function = Functions.GetFunction(typeof(HierarchyFunctions).FullName, nameof(HierarchyFunctions.FlattenParentChild)).GetTransformFunction();
+            foreach (var row in data)
+            {
+                function.Invoke(row, out _);
+            }
+
+            // run the result function to get flattened dataset.
+            for (var i = 0; i < data.Length; i++)
+            {
+                var returnValue = function.ReturnValue(new FunctionVariables() {Index = i},  new object[] {4}, out object[] outputs);
+                
+                // first value if the leaf value
+                Assert.Equal(expected[i][0], returnValue);
+                
+                // second value is the number of levels to the top
+                Assert.Equal(expected[i][1], outputs[0]);
+
+                // third value contains the flattened array.
+                var expectedHierarchy = (object[]) expected[i][2];
+                var actualHierarchy = (object[]) outputs[1];
+                
+                Assert.Equal(expectedHierarchy, actualHierarchy);
+                
+            }
+
         }
     }
 }

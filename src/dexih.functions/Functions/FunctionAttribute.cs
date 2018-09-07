@@ -47,11 +47,7 @@ namespace dexih.functions
         }
     }
     
-    public class TransformFunctionDetailedFlagAttribute : Attribute
-    {
-    }
-
-    public class EncryptionKeyFlagAttribute : Attribute
+    public class TransformGlobalVariablesAttribute : Attribute
     {
     }
 }

@@ -159,9 +159,9 @@ namespace dexih.functions.tests
                 mapAggregate.ProcessInputRow(new object[] {2});
                 mapAggregate.ProcessInputRow(new object[] {3});
                 var outputRow = new object[1];
-                mapAggregate.ProcessResultRow(0, outputRow);
+                mapAggregate.ProcessResultRow(outputRow, EFunctionType.Aggregate);
                 Assert.Equal(6, outputRow[0]);
-                mapAggregate.Reset();
+                mapAggregate.Reset(EFunctionType.Aggregate);
             }
         }
 
@@ -220,7 +220,7 @@ namespace dexih.functions.tests
             
             var outputTable = new Table("output");
 
-            var mapSeries = new MapSeries(inputColumn, outputColumn, ESeriesGrain.Day);
+            var mapSeries = new MapSeries(inputColumn, outputColumn, ESeriesGrain.Day, false, null, null);
             
             mapSeries.InitializeInputOrdinals(inputTable);
             mapSeries.AddOutputColumns(outputTable);

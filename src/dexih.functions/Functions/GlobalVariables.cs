@@ -7,11 +7,19 @@ namespace dexih.functions
         // used by encrypt functions.
         public string EncryptionKey { get; set; }
 
+        // used by profiling functions to provide detailed output.
+        public bool DetailedResults { get; set; }
+
         private readonly Dictionary<string, object> _variables;
 
         public GlobalVariables(string encryptionKey)
         {
             EncryptionKey = encryptionKey;
+            _variables = new Dictionary<string, object>();
+        }
+
+        public GlobalVariables()
+        {
             _variables = new Dictionary<string, object>();
         }
 

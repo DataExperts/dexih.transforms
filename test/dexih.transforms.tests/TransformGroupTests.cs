@@ -190,7 +190,7 @@ namespace dexih.transforms.tests
             var source = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") } );
             source.Reset();
 
-            var mappings = new Mappings(false, true);
+            var mappings = new Mappings(false, false);
 
             var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction();
             
@@ -198,8 +198,11 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterColumn("DateColumn", ETypeCode.DateTime),
                     new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                },
+                ResultInputs = new Parameter[]
+                {
                     new ParameterValue("PreCount", ETypeCode.Int32, 3),
                     new ParameterValue("PostCount", ETypeCode.Int32, 3)
                 },
@@ -207,8 +210,7 @@ namespace dexih.transforms.tests
             };
             
             mappings.Add(new MapFunction(mavg, parameters));
-
-            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, true, null, null));
             
             var transformGroup = new TransformGroup(source, mappings);
             
@@ -237,15 +239,15 @@ namespace dexih.transforms.tests
                 new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField)
             );
 
-            // data with gaps in the date sequence.
-            table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 );
+            // data with duplicates
+            table.AddRow("value01", 2, 1.1, Convert.ToDateTime("2015/01/01"), 10 );
             table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
             table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
 
             var source = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") } );
             source.Reset();
 
-            var mappings = new Mappings(false, true);
+            var mappings = new Mappings(false, false);
 
             var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction();
             
@@ -253,8 +255,11 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterColumn("DateColumn", ETypeCode.DateTime),
                     new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                },
+                ResultInputs = new Parameter[]
+                {
                     new ParameterValue("PreCount", ETypeCode.Int32, 3),
                     new ParameterValue("PostCount", ETypeCode.Int32, 3)
                 },
@@ -263,12 +268,20 @@ namespace dexih.transforms.tests
             
             mappings.Add(new MapFunction(mavg, parameters));
 
-            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
             
             var transformGroup = new TransformGroup(source, mappings);
 
-            // second row is a duplicate, so this should fail
-            await Assert.ThrowsAsync<TransformException>(async () => await transformGroup.ReadAsync());
+            var counter = 0;
+            double[] mAvgExpectedValues = { 3, 3 };
+            string[] expectedDates = { "2015/01/01", "2015/01/02",  };
+            while (await transformGroup.ReadAsync())
+            {
+                Assert.Equal(mAvgExpectedValues[counter], Math.Round((double)transformGroup["MAvg"], 2));
+                Assert.Equal(Convert.ToDateTime(expectedDates[counter]), transformGroup["DateColumn"]);
+                counter = counter + 1;
+            }
+            Assert.Equal(2, counter);        
         }
 
         [Fact]
@@ -288,8 +301,11 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterColumn("DateColumn", ETypeCode.DateTime),
                     new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                },
+                ResultInputs = new Parameter[]
+                {
                     new ParameterValue("PreCount", ETypeCode.Int32, 3),
                     new ParameterValue("PostCount", ETypeCode.Int32, 3)
                 },
@@ -303,20 +319,23 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterColumn("DateColumn", ETypeCode.DateTime),
                     new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
                 },
                 ResultOutputs = new Parameter[]
                 {
+                    new ParameterOutputColumn("Count", ETypeCode.Int32), 
                     new ParameterOutputColumn("HighestValue", ETypeCode.Double), 
                 },
                 ResultReturnParameter = new ParameterOutputColumn("Highest", ETypeCode.DateTime)
             };
             mappings.Add(new MapFunction(highest, parameters));
+            
+            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
 
             var transformGroup = new TransformGroup(source, mappings);
             
-            Assert.Equal(8, transformGroup.FieldCount);
+            Assert.Equal(9, transformGroup.FieldCount);
 
             var counter = 0;
             double[] mAvgExpectedValues = { 2.5, 3, 3.5, 4, 5, 6, 7, 7.14, 7.5, 7.8, 8 };

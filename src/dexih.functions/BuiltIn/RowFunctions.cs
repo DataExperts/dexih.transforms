@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Xml.XPath;
+using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
 using Newtonsoft.Json.Linq;
 
@@ -110,7 +111,7 @@ namespace dexih.functions.BuiltIn
 
             if (Parameters?.Inputs == null)
             {
-                throw new FunctionException($"The parameters.inputs was not set in the row function.");                
+                throw new FunctionException($"The parameters.inputs was not set in the column to rows function.");                
             }
             
             if (Parameters.Inputs[0] is ParameterArray parameterArray && parameterArray.Parameters[_cacheInt.Value] is ParameterColumn parameterColumn)
@@ -227,5 +228,8 @@ namespace dexih.functions.BuiltIn
             }
             return true;
         }
+        
+        
+        
     }
 }

@@ -26,6 +26,11 @@ namespace dexih.functions.Mappings
         /// <returns>0 filters or joins match, -1 row lessthan joinRow, 1 row greater than joinRow--></returns>
         public abstract bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null);
 
+        public bool ProcessInputRow(object[] row, object[] joinRow = null)
+        {
+            return ProcessInputRow(new FunctionVariables(), row, joinRow);
+        }
+
         /// <summary>
         /// Gets the mapping result, and updates the row.
         /// </summary>
@@ -41,6 +46,11 @@ namespace dexih.functions.Mappings
         /// <param name="row">The output row to populate</param>
         public virtual void ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
+        }
+
+        public void ProcessResultRow(object[] row, EFunctionType functionType)
+        {
+            ProcessResultRow(new FunctionVariables(), row, functionType);
         }
 
         public virtual void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue) {}

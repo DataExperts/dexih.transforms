@@ -106,7 +106,8 @@ namespace dexih.functions.BuiltIn
         {
             var lowIndex = index < preCount ? 0 : index - preCount;
             var valueCount = _cacheSeries.Count;
-            var highIndex = (postCount + index) > valueCount ? valueCount : postCount + index;
+            var highIndex = postCount + index + 1;
+            if (highIndex > valueCount) highIndex = valueCount;
 
             double sum = 0;
             var denominator = highIndex - lowIndex;

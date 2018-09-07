@@ -101,6 +101,10 @@ namespace dexih.transforms
                 {
                     _seriesStart = _seriesMapping.GetSeriesStart();
                     _seriesFinish = _seriesMapping.GetSeriesFinish();
+                    if (Mappings.GroupRows)
+                    {
+                        throw new TransformException("The group transform can not have a series value and group rows selected.  Either turn off group rows, or remove the series column.");
+                    }
                 }
             }
 
@@ -183,6 +187,7 @@ namespace dexih.transforms
                                 if (_seriesValue == null)
                                 {
                                     Mappings.ProcessInputData(new FunctionVariables() { SeriesValue = nextSeriesValue}, PrimaryTransform.CurrentRow);
+                                    _seriesValue = nextSeriesValue;
                                 }
                                 else if (Equals(nextSeriesValue, _seriesValue))
                                 {
@@ -226,9 +231,8 @@ namespace dexih.transforms
                                 var nextSeriesValue = _seriesMapping.NextValue(0, PrimaryTransform.CurrentRow);
                                 
                                 //filter series start/finish
-                                
-                                var isAfterStart = ((IComparable) _seriesStart)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
-                                var isBeforeFinish = ((IComparable) nextSeriesValue)?.CompareTo((IComparable) _seriesFinish) ?? 0;
+                                var isAfterStart = _seriesStart == null ? 0 : ((IComparable) _seriesStart)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
+                                var isBeforeFinish = _seriesFinish == null ? 0 : ((IComparable) nextSeriesValue)?.CompareTo((IComparable) _seriesFinish) ?? 0;
                                 if (isAfterStart > 0 || isBeforeFinish == 1)
                                 {
                                     continue;
@@ -323,6 +327,11 @@ namespace dexih.transforms
                 } while (await PrimaryTransform.ReadAsync(cancellationToken));
             }
 
+            if (_firstRecord)
+            {
+                return null;
+            }
+
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
                 ProcessGroupChange(ref outputRow);
@@ -338,7 +347,7 @@ namespace dexih.transforms
         private void ProcessGroupChange(ref object[] outputRow)
         {
             // if the group has changed, update all cached rows with aggregate functions.
-            if (_cachedRows != null)
+            if (_cachedRows != null && _cachedRows.Any())
             {
                 //create a cached current row.  this will be output when the group has changed.
                 var cacheRow = new object[outputRow.Length];
@@ -386,7 +395,14 @@ namespace dexih.transforms
             if (!Mappings.GroupRows)
             {
                 ////set the first cached row to current
-                outputRow = _cachedRows.Dequeue();
+                if (_cachedRows != null && _cachedRows.Any())
+                {
+                    outputRow = _cachedRows.Dequeue();
+                }
+                else
+                {
+                    outputRow = null;
+                }
             }
             else
             {
@@ -394,7 +410,12 @@ namespace dexih.transforms
                 Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate);
 
                 Mappings.Reset(EFunctionType.Aggregate);
-                Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = _seriesStart}, PrimaryTransform.CurrentRow);
+                if (!PrimaryTransform.IsReaderFinished)
+                {
+                    Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = _seriesStart},
+                        PrimaryTransform.CurrentRow);
+                }
+
                 if (_seriesStart != null)
                 {
                     _seriesMapping.InputValue = _seriesStart;

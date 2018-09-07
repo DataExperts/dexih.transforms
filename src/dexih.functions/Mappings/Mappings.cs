@@ -69,7 +69,7 @@ namespace dexih.functions.Mappings
                 for(var i = 0; i < inputTable.Columns.Count; i++)
                 {
                     var column = inputTable.Columns[i];
-                    var ordinal = table.GetOrdinal(column);
+                    var ordinal = table.GetOrdinal(column.TableColumnName());
                     if (ordinal < 0)
                     {
                         targetOrdinal++;

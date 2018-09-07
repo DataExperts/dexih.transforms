@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions
@@ -91,22 +92,6 @@ namespace dexih.functions
                     resultMethod = type.GetMethod(attribute.ResultMethod);
                 }
 
-                string detailedPropertyName = null;
-                string encryionKeyPropertyName = null;
-
-                foreach (var prop in type.GetProperties())
-                {
-                    if (prop.GetCustomAttribute(typeof(TransformFunctionDetailedFlagAttribute)) != null)
-                    {
-                        detailedPropertyName = prop.Name;
-                    }
-
-                    if (prop.GetCustomAttribute(typeof(EncryptionKeyFlagAttribute)) != null)
-                    {
-                        encryionKeyPropertyName = prop.Name;
-                    }
-                }
-                
                 var compareAttribute = method.GetCustomAttribute<TransformFunctionCompareAttribute>();
                 
                 var function = new FunctionReference()
@@ -120,8 +105,6 @@ namespace dexih.functions
                     ResultMethodName = attribute.ResultMethod,
                     ImportMethodName = attribute.ImportMethod,
                     IsStandardFunction = true,
-                    DetailedFlagName = detailedPropertyName,
-                    EncryptionKeyName = encryionKeyPropertyName,
                     Compare = compareAttribute?.Compare,
                     FunctionClassName = type.FullName,
                     

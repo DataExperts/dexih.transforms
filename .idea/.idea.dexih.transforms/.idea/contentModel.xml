@@ -210,15 +210,20 @@
             <e p="CacheFunctions.cs" t="Include" />
             <e p="CategorizeFunctions.cs" t="Include" />
             <e p="ConditionFunctions.cs" t="Include" />
+            <e p="HierarchyFunctions.cs" t="Include" />
             <e p="MapFunctions.cs" t="Include" />
             <e p="ProfileFunctions.cs" t="Include" />
             <e p="RowFunctions.cs" t="Include" />
             <e p="SeriesFunctions.cs" t="Include" />
+            <e p="SeriesValue.cs" t="Include" />
             <e p="ValidationFunctions.cs" t="Include" />
           </e>
           <e p="dexih.functions.csproj" t="IncludeRecursive" />
           <e p="DexihActiveAgent.cs" t="Include" />
           <e p="DownloadUrl.cs" t="Include" />
+          <e p="Exceptions" t="Include">
+            <e p="FunctionException.cs" t="Include" />
+          </e>
           <e p="Extensions.cs" t="Include" />
           <e p="File" t="Include">
             <e p="FileConfiguration.cs" t="Include" />
@@ -229,12 +234,12 @@
             <e p="FileHandlerXml.cs" t="Include" />
           </e>
           <e p="FlatFile.cs" t="Include" />
-          <e p="FunctionExceptions.cs" t="Include" />
           <e p="Functions" t="Include">
             <e p="FunctionAttribute.cs" t="Include" />
             <e p="FunctionParameter.cs" t="Include" />
             <e p="FunctionReference.cs" t="Include" />
             <e p="Functions.cs" t="Include" />
+            <e p="FunctionVariables.cs" t="Include" />
             <e p="GlobalVariables.cs" t="Include" />
             <e p="TransformFunction.cs" t="Include" />
           </e>
@@ -624,7 +629,7 @@
       <e p="Dexih.Utils.DataType.csproj" t="IncludeRecursive" />
       <e p="obj" t="ExcludeRecursive">
         <e p="Debug" t="Include">
-          <e p="netstandard1.3" t="Include">
+          <e p="netstandard2.0" t="Include">
             <e p="Dexih.Utils.DataType.AssemblyInfo.cs" t="Include" />
           </e>
         </e>

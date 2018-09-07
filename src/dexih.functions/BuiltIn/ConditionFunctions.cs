@@ -289,13 +289,17 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Numeric Equals",
-            Description = "Are the specified numeric values equal.")]
+            Description = "Are the specified decimal values equal with the specified precision.")]
         [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
-        public bool IsNumericEqual(decimal[] values)
+        public bool IsDecimalEqual(decimal[] values, int precision = 6)
         {
+            if (values.Length == 0) return true;
+            
+            var value1 = decimal.Round(values[0], precision);
+            
             for (var i = 1; i < values.Length; i++)
             {
-                if (values[0] != values[i]) return false;
+                if (value1 != decimal.Round(values[i], precision)) return false;
             }
 
             return true;
