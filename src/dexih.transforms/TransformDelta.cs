@@ -476,7 +476,7 @@ namespace dexih.transforms
 
                 if (!_referenceOpen)
                 {
-                    //if target reader has finished, theen the natrual key compare will always be not-equal.
+                    //if target reader has finished, then the natural key compare will always be not-equal.
                     compareResult = ECompareResult.Less;
                 }
                 else

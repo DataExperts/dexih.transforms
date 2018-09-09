@@ -29,7 +29,7 @@ namespace dexih.functions.tests
 
             var outputRow = new object[1];
             mapColumn.ProcessInputRow(inputRow);
-            mapColumn.ProcessOutputRow(outputRow);
+            mapColumn.MapOutputRow(outputRow);
 
             Assert.Equal("123", outputRow[0]);
             
@@ -37,7 +37,7 @@ namespace dexih.functions.tests
             mapColumn.InitializeInputOrdinals(inputTable);
             mapColumn.AddOutputColumns(outputTable);
             mapColumn.ProcessInputRow(inputRow);
-            mapColumn.ProcessOutputRow(outputRow);
+            mapColumn.MapOutputRow(outputRow);
             
             Assert.Equal("field1", outputRow[0]);
         }
@@ -59,7 +59,7 @@ namespace dexih.functions.tests
 
             var outputRow = new object[1];
             mapColumn.ProcessInputRow(inputRow);
-            mapColumn.ProcessOutputRow(outputRow);
+            mapColumn.MapOutputRow(outputRow);
 
             Assert.Equal("123", outputRow[0]);
             
@@ -67,7 +67,7 @@ namespace dexih.functions.tests
             mapColumn.InitializeInputOrdinals(inputTable);
             mapColumn.AddOutputColumns(outputTable);
             mapColumn.ProcessInputRow(inputRow);
-            mapColumn.ProcessOutputRow(outputRow);
+            mapColumn.MapOutputRow(outputRow);
             
             Assert.Equal("field1", outputRow[0]);
         }
@@ -202,7 +202,7 @@ namespace dexih.functions.tests
 
             var outputRow = new object[1];
             mapFunction.ProcessInputRow(inputRow);
-            mapFunction.ProcessOutputRow(outputRow);
+            mapFunction.MapOutputRow(outputRow);
 
             Assert.Equal("aaabbb", outputRow[0]);
         }
@@ -227,7 +227,7 @@ namespace dexih.functions.tests
 
             var outputRow = new object[1];
             mapSeries.ProcessInputRow(inputRow);
-            mapSeries.ProcessOutputRow(outputRow);
+            mapSeries.MapOutputRow(outputRow);
 
             // series value should have the non day elements removed.
             Assert.Equal(new DateTime(2018, 1,1, 0, 0, 0), outputRow[0]);

@@ -33,6 +33,8 @@ namespace dexih.functions
 		
 		public EFunctionType FunctionType { get; set; }
 
+		public bool GeneratesRows = false;
+
 		private object _returnValue;
 
 		[JsonConverter(typeof(StringEnumConverter))]
@@ -132,10 +134,12 @@ namespace dexih.functions
 				ResultMethod = string.IsNullOrEmpty(attribute.ResultMethod)
 					? null
 					: targetType.GetMethod(attribute.ResultMethod);
-
+				
 				ImportMethod = string.IsNullOrEmpty(attribute.ImportMethod)
 					? null
 					: targetType.GetMethod(attribute.ImportMethod);
+
+				GeneratesRows = attribute.GeneratesRows;
 			}
 
 			// sets the global variables to the object if the property exists.
@@ -189,6 +193,10 @@ namespace dexih.functions
 						{
 							parameters[pos] = Enum.Parse(functionParameters[pos].ParameterType, stringValue);
 						}
+						else
+						{
+							parameters[pos] = inputParameters[inputPosition];
+						}
 					}
 					else
 					{
@@ -207,50 +215,42 @@ namespace dexih.functions
 			return (parameters, outputPos);
 		}
 
-		public object Invoke(object[] inputParameters)
+		public object RunFunction(object[] inputParameters)
 		{
-			return Invoke(new FunctionVariables(), inputParameters, out _);
+			return RunFunction(new FunctionVariables(), inputParameters, out _);
 		}
 
-		public object Invoke(object[] inputParameters, out object[] outputs)
+		public object RunFunction(object[] inputParameters, out object[] outputs)
 		{
-			return Invoke(new FunctionVariables(), inputParameters, out outputs);
+			return RunFunction(new FunctionVariables(), inputParameters, out outputs);
 		}
 
 
-		public object Invoke(FunctionVariables functionVariables, object[] inputParameters)
+		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters)
 		{
-			return Invoke(functionVariables, inputParameters, out _);
-		}
-		
-		public object Invoke(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
-		{
-			var parameters = SetParameters(FunctionMethod.GetParameters(), functionVariables, inputParameters);
-
-			_returnValue = FunctionMethod.Invoke(ObjectReference, parameters.parameters);
-
-			if (parameters.outputPos >= 0)
-			{
-				outputs = parameters.parameters.Skip(parameters.outputPos).ToArray();
-			}
-			else
-			{
-				outputs = new object[0];
-			}
-			
-			return _returnValue;
-		}
-
-		public object ReturnValue(object[] inputParameters, out object[] outputs)
-		{
-			return ReturnValue(new FunctionVariables(), inputParameters, out outputs);
+			return RunFunction(functionVariables, inputParameters, out _);
 		}
 		
-		public object ReturnValue(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
-			var parameters = SetParameters(ResultMethod.GetParameters(), functionVariables, inputParameters);
+			return Invoke(FunctionMethod, functionVariables, inputParameters, out outputs);
+		}
+
+		public object RunResult(object[] inputParameters, out object[] outputs)
+		{
+			return Invoke(ResultMethod, new FunctionVariables(), inputParameters, out outputs);
+		}
+		
+		public object RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		{
+			return Invoke(ResultMethod, functionVariables, inputParameters, out outputs);
+		}
+
+		private object Invoke(MethodInfo methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		{
+			var parameters = SetParameters(methodInfo.GetParameters(), functionVariables, inputParameters);
 			
-			_returnValue = ResultMethod.Invoke(ObjectReference, parameters.parameters);
+			_returnValue = methodInfo.Invoke(ObjectReference, parameters.parameters);
 
 			if (parameters.outputPos >= 0)
 			{

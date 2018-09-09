@@ -84,7 +84,7 @@ namespace dexih.functions.tests
             var function = Functions.GetFunction(type.FullName, methodName);
             var transformFunction = function.GetTransformFunction();
             transformFunction.OnNull = EErrorAction.Execute;
-            var returnValue = transformFunction.Invoke(parameters);
+            var returnValue = transformFunction.RunFunction(parameters);
 
             if (returnValue is double d)
             {
@@ -169,10 +169,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 1; i <= 10; i++)
                 {
-                    transformFunction.Invoke(new object[] { i });
+                    transformFunction.RunFunction(new object[] { i });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(null, out _);
+                var aggregateResult = transformFunction.RunResult(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 if(aggregateResult is double)
@@ -200,10 +200,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < data.Length; i++)
                 {
-                    transformFunction.Invoke(new[] { data[i] });
+                    transformFunction.RunFunction(new[] { data[i] });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(null, out _);
+                var aggregateResult = transformFunction.RunResult(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 Assert.Equal(expectedResult, aggregateResult);
@@ -227,10 +227,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < data1.Length; i++)
                 {
-                    transformFunction.Invoke(new[] { new[] { data1[i], data2[i]} });
+                    transformFunction.RunFunction(new[] { new[] { data1[i], data2[i]} });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(null, out _);
+                var aggregateResult = transformFunction.RunResult(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 Assert.Equal(expectedResult, aggregateResult);
@@ -253,10 +253,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < data.Length; i++)
                 {
-                    transformFunction.Invoke(new[] { data[i] });
+                    transformFunction.RunFunction(new[] { data[i] });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(null, out _);
+                var aggregateResult = transformFunction.RunResult(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 Assert.Equal(expectedResult, aggregateResult);
@@ -279,10 +279,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < data1.Length; i++)
                 {
-                    transformFunction.Invoke(new[] { data1[i], data2[i], data1 });
+                    transformFunction.RunFunction(new[] { data1[i], data2[i], data1 });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(null, out var outputs);
+                var aggregateResult = transformFunction.RunResult(null, out var outputs);
                 Assert.True((bool)aggregateResult);
 
                 var result = (object[]) outputs[0];
@@ -310,10 +310,10 @@ namespace dexih.functions.tests
                 {
                     var value = i % 2;
 
-                    var functionResult = transformFunction.Invoke(new[] { test, value, i });
+                    var functionResult = transformFunction.RunFunction(new[] { test, value, i });
                 }
 
-                var aggregateResult = transformFunction.ReturnValue(null, out _);
+                var aggregateResult = transformFunction.RunResult(null, out _);
                 Assert.NotNull(aggregateResult);
 
                 if (aggregateResult is double aggregateResultDouble)
@@ -339,12 +339,12 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i <= 10; i++)
                 {
-                    var minFunctionResult = minFunction.Invoke(new object[] { baseDate.AddDays(i) });
-                    var maxFunctionResult = maxFunction.Invoke(new object[] { baseDate.AddDays(i) });
+                    var minFunctionResult = minFunction.RunFunction(new object[] { baseDate.AddDays(i) });
+                    var maxFunctionResult = maxFunction.RunFunction(new object[] { baseDate.AddDays(i) });
                 }
 
-                var minResult = minFunction.ReturnValue(null, out _);
-                var maxResult = maxFunction.ReturnValue(null, out _);
+                var minResult = minFunction.RunResult(null, out _);
+                var maxResult = maxFunction.RunResult(null, out _);
                 Assert.NotNull(minResult);
                 Assert.NotNull(maxResult);
                 Assert.Equal(baseDate, (DateTime)minResult);
@@ -361,10 +361,10 @@ namespace dexih.functions.tests
             var globalVariables = new GlobalVariables("abc");
             const string value = "encrypt this";
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.FastEncrypt)).GetTransformFunction(null, globalVariables);
-            var encrypted = function.Invoke(new object[] {value});
+            var encrypted = function.RunFunction(new object[] {value});
 
             function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.FastDecrypt)).GetTransformFunction(null, globalVariables);
-            var decrypted = function.Invoke(new[] {encrypted});
+            var decrypted = function.RunFunction(new[] {encrypted});
 
             Assert.Equal(value, decrypted);
         }
@@ -375,10 +375,10 @@ namespace dexih.functions.tests
             var globalVariables = new GlobalVariables("abc");
             const string value = "encrypt this";
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.StrongEncrypt)).GetTransformFunction(null, globalVariables);
-            var encrypted = function.Invoke(new object[] {value});
+            var encrypted = function.RunFunction(new object[] {value});
 
             function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.StrongDecrypt)).GetTransformFunction(null, globalVariables);
-            var decrypted = function.Invoke(new[] {encrypted});
+            var decrypted = function.RunFunction(new[] {encrypted});
 
             Assert.Equal(value, decrypted);
         }
@@ -390,10 +390,10 @@ namespace dexih.functions.tests
             const string key = "abc";
             const int iterations = 10;
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Encrypt)).GetTransformFunction();
-            var encrypted = function.Invoke(new object[] {value, key, iterations});
+            var encrypted = function.RunFunction(new object[] {value, key, iterations});
 
             function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Decrypt)).GetTransformFunction();
-            var decrypted = function.Invoke(new [] {encrypted, key, iterations});
+            var decrypted = function.RunFunction(new [] {encrypted, key, iterations});
 
             Assert.Equal(value, decrypted);
         }
@@ -403,15 +403,15 @@ namespace dexih.functions.tests
         {
             const string value = "hash this";
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.SecureHash)).GetTransformFunction();
-            var hashed = function.Invoke(new object[] {value});
+            var hashed = function.RunFunction(new object[] {value});
 
             function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.ValidateSecureHash)).GetTransformFunction();
-            var passed = (bool)function.Invoke(new [] {value, hashed});
+            var passed = (bool)function.RunFunction(new [] {value, hashed});
 
             Assert.True(passed);
             
             //check hash fails with different value.
-            passed = (bool) function.Invoke(new [] {"hash thiS", hashed});
+            passed = (bool) function.RunFunction(new [] {"hash thiS", hashed});
             Assert.False(passed);
         }
         
@@ -419,13 +419,13 @@ namespace dexih.functions.tests
         public void SHA1Test()
         {
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.CreateSHA1)).GetTransformFunction();
-            var sha1 = function.Invoke(new object[] {"sha this"});
-            var sha1a = function.Invoke(new [] {"sha this"});
+            var sha1 = function.RunFunction(new object[] {"sha this"});
+            var sha1a = function.RunFunction(new [] {"sha this"});
 
             // check same value hashed the same.
             Assert.Equal(sha1, sha1a);
 
-            var sha1b = function.Invoke(new [] {"sha thiS"});
+            var sha1b = function.RunFunction(new [] {"sha thiS"});
 
             // check different value hashed the differently.
             Assert.NotEqual(sha1, sha1b);
@@ -465,10 +465,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 1; i <= 10; i++)
                 {
-                    var functionResult = function.Invoke(new FunctionVariables(),new object[] { });
+                    var functionResult = function.RunFunction(new FunctionVariables(),new object[] { });
                 }
 
-                var aggregateResult = function.ReturnValue(new FunctionVariables(), null, out _);
+                var aggregateResult = function.RunResult(new FunctionVariables(), null, out _);
                 Assert.NotNull(aggregateResult);
                 Assert.Equal(10, aggregateResult);
 
@@ -485,10 +485,10 @@ namespace dexih.functions.tests
             {
                 for (var i = 1; i <= 10; i++)
                 {
-                    var functionResult = function.Invoke(new FunctionVariables(),new object[] { i.ToString(), "," });
+                    var functionResult = function.RunFunction(new FunctionVariables(),new object[] { i.ToString(), "," });
                 }
 
-                var aggregateResult = function.ReturnValue(new FunctionVariables(), null, out _);
+                var aggregateResult = function.RunResult(new FunctionVariables(), null, out _);
                 Assert.NotNull(aggregateResult);
                 Assert.Equal("1,2,3,4,5,6,7,8,9,10", aggregateResult);
 
@@ -503,7 +503,7 @@ namespace dexih.functions.tests
             //Get a rows that exists.
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.XPathValues)).GetTransformFunction(); 
             var param = new object[] { "<root><row>0</row><row>1</row><row>2</row><row>3</row><row>4</row><row>5</row></root>", new [] { "//row[1]", "//row[2]", "//row[3]"} };
-            Assert.True((bool)function.Invoke(param, out var outputs));
+            Assert.True((bool)function.RunFunction(param, out var outputs));
             var result = (object[]) outputs[0];;
             Assert.Equal("0", result[0]);
             Assert.Equal("1", result[1]);
@@ -517,7 +517,7 @@ namespace dexih.functions.tests
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.JsonValues)).GetTransformFunction(); 
             var param = new object[] { "{ 'value1': '1', 'value2' : '2', 'value3': '3', 'array' : {'v1' : '1', 'v2' : '2'} }", new [] { "value1", "value2", "value3", "array", "badvalue" }};
             
-            Assert.False((bool)function.Invoke(new FunctionVariables(), param, out var outputs));
+            Assert.False((bool)function.RunFunction(new FunctionVariables(), param, out var outputs));
             var result = (object[]) outputs[0];;
             Assert.Equal("1", result[0]);
             Assert.Equal("2", result[1]);
@@ -528,7 +528,7 @@ namespace dexih.functions.tests
             var moreValues = (string)result[3];
             param = new object[] { moreValues, new [] { "v1", "v2"} };
             function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.JsonValues)).GetTransformFunction();
-            Assert.True((bool)function.Invoke(param, out outputs));
+            Assert.True((bool)function.RunFunction(param, out outputs));
             result = (object[]) outputs[0];;
             Assert.Equal("1", result[0]);
             Assert.Equal("2", result[1]);
@@ -543,11 +543,11 @@ namespace dexih.functions.tests
             var param = new object[] { 0, 10, 2 };
             for (var i = 0; i <= 10; i += 2)
             {
-                Assert.True((bool)function.Invoke(param, out var outputs));
+                Assert.True((bool)function.RunFunction(param, out var outputs));
                 Assert.Equal(i, (int)outputs[0]);
             }
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)function.Invoke(param));
+            Assert.False((bool)function.RunFunction(param));
         }
 
         [Fact]
@@ -559,12 +559,12 @@ namespace dexih.functions.tests
             var compare = new[] { "", "value2", "value3", "", "value5", "", "" };
             for (var i = 0; i < 6; i++)
             {
-                Assert.True((bool)function.Invoke(param, out var outputs));
+                Assert.True((bool)function.RunFunction(param, out var outputs));
                 Assert.Equal(compare[i], (string)outputs[0]);
             }
 
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)function.Invoke(param));
+            Assert.False((bool)function.RunFunction(param));
         }
 
         [Fact]
@@ -575,12 +575,12 @@ namespace dexih.functions.tests
             var param = new object[] { "<root><row>0</row><row>1</row><row>2</row><row>3</row><row>4</row><row>5</row></root>", "//row", 5 };
             for (var i = 0; i < 5; i++)
             {
-                Assert.True((bool)function.Invoke(param, out var outputs));
+                Assert.True((bool)function.RunFunction(param, out var outputs));
                 Assert.Equal(i.ToString(), (string)outputs[0]);
             }
 
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)function.Invoke(param));
+            Assert.False((bool)function.RunFunction(param));
         }
 
         [Fact]
@@ -591,7 +591,7 @@ namespace dexih.functions.tests
             var param = new object[] { "{'results' : [{'value1' : 'r1v1', 'value2' : 'r1v2'}, {'value1' : 'r2v1', 'value2' : 'r2v2'}]} ", "results[*]", 2 };
             for (var i = 1; i <= 2; i++)
             {
-                Assert.True((bool)function.Invoke(param, out var outputs));
+                Assert.True((bool)function.RunFunction(param, out var outputs));
                 var jsonResult = (string)outputs[0];
                 var results = JObject.Parse(jsonResult);
                 Assert.Equal("r" + i.ToString() + "v1", results.SelectToken("value1").ToString());
@@ -599,7 +599,7 @@ namespace dexih.functions.tests
             }
 
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)function.Invoke(param));
+            Assert.False((bool)function.RunFunction(param));
         }
         
         [Fact]
@@ -610,7 +610,7 @@ namespace dexih.functions.tests
             var param = new object[] { "{'results' : {'name1' : 'value1', 'name2' : 'value2', 'name3' : 'value3'}} ", "results", 3 };
             for (var i = 1; i <= 3; i++)
             {
-                Assert.True((bool)function.Invoke(param, out var outputs));
+                Assert.True((bool)function.RunFunction(param, out var outputs));
                 var name = (string)outputs[0];
                 var value = (string)outputs[1];
                 Assert.Equal(name, "name" + i.ToString());
@@ -618,7 +618,7 @@ namespace dexih.functions.tests
             }
 
             //last value should be false as the sequence has been exceeded.
-            Assert.False((bool)function.Invoke(param));
+            Assert.False((bool)function.RunFunction(param));
         }
         
         [Fact]
@@ -626,7 +626,6 @@ namespace dexih.functions.tests
         {
             var data = new[]
             {
-                new object[] {"MGR1", null},
                 new object[] {"EMP1", "MGR1"},
                 new object[] {"EMP2", "MGR1"},
                 new object[] {"EMP3", "MGR2"},
@@ -652,28 +651,32 @@ namespace dexih.functions.tests
             var function = Functions.GetFunction(typeof(HierarchyFunctions).FullName, nameof(HierarchyFunctions.FlattenParentChild)).GetTransformFunction();
             foreach (var row in data)
             {
-                function.Invoke(row, out _);
+                function.RunFunction(row, out _);
             }
 
             // run the result function to get flattened dataset.
+            var pos = 0;
             for (var i = 0; i < data.Length; i++)
             {
-                var returnValue = function.ReturnValue(new FunctionVariables() {Index = i},  new object[] {4}, out object[] outputs);
-                
-                // first value if the leaf value
-                Assert.Equal(expected[i][0], returnValue);
-                
-                // second value is the number of levels to the top
-                Assert.Equal(expected[i][1], outputs[0]);
+                while ((bool)function.RunResult(new FunctionVariables() {Index = i}, new object[] {4}, out object[] outputs))
+                {
 
-                // third value contains the flattened array.
-                var expectedHierarchy = (object[]) expected[i][2];
-                var actualHierarchy = (object[]) outputs[1];
-                
-                Assert.Equal(expectedHierarchy, actualHierarchy);
-                
+
+                    // first value if the leaf value
+                    Assert.Equal(expected[pos][0], outputs[0]);
+
+                    // second value is the number of levels to the top
+                    Assert.Equal(expected[pos][1], outputs[1]);
+
+                    // third value contains the flattened array.
+                    var expectedHierarchy = (object[]) expected[pos][2];
+                    var actualHierarchy = (object[]) outputs[2];
+
+                    Assert.Equal(expectedHierarchy, actualHierarchy);
+
+                    pos++;
+                }
             }
-
         }
     }
 }

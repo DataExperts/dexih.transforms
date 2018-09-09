@@ -106,16 +106,15 @@ namespace dexih.transforms
                 if (Mappings.ProcessInputData(PrimaryTransform.CurrentRow))
                 {
                     var newRow = new object[FieldCount];
-                    Mappings.ProcessOutputRow(newRow);
+                    Mappings.MapOutputRow(newRow);
                     return newRow;
                 }
-                else
+
+                if (!await PrimaryTransform.ReadAsync(cancellationToken))
                 {
-                    if (!await PrimaryTransform.ReadAsync(cancellationToken))
-                    {
-                        return null;
-                    }
+                    return null;
                 }
+                
             } while (true);
 
         }

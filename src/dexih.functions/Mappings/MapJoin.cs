@@ -135,7 +135,7 @@ namespace dexih.functions.Mappings
             return true;
         }
 
-        public override void ProcessOutputRow(object[] row)
+        public override void MapOutputRow(object[] row)
         {
             return;
         }

@@ -27,7 +27,7 @@ namespace dexih.transforms.tests
             var source = new ReaderMemory(table);
             source.Reset();
             
-            var mappings = new Mappings(false, true);
+            var mappings = new Mappings(false);
 
             var split = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.SplitColumnToRows)).GetTransformFunction();
             
@@ -75,7 +75,7 @@ namespace dexih.transforms.tests
             var source = new ReaderMemory(table);
             source.Reset();
             
-            var mappings = new Mappings(false, true);
+            var mappings = new Mappings(false);
 
             var parameters = new Parameters()
             {

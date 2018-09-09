@@ -10,10 +10,9 @@ namespace dexih.functions.Mappings
 {
     public class Mappings : List<Mapping>
     {
-        public Mappings(bool passThroughColumns = true, bool groupRows = false)
+        public Mappings(bool passThroughColumns = true)
         {
             PassThroughColumns = passThroughColumns;
-            GroupRows = groupRows;
         }
 
         private bool _doPassThroughColumns;
@@ -197,7 +196,7 @@ namespace dexih.functions.Mappings
 
                 if (map is MapGroup)
                 {
-                    map.ProcessOutputRow(row);
+                    map.MapOutputRow(row);
                 }
 
 //                if (map is MapFunction || map is MapAggregate)
@@ -276,7 +275,7 @@ namespace dexih.functions.Mappings
             
             foreach (var mapping in this)
             {
-                result = result && mapping.ProcessInputRow(functionVariables, row, joinRow);
+                result = result & mapping.ProcessInputRow(functionVariables, row, joinRow);
             }
 
             _rowData = row;
@@ -284,11 +283,15 @@ namespace dexih.functions.Mappings
             return result;
         }
         
-        public void ProcessOutputRow(object[] row)
+        /// <summary>
+        /// M
+        /// </summary>
+        /// <param name="row"></param>
+        public void MapOutputRow(object[] row)
         {
             foreach (var mapping in this)
             {
-                mapping.ProcessOutputRow(row);
+                mapping.MapOutputRow(row);
             }
 
             if (_passthroughColumns != null)
@@ -300,12 +303,24 @@ namespace dexih.functions.Mappings
             }
         }
 
-        public void ProcessAggregateRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public void ProcessOutputRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
             foreach (var mapping in this)
             {
                 mapping.ProcessResultRow(functionVariables, row, functionType);
             }
+        }
+        
+        public bool ProcessAggregateRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        {
+            var result = false;
+            
+            foreach (var mapping in this)
+            {
+                result = result | mapping.ProcessResultRow(functionVariables, row, functionType);
+            }
+
+            return result;
         }
         
         public void Reset(EFunctionType functionType)

@@ -199,119 +199,12 @@ namespace dexih.transforms
                         }
                     }
                 }
-                
-//                if (Validations != null)
-//                {
-//                    foreach (var validation in Validations)
-//                    {
-//                        //set inputs for the validation function
-//                        foreach (var input in validation.Inputs.Where(c => c.IsColumn))
-//                        {
-//                            try
-//                            {
-//								input.SetValue(PrimaryTransform[input.Column]);
-//                            }
-//                            catch(Exception ex)
-//                            {
-//								throw new TransformException($"The validation transform {Name} failed setting input parameters on the function {validation.FunctionName} parameter {input.Name} for column {input.Column.TableColumnName()}.  {ex.Message}", ex, PrimaryTransform[input.Column.TableColumnName()]);
-//                            }
-//                        }
-//
-//                        bool validationResult;
-//                        try
-//                        {
-//                            var invokeresult = validation.Invoke();
-//                            validationResult = (bool)invokeresult;
-//                        }
-//						catch (FunctionIgnoreRowException)
-//						{
-//							validationResult = false;
-//						}
-//                        catch(Exception ex)
-//                        {
-//                            throw new TransformException($"The validation transform {Name} failed on the function {validation.FunctionName}.  {ex.Message}", ex);
-//                        }
-//
-//                        //if the validation is false.  apply any output columns, and set a reject status
-//                        if (!validationResult)
-//                        {
-//							rejectReason.AppendLine("function: " + validation.FunctionName + ", parameters: " + string.Join(",", validation.Inputs.Select(c => c.Name + "=" + (c.IsColumn ? c.Column.TableColumnName() : c.Value.ToString())).ToArray()) + ".");
-//
-//                            // fail job immediately.
-//                            if (validation.InvalidAction == TransformFunction.EInvalidAction.Abend)
-//                            {
-//                                var reason = $"The validation rule abended as the invalid action is set to abend.  " + rejectReason.ToString();
-//                                throw new Exception(reason);
-//                            }
-//
-//                            //if the record is to be discarded, continue the loop and get the next source record.
-//                            if (validation.InvalidAction == TransformFunction.EInvalidAction.Discard)
-//                                continue;
-//
-//                            //set the final invalidation action based on priority order of other rejections.
-//                            finalInvalidAction = finalInvalidAction < validation.InvalidAction ? validation.InvalidAction : finalInvalidAction;
-//
-//                            if (validation.InvalidAction == TransformFunction.EInvalidAction.Reject || validation.InvalidAction == TransformFunction.EInvalidAction.RejectClean)
-//                            {
-//                                //if the row is rejected, copy unmodified row to a reject row.
-//                                if (rejectRow == null)
-//                                {
-//                                    rejectRow = new object[CacheTable.Columns.Count];
-//                                    passRow.CopyTo(rejectRow, 0);
-//                                    rejectRow[_operationOrdinal] = 'R';
-//                                    TransformRowsRejected++;
-//                                }
-//
-//                                //add a reject reason if it exists
-//                                if (_rejectReasonOrdinal >= 0)
-//                                {
-//                                    if (validation.Outputs != null)
-//                                    {
-//										var param = validation.Outputs.SingleOrDefault(c => c.Column.TableColumnName() == _rejectReasonColumnName);
-//                                        if (param != null)
-//                                        {
-//                                            rejectReason.Append("  Reason: " + (string)param.Value);
-//                                        }
-//                                    }
-//                                }
-//                            }
-//
-//                            if (validation.InvalidAction == TransformFunction.EInvalidAction.Clean || validation.InvalidAction == TransformFunction.EInvalidAction.RejectClean)
-//                            {
-//                                validation.ReturnValue();
-//                                if (validation.Outputs != null)
-//                                {
-//                                    foreach (var output in validation.Outputs)
-//                                    {
-//										if (output.Column.TableColumnName() != "")
-//                                        {
-//											var ordinal = CacheTable.GetOrdinal(output.Column);
-//											var col = CacheTable.Columns[ordinal];
-//                                            if (ordinal >= 0)
-//                                            {
-//                                                try
-//                                                {
-//                                                    var parseresult = TryParse(col.DataType, output.Value, col.MaxLength);
-//                                                    passRow[ordinal] = parseresult;
-//                                                }
-//                                                catch(Exception ex)
-//                                                {
-//                                                    throw new TransformException($"The validation transform {Name} failed parsing output values on the function {validation.FunctionName} parameter {output.Name} column {col.Name}.  {ex.Message}", ex, output.Value);
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-
+   
                 if (ValidateDataTypes && (finalInvalidAction == TransformFunction.EInvalidAction.RejectClean || finalInvalidAction == TransformFunction.EInvalidAction.Clean))
                 {
-                    // update the passrow with any outputs from clean functions.
+                    // update the pass row with any outputs from clean functions.
                     var cleanRow = new object[_columnCount];
-                    Mappings.ProcessOutputRow(cleanRow);
+                    Mappings.MapOutputRow(cleanRow);
                     
                     //copy row data.
                     for (var i = 0; i < _primaryFieldCount; i++)
@@ -353,8 +246,7 @@ namespace dexih.transforms
                             {
                                 try
                                 {
-                                    var parseresult = TryParse(col.DataType, value, col.MaxLength);
-                                    passRow[i] = parseresult;
+                                    passRow[i] =  TryParse(col.DataType, value, col.MaxLength);
                                 }
                                 catch (Exception ex)
                                 {

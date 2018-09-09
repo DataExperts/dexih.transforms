@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.BuiltIn
@@ -20,6 +21,8 @@ namespace dexih.functions.BuiltIn
         private List<object> _cacheList;
         private StringBuilder _cacheStringBuilder;
         private object _cacheObject;
+        private object[] _cacheArray;
+        private SortedRowsDictionary _sortedRowsDictionary = null;
 
         public bool Reset()
         {
@@ -32,6 +35,8 @@ namespace dexih.functions.BuiltIn
             _cacheDictionary = null;
             _cacheStringBuilder = null;
             _cacheObject = null;
+            _cacheArray = null;
+            _sortedRowsDictionary = null;
             return true;
         }
         
@@ -289,6 +294,12 @@ namespace dexih.functions.BuiltIn
             return !values.Contains(null);
         }
         
+        public enum EPercentFormat
+        {
+            AsDecimal,
+            AsPercent
+        }
+        
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Percent of Total", Description = "The percentage total in the group.", ResultMethod = nameof(PercentTotalResult), ResetMethod = nameof(Reset))]
         public void PercentTotal(double value)
         {
@@ -301,12 +312,6 @@ namespace dexih.functions.BuiltIn
             _cacheList.Add(value);        
         }
 
-        public enum EPercentFormat
-        {
-            AsDecimal,
-            AsPercent
-        }
-
         public double PercentTotalResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, EPercentFormat percentFormat = EPercentFormat.AsPercent)
         {
             if (_cacheList == null || _cacheDouble == null)
@@ -315,9 +320,63 @@ namespace dexih.functions.BuiltIn
             var percent = (double)_cacheList[index] / _cacheDouble.Value;
             return percentFormat == EPercentFormat.AsDecimal ? percent : percent * 100;
         }
-        
 
 
         
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Rank", Description = "The ranking (starting at 1) of the item within the group", ResultMethod = nameof(RankResult), ResetMethod = nameof(Reset))]
+        public void Rank(object[] values)
+        {
+            if (_sortedRowsDictionary == null)
+            {
+                _sortedRowsDictionary = new SortedRowsDictionary();
+                _cacheInt = 0;
+            }
+
+            if (_sortedRowsDictionary.ContainsKey(values))
+            {
+                var indexes = _sortedRowsDictionary[values];
+                Array.Resize(ref indexes, indexes.Length + 1);
+                indexes[indexes.Length-1] = _cacheInt;
+                _sortedRowsDictionary[values] = indexes;
+            }
+            else
+            {
+                _sortedRowsDictionary.Add(values, new object[] {_cacheInt});    
+            }
+
+            _cacheInt++;
+        }
+
+        public int RankResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, Sort.EDirection sortDirection)
+        {
+            if (_cacheArray == null)
+            {
+                _cacheArray = new object[_cacheInt.Value];
+                int rank;
+                int increment;
+                if (sortDirection == Sort.EDirection.Ascending)
+                {
+                    rank = 1;
+                    increment = 1;
+                }
+                else
+                {
+                    rank = _sortedRowsDictionary.Count;
+                    increment = -1;
+                }
+                
+                foreach (var item in _sortedRowsDictionary)
+                {
+                    foreach (var value in item.Value)
+                    {
+                        _cacheArray[(int) value] = rank;    
+                    }
+                    
+                    rank += increment * item.Value.Length;
+                }
+            }
+
+            return (int)_cacheArray[index];
+        }
     }
 }

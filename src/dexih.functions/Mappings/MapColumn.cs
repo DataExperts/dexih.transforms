@@ -64,7 +64,7 @@ namespace dexih.functions.Mappings
             return true;
         }
 
-        public override void ProcessOutputRow(object[] data)
+        public override void MapOutputRow(object[] data)
         {
             data[OutputOrdinal] = GetInputValue();
         }

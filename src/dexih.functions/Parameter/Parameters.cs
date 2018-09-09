@@ -174,7 +174,7 @@ namespace dexih.functions.Parameter
                 }
             }
         }
-
+        
         public object[] GetFunctionParameters()
         {
             var count = Inputs?.Count??0 + Outputs?.Count??0;

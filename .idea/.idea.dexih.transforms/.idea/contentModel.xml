@@ -288,6 +288,7 @@
             <e p="UpdateQuery.cs" t="Include" />
           </e>
           <e p="Retry.cs" t="Include" />
+          <e p="SortedRowsDictionary.cs" t="Include" />
           <e p="SymbolExtensions.cs" t="Include" />
           <e p="Table" t="Include">
             <e p="File.cs" t="Include" />
@@ -351,11 +352,13 @@
           <e p="ReaderMemory.cs" t="Include" />
           <e p="ReaderRowCreator.cs" t="Include" />
           <e p="Transform.cs" t="Include" />
+          <e p="TransformAggregate.cs" t="Include" />
           <e p="TransformConcatinate.cs" t="Include" />
           <e p="TransformCsvStream.cs" t="Include" />
           <e p="TransformDelta.cs" t="Include" />
           <e p="TransformFilter.cs" t="Include" />
           <e p="TransformGroup.cs" t="Include" />
+          <e p="TransformGroup_Backup.cs" t="Include" />
           <e p="TransformJoin.cs" t="Include" />
           <e p="TransformJsonStream.cs" t="Include" />
           <e p="TransformLookup.cs" t="Include" />
@@ -369,6 +372,7 @@
             <e p="Transforms.cs" t="Include" />
             <e p="TransformsExceptions.cs" t="Include" />
           </e>
+          <e p="TransformSeries.cs" t="Include" />
           <e p="TransformSort.cs" t="Include" />
           <e p="TransformValidation.cs" t="Include" />
           <e p="TransformWriter.cs" t="Include" />
@@ -608,6 +612,7 @@
           </e>
           <e p="samples.cs" t="Include" />
           <e p="TestSoureDbReader.cs" t="Include" />
+          <e p="TransformAggregateTests.cs" t="Include" />
           <e p="TransformConcatinateTests.cs" t="Include" />
           <e p="TransformDeltaTests.cs" t="Include" />
           <e p="TransformFilterTests.cs" t="Include" />
@@ -617,6 +622,7 @@
           <e p="TransformMappingTests.cs" t="Include" />
           <e p="TransformProfileTests.cs" t="Include" />
           <e p="TransformRowTests.cs" t="Include" />
+          <e p="TransformSeriesTests.cs" t="Include" />
           <e p="TransformSortTests.cs" t="Include" />
           <e p="TransformValidationTests.cs" t="Include" />
         </e>

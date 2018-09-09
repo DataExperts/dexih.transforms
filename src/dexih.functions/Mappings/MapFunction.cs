@@ -45,7 +45,7 @@ namespace dexih.functions.Mappings
             //gets the parameters.
             var parameters = Parameters.GetFunctionParameters();
             
-            ReturnValue = Function.Invoke(functionVariables, parameters, out _outputs);
+            ReturnValue = Function.RunFunction(functionVariables, parameters, out _outputs);
             
             if (ReturnValue != null && ReturnValue is bool boolReturn)
             {
@@ -72,21 +72,28 @@ namespace dexih.functions.Mappings
             throw new NotSupportedException();
         }
 
-        public override void ProcessOutputRow(object[] data)
+        public override void MapOutputRow(object[] data)
         {
             Parameters.SetFunctionResult(ReturnValue, _outputs, data);
         }
         
-        public override void ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public override bool ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
             if (Function.FunctionType == functionType && Function.ResultMethod != null)
             {
                 var parameters = Parameters.GetResultFunctionParameters();
-                ResultReturnValue = Function.ReturnValue(functionVariables, parameters, out _resultOutputs);
+                ResultReturnValue = Function.RunResult(functionVariables, parameters, out _resultOutputs);
                 Parameters.SetResultFunctionResult(ResultReturnValue, _resultOutputs, row);
+                
+                if (Function.GeneratesRows && ResultReturnValue != null && ResultReturnValue is bool boolReturn)
+                {
+                    return boolReturn;
+                }
             }
+
+            return false;
         }
-        
+
         public virtual MapFunction Copy()
         {
             var mapFunction = new MapFunction()

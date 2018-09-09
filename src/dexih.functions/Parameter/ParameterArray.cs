@@ -81,14 +81,14 @@ namespace dexih.functions.Parameter
 	    {
 		    var columns = new List<TableColumn>();
 
-		    foreach (var parmameter in Parameters)
+		    foreach (var parameter in Parameters)
 		    {
-			    if (parmameter is ParameterColumn parameterColumn)
+			    if (parameter is ParameterColumn parameterColumn)
 			    {
 				    columns.Add(parameterColumn.Column);
 			    }
 
-			    if (parmameter is ParameterArray parameterArray)
+			    if (parameter is ParameterArray parameterArray)
 			    {
 				    columns.AddRange(parameterArray.TableColumns());
 			    }

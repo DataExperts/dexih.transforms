@@ -75,12 +75,12 @@ namespace dexih.functions.Mappings
             return true;
         }
 
-        public override void ProcessOutputRow(object[] row)
+        public override void MapOutputRow(object[] row)
         {
             return;
         }
 
-        public override void ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public override bool ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
             if (functionType == EFunctionType.Aggregate)
             {
@@ -102,6 +102,8 @@ namespace dexih.functions.Mappings
 
                 row[_outputOrdinal] = value;
             }
+
+            return false;
         }
 
 

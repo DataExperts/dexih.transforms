@@ -6,20 +6,22 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Mappings;
 using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 using dexih.transforms.Transforms;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
     [Transform(
-        Name = "Group",
-        Description = "Group columns and apply specific aggregation rules to other columns.",
+        Name = "Aggregate",
+        Description = "Aggregate group values whilst maintaining the original row values.",
         TransformType = TransformAttribute.ETransformType.Group
     )]
-    public class TransformGroup : Transform
+    public class TransformAggregate : Transform
     {
-        public TransformGroup() {  }
+        public TransformAggregate() {  }
 
-        public TransformGroup(Transform inReader, Mappings mappings)
+        public TransformAggregate(Transform inReader, Mappings mappings)
         {
             Mappings = mappings;
             SetInTransform(inReader);
@@ -30,6 +32,8 @@ namespace dexih.transforms
 
         private object[] _groupValues;
         
+        private Queue<object[]> _cachedRows;
+
         public override bool InitializeOutputFields()
         {
             CacheTable = Mappings.Initialize(PrimaryTransform.CacheTable);
@@ -82,12 +86,33 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            var outputRow = new object[FieldCount];
-
-            if (!_firstRecord && !_lastRecord)
+            object[] outputRow ;
+            
+            //if there are records in the row cache, then empty them out before getting new records.
+            if(_firstRecord)
             {
-                Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                _cachedRows = new Queue<object[]>();
             }
+            else if( _cachedRows.Count > 0)
+            {
+                outputRow = _cachedRows.Dequeue();
+                return outputRow;
+            }
+            //if all rows have been iterated through, reset the cache and add the stored row for the next group 
+            else if(_firstRecord == false && _lastRecord == false)
+            {
+                //reset the aggregate functions
+                Mappings.Reset(EFunctionType.Aggregate);
+                Mappings.Reset(EFunctionType.Series);
+                
+                //populate the parameters with the current row.
+                Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                var cacheRow = new object[FieldCount];
+                Mappings.MapOutputRow(cacheRow);
+                _cachedRows.Enqueue(cacheRow);
+            }
+
+            outputRow = new object[FieldCount];
 
             // used to track if the group fields have changed
             var groupChanged = false;
@@ -101,7 +126,6 @@ namespace dexih.transforms
             }
             else
             {
-                
                 do
                 {
                     _lastRecord = false;
@@ -112,6 +136,7 @@ namespace dexih.transforms
                     //if it's the first record then the groupvalues are being set for the first time.
                     if (_firstRecord)
                     {
+                        groupChanged = false;
                         _groupValues = nextGroupValues;
                     }
                     else
@@ -131,8 +156,14 @@ namespace dexih.transforms
                     
                     if (!groupChanged)
                     {
+                 
                         // if the group has not changed, process the input row
                         Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+
+                        //create a cached current row.  this will be output when the group has changed.
+                        var cacheRow = new object[outputRow.Length];
+                        Mappings.MapOutputRow(cacheRow);
+                        _cachedRows.Enqueue(cacheRow);
                     }
                     // when group has changed
                     else
@@ -141,7 +172,6 @@ namespace dexih.transforms
                         
                         //store the last groupValues read to start the next grouping.
                         _groupValues = nextGroupValues;
-
                     }
                     
                     _firstRecord = false;
@@ -173,14 +203,69 @@ namespace dexih.transforms
 
         private void ProcessGroupChange(ref object[] outputRow)
         {
-            Mappings.MapOutputRow(outputRow);
-            Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate);
-            Mappings.Reset(EFunctionType.Aggregate);
+            // if the group has changed, update all cached rows with aggregate functions.
+            if (_cachedRows != null && _cachedRows.Any())
+            {
+                //create a cached current row.  this will be output when the group has changed.
+//                var cacheRow = new object[outputRow.Length];
+//                Mappings.MapOutputRow(cacheRow);
+//                _cachedRows.Enqueue(cacheRow);
+
+                var index = 0;
+                List<(int index, object[] row)> additionalRows = null;
+                foreach (var row in _cachedRows)
+                {
+                    var moreRows = Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
+                    
+                    // if the aggregate function wants more rows, store them in a separate collection.
+                    while (moreRows)
+                    {
+                        var rowCopy = new object[FieldCount];
+                        row.CopyTo(rowCopy, 0);
+                        moreRows = Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
+
+                        if (additionalRows == null)
+                        {
+                            additionalRows = new List<(int index, object[] row)>();
+                        }
+                        
+                        additionalRows.Add((index, rowCopy));
+                    }
+                    
+                    index++;
+                }
+                
+                // merge the new rows in with existing cache
+                if (additionalRows != null)
+                {
+                    var newQueue = new Queue<object[]>();
+                    index = 0;
+                    var additionalRowsIndex = 0;
+                    foreach (var row in _cachedRows)
+                    {
+                        while (additionalRowsIndex < additionalRows.Count && index <= additionalRows[additionalRowsIndex].index)
+                        {
+                            newQueue.Enqueue(additionalRows[additionalRowsIndex++].row);
+                        }
+
+                        newQueue.Enqueue(row);
+                    }
+
+                    _cachedRows = newQueue;
+                }
+                
+                Mappings.Reset(EFunctionType.Aggregate);
+                outputRow = _cachedRows.Dequeue();
+            }
+            else
+            {
+                outputRow = null;
+            }
         }
 
         public override string Details()
         {
-            return "Group Transform: Group Columns:" + (Mappings.OfType<MapGroup>().Count() + ", Aggregate Functions: " + Mappings.OfType<MapAggregate>().Count());
+            return "Group: " + ( Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Mapped Columns:" + (Mappings.Count());
         }
 
         public override List<Sort> RequiredSortFields()
@@ -194,6 +279,7 @@ namespace dexih.transforms
             }
             
             return sortFields;
+
         }
 
         public override List<Sort> RequiredReferenceSortFields()

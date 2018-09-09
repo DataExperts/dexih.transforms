@@ -52,13 +52,6 @@ namespace dexih.transforms
             return true;
         }
 
-//        public bool SetProfiles(List<TransformFunction> profiles)
-//        {
-//            _profiles = profiles;
-//            return InitializeOutputFields();
-//        }
-
-
         public override bool RequiresSort => false;
 
         public override bool ResetTransform()
@@ -76,33 +69,6 @@ namespace dexih.transforms
 
             if (!_lastRecord)
             {
-//                var newRow = new object[CacheTable.Columns.Count];
-//                PrimaryTransform.GetValues(newRow);
-//
-//                foreach (var profile in Mappings.OfType<MapFunction>())
-//                {
-//                    foreach (var input in profile.Inputs.Where(c => c.IsColumn))
-//                    {
-//                        try
-//                        {
-//                            input.SetValue(PrimaryTransform[input.Column.Name]);
-//                        } 
-//                        catch(Exception ex)
-//                        {
-//                            throw new TransformException($"The profile transform {Name} failed setting inputs on the function {profile.FunctionName} parameter {input.Name} column {input.Column.Name}.  {ex.Message}", ex, PrimaryTransform[input.Column.Name]);
-//                        }
-//                    }
-//
-//                    try
-//                    {
-//                        profile.Invoke();
-//                    }
-//                    catch (Exception ex)
-//                    {
-//                        throw new TransformException($"The profile transform {Name} failed on the function {profile.FunctionName}.  {ex.Message}", ex);
-//                    }
-//                }
-
                 var newRow = PrimaryTransform.CurrentRow;
                 Mappings.ProcessInputData(newRow);
                 return newRow;
@@ -114,7 +80,7 @@ namespace dexih.transforms
 
                 foreach (var profile in Mappings.OfType<MapFunction>())
                 {
-                    // createa a dummary row for hte profile function to write to
+                    // create a a dummy row for hte profile function to write to
                     var profileRow = new object[2];
                     
                     // object profileResult = null;

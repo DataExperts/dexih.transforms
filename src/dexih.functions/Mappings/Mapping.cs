@@ -35,7 +35,7 @@ namespace dexih.functions.Mappings
         /// Gets the mapping result, and updates the row.
         /// </summary>
         /// <param name="row">The output row to populate</param>
-        public abstract void ProcessOutputRow(object[] row);
+        public abstract void MapOutputRow(object[] row);
 
         public abstract object GetInputValue(object[] row = null);
 
@@ -44,13 +44,14 @@ namespace dexih.functions.Mappings
         /// </summary>
         /// <param name="index">The row within the current group for aggregate functions.</param>
         /// <param name="row">The output row to populate</param>
-        public virtual void ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public virtual bool ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
+            return false;
         }
 
-        public void ProcessResultRow(object[] row, EFunctionType functionType)
+        public bool ProcessResultRow(object[] row, EFunctionType functionType)
         {
-            ProcessResultRow(new FunctionVariables(), row, functionType);
+            return ProcessResultRow(new FunctionVariables(), row, functionType);
         }
 
         public virtual void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue) {}
