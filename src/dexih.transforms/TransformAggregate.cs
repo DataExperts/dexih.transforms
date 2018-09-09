@@ -15,7 +15,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Aggregate",
         Description = "Aggregate group values whilst maintaining the original row values.",
-        TransformType = TransformAttribute.ETransformType.Group
+        TransformType = TransformAttribute.ETransformType.Aggregate
     )]
     public class TransformAggregate : Transform
     {

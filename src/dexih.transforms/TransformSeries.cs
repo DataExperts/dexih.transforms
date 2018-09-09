@@ -15,7 +15,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Series",
         Description = "Group columns, fill a date/numeric series and apply analytical rules to the series.",
-        TransformType = TransformAttribute.ETransformType.Group
+        TransformType = TransformAttribute.ETransformType.Series
     )]
     public class TransformSeries : Transform
     {
