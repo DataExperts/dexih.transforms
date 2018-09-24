@@ -1075,7 +1075,7 @@ namespace dexih.transforms
                 }
 
             }
-            // cancelled or transformexcpetion, bubble the exception up.
+            // cancelled or transform exception, bubble the exception up.
             catch (Exception ex) when (ex is OperationCanceledException || ex is TransformException)
             {
                 IsReaderFinished = true;

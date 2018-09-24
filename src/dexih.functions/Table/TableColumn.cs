@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.CopyProperties;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.functions
 {
@@ -49,6 +50,7 @@ namespace dexih.functions
 			ReferenceTable = parentTable;
 		}
 
+	    [JsonConverter(typeof(StringEnumConverter))]
         public enum EDeltaType
         {
             SurrogateKey,
@@ -82,6 +84,7 @@ namespace dexih.functions
 			Url // the full url called for the web service.
         }
 
+	    [JsonConverter(typeof(StringEnumConverter))]
         public enum ESecurityFlag
         {
             None,

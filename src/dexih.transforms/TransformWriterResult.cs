@@ -73,7 +73,9 @@ namespace dexih.transforms
             FinishedErrors,
             Abended,
             Cancelled,
-            NotRunning
+            NotRunning,
+            Passed, //used for datalink tests
+            Failed //
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
@@ -91,7 +93,7 @@ namespace dexih.transforms
         [PocoColumn(DeltaType = TableColumn.EDeltaType.AutoIncrement, IsKey = true)]
         public long AuditKey { get; set; }
 
-        [PocoColumn(MaxLength = 20)]
+        [PocoColumn(MaxLength = 30)]
         public string AuditType { get; set; }
 
         public long ReferenceKey { get; set; }
@@ -138,6 +140,9 @@ namespace dexih.transforms
         public long RowsSorted { get; set; }
         public long RowsReadPrimary { get; set; }
         public long RowsReadReference { get; set; }
+        
+        public long Passed { get; set; }
+        public long Failed { get; set; }
 
         public long ReadTicks { get; set; }
         public long WriteTicks { get; set; }
