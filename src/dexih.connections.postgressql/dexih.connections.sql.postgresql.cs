@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -6,10 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Newtonsoft.Json;
 using Npgsql;
 using NpgsqlTypes;
 using static Dexih.Utils.DataType.DataType;
@@ -42,10 +46,17 @@ namespace dexih.connections.sql
         public override bool AllowUserPass => true;
         public override string DatabaseTypeName => "PostgreSQL";
         public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
+        public override bool CanUseArray => true;
 
         // postgre doesn't have unsigned values, so convert the unsigned to signed 
         public override object ConvertParameterType(object value)
         {
+            if (value is null)
+                return DBNull.Value;
+            
+            if (value.GetType().IsArray)
+                return JsonConvert.SerializeObject(value);
+
             switch (value)
             {
                 case ushort uint16:
@@ -54,8 +65,6 @@ namespace dexih.connections.sql
                     return (long)uint32;
                 case ulong uint64:
                     return (long)uint64;
-                case null:
-                    return DBNull.Value;
                 default:
                     return value;
             }
@@ -98,15 +107,27 @@ namespace dexih.connections.sql
 
                         for (var i = 0; i < fieldCount; i++)
                         {
-                            var converted = GetSqlDbType(table.Columns[i].DataType, reader[i]);
+                            try
+                            {
 
-                            if (converted.value == null || converted.value == DBNull.Value)
-                            {
-                                writer.WriteNull();
+                                var converted = GetSqlDbType(table.Columns[i], reader[i]);
+
+                                if (converted.value == null || converted.value == DBNull.Value)
+                                {
+                                    writer.WriteNull();
+                                }
+                                else
+                                {
+                                    writer.Write(converted.value, converted.type);
+                                }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                writer.Write(converted.value, converted.type);
+#if DEBUG
+                                throw new ConnectionException($"Column {table.Columns[i].Name}, value {reader[i]}.  {ex.Message}", ex);
+#else
+                                throw new ConnectionException($"Column {table.Columns[i].Name}.  {ex.Message}", ex);
+#endif
                             }
                         }
                     }
@@ -247,6 +268,12 @@ namespace dexih.connections.sql
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
+                case ETypeCode.Char:
+                    if(column.MaxLength == null) 
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "char(0)";
+                    else 
+                        sqlType= (column.IsUnicode == true ? "n" : "") + "char(" + column.MaxLength + ")";
+                    break;
 				case ETypeCode.Text:
                 case ETypeCode.Json:
                 case ETypeCode.Xml:
@@ -284,6 +311,11 @@ namespace dexih.connections.sql
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
+            }
+
+            if (column.IsArray())
+            {
+                return sqlType + "[]";
             }
 
             return sqlType;
@@ -513,9 +545,13 @@ where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.ta
                     }
 
                     // The schema table 
-                    using (var cmd = CreateCommand(connection, @"
-                         select * from information_schema.columns where table_schema = '" + schema + "' and table_name = '" + table.Name + "'"
-                            ))
+                    using (var cmd = CreateCommand(connection, $@"
+SELECT c.column_name, c.data_type, c.character_maximum_length, c.numeric_precision_radix, c.numeric_scale, c.is_nullable, e.data_type AS element_type
+FROM information_schema.columns c LEFT JOIN information_schema.element_types e
+     ON ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
+       = (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
+WHERE c.table_schema = '{schema}' AND c.table_name = '{table.Name}'
+ORDER BY c.ordinal_position"))
                     using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
 
@@ -527,7 +563,8 @@ where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.ta
                                 Name = reader["column_name"].ToString(),
                                 LogicalName = reader["column_name"].ToString(),
                                 IsInput = false,
-                                DataType = ConvertSqlToTypeCode(reader["data_type"].ToString())
+                                Rank = (string)reader["data_type"] == "ARRAY" ? (byte) 1 : (byte) 0,
+                                DataType = (string)reader["data_type"] == "ARRAY" ? ConvertSqlToTypeCode(reader["element_type"].ToString()) : ConvertSqlToTypeCode(reader["data_type"].ToString())
                             };
 
                             if (col.DataType == ETypeCode.Unknown)
@@ -601,7 +638,6 @@ where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.ta
                 case "bit": return ETypeCode.Boolean;
                 case "varbit": return ETypeCode.Binary;
                 case "bytea": return ETypeCode.Binary;
-
                 case "smallint": return ETypeCode.Int16;
                 case "int": return ETypeCode.Int32;
                 case "integer": return ETypeCode.Int32;
@@ -625,7 +661,7 @@ where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.ta
                 case "time with time zone": return ETypeCode.Time;
                 case "character varying": return ETypeCode.String;
                 case "varchar": return ETypeCode.String;
-                case "character": return ETypeCode.String;
+                case "character": return ETypeCode.Char;
                 case "text": return ETypeCode.Text;
             }
             return ETypeCode.Unknown;
@@ -708,7 +744,7 @@ where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.ta
                                     {
                                         var param = cmd.CreateParameter();
                                         param.ParameterName = "@col" + i;
-                                        var converted = GetSqlDbType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Value);
+                                        var converted = GetSqlDbType(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
                                         param.NpgsqlDbType = converted.type;
                                         param.Size = -1;
                                         param.Value = converted.value??DBNull.Value;
@@ -741,7 +777,38 @@ where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.ta
 
         }
 
-        private (NpgsqlDbType type, object value) GetSqlDbType(ETypeCode typeCode, Object value)
+        private (NpgsqlDbType type, object value) GetSqlDbType(TableColumn tableColumn, object value)
+        {
+            if (tableColumn.IsArray())
+            {
+                var values =(IEnumerable)value;
+
+                var parsedValues = new List<object>();
+                var type = NpgsqlDbType.Varchar;
+
+                var i = 0;
+                foreach (var v in values)
+                {
+                    var result = GetSqlDbType(tableColumn.DataType, v);
+                    type = result.type;
+                    parsedValues.Add(result.value);
+                    i++;
+                }
+
+                if (i == 0)
+                {
+                    return GetSqlDbType(tableColumn.DataType, null);
+                }
+
+                return (NpgsqlDbType.Array | type, parsedValues);
+            }
+            else
+            {
+                return GetSqlDbType(tableColumn.DataType, value);
+            }
+        }
+        
+        private (NpgsqlDbType type, object value) GetSqlDbType(ETypeCode typeCode, object value)
         {
             switch (typeCode)
             {
@@ -826,7 +893,7 @@ where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.ta
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i;
-                                    var converted = GetSqlDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Value);
+                                    var converted = GetSqlDbType(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
                                     param.NpgsqlDbType = converted.type;
                                     param.Size = -1;
                                     param.Value = converted.value??DBNull.Value;

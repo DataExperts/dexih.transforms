@@ -120,5 +120,17 @@ namespace dexih.functions.Mappings
                 Count = 0;
             }
         }
+        
+        public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
+        {
+            switch (Aggregate)
+            {
+                case SelectColumn.EAggregate.Sum:
+                case SelectColumn.EAggregate.Average:
+                case SelectColumn.EAggregate.Count:
+                    fillerRow[_inputOrdinal] = 0;
+                    break;
+            }   
+        }
     }
 }

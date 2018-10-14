@@ -76,8 +76,29 @@ namespace dexih.transforms
         public abstract bool CanUpdate { get; }
         public abstract bool CanDelete { get; }
         public abstract bool CanAggregate { get; }
+
+        /// <summary>
+        /// The connection can directly insert binary (byte[])
+        /// </summary>
         public abstract bool CanUseBinary { get; }
+        
+        /// <summary>
+        /// The connection can directly insert arrays
+        /// </summary>
+        public abstract bool CanUseArray { get; }
+        
+        /// <summary>
+        /// The connection can directly insert json
+        /// </summary>
+        public abstract bool CanUseJson { get; }
+        
+        /// <summary>
+        /// The connection can directly insert char[]
+        /// </summary>
+        public abstract bool CanUseCharArray { get; }
+
         public abstract bool CanUseSql { get; }
+        
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
 
         public bool AllowAllPaths { get; set; } = true;

@@ -8,9 +8,9 @@ namespace dexih.functions
         public string Name { get; set; }
         public string Description { get; set; }
         public DataType.ETypeCode DataType { get; set; }
-        public bool IsArray { get; set; }
+        public int Rank { get; set; }
         public bool IsIndex { get; set; }
-        public string TwinParameterName { get; set; }
+        public bool IsTwin { get; set; }
         
         public string[] ListOfValues { get; set; }
         public object DefaultValue { get; set; }

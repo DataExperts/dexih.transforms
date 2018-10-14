@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -52,6 +55,14 @@ namespace dexih.functions.BuiltIn
             }
 
             return true;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Array Contains",
+            Description = "The value is equal to at least one of the values in the values array")]
+        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
+        public bool ArrayContains(object value, object[] values)
+        {
+            return values.Contains(value);
         }
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Strings Equal",
@@ -345,7 +356,48 @@ namespace dexih.functions.BuiltIn
             return LessThan(lowRange1, highRange2) && LessThan(lowRange2, highRange1);
         }
 
- 
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Even", Description = "The specific number is even")]
+        public bool IsEven(long number)
+        {
+            return (number & 1) == 0;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Odd", Description = "The specific number is odd")]
+        public bool IsOdd(long number)
+        {
+            return (number & 1) == 1;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Power Of Two", Description = "The specific number is a power of two")]
+        public static bool IsPowerOfTwo(long number)
+        {
+            if (number > 0L)
+                return (number & number - 1L) == 0L;
+            return false;
+        }
+
+        /// <summary>
+        /// Find out whether the provided 32 bit integer is a perfect square, i.e. a square of an integer.
+        /// </summary>
+        /// <param name="number">The number to very whether it's a perfect square.</param>
+        /// <returns>True if and only if it is a perfect square.</returns>
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Perfect Square", Description = "The specific number is a perfect square (i.e. square of an integer)")]
+        public static bool IsPerfectSquare(int number)
+        {
+            if (number < 0)
+                return false;
+            switch (number & 15)
+            {
+                case 0:
+                case 1:
+                case 4:
+                case 9:
+                    var num = (int) Math.Floor(Math.Sqrt((double) number) + 0.5);
+                    return num * num == number;
+                default:
+                    return false;
+            }
+        }
 
     }
 }

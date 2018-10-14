@@ -81,10 +81,10 @@ namespace dexih.functions.Mappings
             }        
         }
 
-        public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
-        {
-            fillerRow[InputOrdinal] = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];   
-        }
+//        public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
+//        {
+//            fillerRow[InputOrdinal] = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];   
+//        }
 
         public override void Reset(EFunctionType functionType)
         {

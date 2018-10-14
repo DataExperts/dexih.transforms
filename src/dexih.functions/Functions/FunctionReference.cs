@@ -40,10 +40,12 @@ namespace dexih.functions
         public bool IsStandardFunction { get; set; }
 
         public DataType.ETypeCode? ReturnType { get; set; }
+        public int ReturnRank { get; set; }
         public FunctionParameter[] InputParameters { get; set; }
         public FunctionParameter[] OutputParameters { get; set; }
 
         public DataType.ETypeCode? ResultReturnType { get; set; }
+        public int ResultReturnRank { get; set; }
         public FunctionParameter[] ResultInputParameters { get; set; }
         public FunctionParameter[] ResultOutputParameters { get; set; }
 

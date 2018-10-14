@@ -15,8 +15,8 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <LangVersion>7.1</LangVersion>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <!--<ItemGroup>
     <Compile Include="**\*.cs" />
@@ -25,9 +25,7 @@
   </ItemGroup>-->
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="7.1.1" />
-    <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.60" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.9" />
-    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.24" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
     </PackageReference>
@@ -45,6 +43,10 @@
     <PackageReference Include="System.Xml.XPath.XDocument" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.8" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Dexih.Utils.CopyProperties\src\Dexih.Utils.CopyProperties\Dexih.Utils.CopyProperties.csproj" />
+    <ProjectReference Include="..\..\..\dexih.utils.datatype\src\Dexih.Utils.DataType\Dexih.Utils.DataType.csproj" />
   </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>

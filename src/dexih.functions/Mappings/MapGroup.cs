@@ -21,6 +21,12 @@ namespace dexih.functions.Mappings
             InputValue = inputValue;
             OutputColumn = outputColumn;
         }
+        
+        public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
+        {
+            fillerRow[InputOrdinal] = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];   
+        }
+
 
     }
 }

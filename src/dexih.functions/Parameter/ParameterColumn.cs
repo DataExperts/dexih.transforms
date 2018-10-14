@@ -22,17 +22,21 @@ namespace dexih.functions.Parameter
         {
             Name = name;
             DataType = column.DataType;
+            Rank = column.Rank;
             Column = column;
+            
         }
         
         public ParameterColumn(
             string name, 
             DataType.ETypeCode dataType,
+            int rank,
             TableColumn column
         )
         {
             Name = name;
             DataType = dataType;
+            Rank = rank;
             Column = column;
         }
 

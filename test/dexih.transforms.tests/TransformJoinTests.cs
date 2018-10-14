@@ -235,7 +235,7 @@ namespace dexih.transforms.tests
             var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort> { new Sort("StringColumn") });
             
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, Transform.EDuplicateStrategy.First, new TableColumn("LookupValue", ETypeCode.String, "Join"), "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, Transform.EDuplicateStrategy.First, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
 
             // var transformJoin = new TransformJoin(source, sortedJoinData, new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.First, new TableColumn("LookupValue", ETypeCode.String, "Join"), "Join");
             Assert.Equal(9, transformJoin.FieldCount);
@@ -265,7 +265,7 @@ namespace dexih.transforms.tests
             var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort> { new Sort("StringColumn") });
             
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, Transform.EDuplicateStrategy.Last, new TableColumn("LookupValue", ETypeCode.String, "Join"), "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, Transform.EDuplicateStrategy.Last, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
 
 //            var transformJoin = new TransformJoin(source, sortedJoinData, new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, Transform.EDuplicateStrategy.Last, new TableColumn("LookupValue", ETypeCode.String, "Join"), "Join");
             Assert.Equal(9, transformJoin.FieldCount);
@@ -299,9 +299,9 @@ namespace dexih.transforms.tests
             var mappings = new Mappings
             {
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
-                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, "Join"), true )
+                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: "Join"), true )
             };
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, Transform.EDuplicateStrategy.Abend, new TableColumn("LookupValue", ETypeCode.String, "Join"), "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, Transform.EDuplicateStrategy.Abend, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
 
 //            var transformJoin = new TransformJoin(source, sortedJoinData, new List<Join>
 //            {
@@ -336,9 +336,9 @@ namespace dexih.transforms.tests
             var mappings = new Mappings
             {
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
-                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, "Join"), true )
+                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: "Join"), true )
             };
-            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, Transform.EDuplicateStrategy.Abend, new TableColumn("LookupValue", ETypeCode.String, "Join"), "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, Transform.EDuplicateStrategy.Abend, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
 
 //            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), new List<Join>
 //            {
@@ -426,7 +426,7 @@ namespace dexih.transforms.tests
                         Inputs = new List<Parameter>()
                         {
                             new ParameterColumn("IntColumn", ETypeCode.Int32),
-                            new ParameterJoinColumn("Join", new TableColumn("IntColumn", ETypeCode.Int32, "Join"))
+                            new ParameterJoinColumn("Join", new TableColumn("IntColumn", ETypeCode.Int32, parentTable: "Join"))
                         }
                     })
             };
@@ -477,7 +477,7 @@ namespace dexih.transforms.tests
                         Inputs = new List<Parameter>()
                         {
                             new ParameterColumn("IntColumn", ETypeCode.Int32),
-                            new ParameterJoinColumn("Join", new TableColumn("IntColumn", ETypeCode.Int32, "Join"))
+                            new ParameterJoinColumn("Join", new TableColumn("IntColumn", ETypeCode.Int32, parentTable: "Join"))
                         }
                     })
             };

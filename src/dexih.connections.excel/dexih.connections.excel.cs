@@ -12,6 +12,7 @@ using OfficeOpenXml.FormulaParsing.Utilities;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using Newtonsoft.Json;
 
 namespace dexih.connections.excel
 {
@@ -44,13 +45,16 @@ namespace dexih.connections.excel
         public override string DefaultDatabaseHelp => "Excel File";
         public override bool AllowNtAuth => false;
         public override bool AllowUserPass => false;
-        public override bool CanBulkLoad => false;
+        public override bool CanBulkLoad => true;
         public override bool CanSort => false;
         public override bool CanFilter => false;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
         public override bool CanAggregate => false;
 	    public override bool CanUseBinary => false;
+	    public override bool CanUseArray => false;
+	    public override bool CanUseJson => false;
+	    public override bool CanUseCharArray => false;
 	    public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
 
@@ -91,6 +95,17 @@ namespace dexih.connections.excel
 				    return Dexih.Utils.DataType.DataType.GetDataTypeMinValue(typeCode);
 		    }
 		    
+	    }
+	    
+	    public object ConvertParameterType(object value)
+	    {
+		    if (value == null)
+			    return DBNull.Value;
+
+		    if (value.GetType().IsArray)
+			    return JsonConvert.SerializeObject(value);
+            
+		    return value;
 	    }
 	    
         public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
@@ -355,7 +370,7 @@ namespace dexih.connections.excel
                                             {
                                                 throw new ConnectionException($"The column {updateColumn.Column.Name} could not be found on the worksheet {table.Name} was not found.");
                                             }
-                                            worksheet.SetValue(row, columnMappings[updateColumn.Column.Name], updateColumn.Value);
+                                            worksheet.SetValue(row, columnMappings[updateColumn.Column.Name], ConvertParameterType(updateColumn.Value));
                                         }
                                     }
                                 }
@@ -487,7 +502,14 @@ namespace dexih.connections.excel
 		    {
                 try
                 {
-                    parsedValue = TryParse(column.DataType, value, column.MaxLength);
+	                if (column.IsArray())
+	                {
+		                parsedValue = TryParse(ETypeCode.String, value, column.MaxLength);
+	                }
+	                else
+	                {
+		                parsedValue = TryParse(column.DataType, value, column.MaxLength);
+	                }
                 }
                 catch (Exception ex)
                 {
@@ -582,7 +604,7 @@ namespace dexih.connections.excel
                             {
                                 throw new ConnectionException($"The column with the name ${column.Column.Name} could not be found.");
                             }
-                            worksheet.SetValue(row, columnMappings[column.Column.Name], column.Value);
+                            worksheet.SetValue(row, columnMappings[column.Column.Name], ConvertParameterType(column.Value));
                         }
                         rowsInserted++;
                         row++;
@@ -706,7 +728,7 @@ namespace dexih.connections.excel
 
                         foreach (var mapping in columnMappings)
                         {
-                            worksheet.SetValue(row, mapping.Value, reader[mapping.Key]);
+                            worksheet.SetValue(row, mapping.Value, ConvertParameterType(reader[mapping.Key]));
                         }
 
                         row++;
@@ -721,7 +743,7 @@ namespace dexih.connections.excel
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Failed chcck the excel file exists for {table.Name}.  {ex.Message}", ex);
+                throw new ConnectionException($"Failed check the excel file exists for {table.Name}.  {ex.Message}", ex);
             }
         }
 
@@ -748,7 +770,7 @@ namespace dexih.connections.excel
             }
             catch(Exception ex)
             {
-                throw new ConnectionException($"Failed chcck the excel file exists for {table.Name}.  {ex.Message}", ex);
+                throw new ConnectionException($"Failed check the excel file exists for {table.Name}.  {ex.Message}", ex);
             }
         }
 

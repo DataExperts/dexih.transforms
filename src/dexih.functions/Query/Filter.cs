@@ -86,9 +86,9 @@ namespace dexih.functions.Query
             if (Value2 == null)
                 CompareDataType = ETypeCode.String;
             else if(Value2.GetType().IsArray)
-                CompareDataType = GetTypeCode(Value2.GetType().GetElementType());
+                CompareDataType = GetTypeCode(Value2.GetType().GetElementType(), out _);
             else
-                CompareDataType = GetTypeCode(Value2.GetType());
+                CompareDataType = GetTypeCode(Value2.GetType(), out _);
         }
 
         public Filter(string columnName1, ECompare operator1, object value2)
@@ -99,9 +99,9 @@ namespace dexih.functions.Query
             if (Value2 == null)
                 CompareDataType = ETypeCode.String;
             else if (Value2.GetType().IsArray)
-                CompareDataType = GetTypeCode(Value2.GetType().GetElementType());
+                CompareDataType = GetTypeCode(Value2.GetType().GetElementType(), out _);
             else
-                CompareDataType = GetTypeCode(Value2.GetType());
+                CompareDataType = GetTypeCode(Value2.GetType(), out _);
 
             Column1 = new TableColumn(columnName1, CompareDataType);
         }

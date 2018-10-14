@@ -11,6 +11,7 @@ using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.CopyProperties;
+using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.sql
@@ -26,6 +27,9 @@ namespace dexih.connections.sql
         public override bool CanUpdate => true;
         public override bool CanAggregate => true;
         public override bool CanUseBinary => true;
+        public override bool CanUseArray => false;
+        public override bool CanUseCharArray => false;
+        public override bool CanUseJson => false;
         public override bool CanUseSql => true;
         public override bool DynamicTableCreation => false;
 
@@ -78,10 +82,7 @@ namespace dexih.connections.sql
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public virtual object ConvertParameterType(object value)
-        {
-            return value;
-        }
+        public abstract object ConvertParameterType(object value);
 
 
         protected DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
@@ -331,12 +332,12 @@ namespace dexih.connections.sql
 
             if (query?.Groups?.Count > 0)
             {
-                sql.Append("group by ");
+                sql.Append(" group by ");
                 sql.Append(string.Join(",", query.Groups.Select(c => AddDelimiter(c.Name)).ToArray()));
             }
             if (query?.Sorts?.Count > 0)
             {
-                sql.Append("order by ");
+                sql.Append(" order by ");
                 sql.Append(string.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.Direction == Sort.EDirection.Descending ? " desc" : "")).ToArray()));
             }
 
@@ -348,7 +349,7 @@ namespace dexih.connections.sql
             if (filters == null || filters.Count == 0)
                 return "";
             var sql = new StringBuilder();
-            sql.Append("where ");
+            sql.Append(" where ");
 
             foreach (var filter in filters)
             {
@@ -643,7 +644,8 @@ namespace dexih.connections.sql
                         {
                             Name = reader.GetName(i),
                             LogicalName = reader.GetName(i),
-                            DataType = GetTypeCode(reader.GetFieldType(i)),
+                            DataType = GetTypeCode(reader.GetFieldType(i), out var rank),
+                            Rank = rank,
                             DeltaType = TableColumn.EDeltaType.TrackingField
                         };
                         newTable.Columns.Add(col);

@@ -433,26 +433,18 @@ namespace dexih.functions
             return table;
         }
 
-        public void AddColumn(string columnName, ETypeCode dataType = ETypeCode.String)
+        public void AddColumn(string columnName, ETypeCode dataType = ETypeCode.String, TableColumn.EDeltaType deltaType = TableColumn.EDeltaType.TrackingField, byte arrayDimensions = 0)
         {
             if (Columns == null)
                 Columns = new TableColumns();
 
-            Columns.Add(new TableColumn(columnName, dataType, Name));
-        }
-
-        public void AddColumn(string columnName, ETypeCode dataType = ETypeCode.String, TableColumn.EDeltaType deltaType = TableColumn.EDeltaType.TrackingField)
-        {
-            if (Columns == null)
-                Columns = new TableColumns();
-
-            Columns.Add(new TableColumn(columnName, dataType, deltaType, Name));
+            Columns.Add(new TableColumn(columnName, dataType, deltaType, arrayDimensions, Name));
         }
 
         public void AddRow(params object[] values)
         {
             if (values.Length != Columns.Count())
-                throw new Exception("The number of parameters must match the number of columns (" + Columns.Count + ") precicely.");
+                throw new Exception("The number of parameters must match the number of columns (" + Columns.Count + ") precisely.");
 
             var row = new object[Columns.Count];
             values.CopyTo(row, 0);

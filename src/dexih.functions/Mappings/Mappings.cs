@@ -45,6 +45,9 @@ namespace dexih.functions.Mappings
         private Dictionary<int, int> _referencePassthroughOrdinals;
 
         private object[] _rowData;
+        
+        // empty function variables, so save recreating.
+        private FunctionVariables _functionVariables = new FunctionVariables();
 
         public Table Initialize(Table inputTable, Table joinTable = null, string joinTableAlias = null)
         {
@@ -91,14 +94,14 @@ namespace dexih.functions.Mappings
                         newColumn.ReferenceTable = joinTableAlias;
                         newColumn.IsIncrementalUpdate = false;
 
-                        var ordinal = table.GetOrdinal(newColumn.TableColumnName());
-                        if (ordinal < 0)
-                        {
+//                        var ordinal = table.GetOrdinal(newColumn.TableColumnName());
+//                        if (ordinal < 0)
+//                        {
                             targetOrdinal++;
                             table.Columns.Add(newColumn);
                             _referencePassthroughColumns.Add(newColumn);
                             _referencePassthroughOrdinals.Add(i, targetOrdinal);
-                        }
+//                        }
                     }
                 }
             }
@@ -254,12 +257,12 @@ namespace dexih.functions.Mappings
 
         public bool ProcessInputData(object[] row)
         {
-            return ProcessInputData(new FunctionVariables(), row, null);
+            return ProcessInputData(_functionVariables, row, null);
         }
 
         public bool ProcessInputData(object[] row, object[] joinRow)
         {
-            return ProcessInputData(new FunctionVariables(), row, joinRow);
+            return ProcessInputData(_functionVariables, row, joinRow);
         }
 
         /// <summary>

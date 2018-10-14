@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
+using Dexih.Utils.Crypto;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
@@ -20,15 +25,45 @@ namespace dexih.functions
         Execute
     }
 
+	public class TransformParameter
+	{
+		public string Name { get; set; }
+		public bool IsOut { get; set; }
+		public Type ParameterType { get; set; }
+		public TransformFunctionVariableAttribute Variable { get; set; }
+	}
+
+	/// <summary>
+	/// Stores required method information for use during invoke.
+	/// </summary>
+	public class TransformMethod
+	{
+		public MethodInfo MethodInfo { get; set; }
+		public TransformParameter[] ParameterInfo { get; set; }
+
+		public TransformMethod(MethodInfo methodInfo)
+		{
+			MethodInfo = methodInfo;
+			ParameterInfo = methodInfo.GetParameters().Select(p => new TransformParameter()
+			{
+				Name =  p.Name,
+				IsOut = p.IsOut,
+				ParameterType = p.ParameterType,
+				Variable = p.GetCustomAttribute<TransformFunctionVariableAttribute>()
+			}).ToArray();
+			
+		}
+	}
+
 	/// <summary>
 	/// The function class is used by transforms to run functions for conditions, mappings, and aggregations.
 	/// </summary>
 	public class TransformFunction
 	{
-		public MethodInfo FunctionMethod { get; set; }
-		public MethodInfo ResetMethod { get; set; }
-		public MethodInfo ResultMethod { get; set; }
-		public MethodInfo ImportMethod { get; set; }
+		public TransformMethod FunctionMethod { get; set; }
+		public TransformMethod ResetMethod { get; set; }
+		public TransformMethod ResultMethod { get; set; }
+		public TransformMethod ImportMethod { get; set; }
 		public object ObjectReference { get; set; }
 		
 		public EFunctionType FunctionType { get; set; }
@@ -116,7 +151,7 @@ namespace dexih.functions
 
 		private void Initialize(object target, MethodInfo functionMethod, Parameters parameters, GlobalVariables globalVariables)
 		{
-			FunctionMethod = functionMethod;
+			FunctionMethod = new TransformMethod(functionMethod);
 			GlobalVariables = globalVariables;
 
 			var attribute = functionMethod.GetCustomAttribute<TransformFunctionAttribute>();
@@ -129,15 +164,15 @@ namespace dexih.functions
 
 				ResetMethod = string.IsNullOrEmpty(attribute.ResetMethod)
 					? null
-					: targetType.GetMethod(attribute.ResetMethod);
+					: new TransformMethod(targetType.GetMethod(attribute.ResetMethod));
 
 				ResultMethod = string.IsNullOrEmpty(attribute.ResultMethod)
 					? null
-					: targetType.GetMethod(attribute.ResultMethod);
+					:  new TransformMethod(targetType.GetMethod(attribute.ResultMethod));
 				
 				ImportMethod = string.IsNullOrEmpty(attribute.ImportMethod)
 					? null
-					: targetType.GetMethod(attribute.ImportMethod);
+					:  new TransformMethod(targetType.GetMethod(attribute.ImportMethod));
 
 				GeneratesRows = attribute.GeneratesRows;
 			}
@@ -163,7 +198,7 @@ namespace dexih.functions
 		{
 		}
 
-		private (object[] parameters, int outputPos) SetParameters(ParameterInfo[] functionParameters, FunctionVariables functionVariables, object[] inputParameters)
+		private (object[] parameters, int outputPos) SetParameters(TransformParameter[] functionParameters, FunctionVariables functionVariables, object[] inputParameters)
 		{
 			var parameters = new object[functionParameters.Length];
 			var outputPos = -1;
@@ -184,7 +219,8 @@ namespace dexih.functions
 					continue;
 				}
 				
-				var variable = functionParameters[pos].GetCustomAttribute<TransformFunctionVariableAttribute>();
+				var variable = functionParameters[pos].Variable;
+				
 				if (variable is null)
 				{
 					if (functionParameters[pos].ParameterType.IsEnum)
@@ -200,7 +236,14 @@ namespace dexih.functions
 					}
 					else
 					{
-						parameters[pos] = inputParameters[inputPosition];	
+//						if (inputParameters[inputPosition] is DataValue dataValue)
+//						{
+//							parameters[pos] = dataValue.Value;
+//						}
+//						else
+//						{
+							parameters[pos] = inputParameters[inputPosition];
+//						}
 					}
 
 					pos++;
@@ -246,11 +289,11 @@ namespace dexih.functions
 			return Invoke(ResultMethod, functionVariables, inputParameters, out outputs);
 		}
 
-		private object Invoke(MethodInfo methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		private object Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
-			var parameters = SetParameters(methodInfo.GetParameters(), functionVariables, inputParameters);
+			var parameters = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
 			
-			_returnValue = methodInfo.Invoke(ObjectReference, parameters.parameters);
+			_returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters.parameters);
 
 			if (parameters.outputPos >= 0)
 			{
@@ -268,10 +311,7 @@ namespace dexih.functions
         {
             try
             {
-                if (ResetMethod != null)
-                {
-                    ResetMethod.Invoke(ObjectReference, null);
-                }
+	            ResetMethod?.MethodInfo.Invoke(ObjectReference, null);
             }
             catch(Exception ex)
             {
@@ -285,7 +325,7 @@ namespace dexih.functions
 		    {
 			    if (ImportMethod != null)
 			    {
-				    return (string[]) ImportMethod.Invoke(ObjectReference, values);
+				    return (string[]) ImportMethod.MethodInfo.Invoke(ObjectReference, values);
 			    }
 			    
 			    throw new FunctionException($"There is no import function for {FunctionName}.");

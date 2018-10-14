@@ -34,7 +34,9 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), true ),
                     new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Double), 1.1 ),
                     new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1m ),
-                    new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() )
+                    new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() ),
+                    new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Array), new [] {1,1} ),
+                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Matrix), new [] {new [] {1,1}, new [] {2,2}} )
             });
 
             await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
@@ -47,7 +49,9 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
                     new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Double), 1.1 ),
                     new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.2m ),
-                    new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() )
+                    new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() ),
+                    new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Array), new [] {1,1} ),
+                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Matrix), new [] {new [] {1,1}, new [] {2,2}} )
             });
 
             await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
@@ -188,7 +192,7 @@ namespace dexih.connections.test
             {
                 await connection.TruncateTable(table, CancellationToken.None);
 
-                //start a datawriter and insert the test data
+                //start a data writer and insert the test data
                 await connection.DataWriterStart(table);
                 var testData = DataSets.CreateTestData();
 
@@ -208,7 +212,7 @@ namespace dexih.connections.test
                     Assert.True(filemoveResult);
                 }
 
-                //check the table loaded 10 rows successully
+                // check the table loaded 10 rows successfully
                 Transform reader = connection.GetTransformReader(table, true);
                 int count = 0;
                 var openResult = await reader.Open(0, null, CancellationToken.None);
@@ -229,22 +233,16 @@ namespace dexih.connections.test
                 //should return value5
                 var reader = connection.GetTransformReader(table, true);
 
-//                if (reader.CanLookupRowDirect)
-//                {
-                    // var openResult = await reader.Open(0, null, CancellationToken.None);
-                    // Assert.True(openResult, "Open Reader");
+                var returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+                Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "LookupValue :" + returnLookup.First()[0]);
 
-                    var returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
-                    Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "LookupValue :" + returnLookup.First()[0]);
-
-                    //run lookup again with caching set.
-                    reader = connection.GetTransformReader(table);
-                    // var openResult = await reader.Open(0, null, CancellationToken.None);
-                    // Assert.True(openResult, "Open Reader");
-                    reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
-                    returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
-                    Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "Select count - value :" + returnLookup.First()[0]);
-                // }
+                //run lookup again with caching set.
+                reader = connection.GetTransformReader(table);
+                // var openResult = await reader.Open(0, null, CancellationToken.None);
+                // Assert.True(openResult, "Open Reader");
+                reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+                returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+                Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "Select count - value :" + returnLookup.First()[0]);
 
                 reader.Close();
             }

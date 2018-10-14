@@ -12,6 +12,7 @@ using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.sql
@@ -46,20 +47,14 @@ namespace dexih.connections.sql
         protected override string SqlDelimiterOpen { get; } = "`";
         protected override string SqlDelimiterClose { get; } = "`";
 
-//		public override object ConvertParameterType(object value)
-//		{
-//            switch (value)
-//            {
-//                case UInt16 uint16:
-//                    return (Int32)uint16;
-//                case UInt32 uint32:
-//                    return (Int64)uint32;
-//				case UInt64 uint64:
-//					return (Int64)uint64;
-//				default:
-//                    return value;
-//            }
-//		}
+        public override object ConvertParameterType(object value)
+        {
+            if (value.GetType().IsArray)
+            {
+                return JsonConvert.SerializeObject(value);
+            }
+            return value;
+        }
         
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
@@ -134,7 +129,7 @@ namespace dexih.connections.sql
 
                             for (var i = 0; i < fieldCount; i++)
                             {
-                                row.Append(GetSqlFieldValueQuote(table.Columns[i].DataType, reader[i]) +
+                                row.Append(GetSqlFieldValueQuote(table.Columns[i].DataType, ConvertParameterType(reader[i])) +
                                            (i < fieldCount - 1 ? "," : ")"));
                             }
 

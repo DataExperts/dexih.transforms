@@ -17,6 +17,8 @@ using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.Crypto;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
+using Newtonsoft.Json.Linq;
 
 namespace dexih.transforms
 {
@@ -106,6 +108,13 @@ namespace dexih.transforms
         public bool IsReader { get; set; } = true;
 
         public long AuditKey { get; set; }
+
+        // if true, any values which are of type "DataValue" will be converted to their json string.
+        public bool ConvertArrayToString { get; set; } = false;
+        public bool ConvertJsonToString { get; set; } = false;
+        public bool ConvertBinaryToString { get; set; } = false;
+        public bool ConvertComplexToString { get; set; } = false;
+        public bool ConvertCharArrayToString { get; set; } = false;
 
         #endregion
 
@@ -618,7 +627,7 @@ namespace dexih.transforms
         /// <returns></returns>
         public bool Reset()
         {
-            if (!_isResetting) //stops recursive looops where intertwinned transforms are resetting each other
+            if (!_isResetting) //stops recursive loops where intertwined transforms are resetting each other
             {
                 _isResetting = true;
 
@@ -667,7 +676,7 @@ namespace dexih.transforms
             return false;
         }
 
-        //Set the reader to a specific row.  If the rows has exceeded MaxRows this will only start from the beginning of the cache.   A read() is required folowing this to get data.
+        //Set the reader to a specific row.  If the rows has exceeded MaxRows this will only start from the beginning of the cache.   A read() is required following this to get data.
         public void SetRowNumber(int rowNumber = 0)
         {
             if (rowNumber <= CacheTable.Data.Count)
@@ -1249,6 +1258,15 @@ namespace dexih.transforms
         {
             if (i < CurrentRow.Length)
             {
+                if ((ConvertArrayToString && DataType.IsArray(CurrentRow[i].GetType())) ||
+                    (ConvertComplexToString && !DataType.IsSimple(CurrentRow[i].GetType()) ||
+                     (ConvertJsonToString && CurrentRow[i] is JToken)) ||
+                    (ConvertBinaryToString && CurrentRow[i] is byte[]) ||
+                    (ConvertCharArrayToString && CurrentRow[i] is char[])
+                    )
+                {
+                    return DataType.ToString(CurrentRow[i]);
+                }
                 return CurrentRow[i];
             }
 
@@ -1267,7 +1285,7 @@ namespace dexih.transforms
 
             for (var i = 0; i < values.GetLength(0); i++)
             {
-                values[i] = CurrentRow[i];
+                values[i] = GetValue(i);
             }
 
             return values.GetLength(0);

@@ -98,7 +98,25 @@ namespace dexih.connections.sql
                     {
                         try
                         {
-                            row[_fieldOrdinals[i]] = DataType.TryParse(CacheTable.Columns[_fieldOrdinals[i]].DataType, _sqlReader[i]);
+                            var column = CacheTable.Columns[_fieldOrdinals[i]];
+//                            if (column.IsArray())
+//                            {
+//                                var value = _sqlReader[i];
+//                                if (value is string valueString)
+//                                {
+//                                    row[_fieldOrdinals[i]] = new DataValue(column.DataType, column.Rank, valueString);
+//                                }
+//                                else
+//                                {
+//                                    row[_fieldOrdinals[i]] = new DataValue(column.DataType, column.Rank, _sqlReader[i]);
+//                                    
+//                                }
+//                                
+//                            }
+//                            else
+//                            {
+                                row[_fieldOrdinals[i]] = DataType.TryParse(column.DataType, _sqlReader[i]);    
+//                            }
                         }
                         catch (Exception ex)
                         {
@@ -106,7 +124,6 @@ namespace dexih.connections.sql
                                 $"The value on column {CacheTable.Columns[_fieldOrdinals[i]].Name} could not be converted to {CacheTable.Columns[_fieldOrdinals[i]].DataType}.  {ex.Message}",
                                 ex, _sqlReader[i]);
                         }
-
                     }
 
                     return row;

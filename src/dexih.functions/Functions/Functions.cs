@@ -81,6 +81,23 @@ namespace dexih.functions
             return function;
         }
 
+        private static DataType.ETypeCode? GetElementType(Type p, out int rank)
+        {
+            if (p == typeof(void))
+            {
+                rank = 0;
+                return null;
+            }
+            
+            return DataType.GetTypeCode(p, out rank);   
+        }
+//
+//        private static int GetRank(Type p)
+//        {
+//            if (typeof(void) == p) return 0;
+//            return p.IsArray ? p.GetArrayRank() : 0;
+//        }
+
         public static FunctionReference GetFunction(Type type, MethodInfo method)
         {
             var attribute = method.GetCustomAttribute<TransformFunctionAttribute>();
@@ -108,7 +125,8 @@ namespace dexih.functions
                     Compare = compareAttribute?.Compare,
                     FunctionClassName = type.FullName,
                     
-                    ReturnType = method.ReturnType == typeof(void) ? (DataType.ETypeCode?) null : DataType.GetTypeCode(method.ReturnType),
+                    ReturnType = GetElementType(method.ReturnType, out var returnRank),
+                    ReturnRank = returnRank,
                     InputParameters = method.GetParameters().Where(c =>
                     {
                         var variable = c.GetCustomAttribute<TransformFunctionVariableAttribute>();
@@ -121,9 +139,9 @@ namespace dexih.functions
                             ParameterName = p.Name,
                             Name = paramAttribute?.Name?? p.Name,
                             Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType.IsArray ? p.ParameterType.GetElementType() : p.ParameterType),
-                            IsArray = p.ParameterType.IsArray,
-                            TwinParameterName = paramAttribute?.TwinParameterName,
+                            DataType = DataType.GetTypeCode(p.ParameterType, out var paramRank),
+                            Rank = paramRank,
+                            IsTwin = p.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
                             ListOfValues = EnumValues(p),
                             DefaultValue = DefaultValue(p)
                         };
@@ -136,13 +154,15 @@ namespace dexih.functions
                             ParameterName = p.Name,
                             Name = paramAttribute?.Name?? p.Name,
                             Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType.GetElementType().IsArray ? p.ParameterType.GetElementType().GetElementType() : p.ParameterType.GetElementType()),
-                            IsArray = p.ParameterType.GetElementType().IsArray,
-                            TwinParameterName = paramAttribute?.TwinParameterName,
+                            DataType = DataType.GetTypeCode(p.ParameterType, out var outParamRank),
+                            Rank = outParamRank,
+                            IsTwin = p.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
                             ListOfValues = EnumValues(p)
                         };
                     }).ToArray(),
-                    ResultReturnType = (resultMethod == null ||resultMethod.ReturnType == typeof(void)) ? (DataType.ETypeCode?) null :  DataType.GetTypeCode(resultMethod.ReturnType),
+                    ResultReturnType = GetElementType(method.ReturnType, out var resultRank),
+                    ResultReturnRank = resultRank,
+
                     ResultInputParameters = resultMethod?.GetParameters().Where(c =>
                     {
                         var variable = c.GetCustomAttribute<TransformFunctionVariableAttribute>();
@@ -155,9 +175,9 @@ namespace dexih.functions
                             ParameterName = p.Name,
                             Name = paramAttribute?.Name?? p.Name,
                             Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType.IsArray ? p.ParameterType.GetElementType() : p.ParameterType),
-                            IsArray = p.ParameterType.IsArray,
-                            TwinParameterName = paramAttribute?.TwinParameterName,
+                            DataType = DataType.GetTypeCode(p.ParameterType, out var paramRank),
+                            Rank = paramRank,
+                            IsTwin = p.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
                             ListOfValues = EnumValues(p),
                             DefaultValue = DefaultValue(p)
                         };
@@ -170,9 +190,9 @@ namespace dexih.functions
                             ParameterName = p.Name,
                             Name = paramAttribute?.Name?? p.Name,
                             Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType.GetElementType().IsArray ? p.ParameterType.GetElementType().GetElementType() : p.ParameterType.GetElementType()),
-                            IsArray = p.ParameterType.GetElementType().IsArray,
-                            TwinParameterName = paramAttribute?.TwinParameterName,
+                            DataType = DataType.GetTypeCode(p.ParameterType, out var paramRank),
+                            Rank = paramRank,
+                            IsTwin = p.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
                             ListOfValues = EnumValues(p)
                         };
                     }).ToArray(),

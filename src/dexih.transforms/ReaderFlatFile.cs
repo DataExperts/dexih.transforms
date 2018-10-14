@@ -50,7 +50,7 @@ namespace dexih.transforms
                         break;
                     default:
                         throw new ConnectionException(
-                            $"The format type ${table.FormatType} is not currently supported.");
+                            $"The format type {table.FormatType} is not currently supported.");
             }
             
             _fileNameOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileName);
@@ -194,7 +194,7 @@ namespace dexih.transforms
                         }
                         if (row == null)
                         {
-                            return await ReadRecord(cancellationToken); // this creates a recurive loop to cater for empty files.
+                            return await ReadRecord(cancellationToken); // this creates a recursive loop to cater for empty files.
                         }
                     }
                 }

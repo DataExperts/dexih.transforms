@@ -73,7 +73,8 @@ namespace dexih.transforms
                     var column = new TableColumn
                     {
                         Name = columnDetail.ColumnName,
-                        DataType = Dexih.Utils.DataType.DataType.GetTypeCode(columnDetail.DataType),
+                        DataType = Dexih.Utils.DataType.DataType.GetTypeCode(columnDetail.DataType, out var rank),
+                        Rank = rank,
                         MaxLength = columnDetail.ColumnSize,
                         Scale = columnDetail.NumericScale,
                         Precision = columnDetail.NumericPrecision

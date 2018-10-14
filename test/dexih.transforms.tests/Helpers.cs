@@ -15,19 +15,20 @@ namespace dexih.transforms.tests
                 new TableColumn("IntColumn", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("DecimalColumn", ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("DateColumn", ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
+                new TableColumn("ArrayColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField, TableColumn.EArrayType.Array)
             );
 
-            table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 );
-            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
-            table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8 );
-            table.AddRow("value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7 );
-            table.AddRow("value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6 );
-            table.AddRow("value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5 );
-            table.AddRow("value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4 );
-            table.AddRow("value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3 );
-            table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2 );
-            table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1);
+            table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, new [] {1,1} );
+            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9, new [] {1,1} );
+            table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8, new [] {1,1} );
+            table.AddRow("value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7 , new [] {1,1});
+            table.AddRow("value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6 , new [] {1,1});
+            table.AddRow("value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5, new [] {1,1} );
+            table.AddRow("value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4, new [] {1,1} );
+            table.AddRow("value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3, new [] {1,1} );
+            table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, new [] {1,1} );
+            table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1, new [] {1,1});
 
             var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") } );
             adapter.Reset();

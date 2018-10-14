@@ -70,10 +70,11 @@ namespace dexih.transforms.tests
             mappings.Add(new MapFunction(function, parameters));
 
             mappings.Add(new MapColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)));
+            mappings.Add(new MapColumn(new TableColumn("ArrayColumn", ETypeCode.DateTime), new TableColumn("ArrayColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Array)));
             
             var transformMapping = new TransformMapping(source, mappings);
 
-            Assert.Equal(4, transformMapping.FieldCount);
+            Assert.Equal(5, transformMapping.FieldCount);
 
             var count = 0;
             while (await transformMapping.ReadAsync())
@@ -82,6 +83,7 @@ namespace dexih.transforms.tests
                 Assert.Equal("value" + count.ToString().PadLeft(2, '0') + "123", transformMapping["CustomFunction"]);
                 Assert.Equal("alu", transformMapping["Substring"]);
                 Assert.Equal(Convert.ToDateTime("2015-01-" + count), (DateTime)transformMapping["DateColumn"]);
+                Assert.Equal(new[] {1,1}, transformMapping["ArrayColumn"]);
             }
             Assert.Equal(10, count);
         }
@@ -103,7 +105,7 @@ namespace dexih.transforms.tests
         }
 
         [Theory]
-        [InlineData(100000)] //should run in ~ 250ms
+        [InlineData(100000)] //should run in ~ 115ms
         public async Task MappingPerformanceColumnPairs(int rows)
         {
             var data = Helpers.CreateLargeTable(rows);
@@ -142,6 +144,8 @@ namespace dexih.transforms.tests
                     },
                     ReturnParameter = new ParameterOutputColumn(data.GetName(i), ETypeCode.String)
                 };
+                
+                mappings.Add(new MapFunction(function, parameters));
             }
 
             var transformMapping = new TransformMapping(data, mappings);

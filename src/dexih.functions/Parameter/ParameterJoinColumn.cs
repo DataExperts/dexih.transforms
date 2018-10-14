@@ -22,13 +22,15 @@ namespace dexih.functions.Parameter
         {
             Name = name;
             DataType = column.DataType;
+            Rank = column.Rank;
             Column = column;
         }
 
-        public ParameterJoinColumn(string columName, DataType.ETypeCode dataType)
+        public ParameterJoinColumn(string columName, DataType.ETypeCode dataType, int rank)
         {
             Name = columName;
             DataType = dataType;
+            Rank = rank;
             Column = new TableColumn(columName, dataType);
         }
 

@@ -38,25 +38,26 @@ namespace dexih.transforms.Poco
                 var field = propertyInfo.GetCustomAttribute<PocoColumnAttribute>(false) ?? new PocoColumnAttribute(propertyInfo.Name);
 
                 // no attributes, then just create a columns with the same name as the property.
-                if(field == null)
-                {
-                    var column = new TableColumn(propertyInfo.Name)
-                    {
-                        DeltaType = TableColumn.EDeltaType.TrackingField,
-                        DataType = Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType)
-                    };
-
-                    table.Columns.Add(column);
-                    mappings.Add(new PocoTableMapping(propertyInfo, position, false));
-                    position++; 
-                }
-                else if (field.DeltaType != TableColumn.EDeltaType.IgnoreField && !field.Skip)
+//                if(field == null)
+//                {
+//                    var column = new TableColumn(propertyInfo.Name)
+//                    {
+//                        DeltaType = TableColumn.EDeltaType.TrackingField,
+//                        DataType = Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType)
+//                    };
+//
+//                    table.Columns.Add(column);
+//                    mappings.Add(new PocoTableMapping(propertyInfo, position, false));
+//                    position++; 
+//                }
+//                else 
+                if (field.DeltaType != TableColumn.EDeltaType.IgnoreField && !field.Skip)
                 {
                     var column = new TableColumn()
                     {
                         Name = string.IsNullOrEmpty(field.Name) ? propertyInfo.Name : field.Name,
                         DeltaType = field.DeltaType,
-                        DataType = field.DataType == ETypeCode.Unknown ? Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType) : field.DataType,
+                        DataType = field.DataType == ETypeCode.Unknown ? DataType.GetTypeCode(propertyInfo.PropertyType, out _) : field.DataType,
                         AllowDbNull = Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null || field.AllowDbNull,
                         MaxLength = field.MaxLength >= 0 ? (int?)field.MaxLength : null,
                         Precision = field.Precision >= 0 ? (int?)field.Precision : null,

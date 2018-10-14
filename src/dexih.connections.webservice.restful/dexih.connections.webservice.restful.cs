@@ -49,6 +49,9 @@ namespace dexih.connections.webservice
         public override bool CanUpdate => false;
         public override bool CanAggregate => false;
         public override bool CanUseBinary => false;
+	    public override bool CanUseArray => false;
+	    public override bool CanUseJson => true;
+	    public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
 

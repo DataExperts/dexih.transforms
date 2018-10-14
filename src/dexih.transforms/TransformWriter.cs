@@ -88,6 +88,12 @@ namespace dexih.transforms
             _cancellationToken = cancellationToken;
             _targetConnection = targetConnection;
 
+
+            inTransform.ConvertArrayToString = !targetConnection.CanUseArray;
+            inTransform.ConvertJsonToString = !targetConnection.CanUseJson;
+            inTransform.ConvertBinaryToString = !targetConnection.CanUseBinary;
+            inTransform.ConvertCharArrayToString = !targetConnection.CanUseCharArray;
+            
             if (rejectConnection == null)
                 _rejectConnection = targetConnection;
             else

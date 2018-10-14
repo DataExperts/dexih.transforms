@@ -58,6 +58,8 @@ namespace dexih.functions.Parameter
         [JsonConverter(typeof(StringEnumConverter))]
         public ETypeCode DataType { get; set; }
         
+        public int Rank { get; set; }
+        
         public virtual object Value { get; set; }
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace dexih.functions.Parameter
             }
             else
             {
-                var result = TryParse(DataType, input);
+                var result = TryParse(DataType, Rank, input);
                 Value = result;
             }
         }

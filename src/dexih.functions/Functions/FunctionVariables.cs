@@ -21,13 +21,10 @@ namespace dexih.functions
             {
                 case EFunctionVariable.Index:
                     return Index;
-                    break;
                 case EFunctionVariable.SeriesValue:
                     return SeriesValue;
-                    break;
                 case EFunctionVariable.Forecast:
                     return Forecast;
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(functionVariable), functionVariable, null);
             }

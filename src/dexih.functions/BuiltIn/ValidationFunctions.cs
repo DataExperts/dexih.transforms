@@ -40,6 +40,33 @@ namespace dexih.functions.BuiltIn
             return true;
         }
         
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Set Value to Null", Description = "Replaces the specified value with null.")]
+        public bool SetValueToNull(object value, object checkValue, out object adjustedValue)
+        {
+            if (value == checkValue)
+            {
+                adjustedValue = null;
+                return false;
+            }
+
+            adjustedValue = value;
+            return true;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Set Value to Default", Description = "Replaces the specified value with another value.")]
+        public bool SetValueToDefault(object value, object checkValue, object defaultValue, out object adjustedValue)
+        {
+            if (value == checkValue)
+            {
+                adjustedValue = defaultValue;
+                return false;
+            }
+
+            adjustedValue = value;
+            return true;
+        }
+
+        
         [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Maximum Length", Description = "Checks if the string exceeds the length, and trims the string when true.")]
         public bool MaxLength(string value, int maxLength, out string trimmedValue)
         {

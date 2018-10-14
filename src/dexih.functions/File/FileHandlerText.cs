@@ -21,7 +21,37 @@ namespace dexih.functions.File
         private readonly int _fileRowNumberOrdinal;
         private readonly int _responseDataOrdinal;
 
-        private Dictionary<int, (int position, Type dataType)> _csvOrdinalMappings;
+        private struct CsvField
+        {
+            public DataType.ETypeCode TypeCode { get; set; }
+            public int Position { get; set; }
+            public Type DataType { get; set; }
+
+            public CsvField(int position, DataType.ETypeCode typeCode, bool isArray)
+            {
+                Position = position;
+                TypeCode = typeCode;
+
+                if (isArray
+                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Binary
+                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Byte
+                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Char
+                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Guid
+                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Json
+                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Unknown
+                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Xml)
+                {
+                    DataType = typeof(string);
+                }
+                else
+                {
+                    DataType = Dexih.Utils.DataType.DataType.GetType(typeCode);    
+                }
+                
+            }
+        }
+        
+        private Dictionary<int, CsvField> _csvOrdinalMappings;
 
         private int _currentFileRowNumber;
 
@@ -29,13 +59,22 @@ namespace dexih.functions.File
         public FileHandlerText(Table table, FileConfiguration fileConfiguration)
         {
             _table = table;
-            _fileConfiguration = fileConfiguration;
+
+            if (fileConfiguration == null)
+            {
+                _fileConfiguration = new FileConfiguration();
+            }
+            else
+            {
+                _fileConfiguration = fileConfiguration;
+                _fileConfiguration.Delimiter = _fileConfiguration.Delimiter.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\r", "\r");
+            }
+            
             
             _fileRowNumberOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileRowNumber);
             _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
-
-           
         }
+
         public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream stream)
         {
             var streamReader = new StreamReader(stream);
@@ -60,7 +99,7 @@ namespace dexih.functions.File
                 }
                 catch (Exception ex)
                 {
-                    throw new FileHandlerException($"Error occurred opening the filestream: {ex.Message}", ex);
+                    throw new FileHandlerException($"Error occurred opening the file stream: {ex.Message}", ex);
                 }
             }
             else
@@ -126,13 +165,13 @@ namespace dexih.functions.File
                 }
 
                 _csvReader = new CsvReader(streamReader, _fileConfiguration);
-            } 
+            }
             else 
             {
                 _csvReader = new CsvReader(streamReader);
             }
             
-            _csvOrdinalMappings = new Dictionary<int, (int position, Type dataType)>();
+            _csvOrdinalMappings = new Dictionary<int,CsvField>();
 
             // create mappings from column name positions, to the csv field name positions.
             if(_fileConfiguration != null && ( _fileConfiguration.MatchHeaderRecord || !_fileConfiguration.HasHeaderRecord))
@@ -149,7 +188,7 @@ namespace dexih.functions.File
                         {
                             if (_csvReader.Context.HeaderRecord[csvPos] == column.Name)
                             {
-                                _csvOrdinalMappings.Add(col, (csvPos, DataType.GetType(column.DataType)));
+                                _csvOrdinalMappings.Add(col, new CsvField(csvPos, column.DataType, column.Rank > 0));
                                 break;
                             }
                         }
@@ -164,7 +203,7 @@ namespace dexih.functions.File
                     var column = _table.Columns[col];
                     if (column.DeltaType != TableColumn.EDeltaType.FileName && column.DeltaType != TableColumn.EDeltaType.FileRowNumber)
                     {
-                        _csvOrdinalMappings.Add(col, (col, DataType.GetType(column.DataType)));
+                        _csvOrdinalMappings.Add(col, new CsvField(col, column.DataType, column.Rank > 0));
                     }
                 }
             }
@@ -173,39 +212,49 @@ namespace dexih.functions.File
 
         public override async Task<object[]> GetRow(object[] baseRow)
         {
-            while (_csvReader != null && await _csvReader.ReadAsync())
+            try
             {
-                var row = new object[baseRow.Length];
-                Array.Copy(baseRow, row, baseRow.Length);
-                
-                if (_responseDataOrdinal >= 0)
+                while (_csvReader != null && await _csvReader.ReadAsync())
                 {
-                    row[_responseDataOrdinal] = _csvReader.Context.RawRecord;
-                }
+                    var row = new object[baseRow.Length];
+                    Array.Copy(baseRow, row, baseRow.Length);
 
-                _currentFileRowNumber++;
-
-                foreach (var colPos in _csvOrdinalMappings.Keys)
-                {
-                    var mapping = _csvOrdinalMappings[colPos];
-                    row[colPos] = _csvReader.GetField(mapping.dataType, mapping.position);
-                    if (_fileConfiguration.SetWhiteSpaceCellsToNull && row[colPos] is string && string.IsNullOrWhiteSpace((string)row[colPos]))
+                    if (_responseDataOrdinal >= 0)
                     {
-                        row[colPos] = null;
+                        row[_responseDataOrdinal] = _csvReader.Context.RawRecord;
+                    }
+
+                    _currentFileRowNumber++;
+
+                    foreach (var colPos in _csvOrdinalMappings.Keys)
+                    {
+                        var mapping = _csvOrdinalMappings[colPos];
+                        var value = _csvReader.GetField(mapping.DataType, mapping.Position);
+                        row[colPos] = DataType.TryParse(mapping.TypeCode, value);
+                        
+                        if (_fileConfiguration.SetWhiteSpaceCellsToNull && row[colPos] is string &&
+                            string.IsNullOrWhiteSpace((string) row[colPos]))
+                        {
+                            row[colPos] = null;
+                        }
+                    }
+
+                    if (_fileRowNumberOrdinal >= 0)
+                    {
+                        row[_fileRowNumberOrdinal] = _currentFileRowNumber;
+                    }
+
+                    if (_selectQuery == null || _selectQuery.EvaluateRowFilter(row, _table))
+                    {
+                        return row;
                     }
                 }
-
-                if (_fileRowNumberOrdinal >= 0)
-                {
-                    row[_fileRowNumberOrdinal] = _currentFileRowNumber;
-                }
-
-                if (_selectQuery == null || _selectQuery.EvaluateRowFilter(row, _table))
-                {
-                    return row;
-                }
+                return null;
             }
-            return null;
+            catch (Exception ex)
+            {
+                throw new FileHandlerException($"The file load failed at data row {_currentFileRowNumber}, with error - {ex.Message}", ex);
+            }
         }
 
         public override void Dispose()

@@ -95,13 +95,14 @@ namespace dexih.functions.File
 
                     if (node.SelectChildren(XPathNodeType.All).Count == 1)
                     {
-                        var dataType = DataType.GetTypeCode(node.ValueType);
+                        var dataType = DataType.GetTypeCode(node.ValueType, out var rank);
                         var col = new TableColumn
                         {
                             Name = nodePath,
                             IsInput = false,
                             LogicalName = node.Name,
                             DataType = dataType,
+                            Rank = rank,
                             DeltaType = TableColumn.EDeltaType.ResponseSegment,
                             MaxLength = null,
                             Description = "Value of the " + nodePath + " path",

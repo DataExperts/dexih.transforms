@@ -13,23 +13,23 @@ namespace dexih.functions.BuiltIn
         private const string NullPlaceHolder = "A096F007-26EE-479E-A9E1-4E12427A5AF0"; //used a a unique string that can be substituted for null
         
         //The cache parameters are used by the functions to maintain a state during a transform process.
-        private int? _cacheInt;
-        private double? _cacheDouble;
+        // private int? _cacheInt;
+        private double _cacheDouble;
         private DateTime? _cacheDate;
-        private string _cacheString;
         private Dictionary<object, object> _cacheDictionary;
         private List<object> _cacheList;
         private StringBuilder _cacheStringBuilder;
         private object _cacheObject;
         private object[] _cacheArray;
         private SortedRowsDictionary _sortedRowsDictionary = null;
+        private dynamic _cacheNumber;
+        public int _cacheCount;
 
         public bool Reset()
         {
-            _cacheInt = null;
-            _cacheDouble = null;
+            // _cacheInt = null;
+            _cacheDouble = 0;
             _cacheDate = null;
-            _cacheString = null;
             _cacheDictionary = null;
             _cacheList = null;
             _cacheDictionary = null;
@@ -37,40 +37,36 @@ namespace dexih.functions.BuiltIn
             _cacheObject = null;
             _cacheArray = null;
             _sortedRowsDictionary = null;
+            _cacheNumber = 0;
+            _cacheCount = 0;
             return true;
         }
         
-        public string StringResult() => _cacheString;
-        public int IntResult() => _cacheInt??0;
-        public double DoubleResult() => _cacheDouble??0;
         public DateTime? DateResult() => _cacheDate;
-        public double? NullDoubleResult() => _cacheDouble;
         public object ObjectResult() => _cacheObject;
+        public object NumberResult() => _cacheNumber;
+        public object CountResult() => _cacheCount;
 
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(DoubleResult), ResetMethod = nameof(Reset))]
-        public void Sum(double value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset))]
+        public void Sum(dynamic value)
         {
-            
-            if (_cacheDouble == null) _cacheDouble = 0;
-            _cacheDouble = _cacheDouble + value;
+            _cacheNumber = _cacheNumber + value;
         }
 
        
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Average", Description = "Average of the values", ResultMethod = nameof(AverageResult), ResetMethod = nameof(Reset))]
         public void Average(double value)
         {
-            if (_cacheInt == null) _cacheInt = 0;
-            if (_cacheDouble == null) _cacheDouble = 0;
             _cacheDouble = _cacheDouble + value;
-            _cacheInt = _cacheInt + 1;
+            _cacheCount = _cacheCount + 1;
         }
         public double AverageResult()
         {
-            if (_cacheDouble == null || _cacheInt == null || _cacheInt == 0)
+            if (_cacheCount == 0)
                 return 0;
 
-            return (double)_cacheDouble / (double)_cacheInt;
+            return (double)_cacheDouble / (double)_cacheCount;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
@@ -100,48 +96,43 @@ namespace dexih.functions.BuiltIn
             _cacheObject = value;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count", Description = "Number of records", ResultMethod = nameof(IntResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count", Description = "Number of records", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset))]
         public void Count()
         {
-            if (_cacheInt == null) _cacheInt = 1;
-            else _cacheInt = _cacheInt + 1;
+            _cacheCount++;
         }
 
        
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountTrue", Description = "Count where the value is true", ResultMethod = nameof(IntResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountTrue", Description = "Count where the value is true", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset))]
         public void CountTrue(bool value)
         {
             
-            if (_cacheInt == null) _cacheInt = 0;
             if (value)
             {
-                _cacheInt = _cacheInt + 1;
+                _cacheCount++;
             }
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountFalse", Description = "Count where the value is false", ResultMethod = nameof(IntResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountFalse", Description = "Count where the value is false", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset))]
         public void CountFalse(bool value)
         {
             
-            if (_cacheInt == null) _cacheInt = 0;
             if (!value)
             {
-                _cacheInt = _cacheInt + 1;
+                _cacheCount++;
             }
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountEqual", Description = "Count where the values are equal", ResultMethod = nameof(IntResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountEqual", Description = "Count where the values are equal", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset))]
         public void CountEqual(object[] values)
         {
             
-            if (_cacheInt == null) _cacheInt = 0;
-
             for (var i = 1; i < values.Length; i++)
             {
                 if (!object.Equals(values[0], values[i])) return;
             }
 
-            _cacheInt = _cacheInt + 1;
+            _cacheCount++;
         }
 
 
@@ -216,22 +207,20 @@ namespace dexih.functions.BuiltIn
         public void Variance(double value)
         {
             if (_cacheList == null) _cacheList = new List<object>();
-            if (_cacheInt == null) _cacheInt = 0;
-            if (_cacheDouble == null) _cacheDouble = 0;
 
             _cacheList.Add(value);
-            _cacheInt++;
+            _cacheCount++;
             _cacheDouble += value;
         }
 
         public double VarianceResult()
         {
-            if (_cacheList == null || _cacheInt == null || _cacheInt == 0 || _cacheDouble == null || _cacheDouble == 0 )
+            if (_cacheList == null || _cacheCount == 0 )
                 return 0;
 
-            var average = (double)_cacheDouble / (double)_cacheInt;
+            var average = (double)_cacheDouble / (double)_cacheCount;
             var sumOfSquaresOfDifferences = _cacheList.Select(val => ((double)val - average) * ((double)val - average)).Sum();
-            var sd = sumOfSquaresOfDifferences / (double)_cacheInt;
+            var sd = sumOfSquaresOfDifferences / (double)_cacheCount;
 
             return sd;
         }
@@ -270,8 +259,8 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Pivot to Columns", 
-            Description = "Pivots the labelColum and valueColumn into separate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset))]
-        public void PivotToColumns(string labelColumn, object valueColumn, [TransformFunctionParameter(TwinParameterName = "values")] object[] labels)
+            Description = "Pivots the labelColumn and valueColumn into separate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset))]
+        public void PivotToColumns(string labelColumn, object valueColumn, [TransformFunctionParameterTwin] object[] labels)
         {
             if (_cacheDictionary == null)
             {
@@ -288,7 +277,7 @@ namespace dexih.functions.BuiltIn
             }
         }
         
-        public bool PivotToColumnsResult(out object[] values)
+        public bool PivotToColumnsResult([TransformFunctionParameterTwin] out object[] values)
         {
             values = _cacheDictionary.Values.ToArray();
             return !values.Contains(null);
@@ -314,14 +303,12 @@ namespace dexih.functions.BuiltIn
 
         public double PercentTotalResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, EPercentFormat percentFormat = EPercentFormat.AsPercent)
         {
-            if (_cacheList == null || _cacheDouble == null)
+            if (_cacheList == null || _cacheDouble == 0d)
                 return 0;
 
-            var percent = (double)_cacheList[index] / _cacheDouble.Value;
+            var percent = (double)_cacheList[index] / _cacheDouble;
             return percentFormat == EPercentFormat.AsDecimal ? percent : percent * 100;
         }
-
-
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Rank", Description = "The ranking (starting at 1) of the item within the group", ResultMethod = nameof(RankResult), ResetMethod = nameof(Reset))]
         public void Rank(object[] values)
@@ -329,29 +316,29 @@ namespace dexih.functions.BuiltIn
             if (_sortedRowsDictionary == null)
             {
                 _sortedRowsDictionary = new SortedRowsDictionary();
-                _cacheInt = 0;
+                _cacheCount = 0;
             }
 
             if (_sortedRowsDictionary.ContainsKey(values))
             {
                 var indexes = _sortedRowsDictionary[values];
                 Array.Resize(ref indexes, indexes.Length + 1);
-                indexes[indexes.Length-1] = _cacheInt;
+                indexes[indexes.Length-1] = _cacheCount;
                 _sortedRowsDictionary[values] = indexes;
             }
             else
             {
-                _sortedRowsDictionary.Add(values, new object[] {_cacheInt});    
+                _sortedRowsDictionary.Add(values, new object[] {_cacheCount});    
             }
 
-            _cacheInt++;
+            _cacheCount++;
         }
 
         public int RankResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, Sort.EDirection sortDirection)
         {
             if (_cacheArray == null)
             {
-                _cacheArray = new object[_cacheInt.Value];
+                _cacheArray = new object[_cacheCount];
                 int rank;
                 int increment;
                 if (sortDirection == Sort.EDirection.Ascending)
@@ -378,5 +365,29 @@ namespace dexih.functions.BuiltIn
 
             return (int)_cacheArray[index];
         }
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Count", Description = "The running count of rows in the current group.", ResetMethod = nameof(Reset))]
+        public int RunningCount()
+        {
+            _cacheCount++;
+            return _cacheCount;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset))]
+        public object RunningSum(dynamic value)
+        {
+            _cacheNumber = _cacheNumber + value;
+            return _cacheNumber;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset))]
+        public object RunningAverage(dynamic value)
+        {
+            _cacheNumber = _cacheNumber + value;
+            _cacheCount++;
+            return _cacheNumber/_cacheCount;
+        }
+        
+
     }
 }

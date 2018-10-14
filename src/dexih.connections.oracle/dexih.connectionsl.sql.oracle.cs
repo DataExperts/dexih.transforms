@@ -10,6 +10,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
 using static Dexih.Utils.DataType.DataType;
 
@@ -80,12 +81,14 @@ namespace dexih.connections.sql
         {
             if (value == null)
                 return DBNull.Value;
-            else if (value is Guid || value is ulong)
+            if (value.GetType().IsArray)
+                return JsonConvert.SerializeObject(value);
+            if (value is Guid || value is ulong)
                 return value.ToString();
-            else if (value is bool b)
+            if (value is bool b)
                 return b ? 1 : 0;
-            else
-                return value;
+            
+            return value;
         }
         
         public override async Task<DbConnection> NewConnection()

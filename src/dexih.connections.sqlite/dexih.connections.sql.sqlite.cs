@@ -11,7 +11,9 @@ using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 using Microsoft.Data.Sqlite;
+using Newtonsoft.Json;
 
 namespace dexih.connections.sql
 {
@@ -51,10 +53,14 @@ namespace dexih.connections.sql
         {
             if (value == null)
                 return DBNull.Value;
-            else if (value is Guid || value is ulong)
+
+            if (!IsSimple(value.GetType()))
+                return JsonConvert.SerializeObject(value);
+            
+            if (value is Guid || value is ulong)
                 return value.ToString();
-            else
-                return value;
+            
+            return value;
         }
         
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
@@ -110,7 +116,6 @@ namespace dexih.connections.sql
         {
             try
             {
-
                 var tableExists = await TableExists(table, cancellationToken);
 
                 //if table exists, and the dropTable flag is set to false, then error.
@@ -651,22 +656,10 @@ namespace dexih.connections.sql
                                     {
                                         var param = new SqliteParameter
                                         {
-                                            ParameterName = "@col" + i.ToString()
-                                        }; // cmd.CreateParameter();
-
-                                        // sqlite writes guids as binary, so need logic to convert to string first.
-                                        if (query.InsertColumns[i].Column.DataType == ETypeCode.Guid)
-                                        {
-                                            param.Value = query.InsertColumns[i].Value == null ? (object)DBNull.Value
-                                                : query.InsertColumns[i].Value.ToString();
-
-                                        }
-                                        else
-                                        {
-                                            param.Value = query.InsertColumns[i].Value == null ? DBNull.Value
-                                                : query.InsertColumns[i].Value;
-                                        }
-                                        param.DbType = GetDbType(query.InsertColumns[i].Column.DataType);
+                                            ParameterName = "@col" + i.ToString(),
+                                            Value = ConvertParameterType(query.InsertColumns[i].Value),
+                                            DbType = GetDbType(query.InsertColumns[i].Column.DataType)
+                                        };
 
                                         cmd.Parameters.Add(param);
                                     }

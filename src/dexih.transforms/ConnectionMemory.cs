@@ -36,6 +36,9 @@ namespace dexih.transforms
         public override bool CanUpdate => false;
         public override bool CanAggregate => false;
         public override bool CanUseBinary => true;
+        public override bool CanUseArray => true;
+        public override bool CanUseJson => true;
+        public override bool CanUseCharArray => true;
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
 

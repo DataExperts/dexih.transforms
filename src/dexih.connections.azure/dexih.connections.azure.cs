@@ -12,6 +12,7 @@ using System.Threading;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using Newtonsoft.Json;
 
 namespace dexih.connections.azure
 {
@@ -51,6 +52,9 @@ namespace dexih.connections.azure
         public override bool CanUpdate => true;
         public override bool CanAggregate => false;
         public override bool CanUseBinary => true;
+        public override bool CanUseArray => false;
+        public override bool CanUseJson => false;
+        public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => true;
 
@@ -68,7 +72,6 @@ namespace dexih.connections.azure
                 default:
                     return GetDataTypeMinValue(typeCode);
             }
-
         }
 
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
@@ -87,6 +90,14 @@ namespace dexih.connections.azure
                 default:
                     return GetDataTypeMaxValue(typeCode, length);
             }
+        }
+        
+        public object ConvertParameterType(object value)
+        {
+            if (value == null)
+                return DBNull.Value;
+            
+            return value;
         }
 
         public override bool IsValidDatabaseName(string name)
@@ -126,6 +137,13 @@ namespace dexih.connections.azure
         {
             try
             {
+                if (reader is Transform transform)
+                {
+                    transform.ConvertArrayToString = true;
+                    transform.ConvertComplexToString = true;
+                    transform.ConvertJsonToString = true;
+                }
+                
                 var targetTableName = table.Name;
 
                 var tasks = new List<Task>();
@@ -160,7 +178,7 @@ namespace dexih.connections.azure
                     for (var i = 0; i < table.Columns.Count; i++)
                     {
                         if (i < reader.FieldCount)
-                            row[i] = reader[i];
+                            row[i] = ConvertParameterType(reader[i]);
                         else
                         {
                             //if the reader does not have the azure fields, then just add defaults.
@@ -544,7 +562,7 @@ namespace dexih.connections.azure
                             }
                             catch (Exception ex)
                             {
-                                throw new ConnectionException($"The filter value could not be convered to a {filter.CompareDataType}.  {ex.Message}", ex, value);
+                                throw new ConnectionException($"The filter value could not be converted to a {filter.CompareDataType}.  {ex.Message}", ex, value);
                             }
                         }
                         filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1.Name, Filter.ECompare.IsEqual, filter.CompareDataType, c))) + ")";

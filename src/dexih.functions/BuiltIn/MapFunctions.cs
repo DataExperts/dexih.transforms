@@ -95,7 +95,7 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Split",
             Description = "Splits a string into multiple return fields that are based on the characters in an array.")]
-        public int Split(string value, string separator, int count, out string[] result)
+        public int Split(string value, string separator, int? count, out string[] result)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -103,7 +103,8 @@ namespace dexih.functions.BuiltIn
                 return 0;
             }
 
-            result = value.Split(separator.ToCharArray(), count);
+            result = count == null ? value.Split(separator) : value.Split(separator, count.Value);
+            
             return result.Length;
         }
 
@@ -129,7 +130,10 @@ namespace dexih.functions.BuiltIn
             Description = "Returns a copy of this string converted to uppercase.")]
         public string ToUpper(string value)
         {
-            return value.ToUpper();
+            var valueSpan = value.AsSpan();
+            var newSpan = new Span<char>(new char[valueSpan.Length]);
+            valueSpan.ToUpper(newSpan, CultureInfo.InvariantCulture);
+            return newSpan.ToString();
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Trim",
@@ -551,7 +555,7 @@ namespace dexih.functions.BuiltIn
             remainder = dividend - (divisor * quotient);
             return quotient;
         }
-
+        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Exp",
             Description = "Returns e raised to the specified power.")]
         public double Exp(double value)
@@ -708,7 +712,7 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Xml", Name = "XPath Values",
             Description = "Parses an xml string into a series of xpath results.")]
-        public bool XPathValues(string xml, string[] xPaths, out string[] values)
+        public bool XPathValues(string xml, [TransformFunctionParameterTwin] string[] xPaths, [TransformFunctionParameterTwin] out string[] values)
         {
             var returnValue = true;
 
@@ -757,7 +761,7 @@ namespace dexih.functions.BuiltIn
             Description = "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.",
             ImportMethod = nameof(JsonValuesImport))
         ]
-        public bool JsonValues(string json, string[] jsonPaths, out string[] values)
+        public bool JsonValues(string json, [TransformFunctionParameterTwin] string[] jsonPaths, [TransformFunctionParameterTwin] out string[] values)
         {
             try
             {
@@ -823,7 +827,7 @@ namespace dexih.functions.BuiltIn
             Description = "Pivots a json array into column values. ",
             ImportMethod = nameof(JsonArrayToColumnsImport))
         ]
-        public bool JsonArrayToColumns(string json, string jsonPath, string columnPath, string valuePath, string[] columns, out string[] values)
+        public bool JsonArrayToColumns(string json, string jsonPath, string columnPath, string valuePath, [TransformFunctionParameterTwin] string[] columns, [TransformFunctionParameterTwin] out string[] values)
         {
             try
             {
@@ -1027,6 +1031,26 @@ namespace dexih.functions.BuiltIn
         public DateTime MinNDate(DateTime[] value)
         {
             return value.Min();
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Switch Condition",
+            Description = "Maps the 'value' to the matching 'when' and returns the 'then'.  No matches returns default value (or original value if default is null.")]
+        public object Switch(object value, [TransformFunctionParameterTwin] object[] when, [TransformFunctionParameterTwin] object[] then, object defaultValue)
+        {
+            for(var i = 0; i < when.Length; i++)
+            {
+                if (i > then.Length)
+                {
+                    break;
+                }
+
+                if (Equals(value, when[i]))
+                {
+                    return then[i];
+                }
+            }
+
+            return defaultValue ?? value;
         }
 
     }

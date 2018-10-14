@@ -45,6 +45,7 @@ namespace dexih.transforms
             // if this is a transform, then use the dataTypes from the cache table
             if (reader is Transform transform)
             {
+                transform.ConvertCharArrayToString = true;
                 var columns = JsonConvert.SerializeObject(transform.CacheTable.Columns.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType}));
                 _streamWriter.Write(columns);
             }

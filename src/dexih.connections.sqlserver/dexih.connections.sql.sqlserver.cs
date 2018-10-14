@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
@@ -11,6 +12,7 @@ using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Newtonsoft.Json;
 
 namespace dexih.connections.sql
 {
@@ -75,11 +77,27 @@ namespace dexih.connections.sql
             }
 		    
         }
+        
+        public override object ConvertParameterType(object value)
+        {
+            if (value != null && value.GetType().IsArray)
+            {
+                return JsonConvert.SerializeObject(value);
+            }
+            return value;
+        }
 
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
+                if (reader is Transform transform)
+                {
+                    transform.ConvertArrayToString = true;
+                    transform.ConvertComplexToString = true;
+                    transform.ConvertJsonToString = true;
+                }
+                
                 using (var connection = await NewConnection())
                 {
 
@@ -95,7 +113,7 @@ namespace dexih.connections.sql
                     {
                         bulkCopy.ColumnMappings.Add(column.Name, column.Name);
                     }
-
+                    
                     await bulkCopy.WriteToServerAsync(reader, cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
