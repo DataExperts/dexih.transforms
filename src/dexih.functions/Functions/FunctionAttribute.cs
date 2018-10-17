@@ -16,7 +16,12 @@ namespace dexih.functions
         /// Method called when requesting an aggregate value on a group.
         /// </summary>
         public string ResultMethod { get; set; }
-        
+
+        /// <summary>
+        /// Method called to initialize the method
+        /// </summary>
+        public string InitializeMethod { get; set; }
+
         /// <summary>
         /// Method called to reset variables in the class
         /// </summary>

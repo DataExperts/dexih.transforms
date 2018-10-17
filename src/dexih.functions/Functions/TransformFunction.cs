@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
@@ -60,6 +62,7 @@ namespace dexih.functions
 	/// </summary>
 	public class TransformFunction
 	{
+		public TransformMethod InitializeMethod { get; set; }
 		public TransformMethod FunctionMethod { get; set; }
 		public TransformMethod ResetMethod { get; set; }
 		public TransformMethod ResultMethod { get; set; }
@@ -128,7 +131,7 @@ namespace dexih.functions
 		public TransformFunction(Type targetType, string methodName, Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionName = methodName;
-			Initialize(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), parameters, globalVariables);
+			Constructor(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), parameters, globalVariables);
 		}
 
 		/// <summary>
@@ -141,15 +144,15 @@ namespace dexih.functions
 		public TransformFunction(object target, string methodName, Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionName = methodName;
-			Initialize(target, target.GetType().GetMethod(methodName), parameters, globalVariables);
+			Constructor(target, target.GetType().GetMethod(methodName), parameters, globalVariables);
 		}
 
 		public TransformFunction(object target, MethodInfo functionMethod, Parameters parameters, GlobalVariables globalVariables)
 		{
-			Initialize(target, functionMethod, parameters, globalVariables);
+			Constructor(target, functionMethod, parameters, globalVariables);
 		}
 
-		private void Initialize(object target, MethodInfo functionMethod, Parameters parameters, GlobalVariables globalVariables)
+		private void Constructor(object target, MethodInfo functionMethod, Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionMethod = new TransformMethod(functionMethod);
 			GlobalVariables = globalVariables;
@@ -162,6 +165,9 @@ namespace dexih.functions
 			{
 				FunctionType = attribute.FunctionType;
 
+				InitializeMethod = string.IsNullOrEmpty(attribute.InitializeMethod)
+					? null
+					: new TransformMethod(targetType.GetMethod(attribute.InitializeMethod));
 				ResetMethod = string.IsNullOrEmpty(attribute.ResetMethod)
 					? null
 					: new TransformMethod(targetType.GetMethod(attribute.ResetMethod));
@@ -192,6 +198,23 @@ namespace dexih.functions
 			}
 
 			ObjectReference = target;
+		}
+
+		public async Task Initialize(CancellationToken cancellationToken)
+		{
+			if (InitializeMethod != null)
+			{
+				if (InitializeMethod.MethodInfo.ReturnType.IsAssignableFrom(typeof(Task<>)))
+				{
+					var task = (Task) InitializeMethod.MethodInfo.Invoke(ObjectReference,
+						new object[] {cancellationToken});
+					await task;
+				}
+				else
+				{
+					InitializeMethod.MethodInfo.Invoke(ObjectReference, new object[] {cancellationToken});
+				}
+			}
 		}
 
 		public TransformFunction()

@@ -184,7 +184,6 @@ namespace dexih.transforms
 
         #region Abstract Properties
 
-        public abstract bool InitializeOutputFields();
         public abstract string Details();
         protected abstract Task<object[]> ReadRecord(CancellationToken cancellationToken);
         public abstract bool ResetTransform();
@@ -237,7 +236,6 @@ namespace dexih.transforms
 
             Mappings?.Initialize(primaryTransform.CacheTable, referenceTransform?.CacheTable);
 
-            InitializeOutputFields();
             Reset();
             
             //IsReader indicates if this is a base transform.
@@ -320,11 +318,17 @@ namespace dexih.transforms
                 result = result && await PrimaryTransform.Open(auditKey, query, cancellationToken);
                 if (!result)
                     return result;
+                
             }
 
             if (ReferenceTransform != null)
             {
                 result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
+            }
+
+            if (Mappings != null)
+            {
+                CacheTable = await Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable);
             }
 
             return result;
@@ -727,7 +731,7 @@ namespace dexih.transforms
                     {
                         lookupResult.Add(CurrentRow);
                     }
-
+ 
                     break;
                 case EDuplicateStrategy.Last:
                     object[] lastRow = null;

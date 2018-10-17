@@ -30,42 +30,13 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
 
-        public override bool InitializeOutputFields()
-        {
-            if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
-            {
-                CacheTable = new Table(PrimaryTransform.CacheTable.Name);
-                _fieldOrdinals = new List<int>();
-
-                foreach (var column in _selectQuery.Columns)
-                {
-                    CacheTable.Columns.Add(column.Column);
-                    var ordinal = PrimaryTransform.CacheTable.GetOrdinal(column.Column.Name);
-                    if (ordinal < 0)
-                    {
-                        throw new TransformException($"The select column {column.Column.Name} could not be found.");
-                    }
-                    _fieldOrdinals.Add(ordinal);
-                }
-            }
-            else
-            {
-                CacheTable = PrimaryTransform.CacheTable.Copy();
-                _fieldOrdinals = Enumerable.Range(0, CacheTable.Columns.Count).ToList();
-            }
-
-            CacheTable.Name = "Query";
-            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
-
-            return true;
-        }
-
         private List<int> _fieldOrdinals;
 
         public override bool RequiresSort => false;
 
-        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
+           
             AuditKey = auditKey;
 
             var pushQuery = new SelectQuery();
@@ -97,7 +68,33 @@ namespace dexih.transforms
             }
             _rowCount = 0;
 
-            var returnValue = PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);
+            
+            if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
+            {
+                CacheTable = new Table(PrimaryTransform.CacheTable.Name);
+                _fieldOrdinals = new List<int>();
+
+                foreach (var column in _selectQuery.Columns)
+                {
+                    CacheTable.Columns.Add(column.Column);
+                    var ordinal = PrimaryTransform.CacheTable.GetOrdinal(column.Column.Name);
+                    if (ordinal < 0)
+                    {
+                        throw new TransformException($"The select column {column.Column.Name} could not be found.");
+                    }
+                    _fieldOrdinals.Add(ordinal);
+                }
+            }
+            else
+            {
+                CacheTable = PrimaryTransform.CacheTable.Copy();
+                _fieldOrdinals = Enumerable.Range(0, CacheTable.Columns.Count).ToList();
+            }
+
+            CacheTable.Name = "Query";
+            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
+
             return returnValue;
         }
 

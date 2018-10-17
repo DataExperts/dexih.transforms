@@ -217,11 +217,11 @@ namespace dexih.transforms
                 throw new TransformWriterException("Transform write failed to start, as a previous operation is still running.");
             }
 
-            var returnValue = await _inTransform.Open(writerResult.AuditKey, null, cancellationToken);
-            if (!returnValue)
-            {
-                throw new TransformWriterException("Transform write failed to start, could not open the first transform.");
-            }
+//            var returnValue = await _inTransform.Open(writerResult.AuditKey, null, cancellationToken);
+//            if (!returnValue)
+//            {
+//                throw new TransformWriterException("Transform write failed to start, could not open the first transform.");
+//            }
 
             _operationColumnIndex = _inTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
 

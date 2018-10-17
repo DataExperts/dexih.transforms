@@ -71,14 +71,14 @@ namespace dexih.transforms
         private int _primaryFieldCount;
         private int _referenceFieldCount;
 
-        public override bool InitializeOutputFields()
+        public async Task<bool> InitializeOutputFields()
         {
             if (ReferenceTransform == null)
             {
                 throw new Exception("There must a join table specified.");
             }
 
-            CacheTable = Mappings.Initialize(PrimaryTransform.CacheTable, ReferenceTransform.CacheTable, ReferenceTableAlias);
+            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable, ReferenceTransform.CacheTable, ReferenceTableAlias);
 
 //            CacheTable = new Table("Join");
 //
@@ -304,6 +304,8 @@ namespace dexih.transforms
             {
                 return false;
             }
+
+            await InitializeOutputFields();
 
             //check if the primary and reference transform are sorted in the join
             if (SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) &&

@@ -525,6 +525,45 @@ namespace dexih.transforms
             }
         }
 
+        /// <summary>
+        /// Returns a hashset table containing all the values in a table column.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="column"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ConnectionException"></exception>
+        public async Task<HashSet<object>> GetColumnValues(Table table, TableColumn column, CancellationToken cancellationToken)
+        {
+            var query = new SelectQuery()
+            {
+                Columns = new List<SelectColumn>() {new SelectColumn(column)},
+                Groups = new List<TableColumn>() {column},
+            };
+            
+            using (var reader = GetTransformReader(table, true))
+            {
+                var returnValue = await reader.Open(0, query, cancellationToken);
+                
+                if (!returnValue)
+                {
+                    throw new ConnectionException($"The reader failed to open for table {table.Name} on {Name}");
+                }
+
+                var values = new HashSet<object>();
+                while (
+                    cancellationToken.IsCancellationRequested == false &&
+                    await reader.ReadAsync(cancellationToken)
+                )
+                {
+                    var value = reader[0];
+                    if(!values.Contains(value)) values.Add(value);
+                }
+
+                return values;
+            }
+        }
+
 
         /// <summary>
         /// This compares the physical table with the table structure to ensure that it can be used.

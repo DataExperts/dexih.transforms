@@ -6,6 +6,7 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Mappings;
 using dexih.functions.Parameter;
+using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Transforms;
 using Newtonsoft.Json;
@@ -44,12 +45,6 @@ namespace dexih.transforms
             {
                 return null;
             }
-        }
-
-        public override bool InitializeOutputFields()
-        {
-            CacheTable = PrimaryTransform.CacheTable.Copy();
-            return true;
         }
 
         public override bool RequiresSort => false;

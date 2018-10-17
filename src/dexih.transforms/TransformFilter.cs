@@ -27,18 +27,9 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
         
-        public override bool InitializeOutputFields()
-        {
-            CacheTable = PrimaryTransform.CacheTable.Copy();
-            CacheTable.Name = "Filter";
-            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
-
-            return true;
-        }
-
         public override bool RequiresSort => false;
        
-        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -73,7 +64,13 @@ namespace dexih.transforms
                 }
             }
             
-            var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+
+            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable);            
+//            CacheTable = PrimaryTransform.CacheTable.Copy();
+//            CacheTable.Name = "Filter";
+//            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
+
             return returnValue;
         }
 

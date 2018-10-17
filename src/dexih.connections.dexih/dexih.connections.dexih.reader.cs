@@ -116,11 +116,6 @@ namespace dexih.connections.dexih
             return "Information Hub Reader";
         }
 
-        public override bool InitializeOutputFields()
-        {
-            return true;
-        }
-
         public override bool ResetTransform()
         {
             return true;

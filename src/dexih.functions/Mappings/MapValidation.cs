@@ -28,11 +28,25 @@ namespace dexih.functions.Mappings
                     //TODO Need to improve reason string.
                     var parameters = string.Join(",", Parameters.Inputs.OfType<ParameterColumn>().Select(c => $"{c.Column?.Name??c.Value}"));
                     reason = $"Function: {Function.FunctionName} ({parameters})";
+                    return false;
                 }
             }
 
             reason = null;
             return true;
+        }
+        
+        public override void MapOutputRow(object[] data)
+        {
+            // only map the result when the validation is false.
+            if (ReturnValue is bool returnValue)
+            {
+                if (!returnValue)
+                {
+                    Parameters.SetFunctionResult(ReturnValue, Outputs, data);        
+                }
+            }
+            
         }
     }
 }

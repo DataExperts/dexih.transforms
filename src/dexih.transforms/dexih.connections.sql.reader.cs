@@ -83,7 +83,6 @@ namespace dexih.connections.sql
         }
 
         public override List<Sort> SortFields => _sortFields;
-        public override bool InitializeOutputFields() => true;
         public override bool ResetTransform() => _isOpen;
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)

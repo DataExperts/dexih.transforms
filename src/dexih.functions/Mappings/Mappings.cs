@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -47,13 +48,13 @@ namespace dexih.functions.Mappings
         private object[] _rowData;
         
         // empty function variables, so save recreating.
-        private FunctionVariables _functionVariables = new FunctionVariables();
+        private readonly FunctionVariables _functionVariables = new FunctionVariables();
 
-        public Table Initialize(Table inputTable, Table joinTable = null, string joinTableAlias = null)
+        public async Task<Table> Initialize(Table inputTable, Table joinTable = null, string joinTableAlias = null)
         {
             foreach (var mapping in this)
             {
-                mapping.InitializeInputOrdinals(inputTable, joinTable);
+                await mapping.Initialize(inputTable, joinTable);
             }
             
             var table = new Table("Mapping");

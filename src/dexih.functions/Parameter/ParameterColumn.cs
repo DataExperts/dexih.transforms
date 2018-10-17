@@ -52,7 +52,7 @@ namespace dexih.functions.Parameter
         /// <summary>
         /// The index of the datarow to get the value from.
         /// </summary>
-        private int _rowOrdinal;
+        private int _rowOrdinal = -1;
 
         public override void InitializeOrdinal(Table table, Table joinTable = null)
         {

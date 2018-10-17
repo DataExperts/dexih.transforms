@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using dexih.functions.BuiltIn;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -39,7 +40,7 @@ namespace dexih.functions.Mappings
         private object[] _row;
         private object[] _joinRow;
 
-        public override void InitializeInputOrdinals(Table table, Table joinTable)
+        public override Task Initialize(Table table, Table joinTable)
         {
             if (InputColumn != null)
             {
@@ -66,6 +67,8 @@ namespace dexih.functions.Mappings
             {
                 _column2Ordinal = -1;
             }
+
+            return Task.CompletedTask;
         }
 
         public override void AddOutputColumns(Table table)

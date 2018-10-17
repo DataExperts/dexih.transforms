@@ -27,7 +27,7 @@ namespace dexih.transforms
             SetInTransform(inTransform, null);
         }
 
-        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
 
@@ -95,7 +95,8 @@ namespace dexih.transforms
 				query.Sorts = newSorts;
 			}
 
-			var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
+			var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+	        CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable);
 			return returnValue;
         }
 
@@ -135,12 +136,6 @@ namespace dexih.transforms
 			}
 
 	        return null;
-        }
-
-        public override bool InitializeOutputFields()
-        {
-	        CacheTable = Mappings.Initialize(PrimaryTransform.CacheTable);
-            return true;
         }
 
         public override string Details()

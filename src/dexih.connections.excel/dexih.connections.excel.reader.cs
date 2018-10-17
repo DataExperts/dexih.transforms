@@ -88,11 +88,6 @@ namespace dexih.connections.excel
             return "Excel Database Service";
         }
 
-        public override bool InitializeOutputFields()
-        {
-            return true;
-        }
-
         public override bool ResetTransform()
         {
             _currentRow = ((ConnectionExcel) ReferenceConnection).ExcelDataRow;

@@ -29,15 +29,7 @@ namespace dexih.transforms
 
         private bool _firstRecord;
 
-        public override bool InitializeOutputFields()
-        {
-            CacheTable = Mappings.Initialize(PrimaryTransform.CacheTable);
-            _firstRecord = true;
-            return true;
-        }
-
-
-        public override Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
             if (query == null)
@@ -77,7 +69,11 @@ namespace dexih.transforms
                 }
             }            
 
-            var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            
+            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable);
+            _firstRecord = true;
+
             return returnValue;
         }
 

@@ -108,11 +108,6 @@ namespace dexih.transforms
             return "DataSource";
         }
 
-        public override bool InitializeOutputFields()
-        {
-            return true;
-        }
-
         public override List<Sort> SortFields => _sortFields;
 
         public override bool ResetTransform()

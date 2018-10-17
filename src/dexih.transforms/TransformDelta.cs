@@ -119,9 +119,27 @@ namespace dexih.transforms
 
         private DateTime _currentDateTime;
 
-        public override bool InitializeOutputFields()
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-            if (ReferenceTransform == null)
+            AuditKey = auditKey;
+            bool returnValue;
+
+            if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
+            {
+                returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+                
+                }
+            else
+            {
+                if (query == null)
+                    query = new SelectQuery();
+
+                query.Sorts = RequiredSortFields();
+
+                returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            }
+
+                        if (ReferenceTransform == null)
                 throw new Exception("There must be a target table specified.");
 
             //add the operation type, which indicates whether record are C-create/U-update or D-Deletes
@@ -162,30 +180,8 @@ namespace dexih.transforms
             {
                 _sourceOrdinals.Add(PrimaryTransform.GetOrdinal(CacheTable.Columns[referenceOrdinal].Name));
             }
-
-            return true;
-        }
-
-        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
-        {
-            AuditKey = auditKey;
-
-            if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
-            {
-                var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
-                return returnValue;
-                }
-            else
-            {
-                if (query == null)
-                    query = new SelectQuery();
-
-                query.Sorts = RequiredSortFields();
-
-                var returnValue = PrimaryTransform.Open(auditKey, query, cancellationToken);
-                return returnValue;
-            }
-
+            
+            return returnValue;
         }
 
         public override bool RequiresSort

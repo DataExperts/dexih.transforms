@@ -1,15 +1,16 @@
-﻿using dexih.functions;
+﻿using System.Threading.Tasks;
+using dexih.functions;
 
 namespace dexih.functions.Mappings
 {
     public abstract class Mapping
     {
         /// <summary>
-        /// Aligns the input value with the table ordinals.
+        /// Initializes the mapping
         /// </summary>
         /// <param name="table"></param>
         /// <param name="secondTable"></param>
-        public abstract void InitializeInputOrdinals(Table table, Table joinTable = null);
+        public abstract Task Initialize(Table table, Table joinTable = null);
         
         /// <summary>
         /// Add the mapping columns to the table.

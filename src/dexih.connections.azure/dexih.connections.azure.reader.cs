@@ -83,11 +83,6 @@ namespace dexih.connections.azure
             return "AzureConnection";
         }
 
-        public override bool InitializeOutputFields()
-        {
-            return true;
-        }
-
         public override bool ResetTransform()
         {
             if (_isOpen)

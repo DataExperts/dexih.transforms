@@ -40,39 +40,41 @@ namespace dexih.transforms
             SetInTransform(primaryTransform, joinTransform);
         }
 
-        public override bool InitializeOutputFields()
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-            if (ReferenceTransform == null)
-                throw new Exception("There must be a lookup table specified");
 
-            CacheTable = new Table("Lookup");
-
-            var pos = 0;
-            foreach (var column in PrimaryTransform.CacheTable.Columns)
-            {
-                CacheTable.Columns.Add(column.Copy());
-                pos++;
-            }
-            foreach (var column in ReferenceTransform.CacheTable.Columns)
-            {
-                var newColumn = column.Copy();
-                newColumn.ReferenceTable = ReferenceTableAlias;
-                newColumn.IsIncrementalUpdate = false;
-
-                //if a column of the same name exists, append a 1 to the name
-                //if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.TableColumnName()) != null)
-                //{
-                //    throw new Exception("The lookup could not be initialized as the column " + column.TableColumnName() + " is ambiguous.");
-                //}
-                CacheTable.Columns.Add(newColumn);
-                pos++;
-            }
+//            if (ReferenceTransform == null)
+//                throw new Exception("There must be a lookup table specified");
+//
+//            CacheTable = new Table("Lookup");
+//
+//            var pos = 0;
+//            foreach (var column in PrimaryTransform.CacheTable.Columns)
+//            {
+//                CacheTable.Columns.Add(column.Copy());
+//                pos++;
+//            }
+//            foreach (var column in ReferenceTransform.CacheTable.Columns)
+//            {
+//                var newColumn = column.Copy();
+//                newColumn.ReferenceTable = ReferenceTableAlias;
+//                newColumn.IsIncrementalUpdate = false;
+//
+//                //if a column of the same name exists, append a 1 to the name
+//                //if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.TableColumnName()) != null)
+//                //{
+//                //    throw new Exception("The lookup could not be initialized as the column " + column.TableColumnName() + " is ambiguous.");
+//                //}
+//                CacheTable.Columns.Add(newColumn);
+//                pos++;
+//            }
 
             _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.Name : ReferenceTransform.ReferenceTableAlias;
 
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 
+            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable, ReferenceTransform.CacheTable, ReferenceTableAlias);
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             return true;

@@ -43,7 +43,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Set Value to Null", Description = "Replaces the specified value with null.")]
         public bool SetValueToNull(object value, object checkValue, out object adjustedValue)
         {
-            if (value == checkValue)
+            if (Equals(value, checkValue))
             {
                 adjustedValue = null;
                 return false;
@@ -56,7 +56,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Set Value to Default", Description = "Replaces the specified value with another value.")]
         public bool SetValueToDefault(object value, object checkValue, object defaultValue, out object adjustedValue)
         {
-            if (value == checkValue)
+            if (Equals(value, checkValue))
             {
                 adjustedValue = defaultValue;
                 return false;

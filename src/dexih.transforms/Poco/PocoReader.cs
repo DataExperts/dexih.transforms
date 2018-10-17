@@ -46,11 +46,6 @@ namespace dexih.transforms.Poco
 
         #endregion
 
-        public override bool InitializeOutputFields()
-        {
-            return true;
-        }
-
         public override string Details()
         {
             return "Source Table " + CacheTable.Name;

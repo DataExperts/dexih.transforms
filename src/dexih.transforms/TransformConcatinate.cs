@@ -82,6 +82,33 @@ namespace dexih.transforms
 
             returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
 
+            if (ReferenceTransform == null)
+                throw new Exception("There must a concatenate transform specified.");
+
+            CacheTable = new Table("Concatenated");
+
+            var pos = 0;
+            foreach (var column in PrimaryTransform.CacheTable.Columns)
+            {
+                CacheTable.Columns.Add(column.Copy());
+                _primaryMappings.Add(pos);
+                pos++;
+            }
+
+            foreach (var column in ReferenceTransform.CacheTable.Columns)
+            {
+                var ordinal = CacheTable.GetOrdinal(column.Name);
+                if (ordinal < 0)
+                {
+                    CacheTable.Columns.Add(column.Copy());
+                    ordinal = pos;
+                    pos++;
+                }
+                _referenceMappings.Add(ordinal);
+            }
+            
+            _firstRead = true;
+            
             //if the primary & reference transforms are sorted, we will merge sort the items.
             if (PrimaryTransform.SortFields != null && ReferenceTransform.SortFields != null)
             {
@@ -126,38 +153,6 @@ namespace dexih.transforms
             return returnValue;
         }
         
-      public override bool InitializeOutputFields()
-        {
-            if (ReferenceTransform == null)
-                throw new Exception("There must a concatenate transform specified.");
-
-            CacheTable = new Table("Concatenated");
-
-            var pos = 0;
-            foreach (var column in PrimaryTransform.CacheTable.Columns)
-            {
-                CacheTable.Columns.Add(column.Copy());
-                _primaryMappings.Add(pos);
-                pos++;
-            }
-
-            foreach (var column in ReferenceTransform.CacheTable.Columns)
-            {
-                var ordinal = CacheTable.GetOrdinal(column.Name);
-                if (ordinal < 0)
-                {
-                    CacheTable.Columns.Add(column.Copy());
-                    ordinal = pos;
-                    pos++;
-                }
-                _referenceMappings.Add(ordinal);
-            }
-            
-            _firstRead = true;
-
-            return true;
-        }
-
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             // sorted merge will concatenate 2 sorted incoming datasets, and maintain the sort order.

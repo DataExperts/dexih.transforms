@@ -117,11 +117,6 @@ namespace dexih.transforms
             return "FlatFile";
         }
 
-        public override bool InitializeOutputFields()
-        {
-            return true;
-        }
-
         public override bool ResetTransform()
         {
             if (_isOpen)

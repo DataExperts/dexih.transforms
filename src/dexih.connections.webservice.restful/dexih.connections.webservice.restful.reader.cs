@@ -71,11 +71,6 @@ namespace dexih.connections.webservice
             return "Restful WebService";
         }
 
-        public override bool InitializeOutputFields()
-        {
-            return true;
-        }
-
         public override bool ResetTransform()
         {
             return true;

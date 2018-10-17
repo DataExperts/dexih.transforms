@@ -43,14 +43,9 @@ namespace dexih.transforms
                 throw new ArgumentOutOfRangeException(nameof(increment));
             }
 
-            InitializeOutputFields();
-        }
-
-        public override bool InitializeOutputFields()
-        {
             CacheTable = GetTable();
             _currentRow = null;
-            return true;
+
         }
 
         public override bool RequiresSort => false;

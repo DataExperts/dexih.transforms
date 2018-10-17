@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
@@ -23,9 +24,10 @@ namespace dexih.functions.Mappings
         public long Count { get; set; }
         public object Value { get; set; }
 
-        public override void InitializeInputOrdinals(Table table, Table joinTable = null)
+        public override Task Initialize(Table table, Table joinTable = null)
         {
             _inputOrdinal = table.GetOrdinal(InputColumn);
+            return Task.CompletedTask;
         }
         
         public override void AddOutputColumns(Table table)

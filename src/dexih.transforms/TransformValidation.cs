@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using dexih.functions.Exceptions;
 using dexih.functions.Mappings;
+using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Transforms;
@@ -26,17 +27,15 @@ namespace dexih.transforms
         {
             Mappings = mappings;
             SetInTransform(inReader);
-//            Validations = validations;
             ValidateDataTypes = validateDataTypes;
         }
 
-        public bool ValidateDataTypes { get; set; }
+        public bool ValidateDataTypes { get; set; } = true;
 
         private object[] _savedRejectRow; //used as a temporary store for the pass row when a pass and reject occur.
 
         private bool _lastRecord = false;
 
-        private string _rejectReasonColumnName;
         private int _rejectReasonOrdinal;
         private int _operationOrdinal;
         private int _validationStatusOrdinal;
@@ -45,16 +44,27 @@ namespace dexih.transforms
         private int _primaryFieldCount;
         private int _columnCount;
 
-//        public List<TransformFunction> Validations
-//        {
-//            get { return Functions;  }
-//            set { Functions = value;  }
-//        }
-
-        public override bool InitializeOutputFields()
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
+            AuditKey = auditKey;
+
+            var result = true;
+
+            if (PrimaryTransform != null)
+            {
+                result = result && await PrimaryTransform.Open(auditKey, query, cancellationToken);
+                if (!result)
+                    return result;
+                
+            }
+
+            if (ReferenceTransform != null)
+            {
+                result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
+            }
+            
             //CacheTable = PrimaryTransform.CacheTable.Copy();
-            CacheTable = Mappings.Initialize(PrimaryTransform.CacheTable);
+            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable);
 
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
@@ -68,7 +78,7 @@ namespace dexih.transforms
             //add the rejection reason, which details the reason for a rejection.
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.RejectedReason) == null)
             {
-                CacheTable.Columns.Add(new TableColumn("RejectReason", ETypeCode.String)
+                CacheTable.Columns.Add(new TableColumn("RejectReason", TableColumn.EDeltaType.RejectedReason)
                 {
                     DeltaType = TableColumn.EDeltaType.RejectedReason
                 });
@@ -77,7 +87,7 @@ namespace dexih.transforms
             //add the rejection reason, which details the reason for a rejection.
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.ValidationStatus) == null)
             {
-                CacheTable.Columns.Add(new TableColumn("ValidationStatus", ETypeCode.String)
+                CacheTable.Columns.Add(new TableColumn("ValidationStatus")
                 {
                     DeltaType = TableColumn.EDeltaType.ValidationStatus
                 });
@@ -85,30 +95,22 @@ namespace dexih.transforms
 
             //store reject column details to improve performance.
             _rejectReasonOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
-            if (_rejectReasonOrdinal >= 0)
-            {
-                _rejectReasonColumnName = CacheTable.Columns[_rejectReasonOrdinal].Name;
-            }
-
             _operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
             _validationStatusOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
 
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _columnCount = CacheTable.Columns.Count;
             _mapFieldOrdinals = new List<int>();
+
             for (var i = 0; i < _primaryFieldCount; i++)
             {
                 _mapFieldOrdinals.Add(GetOrdinal(PrimaryTransform.GetName(i)));
             }
 
-
-
-            return true;
+            return result;
         }
 
         public override bool RequiresSort => false;
-        // public override bool PassThroughColumns => true;
-
 
         public override bool ResetTransform()
         {
@@ -172,35 +174,36 @@ namespace dexih.transforms
                 {
                     foreach (var mapping in Mappings.OfType<MapValidation>())
                     {
-                        if (mapping.Validated(out string reason))
+                        if (!mapping.Validated(out string reason))
                         {
                             rejectReason.AppendLine(reason);
 
                             if (mapping.Function.InvalidAction == TransformFunction.EInvalidAction.Abend)
                             {
-                                var reason1 = $"The validation rule abended as the invalid action is set to abend.  " + rejectReason.ToString();
+                                var reason1 = $"The validation rule abended as the invalid action is set to abend.  " + rejectReason;
                                 throw new Exception(reason1);
                             }
-                        }
+                            
+                            //set the final invalidation action based on priority order of other rejections.
+                            finalInvalidAction = finalInvalidAction < mapping.Function.InvalidAction ? mapping.Function.InvalidAction : finalInvalidAction;
 
-                        //set the final invalidation action based on priority order of other rejections.
-                        finalInvalidAction = finalInvalidAction < mapping.Function.InvalidAction ? mapping.Function.InvalidAction : finalInvalidAction;
-
-                        if (mapping.Function.InvalidAction == TransformFunction.EInvalidAction.Reject || mapping.Function.InvalidAction == TransformFunction.EInvalidAction.RejectClean)
-                        {
-                            //if the row is rejected, copy unmodified row to a reject row.
-                            if (rejectRow == null)
+                            if (mapping.Function.InvalidAction == TransformFunction.EInvalidAction.Reject || mapping.Function.InvalidAction == TransformFunction.EInvalidAction.RejectClean)
                             {
-                                rejectRow = new object[CacheTable.Columns.Count];
-                                passRow.CopyTo(rejectRow, 0);
-                                rejectRow[_operationOrdinal] = 'R';
-                                TransformRowsRejected++;
+                                //if the row is rejected, copy unmodified row to a reject row.
+                                if (rejectRow == null)
+                                {
+                                    rejectRow = new object[CacheTable.Columns.Count];
+                                    passRow.CopyTo(rejectRow, 0);
+                                    rejectRow[_operationOrdinal] = 'R';
+                                    TransformRowsRejected++;
+                                }
                             }
                         }
                     }
                 }
-   
-                if (ValidateDataTypes && (finalInvalidAction == TransformFunction.EInvalidAction.RejectClean || finalInvalidAction == TransformFunction.EInvalidAction.Clean))
+
+                if (finalInvalidAction == TransformFunction.EInvalidAction.RejectClean ||
+                    finalInvalidAction == TransformFunction.EInvalidAction.Clean)
                 {
                     // update the pass row with any outputs from clean functions.
                     var cleanRow = new object[_columnCount];
@@ -216,10 +219,13 @@ namespace dexih.transforms
                     {
                         passRow[_operationOrdinal] = 'C';
                     }
-                    
+                }
+   
+                if (ValidateDataTypes)
+                {
                     for (var i = 1; i < _columnCount; i++)
                     {
-                        // value if the postition - 1 due to the "Operation" column being in pos[0]
+                        // value if the position - 1 due to the "Operation" column being in pos[0]
                         var value = passRow[i];
                         var col = CacheTable.Columns[i];
 

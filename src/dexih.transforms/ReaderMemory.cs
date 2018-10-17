@@ -56,11 +56,6 @@ namespace dexih.transforms
 
         #endregion
 
-        public override bool InitializeOutputFields()
-        {
-            return true;
-        }
-
         public override string Details()
         {
             return "Memory Table " + CacheTable.Name;

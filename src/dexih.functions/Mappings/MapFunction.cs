@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Parameter;
 using Dexih.Utils.CopyProperties;
@@ -23,14 +25,16 @@ namespace dexih.functions.Mappings
         public Parameters Parameters { get; set; }
 
         public object ReturnValue;
-        private object[] _outputs;
+        protected object[] Outputs;
 
         public object ResultReturnValue;
         private object[] _resultOutputs;
 
-        public override void InitializeInputOrdinals(Table table, Table joinTable = null)
+        public override async Task Initialize(Table table, Table joinTable = null)
         {
             Parameters.InitializeInputOrdinals(table, joinTable);
+
+            await Function.Initialize(CancellationToken.None);
         }
 
         public override void AddOutputColumns(Table table)
@@ -45,7 +49,7 @@ namespace dexih.functions.Mappings
             //gets the parameters.
             var parameters = Parameters.GetFunctionParameters();
             
-            ReturnValue = Function.RunFunction(functionVariables, parameters, out _outputs);
+            ReturnValue = Function.RunFunction(functionVariables, parameters, out Outputs);
             
             if (ReturnValue != null && ReturnValue is bool boolReturn)
             {
@@ -60,7 +64,7 @@ namespace dexih.functions.Mappings
             if (Function.FunctionType == functionType)
             {
                 ReturnValue = null;
-                _outputs = null;
+                Outputs = null;
                 ResultReturnValue = null;
                 _resultOutputs = null;
                 Function.Reset();
@@ -74,7 +78,7 @@ namespace dexih.functions.Mappings
 
         public override void MapOutputRow(object[] data)
         {
-            Parameters.SetFunctionResult(ReturnValue, _outputs, data);
+            Parameters.SetFunctionResult(ReturnValue, Outputs, data);
         }
         
         public override bool ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
