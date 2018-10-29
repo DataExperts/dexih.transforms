@@ -33,7 +33,7 @@ namespace dexih.functions.Mappings
         private int _column1Ordinal = -1;
         private int _column2Ordinal = -1;
 
-        public override Task Initialize(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null)
         {
             if (Column1 != null)
             {
@@ -60,8 +60,6 @@ namespace dexih.functions.Mappings
             {
                 _column2Ordinal = -1;
             }
-
-            return Task.CompletedTask;
         }
 
         public override void AddOutputColumns(Table table)
@@ -74,51 +72,23 @@ namespace dexih.functions.Mappings
             var value1 = _column1Ordinal == -1 ? Value1 : row[_column1Ordinal];
             var value2 = _column2Ordinal == -1 ? Value2 : row[_column2Ordinal];
             
-            var compare = DataType.Compare(Column1.DataType, value1, value2);
-
             switch (Compare)
             {
                 case Filter.ECompare.GreaterThan:
-                    if (compare != DataType.ECompareResult.Greater)
-                    {
-                        return false;
-                    }
-                    break;
+                    return Operations.GreaterThan(Column1.DataType, value1, value2);
                 case Filter.ECompare.IsEqual:
-                    if (compare != DataType.ECompareResult.Equal)
-                    {
-                        return false;
-                    }
-                    break;
+                    return Operations.Equal(Column1.DataType, value1, value2);
                 case Filter.ECompare.GreaterThanEqual:
-                    if (compare == DataType.ECompareResult.Less)
-                    {
-                        return false;
-                    }
-                    break;
+                    return Operations.GreaterThanOrEqual(Column1.DataType, value1, value2);
                 case Filter.ECompare.LessThan:
-                    if (compare != DataType.ECompareResult.Less)
-                    {
-                        return false;
-                    }
-                    break;
+                    return Operations.LessThan(Column1.DataType, value1, value2);
                 case Filter.ECompare.LessThanEqual:
-                    if (compare == DataType.ECompareResult.Greater)
-                    {
-                        return false;
-                    }
-                    break;
+                    return Operations.LessThanOrEqual(Column1.DataType, value1, value2);
                 case Filter.ECompare.NotEqual:
-                    if (compare == DataType.ECompareResult.Equal)
-                    {
-                        return false;
-                    }
-                    break;
+                    return !Operations.Equal(Column1.DataType, value1, value2);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            return true;
         }
 
         public override void MapOutputRow(object[] row)

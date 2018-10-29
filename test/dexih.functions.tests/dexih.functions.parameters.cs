@@ -73,7 +73,7 @@ namespace dexih.transforms.tests
             table.Columns.Add(column);
             parameters.Add(new ParameterColumn("p2", column));
 
-            var parameterArray = new ParameterArray("p2", DataType.ETypeCode.String, parameters);
+            var parameterArray = new ParameterArray("p2", DataType.ETypeCode.String, 1, parameters);
             parameterArray.InitializeOrdinal(table);
 
             try
@@ -104,7 +104,7 @@ namespace dexih.transforms.tests
             inputs.Add(new ParameterValue("p1", DataType.ETypeCode.String, "static"));
             inputs.Add(new ParameterColumn("p2", column1));
             var arrayParameters = new List<Parameter>() {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};
-            inputs.Add(new ParameterArray("p3", DataType.ETypeCode.String, arrayParameters));
+            inputs.Add(new ParameterArray("p3", DataType.ETypeCode.String, 1, arrayParameters));
 
             var parameters = new Parameters();
             parameters.Inputs = inputs;
@@ -140,7 +140,7 @@ namespace dexih.transforms.tests
             var outputs = new Parameter[2];
             outputs[0] = new ParameterColumn("p2", column1);
             var arrayParameters = new List<Parameter>() {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};
-            outputs[1] = new ParameterArray("p3", DataType.ETypeCode.String, arrayParameters);
+            outputs[1] = new ParameterArray("p3", DataType.ETypeCode.String, 1, arrayParameters);
 
             var parameters = new Parameters();
             parameters.InitializeOutputs(returnParameter, outputs, table);

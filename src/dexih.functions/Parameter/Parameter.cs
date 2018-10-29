@@ -68,13 +68,13 @@ namespace dexih.functions.Parameter
         /// <param name="input"></param>
         public void SetValue(object input)
         {
-            if (input == null || Equals(input, ""))
+            if (DataType == ETypeCode.Unknown || input == null || Equals(input, ""))
             {
                 Value = input;
             }
             else
             {
-                var result = TryParse(DataType, Rank, input);
+                var result = Operations.Parse(DataType, Rank, input);
                 Value = result;
             }
         }

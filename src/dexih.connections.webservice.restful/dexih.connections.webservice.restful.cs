@@ -51,7 +51,8 @@ namespace dexih.connections.webservice
         public override bool CanUseBinary => false;
 	    public override bool CanUseArray => false;
 	    public override bool CanUseJson => true;
-	    public override bool CanUseCharArray => false;
+        public override bool CanUseXml => false;
+        public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
 
@@ -336,7 +337,6 @@ namespace dexih.connections.webservice
             try
             {
                 var restFunction = (WebService)table;
-                var baseRow = new object[table.Columns.Count];
 
                 var response = await GetWebServiceResponse(restFunction, filters, cancellationToken);
 
@@ -348,38 +348,41 @@ namespace dexih.connections.webservice
 
                 var lookupResult = new List<object[]>();
 
-                if (responseStatusOrdinal >= 0)
+                void PopulateRow(object[] baseRow)
                 {
-                    baseRow[responseStatusOrdinal] = response.statusCode;
-                }
-
-                if (responseSuccessOrdinal >= 0)
-                {
-                    baseRow[responseSuccessOrdinal] = response.isSuccess;
-                }
-
-				if (urlOrdinal >= 0)
-				{
-					baseRow[urlOrdinal] = response.url;
-				}
-
-                foreach (var column in restFunction.Columns.Where(c => c.IsInput))
-                {
-                    if(filters != null)
+                    if (responseStatusOrdinal >= 0)
                     {
-                        var filter = filters.Where(c => c.Column1.Name == column.Name).ToArray();
-                        if(!filter.Any())
+                        baseRow[responseStatusOrdinal] = response.statusCode;
+                    }
+
+                    if (responseSuccessOrdinal >= 0)
+                    {
+                        baseRow[responseSuccessOrdinal] = response.isSuccess;
+                    }
+
+                    if (urlOrdinal >= 0)
+                    {
+                        baseRow[urlOrdinal] = response.url;
+                    }
+
+                    foreach (var column in restFunction.Columns.Where(c => c.IsInput))
+                    {
+                        if (filters != null)
                         {
-                            baseRow[restFunction.GetOrdinal(column)] = column.DefaultValue;
+                            var filter = filters.Where(c => c.Column1.Name == column.Name).ToArray();
+                            if (!filter.Any())
+                            {
+                                baseRow[restFunction.GetOrdinal(column)] = column.DefaultValue;
+                            }
+                            else
+                            {
+                                baseRow[restFunction.GetOrdinal(column)] = filter.First().Value2;
+                            }
                         }
                         else
                         {
-                            baseRow[restFunction.GetOrdinal(column)] = filter.First().Value2;
+                            baseRow[restFunction.GetOrdinal(column)] = column.DefaultValue;
                         }
-                    }
-                    else
-                    {
-                        baseRow[restFunction.GetOrdinal(column)] = column.DefaultValue;
                     }
                 }
 
@@ -405,19 +408,27 @@ namespace dexih.connections.webservice
 					if (fileHanlder != null)
 					{
 						await fileHanlder.SetStream(response.response, null);
-						return await fileHanlder.GetAllRows(baseRow);
+						var rows = await fileHanlder.GetAllRows();
+                        foreach(var row in rows)
+                        {
+                            PopulateRow(row);
+                        }
+                        return rows;
 					}
 				} 
 				else
 				{
+                    var row = new object[table.Columns.Count];
+                    PopulateRow(row);
+
 					if(errorOrdinal >= 0)
 					{
 						var reader = new StreamReader(response.response);
 						var errorString = await reader.ReadToEndAsync();
-						baseRow[errorOrdinal] = errorString;
+                        row[errorOrdinal] = errorString;
 					}
 
-					return new[] { baseRow };
+					return new[] { row };
 				}
 
                 throw new ConnectionException($"The lookup failed as the web service format type {restFunction.FormatType} is not currently supported.");

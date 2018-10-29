@@ -27,7 +27,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(false);
 
-            var function = new TransformFunction(new Func<string, int, string>((stringColumn, number) => stringColumn + number.ToString()), null, null);
+            var function = new TransformFunction(new Func<string, int, string>((stringColumn, number) => stringColumn + number.ToString()), typeof(bool), null, null);
             var parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
@@ -41,7 +41,7 @@ namespace dexih.transforms.tests
             
             mappings.Add(new MapFunction(function, parameters));
             
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring)).GetTransformFunction();
+            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring)).GetTransformFunction(typeof(string));
             parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
@@ -55,12 +55,12 @@ namespace dexih.transforms.tests
             mappings.Add(new MapFunction(function, parameters));
             
             
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Concat)).GetTransformFunction();
+            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Concat)).GetTransformFunction(typeof(string));
             parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
                 {
-                    new ParameterArray("value", ETypeCode.String, new List<Parameter>
+                    new ParameterArray("value", ETypeCode.String, 1, new List<Parameter>
                     {
                         new ParameterColumn("value", new TableColumn("StringColumn")),
                     })
@@ -70,7 +70,7 @@ namespace dexih.transforms.tests
             mappings.Add(new MapFunction(function, parameters));
 
             mappings.Add(new MapColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)));
-            mappings.Add(new MapColumn(new TableColumn("ArrayColumn", ETypeCode.DateTime), new TableColumn("ArrayColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Array)));
+            mappings.Add(new MapColumn(new TableColumn("ArrayColumn", ETypeCode.DateTime), new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1)));
             
             var transformMapping = new TransformMapping(source, mappings);
 
@@ -135,7 +135,7 @@ namespace dexih.transforms.tests
             var mappings = new Mappings(false);
             for (var i = 0; i < data.FieldCount; i++)
             {
-                var function = new TransformFunction(new Func<object, object>((value) => value), null, null);
+                var function = new TransformFunction(new Func<object, object>((value) => value), typeof(string), null, null);
                 var parameters = new Parameters()
                 {
                     Inputs = new List<Parameter>()

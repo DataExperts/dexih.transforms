@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Data.Common;
 using System.IO;
 using System.Linq;
@@ -9,61 +9,67 @@ using Newtonsoft.Json;
 namespace dexih.transforms
 {
     
-
     /// <summary>
-    /// Writes out a simple json stream containing the headers and data for the reader.
+    /// Converts a DbDataReader into an output csv stream
     /// </summary>
-    public class TransformJsonStream : Stream
+    public class StreamCsv : Stream
     {
         private const int BufferSize = 50000;
         private readonly DbDataReader _reader;
         private readonly MemoryStream _memoryStream;
         private readonly StreamWriter _streamWriter;
         private long _position;
-        private readonly long _maxRows;
-        private long _rowCount;
-        private bool _hasRows;
-        private bool _first;
-        private readonly object[] _valuesArray;
 
-        public TransformJsonStream(string name, DbDataReader reader, long maxRows = -1)
+        private readonly char[] QuoteCharacters = new char[] { '"', ' ', ',' };
+
+        public StreamCsv(DbDataReader reader)
         {
-            _reader = reader;
+            
+
             _memoryStream = new MemoryStream(BufferSize);
             _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
             _position = 0;
 
-            _maxRows = maxRows <= 0 ? long.MaxValue : maxRows;
-            _rowCount = 0;
-            _hasRows = true;
-            _first = true;
-
-            _streamWriter.Write("{\"name\": \"" + System.Web.HttpUtility.JavaScriptStringEncode(name) + "\"");
-
-            _streamWriter.Write(", \"columns\": ");
-
+            //write the file header.
             // if this is a transform, then use the dataTypes from the cache table
             if (reader is Transform transform)
             {
-                transform.ConvertCharArrayToString = true;
-                var columns = JsonConvert.SerializeObject(transform.CacheTable.Columns.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType}));
-                _streamWriter.Write(columns);
+                _reader = new ReaderConvertDataTypes(new ConnectionConvertString(), transform);
+
+                var s = new string[transform.CacheTable.Columns.Count];
+                for (var j = 0; j < transform.CacheTable.Columns.Count; j++)
+                {
+                    s[j] = transform.CacheTable.Columns[j].LogicalName;
+                    if (string.IsNullOrEmpty(s[j]))
+                    {
+                        s[j] = transform.CacheTable.Columns[j].Name;
+                    }
+                    
+                    if (s[j].Contains("\"")) //replace " with ""
+                        s[j] = s[j].Replace("\"", "\"\"");
+                    if (s[j].IndexOfAny(QuoteCharacters) != -1) //add "'s around any string with space or "
+                        s[j] = "\"" + s[j] + "\"";
+                }
+                _streamWriter.WriteLine(string.Join(",", s));
             }
             else
             {
+                _reader = reader;
+
+                var s = new string[reader.FieldCount];
                 for (var j = 0; j < reader.FieldCount; j++)
                 {
-                    var colName = reader.GetName(j);
-                    _streamWriter.Write(JsonConvert.SerializeObject(new {name = colName, logicalName = colName, dataType = reader.GetDataTypeName(j)}) + ",");
+                    s[j] = reader.GetName(j);
+                    if (s[j].Contains("\"")) //replace " with ""
+                        s[j] = s[j].Replace("\"", "\"\"");
+                    if (s[j].IndexOfAny(QuoteCharacters) != -1) //add "'s around any string with space or "
+                        s[j] = "\"" + s[j] + "\"";
                 }
+                _streamWriter.WriteLine(string.Join(",", s));
             }
-            
-            _valuesArray = new object[reader.FieldCount];
 
-            _streamWriter.Write(", \"data\": [");
             _memoryStream.Position = 0;
         }
-
         public override bool CanRead => true;
 
         public override bool CanSeek => false;
@@ -86,7 +92,7 @@ namespace dexih.transforms
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if(!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
+            if(!_reader.HasRows && _memoryStream.Position >= _memoryStream.Length)
             {
                 return 0;
             }
@@ -98,44 +104,24 @@ namespace dexih.transforms
             {
                 _memoryStream.SetLength(0);
 
-                if (_first)
-                {
-                    _hasRows = await _reader.ReadAsync(cancellationToken);
-                    if (_hasRows == false)
-                    {
-                        await _streamWriter.WriteAsync("]}");
-                    }
-                    _first = false;
-                }
-
                 // populate the stream with rows, up to the buffer size.
-                while (_hasRows)
+                while (await _reader.ReadAsync(cancellationToken) )
                 {
                     if (cancellationToken.IsCancellationRequested)
-                    {
                         return 0;
-                    }
 
-                    _reader.GetValues(_valuesArray);
-
-                    var row = JsonConvert.SerializeObject(_valuesArray);
-
-                    await _streamWriter.WriteAsync(row);
-
-                    _rowCount++;
-                    _hasRows = await _reader.ReadAsync(cancellationToken);
-
-                    if (_hasRows && _rowCount < _maxRows)
+                    var s = new string[_reader.FieldCount];
+                    for (var j = 0; j < _reader.FieldCount; j++)
                     {
-                        await _streamWriter.WriteAsync(",");
+                        s[j] = _reader.GetString(j);
+                        if (s[j].Contains("\"")) //replace " with ""
+                            s[j] = s[j].Replace("\"", "\"\"");
+                        if (s[j].IndexOfAny(QuoteCharacters) != -1) //add "'s around any string with space or "
+                            s[j] = "\"" + s[j] + "\"";
                     }
-                    else
-                    {
-                        await _streamWriter.WriteAsync("]}");
-                        _hasRows = false;
-                        break;
-                    }
+                    await _streamWriter.WriteLineAsync(string.Join(",", s));
 
+                    if (_memoryStream.Length > count && _memoryStream.Length > BufferSize) break;
                 }
 
                 _memoryStream.Position = 0;
@@ -151,17 +137,17 @@ namespace dexih.transforms
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotSupportedException("The Seek function is not supported.");
+            throw new NotImplementedException();
         }
 
         public override void SetLength(long value)
         {
-            throw new NotSupportedException("The SetLength function is not supported.");
+            throw new NotImplementedException();
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotSupportedException("The Write function is not supported.");
+            throw new NotImplementedException();
         }
     }
 }

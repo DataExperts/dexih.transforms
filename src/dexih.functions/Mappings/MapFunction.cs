@@ -30,11 +30,9 @@ namespace dexih.functions.Mappings
         public object ResultReturnValue;
         private object[] _resultOutputs;
 
-        public override async Task Initialize(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null)
         {
-            Parameters.InitializeInputOrdinals(table, joinTable);
-
-            await Function.Initialize(CancellationToken.None);
+            Parameters.InitializeColumns(table, joinTable);
         }
 
         public override void AddOutputColumns(Table table)

@@ -13,6 +13,7 @@ using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Newtonsoft.Json;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.excel
 {
@@ -54,7 +55,8 @@ namespace dexih.connections.excel
 	    public override bool CanUseBinary => false;
 	    public override bool CanUseArray => false;
 	    public override bool CanUseJson => false;
-	    public override bool CanUseCharArray => false;
+        public override bool CanUseXml => false;
+        public override bool CanUseCharArray => false;
 	    public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
 
@@ -504,11 +506,11 @@ namespace dexih.connections.excel
                 {
 	                if (column.IsArray())
 	                {
-		                parsedValue = TryParse(ETypeCode.String, value, column.MaxLength);
+		                parsedValue = Operations.Parse(ETypeCode.String, value);
 	                }
 	                else
 	                {
-		                parsedValue = TryParse(column.DataType, value, column.MaxLength);
+		                parsedValue = Operations.Parse(column.DataType, value);
 	                }
                 }
                 catch (Exception ex)

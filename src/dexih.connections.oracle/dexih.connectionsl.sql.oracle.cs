@@ -10,6 +10,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
 using static Dexih.Utils.DataType.DataType;
@@ -77,16 +78,28 @@ namespace dexih.connections.sql
             }
         }
         
-        public override object ConvertParameterType(object value)
+        public override object ConvertParameterType(ETypeCode typeCode, int rank, object value)
         {
-            if (value == null)
+            if (value == null || value == DBNull.Value)
+            {
                 return DBNull.Value;
-            if (value.GetType().IsArray)
-                return JsonConvert.SerializeObject(value);
-            if (value is Guid || value is ulong)
+            }
+
+            if (rank > 0 && !CanUseArray)
+            {
+                return Operations.Parse(ETypeCode.String, value);
+            }
+
+            // GUID's get parameterized as binary.  So need to explicitly convert to string.
+            if (typeCode == ETypeCode.Guid || typeCode == ETypeCode.UInt64)
+            {
                 return value.ToString();
-            if (value is bool b)
-                return b ? 1 : 0;
+            }
+
+            if (typeCode == ETypeCode.Boolean)
+            {
+                return (bool) value ? 1 : 0;
+            }
             
             return value;
         }
@@ -294,10 +307,10 @@ namespace dexih.connections.sql
                         returnValue = "TO_TIMESTAMP('" + EscapeString((string)value) + "', 'HH24:MI:SS.')";
 					break;
                 case ETypeCode.Boolean:
-                    var v = (bool) TryParse(ETypeCode.Boolean, value);
+                    var v = (bool) Operations.Parse(ETypeCode.Boolean, value);
                     return v ? "1" : "0";
                 case ETypeCode.Binary:
-                    return "'" + TryParse(ETypeCode.String, value) + "'";
+                    return "'" + Operations.Parse(ETypeCode.String, value) + "'";
                 default:
                     throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");
             }
@@ -680,11 +693,11 @@ ORDER BY cols.table_name, cols.position"))
                 case ETypeCode.SByte:
                     return (OracleDbType.Int16, value);
                 case ETypeCode.UInt16:
-                    return (OracleDbType.Int32, TryParse(ETypeCode.Int32, value));
+                    return (OracleDbType.Int32, Operations.Parse(ETypeCode.Int32, value));
                 case ETypeCode.UInt32:
-                    return (OracleDbType.Int64, TryParse(ETypeCode.Int64, value));
+                    return (OracleDbType.Int64, Operations.Parse(ETypeCode.Int64, value));
                 case ETypeCode.UInt64:
-                    return (OracleDbType.Int64, TryParse(ETypeCode.Int64, value));
+                    return (OracleDbType.Int64, Operations.Parse(ETypeCode.Int64, value));
                 case ETypeCode.Int16:
                     return (OracleDbType.Int16, value);
                 case ETypeCode.Int32:
@@ -705,7 +718,7 @@ ORDER BY cols.table_name, cols.position"))
                 case ETypeCode.Unknown:
 					return (OracleDbType.Clob, value);
                 case ETypeCode.Boolean:
-                    var v = (bool) TryParse(ETypeCode.Boolean, value);
+                    var v = (bool) Operations.Parse(ETypeCode.Boolean, value);
                     return (OracleDbType.Byte, v ? 1 : 0);
                 case ETypeCode.DateTime:
                     return (OracleDbType.TimeStamp, value);

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using dexih.functions.Query;
@@ -8,77 +6,48 @@ using Dexih.Utils.DataType;
 
 namespace dexih.functions.BuiltIn
 {
-    public class ConditionFunctions
+    public class ConditionFunctions<T>
     {
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Less Than",
-            Description = "Less than")]
+            Description = "Less than", GenericType = EGenericType.All)]
         [TransformFunctionCompare(Compare = Filter.ECompare.LessThan)]
-        public bool LessThan(object value, object compare)
-        {
-            return DataType.Compare(null, value, compare) == DataType.ECompareResult.Less;
-        }
+        public bool LessThan(T value, T compare) => Operations.LessThan(value, compare);
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Less Than/Equal",
-            Description = "Less than or Equal")]
+            Description = "Less than or Equal", GenericType = EGenericType.All)]
         [TransformFunctionCompare(Compare = Filter.ECompare.LessThanEqual)]
-        public bool LessThanEqual(object value, object compare)
-        {
-            var compareResult = DataType.Compare(null, value, compare);
-            return compareResult == DataType.ECompareResult.Less || compareResult == DataType.ECompareResult.Equal;
-        }
+        public bool LessThanOrEqual(T value, T compare) => Operations.LessThanOrEqual(value, compare);
+
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Greater Than",
-            Description = "Greater than")]
+            Description = "Greater than", GenericType = EGenericType.All)]
         [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThan)]
-        public bool GreaterThan(object value, object compare)
-        {
-            return DataType.Compare(null, value, compare) == DataType.ECompareResult.Greater;
-        }
+        public bool GreaterThan(T value, T compare) => Operations.GreaterThan(value, compare);
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition",
-            Name = "Greater Than/Equal", Description = "Greater or Equal")]
+            Name = "Greater Than/Equal", Description = "Greater or Equal", GenericType = EGenericType.All)]
         [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThanEqual)]
-        public bool GreaterThanEqual(object value, object compare)
-        {
-            var compareResult = DataType.Compare(null, value, compare);
-            return compareResult == DataType.ECompareResult.Greater || compareResult == DataType.ECompareResult.Equal;
-        }
+        public bool GreaterThanOrEqual(T value, T compare) => Operations.GreaterThanOrEqual(value, compare);
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Equal",
-            Description = "The list of values are equal.")]
+            Description = "The list of values are equal.", GenericType = EGenericType.All)]
         [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
-        public bool IsEqual(object[] values)
+        public bool IsEqual(T[] values)
         {
             for (var i = 1; i < values.Length; i++)
             {
-                if (!Equals(values[0], values[i])) return false;
+                if (!Operations.Equals(values[0], values[i])) return false;
             }
 
             return true;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Array Contains",
-            Description = "The value is equal to at least one of the values in the values array")]
+            Description = "The value is equal to at least one of the values in the values array", GenericType = EGenericType.All)]
         [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
-        public bool ArrayContains(object value, object[] values)
+        public bool ArrayContains(T value, T[] values)
         {
             return values.Contains(value);
-        }
-        
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Strings Equal",
-            Description = "The list of string values are equal.")]
-        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
-        public bool StringIsEqual(string[] values, bool ignoreCase) 
-        {
-            for (var i = 1; i < values.Length; i++)
-            {
-                var compare = string.Equals(values[0], values[i], ignoreCase
-                    ? StringComparison.InvariantCultureIgnoreCase
-                    : StringComparison.CurrentCulture);
-                if (!compare) return false;
-            }
-
-            return true;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Is Date",
@@ -100,8 +69,6 @@ namespace dexih.functions.BuiltIn
         {
             return decimal.TryParse(value, out _);
         }
-
-
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Is Null",
             Description = "Value is null")]
@@ -126,17 +93,17 @@ namespace dexih.functions.BuiltIn
 
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Between",
-            Description = "Value is between the specified values but not equal to them.")]
-        public bool IsBetween(object value, object lowRange, object highRange)
+            Description = "Value is between the specified values but not equal to them.", GenericType = EGenericType.All)]
+        public bool IsBetween(T value, T lowRange, T highRange)
         {
             return GreaterThan(value, lowRange) && LessThan(value, highRange);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition",
-            Name = "Is Between Inclusive", Description = "Value is equal or between the specified values")]
-        public bool IsBetweenInclusive(object value, object lowRange, object highRange)
+            Name = "Is Between Inclusive", Description = "Value is equal or between the specified values", GenericType = EGenericType.All)]
+        public bool IsBetweenInclusive(T value, T lowRange, T highRange)
         {
-            return GreaterThanEqual(value, lowRange) && LessThanEqual(value, highRange);
+            return GreaterThanOrEqual(value, lowRange) && LessThanOrEqual(value, highRange);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition",
@@ -270,35 +237,6 @@ namespace dexih.functions.BuiltIn
             return !(dateValue.DayOfWeek == DayOfWeek.Saturday || dateValue.DayOfWeek == DayOfWeek.Sunday);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Is In",
-            Description = "Value is one of the elements in an array")]
-        public bool IsIn(object value, object[] compareTo)
-        {
-            var returnValue = false;
-            foreach (var t in compareTo)
-            {
-                returnValue = Equals(value, t);
-                if(returnValue)
-                {
-                    break;
-                }
-            }
-            return returnValue;
-        }
-        
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "DateTime Equals",
-            Description = "Are the specified datetime values equal.")]
-        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
-        public bool IsDateTimeEqual(DateTime[] values)
-        {
-            for (var i = 1; i < values.Length; i++)
-            {
-                if (values[0] != values[i]) return false;
-            }
-
-            return true;
-        }
-
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Numeric Equals",
             Description = "Are the specified decimal values equal with the specified precision.")]
         [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
@@ -316,19 +254,6 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "Boolean Equals",
-            Description = "Are the specified boolean conditions equal.")]
-        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
-        public bool IsBooleanEqual(bool[] values)
-        {
-            for (var i = 1; i < values.Length; i++)
-            {
-                if (values[0] != values[i]) return false;
-            }
-
-            return true;
-        }
-
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "Is True",
             Description = "Is the specified value equal to true.")]
         public bool IsTrue(bool value) => value;
@@ -341,17 +266,9 @@ namespace dexih.functions.BuiltIn
             return DateTime.Now > lowRange && DateTime.Now < highRange;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition",
-            Name = "Is Now Between Dates(inclusive)",
-            Description = "The date now is equal or between the start/end date")]
-        public bool IsDateBetweenInclusiveNow(DateTime lowRange, DateTime highRange)
-        {
-            return DateTime.Now >= lowRange && DateTime.Now <= highRange;
-        }
-
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Range Intersect",
-            Description = "The two ranges (lowRange1-highRange1 & lowRange2-highRange2) intersect.")]
-        public bool RangeIntersect(object lowRange1, object highRange1, object lowRange2, object highRange2)
+            Description = "The two ranges (lowRange1-highRange1 & lowRange2-highRange2) intersect.", GenericType = EGenericType.All)]
+        public bool RangeIntersect(T lowRange1, T highRange1, T lowRange2, T highRange2)
         {
             return LessThan(lowRange1, highRange2) && LessThan(lowRange2, highRange1);
         }
@@ -377,12 +294,12 @@ namespace dexih.functions.BuiltIn
         }
 
         /// <summary>
-        /// Find out whether the provided 32 bit integer is a perfect square, i.e. a square of an integer.
+        /// Find out whether the provided 64 bit integer is a perfect square, i.e. a square of an integer.
         /// </summary>
         /// <param name="number">The number to very whether it's a perfect square.</param>
         /// <returns>True if and only if it is a perfect square.</returns>
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Perfect Square", Description = "The specific number is a perfect square (i.e. square of an integer)")]
-        public static bool IsPerfectSquare(int number)
+        public static bool IsPerfectSquare(long number)
         {
             if (number < 0)
                 return false;
@@ -392,7 +309,7 @@ namespace dexih.functions.BuiltIn
                 case 1:
                 case 4:
                 case 9:
-                    var num = (int) Math.Floor(Math.Sqrt((double) number) + 0.5);
+                    var num = (int) Math.Floor(Math.Sqrt(number) + 0.5);
                     return num * num == number;
                 default:
                     return false;

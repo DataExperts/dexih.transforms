@@ -223,13 +223,13 @@ namespace dexih.transforms
                     
                     for (var i = 0; i < _primarySortOrdinals.Count; i++)
                     {
-                        var compareResult = Dexih.Utils.DataType.DataType.Compare(
+                        var compareResult = Operations.Compare(
                             PrimaryTransform.CacheTable.Columns[_primarySortOrdinals[i]].DataType,
                             PrimaryTransform[_primarySortOrdinals[i]], ReferenceTransform[_referenceSortOrdinals[i]]);
 
-                        if ((compareResult == DataType.ECompareResult.Greater &&
+                        if ((compareResult == 1 &&
                              SortFields[i].Direction == Sort.EDirection.Ascending) ||
-                            (compareResult == DataType.ECompareResult.Less &&
+                            (compareResult == -1 &&
                              SortFields[i].Direction == Sort.EDirection.Descending))
                         {
                             usePrimary = false;

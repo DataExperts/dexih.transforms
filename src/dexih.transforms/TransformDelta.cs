@@ -11,6 +11,7 @@ using dexih.transforms.Transforms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -27,7 +28,7 @@ namespace dexih.transforms
             SurrogateKey = surrogateKey;
 
             // create a copy of the target table without the schem or any deltaType = Ignore columns
-            CacheTable = referenceTransform.CacheTable.Copy(true, true);
+            // CacheTable = referenceTransform.CacheTable.Copy(true, true);
             AddDefaultRow = addDefaultRow;
 
             DoUpdate = false;
@@ -43,7 +44,9 @@ namespace dexih.transforms
             if (deltaType == EUpdateStrategy.AppendUpdateDeletePreserve || deltaType == EUpdateStrategy.AppendUpdatePreserve)
                 DoPreserve = true;
 
-            SetInTransform(inReader, referenceTransform);
+            Mappings = new functions.Mappings.Mappings();
+
+            SetInTransform(inReader, referenceTransform, false);
         }
 
         [JsonConverter(typeof (StringEnumConverter))]
@@ -139,7 +142,7 @@ namespace dexih.transforms
                 returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
             }
 
-                        if (ReferenceTransform == null)
+            if (ReferenceTransform == null)
                 throw new Exception("There must be a target table specified.");
 
             //add the operation type, which indicates whether record are C-create/U-update or D-Deletes
@@ -280,7 +283,7 @@ namespace dexih.transforms
                 }
             }
 
-            return Compare(referenceColumn.DataType, source, reference) == ECompareResult.Equal;
+            return Operations.Compare(referenceColumn.DataType, source, reference) == 0;
         }
 
 
@@ -468,12 +471,12 @@ namespace dexih.transforms
                 }
 
                 //check if the natrual key in the source & target are less/match/greater to determine operation
-                var compareResult = ECompareResult.Less;
+                var compareResult = -1;
 
                 if (!_referenceOpen)
                 {
                     //if target reader has finished, then the natural key compare will always be not-equal.
-                    compareResult = ECompareResult.Less;
+                    compareResult = -1;
                 }
                 else
                 {
@@ -484,8 +487,8 @@ namespace dexih.transforms
                         {
                             try
                             {
-                                compareResult = Compare(col.DataType, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
-                                if (compareResult != ECompareResult.Equal)
+                                compareResult = Operations.Compare(col.DataType, PrimaryTransform[col.Name], ReferenceTransform[col.Name]);
+                                if (compareResult != 0)
                                     break;
                             }
                             catch (Exception ex)
@@ -495,7 +498,7 @@ namespace dexih.transforms
                         }
                     }
 
-                    if(compareResult != ECompareResult.Equal && readReferenceIfChanged)
+                    if(compareResult != 0 && readReferenceIfChanged)
                     {
                         _referenceOpen = await ReferenceRead(cancellationToken);
                         readReferenceIfChanged = false;
@@ -506,7 +509,7 @@ namespace dexih.transforms
                 readReferenceIfChanged = false;
 
                 //if the primary greater in sort order than the target, then the target row has been deleted.
-                if (compareResult == ECompareResult.Greater && DoDelete)
+                if (compareResult == 1 && DoDelete)
                 {
                     newRow = CreateDeleteRow();
                     _referenceOpen = await ReferenceRead(cancellationToken);
@@ -514,14 +517,14 @@ namespace dexih.transforms
                 }
 
                 //if compare result is greater, and not checking deletes.  Move the target table to the next row and test again.
-                if (compareResult == ECompareResult.Greater)
+                if (compareResult == 1)
                 {
                     _referenceOpen = await ReferenceRead(cancellationToken);
                     continue;
                 }
 
                 //if not checking deletes and not equal, than this is a new row.  
-                if (compareResult != ECompareResult.Equal)
+                if (compareResult != 0)
                 {
                     newRow = CreateOutputRow('C');
                     _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
@@ -531,8 +534,8 @@ namespace dexih.transforms
                     // if the source row has a valid from less than the target row, then ignore the source row.
                     if (_sourceValidFromOrdinal >= 0 && _referenceValidFromOridinal >= 0)
                     {
-                        var compare = Compare(_colValidFrom.DataType, PrimaryTransform[_sourceValidFromOrdinal], ReferenceTransform[_referenceValidFromOridinal]);
-                        if (compare == ECompareResult.Less)
+                        var compare = Operations.Compare(_colValidFrom.DataType, PrimaryTransform[_sourceValidFromOrdinal], ReferenceTransform[_referenceValidFromOridinal]);
+                        if (compare == -1)
                         {
                             _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
                             TransformRowsIgnored++;
@@ -572,8 +575,8 @@ namespace dexih.transforms
 
                         if (_primaryOpen && _sourceValidFromOrdinal >= 0 && _referenceValidToOridinal >=0)
                         {
-                            var compareResult3 = Compare(_colValidFrom.DataType, PrimaryTransform[_sourceValidFromOrdinal], ReferenceTransform[_referenceValidToOridinal]);
-                            if (compareResult3 == ECompareResult.Greater || compareResult3 == ECompareResult.Equal)
+                            var isGreaterThan = Operations.GreaterThanOrEqual(_colValidFrom.DataType, PrimaryTransform[_sourceValidFromOrdinal], ReferenceTransform[_referenceValidToOridinal]);
+                            if (isGreaterThan)
                             {
                                 _referenceOpen = await ReferenceRead(cancellationToken);
                             }
@@ -685,10 +688,10 @@ namespace dexih.transforms
                 {
                     try
                     {
-                        var returnValue = TryParse(ETypeCode.Int64, ReferenceTransform[_referenceSurrogateKeyOrdinal]);
+                        var returnValue = Convert.ToInt64(ReferenceTransform[_referenceSurrogateKeyOrdinal]);
 
                         //surogate key = 0, ignore as this is the defaulted value.
-                        if ((long)returnValue == 0)
+                        if (returnValue == 0)
                         {
                             continue;
                         }
@@ -707,10 +710,10 @@ namespace dexih.transforms
                 {
                     try
                     {
-                        var returnValue = TryParse(ETypeCode.Boolean, ReferenceTransform[_referenceIsValidOrdinal]);
+                        var returnValue = Operations.Parse<bool>(ReferenceTransform[_referenceIsValidOrdinal]);
 
                         //IsCurrent = false, continue to next record.
-                        if (!(bool)returnValue)
+                        if (!returnValue)
                         {
                             continue;
                         }
@@ -775,9 +778,9 @@ namespace dexih.transforms
                     var referenceOrdinal = CacheTable.GetOrdinal(col.Name);
                     try
                     {
-                        var result = Compare(col.DataType, PrimaryTransform[sourceOrdinal], newRow[referenceOrdinal]);
+                        var result = Operations.Equal(col.DataType, PrimaryTransform[sourceOrdinal], newRow[referenceOrdinal]);
 
-                        if (result != ECompareResult.Equal)
+                        if (!result)
                         {
                             isMatch = false;
                             break;

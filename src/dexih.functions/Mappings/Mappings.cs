@@ -50,11 +50,11 @@ namespace dexih.functions.Mappings
         // empty function variables, so save recreating.
         private readonly FunctionVariables _functionVariables = new FunctionVariables();
 
-        public async Task<Table> Initialize(Table inputTable, Table joinTable = null, string joinTableAlias = null)
+        public Table Initialize(Table inputTable, Table joinTable = null, string joinTableAlias = null, bool mapAllJoinColumns = true)
         {
             foreach (var mapping in this)
             {
-                await mapping.Initialize(inputTable, joinTable);
+                mapping.InitializeColumns(inputTable, joinTable);
             }
             
             var table = new Table("Mapping");
@@ -95,14 +95,14 @@ namespace dexih.functions.Mappings
                         newColumn.ReferenceTable = joinTableAlias;
                         newColumn.IsIncrementalUpdate = false;
 
-//                        var ordinal = table.GetOrdinal(newColumn.TableColumnName());
-//                        if (ordinal < 0)
-//                        {
+                        var ordinal = table.GetOrdinal(newColumn.TableColumnName());
+                        if (mapAllJoinColumns || ordinal < 0)
+                        {
                             targetOrdinal++;
                             table.Columns.Add(newColumn);
                             _referencePassthroughColumns.Add(newColumn);
                             _referencePassthroughOrdinals.Add(i, targetOrdinal);
-//                        }
+                        }
                     }
                 }
             }
@@ -151,6 +151,19 @@ namespace dexih.functions.Mappings
             }
 
             return table;
+        }
+
+
+        /// <summary>
+        /// Run any open function logic such as preloading caches.
+        /// </summary>
+        /// <returns></returns>
+        public async Task Open()
+        {
+            foreach (var mapping in this)
+            {
+                await mapping.Open();
+            }
         }
 
         /// <summary>
@@ -236,24 +249,15 @@ namespace dexih.functions.Mappings
         /// </summary>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public DataType.ECompareResult GetJoinCompareResult()
+        public int GetJoinCompareResult()
         {
             foreach (var mapping in this.OfType<MapJoin>())
             {
-                switch (mapping.CompareResult)
-                {
-                    case DataType.ECompareResult.Less:
-                        return DataType.ECompareResult.Less;
-                    case DataType.ECompareResult.Equal:
-                        continue;
-                    case DataType.ECompareResult.Greater:
-                        return DataType.ECompareResult.Greater;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                if (mapping.CompareResult != 0)
+                    return mapping.CompareResult;
             }
 
-            return DataType.ECompareResult.Equal;
+            return 0;
         }
 
         public bool ProcessInputData(object[] row)
@@ -280,6 +284,7 @@ namespace dexih.functions.Mappings
             foreach (var mapping in this)
             {
                 result = result & mapping.ProcessInputRow(functionVariables, row, joinRow);
+                if (!result) break;
             }
 
             _rowData = row;

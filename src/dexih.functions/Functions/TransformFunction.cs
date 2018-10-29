@@ -43,9 +43,19 @@ namespace dexih.functions
 		public MethodInfo MethodInfo { get; set; }
 		public TransformParameter[] ParameterInfo { get; set; }
 
-		public TransformMethod(MethodInfo methodInfo)
+		public TransformMethod(MethodInfo methodInfo, Type genericType = null)
 		{
-			MethodInfo = methodInfo;
+			
+
+            if(methodInfo.IsGenericMethod)
+            {
+                MethodInfo = methodInfo.MakeGenericMethod(genericType);
+            }
+            else
+            {
+                MethodInfo = methodInfo;
+            }
+
 			ParameterInfo = methodInfo.GetParameters().Select(p => new TransformParameter()
 			{
 				Name =  p.Name,
@@ -117,8 +127,8 @@ namespace dexih.functions
 		/// </summary>
 		/// <param name="functionMethod">Reference to the function that will be executed.</param>
 		/// <param name="parameters"></param>
-		public TransformFunction(Delegate functionMethod, Parameters parameters, GlobalVariables globalVariables) :
-			this(functionMethod.Target, functionMethod.GetMethodInfo(), parameters, globalVariables)
+		public TransformFunction(Delegate functionMethod, Type genericType, Parameters parameters, GlobalVariables globalVariables) :
+			this(functionMethod.Target, functionMethod.GetMethodInfo(), genericType, parameters, globalVariables)
 		{
 		}
 
@@ -128,11 +138,15 @@ namespace dexih.functions
 		/// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
 		/// <param name="methodName">The name of the method to call.</param>
 		/// <param name="parameters"></param>
-		public TransformFunction(Type targetType, string methodName, Parameters parameters, GlobalVariables globalVariables)
+		public TransformFunction(Type targetType, string methodName, Type genericType, Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionName = methodName;
-			Constructor(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), parameters, globalVariables);
-		}
+            if(targetType.IsGenericTypeDefinition)
+            {
+                targetType = targetType.MakeGenericType(genericType);
+            }
+            Constructor(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), genericType, parameters, globalVariables);
+        }
 
 		/// <summary>
 		/// Creates a new function from a class/method reference.
@@ -141,20 +155,20 @@ namespace dexih.functions
 		/// <param name="methodName">The name of the method to call.</param>
 		/// <param name="parameters"></param>
 		/// <param name="globalVariables"></param>
-		public TransformFunction(object target, string methodName, Parameters parameters, GlobalVariables globalVariables)
+		public TransformFunction(object target, string methodName, Type genericType,  Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionName = methodName;
-			Constructor(target, target.GetType().GetMethod(methodName), parameters, globalVariables);
+			Constructor(target, target.GetType().GetMethod(methodName), genericType, parameters, globalVariables);
 		}
 
-		public TransformFunction(object target, MethodInfo functionMethod, Parameters parameters, GlobalVariables globalVariables)
+		public TransformFunction(object target, MethodInfo functionMethod, Type genericType, Parameters parameters, GlobalVariables globalVariables)
 		{
-			Constructor(target, functionMethod, parameters, globalVariables);
+			Constructor(target, functionMethod, genericType, parameters, globalVariables);
 		}
 
-		private void Constructor(object target, MethodInfo functionMethod, Parameters parameters, GlobalVariables globalVariables)
+		private void Constructor(object target, MethodInfo functionMethod, Type genericType, Parameters parameters, GlobalVariables globalVariables)
 		{
-			FunctionMethod = new TransformMethod(functionMethod);
+			FunctionMethod = new TransformMethod(functionMethod, genericType);
 			GlobalVariables = globalVariables;
 
 			var attribute = functionMethod.GetCustomAttribute<TransformFunctionAttribute>();
@@ -167,18 +181,18 @@ namespace dexih.functions
 
 				InitializeMethod = string.IsNullOrEmpty(attribute.InitializeMethod)
 					? null
-					: new TransformMethod(targetType.GetMethod(attribute.InitializeMethod));
+					: new TransformMethod(targetType.GetMethod(attribute.InitializeMethod), genericType);
 				ResetMethod = string.IsNullOrEmpty(attribute.ResetMethod)
 					? null
-					: new TransformMethod(targetType.GetMethod(attribute.ResetMethod));
+					: new TransformMethod(targetType.GetMethod(attribute.ResetMethod), genericType);
 
 				ResultMethod = string.IsNullOrEmpty(attribute.ResultMethod)
 					? null
-					:  new TransformMethod(targetType.GetMethod(attribute.ResultMethod));
+					:  new TransformMethod(targetType.GetMethod(attribute.ResultMethod), genericType);
 				
 				ImportMethod = string.IsNullOrEmpty(attribute.ImportMethod)
 					? null
-					:  new TransformMethod(targetType.GetMethod(attribute.ImportMethod));
+					:  new TransformMethod(targetType.GetMethod(attribute.ImportMethod), genericType);
 
 				GeneratesRows = attribute.GeneratesRows;
 			}

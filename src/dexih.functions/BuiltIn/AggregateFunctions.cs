@@ -8,25 +8,32 @@ using Dexih.Utils.DataType;
 
 namespace dexih.functions.BuiltIn
 {
-    public class AggregateFunctions
+    public class AggregateFunctions<T>
     {
+        private T OneHundred;
+
         private const string NullPlaceHolder = "A096F007-26EE-479E-A9E1-4E12427A5AF0"; //used a a unique string that can be substituted for null
         
         //The cache parameters are used by the functions to maintain a state during a transform process.
         // private int? _cacheInt;
         private double _cacheDouble;
         private DateTime? _cacheDate;
-        private Dictionary<object, object> _cacheDictionary;
-        private List<object> _cacheList;
+        private Dictionary<object, T> _cacheDictionary;
+        private List<T> _cacheList;
+        private List<double> _doubleList;
         private StringBuilder _cacheStringBuilder;
         private object _cacheObject;
         private object[] _cacheArray;
-        private SortedRowsDictionary _sortedRowsDictionary = null;
-        private dynamic _cacheNumber;
+        private SortedRowsDictionary<T> _sortedRowsDictionary = null;
+        private T _cacheNumber;
         public int _cacheCount;
+        public HashSet<T> _hashSet;
+
+        private bool isFirst = true;
 
         public bool Reset()
         {
+            isFirst = true;
             // _cacheInt = null;
             _cacheDouble = 0;
             _cacheDate = null;
@@ -37,63 +44,76 @@ namespace dexih.functions.BuiltIn
             _cacheObject = null;
             _cacheArray = null;
             _sortedRowsDictionary = null;
-            _cacheNumber = 0;
+            _cacheNumber = default(T);
             _cacheCount = 0;
+            _doubleList = null;
+            _hashSet = null;
             return true;
         }
         
         public DateTime? DateResult() => _cacheDate;
         public object ObjectResult() => _cacheObject;
-        public object NumberResult() => _cacheNumber;
+        public T NumberResult() => _cacheNumber;
         public object CountResult() => _cacheCount;
 
-        
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset))]
-        public void Sum(dynamic value)
-        {
-            _cacheNumber = _cacheNumber + value;
-        }
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        public void Sum(T value) => _cacheNumber = Operations.Add<T>(_cacheNumber, value);
 
        
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Average", Description = "Average of the values", ResultMethod = nameof(AverageResult), ResetMethod = nameof(Reset))]
-        public void Average(double value)
+        public void Average(T value)
         {
-            _cacheDouble = _cacheDouble + value;
+            _cacheNumber = Operations.Add<T>(_cacheNumber, value);
             _cacheCount = _cacheCount + 1;
         }
-        public double AverageResult()
+        public T AverageResult()
         {
             if (_cacheCount == 0)
-                return 0;
+                return default(T);
 
-            return (double)_cacheDouble / (double)_cacheCount;
+            var type = typeof(T);
+
+            return Operations.DivideInt<T>(_cacheNumber, _cacheCount);
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
-        public void Min(object value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void Min(T value)
         {
-            if (_cacheObject == null) _cacheObject = value;
-            else if (DataType.Compare(null, value, (_cacheObject)) == DataType.ECompareResult.Less) _cacheObject = value;
+            if (isFirst)
+            {
+                isFirst = false;
+                _cacheNumber = value;
+            }
+            else if (Operations.LessThan<T>(value, _cacheNumber)) _cacheNumber = value;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Maximum", Description = "Maximum Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
-        public void Max(object value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Maximum", Description = "Maximum Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void Max(T value)
         {
-            if (_cacheObject == null) _cacheObject = value;
-            else if (DataType.Compare(null, value, (_cacheObject)) == DataType.ECompareResult.Greater) _cacheObject = value;
+            if (isFirst)
+            {
+                isFirst = false;
+                _cacheNumber = value;
+            }
+            else if (Operations.GreaterThan<T>(value, _cacheNumber)) _cacheNumber = value;
         }
 
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First", Description = "First Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
-        public void First(object value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First", Description = "First Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void First(T value)
         {
-            if (_cacheObject == null) _cacheObject = value;
+            if (isFirst)
+            {
+                isFirst = false;
+                _cacheNumber = value;
+            }
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last", Description = "Last Value", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
-        public void Last(object value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last", Description = "Last Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void Last(T value)
         {
-            _cacheObject = value;
+            _cacheNumber = value;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count", Description = "Number of records", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset))]
@@ -129,25 +149,24 @@ namespace dexih.functions.BuiltIn
             
             for (var i = 1; i < values.Length; i++)
             {
-                if (!object.Equals(values[0], values[i])) return;
+                if (!Equals(values[0], values[i])) return;
             }
 
             _cacheCount++;
         }
 
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count Distinct", Description = "Number if distinct values", ResultMethod = nameof(CountDistinctResult), ResetMethod = nameof(Reset))]
-        public void CountDistinct(object value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count Distinct", Description = "Number if distinct values", ResultMethod = nameof(CountDistinctResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void CountDistinct(T value)
         {
-            if (_cacheDictionary == null) _cacheDictionary = new Dictionary<object, object>();
-            if (value == null) value = NullPlaceHolder; //dictionary can't use nulls, so substitute null values.
-            if (_cacheDictionary.ContainsKey(value) == false)
-                _cacheDictionary.Add(value, null);
+            if (_hashSet == null) _hashSet = new HashSet<T>();
+            // if (value == null) value = NullPlaceHolder; //dictionary can't use nulls, so substitute null values.
+            _hashSet.Add(value);
         }
         
         public int CountDistinctResult()
         {
-            return _cacheDictionary.Keys.Count;
+            return _hashSet.Count;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Concatenate Aggregate", Description = "Returns concatenated string of repeating values.", ResultMethod = nameof(ConcatAggResult), ResetMethod = nameof(Reset))]
@@ -167,28 +186,30 @@ namespace dexih.functions.BuiltIn
             return _cacheStringBuilder.ToString();
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Median", Description = "The median value in a series", ResultMethod = nameof(MedianResult), ResetMethod = nameof(Reset))]
-        public void Median(double value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Median", Description = "The median value in a series", ResultMethod = nameof(MedianResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        public void Median(T value)
         {
-            if (_cacheList == null) _cacheList = new List<object>();
+            if (_cacheList == null) _cacheList = new List<T>();
             _cacheList.Add(value);
         }
-        public double MedianResult()
+        public T MedianResult()
         {
             if (_cacheList == null)
-                return 0;
-            var sorted = _cacheList.OrderBy(c => (double)c).ToArray();
+                return default(T);
+            var sorted = _cacheList.OrderBy(c => c).ToArray();
             var count = sorted.Length;
+
+            var type = typeof(T);
 
             if (count % 2 == 0)
             {
                 // count is even, average two middle elements
-                var a = (double)sorted[count / 2 - 1];
-                var b = (double)sorted[count / 2];
-                return (a + b) / 2;
+                var a = sorted[count / 2 - 1];
+                var b = sorted[count / 2];
+                return Operations.DivideInt<T>(Operations.Add<T>(a, b), 2);
             }
             // count is odd, return the middle element
-            return (double)sorted[count / 2];
+            return sorted[count / 2];
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Standard Deviation", Description = "The standard deviation in a set of numbers", ResultMethod = nameof(StdDevResult), ResetMethod = nameof(Reset))]
@@ -206,42 +227,28 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Variance", Description = "The variance in a set of numbers.", ResultMethod = nameof(VarianceResult), ResetMethod = nameof(Reset))]
         public void Variance(double value)
         {
-            if (_cacheList == null) _cacheList = new List<object>();
+            if (_doubleList == null) _doubleList = new List<double>();
 
-            _cacheList.Add(value);
+            _doubleList.Add(value);
             _cacheCount++;
             _cacheDouble += value;
         }
 
         public double VarianceResult()
         {
-            if (_cacheList == null || _cacheCount == 0 )
+            if (_doubleList == null || _cacheCount == 0 )
                 return 0;
 
-            var average = (double)_cacheDouble / (double)_cacheCount;
-            var sumOfSquaresOfDifferences = _cacheList.Select(val => ((double)val - average) * ((double)val - average)).Sum();
-            var sd = sumOfSquaresOfDifferences / (double)_cacheCount;
+            var average = _cacheDouble / _cacheCount;
+            var sumOfSquaresOfDifferences = _doubleList.Select(val => (val - average) * (val - average)).Sum();
+            var sd = sumOfSquaresOfDifferences / _cacheCount;
 
             return sd;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "MinimumDate", Description = "Minimum Date", ResultMethod = nameof(DateResult), ResetMethod = nameof(Reset))]
-        public void MinDate(DateTime value)
-        {
-            if (_cacheDate == null) _cacheDate = value;
-            else if (value < _cacheDate) _cacheDate = value;
-        }
-
-       
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "MaximumDate", Description = "Maximum Date", ResultMethod = nameof(DateResult), ResetMethod = nameof(Reset))]
-        public void MaxDate(DateTime value)
-        {
-            if (_cacheDate == null) _cacheDate = value;
-            else if (value > _cacheDate) _cacheDate = value;
-        }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First When", Description = "First resultValue when the condition = conditionValue", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
-        public void FirstWhen(object condition, object conditionValue, object resultValue)
+        public void FirstWhen(object condition, object conditionValue, T resultValue)
         {
             if (Equals(condition, conditionValue) && _cacheObject == null)
             {
@@ -250,7 +257,7 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last When", Description = "Last resultValue when the condition = conditionValue", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset))]
-        public void LastWhen(object condition, object conditionValue, object resultValue)
+        public void LastWhen(object condition, object conditionValue, T resultValue)
         {
             if (Equals(condition, conditionValue))
             {
@@ -259,15 +266,15 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Pivot to Columns", 
-            Description = "Pivots the labelColumn and valueColumn into separate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset))]
-        public void PivotToColumns(string labelColumn, object valueColumn, [TransformFunctionParameterTwin] object[] labels)
+            Description = "Pivots the labelColumn and valueColumn into separate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void PivotToColumns(string labelColumn, T valueColumn, [TransformFunctionParameterTwin] object[] labels)
         {
             if (_cacheDictionary == null)
             {
-                _cacheDictionary = new Dictionary<object, object>();
+                _cacheDictionary = new Dictionary<object, T>();
                 foreach (var label in labels)
                 {
-                    _cacheDictionary.Add(label, null);
+                    _cacheDictionary.Add(label, default(T));
                 }
             }
 
@@ -277,10 +284,10 @@ namespace dexih.functions.BuiltIn
             }
         }
         
-        public bool PivotToColumnsResult([TransformFunctionParameterTwin] out object[] values)
+        public bool PivotToColumnsResult([TransformFunctionParameterTwin] out T[] values)
         {
             values = _cacheDictionary.Values.ToArray();
-            return !values.Contains(null);
+            return !values.Contains(default(T));
         }
         
         public enum EPercentFormat
@@ -290,32 +297,34 @@ namespace dexih.functions.BuiltIn
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Percent of Total", Description = "The percentage total in the group.", ResultMethod = nameof(PercentTotalResult), ResetMethod = nameof(Reset))]
-        public void PercentTotal(double value)
+        public void PercentTotal(T value)
         {
             if (_cacheList == null)
             {
-                _cacheList = new List<object>();
-                _cacheDouble = 0;
+                _cacheList = new List<T>();
+                _cacheNumber = default(T);
+                OneHundred = Operations.Parse<T>(100);
             }
-            _cacheDouble += value;
+            _cacheNumber = Operations.Add<T>(_cacheNumber, value);
             _cacheList.Add(value);        
         }
 
-        public double PercentTotalResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, EPercentFormat percentFormat = EPercentFormat.AsPercent)
+        public T PercentTotalResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, EPercentFormat percentFormat = EPercentFormat.AsPercent)
         {
-            if (_cacheList == null || _cacheDouble == 0d)
-                return 0;
+            if (_cacheList == null || Operations.Equal<T>(_cacheNumber, default(T)))
+                return default(T);
 
-            var percent = (double)_cacheList[index] / _cacheDouble;
-            return percentFormat == EPercentFormat.AsDecimal ? percent : percent * 100;
+            var percent = Operations.Divide<T>(_cacheList[index], _cacheNumber);
+            
+            return percentFormat == EPercentFormat.AsDecimal ? percent : Operations.Multiply<T>(percent, OneHundred);
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Rank", Description = "The ranking (starting at 1) of the item within the group", ResultMethod = nameof(RankResult), ResetMethod = nameof(Reset))]
-        public void Rank(object[] values)
+        public void Rank(T[] values)
         {
             if (_sortedRowsDictionary == null)
             {
-                _sortedRowsDictionary = new SortedRowsDictionary();
+                _sortedRowsDictionary = new SortedRowsDictionary<T>();
                 _cacheCount = 0;
             }
 
@@ -348,7 +357,7 @@ namespace dexih.functions.BuiltIn
                 }
                 else
                 {
-                    rank = _sortedRowsDictionary.Count;
+                    rank = _sortedRowsDictionary.Count();
                     increment = -1;
                 }
                 
@@ -373,19 +382,19 @@ namespace dexih.functions.BuiltIn
             return _cacheCount;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset))]
-        public object RunningSum(dynamic value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        public object RunningSum(T value)
         {
-            _cacheNumber = _cacheNumber + value;
+            _cacheNumber = Operations.Add(_cacheNumber, value);
             return _cacheNumber;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset))]
-        public object RunningAverage(dynamic value)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        public object RunningAverage(T value)
         {
-            _cacheNumber = _cacheNumber + value;
+            _cacheNumber = Operations.Add(_cacheNumber, value);
             _cacheCount++;
-            return _cacheNumber/_cacheCount;
+            return Operations.DivideInt(_cacheNumber, _cacheCount);
         }
         
 

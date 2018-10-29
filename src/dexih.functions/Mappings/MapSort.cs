@@ -20,7 +20,7 @@ namespace dexih.functions.Mappings
 
         private object[] _rowData;
 
-        public override Task Initialize(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null)
         {
             if (InputColumn != null)
             {
@@ -30,8 +30,6 @@ namespace dexih.functions.Mappings
                     InputValue = InputColumn.DefaultValue;
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         public override void AddOutputColumns(Table table)

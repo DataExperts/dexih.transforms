@@ -11,6 +11,7 @@ using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.CopyProperties;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 
@@ -30,6 +31,7 @@ namespace dexih.connections.sql
         public override bool CanUseArray => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseJson => false;
+        public override bool CanUseXml => false;
         public override bool CanUseSql => true;
         public override bool DynamicTableCreation => false;
 
@@ -82,7 +84,26 @@ namespace dexih.connections.sql
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public abstract object ConvertParameterType(object value);
+        public virtual object ConvertParameterType(ETypeCode typeCode, int rank, object value)
+        {
+            if (value == null || value == DBNull.Value)
+            {
+                return DBNull.Value;
+            }
+
+            if ((rank > 0 && !CanUseArray) || typeCode == ETypeCode.CharArray)
+            {
+                return Operations.Parse(ETypeCode.String, value);
+            }
+
+            // GUID's get parameterized as binary.  So need to explicitly convert to string.
+            if (typeCode == ETypeCode.Guid)
+            {
+                return value.ToString();
+            }
+
+            return value;
+        }
 
 
         protected DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
@@ -144,7 +165,7 @@ namespace dexih.connections.sql
                             {
                                 for (var i = 0; i < fieldCount; i++)
                                 {
-                                    parameters[i].Value = ConvertParameterType(reader[i]);
+                                    parameters[i].Value = reader[i];
                                 }
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 if (cancellationToken.IsCancellationRequested)
@@ -458,16 +479,19 @@ namespace dexih.connections.sql
                                     param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
                                     // param.Size = -1;
 
-                                    // GUID's get parameterized as binary.  So need to explicitly convert to string.
-                                    if (query.UpdateColumns[i].Column.DataType == ETypeCode.Guid)
-                                    {
-                                        param.Value = query.UpdateColumns[i].Value == null ? (object)DBNull.Value : query.UpdateColumns[i].Value.ToString();
-                                    }
-                                    else
-                                    {
-                                        param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value
-                                            : query.UpdateColumns[i].Value;
-                                    }
+                                    param.Value = ConvertParameterType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank, query.UpdateColumns[i].Value);
+
+                                    // replaced with ConvertParamterType above.
+                                    //// GUID's get parameterized as binary.  So need to explicitly convert to string.
+                                    //if (query.UpdateColumns[i].Column.DataType == ETypeCode.Guid)
+                                    //{
+                                    //    param.Value = query.UpdateColumns[i].Value == null ? (object)DBNull.Value : query.UpdateColumns[i].Value.ToString();
+                                    //}
+                                    //else
+                                    //{
+                                    //    param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value
+                                    //        : query.UpdateColumns[i].Value;
+                                    //}
 
                                     cmd.Parameters.Add(param);
                                     parameters[i] = param;
@@ -567,7 +591,7 @@ namespace dexih.connections.sql
 
                         try
                         {
-                            return TryParse(table.Columns[query.Columns[0].Column].DataType, value);
+                            return Operations.Parse(table.Columns[query.Columns[0].Column].DataType, value);
                         }
                         catch (Exception ex)
                         {

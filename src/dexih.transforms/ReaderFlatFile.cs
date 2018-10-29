@@ -17,7 +17,6 @@ namespace dexih.transforms
         private DexihFiles _files;
 
         private readonly FileHandlerBase _fileHandler;
-        private object[] _baseRow;
 
         private readonly ConnectionFlatFile _fileConnection;
 
@@ -54,7 +53,6 @@ namespace dexih.transforms
             }
             
             _fileNameOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileName);
-            _baseRow = new object[table.Columns.Count];
         }
 
         protected override void Dispose(bool disposing)
@@ -94,10 +92,6 @@ namespace dexih.transforms
             }
 
             var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
-            if (_fileNameOrdinal >= 0)
-            {
-                _baseRow[_fileNameOrdinal] = _files.Current.FileName;
-            }
 
             try
             {
@@ -136,7 +130,7 @@ namespace dexih.transforms
                 object[] row;
                 try
                 {
-                    row = await _fileHandler.GetRow(_baseRow);
+                    row = await _fileHandler.GetRow();
                 }
                 catch (Exception ex)
                 {
@@ -168,10 +162,6 @@ namespace dexih.transforms
                         try
                         {
                             var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
-                            if (_fileNameOrdinal >= 0)
-                            {
-                                _baseRow[_fileNameOrdinal] = _files.Current.FileName;
-                            }
                             await _fileHandler.SetStream(fileStream, _selectQuery);
                         }
                         catch (Exception ex)
@@ -181,7 +171,11 @@ namespace dexih.transforms
                         
                         try
                         {
-                            row = await _fileHandler.GetRow(_baseRow);
+                            row = await _fileHandler.GetRow();
+                            if (_fileNameOrdinal >= 0)
+                            {
+                                row[_fileNameOrdinal] = _files.Current.FileName;
+                            }
                         }
                         catch (Exception ex)
                         {

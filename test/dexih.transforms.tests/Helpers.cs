@@ -16,7 +16,7 @@ namespace dexih.transforms.tests
                 new TableColumn("DecimalColumn", ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("DateColumn", ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
-                new TableColumn("ArrayColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField, TableColumn.EArrayType.Array)
+                new TableColumn("ArrayColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField, 1)
             );
 
             table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, new [] {1,1} );
@@ -46,16 +46,16 @@ namespace dexih.transforms.tests
                 new TableColumn("GroupColumn", ETypeCode.String)
             );
 
-            table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, "Odd" );
-            table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1, "Even" );
-            table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), 8, "Odd" );
-            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9, "Even" );
-            table.AddRow("value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), 3, "Even" );
-            table.AddRow("value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), 7, "Even" );
-            table.AddRow("value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), 4, "Odd" );
-            table.AddRow("value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), 6, "Odd" );
-            table.AddRow("value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), 5, "Even" );
-            table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, "Odd" );
+            table.AddRow("value01", 1, 1.1m, Convert.ToDateTime("2015/01/01"), 10, "Odd" );
+            table.AddRow("value10", 10, 10.1m, Convert.ToDateTime("2015/01/10"), 1, "Even" );
+            table.AddRow("value03", 3, 3.1m, Convert.ToDateTime("2015/01/03"), 8, "Odd" );
+            table.AddRow("value02", 2, 2.1m, Convert.ToDateTime("2015/01/02"), 9, "Even" );
+            table.AddRow("value08", 8, 8.1m, Convert.ToDateTime("2015/01/08"), 3, "Even" );
+            table.AddRow("value04", 4, 4.1m, Convert.ToDateTime("2015/01/04"), 7, "Even" );
+            table.AddRow("value07", 7, 7.1m, Convert.ToDateTime("2015/01/07"), 4, "Odd" );
+            table.AddRow("value05", 5, 5.1m, Convert.ToDateTime("2015/01/05"), 6, "Odd" );
+            table.AddRow("value06", 6, 6.1m, Convert.ToDateTime("2015/01/06"), 5, "Even" );
+            table.AddRow("value09", 9, 9.1m, Convert.ToDateTime("2015/01/09"), 2, "Odd" );
 
             var adapter = new ReaderMemory(table, null);
             adapter.Reset();

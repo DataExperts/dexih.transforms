@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
+using System.Xml;
 using System.Xml.XPath;
 using dexih.functions.Exceptions;
 using Dexih.Utils.Crypto;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
@@ -20,7 +22,7 @@ namespace dexih.functions.BuiltIn
     public class MapFunctions
     {
         public GlobalVariables GlobalVariables { get; set; }
-        
+
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Concatenate",
             Description = "Concatenates multiple string fields.")]
         public string Concat([TransformFunctionParameter(Description = "Array of Values to Concatenate")] string[] values)
@@ -496,223 +498,11 @@ namespace dexih.functions.BuiltIn
             return HashString.ValidateHash(value, hash);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Abs",
-            Description = "Returns the absolute value of a Decimal number.")]
-        public double Abs(double value)
-        {
-            return Math.Abs(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Acos",
-            Description = "Returns the angle whose cosine is the specified number.")]
-        public double Acos(double value)
-        {
-            return Math.Acos(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Asin",
-            Description = "Returns the angle whose sine is the specified number.")]
-        public double Asin(double value)
-        {
-            return Math.Asin(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Atan",
-            Description = "Returns the angle whose tangent is the specified number.")]
-        public double Atan(double value)
-        {
-            return Math.Atan(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Atan2",
-            Description = "Returns the angle whose tangent is the quotient of two specified numbers.")]
-        public double Atan2(double x, double y)
-        {
-            return Math.Atan2(x, y);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Cos",
-            Description = "Returns the cosine of the specified angle.")]
-        public double Cos(double value)
-        {
-            return Math.Cos(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Cosh",
-            Description = "Returns the hyperbolic cosine of the specified angle.")]
-        public double Cosh(double value)
-        {
-            return Math.Cosh(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Divide Remainder",
-            Description =
-                "Calculates the quotient of two 32-bit signed integers and also returns the remainder in an output parameter.")]
-        public int DivRem(int dividend, int divisor, out int remainder)
-        {
-            //return Math.DivRem(dividend, divisor, out remainder); Not working in DNX50
-            var quotient = dividend / divisor;
-            remainder = dividend - (divisor * quotient);
-            return quotient;
-        }
-        
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Exp",
-            Description = "Returns e raised to the specified power.")]
-        public double Exp(double value)
-        {
-            return Math.Exp(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "IEEERemainder",
-            Description =
-                "Returns the remainder resulting from the division of a specified number by another specified number.")]
-        public double IeeeRemainder(double x, double y)
-        {
-            return Math.IEEERemainder(x, y);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Log",
-            Description = "Returns the natural (base e) logarithm of a specified number.")]
-        public double Log(double value)
-        {
-            return Math.Log(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Log(10)",
-            Description = "Returns the base 10 logarithm of a specified number.")]
-        public double Log10(double value)
-        {
-            return Math.Log10(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Pow",
-            Description = "Returns a specified number raised to the specified power.")]
-        public double Pow(double x, double y)
-        {
-            return Math.Pow(x, y);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Round",
-            Description = "Rounds a decimal value to the nearest integral value.")]
-        public double Round(double value)
-        {
-            return Math.Round(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Sign",
-            Description = "Returns a value indicating the sign of a decimal number.")]
-        public double Sign(double value)
-        {
-            return Math.Sign(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Sin",
-            Description = "Returns the sine of the specified angle.")]
-        public double Sin(double value)
-        {
-            return Math.Sin(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Sinh",
-            Description = "Returns the hyperbolic sine of the specified angle.")]
-        public double Sinh(double value)
-        {
-            return Math.Sinh(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Sqrt",
-            Description = "Returns the square root of a specified number.")]
-        public double Sqrt(double value)
-        {
-            return Math.Sqrt(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Tan",
-            Description = "Returns the tangent of the specified angle.")]
-        public double Tan(double value)
-        {
-            return Math.Tan(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Tanh",
-            Description = "Returns the hyperbolic tangent of the specified angle.")]
-        public double Tanh(double value)
-        {
-            return Math.Tanh(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Truncate",
-            Description = "Calculates the integral part of a specified decimal number.")]
-        public double Truncate(double value)
-        {
-            return Math.Truncate(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Add",
-            Description = "Adds two or more specified Decimal values.")]
-        public decimal Add(decimal value1, decimal[] value2)
-        {
-            return value1 + value2.Sum();
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Ceiling",
-            Description =
-                "Returns the smallest integral value that is greater than or equal to the specified decimal number.")]
-        public decimal Ceiling(decimal value)
-        {
-            return decimal.Ceiling(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Divide",
-            Description = "Divides two specified Decimal values.")]
-        public decimal Divide(decimal value1, decimal value2)
-        {
-            return value1 / value2;
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Floor",
-            Description = "Rounds a specified Decimal number to the closest integer toward negative infinity.")]
-        public decimal Floor(decimal value)
-        {
-            return decimal.Floor(value);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Multiply",
-            Description = "Multiplies two or more specified Decimal values.")]
-        public decimal Multiply(decimal value1, decimal[] value2)
-        {
-            var returnValue = value1;
-            foreach(var value in value2)
-            {
-                returnValue *= value;
-            }
-            return returnValue;
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Negate",
-            Description = "Returns the result of multiplying the specifiedDecimal value by negative one.")]
-        public decimal Negate(decimal value)
-        {
-            return value * -1;
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Remainder",
-            Description = "Computes the remainder after dividing two Decimal values.")]
-        public decimal Remainder(decimal value1, decimal value2)
-        {
-            return decimal.Remainder(value1, value2);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Subtract",
-            Description = "Subtracts one or more specified Decimal values from another.")]
-        public decimal Subtract(decimal value1, decimal[] value2)
-        {
-            return value1 - value2.Sum();
-        }
+ 
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Xml", Name = "XPath Values",
             Description = "Parses an xml string into a series of xpath results.")]
-        public bool XPathValues(string xml, [TransformFunctionParameterTwin] string[] xPaths, [TransformFunctionParameterTwin] out string[] values)
+        public bool XPathValues(XmlDocument xml, [TransformFunctionParameterTwin] string[] xPaths, [TransformFunctionParameterTwin] out string[] values)
         {
             var returnValue = true;
 
@@ -721,16 +511,16 @@ namespace dexih.functions.BuiltIn
                 //XmlDocument xmlDoc = new XmlDocument();
                 //xmlDoc.LoadXml(xml);
 
-                var stream = new StringReader(xml);
-                var xPathDocument = new XPathDocument(stream);
-                var xPathNavigator = xPathDocument.CreateNavigator();
+                //var stream = new StringReader(xml);
+                //var xPathDocument = new XPathDocument(stream);
+                //var xPathNavigator = xPathDocument.CreateNavigator();
 
                 values = new string[xPaths.Length];
 
                 for (var i = 0; i < xPaths.Length; i++)
                 {
-                    //XmlNode xmlNode = xmlDoc.SelectSingleNode(xPaths[i]);
-                    var xmlNode = xPathNavigator.SelectSingleNode(xPaths[i]);
+                    var xmlNode = xml.SelectSingleNode(xPaths[i]);
+                    //var xmlNode = xPathNavigator.SelectSingleNode(xPaths[i]);
 
                     //((XmlElement) xmlNode)?.RemoveAttribute("xmlns");
 
@@ -761,19 +551,19 @@ namespace dexih.functions.BuiltIn
             Description = "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.",
             ImportMethod = nameof(JsonValuesImport))
         ]
-        public bool JsonValues(string json, [TransformFunctionParameterTwin] string[] jsonPaths, [TransformFunctionParameterTwin] out string[] values)
+        public bool JsonValues(JToken json, [TransformFunctionParameterTwin] string[] jsonPaths, [TransformFunctionParameterTwin] out string[] values)
         {
             try
             {
                 var returnValue = true;
 
-                var results = JToken.Parse(json);
+                // var results = JToken.Parse(json);
 
                 values = new string[jsonPaths.Length];
 
                 for (var i = 0; i < jsonPaths.Length; i++)
                 {
-                    var token = results.SelectToken(jsonPaths[i]);
+                    var token = json.SelectToken(jsonPaths[i]);
                     if (token == null)
                     {
                         returnValue = false;
@@ -827,20 +617,20 @@ namespace dexih.functions.BuiltIn
             Description = "Pivots a json array into column values. ",
             ImportMethod = nameof(JsonArrayToColumnsImport))
         ]
-        public bool JsonArrayToColumns(string json, string jsonPath, string columnPath, string valuePath, [TransformFunctionParameterTwin] string[] columns, [TransformFunctionParameterTwin] out string[] values)
+        public bool JsonArrayToColumns(JToken json, string jsonPath, string columnPath, string valuePath, [TransformFunctionParameterTwin] string[] columns, [TransformFunctionParameterTwin] out string[] values)
         {
             try
             {
-                var results = JToken.Parse(json);
+                // var results = JToken.Parse(json);
 
                 JToken array;
                 if (string.IsNullOrEmpty(jsonPath))
                 {
-                    array = results;
+                    array = json;
                 }
                 else
                 {
-                    array = results.SelectToken(jsonPath);
+                    array = json.SelectToken(jsonPath);
                 }
 
                 if (array.Type == JTokenType.Property || array.Type == JTokenType.Object)
@@ -878,18 +668,16 @@ namespace dexih.functions.BuiltIn
             }
         }
 
-        public string[] JsonArrayToColumnsImport(string json, string jsonPath, string columnPath)
+        public string[] JsonArrayToColumnsImport(JToken json, string jsonPath, string columnPath)
         {
-            var results = JToken.Parse(json);
-
             JToken array;
             if (string.IsNullOrEmpty(jsonPath))
             {
-                array = results;
+                array = json;
             }
             else
             {
-                array = results.SelectToken(jsonPath);
+                array = json.SelectToken(jsonPath);
             }
 
             if (array.Type == JTokenType.Property || array.Type == JTokenType.Object)
@@ -1006,36 +794,23 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Maximum Number",
-    Description = "Returns the highest value in the array ")]
-        public decimal MaxNumber(decimal[] value)
+            Description = "Returns the highest value in the array ")]
+        public T MaxValue<T>(T[] value)
         {
             return value.Max();
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Minimum Number",
             Description = "Returns the lowest value in the array ")]
-        public decimal MinNumber(decimal[] value)
+        public T MinValue<T>(T[] value)
         {
             return value.Min();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Maximum Date",
-            Description = "Returns the highest date in the array ")]
-        public DateTime MaxDate(DateTime[] value)
-        {
-            return value.Max();
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Minimum Date",
-            Description = "Returns the lowest date in the array ")]
-        public DateTime MinNDate(DateTime[] value)
-        {
-            return value.Min();
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Switch Condition",
-            Description = "Maps the 'value' to the matching 'when' and returns the 'then'.  No matches returns default value (or original value if default is null.")]
-        public object Switch(object value, [TransformFunctionParameterTwin] object[] when, [TransformFunctionParameterTwin] object[] then, object defaultValue)
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Switch Condition", GenericTypeDefault = DataType.ETypeCode.String,
+            Description = "Maps the 'value' to the matching 'when' and returns the 'then'.  No matches returns default value (or original value if default is null."),
+        ]
+        public T Switch<T>(object value, [TransformFunctionParameterTwin] object[] when, [TransformFunctionParameterTwin] T[] then, T defaultValue)
         {
             for(var i = 0; i < when.Length; i++)
             {
@@ -1050,7 +825,7 @@ namespace dexih.functions.BuiltIn
                 }
             }
 
-            return defaultValue ?? value;
+            return defaultValue;
         }
 
     }

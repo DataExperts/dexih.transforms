@@ -38,6 +38,7 @@ namespace dexih.transforms
         public override bool CanUseBinary => true;
         public override bool CanUseArray => true;
         public override bool CanUseJson => true;
+        public override bool CanUseXml => true;
         public override bool CanUseCharArray => true;
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
@@ -118,7 +119,7 @@ namespace dexih.transforms
                 autoIncrementOrdinal = table.GetOrdinal(autoIncrement.Name);
                 foreach(var row in insertTable.Data)
                 {
-                    var value = (long)DataType.TryParse(DataType.ETypeCode.Int64, row[autoIncrementOrdinal]);
+                    var value = Operations.Parse<long>(row[autoIncrementOrdinal]);
                     if(value > maxIncrement)
                     {
                         maxIncrement = value;

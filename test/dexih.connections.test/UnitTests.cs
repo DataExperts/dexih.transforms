@@ -35,8 +35,8 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Double), 1.1 ),
                     new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1m ),
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() ),
-                    new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Array), new [] {1,1} ),
-                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Matrix), new [] {new [] {1,1}, new [] {2,2}} )
+                    new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1), new [] {1,1} ),
+                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2), new [] {new [] {1,1}, new [] {2,2}} )
             });
 
             await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
@@ -50,8 +50,8 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Double), 1.1 ),
                     new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.2m ),
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() ),
-                    new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Array), new [] {1,1} ),
-                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Matrix), new [] {new [] {1,1}, new [] {2,2}} )
+                    new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1), new [] {1,1} ),
+                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2), new [] {new [] {1,1}, new [] {2,2}} )
             });
 
             await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
@@ -195,8 +195,9 @@ namespace dexih.connections.test
                 //start a data writer and insert the test data
                 await connection.DataWriterStart(table);
                 var testData = DataSets.CreateTestData();
+                var convertedTestData = new ReaderConvertDataTypes(connection, testData);
 
-                await connection.ExecuteInsertBulk(table, testData, CancellationToken.None);
+                await connection.ExecuteInsertBulk(table, convertedTestData, CancellationToken.None);
 
                 await connection.DataWriterFinish(table);
 

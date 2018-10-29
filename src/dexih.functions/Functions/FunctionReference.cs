@@ -31,7 +31,13 @@ namespace dexih.functions
         public string ResultMethodName { get; set; }
         public string ResetMethodName { get; set; }
         public string ImportMethodName { get; set; }
-        
+
+        /// <summary>
+        /// Indicates the function contains a generic tyep definition
+        /// </summary>
+        public EGenericType GenericType { get; set; }
+        public DataType.ETypeCode GenericTypeDefault { get; set; }
+
         /// <summary>
         /// Used to map a filter equivalent operator
         /// </summary>
@@ -39,20 +45,18 @@ namespace dexih.functions
         
         public bool IsStandardFunction { get; set; }
 
-        public DataType.ETypeCode? ReturnType { get; set; }
-        public int ReturnRank { get; set; }
+        public FunctionParameter ReturnParameter { get; set; }
         public FunctionParameter[] InputParameters { get; set; }
         public FunctionParameter[] OutputParameters { get; set; }
 
-        public DataType.ETypeCode? ResultReturnType { get; set; }
-        public int ResultReturnRank { get; set; }
+        public FunctionParameter ResultReturnParameter { get; set; }
         public FunctionParameter[] ResultInputParameters { get; set; }
         public FunctionParameter[] ResultOutputParameters { get; set; }
 
-        public TransformFunction GetTransformFunction(Parameters parameters = null, GlobalVariables globalVariables = null)
+        public TransformFunction GetTransformFunction(Type genericType, Parameters parameters = null, GlobalVariables globalVariables = null)
         {
             var type = Functions.GetFunctionType(FunctionClassName, FunctionAssemblyName); 
-            return new TransformFunction(type, FunctionMethodName, parameters, globalVariables);
+            return new TransformFunction(type, FunctionMethodName, genericType, parameters, globalVariables);
         }
 
 //        public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables)

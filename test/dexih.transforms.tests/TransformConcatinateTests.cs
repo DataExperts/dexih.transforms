@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,8 +21,9 @@ namespace dexih.transforms.tests
             var reader2 = Helpers.CreateSortedTestData();
 
             var concatinateTransform = new TransformConcatenate(reader1, reader2);
+            await concatinateTransform.Open(0, null, CancellationToken.None);
 
-            Assert.Equal(5, concatinateTransform.FieldCount);
+            Assert.Equal(6, concatinateTransform.FieldCount);
 
             var count = 0;
             while(await concatinateTransform.ReadAsync())

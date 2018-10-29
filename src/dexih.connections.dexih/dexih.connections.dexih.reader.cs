@@ -25,7 +25,6 @@ namespace dexih.connections.dexih
 		private string _dataUrl;
         
         private FileHandlerBase _fileHandler;
-        private object[] _baseRow;
 
         private ConnectionDexih _dexihConnection;
 
@@ -100,8 +99,6 @@ namespace dexih.connections.dexih
                     _fileHandler = new FileHandlerText(CacheTable, config);
                     await _fileHandler.SetStream(responseStream, null);
 
-                    _baseRow = new object[CacheTable.Columns.Count];
-
                     return true;
                 }
             }
@@ -128,7 +125,7 @@ namespace dexih.connections.dexih
                 object[] row;
                 try
                 {
-                    row = await _fileHandler.GetRow(_baseRow);
+                    row = await _fileHandler.GetRow();
                 }
                 catch (Exception ex)
                 {

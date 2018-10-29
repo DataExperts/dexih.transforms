@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.BuiltIn;
@@ -43,7 +44,7 @@ namespace dexih.transforms.tests
                 new object[] {"EMP6", 4, "MGR1", "MGR2", "EMP4", "EMP5", "EMP6"},
             };
 
-            var func = Functions.GetFunction(typeof(HierarchyFunctions).FullName, nameof(HierarchyFunctions.FlattenParentChild)).GetTransformFunction();
+            var func = Functions.GetFunction(typeof(HierarchyFunctions).FullName, nameof(HierarchyFunctions.FlattenParentChild)).GetTransformFunction(typeof(string));
             
             var parameters = new Parameters()
             {
@@ -60,7 +61,7 @@ namespace dexih.transforms.tests
                 {
                     new ParameterOutputColumn("leafValue", DataType.ETypeCode.String),
                     new ParameterOutputColumn("depth", DataType.ETypeCode.Int32),
-                    new ParameterArray("levels", DataType.ETypeCode.String, new List<Parameter>()
+                    new ParameterArray("levels", DataType.ETypeCode.String, 1, new List<Parameter>()
                     {
                         new ParameterOutputColumn("level1", DataType.ETypeCode.String),
                         new ParameterOutputColumn("level2", DataType.ETypeCode.String),
@@ -75,8 +76,8 @@ namespace dexih.transforms.tests
             
             var mappings = new Mappings(false);
             mappings.Add(new MapFunction(func, parameters));
-            
             var transformAggregate = new TransformAggregate(source, mappings);
+            await transformAggregate.Open(0, null, CancellationToken.None);
             
             Assert.Equal(7, transformAggregate.FieldCount);
 
@@ -89,7 +90,7 @@ namespace dexih.transforms.tests
         }
         
         [Fact]
-        public async Task Group_PercentTotal()
+        public async Task Group_PercentTotal_Rank()
         {
             var table = new Table("parent-child", 0, 
                 new TableColumn("group", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
@@ -117,7 +118,7 @@ namespace dexih.transforms.tests
             };
 
             var percentTotal = new MapFunction(
-                Functions.GetFunction(typeof(AggregateFunctions).FullName, nameof(AggregateFunctions.PercentTotal)).GetTransformFunction(),
+                Functions.GetFunction(typeof(AggregateFunctions<>).FullName, nameof(AggregateFunctions<double>.PercentTotal)).GetTransformFunction(typeof(double)),
                 new Parameters()
                 {
                     Inputs = new Parameter []
@@ -126,26 +127,26 @@ namespace dexih.transforms.tests
                     },
                     ResultInputs = new Parameter []
                     {
-                        new ParameterValue("percentFormat", DataType.ETypeCode.Unknown, AggregateFunctions.EPercentFormat.AsPercent), 
+                        new ParameterValue("percentFormat", DataType.ETypeCode.Enum, AggregateFunctions<double>.EPercentFormat.AsPercent), 
                     },
                     ResultReturnParameter = new ParameterOutputColumn("percent", DataType.ETypeCode.Double),
                 }   
             );
 
             var rank = new MapFunction(
-                Functions.GetFunction(typeof(AggregateFunctions).FullName, nameof(AggregateFunctions.Rank)).GetTransformFunction(),
+                Functions.GetFunction(typeof(AggregateFunctions<>).FullName, nameof(AggregateFunctions<string>.Rank)).GetTransformFunction(typeof(double)),
                 new Parameters()
                 {
                     Inputs = new Parameter []
                     {
-                        new ParameterArray("values", DataType.ETypeCode.Unknown, new List<Parameter>() 
+                        new ParameterArray("values", DataType.ETypeCode.Double, 1, new List<Parameter>() 
                         { 
                             new ParameterColumn("value", table["value"])
                         })
                     },
                     ResultInputs = new Parameter []
                     {
-                        new ParameterValue("direction", DataType.ETypeCode.Unknown, Sort.EDirection.Ascending), 
+                        new ParameterValue("direction", DataType.ETypeCode.Enum, Sort.EDirection.Ascending), 
                     },
                     ResultReturnParameter = new ParameterOutputColumn("rank", DataType.ETypeCode.Int32),
                 }   
@@ -159,7 +160,8 @@ namespace dexih.transforms.tests
             };
 
             var transformAggregate = new TransformAggregate(source, mappings);
-            
+            await transformAggregate.Open(0, null, CancellationToken.None);
+
             Assert.Equal(3, transformAggregate.FieldCount);
 
             var counter = 0;

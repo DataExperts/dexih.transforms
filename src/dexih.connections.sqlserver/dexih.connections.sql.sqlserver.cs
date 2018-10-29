@@ -78,26 +78,11 @@ namespace dexih.connections.sql
 		    
         }
         
-        public override object ConvertParameterType(object value)
-        {
-            if (value != null && value.GetType().IsArray)
-            {
-                return JsonConvert.SerializeObject(value);
-            }
-            return value;
-        }
 
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
-                if (reader is Transform transform)
-                {
-                    transform.ConvertArrayToString = true;
-                    transform.ConvertComplexToString = true;
-                    transform.ConvertJsonToString = true;
-                }
-                
                 using (var connection = await NewConnection())
                 {
 
@@ -312,7 +297,13 @@ namespace dexih.connections.sql
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
-				case ETypeCode.Text:
+                case ETypeCode.CharArray:
+                    if (column.MaxLength == null)
+                        throw new Exception($"The column {column.Name} has a char datatype however no length is specified.");
+                    else
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "char(" + column.MaxLength + ")";
+                    break;
+                case ETypeCode.Text:
                 case ETypeCode.Json:
                 case ETypeCode.Xml:
 					sqlType = "text";
@@ -354,7 +345,7 @@ namespace dexih.connections.sql
                     sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
-                    throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
+                    throw new Exception($"The column {column.Name} has datatype datatype {column.DataType} which is not compatible with the create table.");
             }
 
             return sqlType;

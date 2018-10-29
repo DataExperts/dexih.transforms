@@ -12,6 +12,7 @@ using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -96,6 +97,11 @@ namespace dexih.transforms
         /// The connection can directly insert char[]
         /// </summary>
         public abstract bool CanUseCharArray { get; }
+
+        /// <summary>
+        /// The connection can directly insert xml structure.
+        /// </summary>
+        public abstract bool CanUseXml { get; }
 
         public abstract bool CanUseSql { get; }
         
@@ -437,7 +443,7 @@ namespace dexih.transforms
             {
                 try
                 {
-                    var convertResult = TryParse(ETypeCode.Int64, executeResult);
+                    var convertResult = Operations.Parse<long>(executeResult);
                     surrogateKeyValue = (long)convertResult;
                 } 
                 catch(Exception ex)
@@ -472,6 +478,58 @@ namespace dexih.transforms
         public virtual Task DataWriterStart(Table table)
         {
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Converts a value to a datatype that can be written to the data source.
+        /// This includes transforming json/xml/arrays into strings where neccessary.
+        /// </summary>
+        /// <param name="typeCode"></param>
+        /// <param name="rank"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public virtual object ConvertForWrite(TableColumn column, object value)
+        {
+            if (value == null || value == DBNull.Value)
+            {
+                return DBNull.Value;
+            }
+
+            if ((column.Rank > 0 && !CanUseArray) ||
+                (column.DataType == ETypeCode.CharArray && !CanUseCharArray) ||
+                (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
+                (column.DataType == ETypeCode.Json && !CanUseJson) ||
+                (column.DataType == ETypeCode.Xml && !CanUseXml) ||
+                column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
+            {
+                return Operations.Parse(ETypeCode.String, value);
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Converts a value to the required data type after being read from the data source.
+        /// This includes transforming strings containing arrays/json/xml into native structures.
+        /// </summary>
+        /// <param name="typeCode"></param>
+        /// <param name="rank"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public virtual object ConvertForRead(TableColumn column, object value)
+        {
+            if ((column.Rank > 0 && !CanUseArray) ||
+                (column.DataType == ETypeCode.CharArray && !CanUseCharArray) ||
+                (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
+                (column.DataType == ETypeCode.Json && !CanUseJson) ||
+                (column.DataType == ETypeCode.Xml && !CanUseXml) ||
+                column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
+            {
+                return Operations.Parse(column.DataType, value);
+            }
+
+            return value;
+
         }
 
         /// <summary>

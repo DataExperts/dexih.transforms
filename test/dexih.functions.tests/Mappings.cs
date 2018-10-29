@@ -34,7 +34,7 @@ namespace dexih.functions.tests
             Assert.Equal("123", outputRow[0]);
             
             mapColumn = new MapColumn(inputColumn, outputColumn);
-            mapColumn.InitializeInputOrdinals(inputTable);
+            mapColumn.InitializeColumns(inputTable);
             mapColumn.AddOutputColumns(outputTable);
             mapColumn.ProcessInputRow(inputRow);
             mapColumn.MapOutputRow(outputRow);
@@ -64,7 +64,7 @@ namespace dexih.functions.tests
             Assert.Equal("123", outputRow[0]);
             
             mapColumn = new MapGroup(inputColumn, outputColumn);
-            mapColumn.InitializeInputOrdinals(inputTable);
+            mapColumn.InitializeColumns(inputTable);
             mapColumn.AddOutputColumns(outputTable);
             mapColumn.ProcessInputRow(inputRow);
             mapColumn.MapOutputRow(outputRow);
@@ -87,19 +87,19 @@ namespace dexih.functions.tests
             
             // test filter
             var mapFilter = new MapFilter(inputColumn1, "val1");
-            mapFilter.InitializeInputOrdinals(inputTable);
+            mapFilter.InitializeColumns(inputTable);
             Assert.True(mapFilter.ProcessInputRow(inputRow));
             
             mapFilter = new MapFilter(inputColumn1, "not val1");
-            mapFilter.InitializeInputOrdinals(inputTable);
+            mapFilter.InitializeColumns(inputTable);
             Assert.False(mapFilter.ProcessInputRow(inputRow));
 
             mapFilter = new MapFilter(inputColumn1, inputColumn2);
-            mapFilter.InitializeInputOrdinals(inputTable);
+            mapFilter.InitializeColumns(inputTable);
             Assert.True(mapFilter.ProcessInputRow(inputRow));
 
             mapFilter = new MapFilter(inputColumn1, inputColumn3);
-            mapFilter.InitializeInputOrdinals(inputTable);
+            mapFilter.InitializeColumns(inputTable);
             Assert.False(mapFilter.ProcessInputRow(inputRow));
 
         }
@@ -129,11 +129,11 @@ namespace dexih.functions.tests
 //            Assert.False(mapJoin.ProcessInputRow(inputRow, joinRow));
 
             var mapJoin = new MapJoin(inputColumn1, inputColumn2);
-            mapJoin.InitializeInputOrdinals(inputTable, joinTable);
+            mapJoin.InitializeColumns(inputTable, joinTable);
             Assert.True(mapJoin.ProcessInputRow(inputRow, joinRow));
 
             mapJoin = new MapJoin(inputColumn1, inputColumn3);
-            mapJoin.InitializeInputOrdinals(inputTable, joinTable);
+            mapJoin.InitializeColumns(inputTable, joinTable);
             Assert.False(mapJoin.ProcessInputRow(inputRow, joinRow));
 
         }
@@ -180,12 +180,12 @@ namespace dexih.functions.tests
             var outputTable = new Table("output");
             
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Concat));
-            var transformFunction = function.GetTransformFunction();
+            var transformFunction = function.GetTransformFunction(typeof(string));
             var parameters = new Parameters
             {
                 Inputs = new List<Parameter.Parameter>()
                 {
-                    new ParameterArray("input", DataType.ETypeCode.String,
+                    new ParameterArray("input", DataType.ETypeCode.String, 1,
                         new List<Parameter.Parameter>()
                         {
                             new ParameterColumn("values", inputColumn1),
@@ -197,7 +197,7 @@ namespace dexih.functions.tests
 
             // map a value
             var mapFunction = new MapFunction(transformFunction, parameters);
-            mapFunction.InitializeInputOrdinals(inputTable);
+            mapFunction.InitializeColumns(inputTable);
             mapFunction.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
@@ -222,7 +222,7 @@ namespace dexih.functions.tests
 
             var mapSeries = new MapSeries(inputColumn, outputColumn, ESeriesGrain.Day, false, null, null);
             
-            mapSeries.InitializeInputOrdinals(inputTable);
+            mapSeries.InitializeColumns(inputTable);
             mapSeries.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];

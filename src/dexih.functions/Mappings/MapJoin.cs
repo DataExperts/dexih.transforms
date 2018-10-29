@@ -32,7 +32,7 @@ namespace dexih.functions.Mappings
         /// <summary>
         /// Stores the actual compare result.
         /// </summary>
-        public DataType.ECompareResult CompareResult { get; set; }
+        public int CompareResult { get; set; }
 
         private int _column1Ordinal;
         private int _column2Ordinal;
@@ -40,7 +40,7 @@ namespace dexih.functions.Mappings
         private object[] _row;
         private object[] _joinRow;
 
-        public override Task Initialize(Table table, Table joinTable)
+        public override void InitializeColumns(Table table, Table joinTable)
         {
             if (InputColumn != null)
             {
@@ -67,8 +67,6 @@ namespace dexih.functions.Mappings
             {
                 _column2Ordinal = -1;
             }
-
-            return Task.CompletedTask;
         }
 
         public override void AddOutputColumns(Table table)
@@ -90,52 +88,26 @@ namespace dexih.functions.Mappings
 
             var value1 = GetInputValue();
             var value2 = GetJoinValue();
-            
-            CompareResult = DataType.Compare(InputColumn.DataType, value1, value2);
+
+            CompareResult = Operations.Compare(InputColumn.DataType, value1, value2);
 
             switch (Compare)
             {
                 case Filter.ECompare.GreaterThan:
-                    if (CompareResult != DataType.ECompareResult.Greater)
-                    {
-                        return false;
-                    }
-                    break;
+                    return CompareResult == 1;
                 case Filter.ECompare.IsEqual:
-                    if (CompareResult != DataType.ECompareResult.Equal)
-                    {
-                        return false;
-                    }
-                    break;
+                    return CompareResult == 0;
                 case Filter.ECompare.GreaterThanEqual:
-                    if (CompareResult == DataType.ECompareResult.Less)
-                    {
-                        return false;
-                    }
-                    break;
+                    return CompareResult != -1;
                 case Filter.ECompare.LessThan:
-                    if (CompareResult != DataType.ECompareResult.Less)
-                    {
-                        return false;
-                    }
-                    break;
+                    return CompareResult == -1;
                 case Filter.ECompare.LessThanEqual:
-                    if (CompareResult == DataType.ECompareResult.Greater)
-                    {
-                        return false;
-                    }
-                    break;
+                    return CompareResult != 1;
                 case Filter.ECompare.NotEqual:
-                    if (CompareResult == DataType.ECompareResult.Equal)
-                    {
-                        return false;
-                    }
-                    break;
+                    return CompareResult != 0;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            return true;
         }
 
         public override void MapOutputRow(object[] row)

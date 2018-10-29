@@ -110,7 +110,7 @@ namespace dexih.functions
                 }
 
                 var compareAttribute = method.GetCustomAttribute<TransformFunctionCompareAttribute>();
-                
+
                 var function = new FunctionReference()
                 {
                     Name = attribute.Name,
@@ -124,84 +124,55 @@ namespace dexih.functions
                     IsStandardFunction = true,
                     Compare = compareAttribute?.Compare,
                     FunctionClassName = type.FullName,
-                    
-                    ReturnType = GetElementType(method.ReturnType, out var returnRank),
-                    ReturnRank = returnRank,
+                    GenericType = attribute.GenericType,
+                    GenericTypeDefault = attribute.GenericTypeDefault,
+                    ReturnParameter = GetFunctionParameter(method.ReturnParameter, "Return"),
                     InputParameters = method.GetParameters().Where(c =>
                     {
                         var variable = c.GetCustomAttribute<TransformFunctionVariableAttribute>();
                         return !c.IsOut && variable == null;
-                    }).Select(p =>
-                    {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameterAttribute>();
-                        return new FunctionParameter()
-                        {
-                            ParameterName = p.Name,
-                            Name = paramAttribute?.Name?? p.Name,
-                            Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType, out var paramRank),
-                            Rank = paramRank,
-                            IsTwin = p.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
-                            ListOfValues = EnumValues(p),
-                            DefaultValue = DefaultValue(p)
-                        };
-                    }).ToArray(),
-                    OutputParameters = method.GetParameters().Where(c => c.IsOut).Select(p =>
-                    {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameterAttribute>();
-                        return new FunctionParameter()
-                        {
-                            ParameterName = p.Name,
-                            Name = paramAttribute?.Name?? p.Name,
-                            Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType, out var outParamRank),
-                            Rank = outParamRank,
-                            IsTwin = p.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
-                            ListOfValues = EnumValues(p)
-                        };
-                    }).ToArray(),
-                    ResultReturnType = GetElementType(method.ReturnType, out var resultRank),
-                    ResultReturnRank = resultRank,
-
+                    }).Select(p => GetFunctionParameter(p)).ToArray(),
+                    OutputParameters = method.GetParameters().Where(c => c.IsOut).Select(p => GetFunctionParameter(p)).ToArray(),
+                    ResultReturnParameter = GetFunctionParameter(resultMethod?.ReturnParameter, "Group Return"),
                     ResultInputParameters = resultMethod?.GetParameters().Where(c =>
                     {
                         var variable = c.GetCustomAttribute<TransformFunctionVariableAttribute>();
                         return !c.IsOut && variable == null;
-                    }).Select(p =>
-                    {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameterAttribute>();
-                        return new FunctionParameter()
-                        {
-                            ParameterName = p.Name,
-                            Name = paramAttribute?.Name?? p.Name,
-                            Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType, out var paramRank),
-                            Rank = paramRank,
-                            IsTwin = p.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
-                            ListOfValues = EnumValues(p),
-                            DefaultValue = DefaultValue(p)
-                        };
-                    }).ToArray(),
-                    ResultOutputParameters = resultMethod?.GetParameters().Where(c => c.IsOut).Select(p =>
-                    {
-                        var paramAttribute = p.GetCustomAttribute<TransformFunctionParameterAttribute>();
-                        return new FunctionParameter()
-                        {
-                            ParameterName = p.Name,
-                            Name = paramAttribute?.Name?? p.Name,
-                            Description = paramAttribute?.Description,
-                            DataType = DataType.GetTypeCode(p.ParameterType, out var paramRank),
-                            Rank = paramRank,
-                            IsTwin = p.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
-                            ListOfValues = EnumValues(p)
-                        };
-                    }).ToArray(),
+                    }).Select(p => GetFunctionParameter(p)).ToArray(),
+                    ResultOutputParameters = resultMethod?.GetParameters().Where(c => c.IsOut).Select(p => GetFunctionParameter(p)).ToArray()
                 };
 
                 return function;
             }
 
             return null;
+        }
+
+        private static FunctionParameter GetFunctionParameter(ParameterInfo parameterInfo, string name = null)
+        {
+            if (parameterInfo == null) return null;
+
+            var parameterAttribute = parameterInfo.GetCustomAttribute<TransformFunctionParameterAttribute>();
+
+            bool isGeneric = false;
+            if ((parameterInfo.ParameterType.IsArray && parameterInfo.ParameterType.GetElementType().IsGenericParameter) || (parameterInfo.ParameterType.IsGenericParameter))
+            {
+                isGeneric = true;
+            }
+
+            return new FunctionParameter()
+            {
+                ParameterName = name ?? parameterInfo.Name,
+                Name = name ?? parameterAttribute?.Name ?? parameterInfo.Name,
+                Description = parameterAttribute?.Description,
+                IsGeneric = isGeneric,
+                DataType = DataType.GetTypeCode(parameterInfo.ParameterType, out var paramRank),
+                AllowNull = Nullable.GetUnderlyingType(parameterInfo.ParameterType) != null,
+                Rank = paramRank,
+                IsTwin = parameterInfo.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
+                ListOfValues = EnumValues(parameterInfo),
+                DefaultValue = DefaultValue(parameterInfo)
+            };
         }
 
         // convert enum to list of values

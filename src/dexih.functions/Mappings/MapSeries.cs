@@ -52,12 +52,12 @@ namespace dexih.functions.Mappings
 
         public object GetSeriesStart()
         {
-            return DataType.TryParse(InputColumn.DataType, SeriesStart);
+            return Operations.Parse(InputColumn.DataType, SeriesStart);
         }
 
         public object GetSeriesFinish()
         {
-            return DataType.TryParse(InputColumn.DataType, SeriesFinish);
+            return Operations.Parse(InputColumn.DataType, SeriesFinish);
         }
 
         public override object GetInputValue(object[] row = null)

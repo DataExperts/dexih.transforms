@@ -28,10 +28,10 @@ namespace dexih.functions.Parameter
         public void InitializeInputs(IList<Parameter> inputs, Table table, Table joinTable = null)
         {
             Inputs = inputs;
-            InitializeInputOrdinals(table, joinTable);            
+            InitializeColumns(table, joinTable);            
         }
 
-        public void InitializeInputOrdinals(Table table, Table joinTable)
+        public void InitializeColumns(Table table, Table joinTable)
         {
             if (Inputs != null)
             {

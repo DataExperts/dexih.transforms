@@ -15,7 +15,7 @@ namespace dexih.transforms.tests
     public class TransformGroupTests
     {
         
-        private readonly string _aggregateFunctions = typeof(AggregateFunctions).FullName;
+        private readonly string _aggregateFunctions = typeof(AggregateFunctions<>).FullName;
 
         private Mappings AggregateMappings()
         {
@@ -24,7 +24,7 @@ namespace dexih.transforms.tests
             var intParameter = new ParameterColumn("IntColumn", ETypeCode.Int32);
             var stringParameter = new ParameterColumn("StringColumn", ETypeCode.String);
 
-            var sum = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions.Sum)).GetTransformFunction();
+            var sum = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Sum)).GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(sum,
                 new Parameters()
                 {
@@ -32,8 +32,8 @@ namespace dexih.transforms.tests
                     ResultReturnParameter = new ParameterOutputColumn("Sum", ETypeCode.Int32)
                 }));
 
-            var avg = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions.Average))
-                .GetTransformFunction();
+            var avg = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Average))
+                .GetTransformFunction(typeof(double));
             mappings.Add(new MapFunction(avg,
                 new Parameters()
                 {
@@ -41,7 +41,7 @@ namespace dexih.transforms.tests
                     ResultReturnParameter = new ParameterOutputColumn("Average", ETypeCode.Double)
                 }));
 
-            var min = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions.Min)).GetTransformFunction();
+            var min = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Min)).GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(min,
                 new Parameters()
                 {
@@ -49,7 +49,7 @@ namespace dexih.transforms.tests
                     ResultReturnParameter = new ParameterOutputColumn("Minimum", ETypeCode.Int32)
                 }));
 
-            var max = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions.Max)).GetTransformFunction();
+            var max = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Max)).GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(max,
                 new Parameters()
                 {
@@ -57,13 +57,13 @@ namespace dexih.transforms.tests
                     ResultReturnParameter = new ParameterOutputColumn("Maximum", ETypeCode.Int32)
                 }));
 
-            var count = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions.Count))
-                .GetTransformFunction();
+            var count = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Count))
+                .GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(count,
                 new Parameters() {ResultReturnParameter = new ParameterOutputColumn("Count", ETypeCode.Int32)}));
 
-            var countdistinct = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions.CountDistinct))
-                .GetTransformFunction();
+            var countdistinct = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.CountDistinct))
+                .GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(countdistinct,
                 new Parameters()
                 {
@@ -71,8 +71,8 @@ namespace dexih.transforms.tests
                     ResultReturnParameter = new ParameterOutputColumn("CountDistinct", ETypeCode.Int32)
                 }));
 
-            var concat = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions.ConcatAgg))
-                .GetTransformFunction();
+            var concat = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<string>.ConcatAgg))
+                .GetTransformFunction(typeof(string));
             mappings.Add(new MapFunction(concat,
                 new Parameters()
                 {
@@ -161,15 +161,15 @@ namespace dexih.transforms.tests
 
             var intColumn = new TableColumn("IntColumn", ETypeCode.Int32);
 
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Sum", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Sum", ETypeCode.Int32),
                 SelectColumn.EAggregate.Sum));
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Average", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Average", ETypeCode.Decimal),
                 SelectColumn.EAggregate.Average));
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Minimum", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Minimum", ETypeCode.Int32),
                 SelectColumn.EAggregate.Min));
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Maximum", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Maximum", ETypeCode.Int32),
                 SelectColumn.EAggregate.Max));
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Count", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Count", ETypeCode.Int32),
                 SelectColumn.EAggregate.Count));
 
             var transformGroup = new TransformGroup(source, mappings);
@@ -182,10 +182,10 @@ namespace dexih.transforms.tests
             {
                 counter = counter + 1;
                 Assert.Equal(55, transformGroup["Sum"]);
-                Assert.Equal(5.5, transformGroup["Average"]);
+                Assert.Equal(5.5m, transformGroup["Average"]);
                 Assert.Equal(1, transformGroup["Minimum"]);
                 Assert.Equal(10, transformGroup["Maximum"]);
-                Assert.Equal(10L, transformGroup["Count"]);
+                Assert.Equal(10, transformGroup["Count"]);
             }
 
             Assert.Equal(1, counter);
@@ -200,15 +200,15 @@ namespace dexih.transforms.tests
 
             var intColumn = new TableColumn("IntColumn", ETypeCode.Int32);
 
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Sum", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Sum", ETypeCode.Int32),
                 SelectColumn.EAggregate.Sum));
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Average", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Average", ETypeCode.Int32),
                 SelectColumn.EAggregate.Average));
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Minimum", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Minimum", ETypeCode.Int32),
                 SelectColumn.EAggregate.Min));
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Maximum", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Maximum", ETypeCode.Int32),
                 SelectColumn.EAggregate.Max));
-            mappings.Add(new MapAggregate(intColumn, new TableColumn("Count", ETypeCode.Double),
+            mappings.Add(new MapAggregate(intColumn, new TableColumn("Count", ETypeCode.Int32),
                 SelectColumn.EAggregate.Count));
 
             //add a row to use for grouping.
@@ -224,18 +224,18 @@ namespace dexih.transforms.tests
                 if (counter < 10)
                 {
                     Assert.Equal(counter, transformGroup["Sum"]);
-                    Assert.Equal((double) counter, transformGroup["Average"]);
+                    Assert.Equal(counter, transformGroup["Average"]);
                     Assert.Equal(counter, transformGroup["Minimum"]);
                     Assert.Equal(counter, transformGroup["Maximum"]);
-                    Assert.Equal(1L, transformGroup["Count"]);
+                    Assert.Equal(1, transformGroup["Count"]);
                 }
                 else
                 {
                     Assert.Equal(20, transformGroup["Sum"]);
-                    Assert.Equal(10d, transformGroup["Average"]);
+                    Assert.Equal(10, transformGroup["Average"]);
                     Assert.Equal(10, transformGroup["Minimum"]);
                     Assert.Equal(10, transformGroup["Maximum"]);
-                    Assert.Equal(2L, transformGroup["Count"]);
+                    Assert.Equal(2, transformGroup["Count"]);
                 }
             }
 

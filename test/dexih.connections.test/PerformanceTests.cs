@@ -33,6 +33,7 @@ namespace dexih.connections.test
             foreach (ETypeCode typeCode in Enum.GetValues(typeof(ETypeCode)))
             {
                 if (typeCode == ETypeCode.Binary && !connection.CanUseBinary) continue;
+                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown) continue;
 
                 table.Columns.Add(new TableColumn()
                 {

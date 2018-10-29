@@ -11,6 +11,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
@@ -47,15 +48,7 @@ namespace dexih.connections.sql
         protected override string SqlDelimiterOpen { get; } = "`";
         protected override string SqlDelimiterClose { get; } = "`";
 
-        public override object ConvertParameterType(object value)
-        {
-            if (value.GetType().IsArray)
-            {
-                return JsonConvert.SerializeObject(value);
-            }
-            return value;
-        }
-        
+       
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
@@ -129,8 +122,8 @@ namespace dexih.connections.sql
 
                             for (var i = 0; i < fieldCount; i++)
                             {
-                                row.Append(GetSqlFieldValueQuote(table.Columns[i].DataType, ConvertParameterType(reader[i])) +
-                                           (i < fieldCount - 1 ? "," : ")"));
+                                var value = ConvertParameterType(table.Columns[i].DataType, table.Columns[i].Rank, reader[i]);
+                                row.Append(GetSqlFieldValueQuote(table.Columns[i].DataType, value) + (i < fieldCount - 1 ? "," : ")"));
                             }
 
                             // if the maximum sql size will be exceeded with this value, then break, so the command can be executed.
@@ -392,7 +385,7 @@ namespace dexih.connections.sql
                         returnValue = "TIME_FORMAT('" + MySqlHelper.EscapeString((string)value) + "', '%H:%i:%s.%f')";
 					break;
                 case ETypeCode.Binary:
-                    returnValue = "X'" + TryParse(ETypeCode.String, value) +"'";
+                    returnValue = "X'" + Operations.Parse(ETypeCode.String, value) +"'";
                     break;
                 default:
                     throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");

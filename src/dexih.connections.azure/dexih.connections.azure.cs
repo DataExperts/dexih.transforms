@@ -13,6 +13,7 @@ using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Newtonsoft.Json;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.azure
 {
@@ -54,6 +55,7 @@ namespace dexih.connections.azure
         public override bool CanUseBinary => true;
         public override bool CanUseArray => false;
         public override bool CanUseJson => false;
+        public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => true;
@@ -137,13 +139,6 @@ namespace dexih.connections.azure
         {
             try
             {
-                if (reader is Transform transform)
-                {
-                    transform.ConvertArrayToString = true;
-                    transform.ConvertComplexToString = true;
-                    transform.ConvertJsonToString = true;
-                }
-                
                 var targetTableName = table.Name;
 
                 var tasks = new List<Task>();
@@ -178,7 +173,9 @@ namespace dexih.connections.azure
                     for (var i = 0; i < table.Columns.Count; i++)
                     {
                         if (i < reader.FieldCount)
-                            row[i] = ConvertParameterType(reader[i]);
+                        {
+                            row[i] = reader[i];
+                        }
                         else
                         {
                             //if the reader does not have the azure fields, then just add defaults.
@@ -557,7 +554,7 @@ namespace dexih.connections.azure
                         {
                             try
                             {
-                                var valueparse = TryParse(filter.CompareDataType, value);
+                                var valueparse = Operations.Parse(filter.CompareDataType, value);
                                 array.Add(valueparse);
                             }
                             catch (Exception ex)
@@ -572,7 +569,7 @@ namespace dexih.connections.azure
                         object value2 = null;
                         try
                         {
-                            value2 = TryParse(filter.CompareDataType, filter.Value2);
+                            value2 = Operations.Parse(filter.CompareDataType, filter.Value2);
                         }
                         catch (Exception ex)
                         {
@@ -715,7 +712,7 @@ namespace dexih.connections.azure
             object returnValue;
             try
             {
-                returnValue = TryParse(typeCode, value);
+                returnValue = Operations.Parse(typeCode, value);
             }
             catch(Exception ex)
             {

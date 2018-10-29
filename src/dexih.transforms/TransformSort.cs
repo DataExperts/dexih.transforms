@@ -20,7 +20,7 @@ namespace dexih.transforms
     {
         private bool _alreadySorted;
         private bool _firstRead;
-        private SortedRowsDictionary _sortedDictionary;
+        private SortedRowsDictionary<object> _sortedDictionary;
         private SortedDictionary<object[], object[]>.KeyCollection.Enumerator _iterator;
 
         private readonly List<Sort> _sortFields;
@@ -40,6 +40,12 @@ namespace dexih.transforms
 
         public TransformSort(Transform inTransform, List<Sort> sortFields)
         {
+            Mappings = new Mappings();
+            foreach(var sortField in sortFields)
+            {
+                Mappings.Add(new MapSort(sortField.Column, sortField.Direction));
+            }
+
             SetInTransform(inTransform);
             _sortFields = sortFields;
         }
@@ -61,8 +67,6 @@ namespace dexih.transforms
             query.Sorts = RequiredSortFields();
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-
-            if(Mappings != null) await Mappings?.Initialize(PrimaryTransform.CacheTable);
 
             //check if the transform has already sorted the data, using sql or a presort.
             _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);
@@ -88,7 +92,7 @@ namespace dexih.transforms
             }
             if (_firstRead) //load the entire record into a sorted list.
             {
-                _sortedDictionary = new SortedRowsDictionary(_sortFields.Select(c=>c.Direction).ToList());
+                _sortedDictionary = new SortedRowsDictionary<object>(_sortFields.Select(c=>c.Direction).ToList());
 
                 var rowcount = 0;
                 while (await PrimaryTransform.ReadAsync(cancellationToken))

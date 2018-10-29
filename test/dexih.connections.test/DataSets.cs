@@ -24,8 +24,8 @@ namespace dexih.connections.test
                 new TableColumn("BooleanColumn", ETypeCode.Boolean),
                 new TableColumn("DateColumn", ETypeCode.DateTime),
                 new TableColumn("GuidColumn", ETypeCode.Guid),
-                new TableColumn("ArrayColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Array),
-                new TableColumn("MatrixColumn", ETypeCode.Int32, arrayType: TableColumn.EArrayType.Matrix)
+                new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1),
+                new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2)
                 );
 
             table.Data.Add(new object[] { "value1", 1, 1.1m, 1.1, true, Convert.ToDateTime("2015/01/01"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
@@ -116,7 +116,7 @@ namespace dexih.connections.test
                 Name = "ArrayColumn",
                 Description = "An array column",
                 DataType = ETypeCode.Int32,
-                ArrayType = TableColumn.EArrayType.Array,
+                Rank = 1,
                 DeltaType = TableColumn.EDeltaType.TrackingField
             });
 
@@ -125,7 +125,7 @@ namespace dexih.connections.test
                 Name = "MatrixColumn",
                 Description = "An matrix column",
                 DataType = ETypeCode.Int32,
-                ArrayType = TableColumn.EArrayType.Matrix,
+                Rank = 2,
                 DeltaType = TableColumn.EDeltaType.TrackingField
             });
             

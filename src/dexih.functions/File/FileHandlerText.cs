@@ -20,22 +20,25 @@ namespace dexih.functions.File
 
         private readonly int _fileRowNumberOrdinal;
         private readonly int _responseDataOrdinal;
+        private readonly int _fieldCount;
 
         private struct CsvField
         {
             public DataType.ETypeCode TypeCode { get; set; }
+            public int Rank { get; set; }
             public int Position { get; set; }
             public Type DataType { get; set; }
 
-            public CsvField(int position, DataType.ETypeCode typeCode, bool isArray)
+            public CsvField(int position, DataType.ETypeCode typeCode, int rank)
             {
                 Position = position;
                 TypeCode = typeCode;
+                Rank = rank;
 
-                if (isArray
+                if (rank > 0
                     || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Binary
                     || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Byte
-                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Char
+                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.CharArray
                     || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Guid
                     || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Json
                     || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Unknown
@@ -59,6 +62,7 @@ namespace dexih.functions.File
         public FileHandlerText(Table table, FileConfiguration fileConfiguration)
         {
             _table = table;
+            _fieldCount = _table.Columns.Count;
 
             if (fileConfiguration == null)
             {
@@ -69,7 +73,6 @@ namespace dexih.functions.File
                 _fileConfiguration = fileConfiguration;
                 _fileConfiguration.Delimiter = _fileConfiguration.Delimiter.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\r", "\r");
             }
-            
             
             _fileRowNumberOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileRowNumber);
             _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
@@ -188,7 +191,7 @@ namespace dexih.functions.File
                         {
                             if (_csvReader.Context.HeaderRecord[csvPos] == column.Name)
                             {
-                                _csvOrdinalMappings.Add(col, new CsvField(csvPos, column.DataType, column.Rank > 0));
+                                _csvOrdinalMappings.Add(col, new CsvField(csvPos, column.DataType, column.Rank));
                                 break;
                             }
                         }
@@ -203,21 +206,20 @@ namespace dexih.functions.File
                     var column = _table.Columns[col];
                     if (column.DeltaType != TableColumn.EDeltaType.FileName && column.DeltaType != TableColumn.EDeltaType.FileRowNumber)
                     {
-                        _csvOrdinalMappings.Add(col, new CsvField(col, column.DataType, column.Rank > 0));
+                        _csvOrdinalMappings.Add(col, new CsvField(col, column.DataType, column.Rank));
                     }
                 }
             }
 
         }
 
-        public override async Task<object[]> GetRow(object[] baseRow)
+        public override async Task<object[]> GetRow()
         {
             try
             {
                 while (_csvReader != null && await _csvReader.ReadAsync())
                 {
-                    var row = new object[baseRow.Length];
-                    Array.Copy(baseRow, row, baseRow.Length);
+                    var row = new object[_fieldCount];
 
                     if (_responseDataOrdinal >= 0)
                     {
@@ -230,7 +232,7 @@ namespace dexih.functions.File
                     {
                         var mapping = _csvOrdinalMappings[colPos];
                         var value = _csvReader.GetField(mapping.DataType, mapping.Position);
-                        row[colPos] = DataType.TryParse(mapping.TypeCode, value);
+                        row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);
                         
                         if (_fileConfiguration.SetWhiteSpaceCellsToNull && row[colPos] is string &&
                             string.IsNullOrWhiteSpace((string) row[colPos]))

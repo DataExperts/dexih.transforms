@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.XPath;
 using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
@@ -14,7 +15,7 @@ namespace dexih.functions.BuiltIn
         private int? _cacheInt;
         private DateTime? _cacheDate;
         private string[] _cacheArray;
-        private XPathNodeIterator _cacheXmlNodeList;
+        private XmlNodeList _cacheXmlNodeList;
         private JToken[] _cacheJsonTokens;
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace dexih.functions.BuiltIn
         
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "Columns To Rows",
             Description = "Columns into rows.", ResetMethod = nameof(Reset))]
-        public bool ColumnsToRows(string[] column, out string columnName, out string item)
+        public bool ColumnsToRows<T>(T[] column, out string columnName, out T item)
         {
             if (_cacheInt == null)
             {
@@ -102,7 +103,7 @@ namespace dexih.functions.BuiltIn
 
             if (_cacheInt > column.Length - 1)
             {
-                item = "";
+                item = default(T);
                 columnName = "";
                 return false;
             }
@@ -128,39 +129,36 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "XPath Nodes To Rows",
             Description = "Split an XPath query into multiple rows", ResetMethod = nameof(Reset))]
-        public bool XPathNodesToRows(string xml, string xPath, int maxItems, out string node)
+        public bool XPathNodesToRows(XmlDocument xml, string xPath, int maxItems, out string node)
         {
             if (_cacheXmlNodeList == null)
             {
-                var stream = new StringReader(xml);
-                var xPathDocument = new XPathDocument(stream);
-
-                _cacheXmlNodeList = xPathDocument.CreateNavigator().Select(xPath);
+                _cacheXmlNodeList = xml.SelectNodes(xPath);
                 _cacheInt = 0;
             }
 
-            if ((maxItems > 0 && _cacheInt > maxItems - 1) || _cacheXmlNodeList.MoveNext() == false)
+            if ((maxItems > 0 && _cacheInt > maxItems - 1) || _cacheInt >= _cacheXmlNodeList.Count)
             {
                 node = "";
                 return false;
             }
 
+            node = _cacheXmlNodeList[_cacheInt.Value].InnerXml;
             _cacheInt++;
-            node = _cacheXmlNodeList.Current.InnerXml;
             return true;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "JSON Elements To Rows",
             Description = "Split a JSON array into separate rows", ResetMethod = nameof(Reset))]
 
-        public bool JsonElementsToRows(string json, string jsonPath, int maxItems, out string item)
+        public bool JsonElementsToRows(JToken json, string jsonPath, int maxItems, out string item)
         {
             if (_cacheJsonTokens == null)
             {
-                var results = JToken.Parse(json);
+                // var results = JToken.Parse(json);
                 _cacheJsonTokens = string.IsNullOrEmpty(jsonPath)
-                    ? results.ToArray()
-                    : results.SelectTokens(jsonPath).ToArray();
+                    ? json.ToArray()
+                    : json.SelectTokens(jsonPath).ToArray();
                 _cacheInt = 0;
             }
             else
@@ -178,21 +176,21 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "Json Pivot Element To Rows",
             Description = "Splits the properties of a Json element into rows containing the property name and value.", ResetMethod = nameof(Reset))]
-        public bool JsonPivotElementToRows(string json, string jsonPath, int maxItems, out string name,
+        public bool JsonPivotElementToRows(JToken json, string jsonPath, int maxItems, out string name,
             out string value)
         {
-            if (string.IsNullOrEmpty(json))
+            if (json == null)
             {
                 throw new FunctionException("The json value contained no data.");
             }
             
             if (_cacheJsonTokens == null)
             {
-                var results = JToken.Parse(json);
+                // var results = JToken.Parse(json);
 
                 _cacheJsonTokens = string.IsNullOrEmpty(jsonPath)
-                    ? results.SelectTokens(" ").ToArray()
-                    : results.SelectTokens(jsonPath).ToArray();
+                    ? json.SelectTokens(" ").ToArray()
+                    : json.SelectTokens(jsonPath).ToArray();
 
                 _cacheInt = 0;
             }

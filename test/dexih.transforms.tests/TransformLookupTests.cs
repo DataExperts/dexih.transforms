@@ -30,7 +30,7 @@ namespace dexih.transforms.tests
             };
             var transformLookup = new TransformLookup(source, Helpers.CreateUnSortedJoinData(), mappings, "Lookup");
                 
-            Assert.Equal(8, transformLookup.FieldCount);
+            Assert.Equal(9, transformLookup.FieldCount);
 
             await transformLookup.Open(1, null, CancellationToken.None);
 

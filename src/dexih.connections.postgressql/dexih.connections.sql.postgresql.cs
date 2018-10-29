@@ -13,6 +13,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Npgsql;
 using NpgsqlTypes;
@@ -49,13 +50,17 @@ namespace dexih.connections.sql
         public override bool CanUseArray => true;
 
         // postgre doesn't have unsigned values, so convert the unsigned to signed 
-        public override object ConvertParameterType(object value)
+        public override object ConvertParameterType(ETypeCode typeCode, int rank, object value)
         {
-            if (value is null)
+            if (value == null || value == DBNull.Value)
+            {
                 return DBNull.Value;
-            
-            if (value.GetType().IsArray)
-                return JsonConvert.SerializeObject(value);
+            }
+
+            if (rank > 0 && !CanUseArray)
+            {
+                return Operations.Parse(ETypeCode.String, value);
+            }
 
             switch (value)
             {
@@ -268,7 +273,7 @@ namespace dexih.connections.sql
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
-                case ETypeCode.Char:
+                case ETypeCode.CharArray:
                     if(column.MaxLength == null) 
                         sqlType = (column.IsUnicode == true ? "n" : "") + "char(0)";
                     else 
@@ -661,7 +666,7 @@ ORDER BY c.ordinal_position"))
                 case "time with time zone": return ETypeCode.Time;
                 case "character varying": return ETypeCode.String;
                 case "varchar": return ETypeCode.String;
-                case "character": return ETypeCode.Char;
+                case "character": return ETypeCode.CharArray;
                 case "text": return ETypeCode.Text;
             }
             return ETypeCode.Unknown;
@@ -813,43 +818,43 @@ ORDER BY c.ordinal_position"))
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return (NpgsqlDbType.Smallint, TryParse(ETypeCode.Int16, value));
+                    return (NpgsqlDbType.Smallint, Operations.Parse(ETypeCode.Int16, value));
                 case ETypeCode.SByte:
-                    return (NpgsqlDbType.Smallint, TryParse(ETypeCode.Int16, value));
+                    return (NpgsqlDbType.Smallint, Operations.Parse(ETypeCode.Int16, value));
                 case ETypeCode.UInt16:
-                    return (NpgsqlDbType.Integer, TryParse(ETypeCode.Int32, value));
+                    return (NpgsqlDbType.Integer, Operations.Parse(ETypeCode.Int32, value));
                 case ETypeCode.UInt32:
-                    return (NpgsqlDbType.Bigint, TryParse(ETypeCode.Int64, value));
+                    return (NpgsqlDbType.Bigint, Operations.Parse(ETypeCode.Int64, value));
                 case ETypeCode.UInt64:
-                    return (NpgsqlDbType.Bigint, TryParse(ETypeCode.Int64, value));
+                    return (NpgsqlDbType.Bigint, Operations.Parse(ETypeCode.Int64, value));
                 case ETypeCode.Int16:
-                    return (NpgsqlDbType.Smallint, TryParse(ETypeCode.Int16, value));
+                    return (NpgsqlDbType.Smallint, Operations.Parse(ETypeCode.Int16, value));
                 case ETypeCode.Int32:
-                    return (NpgsqlDbType.Integer, TryParse(ETypeCode.Int32, value));
+                    return (NpgsqlDbType.Integer, Operations.Parse(ETypeCode.Int32, value));
                 case ETypeCode.Int64:
-                    return (NpgsqlDbType.Bigint, TryParse(ETypeCode.Int64, value));
+                    return (NpgsqlDbType.Bigint, Operations.Parse(ETypeCode.Int64, value));
                 case ETypeCode.Decimal:
-                    return (NpgsqlDbType.Numeric, TryParse(ETypeCode.Decimal, value));
+                    return (NpgsqlDbType.Numeric, Operations.Parse(ETypeCode.Decimal, value));
                 case ETypeCode.Double:
-                    return (NpgsqlDbType.Double, TryParse(ETypeCode.Double, value));
+                    return (NpgsqlDbType.Double, Operations.Parse(ETypeCode.Double, value));
                 case ETypeCode.Single:
-                    return (NpgsqlDbType.Real, TryParse(ETypeCode.Single, value));
+                    return (NpgsqlDbType.Real, Operations.Parse(ETypeCode.Single, value));
                 case ETypeCode.String:
-                    return (NpgsqlDbType.Varchar, TryParse(ETypeCode.String, value));
+                    return (NpgsqlDbType.Varchar, Operations.Parse(ETypeCode.String, value));
 				case ETypeCode.Text:
-					return (NpgsqlDbType.Text, TryParse(ETypeCode.Text, value));
+					return (NpgsqlDbType.Text, Operations.Parse(ETypeCode.Text, value));
                 case ETypeCode.Boolean:
-                    return (NpgsqlDbType.Boolean, TryParse(ETypeCode.Boolean, value));
+                    return (NpgsqlDbType.Boolean, Operations.Parse(ETypeCode.Boolean, value));
                 case ETypeCode.DateTime:
-                    return (NpgsqlDbType.Timestamp, TryParse(ETypeCode.DateTime, value));
+                    return (NpgsqlDbType.Timestamp, Operations.Parse(ETypeCode.DateTime, value));
                 case ETypeCode.Time:
-                    return (NpgsqlDbType.Time, TryParse(ETypeCode.Time, value));
+                    return (NpgsqlDbType.Time, Operations.Parse(ETypeCode.Time, value));
                 case ETypeCode.Guid:
                     return (NpgsqlDbType.Varchar, value.ToString());
                 case ETypeCode.Binary:
                     return (NpgsqlDbType.Bytea, value);
                 default:
-                    return (NpgsqlDbType.Varchar, TryParse(ETypeCode.String, value));
+                    return (NpgsqlDbType.Varchar, Operations.Parse(ETypeCode.String, value));
             }
         }
 

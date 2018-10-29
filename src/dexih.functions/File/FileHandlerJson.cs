@@ -13,6 +13,7 @@ namespace dexih.functions.File
     {
         private readonly string _rowPath;
         private readonly Table _table;
+        private readonly int _fieldCount;
         private IEnumerator<JToken> _jEnumerator;
         private int _responseDataOrdinal;
         private readonly Dictionary<string, (int Ordinal, DataType.ETypeCode Datatype)> _responseSegementOrdinals;
@@ -21,6 +22,7 @@ namespace dexih.functions.File
         {
             _rowPath = rowPath;
             _table = table;
+            _fieldCount = table.Columns.Count;
             
             _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
 
@@ -203,12 +205,11 @@ namespace dexih.functions.File
             }
         }
 
-        public override Task<object[]> GetRow(object[] baseRow)
+        public override Task<object[]> GetRow()
         {
             if (_jEnumerator != null && _jEnumerator.MoveNext())
             {
-                var row = new object[baseRow.Length];
-                Array.Copy(baseRow, row, baseRow.Length);
+                var row = new object[_fieldCount];
 
                 if (_responseDataOrdinal >= 0)
                 {
@@ -221,7 +222,7 @@ namespace dexih.functions.File
                         
                     try
                     {
-                        row[column.Value.Ordinal] = DataType.TryParse(column.Value.Datatype, value);
+                        row[column.Value.Ordinal] = Operations.Parse(column.Value.Datatype, value);
                     }
                     catch (Exception ex)
                     {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.BuiltIn;
@@ -27,13 +28,13 @@ namespace dexih.transforms.tests
 
             //set a filter that filters all
             var function = Functions
-                .GetFunction(typeof(ConditionFunctions).FullName, nameof(ConditionFunctions.IsEqual))
-                .GetTransformFunction();
+                .GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<string>.IsEqual))
+                .GetTransformFunction(typeof(string));
             var parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
                 {
-                    new ParameterArray("Compare", ETypeCode.String, new List<Parameter>
+                    new ParameterArray("Compare", ETypeCode.String, 1, new List<Parameter>
                     {
                         new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
                         new ParameterValue("Compare", ETypeCode.String, "junk")
@@ -47,16 +48,16 @@ namespace dexih.transforms.tests
             };
 
             var transformValidation = new TransformValidation(table, mappings, true);
-
-//            //set a validation that rejects all.
-//            var validations = new List<TransformFunction>();
-//            var transformFunction = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", "IsEqual").GetTransformFunction();
-//            transformFunction.Inputs = new[] {
-//                    new Parameter("StringColumn", ETypeCode.String, true, null, new TableColumn("StringColumn"), isArray: true  ),
-//                    new Parameter("Compare", ETypeCode.String, false, "junk", isArray: true ) };
-//            validations.Add(transformFunction);
-//
-//            var transformValidation = new TransformValidation(table, validations, true);
+            await transformValidation.Open(0, null, CancellationToken.None);
+            //            //set a validation that rejects all.
+            //            var validations = new List<TransformFunction>();
+            //            var transformFunction = Functions.GetFunction("dexih.functions.BuiltIn.ConditionFunctions", "IsEqual").GetTransformFunction();
+            //            transformFunction.Inputs = new[] {
+            //                    new Parameter("StringColumn", ETypeCode.String, true, null, new TableColumn("StringColumn"), isArray: true  ),
+            //                    new Parameter("Compare", ETypeCode.String, false, "junk", isArray: true ) };
+            //            validations.Add(transformFunction);
+            //
+            //            var transformValidation = new TransformValidation(table, validations, true);
 
             Assert.Equal(8, transformValidation.FieldCount);
 
@@ -82,7 +83,7 @@ namespace dexih.transforms.tests
             //set a filter that filters all
             var function = Functions
                 .GetFunction(typeof(ValidationFunctions).FullName, nameof(ValidationFunctions.MaxLength))
-                .GetTransformFunction();
+                .GetTransformFunction(typeof(string));
             function.InvalidAction = TransformFunction.EInvalidAction.Clean;
             var parameters = new Parameters()
             {
@@ -102,23 +103,23 @@ namespace dexih.transforms.tests
                 new MapValidation(function, parameters)
             };
             var transformValidation = new TransformValidation(table, mappings, true);
+            await transformValidation.Open(0, null, CancellationToken.None);
+            //            validations = new List<TransformFunction>();
+            //
+            //            //create a simple clean function that set's the max value.
+            //            transformFunction = Functions.GetFunction("dexih.functions.BuiltIn.ValidationFunctions", "MaxLength").GetTransformFunction();
+            //            transformFunction.Inputs = new[] {
+            //                    new Parameter("value", ETypeCode.String, true, null, new TableColumn("StringColumn") ),
+            //                    new Parameter("maxLength", ETypeCode.Int32, false, 5) };
+            //            transformFunction.Outputs = new[] {
+            //                    new Parameter("cleanedValue", ETypeCode.String, true, null, new TableColumn("StringColumn") )
+            //            };
+            //            transformFunction.InvalidAction = TransformFunction.EInvalidAction.Clean;
+            //
+            //            validations.Clear();
+            //            validations.Add(transformFunction);
 
-//            validations = new List<TransformFunction>();
-//
-//            //create a simple clean function that set's the max value.
-//            transformFunction = Functions.GetFunction("dexih.functions.BuiltIn.ValidationFunctions", "MaxLength").GetTransformFunction();
-//            transformFunction.Inputs = new[] {
-//                    new Parameter("value", ETypeCode.String, true, null, new TableColumn("StringColumn") ),
-//                    new Parameter("maxLength", ETypeCode.Int32, false, 5) };
-//            transformFunction.Outputs = new[] {
-//                    new Parameter("cleanedValue", ETypeCode.String, true, null, new TableColumn("StringColumn") )
-//            };
-//            transformFunction.InvalidAction = TransformFunction.EInvalidAction.Clean;
-//
-//            validations.Clear();
-//            validations.Add(transformFunction);
-
-//            transformValidation = new TransformValidation(table, validations, true);
+            //            transformValidation = new TransformValidation(table, validations, true);
 
             Assert.Equal(8, transformValidation.FieldCount);
 
@@ -143,7 +144,7 @@ namespace dexih.transforms.tests
             //set a filter that filters all
             var function = Functions
                 .GetFunction(typeof(ValidationFunctions).FullName, nameof(ValidationFunctions.MaxValue))
-                .GetTransformFunction();
+                .GetTransformFunction(typeof(int));
             function.InvalidAction = TransformFunction.EInvalidAction.RejectClean;
             var parameters = new Parameters()
             {
@@ -163,21 +164,22 @@ namespace dexih.transforms.tests
                 new MapValidation(function, parameters)
             };
             var transformValidation = new TransformValidation(table, mappings, true);
-            
-//        //Run the same validation with RejectClean set.
-//            transformFunction = Functions.GetFunction("dexih.functions.BuiltIn.ValidationFunctions", "MaxValue").GetTransformFunction();
-//            transformFunction.Inputs = new[] {
-//                    new Parameter("value", ETypeCode.Decimal, true, null, new TableColumn("IntColumn") ),
-//                    new Parameter("maxLength", ETypeCode.Decimal, false, 5) };
-//            transformFunction.Outputs = new[] {
-//                    new Parameter("cleanedValue", ETypeCode.Decimal, true, null, new TableColumn("IntColumn") )
-//            };
-//            transformFunction.InvalidAction = TransformFunction.EInvalidAction.RejectClean;
-//
-//            validations.Clear();
-//            validations.Add(transformFunction);
-//
-//            transformValidation = new TransformValidation(table, validations, true);
+            await transformValidation.Open(0, null, CancellationToken.None);
+
+            //        //Run the same validation with RejectClean set.
+            //            transformFunction = Functions.GetFunction("dexih.functions.BuiltIn.ValidationFunctions", "MaxValue").GetTransformFunction();
+            //            transformFunction.Inputs = new[] {
+            //                    new Parameter("value", ETypeCode.Decimal, true, null, new TableColumn("IntColumn") ),
+            //                    new Parameter("maxLength", ETypeCode.Decimal, false, 5) };
+            //            transformFunction.Outputs = new[] {
+            //                    new Parameter("cleanedValue", ETypeCode.Decimal, true, null, new TableColumn("IntColumn") )
+            //            };
+            //            transformFunction.InvalidAction = TransformFunction.EInvalidAction.RejectClean;
+            //
+            //            validations.Clear();
+            //            validations.Add(transformFunction);
+            //
+            //            transformValidation = new TransformValidation(table, validations, true);
 
             Assert.Equal(8, transformValidation.FieldCount);
 
@@ -205,6 +207,7 @@ namespace dexih.transforms.tests
             var data = Helpers.CreateLargeTable(rows);
             var mappings = new Mappings();
             var transform = new TransformValidation(data, mappings, false);
+            await transform.Open(0, null, CancellationToken.None);
 
             var count = 0;
             while (await transform.ReadAsync())
@@ -222,7 +225,7 @@ namespace dexih.transforms.tests
             var data = Helpers.CreateLargeTable(rows);
             var mappings = new Mappings();
             var transform = new TransformValidation(data, mappings, true);
-            transform.SetInTransform(data);
+            await transform.Open(0, null, CancellationToken.None);
 
             var count = 0;
             while (await transform.ReadAsync())

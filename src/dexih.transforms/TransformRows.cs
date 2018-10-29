@@ -70,10 +70,7 @@ namespace dexih.transforms
             }            
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-            
-            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable);
             _firstRecord = true;
-
             return returnValue;
         }
 

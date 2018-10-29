@@ -15,6 +15,7 @@ using dexih.transforms.Exceptions;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using Newtonsoft.Json;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -46,6 +47,7 @@ namespace dexih.transforms
         public override bool CanUseBinary => false;
         public override bool CanUseArray => false;
         public override bool CanUseJson => false;
+        public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
         public override bool DynamicTableCreation => true;
@@ -195,23 +197,20 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
         
-        public object ConvertParameterType(object value)
+        public object ConvertParameterType(ETypeCode dataType, int rank, object value)
         {
             if (value == null)
                 return DBNull.Value;
-            
+
+            if (rank > 0)
+            {
+                return Operations.Parse(ETypeCode.String, value);
+            }
             return value;
         }
 
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
-            if (reader is Transform transform)
-            {
-                transform.ConvertArrayToString = true;
-                transform.ConvertComplexToString = true;
-                transform.ConvertJsonToString = true;
-            }
-            
             try
             {
                 while(await reader.ReadAsync(cancellationToken))
@@ -224,7 +223,7 @@ namespace dexih.transforms
                     var s = new string[reader.FieldCount];
                     for (var j = 0; j < reader.FieldCount; j++)
                     {
-                        _csvWriter.WriteField(ConvertParameterType(reader[j]));
+                        _csvWriter.WriteField(reader[j]);
                     }
                     _csvWriter.NextRecord();
                 }
@@ -395,7 +394,7 @@ namespace dexih.transforms
                     {
                         for (var j = 0; j < query.InsertColumns.Count; j++)
                         {
-                            csv.WriteField(ConvertParameterType(query.InsertColumns[j].Value));
+                            csv.WriteField(ConvertParameterType(query.InsertColumns[j].Column.DataType, query.InsertColumns[j].Column.Rank, query.InsertColumns[j].Value));
                         }
                         csv.NextRecord();
                         rows++;

@@ -71,14 +71,12 @@ namespace dexih.transforms
         private int _primaryFieldCount;
         private int _referenceFieldCount;
 
-        public async Task<bool> InitializeOutputFields()
+        public Task<bool> InitializeOutputFields()
         {
             if (ReferenceTransform == null)
             {
                 throw new Exception("There must a join table specified.");
             }
-
-            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable, ReferenceTransform.CacheTable, ReferenceTableAlias);
 
 //            CacheTable = new Table("Join");
 //
@@ -273,7 +271,7 @@ namespace dexih.transforms
 
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
-            return true;
+            return Task.FromResult<bool>(true);
         }
 
         public override bool RequiresSort => false;
@@ -416,11 +414,11 @@ namespace dexih.transforms
                         
                         switch (Mappings.GetJoinCompareResult())
                         {
-                            case DataType.ECompareResult.Less:
+                            case -1:
                                 joinMatchFound = false;
                                 done = true;
                                 break;
-                            case DataType.ECompareResult.Greater:
+                            case 1:
                                 if (_groupsOpen)
                                 {
                                     // now the join table has advanced, add the reference row.
@@ -429,7 +427,7 @@ namespace dexih.transforms
                                 }
 
                                 break;
-                            case DataType.ECompareResult.Equal:
+                            case 0:
                                 joinMatchFound = true;
                                 done = true;
                                 break;
@@ -700,15 +698,13 @@ namespace dexih.transforms
             {
                 for (var i = 0; i < x.Length; i++)
                 {
-                    var compareResult = DataType.Compare(null, x[i], y[i]);
-                    // var compareResult = ((IComparable)x[i]).CompareTo((IComparable)y[i]);
-
-                    if (compareResult == DataType.ECompareResult.Equal)
+                    var compareResult = Operations.Compare(x[i], y[i]);
+                    if (compareResult == 0)
                     {
                         continue;
                     }
 
-                    return (int)compareResult;
+                    return compareResult;
                 }
                 return 0;
             }

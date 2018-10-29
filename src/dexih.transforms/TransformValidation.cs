@@ -11,6 +11,7 @@ using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Transforms;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -63,9 +64,6 @@ namespace dexih.transforms
                 result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
             }
             
-            //CacheTable = PrimaryTransform.CacheTable.Copy();
-            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable);
-
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
             {
@@ -252,7 +250,15 @@ namespace dexih.transforms
                             {
                                 try
                                 {
-                                    passRow[i] =  TryParse(col.DataType, value, col.MaxLength);
+                                    passRow[i] =  Operations.Parse(col.DataType, value);
+
+                                    if(col.DataType == ETypeCode.String && col.MaxLength != null)
+                                    {
+                                        if(((string)passRow[i]).Length > col.MaxLength)
+                                        {
+                                            throw new DataTypeParseException($"The column ${col.Name} value exceededthe maximum string length of {col.MaxLength}.");
+                                        }
+                                    }
                                 }
                                 catch (Exception ex)
                                 {

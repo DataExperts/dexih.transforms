@@ -49,7 +49,7 @@ namespace dexih.transforms.tests
             var transformFilter = new TransformFilter(table, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
 
-            Assert.Equal(5, transformFilter.FieldCount);
+            Assert.Equal(6, transformFilter.FieldCount);
             
             var count = 0;
             while (await transformFilter.ReadAsync())
@@ -70,24 +70,24 @@ namespace dexih.transforms.tests
         };
 
         [Fact]
-        public async Task Filters()
+        public async Task Filters_Function_NoRows()
         {
             var table = Helpers.CreateSortedTestData();
 
             //set a filter that filters all
-            var function = Functions.GetFunction(typeof(ConditionFunctions).FullName, nameof(ConditionFunctions.IsEqual)).GetTransformFunction();
+            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.IsEqual)).GetTransformFunction(typeof(string));
             var parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
                 {
-                    new ParameterArray("Compare", ETypeCode.String, new List<Parameter>
+                    new ParameterArray("Compare", ETypeCode.String, 1, new List<Parameter>
                     {
                         new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
                         new ParameterValue("Compare", ETypeCode.String, "junk")
                     })
                 },
             };
-            
+
             var mappings = new Mappings()
             {
                 new MapFunction(function, parameters)
@@ -96,7 +96,7 @@ namespace dexih.transforms.tests
             var transformFilter = new TransformFilter(table, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
 
-            Assert.Equal(5, transformFilter.FieldCount);
+            Assert.Equal(6, transformFilter.FieldCount);
 
             var count = 0;
             while (await transformFilter.ReadAsync())
@@ -104,13 +104,21 @@ namespace dexih.transforms.tests
                 count = count + 1;
             }
             Assert.Equal(0, count);
+        }
+
+
+        [Fact]
+        public async Task Filters_Function_OneRow()
+        {
+            var table = Helpers.CreateSortedTestData();
 
             //set a filter than filters to 1 row.
-            parameters = new Parameters()
+            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.IsEqual)).GetTransformFunction(typeof(string));
+            var parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
                 {
-                    new ParameterArray("Compare", ETypeCode.String, new List<Parameter>
+                    new ParameterArray("Compare", ETypeCode.String, 1, new List<Parameter>
                     {
                         new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
                         new ParameterValue("Compare", ETypeCode.String, "value03")
@@ -118,10 +126,14 @@ namespace dexih.transforms.tests
                 }
             };
 
-            transformFilter.Mappings = new Mappings { new MapFunction(function, parameters) };
-            transformFilter.Reset();
+            var mappings = new Mappings() { new MapFunction(function, parameters) };
 
-            count = 0;
+            var transformFilter = new TransformFilter(table, mappings);
+            await transformFilter.Open(0, null, CancellationToken.None);
+
+            Assert.Equal(6, transformFilter.FieldCount);
+
+            var count = 0;
             while (await transformFilter.ReadAsync())
             {
                 count = count + 1;
@@ -129,16 +141,23 @@ namespace dexih.transforms.tests
                     Assert.Equal(3, transformFilter["IntColumn"]);
             }
             Assert.Equal(1, count);
+        }
+
+
+        [Fact]
+        public async Task Filters_Function_ThreeRows()
+        {
+            var table = Helpers.CreateSortedTestData();
 
             // use the "IN" function to filter 3 rows.
             //set a filter than filters to 1 row.
-            function = Functions.GetFunction(typeof(ConditionFunctions).FullName, nameof(ConditionFunctions.IsIn)).GetTransformFunction();
-            parameters = new Parameters()
+            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<string>.ArrayContains)).GetTransformFunction(typeof(string));
+            var parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
                 {
                     new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
-                    new ParameterArray("CompareTo", ETypeCode.String, new List<Parameter>
+                    new ParameterArray("CompareTo", ETypeCode.String, 1, new List<Parameter>
                     {
                         new ParameterValue("CompareTo", ETypeCode.String, "value03"),
                         new ParameterValue("CompareTo", ETypeCode.String, "value05"),
@@ -146,20 +165,27 @@ namespace dexih.transforms.tests
                     })
                 }
             };
-            transformFilter.Mappings = new Mappings { new MapFunction(function, parameters) };
-            table.Reset();
-            transformFilter.SetInTransform(table);
+            var mappings = new Mappings { new MapFunction(function, parameters) };
+            var transformFilter = new TransformFilter(table, mappings);
+            await transformFilter.Open(0, null, CancellationToken.None);
 
-            count = 0;
+            var count = 0;
             while (await transformFilter.ReadAsync())
             {
                 count = count + 1;
             }
             Assert.Equal(3, count);
+        }
+
+
+        [Fact]
+        public async Task Filters_Function_MapTransform()
+        {
+            var table = Helpers.CreateSortedTestData();
 
             // create a mapping, and use the filter after the calculation.
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring)).GetTransformFunction();
-            parameters = new Parameters()
+            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring)).GetTransformFunction(typeof(string));
+            var parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
                 {
@@ -172,7 +198,7 @@ namespace dexih.transforms.tests
             table.Reset();
             var transformMapping = new TransformMapping(table, new Mappings { new MapFunction(function, parameters) });
             
-            function = Functions.GetFunction(typeof(ConditionFunctions).FullName, nameof(ConditionFunctions.LessThan)).GetTransformFunction();
+            function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.LessThan)).GetTransformFunction(typeof(int));
             parameters = new Parameters()
             {
                 Inputs = new List<Parameter>()
@@ -181,10 +207,12 @@ namespace dexih.transforms.tests
                     new ParameterValue("Compare", ETypeCode.Int32, 5),
                 },
             };
-            transformFilter.Mappings = new Mappings { new MapFunction(function, parameters) };
-            transformFilter.SetInTransform(transformMapping);
 
-            count = 0;
+            var mappings = new Mappings { new MapFunction(function, parameters) };
+            var transformFilter = new TransformFilter(transformMapping, mappings);
+            await transformFilter.Open(0, null, CancellationToken.None);
+
+            var count = 0;
             while (await transformFilter.ReadAsync())
             {
                 count = count + 1;
@@ -216,7 +244,7 @@ namespace dexih.transforms.tests
         {
             var data = Helpers.CreateLargeTable(rows);
             
-            var function = new TransformFunction(new Func<int, bool>(value => value < 0), null, null);
+            var function = new TransformFunction(new Func<int, bool>(value => value < 0), typeof(string), null, null);
 
             var mappings = new Mappings()
             {

@@ -114,7 +114,7 @@ namespace dexih.connections.sql
 //                            }
 //                            else
 //                            {
-                                row[_fieldOrdinals[i]] = DataType.TryParse(column.DataType, _sqlReader[i]);    
+                                row[_fieldOrdinals[i]] = Operations.Parse(column.DataType, column.Rank, _sqlReader[i]);    
 //                            }
                         }
                         catch (Exception ex)

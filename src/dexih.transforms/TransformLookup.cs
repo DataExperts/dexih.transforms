@@ -74,10 +74,11 @@ namespace dexih.transforms
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 
-            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable, ReferenceTransform.CacheTable, ReferenceTableAlias);
-            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
+            //CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable, ReferenceTransform.CacheTable, ReferenceTableAlias);
+            //CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
-            return true;
+            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            return returnValue;
         }
 
 

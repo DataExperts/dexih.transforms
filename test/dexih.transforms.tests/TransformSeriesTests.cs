@@ -40,7 +40,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(false);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction();
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction(typeof(double));
             
             var parameters = new Parameters()
             {
@@ -97,7 +97,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(false);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction();
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction(typeof(double));
             
             var parameters = new Parameters()
             {
@@ -138,12 +138,12 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateSortedTestData();
 
             //add a row to test highest since.
-            source.Add(new object[] { "value11", 5, 10.1, Convert.ToDateTime("2015/01/11"), 1 });
+            source.Add(new object[] { "value11", 5, 10.1, Convert.ToDateTime("2015/01/11"), 1, new[] { 1, 1 } });
             source.Reset();
 
             var mappings = new Mappings(true);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction();
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction(typeof(double));
             
             var parameters = new Parameters()
             {
@@ -162,7 +162,7 @@ namespace dexih.transforms.tests
             
             mappings.Add(new MapFunction(mavg, parameters));
             
-            var highest = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.HighestSince)).GetTransformFunction();
+            var highest = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.HighestSince)).GetTransformFunction(typeof(double));
             parameters = new Parameters()
             {
                 Inputs = new Parameter[]
@@ -178,12 +178,10 @@ namespace dexih.transforms.tests
                 ResultReturnParameter = new ParameterOutputColumn("Highest", DataType.ETypeCode.DateTime)
             };
             mappings.Add(new MapFunction(highest, parameters));
-            
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
 
             var transformGroup = new TransformSeries(source, mappings);
-            
-            Assert.Equal(9, transformGroup.FieldCount);
+            Assert.Equal(10, transformGroup.FieldCount);
 
             var counter = 0;
             double[] mAvgExpectedValues = { 2.5, 3, 3.5, 4, 5, 6, 7, 7.14, 7.5, 7.8, 8 };

@@ -21,13 +21,12 @@ namespace dexih.functions.Mappings
         private int _inputOrdinal;
         private int _outputOrdinal;
 
-        public long Count { get; set; }
+        public int Count { get; set; }
         public object Value { get; set; }
 
-        public override Task Initialize(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null)
         {
             _inputOrdinal = table.GetOrdinal(InputColumn);
-            return Task.CompletedTask;
         }
         
         public override void AddOutputColumns(Table table)
@@ -53,20 +52,18 @@ namespace dexih.functions.Mappings
                     case SelectColumn.EAggregate.Average:
                         if (value != null)
                         {
-                            Value = DataType.Add(InputColumn.DataType, Value ?? 0, value);
+                            Value = Operations.Add(InputColumn.DataType, Value ?? 0, value);
                         }
 
                         break;
                     case SelectColumn.EAggregate.Min:
-                        var compare = DataType.Compare(InputColumn.DataType, value, Value);
-                        if (compare == DataType.ECompareResult.Less)
+                        if (Operations.LessThan(InputColumn.DataType, value, Value))
                         {
                             Value = value;
                         }
                         break;
                     case SelectColumn.EAggregate.Max:
-                        var compare1 = DataType.Compare(InputColumn.DataType, value, Value);
-                        if (compare1 == DataType.ECompareResult.Greater)
+                        if (Operations.GreaterThan(InputColumn.DataType, value, Value))
                         {
                             Value = value;
                         }
@@ -98,7 +95,10 @@ namespace dexih.functions.Mappings
                         value = Value;
                         break;
                     case SelectColumn.EAggregate.Average:
-                        value = Count == 0 ? 0 : DataType.Divide(OutputColumn.DataType, Value, Count);
+                    // average may have a different output datatype than input, so parse it.  
+                    // TODO: Find way to avoid parse as this causes minor performance.
+                        var input = Operations.Parse(OutputColumn.DataType, Value);
+                        value = Count == 0 ? 0 : Operations.DivideInt(OutputColumn.DataType, input, Count);
                         break;
                 }
 

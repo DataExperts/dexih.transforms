@@ -1,4 +1,5 @@
 ﻿using dexih.functions.Query;
+using Dexih.Utils.DataType;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -81,6 +82,20 @@ namespace dexih.functions
             {
                 return Schema + "." + name;
             }
+        }
+
+        /// <summary>
+        /// Removes all non alphanumeric characters from the string
+        /// </summary>
+        /// <returns></returns>
+        private string CleanString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return value;
+
+            var arr = value.Where(c => (char.IsLetterOrDigit(c))).ToArray();
+            var newValue = new string(arr);
+            return newValue;
         }
 
         #endregion
@@ -258,27 +273,25 @@ namespace dexih.functions
                     value2 = row[GetOrdinal(filter.Column2.Name)];
                 }
 
-                var compareResult = Compare(filter.CompareDataType, value1, value2);
-
                 switch (filter.Operator)
                 {
                     case Filter.ECompare.IsEqual:
-                        isMatch = compareResult == ECompareResult.Equal;
+                        isMatch = Operations.Equal(filter.CompareDataType, value1, value2);
                         break;
                     case Filter.ECompare.NotEqual:
-                        isMatch = compareResult != ECompareResult.Equal;
+                        isMatch = !Operations.Equal(filter.CompareDataType, value1, value2);
                         break;
                     case Filter.ECompare.LessThan:
-                        isMatch = compareResult == ECompareResult.Less;
+                        isMatch = Operations.LessThan(filter.CompareDataType, value1, value2);
                         break;
                     case Filter.ECompare.LessThanEqual:
-                        isMatch = compareResult == ECompareResult.Less || compareResult == ECompareResult.Equal;
+                        isMatch = Operations.LessThanOrEqual(filter.CompareDataType, value1, value2);
                         break;
                     case Filter.ECompare.GreaterThan:
-                        isMatch = compareResult == ECompareResult.Greater;
+                        isMatch = Operations.GreaterThan(filter.CompareDataType, value1, value2);
                         break;
                     case Filter.ECompare.GreaterThanEqual:
-                        isMatch = compareResult == ECompareResult.Greater || compareResult == ECompareResult.Greater;
+                        isMatch = Operations.GreaterThanOrEqual(filter.CompareDataType, value1, value2);
                         break;
                 }
 
@@ -375,6 +388,12 @@ namespace dexih.functions
             if (string.IsNullOrEmpty(rejectedTableName)) return null;
 
             var table = Copy();
+
+            // reset delta types on reject table to ensure the reject table contains no keys.
+            foreach(var column in table.Columns)
+            {
+                column.DeltaType = TableColumn.EDeltaType.TrackingField;
+            }
 
             table.Name = rejectedTableName;
             table.Description = "Rejected table for: " + Description;

@@ -87,12 +87,6 @@ namespace dexih.transforms
         {
             _cancellationToken = cancellationToken;
             _targetConnection = targetConnection;
-
-
-            inTransform.ConvertArrayToString = !targetConnection.CanUseArray;
-            inTransform.ConvertJsonToString = !targetConnection.CanUseJson;
-            inTransform.ConvertBinaryToString = !targetConnection.CanUseBinary;
-            inTransform.ConvertCharArrayToString = !targetConnection.CanUseCharArray;
             
             if (rejectConnection == null)
                 _rejectConnection = targetConnection;
@@ -325,10 +319,11 @@ namespace dexih.transforms
 
             for (var i = 0; i < columnCount; i++)
             {
-                //int ordinal = reader.GetOrdinal(table.Columns[i].ColumnName);
                 var ordinal = ordinals[i];
-                if (ordinal >= 0) 
+                if (ordinal >= 0)
+                {
                     row[i] = reader[ordinal];
+                }
             }
 
             switch (operation)

@@ -66,7 +66,6 @@ namespace dexih.transforms
             
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
 
-            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable);            
 //            CacheTable = PrimaryTransform.CacheTable.Copy();
 //            CacheTable.Name = "Filter";
 //            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;

@@ -29,7 +29,7 @@ namespace dexih.transforms.tests
             
             var mappings = new Mappings(false);
 
-            var split = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.SplitColumnToRows)).GetTransformFunction();
+            var split = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.SplitColumnToRows)).GetTransformFunction(typeof(string));
             
             var parameters = new Parameters()
             {
@@ -81,7 +81,7 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterArray("columns", DataType.ETypeCode.String, new List<Parameter>()
+                    new ParameterArray("columns", DataType.ETypeCode.String, 1, new List<Parameter>()
                     {
                         new ParameterColumn("col0", DataType.ETypeCode.String),
                         new ParameterColumn("col1", DataType.ETypeCode.String),
@@ -96,7 +96,7 @@ namespace dexih.transforms.tests
                 }
             };
 
-            var function = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.ColumnsToRows)).GetTransformFunction(parameters);
+            var function = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.ColumnsToRows)).GetTransformFunction(typeof(string), parameters);
 
             mappings.Add(new MapFunction(function, parameters));
             

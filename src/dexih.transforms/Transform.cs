@@ -109,13 +109,6 @@ namespace dexih.transforms
 
         public long AuditKey { get; set; }
 
-        // if true, any values which are of type "DataValue" will be converted to their json string.
-        public bool ConvertArrayToString { get; set; } = false;
-        public bool ConvertJsonToString { get; set; } = false;
-        public bool ConvertBinaryToString { get; set; } = false;
-        public bool ConvertComplexToString { get; set; } = false;
-        public bool ConvertCharArrayToString { get; set; } = false;
-
         #endregion
 
         #region Statistics
@@ -198,10 +191,17 @@ namespace dexih.transforms
         /// <param name="primaryTransform">The primary input transform</param>
         /// <param name="referenceTransform">The secondary input, such as join table, target table, lookup table etc.</param>
         /// <returns></returns>
-        public bool SetInTransform(Transform primaryTransform, Transform referenceTransform = null)
+        public bool SetInTransform(Transform primaryTransform, Transform referenceTransform = null, bool mapAllReferenceColumns = true)
         {
             PrimaryTransform = primaryTransform;
             ReferenceTransform = referenceTransform;
+
+            Reset();
+
+            if (Mappings != null)
+            {
+                CacheTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, null, mapAllReferenceColumns);
+            }
 
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
@@ -234,9 +234,6 @@ namespace dexih.transforms
                 }
             }
 
-            Mappings?.Initialize(primaryTransform.CacheTable, referenceTransform?.CacheTable);
-
-            Reset();
             
             //IsReader indicates if this is a base transform.
             IsReader = primaryTransform == null ? true : false;
@@ -244,7 +241,6 @@ namespace dexih.transforms
                 primaryTransform.IsPrimaryTransform = true;
             if (referenceTransform != null)
                 referenceTransform.IsPrimaryTransform = false;
-
            
             return true;
         }
@@ -278,9 +274,7 @@ namespace dexih.transforms
                         break;
                     }
                     var actualField = actualSortEnumerator.Current;
-
-
-
+                    
                     if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName())
                     {
                         continue;
@@ -295,16 +289,14 @@ namespace dexih.transforms
                     break;
                 }
             }
-
             return match;
-
         }
 
         /// <summary>
         /// Opens underlying connections passing sort and filter requests through.
         /// </summary>
         /// <param name="auditKey"></param>
-        /// <param name="query"></param>
+        /// <param name="query">Query to apply (note only filters are used)</param>
         /// <param name="cancellationToken"></param>
         /// <returns>True is successful, False is unsuccessful.</returns>
         public virtual async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
@@ -324,11 +316,6 @@ namespace dexih.transforms
             if (ReferenceTransform != null)
             {
                 result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
-            }
-
-            if (Mappings != null)
-            {
-                CacheTable = await Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable);
             }
 
             return result;
@@ -1028,6 +1015,11 @@ namespace dexih.transforms
 
             if (_isFirstRead)
             {
+                if (Mappings != null)
+                {
+                    await Mappings.Open();
+                }
+
                 if (IsReader && IsPrimaryTransform)
                 {
                     //get the incremental column (if it exists)
@@ -1039,7 +1031,7 @@ namespace dexih.transforms
                     }
                     else if (incrementalCol.Length > 1)
                     {
-                        throw new Exception("Cannot run the transform as two columns have been defined with IncrementalUpdate flags.");
+                        throw new Exception("Cannot run the transform as two columns have been defined with incremental update flags.");
                     }
                     else
                         _incrementalColumnIndex = -1;
@@ -1105,8 +1097,8 @@ namespace dexih.transforms
             {
                 try
                 {
-                    var compresult = Compare(_incrementalColumnType, CurrentRow[_incrementalColumnIndex], _maxIncrementalValue);
-                    if (compresult == ECompareResult.Greater)
+                    var compresult = Operations.GreaterThan(_incrementalColumnType, CurrentRow[_incrementalColumnIndex], _maxIncrementalValue);
+                    if (compresult)
                     {
                         _maxIncrementalValue = CurrentRow[_incrementalColumnIndex];
                     }
@@ -1262,15 +1254,6 @@ namespace dexih.transforms
         {
             if (i < CurrentRow.Length)
             {
-                if ((ConvertArrayToString && DataType.IsArray(CurrentRow[i].GetType())) ||
-                    (ConvertComplexToString && !DataType.IsSimple(CurrentRow[i].GetType()) ||
-                     (ConvertJsonToString && CurrentRow[i] is JToken)) ||
-                    (ConvertBinaryToString && CurrentRow[i] is byte[]) ||
-                    (ConvertCharArrayToString && CurrentRow[i] is char[])
-                    )
-                {
-                    return DataType.ToString(CurrentRow[i]);
-                }
                 return CurrentRow[i];
             }
 

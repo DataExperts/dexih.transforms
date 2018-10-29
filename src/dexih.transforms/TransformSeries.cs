@@ -67,7 +67,6 @@ namespace dexih.transforms
             query.Sorts = requiredSorts;
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-            CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable);            
             return returnValue;
         }
 

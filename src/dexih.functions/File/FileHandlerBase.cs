@@ -17,18 +17,18 @@ namespace dexih.functions.File
 
         public abstract Task SetStream(Stream stream, SelectQuery selectQuery);
 
-        public abstract Task<object[]> GetRow(object[] baseRow);
+        public abstract Task<object[]> GetRow();
 
-        public async Task<ICollection<object[]>> GetAllRows(object[] baseRow)
+        public async Task<ICollection<object[]>> GetAllRows()
         {
             var rows = new List<object[]>();
 
-            var row = await GetRow(baseRow);
+            var row = await GetRow();
 
             while (row != null)
             {
                 rows.Add(row);
-                row = await GetRow(baseRow);
+                row = await GetRow();
             }
 
             return rows;

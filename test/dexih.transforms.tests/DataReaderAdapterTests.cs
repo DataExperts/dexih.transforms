@@ -10,7 +10,7 @@ namespace dexih.transforms.tests
         {
             var Table = Helpers.CreateSortedTestData();
 
-            Assert.Equal(5, Table.FieldCount);
+            Assert.Equal(6, Table.FieldCount);
 
             var count = 0;
             while (await Table.ReadAsync())

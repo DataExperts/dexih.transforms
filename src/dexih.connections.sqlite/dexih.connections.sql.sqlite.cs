@@ -49,17 +49,24 @@ namespace dexih.connections.sql
         public override string DatabaseTypeName => "SQLite";
         public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.DatabaseFile;
 
-        public override object ConvertParameterType(object value)
+        public override object ConvertParameterType(ETypeCode typeCode, int rank, object value)
         {
-            if (value == null)
+            if (value == null || value == DBNull.Value)
+            {
                 return DBNull.Value;
+            }
 
-            if (!IsSimple(value.GetType()))
-                return JsonConvert.SerializeObject(value);
-            
-            if (value is Guid || value is ulong)
+            if ((rank > 0 && !CanUseArray) || (typeCode == ETypeCode.CharArray && !CanUseCharArray))
+            {
+                return Operations.Parse(ETypeCode.String, value);
+            }
+
+            // GUID's get parameterized as binary.  So need to explicitly convert to string.
+            if (typeCode == ETypeCode.Guid || typeCode == ETypeCode.UInt64)
+            {
                 return value.ToString();
-            
+            }
+
             return value;
         }
         
@@ -264,6 +271,12 @@ namespace dexih.connections.sql
                     break;
                 case ETypeCode.Binary:
                     sqlType = "blob";
+                    break;
+                case ETypeCode.Enum:
+                    sqlType = "text";
+                    break;
+                case ETypeCode.CharArray:
+                    sqlType = $"nchar({column.MaxLength})";
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
@@ -657,7 +670,7 @@ namespace dexih.connections.sql
                                         var param = new SqliteParameter
                                         {
                                             ParameterName = "@col" + i.ToString(),
-                                            Value = ConvertParameterType(query.InsertColumns[i].Value),
+                                            Value = ConvertParameterType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank, query.InsertColumns[i].Value),
                                             DbType = GetDbType(query.InsertColumns[i].Column.DataType)
                                         };
 

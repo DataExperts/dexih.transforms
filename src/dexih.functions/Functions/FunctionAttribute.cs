@@ -1,17 +1,25 @@
 ﻿using System;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.functions
 {
 
-    
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum EGenericType
+    {
+        None, Numeric, All, String
+    }
+
     public class TransformFunctionAttribute : Attribute
     {
         public string Category { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public EFunctionType FunctionType { get; set; }
-        
+
         /// <summary>
         /// Method called when requesting an aggregate value on a group.
         /// </summary>
@@ -31,6 +39,10 @@ namespace dexih.functions
         /// Method called to return potential columns based on a sample dataset.
         /// </summary>
         public string ImportMethod { get; set; }
+
+        public DataType.ETypeCode GenericTypeDefault { get; set; } = DataType.ETypeCode.String;
+
+        public EGenericType GenericType { get; set; } = EGenericType.None;
 
         /// <summary>
         /// If true, the result function must return a boolean value which indicates function to be called again for more rows.

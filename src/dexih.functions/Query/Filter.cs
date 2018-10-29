@@ -7,6 +7,7 @@ using System.Linq;
 using CsvHelper;
 using dexih.functions.Mappings;
 using dexih.functions.Parameter;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.Query
 {
@@ -169,8 +170,8 @@ namespace dexih.functions.Query
             {
                 foreach(var value in (IEnumerable)Value2)
                 {
-                    var compare = Compare(CompareDataType, value1, value);
-                    if(compare == ECompareResult.Equal)
+                    var compare = Operations.Equal(CompareDataType, value1, value);
+                    if(compare)
                     {
                         return true;
                     }
@@ -188,24 +189,20 @@ namespace dexih.functions.Query
                 return value1 != null && !(value1 is DBNull);
             }
 
-            var compareResult = Compare(CompareDataType, value1, value2);
-
             switch (Operator)
             {
                 case ECompare.IsEqual:
-                    return compareResult == ECompareResult.Equal;
+                    return Operations.Equal(CompareDataType, value1, value2);
                 case ECompare.GreaterThan:
-                    return compareResult == ECompareResult.Greater;
+                    return Operations.GreaterThan(CompareDataType, value1, value2);
                 case ECompare.GreaterThanEqual:
-                    return compareResult == ECompareResult.Greater || compareResult == ECompareResult.Equal;
+                    return Operations.GreaterThanOrEqual(CompareDataType, value1, value2);
                 case ECompare.LessThan:
-                    return compareResult == ECompareResult.Less;
+                    return Operations.LessThan(CompareDataType, value1, value2);
                 case ECompare.LessThanEqual:
-                    return compareResult == ECompareResult.Less || compareResult == ECompareResult.Equal;
+                    return Operations.LessThanOrEqual(CompareDataType, value1, value2);
                 case ECompare.NotEqual:
-                    return compareResult != ECompareResult.Equal;
-                case ECompare.IsIn:
-                    return compareResult == ECompareResult.Equal;
+                    return !Operations.Equal(CompareDataType, value1, value2);
                 default:
                     throw new QueryException($"The {Operator} is not currently supported in the query evaluation.");
             }

@@ -10,8 +10,15 @@ namespace dexih.functions.Mappings
         /// </summary>
         /// <param name="table"></param>
         /// <param name="secondTable"></param>
-        public abstract Task Initialize(Table table, Table joinTable = null);
+        public abstract void InitializeColumns(Table table, Table joinTable = null);
         
+        /// <summary>
+        /// Runs any initialize functions for mappings, such as preloading data.
+        /// </summary>
+        public virtual Task Open()
+        {
+            return Task.CompletedTask;
+        }
         /// <summary>
         /// Add the mapping columns to the table.
         /// </summary>

@@ -7,7 +7,10 @@ namespace dexih.functions
         public string ParameterName { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public bool IsGeneric { get; set; }
         public DataType.ETypeCode DataType { get; set; }
+        public bool AllowNull { get; set; }
+
         public int Rank { get; set; }
         public bool IsIndex { get; set; }
         public bool IsTwin { get; set; }

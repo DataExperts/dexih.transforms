@@ -14,12 +14,14 @@ namespace dexih.functions.File
         private readonly string _rowPath;
         private XPathNodeIterator _xPathNodeIterator;
         private readonly Table _table;
+        private readonly int _fieldCount;
         private readonly int _responseDataOrdinal;
         private readonly Dictionary<string, (int Ordinal, DataType.ETypeCode Datatype)> _responseSegementOrdinals;
         
         public FileHandlerXml(Table table, string rowPath)
         {
             _table = table;
+            _fieldCount = table.Columns.Count;
             _rowPath = rowPath;
             
             _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
@@ -150,7 +152,7 @@ namespace dexih.functions.File
             return Task.CompletedTask;
         }
 
-        public override Task<object[]> GetRow(object[] baseRow)
+        public override Task<object[]> GetRow()
         {
             var rows = new List<object[]>();
             var columnCount = _table.Columns.Count;
@@ -159,8 +161,7 @@ namespace dexih.functions.File
             {
                 var currentRow = _xPathNodeIterator.Current;
 
-                var row = new object[columnCount];
-                Array.Copy(baseRow, row, columnCount);
+                var row = new object[_fieldCount];
 
                 if (_responseDataOrdinal >= 0)
                 {
@@ -184,7 +185,7 @@ namespace dexih.functions.File
                         {
                             try
                             {
-                                row[column.Value.Ordinal] = DataType.TryParse(column.Value.Datatype, node.Value);
+                                row[column.Value.Ordinal] = Operations.Parse(column.Value.Datatype, node.Value);
                             }
                             catch (Exception ex)
                             {

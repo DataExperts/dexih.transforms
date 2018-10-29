@@ -76,7 +76,7 @@ namespace dexih.transforms.Poco
                         }
                         else
                         {
-                            value = DataType.TryParse(column.DataType, value);
+                            value =Operations.Parse(column.DataType, value);
                         }
 
                         mapping.PropertyInfo.SetValue(item, value is DBNull ? null : value);
