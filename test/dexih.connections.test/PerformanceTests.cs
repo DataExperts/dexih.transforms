@@ -25,10 +25,10 @@ namespace dexih.connections.test
             this._output = output;
         }
         
-        public long Timer(string name, Action action)
+        public async Task<long> Timer(string name, Func<Task> action)
         {
             var start = Stopwatch.StartNew();
-            action.Invoke();
+            await action.Invoke();
             var time = start.ElapsedMilliseconds;
             _output.WriteLine($"Test \"{name}\" completed in {time}ms");
 
@@ -100,10 +100,10 @@ namespace dexih.connections.test
             var readerMemory = new ReaderMemory(table);
             var cleanedReader = new ReaderConvertDataTypes(connection, readerMemory);
 
-            var time = Timer($"Reader with data converter applied", () =>
+            var time = await Timer($"Reader with data converter applied", async () =>
             {
                 var i = 0;
-                while (cleanedReader.Read()) i++;
+                while (await cleanedReader.ReadAsync()) i++;
                 Assert.Equal(rows, i);
             });
 
@@ -115,9 +115,9 @@ namespace dexih.connections.test
             readerMemory = new ReaderMemory(table);
             cleanedReader = new ReaderConvertDataTypes(connection, readerMemory); 
                     
-            time = Timer($"Run bulk insert for {rows} rows.", () =>
+            time = await Timer($"Run bulk insert for {rows} rows.", async () =>
             {
-                connection.ExecuteInsertBulk(table, cleanedReader, CancellationToken.None).Wait();    
+                await connection.ExecuteInsertBulk(table, cleanedReader, CancellationToken.None);    
             });
             _output.WriteLine($"Run bulk insert for {rows} rows. Columns: {table.Columns.Count}, row average {1000*rows/time} r/s, column average: {(1000*rows*table.Columns.Count)/time}");
             
@@ -201,9 +201,9 @@ namespace dexih.connections.test
                 });
             }
 
-            Timer($"Run update in 10% of rows for {rows} rows.", () =>
+            await Timer($"Run update in 10% of rows for {rows} rows.", async () =>
             {
-                connection.ExecuteUpdate(table, updateQueries, CancellationToken.None).Wait();    
+                await connection.ExecuteUpdate(table, updateQueries, CancellationToken.None);    
             });
             
 
@@ -239,10 +239,10 @@ namespace dexih.connections.test
                 }
             };
 
-            Timer($"Delete 10% of rows for {rows} rows.",
-                () =>
+            await Timer($"Delete 10% of rows for {rows} rows.",
+                async () =>
                 {
-                    connection.ExecuteDelete(table, deleteQueries, CancellationToken.None).Wait(); 
+                    await connection.ExecuteDelete(table, deleteQueries, CancellationToken.None); 
                     
                 });
 

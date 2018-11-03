@@ -154,11 +154,9 @@ namespace dexih.functions
 
             var parameterAttribute = parameterInfo.GetCustomAttribute<TransformFunctionParameterAttribute>();
 
-            bool isGeneric = false;
-            if ((parameterInfo.ParameterType.IsArray && parameterInfo.ParameterType.GetElementType().IsGenericParameter) || (parameterInfo.ParameterType.IsGenericParameter))
-            {
-                isGeneric = true;
-            }
+            var isGeneric = 
+                (parameterInfo.ParameterType.IsArray && parameterInfo.ParameterType.GetElementType().IsGenericParameter) || 
+                (parameterInfo.ParameterType.IsGenericParameter);
 
             return new FunctionParameter()
             {
