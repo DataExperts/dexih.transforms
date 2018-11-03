@@ -31,7 +31,6 @@ namespace dexih.transforms
 		private Task<TimeSpan> _deleteRecordsTask; //task to allow writes to run async with other processing.
 		private Task<TimeSpan> _rejectRecordsTask; //task to allow writes to run async with other processing.
 
-        private Transform _inTransform;
         private Table _targetTable;
         private Table _rejectTable;
         private Table _profileTable;
@@ -108,13 +107,12 @@ namespace dexih.transforms
             _rejectTable = rejectTable?.Copy(false, true);
             _profileTable = profileTable?.Copy(false, true);
 
-            _inTransform = inTransform;
-
             writerResult.RejectTableName = rejectTable?.Name;
+            var convertedTransform = new ReaderConvertDataTypes(targetConnection, inTransform);
 
             try
             {
-                await WriteStart(_inTransform, writerResult, cancellationToken);
+                await WriteStart(convertedTransform, writerResult, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -127,7 +125,8 @@ namespace dexih.transforms
             var firstRead = true;
             Task writeTask = null;
 
-            while (await inTransform.ReadAsync(cancellationToken))
+            
+            while (await convertedTransform.ReadAsync(cancellationToken))
             {
                 if (firstRead)
                 {
@@ -151,7 +150,7 @@ namespace dexih.transforms
                     }
                 }
 
-                writeTask = WriteRecord(writerResult, inTransform);
+                writeTask = WriteRecord(writerResult, convertedTransform);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -162,7 +161,7 @@ namespace dexih.transforms
 
             try
             {
-                await WriteFinish(writerResult, inTransform);
+                await WriteFinish(writerResult, convertedTransform);
             }
             catch (Exception ex)
             {
@@ -174,7 +173,7 @@ namespace dexih.transforms
 
             if (_profileTable != null)
             {
-                var profileResults = inTransform.GetProfileResults();
+                var profileResults = convertedTransform.GetProfileResults();
                 if (profileResults != null)
                 {
                     var profileExists = await _profileConnection.TableExists(_profileTable, cancellationToken);
@@ -211,29 +210,12 @@ namespace dexih.transforms
                 throw new TransformWriterException("Transform write failed to start, as a previous operation is still running.");
             }
 
-//            var returnValue = await _inTransform.Open(writerResult.AuditKey, null, cancellationToken);
-//            if (!returnValue)
-//            {
-//                throw new TransformWriterException("Transform write failed to start, could not open the first transform.");
-//            }
-
-            _operationColumnIndex = _inTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+            _operationColumnIndex = inTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
 
             _createRows = new TableCache();
             _updateRows = new TableCache();
             _deleteRows = new TableCache();
             _rejectRows = new TableCache();
-
-            //create template queries, with the values set to paramaters (i.e. @param1, @param2)
-            //new InsertQuery(_targetTable.Name, _targetTable.Columns.Select(c => new QueryColumn(new TableColumn(c.Name, c.Datatype), "@param" + _targetTable.GetOrdinal(c.Name).ToString())).ToList());
-
-            //new UpdateQuery(
-            //    _targetTable.Name,
-            //    _targetTable.Columns.Where(c=> c.DeltaType != TableColumn.EDeltaType.SurrogateKey).Select(c => new QueryColumn(c, "@param" + _targetTable.GetOrdinal(c.Name).ToString())).ToList(),
-            //    _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c=> new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList()
-            //);
-
-            //new DeleteQuery(_targetTable.Name, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
 
             //if the table doesn't exist, create it.  
             var tableExistsResult = await _targetConnection.TableExists(_targetTable, cancellationToken);

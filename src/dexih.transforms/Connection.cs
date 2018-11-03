@@ -6,6 +6,7 @@ using System.Threading;
 using dexih.functions;
 using System.Diagnostics;
 using System.Data.Common;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using dexih.functions.Query;
@@ -62,15 +63,9 @@ namespace dexih.transforms
 
         #region Abstracts
 
-        //Abstract Properties
-        public abstract string ServerHelp { get; } //help text for what the server means for this description
-        public abstract string DefaultDatabaseHelp { get; } //help text for what the default database means for this description
-
-        public abstract string DatabaseTypeName { get; }
-        public abstract EConnectionCategory DatabaseConnectionCategory { get; }
-        public abstract bool AllowNtAuth { get; }
-        public abstract bool AllowUserPass { get; }
-
+        public ConnectionAttribute Attributes => GetType().GetCustomAttribute<ConnectionAttribute>();
+        
+//        //Abstract Properties
         public abstract bool CanBulkLoad { get; }
         public abstract bool CanSort { get; }
         public abstract bool CanFilter { get; }
@@ -102,6 +97,31 @@ namespace dexih.transforms
         /// The connection can directly insert xml structure.
         /// </summary>
         public abstract bool CanUseXml { get; }
+
+        /// <summary>
+        /// The connection can directly used Guids
+        /// </summary>
+        public virtual bool CanUseGuid { get; } = false;
+        
+        /// <summary>
+        /// The connection has native support for boolean.  If false, conversion will be an in 0 - false, 1- true.
+        /// </summary>
+        public virtual bool CanUseBoolean { get; } = true;
+
+        /// <summary>
+        /// Allows for columns which are automatically incremented by the database
+        /// </summary>
+        public abstract  bool CanUseAutoIncrement { get; }
+
+        /// <summary>
+        /// The connection can natively insert timespan.
+        /// </summary>
+        public virtual bool CanUseTimeSpan { get; } = true;
+
+        /// <summary>
+        /// The connection can natively accept unsigned numeric types.
+        /// </summary>
+        public virtual bool CanUseUnsigned { get; } = true;
 
         public abstract bool CanUseSql { get; }
         
@@ -148,7 +168,7 @@ namespace dexih.transforms
         /// <returns></returns>
         public abstract Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken);
 
-        //Functions required for datapoint.
+        //Functions required for data point.
         public abstract Task CreateDatabase(string databaseName, CancellationToken cancellationToken);
         public abstract Task<List<string>> GetDatabaseList(CancellationToken cancellationToken);
         public abstract Task<List<Table>> GetTableList(CancellationToken cancellationToken);
@@ -191,9 +211,9 @@ namespace dexih.transforms
             return GetDataTypeMaxValue(typeCode, length);
         }
 
-        public virtual object GetConnectionMinValue(ETypeCode typeCode)
+        public virtual object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
-            return GetDataTypeMinValue(typeCode);
+            return GetDataTypeMinValue(typeCode, length);
         }
 
         
@@ -480,40 +500,91 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
+        public virtual object ConvertForWrite(TableColumn column, object value)
+        {
+            return ConvertForWrite(column.DataType, column.Rank, column.AllowDbNull, value);
+        }
+
         /// <summary>
         /// Converts a value to a datatype that can be written to the data source.
-        /// This includes transforming json/xml/arrays into strings where neccessary.
+        /// This includes transforming json/xml/arrays into strings where necessary.
         /// </summary>
-        /// <param name="typeCode"></param>
-        /// <param name="rank"></param>
+        /// <param name="column"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public virtual object ConvertForWrite(TableColumn column, object value)
+        public virtual object ConvertForWrite(ETypeCode typeCode, int rank, bool allowDbNull, object value)
         {
             if (value == null || value == DBNull.Value)
             {
-                return DBNull.Value;
+                if (allowDbNull)
+                {
+                    return DBNull.Value;
+                }
+                else
+                {
+                    throw new ConnectionException($"The value null could not be inserted into the column which does not allow nulls.");
+                }
             }
 
-            if ((column.Rank > 0 && !CanUseArray) ||
-                (column.DataType == ETypeCode.CharArray && !CanUseCharArray) ||
-                (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
-                (column.DataType == ETypeCode.Json && !CanUseJson) ||
-                (column.DataType == ETypeCode.Xml && !CanUseXml) ||
-                column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
+            if (rank > 0 && !CanUseArray)
             {
-                return Operations.Parse(ETypeCode.String, value);
+                return Operations.Parse<string>(value);
             }
+            
+            switch (typeCode)
+            {
+                case ETypeCode.Binary:
+                    if(!CanUseBinary) return Operations.Parse<string>(value);
+                    goto default;
+                case ETypeCode.Boolean:
+                    if (!CanUseBoolean)
+                    {
+                        if (value is bool b)
+                        {
+                            return b ? 1 : 0;
+                        }
+                        else
+                        {
+                            var b1 = Operations.Parse<bool>(value);
+                            return b1 ? 1 : 0;
 
-            return value;
+                        }
+                    }
+                    goto default;
+                case ETypeCode.Json:
+                    if(!CanUseJson) return Operations.Parse<string>(value);
+                    goto default;
+                case ETypeCode.Xml:
+                    if(!CanUseXml) return Operations.Parse<string>(value);
+                    goto default;
+                case ETypeCode.CharArray:
+                    if(!CanUseCharArray) return Operations.Parse<string>(value);
+                    goto default;
+                case ETypeCode.Guid:
+                    if(!CanUseGuid) return Operations.Parse<string>(value);
+                    goto default;
+                case ETypeCode.UInt16:
+                    if (!CanUseUnsigned) return Operations.Parse<int>(value);
+                    goto default;
+                case ETypeCode.UInt32:
+                    if (!CanUseUnsigned) return Operations.Parse<long>(value);
+                    goto default;
+                case ETypeCode.UInt64:
+                    if (!CanUseUnsigned) return Operations.Parse<long>(value);
+                    goto default;
+                case ETypeCode.Time:
+                    if (!CanUseTimeSpan) return Operations.Parse<string>(value);
+                    goto default;
+                default:
+                    return Operations.Parse(typeCode, rank, value);
+            }
         }
 
         /// <summary>
         /// Converts a value to the required data type after being read from the data source.
         /// This includes transforming strings containing arrays/json/xml into native structures.
         /// </summary>
-        /// <param name="typeCode"></param>
-        /// <param name="rank"></param>
+        /// <param name="column"></param>
         /// <param name="value"></param>
         /// <returns></returns>
         public virtual object ConvertForRead(TableColumn column, object value)
@@ -527,7 +598,7 @@ namespace dexih.transforms
             {
                 return Operations.Parse(column.DataType, value);
             }
-
+            
             return value;
 
         }

@@ -38,10 +38,6 @@ namespace dexih.connections.webservice
 	)]
     public class ConnectionRestful : Connection
     {
-        public override string ServerHelp => "The API end point for the Restful web service, excluding query strings.  Eg.  http://twitter.com/statuses/";
-        public override string DefaultDatabaseHelp => "Service Name";
-        public override bool AllowNtAuth => true;
-        public override bool AllowUserPass => true;
         public override bool CanBulkLoad => false;
         public override bool CanSort => false;
         public override bool CanFilter => false;
@@ -54,10 +50,8 @@ namespace dexih.connections.webservice
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
+	    public override bool CanUseAutoIncrement => false;
         public override bool DynamicTableCreation => false;
-
-        public override string DatabaseTypeName => "Restful Web Service";
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.WebService;
 
         public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
         {

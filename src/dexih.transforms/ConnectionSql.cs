@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
@@ -19,8 +20,6 @@ namespace dexih.connections.sql
 {
     public abstract class ConnectionSql : Connection
     {
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
-
         public override bool CanBulkLoad => true;
         public override bool CanSort => true;
         public override bool CanFilter => true;
@@ -33,6 +32,7 @@ namespace dexih.connections.sql
         public override bool CanUseJson => false;
         public override bool CanUseXml => false;
         public override bool CanUseSql => true;
+        public override bool CanUseAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
 
@@ -60,7 +60,7 @@ namespace dexih.connections.sql
             return newName;
         }
 
-        protected virtual string SqlTableName(Table table)
+        public virtual string SqlTableName(Table table)
         {
             if (!string.IsNullOrEmpty(table.Schema))
             {
@@ -76,34 +76,7 @@ namespace dexih.connections.sql
         public abstract Task<DbConnection> NewConnection();
 
         protected abstract string GetSqlType(TableColumn column);
-        protected abstract string GetSqlFieldValueQuote(ETypeCode type, object value);
-
-
-        /// <summary>
-        /// This is used to convert any datatypes that are not compatible with the target database.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public virtual object ConvertParameterType(ETypeCode typeCode, int rank, object value)
-        {
-            if (value == null || value == DBNull.Value)
-            {
-                return DBNull.Value;
-            }
-
-            if ((rank > 0 && !CanUseArray) || typeCode == ETypeCode.CharArray)
-            {
-                return Operations.Parse(ETypeCode.String, value);
-            }
-
-            // GUID's get parameterized as binary.  So need to explicitly convert to string.
-            if (typeCode == ETypeCode.Guid)
-            {
-                return value.ToString();
-            }
-
-            return value;
-        }
+        // protected abstract string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value);
 
 
         protected DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
@@ -137,10 +110,14 @@ namespace dexih.connections.sql
                     insert.Append("INSERT INTO " + SqlTableName(table) + " (");
                     values.Append("VALUES (");
 
-                    for (var i = 0; i < fieldCount; i++)
+                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement).ToArray();
+                    var ordinals = new int[columns.Length];
+                    
+                    for(var i = 0; i< columns.Length; i++)
                     {
-                        insert.Append(AddDelimiter(reader.GetName(i)) + ",");
+                        insert.Append(AddDelimiter(columns[i].Name) + ",");
                         values.Append("@col" + i + ",");
+                        ordinals[i] = reader.GetOrdinal(columns[i].Name);
                     }
 
                     var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " + values.Remove(values.Length - 1, 1) + ");";
@@ -150,23 +127,36 @@ namespace dexih.connections.sql
                         using (var cmd = connection.CreateCommand())
                         {
                             cmd.CommandText = insertCommand;
-                            //cmd.Transaction = transaction;
+                            cmd.Transaction = transaction;
 
                             var parameters = new DbParameter[fieldCount];
-                            for (var i = 0; i < fieldCount; i++)
+
+                            for (var i = 0; i < columns.Count(); i++)
                             {
                                 var param = cmd.CreateParameter();
                                 param.ParameterName = "@col" + i;
                                 cmd.Parameters.Add(param);
                                 parameters[i] = param;
                             }
+//                            for (var i = 0; i < fieldCount; i++)
+//                            {
+//                                var param = cmd.CreateParameter();
+//                                param.ParameterName = "@col" + i;
+//                                cmd.Parameters.Add(param);
+//                                parameters[i] = param;
+//                            }
 
                             while (await reader.ReadAsync(cancellationToken))
                             {
-                                for (var i = 0; i < fieldCount; i++)
+                                for (var i = 0; i < columns.Count(); i++)
                                 {
-                                    parameters[i].Value = reader[i];
+                                    parameters[i].Value = reader[ordinals[i]];
                                 }
+
+//                                for (var i = 0; i < fieldCount; i++)
+//                                {
+//                                    parameters[i].Value = reader[i];
+//                                }
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 if (cancellationToken.IsCancellationRequested)
                                 {
@@ -312,7 +302,7 @@ namespace dexih.connections.sql
             return ""; //not possible to get here.
         }
 
-        private string BuildSelectQuery(Table table, SelectQuery query)
+        private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
         {
             var sql = new StringBuilder();
 
@@ -344,10 +334,10 @@ namespace dexih.connections.sql
                         var filter = new Filter(inputColumn, Filter.ECompare.IsEqual, inputColumn.DefaultValue);
                         filters.Add(filter);
                     }
-                    sql.Append(BuildFiltersString(filters));
+                    sql.Append(BuildFiltersString(filters, cmd));
                 }
 
-                sql.Append(BuildFiltersString(query.Filters));
+                sql.Append(BuildFiltersString(query.Filters, cmd));
             }
 
 
@@ -365,15 +355,19 @@ namespace dexih.connections.sql
             return sql.ToString();
         }
 
-        protected string BuildFiltersString(List<Filter> filters)
+        protected string BuildFiltersString(List<Filter> filters, DbCommand cmd)
         {
             if (filters == null || filters.Count == 0)
                 return "";
+            
             var sql = new StringBuilder();
             sql.Append(" where ");
 
+            var index = 0;
             foreach (var filter in filters)
             {
+                index++;
+                
                 if (filter.Value1 == null && filter.Column1 == null)
                 {
                     throw new ConnectionException("The filter has no values or columns specified for the primary value.");
@@ -383,7 +377,13 @@ namespace dexih.connections.sql
                 {
                     if (filter.Column1.IsInput)
                     {
-                        sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Column1.DefaultValue) + " ");
+                        // sql.Append(" " + GetSqlFieldValueQuote(filter.Column1.DataType, filter.Column1.Rank, filter.Column1.DefaultValue) + " ");
+                        var param = cmd.CreateParameter();
+                        param.ParameterName = $"@Filter{index}Column1Default";
+                        param.Direction = ParameterDirection.Input;
+                        param.Value = filter.Column1.DefaultValue;
+                        cmd.Parameters.Add(param);
+                        sql.Append($" {param.ParameterName} ");
                     }
                     else
                     {
@@ -392,7 +392,15 @@ namespace dexih.connections.sql
                 }
                 else
                 {
-                    sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value1) + " ");
+                    // sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, 0, filter.Value1) + " ");
+                    var param = cmd.CreateParameter();
+                    param.ParameterName = $"@Filter{index}Value1";
+                    param.Direction = ParameterDirection.Input;
+                    param.Value = filter.Value1;
+                    cmd.Parameters.Add(param);
+                    sql.Append($" {param.ParameterName} ");
+
+
                 }
 
                 sql.Append(GetSqlCompare(filter.Operator));
@@ -407,7 +415,13 @@ namespace dexih.connections.sql
                     if (filter.Column2 != null)
                         if (filter.Column2.IsInput)
                         {
-                            sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Column2.DefaultValue) + " ");
+                            // sql.Append(" " + GetSqlFieldValueQuote(filter.Column2.DataType, filter.Column2.Rank, filter.Column2.DefaultValue) + " ");
+                            var param = cmd.CreateParameter();
+                            param.ParameterName = $"@Filter{index}Column2Default";
+                            param.Direction = ParameterDirection.Input;
+                            param.Value = filter.Column2.DefaultValue;
+                            cmd.Parameters.Add(param);
+                            sql.Append($" {param.ParameterName} ");
                         }
                         else
                         {
@@ -420,13 +434,30 @@ namespace dexih.connections.sql
                             var array = new List<string>();
                             foreach (var value in (Array) filter.Value2)
                                 array.Add(value.ToString());
-                            sql.Append(" (" + string.Join(",",
-                                           array.Select(c => GetSqlFieldValueQuote(filter.CompareDataType, c))) +
+                                var index1 = index;
+                                sql.Append(" (" + string.Join(",",
+                                           array.Select((c, arrayIndex) =>
+                                           {
+                                               // return GetSqlFieldValueQuote(filter.CompareDataType, 0, c);
+                                               var param = cmd.CreateParameter();
+                                               param.Direction = ParameterDirection.Input;
+                                               param.Value = ConvertForWrite(filter.CompareDataType, 0, true, c);
+                                               param.ParameterName = $"@Filter{index1}ArrayValue{arrayIndex}";
+                                               cmd.Parameters.Add(param);
+
+                                               return $"{param.ParameterName}";
+                                           })) +
                                        ") ");
                         }
                         else
                         {
-                            sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, filter.Value2) + " ");
+                            // sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, 0, filter.Value2) + " ");
+                            var param = cmd.CreateParameter();
+                            param.ParameterName = $"@Filter{index}Value2";
+                            param.Direction = ParameterDirection.Input;
+                            param.Value = filter.Value2;
+                            cmd.Parameters.Add(param);
+                            sql.Append($" {param.ParameterName} ");
                         }
                     }
                 }
@@ -437,6 +468,89 @@ namespace dexih.connections.sql
             sql.Remove(sql.Length - 3, 3); //remove last or/and
 
             return sql.ToString();
+        }
+        
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        {
+            try
+            {
+                long identityValue = 0;
+
+                using (var connection = await NewConnection())
+                {
+                    var insert = new StringBuilder();
+                    var values = new StringBuilder();
+
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        foreach (var query in queries)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            insert.Clear();
+                            values.Clear();
+
+                            insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
+                            values.Append("VALUES (");
+
+                            for (var i = 0; i < query.InsertColumns.Count; i++)
+                            {
+                                insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
+                                values.Append("@col" + i + ",");
+                            }
+
+                            var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                                values.Remove(values.Length - 1, 1) + "); ";
+
+                            try
+                            {
+                                using (var cmd = connection.CreateCommand())
+                                {
+                                    cmd.CommandText = insertCommand;
+                                    cmd.Transaction = transaction;
+
+                                    for (var i = 0; i < query.InsertColumns.Count; i++)
+                                    {
+                                        var param = cmd.CreateParameter();
+                                        param.ParameterName = "@col" + i;
+                                        param.Value = ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
+                                        // param.DbType = GetDbType(query.InsertColumns[i].Column.DataType);
+                                        cmd.Parameters.Add(param);
+                                    }
+
+                                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new ConnectionException($"The insert query failed.  {ex.Message}", ex);
+                            }
+                        }
+                        
+                        var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+                        if (deltaColumn != null)
+                        {
+                            var autoIncrementSql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
+                            using (var cmd = connection.CreateCommand())
+                            {
+                                cmd.CommandText = autoIncrementSql;
+                                cmd.Transaction = transaction;
+                                var identity = await cmd.ExecuteScalarAsync(cancellationToken);
+                                identityValue = Convert.ToInt64(identity);
+                            }
+                        }
+
+                        transaction.Commit();
+                    }
+
+                    return identityValue; //sometimes reader returns -1, when we want this to be error condition.
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
+            }
         }
 
         public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
@@ -463,11 +577,12 @@ namespace dexih.connections.sql
                                 count++;
                             }
                             sql.Remove(sql.Length - 1, 1); //remove last comma
-                            sql.Append(" " + BuildFiltersString(query.Filters) + ";");
 
                             //  Retrieving schema for columns from a single table
                             using (var cmd = connection.CreateCommand())
                             {
+                                sql.Append(" " + BuildFiltersString(query.Filters, cmd) + ";");
+
                                 cmd.Transaction = transaction;
                                 cmd.CommandText = sql.ToString();
 
@@ -476,10 +591,10 @@ namespace dexih.connections.sql
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i;
-                                    param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
+                                    // param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
                                     // param.Size = -1;
 
-                                    param.Value = ConvertParameterType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank, query.UpdateColumns[i].Value);
+                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
 
                                     // replaced with ConvertParamterType above.
                                     //// GUID's get parameterized as binary.  So need to explicitly convert to string.
@@ -536,12 +651,13 @@ namespace dexih.connections.sql
                         {
                             sql.Clear();
                             sql.Append("delete from " + SqlTableName(table) + " ");
-                            sql.Append(BuildFiltersString(query.Filters));
 
                             cancellationToken.ThrowIfCancellationRequested();
 
                             using (var cmd = connection.CreateCommand())
                             {
+                                sql.Append(BuildFiltersString(query.Filters, cmd));
+
                                 cmd.Transaction = transaction;
                                 cmd.CommandText = sql.ToString();
 
@@ -572,11 +688,11 @@ namespace dexih.connections.sql
             {
                 using (var connection = await NewConnection())
                 {
-                    var sql = BuildSelectQuery(table, query);
 
                     //  Retrieving schema for columns from a single table
                     using (var cmd = connection.CreateCommand())
                     {
+                        var sql = BuildSelectQuery(table, query, cmd);
                         cmd.CommandText = sql;
 
                         object value;
@@ -662,19 +778,23 @@ namespace dexih.connections.sql
                     var newTable = new Table();
                     table.CopyProperties(newTable, true);
 
+                    var readerOpen = await reader.ReadAsync(cancellationToken); 
+
                     for (var i = 0; i < reader.FieldCount; i++)
                     {
+                        // use the type of the value (which is better for arrays) unless it's null, then use the GetFieldType.
+                        var type = !readerOpen || reader[i] is null ? reader.GetFieldType(i) : reader[i].GetType();
                         var col = new TableColumn
                         {
                             Name = reader.GetName(i),
                             LogicalName = reader.GetName(i),
-                            DataType = GetTypeCode(reader.GetFieldType(i), out var rank),
+                            DataType = GetTypeCode(type, out var rank),
                             Rank = rank,
                             DeltaType = TableColumn.EDeltaType.TrackingField
                         };
                         newTable.Columns.Add(col);
                     }
-
+                        
                     return newTable;
                 }
             }
@@ -690,7 +810,7 @@ namespace dexih.connections.sql
             try
             {
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = table.UseQuery ? table.QueryString : BuildSelectQuery(table, query);
+                cmd.CommandText = table.UseQuery ? table.QueryString : BuildSelectQuery(table, query, cmd);
                 DbDataReader reader;
 
                 try

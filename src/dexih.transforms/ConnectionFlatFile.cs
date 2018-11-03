@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Linq;
 using CsvHelper;
 using System.Text.RegularExpressions;
 using dexih.functions.File;
@@ -33,13 +34,8 @@ namespace dexih.transforms
         public abstract Task<bool> TestFileConnection();
         public abstract string GetFullPath(FlatFile file, EFlatFilePath path);
         
-        public override string ServerHelp => "Path for the files (use //server/path format)";
-        public override string DefaultDatabaseHelp => "";
-        public override bool AllowNtAuth => false;
-        public override bool AllowUserPass => true;
         public override bool CanBulkLoad => true;
         public override bool CanSort => false;
-
         public override bool CanFilter => true;
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
@@ -50,10 +46,8 @@ namespace dexih.transforms
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
+        public override bool CanUseAutoIncrement => false;
         public override bool DynamicTableCreation => true;
-
-        public override string DatabaseTypeName => "Flat Files";
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.File;
 
         private Stream _fileStream;
         private StreamWriter _fileWriter;
@@ -197,22 +191,16 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
         
-        public object ConvertParameterType(ETypeCode dataType, int rank, object value)
-        {
-            if (value == null)
-                return DBNull.Value;
-
-            if (rank > 0)
-            {
-                return Operations.Parse(ETypeCode.String, value);
-            }
-            return value;
-        }
-
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
+                var oridinals = new int[table.Columns.Count];
+                for(var i = 0; i < table.Columns.Count; i++)
+                {
+                    oridinals[i] = reader.GetOrdinal(table.Columns[i].Name);
+                }
+                
                 while(await reader.ReadAsync(cancellationToken))
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -220,10 +208,16 @@ namespace dexih.transforms
                         throw new ConnectionException("Insert bulk operation cancelled.");
                     }
 
-                    var s = new string[reader.FieldCount];
-                    for (var j = 0; j < reader.FieldCount; j++)
+                    foreach(var ordinal in oridinals)
                     {
-                        _csvWriter.WriteField(reader[j]);
+                        if (ordinal == -1)
+                        {
+                            _csvWriter.WriteField(null);
+                        }
+                        else
+                        {
+                            _csvWriter.WriteField(reader[ordinal]);
+                        }
                     }
                     _csvWriter.NextRecord();
                 }
@@ -383,19 +377,28 @@ namespace dexih.transforms
                     {
                         //write a header row.
                         var s = new string[table.Columns.Count];
-                        for (var j = 0; j < queries[0].InsertColumns.Count; j++)
+                        foreach (var column in table.Columns)
                         {
-                            csv.WriteField(queries[0].InsertColumns[j].Column.Name);
+                            csv.WriteField(column.Name);
                         }
                         csv.NextRecord();
                     }
 
                     foreach (var query in queries)
                     {
-                        for (var j = 0; j < query.InsertColumns.Count; j++)
+                        foreach (var column in table.Columns)
                         {
-                            csv.WriteField(ConvertParameterType(query.InsertColumns[j].Column.DataType, query.InsertColumns[j].Column.Rank, query.InsertColumns[j].Value));
+                            var insertColumn = query.InsertColumns.SingleOrDefault(c => c.Column.Name == column.Name);
+                            if (insertColumn == null)
+                            {
+                                csv.WriteField(null);
+                            }
+                            else
+                            {
+                                csv.WriteField(ConvertForWrite(insertColumn.Column, insertColumn.Value));    
+                            }
                         }
+                        
                         csv.NextRecord();
                         rows++;
                     }

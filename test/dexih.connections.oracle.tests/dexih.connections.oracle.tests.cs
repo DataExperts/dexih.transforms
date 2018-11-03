@@ -6,12 +6,20 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.sql
 {
     [Collection("SqlTest")]
     public class ConnectionOracleTests
-    {
+    {        
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionOracleTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionOracle GetConnection()
         {
             return new ConnectionOracle()
@@ -44,7 +52,7 @@ namespace dexih.connections.sql
         public async Task TestOracle_PerformanceTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
-            await new PerformanceTests().Performance(GetConnection(), database, 10000);
+            await new PerformanceTests(_output).Performance(GetConnection(), database, 10000);
         }
         
         [Fact]
@@ -52,7 +60,7 @@ namespace dexih.connections.sql
         {
             string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
 
-            await new PerformanceTests().PerformanceTransformWriter(GetConnection(), database, 100000);
+            await new PerformanceTests(_output).PerformanceTransformWriter(GetConnection(), database, 100000);
         }
         
         [Fact]

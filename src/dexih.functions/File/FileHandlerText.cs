@@ -231,9 +231,16 @@ namespace dexih.functions.File
                     foreach (var colPos in _csvOrdinalMappings.Keys)
                     {
                         var mapping = _csvOrdinalMappings[colPos];
-                        var value = _csvReader.GetField(mapping.DataType, mapping.Position);
-                        row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);
-                        
+                        var result = _csvReader.TryGetField(mapping.DataType, mapping.Position, out object value);
+                        if (result)
+                        {
+                            row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);
+                        }
+                        else
+                        {
+                            row[colPos] = null;
+                        }
+
                         if (_fileConfiguration.SetWhiteSpaceCellsToNull && row[colPos] is string &&
                             string.IsNullOrWhiteSpace((string) row[colPos]))
                         {

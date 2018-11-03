@@ -27,7 +27,7 @@ namespace dexih.connections.test
             await connection.CreateTable(table, true, CancellationToken.None);
 
             //insert a single row
-            InsertQuery insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
+            var insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
                     new QueryColumn(new TableColumn("IntColumn", ETypeCode.Int32), 1),
                     new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value1" ),
                     new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
@@ -36,10 +36,12 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1m ),
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() ),
                     new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1), new [] {1,1} ),
-                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2), new [] {new [] {1,1}, new [] {2,2}} )
+                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2), new [,] {{1,1}, {2,2}} )
             });
 
-            await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
+            var identity = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
+            
+            if(connection.CanUseAutoIncrement) Assert.Equal(1, identity);
 
             //insert a second row
             insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
@@ -51,13 +53,15 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.2m ),
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() ),
                     new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1), new [] {1,1} ),
-                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2), new [] {new [] {1,1}, new [] {2,2}} )
+                    new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2), new [,] {{1,1}, {2,2}} )
             });
 
-            await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
+            identity = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
+
+            if(connection.CanUseAutoIncrement) Assert.Equal(2, identity);
 
             ////if the write was a file.  move it back to the incoming directory to read it.
-            if(connection.DatabaseConnectionCategory == Connection.EConnectionCategory.File)
+            if(connection.Attributes.ConnectionCategory == Connection.EConnectionCategory.File)
             {
                 var fileConnection = (ConnectionFlatFile)connection;
                 var filename = fileConnection.LastWrittenFile;
@@ -86,7 +90,7 @@ namespace dexih.connections.test
                 Assert.NotNull(returnScalar);
 
                 //if the connection doesn't support sorting, don't bother with this test.
-                if (connection.CanSort == true) 
+                if (connection.CanSort) 
                     Assert.Equal("value2", (string)returnScalar);
             }
 
@@ -195,38 +199,38 @@ namespace dexih.connections.test
                 //start a data writer and insert the test data
                 await connection.DataWriterStart(table);
                 var testData = DataSets.CreateTestData();
-                var convertedTestData = new ReaderConvertDataTypes(connection, testData);
 
+                var convertedTestData = new ReaderConvertDataTypes(connection, testData);
                 await connection.ExecuteInsertBulk(table, convertedTestData, CancellationToken.None);
 
                 await connection.DataWriterFinish(table);
 
                 ////if the write was a file.  move it back to the incoming directory to read it.
-                if(connection.DatabaseConnectionCategory == Connection.EConnectionCategory.File)
+                if(connection.Attributes.ConnectionCategory == Connection.EConnectionCategory.File)
                 {
                     var fileConnection = (ConnectionFlatFile)connection;
                     var filename = fileConnection.LastWrittenFile;
 
-                    var filemoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
+                    var fileMoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
                         EFlatFilePath.Outgoing, EFlatFilePath.Incoming);
                     
-                    Assert.True(filemoveResult);
+                    Assert.True(fileMoveResult);
                 }
 
                 // check the table loaded 10 rows successfully
-                Transform reader = connection.GetTransformReader(table, true);
-                int count = 0;
+                var reader = connection.GetTransformReader(table, true);
+                var count = 0;
                 var openResult = await reader.Open(0, null, CancellationToken.None);
                 Assert.True(openResult, "Open Reader");
                 while (await reader.ReadAsync()) count++;
-                Assert.True(count == 10, "Select count - value :" + count);
+                Assert.Equal(10, count); 
             }
 
-            if (connection.CanFilter == true)
+            if (connection.CanFilter)
             {
                 //run a lookup query.
                 var filters = new List<Filter> { new Filter("IntColumn", Filter.ECompare.IsEqual, 5) };
-                var query = new SelectQuery()
+                var query = new SelectQuery
                 {
                     Filters = filters
                 };
@@ -234,8 +238,9 @@ namespace dexih.connections.test
                 //should return value5
                 var reader = connection.GetTransformReader(table, true);
 
+                var stringColumn = table.GetOrdinal("StringColumn");
                 var returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
-                Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "LookupValue :" + returnLookup.First()[0]);
+                Assert.True(Convert.ToString(returnLookup.First()[stringColumn]) == "value5", "LookupValue :" + returnLookup.First()[stringColumn]);
 
                 //run lookup again with caching set.
                 reader = connection.GetTransformReader(table);
@@ -243,7 +248,7 @@ namespace dexih.connections.test
                 // Assert.True(openResult, "Open Reader");
                 reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
                 returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
-                Assert.True(Convert.ToString(returnLookup.First()[0]) == "value5", "Select count - value :" + returnLookup.First()[0]);
+                Assert.True(Convert.ToString(returnLookup.First()[stringColumn]) == "value5", "Select count - value :" + returnLookup.First()[stringColumn]);
 
                 reader.Close();
             }

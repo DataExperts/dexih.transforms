@@ -198,10 +198,12 @@ namespace dexih.transforms
 
             Reset();
 
-            if (Mappings != null)
+            if (Mappings == null)
             {
-                CacheTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, null, mapAllReferenceColumns);
+                Mappings = new Mappings();
             }
+
+            CacheTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, null, mapAllReferenceColumns);
 
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)

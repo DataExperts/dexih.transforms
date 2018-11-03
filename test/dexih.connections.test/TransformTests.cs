@@ -17,22 +17,20 @@ namespace dexih.connections.test
 
         public async Task Transform(Connection connection, string databaseName)
         {
-            Table table = DataSets.CreateTable();
+            var table = DataSets.CreateTable();
 
             await connection.CreateDatabase(databaseName, CancellationToken.None);
 
             //create a new table and write some data to it.  
             Transform reader = DataSets.CreateTestData();
             await connection.CreateTable(table, true, CancellationToken.None);
-            TransformWriter writer = new TransformWriter();
+            var writer = new TransformWriter();
 
-            TransformWriterResult writerResult = new TransformWriterResult();
+            var writerResult = new TransformWriterResult();
             await connection.InitializeAudit(writerResult, 0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
-
             var writeRecords = await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
 
             Assert.True(writeRecords, $"WriteAllRecords failed with message {writerResult.Message}.  Details:{writerResult.ExceptionDetails}");
-            
 
             //check database can sort 
             if (connection.CanSort)
@@ -40,14 +38,14 @@ namespace dexih.connections.test
                 //use the new table test the data base is sorting
                 reader = connection.GetTransformReader(table);
 
-                SelectQuery query = new SelectQuery()
+                var query = new SelectQuery()
                 {
                     Sorts = new List<Sort>() { new Sort("IntColumn", Sort.EDirection.Descending) }
                 };
                 await reader.Open(0, query, CancellationToken.None);
 
 
-                int sortValue = 10;
+                var sortValue = 10;
                 while (await reader.ReadAsync())
                 {
                     Assert.Equal(sortValue, Convert.ToInt32(reader["IntColumn"]));
@@ -62,14 +60,14 @@ namespace dexih.connections.test
                 //use the new table to test database is filtering
                 reader = connection.GetTransformReader(table);
 
-                SelectQuery query = new SelectQuery()
+                var query = new SelectQuery()
                 {
                     Filters = new List<Filter>() { new Filter("IntColumn", Filter.ECompare.LessThanEqual, 5) }
                 };
                 await reader.Open(0, query, CancellationToken.None);
 
 
-                int count = 0;
+                var count = 0;
                 while (await reader.ReadAsync())
                 {
                     Assert.True(Convert.ToInt32(reader["IntColumn"]) <= 5);
@@ -78,14 +76,15 @@ namespace dexih.connections.test
                 Assert.Equal(5, count);
             }
 
-            Table deltaTable = DataSets.CreateTable();
+            var deltaTable = DataSets.CreateTable();
             deltaTable.AddAuditColumns();
             deltaTable.Name = "DeltaTable";
             await connection.CreateTable(deltaTable, true, CancellationToken.None);
 
-            Transform targetReader = connection.GetTransformReader(deltaTable);
+            var targetReader = connection.GetTransformReader(deltaTable);
             reader = connection.GetTransformReader(table);
-            TransformDelta transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
+            var transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
+            await transformDelta.Open(0, null, CancellationToken.None);
 
             writerResult = new TransformWriterResult();
             await connection.InitializeAudit(writerResult, 0, 1, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);

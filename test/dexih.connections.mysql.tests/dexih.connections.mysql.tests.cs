@@ -5,12 +5,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.sql
 {
     [Collection("SqlTest")]
     public class ConnectionMySqlTests
     {
+                
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionMySqlTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionMySql GetConnection()
         {
             return new ConnectionMySql()
@@ -42,7 +51,7 @@ namespace dexih.connections.sql
         [Fact]
         public async Task TestMySql_PerformanceTests()
         {
-            await new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 10000);
+            await new PerformanceTests(_output).Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 10000);
         }
         
         [Fact]
@@ -50,7 +59,7 @@ namespace dexih.connections.sql
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            await new PerformanceTests().PerformanceTransformWriter(GetConnection(), database, 100000);
+            await new PerformanceTests(_output).PerformanceTransformWriter(GetConnection(), database, 100000);
         }
         
         [Fact]

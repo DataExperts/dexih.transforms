@@ -7,22 +7,21 @@ using dexih.functions;
 using System.IO;
 using System.Data.Common;
 using System.Threading;
+using dexih.connections.sql;
 using static Dexih.Utils.DataType.DataType;
-using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
-using Dexih.Utils.DataType;
-using Microsoft.Data.Sqlite;
-using Newtonsoft.Json;
+using IBM.Data.DB2.Core;
 
-namespace dexih.connections.sql
+
+namespace dexih.connections.db2
 {
     [Connection(
-        ConnectionCategory = EConnectionCategory.DatabaseFile,
-        Name = "SQLite", 
-        Description = "SQLite is an embedded relational database management system. In contrast to many other database management systems, SQLite is not a client–server database engine, and requires no other software to use.",
-        DatabaseDescription = "Directory",
-        ServerDescription = "Sqlite File Name",
+        ConnectionCategory = Connection.EConnectionCategory.DatabaseFile,
+        Name = "DB2", 
+        Description = "IBM DB2 Data Server",
+        DatabaseDescription = "DB2 Schema",
+        ServerDescription = "DB2 Server (format server:port/database)",
         AllowsConnectionString = true,
         AllowsSql = true,
         AllowsFlatFiles = false,
@@ -34,34 +33,16 @@ namespace dexih.connections.sql
         RequiresDatabase = true,
         RequiresLocalStorage = false
     )]
-    public class ConnectionSqlite : ConnectionSql
+    public class ConnectionDB2 : ConnectionSql
     {
+        public override bool CanUseUnsigned => false;
+        public override bool CanUseBoolean => false;
+        public override bool CanUseAutoIncrement => true;
+        public override bool CanUseArray => false;
         
-        public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
-        {
-            switch (typeCode)
-            {
-               case ETypeCode.Decimal:
-                   return (decimal) 999999999999999;
-               case ETypeCode.UInt64:
-                   return (ulong) long.MaxValue;
-                default:
-                    return GetDataTypeMaxValue(typeCode, length);
-            }
-        }
-
-        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
-        {
-            switch (typeCode)
-            {
-                case ETypeCode.Decimal:
-                    return (decimal)-999999999999999;
-                default:
-                    return GetDataTypeMinValue(typeCode, length);
-            }
-        }
-
-
+        // this is creator for linux/ owner for zos (stupid IBM!!!!)
+        protected virtual string OwnerColumn => "creator"; //owner
+        
         public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {
             try
@@ -70,8 +51,9 @@ namespace dexih.connections.sql
                 {
 
                     using (var cmd = CreateCommand(connection,
-                        "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
+                        $"select * from sysibm.SYSTABLES where {OwnerColumn} = @SCHEMA and name = @NAME and TYPE = 'T';"))
                     {
+                        cmd.Parameters.Add(CreateParameter(cmd, "@SCHEMA", DefaultDatabase));
                         cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
                         var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                         return tableExists != null;
@@ -109,7 +91,7 @@ namespace dexih.connections.sql
                 var createSql = new StringBuilder();
 
                 //Create the table
-                createSql.Append("create table " + AddDelimiter(table.Name) + " ");
+                createSql.Append($"create table {AddDelimiter(DefaultDatabase)}.{AddDelimiter(table.Name)} ");
 
                 //sqlite does not support table/column comments, so add a comment string into the ddl.
                 if (!string.IsNullOrEmpty(table.Description))
@@ -125,7 +107,7 @@ namespace dexih.connections.sql
                     //ignore datatypes for autoincrement and create a primary key.
                     if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
                     {
-                        createSql.Append(AddDelimiter(col.Name) + " INTEGER PRIMARY KEY ");
+                        createSql.Append($"{AddDelimiter(col.Name)} {GetSqlType(col)} NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) ");
                     }
                     else
                     {
@@ -187,11 +169,9 @@ namespace dexih.connections.sql
             {
                 case ETypeCode.Int32:
                 case ETypeCode.UInt16:
-                    sqlType = "int";
+                    sqlType = "integer";
                     break;
                 case ETypeCode.Byte:
-                    sqlType = "tinyint";
-                    break;
                 case ETypeCode.Int16:
                 case ETypeCode.SByte:
                     sqlType = "smallint";
@@ -202,50 +182,50 @@ namespace dexih.connections.sql
                     break;
                 case ETypeCode.String:
                     if (column.MaxLength == null)
-                        sqlType = (column.IsUnicode == true ? "n" : "") + "text";
+                        sqlType = "clob";
                     else
-                        sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength.ToString() + ")";
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
 				case ETypeCode.Text:
                 case ETypeCode.Xml:
                 case ETypeCode.Json:
-                    sqlType = (column.IsUnicode == true ? "n" : "") + "text";
+                    sqlType = "clob";
 					break;
                 case ETypeCode.Single:
-                    sqlType = "float";
+                    sqlType = "real";
                     break;
                 case ETypeCode.UInt64:
-                    sqlType = "nvarchar(25)";
+                    sqlType = "varchar(25)";
                     break;
                 case ETypeCode.Double:
                     sqlType = "float";
                     break;
                 case ETypeCode.Boolean:
-                    sqlType = "boolean";
+                    sqlType = "smallint";
                     break;
                 case ETypeCode.DateTime:
-                    sqlType = "datetime";
+                    sqlType = "timestamp";
                     break;
                 case ETypeCode.Time:
-                    sqlType = "text"; //sqlite doesn't have a time type.
+                    sqlType = "time";
                     break;
                 case ETypeCode.Guid:
-                    sqlType = "text";
+                    sqlType = "varchar(40)";
                     break;
                 case ETypeCode.Unknown:
-                    sqlType = "text";
+                    sqlType = "clob";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
+                    sqlType = $"decimal ({column.Precision??28}, {column.Scale??0})";
                     break;
                 case ETypeCode.Binary:
                     sqlType = "blob";
                     break;
                 case ETypeCode.Enum:
-                    sqlType = "text";
+                    sqlType = "clob";
                     break;
                 case ETypeCode.CharArray:
-                    sqlType = $"nchar({column.MaxLength})";
+                    sqlType = $"char({column.MaxLength})";
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
@@ -255,69 +235,7 @@ namespace dexih.connections.sql
         }
 
 
-        /// <summary>
-        /// Gets the start quote to go around the values in sql insert statement based in the column type.
-        /// </summary>
-        /// <returns></returns>
-//        protected override string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
-//        {
-//            string returnValue;
-//
-//            if (value == null || value.GetType().ToString() == "System.DBNull")
-//                return "null";
-//
-//            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
-//            //    return "null";
-//
-//            if (rank > 0)
-//            {
-//                return "'" + AddEscape(value.ToString()) + "'";
-//            }
-//            
-//            switch (typeCode)
-//            {
-//                case ETypeCode.Byte:
-//                case ETypeCode.Single:
-//                case ETypeCode.Int16:
-//                case ETypeCode.Int32:
-//                case ETypeCode.Int64:
-//                case ETypeCode.SByte:
-//                case ETypeCode.UInt16:
-//                case ETypeCode.UInt32:
-//                case ETypeCode.UInt64:
-//                case ETypeCode.Double:
-//                case ETypeCode.Decimal:
-//                    returnValue = AddEscape(value.ToString());
-//                    break;
-//                case ETypeCode.Boolean:
-//                    returnValue = (bool) value ? "1" : "0";
-//                    break;
-//				case ETypeCode.String:
-//                case ETypeCode.Text:
-//                case ETypeCode.Json:
-//                case ETypeCode.Xml:
-//                case ETypeCode.Guid:
-//                case ETypeCode.Unknown:
-//                    returnValue = "'" + AddEscape(value.ToString()) + "'";
-//                    break;
-//                case ETypeCode.DateTime:
-//                case ETypeCode.Time:
-//                    //sqlite does not have date fields, so convert to format that will work for greater/less compares
-//                    if (value is DateTime)
-//                        returnValue = "'" + AddEscape(((DateTime) value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "'";
-//                    else if (value is TimeSpan)
-//                        returnValue = "'" + AddEscape(((TimeSpan) value).ToString()) + "'";
-//                    else
-//                        returnValue = "'" + AddEscape((string) value) + "'";
-//                    break;
-//                default:
-//                    throw new Exception($"The datatype {typeCode} is not compatible with the sql insert statement.");
-//            }
-//
-//            return returnValue;
-//        }
-
-
+    
         public override async Task<DbConnection> NewConnection()
         {
             try
@@ -327,86 +245,74 @@ namespace dexih.connections.sql
                     connectionString = ConnectionString;
                 else
                 {
-                    if (Server.Substring(Server.Length - 1) != "/" || Server.Substring(Server.Length - 1) != "/")
-                        Server += "/";
-                    connectionString = "Data Source=" + Server + DefaultDatabase + ".sqlite";
+                    var server = Server.Split("/");
+                    if (server.Length != 2)
+                    {
+                        throw new ConnectionException("The server must be in the format server:port/database.");
+                    }
+                    connectionString = $"DATABASE={server[1]};SERVER={server[0]};UID={Username};PWD={Password};";
+                    
                 }
 
-                var connection = new SqliteConnection(connectionString);
+                var connection = new DB2Connection(connectionString);
                 await connection.OpenAsync();
                 State = (EConnectionState) connection.State;
 
                 if (connection.State != ConnectionState.Open)
                 {
                     connection.Dispose();
-                    throw new ConnectionException($"The Sqlite connection has a state of {connection.State}.");
-                }
-
-                using (var command = new SqliteCommand())
-                {
-                    command.Connection = connection;
-                    command.CommandText = "PRAGMA journal_mode=WAL";
-                    command.ExecuteNonQuery();
+                    throw new ConnectionException($"The DB2 connection has a state of {connection.State}.");
                 }
 
                 return connection;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Sqlite connection failed at directory {Server} for file {DefaultDatabase}. {ex.Message}", ex);
+                throw new ConnectionException($"DB2 connection failed at directory {Server} for file {DefaultDatabase}. {ex.Message}", ex);
             }
         }
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
         {
             try
             {
-                var fileName = Server + "/" + databaseName + ".sqlite";
-
-                var fileExists = File.Exists(fileName);
-
-                if (fileExists)
+                
+                DefaultDatabase = "";
+                using (var connection = await NewConnection())
+                using (var cmd = CreateCommand(connection, "CREATE SCHEMA " + AddDelimiter(databaseName)))
                 {
-                    return Task.FromResult(false);
+                    
+                    var value = await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
 
-                var stream = File.Create(fileName);
-                stream.Dispose();
                 DefaultDatabase = databaseName;
-
-                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Create database {databaseName} failed. {ex.Message}", ex);
+                throw new ConnectionException($"Create SCHEMA {databaseName} failed. {ex.Message}", ex);
             }
         }
 
-        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
         {
             try
             {
-                var directoryExists = Directory.Exists(Server);
-                if (!directoryExists)
-                {
-                    throw new ConnectionException($"The directory {Server} does not exist.");
-                }
-
-                var files = Directory.GetFiles(Server, "*.sqlite");
-
                 var list = new List<string>();
 
-                foreach (var file in files)
+                using (var connection = await NewConnection())
+                using (var cmd = CreateCommand(connection, "select schemaname from syscat.schemata"))
+                using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
-                    list.Add(Path.GetFileName(file).Replace(".sqlite", ""));
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        list.Add((string)reader["schemaname"]);
+                    }
                 }
-
-
-                return Task.FromResult(list);
+                return list;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Get database list failed. {ex.Message}", ex);
+                throw new ConnectionException($"Get schema list failed. {ex.Message}", ex);
             }
         }
 
@@ -415,19 +321,17 @@ namespace dexih.connections.sql
             try
             {
                 using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type='table';"))
+                using (var cmd = CreateCommand(connection, $"select * from QSYS2.SYSTABLES where TABLE_SCHEMA like '{DefaultDatabase}' and TYPE = 'T';"))
                 {
-                    DbDataReader reader;
-                    reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                    var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
                     using (reader)
                     {
-
                         var tableList = new List<Table>();
 
                         while (await reader.ReadAsync(cancellationToken))
                         {
-                            tableList.Add(new Table((string)reader["name"]));
+                            tableList.Add(new Table((string)reader["TABLE_NAME"]));
                         }
 
                         return tableList;
@@ -593,84 +497,6 @@ namespace dexih.connections.sql
             return ETypeCode.Unknown;
         }
 
-//        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries,
-//            CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//
-//                var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null
-//                    ? ""
-//                    : " select last_insert_rowid() from [" + table.Name + "]";
-//                long identityValue = 0;
-//
-//                using (var connection = await NewConnection())
-//                {
-//                    var insert = new StringBuilder();
-//                    var values = new StringBuilder();
-//
-//                    using (var transaction = connection.BeginTransaction())
-//                    {
-//                        foreach (var query in queries)
-//                        {
-//                            cancellationToken.ThrowIfCancellationRequested();
-//
-//                            insert.Clear();
-//                            values.Clear();
-//
-//                            insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
-//                            values.Append("VALUES (");
-//
-//                            for (var i = 0; i < query.InsertColumns.Count; i++)
-//                            {
-//                                insert.Append("[" + query.InsertColumns[i].Column.Name + "],");
-//                                values.Append("@col" + i.ToString() + ",");
-//                            }
-//
-//                            var insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
-//                                                   values.Remove(values.Length - 1, 1).ToString() + "); " +
-//                                                   autoIncrementSql;
-//
-//                            try
-//                            {
-//                                using (var cmd = connection.CreateCommand())
-//                                {
-//                                    cmd.CommandText = insertCommand;
-//                                    cmd.Transaction = transaction;
-//
-//                                    for (var i = 0; i < query.InsertColumns.Count; i++)
-//                                    {
-//                                        var param = new SqliteParameter
-//                                        {
-//                                            ParameterName = "@col" + i.ToString(),
-//                                            Value = ConvertParameterType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank, query.InsertColumns[i].Value),
-//                                            DbType = GetDbType(query.InsertColumns[i].Column.DataType)
-//                                        };
-//
-//                                        cmd.Parameters.Add(param);
-//                                    }
-//
-//                                    var identity = await cmd.ExecuteScalarAsync(cancellationToken);
-//                                    identityValue = Convert.ToInt64(identity);
-//
-//                                }
-//                            }
-//                            catch (Exception ex)
-//                            {
-//                                throw new ConnectionException($"The insert query failed.  {ex.Message}");
-//                            }
-//                        }
-//                        transaction.Commit();
-//                    }
-//
-//                    return identityValue; //sometimes reader returns -1, when we want this to be error condition.
-//                }
-//            }
-//            catch(Exception ex)
-//            {
-//                throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
-//            }
-//        }
     }
 
 }

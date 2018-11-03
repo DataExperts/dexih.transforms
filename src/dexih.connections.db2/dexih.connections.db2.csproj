@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="IBM.Data.DB2.Core-osx" Version="1.2.2.100" />
+    </ItemGroup>
+
+</Project>

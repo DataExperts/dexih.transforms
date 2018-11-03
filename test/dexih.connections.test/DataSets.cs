@@ -50,6 +50,14 @@ namespace dexih.connections.test
             {
                 Description = "The testing table"
             };
+            
+            table.Columns.Add(new TableColumn()
+            {
+                Name = "AutoIncrement",
+                Description = "A key column",
+                DataType = ETypeCode.Int32,
+                DeltaType = TableColumn.EDeltaType.AutoIncrement
+            });
 
             table.Columns.Add(new TableColumn()
             {

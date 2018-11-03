@@ -40,40 +40,10 @@ namespace dexih.connections.sql
     )]
     public class ConnectionPostgreSql : ConnectionSql
     {
-
-        public override string ServerHelp => "Server:Port Name";
-        public override string DefaultDatabaseHelp => "Database";
-        public override bool AllowNtAuth => true;
-        public override bool AllowUserPass => true;
-        public override string DatabaseTypeName => "PostgreSQL";
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
         public override bool CanUseArray => true;
+        public override bool CanUseCharArray => true;
+        public override bool CanUseUnsigned => false;
 
-        // postgre doesn't have unsigned values, so convert the unsigned to signed 
-        public override object ConvertParameterType(ETypeCode typeCode, int rank, object value)
-        {
-            if (value == null || value == DBNull.Value)
-            {
-                return DBNull.Value;
-            }
-
-            if (rank > 0 && !CanUseArray)
-            {
-                return Operations.Parse(ETypeCode.String, value);
-            }
-
-            switch (value)
-            {
-                case ushort uint16:
-                    return (int)uint16;
-                case uint uint32:
-                    return (long)uint32;
-                case ulong uint64:
-                    return (long)uint64;
-                default:
-                    return value;
-            }
-        }
 
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
@@ -88,17 +58,28 @@ namespace dexih.connections.sql
             }
         }
         
+
+        
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
         {
             try
             {
                 var fieldCount = reader.FieldCount;
                 var copyCommand = new StringBuilder();
-
                 copyCommand.Append($"COPY {SqlTableName(table)} (");
-                for (var i = 0; i < fieldCount; i++)
+
+                var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement).ToArray();
+                var ordinals = new int[columns.Length];
+                var types = new NpgsqlDbType[columns.Length];
+                    
+                for(var i = 0; i< columns.Length; i++)
                 {
-                    copyCommand.Append(AddDelimiter(reader.GetName(i)) + (i == fieldCount - 1 ? "" : ","));
+                    ordinals[i] = reader.GetOrdinal(columns[i].Name);
+                    types[i] = GetTypeCodeDbType(columns[i].DataType, columns[i].Rank);
+                    if (ordinals[i] >= 0)
+                    {
+                        copyCommand.Append(AddDelimiter(columns[i].Name) + (i == columns.Length - 1 ? "" : ","));
+                    }
                 }
 
                 copyCommand.Append(") FROM STDIN (FORMAT BINARY)");
@@ -110,28 +91,31 @@ namespace dexih.connections.sql
                     {
                         writer.StartRow();
 
-                        for (var i = 0; i < fieldCount; i++)
+                        for(var i = 0; i< columns.Length; i++)
                         {
                             try
                             {
 
-                                var converted = GetSqlDbType(table.Columns[i], reader[i]);
+                                if (ordinals[i] >= 0)
+                                {
+                                    var value = reader[ordinals[i]];
 
-                                if (converted.value == null || converted.value == DBNull.Value)
-                                {
-                                    writer.WriteNull();
-                                }
-                                else
-                                {
-                                    writer.Write(converted.value, converted.type);
+                                    if (value == null || value == DBNull.Value)
+                                    {
+                                        writer.WriteNull();
+                                    }
+                                    else
+                                    {
+                                        writer.Write(value, types[i]);
+                                    }
                                 }
                             }
                             catch (Exception ex)
                             {
 #if DEBUG
-                                throw new ConnectionException($"Column {table.Columns[i].Name}, value {reader[i]}.  {ex.Message}", ex);
+                                throw new ConnectionException($"Column {columns[i].Name}, value {reader[ordinals[i]]}.  {ex.Message}", ex);
 #else
-                                throw new ConnectionException($"Column {table.Columns[i].Name}.  {ex.Message}", ex);
+                                throw new ConnectionException($"Column {columns[i].Name}.  {ex.Message}", ex);
 #endif
                             }
                         }
@@ -258,6 +242,7 @@ namespace dexih.connections.sql
                     sqlType = "int";
                     break;
                 case ETypeCode.Byte:
+                case ETypeCode.Char:
                 case ETypeCode.Int16:
                 case ETypeCode.SByte:
                     sqlType = "smallint";
@@ -280,10 +265,14 @@ namespace dexih.connections.sql
                         sqlType= (column.IsUnicode == true ? "n" : "") + "char(" + column.MaxLength + ")";
                     break;
 				case ETypeCode.Text:
-                case ETypeCode.Json:
-                case ETypeCode.Xml:
                     sqlType = (column.IsUnicode == true ? "n" : "") + "text";
-					break;
+                    break;
+                case ETypeCode.Json:
+                    sqlType = "json";
+                    break;
+                case ETypeCode.Xml:
+                    sqlType = "xml";
+                    break;
                 case ETypeCode.Single:
                     sqlType = "real";
                     break;
@@ -318,9 +307,9 @@ namespace dexih.connections.sql
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
             }
 
-            if (column.IsArray())
+            if (column.Rank > 0)
             {
-                return sqlType + "[]";
+                return sqlType + string.Concat(Enumerable.Repeat("[]", column.Rank));
             }
 
             return sqlType;
@@ -331,58 +320,59 @@ namespace dexih.connections.sql
         /// Gets the start quote to go around the values in sql insert statement based in the column type.
         /// </summary>
         /// <returns></returns>
-        protected override string GetSqlFieldValueQuote(ETypeCode type, object value)
-        {
-            string returnValue;
-
-            if (value == null || value is DBNull)
-                return "null";
-
-            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
-            //    return "null";
-
-            switch (type)
-            {
-                case ETypeCode.Byte:
-                case ETypeCode.Single:
-                case ETypeCode.Int16:
-                case ETypeCode.Int32:
-                case ETypeCode.Int64:
-                case ETypeCode.SByte:
-                case ETypeCode.UInt16:
-                case ETypeCode.UInt32:
-                case ETypeCode.UInt64:
-                case ETypeCode.Double:
-                case ETypeCode.Decimal:
-                    returnValue = AddEscape(value.ToString());
-                    break;
-                case ETypeCode.String:
-				case ETypeCode.Text:
-                case ETypeCode.Json:
-                case ETypeCode.Xml:
-                case ETypeCode.Guid:
-                case ETypeCode.Boolean:
-                case ETypeCode.Unknown:
-                    returnValue = "'" + AddEscape(value.ToString()) + "'";
-                    break;
-                case ETypeCode.DateTime:
-                    if (value is DateTime time)
-                        returnValue = "to_timestamp('" + AddEscape(time.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
-                    else
-                        returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
-                    break;
-                case ETypeCode.Time:
-                    if (value is TimeSpan span)
-                        returnValue = "to_timestamp('" + AddEscape(span.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
-                    else
-                        returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
-                    break;
-                default:
-                    throw new Exception("The datatype " + type + " is not compatible with the sql statement.");
-            }
-
-            return returnValue;
-        }
+//        protected override string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
+//        {
+//            string returnValue;
+//
+//            if (value == null || value is DBNull)
+//                return "null";
+//
+//            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
+//            //    return "null";
+//
+//            switch (typeCode)
+//            {
+//                case ETypeCode.Byte:
+//                case ETypeCode.Char:
+//                case ETypeCode.Single:
+//                case ETypeCode.Int16:
+//                case ETypeCode.Int32:
+//                case ETypeCode.Int64:
+//                case ETypeCode.SByte:
+//                case ETypeCode.UInt16:
+//                case ETypeCode.UInt32:
+//                case ETypeCode.UInt64:
+//                case ETypeCode.Double:
+//                case ETypeCode.Decimal:
+//                    returnValue = AddEscape(value.ToString());
+//                    break;
+//                case ETypeCode.String:
+//				case ETypeCode.Text:
+//                case ETypeCode.Json:
+//                case ETypeCode.Xml:
+//                case ETypeCode.Guid:
+//                case ETypeCode.Boolean:
+//                case ETypeCode.Unknown:
+//                    returnValue = "'" + AddEscape(value.ToString()) + "'";
+//                    break;
+//                case ETypeCode.DateTime:
+//                    if (value is DateTime time)
+//                        returnValue = "to_timestamp('" + AddEscape(time.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
+//                    else
+//                        returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
+//                    break;
+//                case ETypeCode.Time:
+//                    if (value is TimeSpan span)
+//                        returnValue = "to_timestamp('" + AddEscape(span.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
+//                    else
+//                        returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
+//                    break;
+//                default:
+//                    throw new Exception($"The datatype {typeCode} is not compatible with the sql insert statement.");
+//            }
+//
+//            return returnValue;
+//        }
 
         public override async Task<DbConnection> NewConnection()
         {
@@ -668,6 +658,8 @@ ORDER BY c.ordinal_position"))
                 case "varchar": return ETypeCode.String;
                 case "character": return ETypeCode.CharArray;
                 case "text": return ETypeCode.Text;
+                case "json": return ETypeCode.Json;
+                case "xml": return ETypeCode.Xml;
             }
             return ETypeCode.Unknown;
         }
@@ -749,12 +741,10 @@ ORDER BY c.ordinal_position"))
                                     {
                                         var param = cmd.CreateParameter();
                                         param.ParameterName = "@col" + i;
-                                        var converted = GetSqlDbType(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
-                                        param.NpgsqlDbType = converted.type;
+                                        param.NpgsqlDbType = GetTypeCodeDbType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank);
                                         param.Size = -1;
-                                        param.Value = converted.value??DBNull.Value;
+                                        param.NpgsqlValue = ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
                                         cmd.Parameters.Add(param);
-
                                     }
 
                                     var identity = await cmd.ExecuteScalarAsync(cancellationToken);
@@ -782,79 +772,93 @@ ORDER BY c.ordinal_position"))
 
         }
 
-        private (NpgsqlDbType type, object value) GetSqlDbType(TableColumn tableColumn, object value)
-        {
-            if (tableColumn.IsArray())
-            {
-                var values =(IEnumerable)value;
-
-                var parsedValues = new List<object>();
-                var type = NpgsqlDbType.Varchar;
-
-                var i = 0;
-                foreach (var v in values)
-                {
-                    var result = GetSqlDbType(tableColumn.DataType, v);
-                    type = result.type;
-                    parsedValues.Add(result.value);
-                    i++;
-                }
-
-                if (i == 0)
-                {
-                    return GetSqlDbType(tableColumn.DataType, null);
-                }
-
-                return (NpgsqlDbType.Array | type, parsedValues);
-            }
-            else
-            {
-                return GetSqlDbType(tableColumn.DataType, value);
-            }
-        }
+//        private (NpgsqlDbType type, object value) GetSqlDbType(TableColumn tableColumn, object value)
+//        {
+//            if (tableColumn.IsArray())
+//            {
+//                var values =(IEnumerable)value;
+//
+//                var parsedValues = new List<object>();
+//                var type = NpgsqlDbType.Varchar;
+//
+//                var i = 0;
+//                foreach (var v in values)
+//                {
+//                    var result = GetSqlDbType(tableColumn.DataType, tableColumn.Rank, v);
+//                    type = result.type;
+//                    parsedValues.Add(result.value);
+//                    i++;
+//                }
+//
+//                if (i == 0)
+//                {
+//                    return GetSqlDbType(tableColumn.DataType, tableColumn.Rank, null);
+//                }
+//
+//                return (NpgsqlDbType.Array | type, parsedValues);
+//            }
+//            else
+//            {
+//                return GetSqlDbType(tableColumn.DataType, tableColumn.Rank, value);
+//            }
+//        }
         
-        private (NpgsqlDbType type, object value) GetSqlDbType(ETypeCode typeCode, object value)
+       
+        private NpgsqlDbType GetTypeCodeDbType(ETypeCode typeCode, int rank)
         {
+            if (rank > 0)
+            {
+                return NpgsqlDbType.Array | GetTypeCodeDbType(typeCode, 0);
+            }
+            
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return (NpgsqlDbType.Smallint, Operations.Parse(ETypeCode.Int16, value));
+                    return NpgsqlDbType.Smallint;
+                case ETypeCode.Char:
+                    return NpgsqlDbType.Smallint;
                 case ETypeCode.SByte:
-                    return (NpgsqlDbType.Smallint, Operations.Parse(ETypeCode.Int16, value));
+                    return NpgsqlDbType.Smallint;
                 case ETypeCode.UInt16:
-                    return (NpgsqlDbType.Integer, Operations.Parse(ETypeCode.Int32, value));
+                    return NpgsqlDbType.Integer;
                 case ETypeCode.UInt32:
-                    return (NpgsqlDbType.Bigint, Operations.Parse(ETypeCode.Int64, value));
+                    return NpgsqlDbType.Bigint;
                 case ETypeCode.UInt64:
-                    return (NpgsqlDbType.Bigint, Operations.Parse(ETypeCode.Int64, value));
+                    return NpgsqlDbType.Bigint;
                 case ETypeCode.Int16:
-                    return (NpgsqlDbType.Smallint, Operations.Parse(ETypeCode.Int16, value));
+                    return NpgsqlDbType.Smallint;
                 case ETypeCode.Int32:
-                    return (NpgsqlDbType.Integer, Operations.Parse(ETypeCode.Int32, value));
+                    return NpgsqlDbType.Integer;
                 case ETypeCode.Int64:
-                    return (NpgsqlDbType.Bigint, Operations.Parse(ETypeCode.Int64, value));
+                    return NpgsqlDbType.Bigint;
                 case ETypeCode.Decimal:
-                    return (NpgsqlDbType.Numeric, Operations.Parse(ETypeCode.Decimal, value));
+                    return NpgsqlDbType.Numeric;
                 case ETypeCode.Double:
-                    return (NpgsqlDbType.Double, Operations.Parse(ETypeCode.Double, value));
+                    return NpgsqlDbType.Double;
                 case ETypeCode.Single:
-                    return (NpgsqlDbType.Real, Operations.Parse(ETypeCode.Single, value));
+                    return NpgsqlDbType.Real;
                 case ETypeCode.String:
-                    return (NpgsqlDbType.Varchar, Operations.Parse(ETypeCode.String, value));
+                    return NpgsqlDbType.Varchar;
 				case ETypeCode.Text:
-					return (NpgsqlDbType.Text, Operations.Parse(ETypeCode.Text, value));
+				    return NpgsqlDbType.Text;
                 case ETypeCode.Boolean:
-                    return (NpgsqlDbType.Boolean, Operations.Parse(ETypeCode.Boolean, value));
+                    return NpgsqlDbType.Boolean;
                 case ETypeCode.DateTime:
-                    return (NpgsqlDbType.Timestamp, Operations.Parse(ETypeCode.DateTime, value));
+                    return NpgsqlDbType.Timestamp;
                 case ETypeCode.Time:
-                    return (NpgsqlDbType.Time, Operations.Parse(ETypeCode.Time, value));
+                    return NpgsqlDbType.Time;
                 case ETypeCode.Guid:
-                    return (NpgsqlDbType.Varchar, value.ToString());
+                    return NpgsqlDbType.Varchar;
                 case ETypeCode.Binary:
-                    return (NpgsqlDbType.Bytea, value);
+                    return NpgsqlDbType.Bytea;
+                case ETypeCode.Json:
+                    return NpgsqlDbType.Json;
+                case ETypeCode.Xml:
+                    return NpgsqlDbType.Xml;
+                case ETypeCode.CharArray:
+                    return NpgsqlDbType.Char;
                 default:
-                    return (NpgsqlDbType.Varchar, Operations.Parse(ETypeCode.String, value));
+                    return NpgsqlDbType.Varchar;
             }
         }
 
@@ -886,11 +890,12 @@ ORDER BY c.ordinal_position"))
                                 count++;
                             }
                             sql.Remove(sql.Length - 1, 1); //remove last comma
-                            sql.Append(" " + BuildFiltersString(query.Filters) + ";");
 
                             //  Retrieving schema for columns from a single table
                             using (var cmd = connection.CreateCommand())
                             {
+                                sql.Append(" " + BuildFiltersString(query.Filters, cmd) + ";");
+                                
                                 cmd.Transaction = transaction;
                                 cmd.CommandText = sql.ToString();
 
@@ -898,10 +903,9 @@ ORDER BY c.ordinal_position"))
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i;
-                                    var converted = GetSqlDbType(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
-                                    param.NpgsqlDbType = converted.type;
+                                    param.NpgsqlDbType = GetTypeCodeDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank);
                                     param.Size = -1;
-                                    param.Value = converted.value??DBNull.Value;
+                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
                                     cmd.Parameters.Add(param);
                                 }
 
@@ -911,7 +915,7 @@ ORDER BY c.ordinal_position"))
                                 }
                                 catch (Exception ex)
                                 {
-                                    throw new ConnectionException($"The update query failed.  {ex.Message}");
+                                    throw new ConnectionException($"The update query failed.  {ex.Message}", ex);
                                 }
                             }
                         }

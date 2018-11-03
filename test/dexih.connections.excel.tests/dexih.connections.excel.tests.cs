@@ -5,11 +5,20 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.excel
 {
     public class ConnectionExcelTests
-    {
+    {        
+        
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionExcelTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionExcel GetLocalConnection()
         {
             var serverName = Convert.ToString(Configuration.AppSettings["Excel:ServerName"]);
@@ -47,7 +56,7 @@ namespace dexih.connections.excel
         [Fact]
         public async Task Excel_PerformanceTests()
         {
-            await new PerformanceTests().Performance(GetLocalConnection(), "Test-" + Guid.NewGuid().ToString(), 1000);
+            await new PerformanceTests(_output).Performance(GetLocalConnection(), "Test-" + Guid.NewGuid().ToString(), 1000);
         }
         
         [Fact]

@@ -1,31 +1,36 @@
 ﻿using dexih.connections.test;
-using dexih.functions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
+using dexih.connections.db2;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.sql
 {
     [Collection("SqlTest")]
-    public class ConnectionOracleTests
+    public class ConnectionDB2Tests
     {
-        public ConnectionOracle GetConnection()
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionDB2Tests(ITestOutputHelper output)
         {
-            return new ConnectionOracle()
+            this._output = output;
+        }
+        
+        public ConnectionDB2 GetConnection()
+        {
+            return new ConnectionDB2()
             {
                 Name = "Test Connection",
                 UseWindowsAuth = false,
-                Server = Configuration.AppSettings["Oracle:ServerName"].ToString(),
-                Username = Configuration.AppSettings["Oracle:UserName"].ToString(),
-                Password = Configuration.AppSettings["Oracle:Password"].ToString()
+                Server = Configuration.AppSettings["DB2:ServerName"].ToString(),
+                Username = Configuration.AppSettings["DB2:UserName"].ToString(),
+                Password = Configuration.AppSettings["DB2:Password"].ToString()
             };
         }
 
         [Fact]
-        public async Task TestOracle_BasicTests()
+        public async Task DB2_BasicTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
@@ -33,7 +38,7 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestOracle_TransformTests()
+        public async Task DB2_TransformTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
 
@@ -41,22 +46,22 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestOracle_PerformanceTests()
+        public async Task DB2_PerformanceTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
-            await new PerformanceTests().Performance(GetConnection(), database, 10000);
+            await new PerformanceTests(_output).Performance(GetConnection(), database, 10000);
         }
         
         [Fact]
-        public async Task TestOracle_TransformWriter()
+        public async Task DB2_TransformWriter()
         {
             string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
 
-            await new PerformanceTests().PerformanceTransformWriter(GetConnection(), database, 100000);
+            await new PerformanceTests(_output).PerformanceTransformWriter(GetConnection(), database, 100000);
         }
         
         [Fact]
-        public async Task TestOracle_SqlReader()
+        public async Task DB2_SqlReader()
         {
             string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();

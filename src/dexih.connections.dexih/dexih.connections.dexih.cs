@@ -31,10 +31,6 @@ namespace dexih.connections.dexih
     )]
     public class ConnectionDexih : Connection
     {
-        public override string ServerHelp => "The URI for the Information Hub";
-        public override string DefaultDatabaseHelp => "Hub Name";
-        public override bool AllowNtAuth => false;
-        public override bool AllowUserPass => true;
         public override bool CanBulkLoad => false;
         public override bool CanSort => false;
         public override bool CanFilter => false;
@@ -46,10 +42,9 @@ namespace dexih.connections.dexih
         public override bool CanUseJson => true;
         public override bool CanUseXml => true;
         public override bool CanUseCharArray => true;
+        public override bool CanUseAutoIncrement => false;
 	    public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
-        public override string DatabaseTypeName => "Dexih Hub";
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.Hub;
         
         private readonly HttpClient _httpClient = new HttpClient();
         private bool _isAuthenticated = false;

@@ -4,11 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.azure
 {
     public class ConnectionAzureTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionAzureTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionAzureTable GetConnection()
         {
             return new ConnectionAzureTable()
@@ -43,7 +51,7 @@ namespace dexih.connections.azure
         [Fact]
         public async Task Azure_Performance()
         {
-            await new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 100);
+            await new PerformanceTests(_output).Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 100);
         }
 
 

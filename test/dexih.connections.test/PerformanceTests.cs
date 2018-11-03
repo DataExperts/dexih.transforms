@@ -11,12 +11,30 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions.Mappings;
 using Xunit;
+using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test
 {
     public class PerformanceTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public PerformanceTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
+        public long Timer(string name, Action action)
+        {
+            var start = Stopwatch.StartNew();
+            action.Invoke();
+            var time = start.ElapsedMilliseconds;
+            _output.WriteLine($"Test \"{name}\" completed in {time}ms");
+
+            return time;
+        }
+        
         /// <summary>
         /// Perfromance tests should run in around 1 minute. 
         /// </summary>
@@ -33,14 +51,16 @@ namespace dexih.connections.test
             foreach (ETypeCode typeCode in Enum.GetValues(typeof(ETypeCode)))
             {
                 if (typeCode == ETypeCode.Binary && !connection.CanUseBinary) continue;
-                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown) continue;
+                if (typeCode == ETypeCode.CharArray && !connection.CanUseCharArray) continue;
+                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown || typeCode == ETypeCode.Char) continue;
 
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "column" + typeCode,
                     DataType = typeCode,
                     MaxLength = 50,
-                    DeltaType = TableColumn.EDeltaType.TrackingField
+                    DeltaType = TableColumn.EDeltaType.TrackingField,
+                    AllowDbNull = true
                 });
             }
 
@@ -59,25 +79,50 @@ namespace dexih.connections.test
                 //load the rows with min and max values.
                 for (var j = 2; j < table.Columns.Count; j++)
                 {
-                    var dataType = DataType.GetType(table.Columns[j].DataType);
-                    if (i % 2 == 0)
-                        row[j] = connection.GetConnectionMaxValue(table.Columns[j].DataType, 20);
-                    else
-                        row[j] = connection.GetConnectionMinValue(table.Columns[j].DataType);
+                    // alternate rows with min values, max values and null values.
+                    switch (i % 3)
+                    {
+                        case 0:
+                            row[j] = connection.GetConnectionMaxValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value);
+                            break;
+                        case 1:
+                            row[j] = connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value);
+                            break;
+                        case 2:
+                            row[j] = null;
+                            break;
+                    }
+                        
                 }
                 table.Data.Add(row);
-                buffer++;
-
-                if (buffer >= 5000 || rows == i + 1)
-                {
-                    //start a datawriter and insert the test data
-                    await connection.DataWriterStart(table);
-                    await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
-
-                    table.Data.Clear();
-                    buffer = 0;
-                }
             }
+
+            var readerMemory = new ReaderMemory(table);
+            var cleanedReader = new ReaderConvertDataTypes(connection, readerMemory);
+
+            var time = Timer($"Reader with data converter applied", () =>
+            {
+                var i = 0;
+                while (cleanedReader.Read()) i++;
+                Assert.Equal(rows, i);
+            });
+
+            _output.WriteLine($"Reader with data converter, columns: {table.Columns.Count}, row average {1000*rows/time} r/s, column average: {(1000*rows*table.Columns.Count)/time}");
+
+            //start a datawriter and insert the test data
+            await connection.DataWriterStart(table);
+                    
+            readerMemory = new ReaderMemory(table);
+            cleanedReader = new ReaderConvertDataTypes(connection, readerMemory); 
+                    
+            time = Timer($"Run bulk insert for {rows} rows.", () =>
+            {
+                connection.ExecuteInsertBulk(table, cleanedReader, CancellationToken.None).Wait();    
+            });
+            _output.WriteLine($"Run bulk insert for {rows} rows. Columns: {table.Columns.Count}, row average {1000*rows/time} r/s, column average: {(1000*rows*table.Columns.Count)/time}");
+            
+            table.Data.Clear();
+
 
             //count rows using reader
             var count = 0;
@@ -96,7 +141,7 @@ namespace dexih.connections.test
                 {
                     for (var j = 2; j < table.Columns.Count; j++)
                     {
-                        Assert.Equal(connection.GetConnectionMaxValue(table.Columns[j].DataType, 20), reader[j]);
+                        Assert.Equal(connection.GetConnectionMaxValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value), reader[j]);
                     }
                     
                 }
@@ -104,9 +149,24 @@ namespace dexih.connections.test
                 {
                     for (var j = 2; j < table.Columns.Count; j++)
                     {
-                        Assert.Equal(connection.GetConnectionMinValue(table.Columns[j].DataType), reader[j]);
+                        if (reader[j] == null)
+                        {
+                            Assert.Equal(connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value), "");
+                        }
+                        else
+                        {
+                            Assert.Equal(connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value), reader[j]);    
+                        }
+                        
                     }
-                    
+                }
+
+                if (count == 2)
+                {
+                    for (var j = 2; j < table.Columns.Count; j++)
+                    {
+                        Assert.Null(reader[j]);
+                    }
                 }
 
                 count++;
@@ -118,7 +178,7 @@ namespace dexih.connections.test
             var updateQueries = new List<UpdateQuery>();
 
             //run a update on 10% of rows
-            for (long i = 0; i < (rows / 10); i++)
+            for (long i = 0; i < rows / 10; i++)
             {
                 var updateColumns = new List<QueryColumn>();
 
@@ -141,7 +201,11 @@ namespace dexih.connections.test
                 });
             }
 
-            await connection.ExecuteUpdate(table, updateQueries, CancellationToken.None);
+            Timer($"Run update in 10% of rows for {rows} rows.", () =>
+            {
+                connection.ExecuteUpdate(table, updateQueries, CancellationToken.None).Wait();    
+            });
+            
 
             //check the table loaded 1,000 rows updated successully
             var selectQuery = new SelectQuery()
@@ -174,7 +238,13 @@ namespace dexih.connections.test
                     Table = table.Name,
                 }
             };
-            await connection.ExecuteDelete(table, deleteQueries, CancellationToken.None);
+
+            Timer($"Delete 10% of rows for {rows} rows.",
+                () =>
+                {
+                    connection.ExecuteDelete(table, deleteQueries, CancellationToken.None).Wait(); 
+                    
+                });
 
             selectQuery = new SelectQuery()
             {
@@ -280,23 +350,23 @@ namespace dexih.connections.test
             transform = new TransformMapping(transform, mappings);
             transform = new TransformValidation(transform, null, false);
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, false);
+            await transform.Open(0, null, CancellationToken.None);
 
             var writer = new TransformWriter();
             var writerResult = new TransformWriterResult();
-            await connection.InitializeAudit(writerResult, 0, 0, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target",
-                TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
+            await connection.InitializeAudit(writerResult, 0, 0, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
             Assert.NotNull(writerResult);
 
-            var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null,
-                null, null, CancellationToken.None);
+            var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, null, null, CancellationToken.None);
 
             Assert.Equal(rows, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.
             var auditTable = await connection.GetTransformWriterResults(0, 1, null, "Datalink", writerResult.AuditKey, null, true,
                 false, false, null, 1, 2, false, CancellationToken.None);
+            
             Assert.Equal(writerResult.RowsCreated, auditTable[0].RowsCreated);
-            Assert.Equal(rows - 1, Convert.ToInt64(auditTable[0].MaxIncrementalValue));
+            Assert.Equal(rows + 1, Convert.ToInt64(auditTable[0].MaxIncrementalValue));
         }
     }
 }

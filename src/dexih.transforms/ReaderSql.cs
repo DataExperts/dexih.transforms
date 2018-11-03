@@ -79,7 +79,8 @@ namespace dexih.connections.sql
 
         public override string Details()
         {
-            return ReferenceConnection == null ? "SqlReader" : $"SqlReader - {ReferenceConnection.Name}({ReferenceConnection.DatabaseTypeName})";
+            
+            return ReferenceConnection == null ? "SqlReader" : $"SqlReader - {ReferenceConnection.Name}({ReferenceConnection.GetType().Name})";
         }
 
         public override List<Sort> SortFields => _sortFields;
@@ -87,6 +88,10 @@ namespace dexih.connections.sql
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
+            if (_sqlReader == null)
+            {
+                throw new ConnectionException("The read record failed as the connection has not been opened.");
+            }
             try
             {
                 if (await _sqlReader.ReadAsync(cancellationToken))

@@ -5,12 +5,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.sql
 {
     [Collection("SqlTest")]
     public class ConnectionSqliteTests
     {
+                
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionSqliteTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionSqlite GetConnection()
         {
             return new ConnectionSqlite()
@@ -40,7 +49,7 @@ namespace dexih.connections.sql
         [Fact]
         public async Task TestSqlite_PerformanceTests()
         {
-            await new PerformanceTests().Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 10000);
+            await new PerformanceTests(_output).Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 50000);
         }
         
         [Fact]

@@ -16,17 +16,6 @@ namespace dexih.transforms
     /// </summary>
     public class ConnectionConvertString : Connection
     {
-        public override string ServerHelp => throw new NotImplementedException();
-
-        public override string DefaultDatabaseHelp => throw new NotImplementedException();
-
-        public override string DatabaseTypeName => throw new NotImplementedException();
-
-        public override EConnectionCategory DatabaseConnectionCategory => throw new NotImplementedException();
-
-        public override bool AllowNtAuth => throw new NotImplementedException();
-
-        public override bool AllowUserPass => throw new NotImplementedException();
 
         public override bool CanBulkLoad => throw new NotImplementedException();
 
@@ -51,6 +40,9 @@ namespace dexih.transforms
         public override bool CanUseXml => false;
 
         public override bool CanUseSql => throw new NotImplementedException();
+
+        public override bool CanUseAutoIncrement => false;
+
 
         public override bool DynamicTableCreation => throw new NotImplementedException();
 

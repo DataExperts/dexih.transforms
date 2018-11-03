@@ -38,14 +38,9 @@ namespace dexih.connections.sql
     {
         protected override string SqlDelimiterOpen { get; } = $"\"";
         protected override string SqlDelimiterClose { get; } = "\"";
-        public override string ServerHelp => "Server";
-        public override string DefaultDatabaseHelp => "Database";
-        public override bool AllowNtAuth => true;
-        public override bool AllowUserPass => true;
-        public override string DatabaseTypeName => "Oracle";
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
-        public override bool CanUseBinary => false;
-
+        public override bool CanUseBinary => true;
+        public override bool CanUseBoolean => false;
+        public override bool CanUseTimeSpan => false;
         
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
@@ -65,7 +60,7 @@ namespace dexih.connections.sql
             }
         }
         
-        public override object GetConnectionMinValue(ETypeCode typeCode)
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
@@ -74,35 +69,35 @@ namespace dexih.connections.sql
                 case ETypeCode.Single:
                     return -1E20F;
                 default:
-                    return Dexih.Utils.DataType.DataType.GetDataTypeMinValue(typeCode);
+                    return GetDataTypeMinValue(typeCode, length);
             }
         }
         
-        public override object ConvertParameterType(ETypeCode typeCode, int rank, object value)
-        {
-            if (value == null || value == DBNull.Value)
-            {
-                return DBNull.Value;
-            }
-
-            if (rank > 0 && !CanUseArray)
-            {
-                return Operations.Parse(ETypeCode.String, value);
-            }
-
-            // GUID's get parameterized as binary.  So need to explicitly convert to string.
-            if (typeCode == ETypeCode.Guid || typeCode == ETypeCode.UInt64)
-            {
-                return value.ToString();
-            }
-
-            if (typeCode == ETypeCode.Boolean)
-            {
-                return (bool) value ? 1 : 0;
-            }
-            
-            return value;
-        }
+//        public override object ConvertParameterType(ETypeCode typeCode, int rank, object value)
+//        {
+//            if (value == null || value == DBNull.Value)
+//            {
+//                return DBNull.Value;
+//            }
+//
+//            if (rank > 0 && !CanUseArray)
+//            {
+//                return Operations.Parse(ETypeCode.String, value);
+//            }
+//
+//            // GUID's get parameterized as binary.  So need to explicitly convert to string.
+//            if (typeCode == ETypeCode.Guid || typeCode == ETypeCode.UInt64)
+//            {
+//                return value.ToString();
+//            }
+//
+//            if (typeCode == ETypeCode.Boolean)
+//            {
+//                return (bool) value ? 1 : 0;
+//            }
+//            
+//            return value;
+//        }
         
         public override async Task<DbConnection> NewConnection()
         {
@@ -169,6 +164,11 @@ namespace dexih.connections.sql
         {
             string sqlType;
 
+            if (column.Rank > 0)
+            {
+                return "VARCHAR(2000)";
+            }
+
             switch (column.DataType)
             {
                 case ETypeCode.Byte:
@@ -219,7 +219,7 @@ namespace dexih.connections.sql
                     sqlType = "TIMESTAMP";
                     break;
                 case ETypeCode.Time:
-                    sqlType = "TIMESTAMP";
+                    sqlType = "CHAR(20)";
                     break;
                 case ETypeCode.Guid:
                     sqlType = "CHAR(36)";
@@ -239,6 +239,7 @@ namespace dexih.connections.sql
 
             return sqlType;
         }
+        
 
         private string EscapeString(string value)
         {
@@ -261,62 +262,66 @@ namespace dexih.connections.sql
         /// Gets the start quote to go around the values in sql insert statement based in the column type.
         /// </summary>
         /// <returns></returns>
-        protected override string GetSqlFieldValueQuote(ETypeCode type, object value)
-        {
-            string returnValue;
-
-            if (value == null || value is DBNull)
-                return "null";
-
-            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
-            //    return "null";
-
-            switch (type)
-            {
-                case ETypeCode.Byte:
-                case ETypeCode.Single:
-                case ETypeCode.Int16:
-                case ETypeCode.Int32:
-                case ETypeCode.Int64:
-                case ETypeCode.SByte:
-                case ETypeCode.UInt16:
-                case ETypeCode.UInt32:
-                case ETypeCode.UInt64:
-                case ETypeCode.Double:
-                case ETypeCode.Decimal:
-                    returnValue = EscapeString(value.ToString());
-                    break;
-                case ETypeCode.String:
-				case ETypeCode.Text:
-                case ETypeCode.Json:
-                case ETypeCode.Xml:
-                case ETypeCode.Guid:
-                case ETypeCode.Unknown:
-                    returnValue = "'" + EscapeString(value.ToString()) + "'";
-                    break;
-                case ETypeCode.DateTime:
-                    if (value is DateTime)
-                        returnValue = "TO_DATE('" + EscapeString(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss")) + "', 'YYYY-MM-DD HH24:MI:SS.')";
-                    else
-						returnValue = "STR_TO_DATE('"+ EscapeString((string)value) + "', 'YYYY-MM-DD HH24:MI:SS.')";
-                    break;
-                case ETypeCode.Time:
-                    if (value is TimeSpan span)
-						returnValue = "TO_TIMESTAMP('" + EscapeString(span.ToString("c")) + "', 'HH24:MI:SS.')";
-					else
-                        returnValue = "TO_TIMESTAMP('" + EscapeString((string)value) + "', 'HH24:MI:SS.')";
-					break;
-                case ETypeCode.Boolean:
-                    var v = (bool) Operations.Parse(ETypeCode.Boolean, value);
-                    return v ? "1" : "0";
-                case ETypeCode.Binary:
-                    return "'" + Operations.Parse(ETypeCode.String, value) + "'";
-                default:
-                    throw new Exception("The datatype " + type + " is not compatible with the sql insert statement.");
-            }
-
-            return returnValue;
-        }
+//        protected override string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
+//        {
+//            string returnValue;
+//
+//            if (value == null || value is DBNull)
+//                return "null";
+//
+//            if (rank > 0)
+//            {
+//                return "'" + EscapeString(value.ToString()) + "'";
+//            }
+//            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
+//            //    return "null";
+//
+//            switch (typeCode)
+//            {
+//                case ETypeCode.Byte:
+//                case ETypeCode.Single:
+//                case ETypeCode.Int16:
+//                case ETypeCode.Int32:
+//                case ETypeCode.Int64:
+//                case ETypeCode.SByte:
+//                case ETypeCode.UInt16:
+//                case ETypeCode.UInt32:
+//                case ETypeCode.UInt64:
+//                case ETypeCode.Double:
+//                case ETypeCode.Decimal:
+//                    returnValue = EscapeString(value.ToString());
+//                    break;
+//                case ETypeCode.String:
+//				case ETypeCode.Text:
+//                case ETypeCode.Json:
+//                case ETypeCode.Xml:
+//                case ETypeCode.Guid:
+//                case ETypeCode.Unknown:
+//                    returnValue = "'" + EscapeString(value.ToString()) + "'";
+//                    break;
+//                case ETypeCode.DateTime:
+//                    if (value is DateTime)
+//                        returnValue = "TO_DATE('" + EscapeString(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss")) + "', 'YYYY-MM-DD HH24:MI:SS.')";
+//                    else
+//						returnValue = "STR_TO_DATE('"+ EscapeString((string)value) + "', 'YYYY-MM-DD HH24:MI:SS.')";
+//                    break;
+//                case ETypeCode.Time:
+//                    if (value is TimeSpan span)
+//						returnValue = "TO_TIMESTAMP('" + EscapeString(span.ToString("c")) + "', 'HH24:MI:SS.')";
+//					else
+//                        returnValue = "TO_TIMESTAMP('" + EscapeString((string)value) + "', 'HH24:MI:SS.')";
+//					break;
+//                case ETypeCode.Boolean:
+//                    var v = (bool) Operations.Parse(ETypeCode.Boolean, value);
+//                    return v ? "1" : "0";
+//                case ETypeCode.Binary:
+//                    return "'" + Operations.Parse(ETypeCode.String, value) + "'";
+//                default:
+//                    throw new Exception($"The datatype {typeCode} is not compatible with the sql insert statement.");
+//            }
+//
+//            return returnValue;
+//        }
 
         public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
         {
@@ -684,52 +689,56 @@ ORDER BY cols.table_name, cols.position"))
             }
         }
 
-        private (OracleDbType type, object value) GetSqlDbType(ETypeCode typeCode, Object value)
+        private OracleDbType GetSqlDbType(ETypeCode typeCode, int rank)
         {
+            if (rank > 0)
+            {
+                return OracleDbType.Varchar2;
+            }
+            
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return (OracleDbType.Byte, value);
+                    return OracleDbType.Byte;
                 case ETypeCode.SByte:
-                    return (OracleDbType.Int16, value);
+                    return OracleDbType.Int16;
                 case ETypeCode.UInt16:
-                    return (OracleDbType.Int32, Operations.Parse(ETypeCode.Int32, value));
+                    return OracleDbType.Int32;
                 case ETypeCode.UInt32:
-                    return (OracleDbType.Int64, Operations.Parse(ETypeCode.Int64, value));
+                    return OracleDbType.Int64;
                 case ETypeCode.UInt64:
-                    return (OracleDbType.Int64, Operations.Parse(ETypeCode.Int64, value));
+                    return OracleDbType.Int64;
                 case ETypeCode.Int16:
-                    return (OracleDbType.Int16, value);
+                    return OracleDbType.Int16;
                 case ETypeCode.Int32:
-                    return (OracleDbType.Int32, value);
+                    return OracleDbType.Int32;
                 case ETypeCode.Int64:
-                    return (OracleDbType.Int64, value);
+                    return OracleDbType.Int64;
                 case ETypeCode.Decimal:
-                    return (OracleDbType.Decimal, value);
+                    return OracleDbType.Decimal;
                 case ETypeCode.Double:
-                    return (OracleDbType.Double, value);
+                    return OracleDbType.Double;
                 case ETypeCode.Single:
-                    return (OracleDbType.Double, value);
+                    return OracleDbType.Double;
                 case ETypeCode.String:
-                    return (OracleDbType.Varchar2, value);
+                    return OracleDbType.Varchar2;
 				case ETypeCode.Text:
                 case ETypeCode.Json:
                 case ETypeCode.Xml:
                 case ETypeCode.Unknown:
-					return (OracleDbType.Clob, value);
+				    return OracleDbType.Clob;
                 case ETypeCode.Boolean:
-                    var v = (bool) Operations.Parse(ETypeCode.Boolean, value);
-                    return (OracleDbType.Byte, v ? 1 : 0);
+                    return OracleDbType.Byte;
                 case ETypeCode.DateTime:
-                    return (OracleDbType.TimeStamp, value);
+                    return OracleDbType.TimeStamp;
                 case ETypeCode.Time:
-                    return (OracleDbType.TimeStamp, value);
+                    return OracleDbType.Varchar2;
                 case ETypeCode.Guid:
-                    return (OracleDbType.Varchar2, value.ToString());
+                    return OracleDbType.Varchar2;
                 case ETypeCode.Binary:
-                    return (OracleDbType.Blob, value);
+                    return OracleDbType.Blob;
                 default:
-                    return (OracleDbType.Varchar2, value);
+                    return OracleDbType.Varchar2;
             }
         }
         
@@ -739,20 +748,30 @@ ORDER BY cols.table_name, cols.position"))
             {
                 using (var connection = (OracleConnection) await NewConnection())
                 {
-                    var fieldCount = reader.FieldCount;
+                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement)
+                        .ToArray();
+                    var ordinals = new int[columns.Length];
+                    var types = new OracleDbType[columns.Length];
+
                     var insert = new StringBuilder();
                     var values = new StringBuilder();
 
                     insert.Append("INSERT INTO " + SqlTableName(table) + " (");
                     values.Append("VALUES (");
 
-                    for (var i = 0; i < fieldCount; i++)
+                    for (var i = 0; i < columns.Length; i++)
                     {
-                        insert.Append(AddDelimiter(reader.GetName(i)) + ",");
-                        values.Append(":col" + i + ",");
+                        ordinals[i] = reader.GetOrdinal(columns[i].Name);
+                        types[i] = GetSqlDbType(columns[i].DataType, columns[i].Rank);
+                        if (ordinals[i] >= 0)
+                        {
+                            insert.Append(AddDelimiter(columns[i].Name) + ",");
+                            values.Append(":col" + i + ",");
+                        }
                     }
 
-                    var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " + values.Remove(values.Length - 1, 1) + ") ";
+                    var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                        values.Remove(values.Length - 1, 1) + ") ";
 
                     using (var transaction = connection.BeginTransaction())
                     {
@@ -761,8 +780,8 @@ ORDER BY cols.table_name, cols.position"))
                             cmd.CommandText = insertCommand;
                             //cmd.Transaction = transaction;
 
-                            var parameters = new OracleParameter[fieldCount];
-                            for (var i = 0; i < fieldCount; i++)
+                            var parameters = new OracleParameter[columns.Length];
+                            for (var i = 0; i < columns.Length; i++)
                             {
                                 var param = cmd.CreateParameter();
                                 param.ParameterName = "col" + i;
@@ -772,15 +791,29 @@ ORDER BY cols.table_name, cols.position"))
 
                             while (await reader.ReadAsync(cancellationToken))
                             {
-                                for (var i = 0; i < fieldCount; i++)
+                                for (var i = 0; i < columns.Length; i++)
                                 {
-                                    var convert = GetSqlDbType(table.Columns[i].DataType, reader[i]);
-                                    parameters[i].OracleDbType = convert.type;
-                                    parameters[i].Value = convert.value;
-                                    Console.WriteLine($"{reader.GetName(i)} {table.Columns[i].Name} {parameters[i].ParameterName} - {parameters[i].OracleDbType} {parameters[i].DbType} {parameters[i].Value}");
+                                    if (ordinals[i] >= 0)
+                                    {
+                                        parameters[i].OracleDbType = types[i];
+                                        parameters[i].Value = reader[ordinals[i]];
+                                    }
                                 }
-                                
-                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                                try
+                                {
+                                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+                                }
+                                catch (Exception ex)
+                                {
+#if DEBUG
+                                    var v = new object[reader.FieldCount];
+                                    reader.GetValues(v);
+                                    throw new ConnectionException($"Bulk insert failed: {ex.Message}", v);
+#else
+                                    throw new ConnectionException("Bulk insert failed, error on row");
+#endif
+                                }
 
                                 if (cancellationToken.IsCancellationRequested)
                                 {
@@ -789,9 +822,14 @@ ORDER BY cols.table_name, cols.position"))
                                 }
                             }
                         }
+
                         transaction.Commit();
                     }
                 }
+            }
+            catch (ConnectionException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -846,10 +884,9 @@ ORDER BY cols.table_name, cols.position"))
                                     for (var i = 0; i < query.InsertColumns.Count; i++)
                                     {
                                         var param = cmd.CreateParameter();
-                                        var convert = GetSqlDbType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Value);
                                         param.ParameterName = $"col{i}";
-                                        param.OracleDbType = convert.type;
-                                        param.Value = convert.value;
+                                        param.OracleDbType = GetSqlDbType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank);
+                                        param.Value =ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
                                         cmd.Parameters.Add(param);
                                     }
 
@@ -913,11 +950,12 @@ ORDER BY cols.table_name, cols.position"))
                                 count++;
                             }
                             sql.Remove(sql.Length - 1, 1); //remove last comma
-                            sql.Append(" " + BuildFiltersString(query.Filters));
 
                             //  Retrieving schema for columns from a single table
                             using (var cmd = connection.CreateCommand())
                             {
+                                sql.Append(" " + BuildFiltersString(query.Filters, cmd));
+
                                 cmd.Transaction = transaction;
                                 cmd.CommandText = sql.ToString();
 
@@ -926,10 +964,8 @@ ORDER BY cols.table_name, cols.position"))
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "col" + i;
-                                    // param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
-                                    var converted = GetSqlDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Value);
-                                    param.Value = converted.value?? DBNull.Value;
-                                    param.OracleDbType = converted.type;
+                                    param.OracleDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank);
+                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
                                     
                                     cmd.Parameters.Add(param);
                                     parameters[i] = param;

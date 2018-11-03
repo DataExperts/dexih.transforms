@@ -7,12 +7,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.sql.sqlserver
 {
     [Collection("SqlTest")]
     public class ConnectionSqlTests
-    {
+    {        
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionSqlTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionSql GetConnection()
         {
             return new ConnectionSqlServer()
@@ -38,7 +46,7 @@ namespace dexih.connections.sql.sqlserver
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            await new PerformanceTests().Performance(GetConnection(), database, 100000);
+            await new PerformanceTests(_output).Performance(GetConnection(), database, 100000);
         }
 
         [Fact]
@@ -46,7 +54,7 @@ namespace dexih.connections.sql.sqlserver
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            await new PerformanceTests().PerformanceTransformWriter(GetConnection(), database, 100000);
+            await new PerformanceTests(_output).PerformanceTransformWriter(GetConnection(), database, 100000);
         }
 
         [Fact]

@@ -22,7 +22,7 @@ namespace dexih.transforms
     )]
     public sealed class TransformDelta : Transform
     {
-        public TransformDelta(Transform inReader, Transform referenceTransform, EUpdateStrategy deltaType, long surrogateKey, bool addDefaultRow)
+        public TransformDelta(Transform inReader, Transform referenceTransform, EUpdateStrategy deltaType, object surrogateKey, bool addDefaultRow)
         {
             DeltaType = deltaType;
             SurrogateKey = surrogateKey;
@@ -107,7 +107,7 @@ namespace dexih.transforms
         private TableColumn[] _colNatrualKey;
 
         private EUpdateStrategy DeltaType { get; set; }
-        public long SurrogateKey { get; set; }
+        public object SurrogateKey { get; set; }
         public bool AddDefaultRow { get; set; }
         
 
@@ -148,7 +148,7 @@ namespace dexih.transforms
             //add the operation type, which indicates whether record are C-create/U-update or D-Deletes
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
             {
-                CacheTable.Columns.Insert(0, new TableColumn("Operation", ETypeCode.Byte)
+                CacheTable.Columns.Insert(0, new TableColumn("Operation", ETypeCode.Char)
                 {
                     DeltaType = TableColumn.EDeltaType.DatabaseOperation
                 });
@@ -220,7 +220,12 @@ namespace dexih.transforms
             _rejectedReasonOrdinal = PrimaryTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
             if(CacheTable.GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
             {
-                CacheTable.AddColumn("RejectedReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason);
+                var rejectColumn =
+                    new TableColumn("RejectedReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason)
+                    {
+                        AllowDbNull = true
+                    };
+                CacheTable.Columns.Add(rejectColumn);
             }
 
             _validFromOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
@@ -688,10 +693,10 @@ namespace dexih.transforms
                 {
                     try
                     {
-                        var returnValue = Convert.ToInt64(ReferenceTransform[_referenceSurrogateKeyOrdinal]);
+                        var returnValue = ReferenceTransform[_referenceSurrogateKeyOrdinal];
 
                         //surogate key = 0, ignore as this is the defaulted value.
-                        if (returnValue == 0)
+                        if (Equals(returnValue, 0))
                         {
                             continue;
                         }
@@ -881,7 +886,7 @@ namespace dexih.transforms
                         newRow[referenceOrdinal] = 1;
                         break;
                     case TableColumn.EDeltaType.SurrogateKey:
-                        SurrogateKey++; //increment now that key has been used.
+                        SurrogateKey = Operations.Increment(SurrogateKey); //increment now that key has been used.
                         newRow[referenceOrdinal] = SurrogateKey;
                         break;
                     case TableColumn.EDeltaType.SourceSurrogateKey:
@@ -964,7 +969,7 @@ namespace dexih.transforms
                             newRow[referenceOrdinal] = true;
                             break;
                         case TableColumn.EDeltaType.SurrogateKey:
-                            SurrogateKey++; //increment now that key has been used.
+                            SurrogateKey = Operations.Increment(SurrogateKey); //increment now that key has been used.
                             newRow[referenceOrdinal] = 0;
                             break;
                         case TableColumn.EDeltaType.SourceSurrogateKey:

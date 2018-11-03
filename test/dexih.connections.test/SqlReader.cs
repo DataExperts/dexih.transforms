@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.connections.sql;
 using dexih.functions;
 using dexih.transforms;
 using Xunit;
@@ -35,7 +36,9 @@ namespace dexih.connections.test
                 new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Decimal), 1.1 ),
                 new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1m ),
                 new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), true ),
-                new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), guid )
+                new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), guid ),
+                new QueryColumn(new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1), new [] {1,1} ),
+                new QueryColumn(new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2), new [,] {{1,1}, {2,2}} )
             });
 
             var insertReturn = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
@@ -44,11 +47,12 @@ namespace dexih.connections.test
             Table sqlTable;
             if (connection.CanUseSql)
             {
+                var sqlConnection = (ConnectionSql) connection;
                 // create a simple table with a sql query.
                 sqlTable = new Table("SqlTest")
                 {
                     UseQuery = true,
-                    QueryString = $"select * from {table.Name}"
+                    QueryString = $"select * from {sqlConnection.SqlTableName(table)}"
                 };
             }
             else
@@ -59,19 +63,36 @@ namespace dexih.connections.test
             // check the columns can be imported.
             var importTable = await connection.GetSourceTableInfo(sqlTable, CancellationToken.None);
 
-            Assert.Equal(7, importTable.Columns.Count);
+            Assert.Equal(10, importTable.Columns.Count);
             
             Assert.Equal("IntColumn", importTable.Columns["IntColumn"].Name);
             Assert.True(ETypeCode.Int32 == importTable.Columns["IntColumn"].DataType || ETypeCode.Int64 == importTable.Columns["IntColumn"].DataType);
             Assert.Equal("StringColumn", importTable.Columns["StringColumn"].Name);
             Assert.Equal(ETypeCode.String, importTable.Columns["StringColumn"].DataType);
             // commented date check as sqlite treats dates as string.  Value check below does the test adequately.
-//            Assert.Equal("DateColumn", importTable.Columns["DateColumn"].Name);
-//            Assert.Equal(ETypeCode.DateTime, importTable.Columns["DateColumn"].Datatype);
-//            Assert.Equal("DecimalColumn", importTable.Columns["DecimalColumn"].Name);
-//            Assert.Equal(ETypeCode.Decimal, importTable.Columns["DecimalColumn"].Datatype);
+            Assert.Equal("DateColumn", importTable.Columns["DateColumn"].Name);
+            Assert.True(ETypeCode.String == importTable.Columns["DateColumn"].DataType || ETypeCode.DateTime == importTable.Columns["DateColumn"].DataType);
+            Assert.Equal("DecimalColumn", importTable.Columns["DecimalColumn"].Name);
+            Assert.True(ETypeCode.Decimal == importTable.Columns["DecimalColumn"].DataType || ETypeCode.Double == importTable.Columns["DecimalColumn"].DataType);
             Assert.Equal("GuidColumn", importTable.Columns["GuidColumn"].Name);
             Assert.True(ETypeCode.String == importTable.Columns["GuidColumn"].DataType || ETypeCode.Guid == importTable.Columns["GuidColumn"].DataType);
+
+            if (connection.CanUseArray)
+            {
+                Assert.Equal("ArrayColumn", importTable.Columns["ArrayColumn"].Name);
+                Assert.Equal(ETypeCode.Int32, importTable.Columns["ArrayColumn"].DataType);
+                Assert.Equal(1, importTable.Columns["ArrayColumn"].Rank);
+                Assert.Equal("MatrixColumn", importTable.Columns["MatrixColumn"].Name);
+                Assert.Equal(2, importTable.Columns["MatrixColumn"].Rank);
+            }
+            else
+            {
+                Assert.Equal("ArrayColumn", importTable.Columns["ArrayColumn"].Name);
+                Assert.Equal(ETypeCode.String, importTable.Columns["ArrayColumn"].DataType);
+                Assert.Equal("MatrixColumn", importTable.Columns["MatrixColumn"].Name);
+                Assert.Equal(ETypeCode.String, importTable.Columns["MatrixColumn"].DataType);
+                
+            }
 
             // check rows can be read.
             var reader = connection.GetTransformReader(importTable);

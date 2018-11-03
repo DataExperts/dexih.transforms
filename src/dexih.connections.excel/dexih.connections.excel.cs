@@ -7,6 +7,7 @@ using dexih.functions;
 using System.IO;
 using System.Data.Common;
 using System.Threading;
+using dexih.functions.Mappings;
 using OfficeOpenXml;
 using OfficeOpenXml.FormulaParsing.Utilities;
 using static Dexih.Utils.DataType.DataType;
@@ -42,10 +43,6 @@ namespace dexih.connections.excel
 	    public readonly int ExcelDataRow = 2;
 	    public readonly int ExcelDataRowMax = 1048576;
 	    
-        public override string ServerHelp => "The full path containing the excel file";
-        public override string DefaultDatabaseHelp => "Excel File";
-        public override bool AllowNtAuth => false;
-        public override bool AllowUserPass => false;
         public override bool CanBulkLoad => true;
         public override bool CanSort => false;
         public override bool CanFilter => false;
@@ -58,11 +55,8 @@ namespace dexih.connections.excel
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
 	    public override bool CanUseSql => false;
+	    public override bool CanUseAutoIncrement => false;
         public override bool DynamicTableCreation => false;
-
-
-        public override string DatabaseTypeName => "Excel Database";
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.DatabaseFile;
 
 	    public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
 	    {
@@ -82,7 +76,7 @@ namespace dexih.connections.excel
 		    }
 	    }
 	    
-	    public override object GetConnectionMinValue(ETypeCode typeCode)
+	    public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
 	    {
 		    // Note: Excel only support max 15 digits.
 		    switch (typeCode)
@@ -94,20 +88,9 @@ namespace dexih.connections.excel
 			    case ETypeCode.Decimal:
 				    return (decimal)-999999999999999; 
 			    default:
-				    return Dexih.Utils.DataType.DataType.GetDataTypeMinValue(typeCode);
+				    return GetDataTypeMinValue(typeCode, length);
 		    }
 		    
-	    }
-	    
-	    public object ConvertParameterType(object value)
-	    {
-		    if (value == null)
-			    return DBNull.Value;
-
-		    if (value.GetType().IsArray)
-			    return JsonConvert.SerializeObject(value);
-            
-		    return value;
 	    }
 	    
         public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
@@ -372,7 +355,7 @@ namespace dexih.connections.excel
                                             {
                                                 throw new ConnectionException($"The column {updateColumn.Column.Name} could not be found on the worksheet {table.Name} was not found.");
                                             }
-                                            worksheet.SetValue(row, columnMappings[updateColumn.Column.Name], ConvertParameterType(updateColumn.Value));
+                                            worksheet.SetValue(row, columnMappings[updateColumn.Column.Name], ConvertForWrite(updateColumn.Column, updateColumn.Value));
                                         }
                                     }
                                 }
@@ -510,7 +493,16 @@ namespace dexih.connections.excel
 	                }
 	                else
 	                {
-		                parsedValue = Operations.Parse(column.DataType, value);
+		                // excel returns empty strings rather than nulls, so convert
+		                if (value is string valueString && string.IsNullOrWhiteSpace(valueString))
+		                {
+			                parsedValue = null;
+		                }
+		                else
+		                {
+			                parsedValue = Operations.Parse(column.DataType, value);    
+		                }
+		                
 	                }
                 }
                 catch (Exception ex)
@@ -533,25 +525,25 @@ namespace dexih.connections.excel
 				        
 		    foreach (var filter in filters)
 		    {
-			    var column1Value = filter.Column1 == null
+			    var value1 = filter.Column1 == null
 				    ? filter.Value1
 				    : worksheet.GetValue(row, headerOrdinals[filter.Column1.Name]);
-			    var column2Value = filter.Column2 == null
+			    var value2 = filter.Column2 == null
 				    ? filter.Value2
 				    : worksheet.GetValue(row, headerOrdinals[filter.Column2.Name]);
 
 			    if (isFirst)
 			    {
-				    filterResult = filter.Evaluate(column1Value, column2Value);
+				    filterResult = filter.Evaluate(value1, value2);
 				    isFirst = false;
 			    }
 			    else if (filter.AndOr == Filter.EAndOr.And)
 			    {
-				    filterResult = filterResult && filter.Evaluate(column1Value, column2Value);
+				    filterResult = filterResult && filter.Evaluate(value1, value2);
 			    }
 			    else
 			    {
-				    filterResult = filterResult || filter.Evaluate(column1Value, column2Value);
+				    filterResult = filterResult || filter.Evaluate(value1, value2);
 			    }
 		    }
 
@@ -606,7 +598,7 @@ namespace dexih.connections.excel
                             {
                                 throw new ConnectionException($"The column with the name ${column.Column.Name} could not be found.");
                             }
-                            worksheet.SetValue(row, columnMappings[column.Column.Name], ConvertParameterType(column.Value));
+                            worksheet.SetValue(row, columnMappings[column.Column.Name], ConvertForWrite(column.Column, column.Value));
                         }
                         rowsInserted++;
                         row++;
@@ -718,19 +710,40 @@ namespace dexih.connections.excel
                 using (var package = NewConnection())
                 {
                     long rowsInserted = 0;
+
                     var worksheet = GetWorkSheet(package, table.Name);
 
                     // get the position of each of the column names.
                     var columnMappings = GetHeaderOrdinals(worksheet);
+
+	                var autoIncrementColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+	                var autoIncrementOrdinal = -1;
+	                if (autoIncrementColumn != null && columnMappings.ContainsKey(autoIncrementColumn.Name))
+	                {
+		                autoIncrementOrdinal = columnMappings[autoIncrementColumn.Name];
+	                }
+
                     var row = worksheet.Dimension.Rows + 1;
 
                     while (await reader.ReadAsync(cancellationToken))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+	                    if (cancellationToken.IsCancellationRequested)
+	                    {
+		                    throw new ConnectionException("Insert bulk operation cancelled.");
+	                    }
 
+	                    if (autoIncrementOrdinal >= 0)
+	                    {
+		                    worksheet.SetValue(row, autoIncrementOrdinal, row);
+	                    }
+	                    
                         foreach (var mapping in columnMappings)
                         {
-                            worksheet.SetValue(row, mapping.Value, ConvertParameterType(reader[mapping.Key]));
+	                        var ordinal = reader.GetOrdinal(mapping.Key);
+	                        if (ordinal >= 0 && mapping.Value != autoIncrementOrdinal)
+	                        {
+		                        worksheet.SetValue(row, mapping.Value, reader[ordinal]);
+	                        }
                         }
 
                         row++;

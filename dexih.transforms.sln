@@ -73,6 +73,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{DA48DBC9-118
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dexih.Utils.DataType", "..\dexih.utils.datatype\src\Dexih.Utils.DataType\Dexih.Utils.DataType.csproj", "{F3BA5E73-7ED3-478D-BBAD-D38FA177B03F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.db2", "src\dexih.connections.db2\dexih.connections.db2.csproj", "{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connectinos.db2.tests", "test\dexih.connectinos.db2.tests\dexih.connectinos.db2.tests.csproj", "{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -443,6 +447,30 @@ Global
 		{F3BA5E73-7ED3-478D-BBAD-D38FA177B03F}.Release|x64.Build.0 = Release|Any CPU
 		{F3BA5E73-7ED3-478D-BBAD-D38FA177B03F}.Release|x86.ActiveCfg = Release|Any CPU
 		{F3BA5E73-7ED3-478D-BBAD-D38FA177B03F}.Release|x86.Build.0 = Release|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Debug|x64.Build.0 = Debug|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Debug|x86.Build.0 = Debug|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Release|x64.ActiveCfg = Release|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Release|x64.Build.0 = Release|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Release|x86.ActiveCfg = Release|Any CPU
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C}.Release|x86.Build.0 = Release|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Debug|x64.Build.0 = Debug|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Debug|x86.Build.0 = Debug|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Release|x64.ActiveCfg = Release|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Release|x64.Build.0 = Release|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Release|x86.ActiveCfg = Release|Any CPU
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -478,6 +506,8 @@ Global
 		{72159588-5D70-4861-916C-AEBF1B52A307} = {4712A230-9747-4447-B4C5-022006511342}
 		{158DACDD-255A-4182-8F63-EBB8D9B1AF01} = {4712A230-9747-4447-B4C5-022006511342}
 		{F3BA5E73-7ED3-478D-BBAD-D38FA177B03F} = {DA48DBC9-1181-4043-B5F7-89609F317814}
+		{7FCE485F-CF5E-44F2-ACCE-467ACCE5BF3C} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
+		{EF063DEE-AF6E-43FA-9F4B-1F5848AE3D79} = {4712A230-9747-4447-B4C5-022006511342}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5BB1D6C4-C2EC-45ED-AB2E-F43CD8D84EA3}

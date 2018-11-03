@@ -190,13 +190,13 @@ namespace dexih.transforms.tests
             var targetTable = source.CacheTable.Copy();
             targetTable.AddAuditColumns();
 
-            long surrrogateKey = 0;
+            object surrrogateKey = 0;
 
             Transform target = new ReaderMemory(targetTable);
             target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
             //run an update load with nothing in the target.  
-            var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve, surrrogateKey, false);
+            var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve,  surrrogateKey, false);
             transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
             await transformDelta.Open(0, null, CancellationToken.None);
 
@@ -238,7 +238,7 @@ namespace dexih.transforms.tests
             target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
             //run an append.  (only difference from reload is no truncate record at start.
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
+            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,  surrrogateKey, false);
             await transformDelta.Open(0, null, CancellationToken.None);
 
             count = 0;
@@ -270,7 +270,7 @@ namespace dexih.transforms.tests
                 if ((char) transformDelta["Operation"] == 'C')
                 {
                     rowsCreated += 1;    
-                    Assert.Equal(surrrogateKey + rowsCreated, (long) transformDelta["SurrogateKey"]);
+                    Assert.Equal((long)surrrogateKey + rowsCreated, (long) transformDelta["SurrogateKey"]);
                     Assert.Equal(2, (int) transformDelta["Version"]);
                     Assert.True(DateIsNearCurrent((DateTime) transformDelta["UpdateDate"]));
                     Assert.True(DateIsNearCurrent((DateTime) transformDelta["CreateDate"]));

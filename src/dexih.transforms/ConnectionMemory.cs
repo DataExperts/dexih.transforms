@@ -15,22 +15,8 @@ namespace dexih.transforms
     {
         private readonly Dictionary<string, Table> _tables = new Dictionary<string, Table>();
 
-        public override bool AllowNtAuth => false;
-
-        public override bool AllowUserPass => false;
-
         public override bool CanBulkLoad => false;
-
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.NoSqlDatabase;
-
-        public override string DatabaseTypeName => "In Memory";
-
-        public override string DefaultDatabaseHelp => "";
-
-        public override string ServerHelp => "";
-
         public override bool CanSort => false;
-
         public override bool CanFilter => false;
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
@@ -41,6 +27,7 @@ namespace dexih.transforms
         public override bool CanUseXml => true;
         public override bool CanUseCharArray => true;
         public override bool CanUseSql => false;
+        public override bool CanUseAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
         public override Task<Table> InitializeTable(Table table, int position) => Task.FromResult<Table>(null);

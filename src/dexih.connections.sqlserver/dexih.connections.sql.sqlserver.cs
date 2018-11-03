@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Data;
 using dexih.functions;
 using System.Data.Common;
+using System.Linq;
 using System.Threading;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
@@ -35,14 +36,8 @@ namespace dexih.connections.sql
     )]
     public class ConnectionSqlServer : ConnectionSql
     {
-
-        public override string ServerHelp => "Server Name";
-        public override string DefaultDatabaseHelp => "Database";
-        public override bool AllowNtAuth => true;
-        public override bool AllowUserPass => true;
-        public override string DatabaseTypeName => "SQL Server";
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.SqlDatabase;
-
+        public override bool CanUseGuid { get; } = true;
+        
         protected override string SqlFromAttribute(Table table)
         {
             var sql = "";
@@ -62,18 +57,18 @@ namespace dexih.connections.sql
                 case ETypeCode.DateTime:
                     return new DateTime(9999,12,31);
                 default:
-                    return Dexih.Utils.DataType.DataType.GetDataTypeMaxValue(typeCode, length);
+                    return GetDataTypeMaxValue(typeCode, length);
             }
         }
 	    
-        public override object GetConnectionMinValue(ETypeCode typeCode)
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
                     return new DateTime(1753,1,1);
                 default:
-                    return Dexih.Utils.DataType.DataType.GetDataTypeMinValue(typeCode);
+                    return GetDataTypeMinValue(typeCode, length);
             }
 		    
         }
@@ -94,7 +89,7 @@ namespace dexih.connections.sql
                     };
 
                     //Add column mapping to ensure unsupported columns (i.e. location datatype) are ignored.
-                    foreach(var column in table.Columns)
+                    foreach(var column in table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement))
                     {
                         bulkCopy.ColumnMappings.Add(column.Name, column.Name);
                     }
@@ -274,6 +269,11 @@ namespace dexih.connections.sql
         {
             string sqlType;
 
+            if (column.Rank > 0)
+            {
+                return "varchar(max)";
+            }
+
             switch (column.DataType)
             {
                 case ETypeCode.Int32:
@@ -356,58 +356,60 @@ namespace dexih.connections.sql
         /// Gets the start quote to go around the values in sql insert statement based in the column type.
         /// </summary>
         /// <returns></returns>
-        protected override string GetSqlFieldValueQuote(ETypeCode type, object value)
-        {
-            string returnValue;
-
-            if (value == null || value is DBNull)
-                return "null";
-
-            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
-            //    return "null";
-
-            switch (type)
-            {
-                case ETypeCode.Byte:
-                case ETypeCode.Single:
-                case ETypeCode.Int16:
-                case ETypeCode.Int32:
-                case ETypeCode.Int64:
-                case ETypeCode.SByte:
-                case ETypeCode.UInt16:
-                case ETypeCode.UInt32:
-                case ETypeCode.UInt64:
-                case ETypeCode.Double:
-                case ETypeCode.Decimal:
-                    returnValue = AddEscape(value.ToString());
-                    break;
-                case ETypeCode.String:
-                case ETypeCode.Guid:
-                case ETypeCode.Boolean:
-                case ETypeCode.Text:
-                case ETypeCode.Json:
-                case ETypeCode.Xml:
-                case ETypeCode.Unknown:
-                    returnValue = "'" + AddEscape(value.ToString()) + "'";
-                    break;
-                case ETypeCode.DateTime:
-                    if (value is DateTime)
-                        returnValue = "convert(datetime, '" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "')";
-                    else
-                        returnValue = "convert(datetime, '" + AddEscape((string)value) + "')";
-                    break;
-                case ETypeCode.Time:
-                    if (value is TimeSpan)
-                        returnValue = "convert(time, '" + AddEscape(((TimeSpan)value).ToString("c")) + "')";
-                    else
-                        returnValue = "convert(time, '" + AddEscape((string)value) + "')";
-                    break;
-                default:
-                    throw new Exception("The datatype " + type.ToString() + " is not compatible with the sql statement.");
-            }
-
-            return returnValue;
-        }
+//        protected override string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
+//        {
+//            string returnValue;
+//
+//            if (value == null || value is DBNull)
+//                return "null";
+//
+//            if (rank > 0)
+//            {
+//                return "'" + AddEscape(value.ToString()) + "'";
+//            }
+//
+//            switch (typeCode)
+//            {
+//                case ETypeCode.Byte:
+//                case ETypeCode.Single:
+//                case ETypeCode.Int16:
+//                case ETypeCode.Int32:
+//                case ETypeCode.Int64:
+//                case ETypeCode.SByte:
+//                case ETypeCode.UInt16:
+//                case ETypeCode.UInt32:
+//                case ETypeCode.UInt64:
+//                case ETypeCode.Double:
+//                case ETypeCode.Decimal:
+//                    returnValue = AddEscape(value.ToString());
+//                    break;
+//                case ETypeCode.String:
+//                case ETypeCode.Guid:
+//                case ETypeCode.Boolean:
+//                case ETypeCode.Text:
+//                case ETypeCode.Json:
+//                case ETypeCode.Xml:
+//                case ETypeCode.Unknown:
+//                    returnValue = "'" + AddEscape(value.ToString()) + "'";
+//                    break;
+//                case ETypeCode.DateTime:
+//                    if (value is DateTime)
+//                        returnValue = "convert(datetime, '" + AddEscape(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "')";
+//                    else
+//                        returnValue = "convert(datetime, '" + AddEscape((string)value) + "')";
+//                    break;
+//                case ETypeCode.Time:
+//                    if (value is TimeSpan)
+//                        returnValue = "convert(time, '" + AddEscape(((TimeSpan)value).ToString("c")) + "')";
+//                    else
+//                        returnValue = "convert(time, '" + AddEscape((string)value) + "')";
+//                    break;
+//                default:
+//                    throw new Exception($"The datatype {typeCode} is not compatible with the sql insert statement.");
+//            }
+//
+//            return returnValue;
+//        }
 
         public override async Task<DbConnection> NewConnection()
         {
@@ -788,7 +790,7 @@ namespace dexih.connections.sql
                 var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null ? "" : "SELECT SCOPE_IDENTITY()";
                 long identityValue = 0;
 
-                using (var connection = await NewConnection())
+                using (var connection = (SqlConnection) await NewConnection())
                 {
                     var insert = new StringBuilder();
                     var values = new StringBuilder();
@@ -807,11 +809,11 @@ namespace dexih.connections.sql
                             for (var i = 0; i < query.InsertColumns.Count; i++)
                             {
                                 insert.Append("[" + query.InsertColumns[i].Column.Name + "],");
-                                values.Append("@col" + i.ToString() + ",");
+                                values.Append("@col" + i + ",");
                             }
 
-                            var insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
-                                values.Remove(values.Length - 1, 1).ToString() + "); " + autoIncrementSql;
+                            var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                values.Remove(values.Length - 1, 1) + "); " + autoIncrementSql;
 
                             try
                             {
@@ -823,8 +825,9 @@ namespace dexih.connections.sql
                                     for (var i = 0; i < query.InsertColumns.Count; i++)
                                     {
                                         var param = cmd.CreateParameter();
-                                        param.ParameterName = "@col" + i.ToString();
-                                        param.Value = query.InsertColumns[i].Value == null ? DBNull.Value : query.InsertColumns[i].Value;
+                                        param.ParameterName = "@col" + i;
+                                        param.SqlDbType = GetSqlDbType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank);
+                                        param.Value = ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
                                         cmd.Parameters.Add(param);
                                     }
 
@@ -850,8 +853,13 @@ namespace dexih.connections.sql
             }
         }
 
-        public static SqlDbType GetSqlDbType(ETypeCode typeCode)
+        public static SqlDbType GetSqlDbType(ETypeCode typeCode, int rank)
         {
+            if (rank > 0)
+            {
+                return SqlDbType.NVarChar;
+            }
+            
             switch (typeCode)
             {
                 case ETypeCode.Byte:
@@ -917,15 +925,15 @@ namespace dexih.connections.sql
                             var count = 0;
                             foreach (var column in query.UpdateColumns)
                             {
-                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count.ToString() + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
+                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
                                 count++;
                             }
                             sql.Remove(sql.Length - 1, 1); //remove last comma
-                            sql.Append(" " + BuildFiltersString(query.Filters) + ";");
 
                             //  Retrieving schema for columns from a single table
                             using (var cmd = connection.CreateCommand())
                             {
+                                sql.Append(" " + BuildFiltersString(query.Filters, cmd) + ";");
                                 cmd.Transaction = transaction;
                                 cmd.CommandText = sql.ToString();
 
@@ -933,10 +941,10 @@ namespace dexih.connections.sql
                                 for (var i = 0; i < query.UpdateColumns.Count; i++)
                                 {
                                     var param = cmd.CreateParameter();
-                                    param.ParameterName = "@col" + i.ToString();
-                                    param.SqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType);
+                                    param.ParameterName = "@col" + i;
+                                    param.SqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank);
                                     param.Size = -1;
-                                    param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value : query.UpdateColumns[i].Value;
+                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
                                     cmd.Parameters.Add(param);
                                     parameters[i] = param;
                                 }

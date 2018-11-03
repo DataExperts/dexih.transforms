@@ -36,18 +36,8 @@ namespace dexih.connections.azure
     )]
     public class ConnectionAzureTable : Connection
     {
-
-        public override string ServerHelp => "Server Name";
-        public override string DefaultDatabaseHelp => "Database";
-        public override bool AllowNtAuth => false;
-        public override bool AllowUserPass => true;
-        public override string DatabaseTypeName => "Azure Storage Tables";
-        public override EConnectionCategory DatabaseConnectionCategory => EConnectionCategory.NoSqlDatabase;
-
-
         public override bool CanBulkLoad => true;
         public override bool CanSort => false;
-
         public override bool CanFilter => true;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
@@ -58,10 +48,11 @@ namespace dexih.connections.azure
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
+        public override bool CanUseAutoIncrement => false;
         public override bool DynamicTableCreation => true;
 
 
-        public override object GetConnectionMinValue(ETypeCode typeCode)
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
@@ -72,7 +63,7 @@ namespace dexih.connections.azure
                 case ETypeCode.Single:
                     return -1E+37F;
                 default:
-                    return GetDataTypeMinValue(typeCode);
+                    return GetDataTypeMinValue(typeCode, length);
             }
         }
 

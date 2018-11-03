@@ -7,12 +7,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.sql.npgsql
 {
     [Collection("SqlTest")]
     public class ConnectionPostgreSqlTests
     {
+                
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionPostgreSqlTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionPostgreSql GetConnection()
         {
             return new ConnectionPostgreSql()
@@ -36,14 +45,14 @@ namespace dexih.connections.sql.npgsql
         public async Task Postgres_Performance()
         {
             var database = "Test-" + Guid.NewGuid().ToString();
-            await new PerformanceTests().Performance(GetConnection(), database, 100000);
+            await new PerformanceTests(_output).Performance(GetConnection(), database, 100000);
         }
 
         [Fact]
         public async Task Postgres_TransformWriter()
         {
             var database = "Test-" + Guid.NewGuid().ToString();
-            await new PerformanceTests().PerformanceTransformWriter(GetConnection(), database, 100000);
+            await new PerformanceTests(_output).PerformanceTransformWriter(GetConnection(), database, 100000);
         }
 
         [Fact]
