@@ -68,6 +68,13 @@ namespace dexih.transforms
             }
             _rowCount = 0;
 
+            // if there are sorts, insert a sort transform.
+            if (pushQuery.Sorts.Count > 0)
+            {
+                var sortTransform = new TransformSort(PrimaryTransform, pushQuery.Sorts);
+                PrimaryTransform = sortTransform;
+            }
+
             var returnValue = await PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);
             
             if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)

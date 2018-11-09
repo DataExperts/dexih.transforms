@@ -476,7 +476,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancellationToken)
+        public override async Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken)
         {
             try
             {
@@ -490,10 +490,33 @@ namespace dexih.connections.azure
 
                 DynamicTableEntity entity = null;
                 entity = new DynamicTableEntity(table.Name, surrogateKeyColumn);
-                entity.Properties.Add("IncrementalValue", new EntityProperty(value));
+                switch (value)
+                {
+                    case short shortValue:
+                        entity.Properties.Add("IncrementalValue", new EntityProperty(shortValue));
+                        break;
+                    case int intValue:
+                        entity.Properties.Add("IncrementalValue", new EntityProperty(intValue));
+                        break;
+                    case long longValue:
+                        entity.Properties.Add("IncrementalValue", new EntityProperty(longValue));
+                        break;
+                    case ushort ushortValue:
+                        entity.Properties.Add("IncrementalValue", new EntityProperty(ushortValue));
+                        break;
+                    case uint uintValue:
+                        entity.Properties.Add("IncrementalValue", new EntityProperty(uintValue));
+                        break;
+                    case ulong ulongValue:
+                        entity.Properties.Add("IncrementalValue", new EntityProperty(ulongValue));
+                        break;
+                    default:
+                        throw new ConnectionException($"The datatype {value.GetType()} is not supported for incremental columns.  Use an integer type instead.");
+                }
+
                 entity.Properties.Add("LockGuid", new EntityProperty(Guid.NewGuid()));
 
-                //update the record with the new incrementalvalue and the guid.
+                //update the record with the new incremental value and the guid.
                 await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
             }
             catch (Exception ex)

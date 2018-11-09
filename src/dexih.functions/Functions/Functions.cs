@@ -154,9 +154,19 @@ namespace dexih.functions
 
             var parameterAttribute = parameterInfo.GetCustomAttribute<TransformFunctionParameterAttribute>();
 
+            Type paramType;
+            if (parameterInfo.ParameterType.IsByRef)
+            {
+                paramType = parameterInfo.ParameterType.GetElementType();
+            }
+            else
+            {
+                paramType = parameterInfo.ParameterType;
+            }
+            
             var isGeneric = 
-                (parameterInfo.ParameterType.IsArray && parameterInfo.ParameterType.GetElementType().IsGenericParameter) || 
-                (parameterInfo.ParameterType.IsGenericParameter);
+                (paramType.IsArray && paramType.GetElementType().IsGenericParameter) || 
+                (paramType.IsGenericParameter);
 
             return new FunctionParameter()
             {
@@ -164,8 +174,8 @@ namespace dexih.functions
                 Name = name ?? parameterAttribute?.Name ?? parameterInfo.Name,
                 Description = parameterAttribute?.Description,
                 IsGeneric = isGeneric,
-                DataType = DataType.GetTypeCode(parameterInfo.ParameterType, out var paramRank),
-                AllowNull = Nullable.GetUnderlyingType(parameterInfo.ParameterType) != null,
+                DataType = DataType.GetTypeCode(paramType, out var paramRank),
+                AllowNull = Nullable.GetUnderlyingType(paramType) != null,
                 Rank = paramRank,
                 IsTwin = parameterInfo.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
                 ListOfValues = EnumValues(parameterInfo),

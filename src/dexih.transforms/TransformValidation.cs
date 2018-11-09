@@ -48,21 +48,6 @@ namespace dexih.transforms
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
-
-            var result = true;
-
-            if (PrimaryTransform != null)
-            {
-                result = result && await PrimaryTransform.Open(auditKey, query, cancellationToken);
-                if (!result)
-                    return result;
-                
-            }
-
-            if (ReferenceTransform != null)
-            {
-                result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
-            }
             
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
             if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
@@ -89,6 +74,21 @@ namespace dexih.transforms
                 {
                     DeltaType = TableColumn.EDeltaType.ValidationStatus
                 });
+            }
+
+            var result = true;
+
+            if (PrimaryTransform != null)
+            {
+                result = result && await PrimaryTransform.Open(auditKey, query, cancellationToken);
+                if (!result)
+                    return result;
+                
+            }
+
+            if (ReferenceTransform != null)
+            {
+                result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
             }
 
             //store reject column details to improve performance.
@@ -256,7 +256,7 @@ namespace dexih.transforms
                                     {
                                         if(((string)passRow[i]).Length > col.MaxLength)
                                         {
-                                            throw new DataTypeParseException($"The column ${col.Name} value exceededthe maximum string length of {col.MaxLength}.");
+                                            throw new DataTypeParseException($"The column ${col.Name} value exceeded the maximum string length of {col.MaxLength}.");
                                         }
                                     }
                                 }

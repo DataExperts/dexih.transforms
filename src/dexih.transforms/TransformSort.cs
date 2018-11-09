@@ -54,9 +54,6 @@ namespace dexih.transforms
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-            CacheTable = PrimaryTransform.CacheTable.Copy();
-            CacheTable.OutputSortFields = _sortFields;
-            
             _firstRead = true;
             
             AuditKey = auditKey;
@@ -67,6 +64,10 @@ namespace dexih.transforms
             query.Sorts = RequiredSortFields();
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+
+            CacheTable = PrimaryTransform.CacheTable.Copy();
+            CacheTable.OutputSortFields = _sortFields;
+
 
             //check if the transform has already sorted the data, using sql or a presort.
             _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);

@@ -396,11 +396,9 @@ namespace dexih.connections.sql
                     var param = cmd.CreateParameter();
                     param.ParameterName = $"@Filter{index}Value1";
                     param.Direction = ParameterDirection.Input;
-                    param.Value = filter.Value1;
+                    param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Value1);
                     cmd.Parameters.Add(param);
                     sql.Append($" {param.ParameterName} ");
-
-
                 }
 
                 sql.Append(GetSqlCompare(filter.Operator));
@@ -419,7 +417,7 @@ namespace dexih.connections.sql
                             var param = cmd.CreateParameter();
                             param.ParameterName = $"@Filter{index}Column2Default";
                             param.Direction = ParameterDirection.Input;
-                            param.Value = filter.Column2.DefaultValue;
+                            param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Column2.DefaultValue);
                             cmd.Parameters.Add(param);
                             sql.Append($" {param.ParameterName} ");
                         }
@@ -441,7 +439,7 @@ namespace dexih.connections.sql
                                                // return GetSqlFieldValueQuote(filter.CompareDataType, 0, c);
                                                var param = cmd.CreateParameter();
                                                param.Direction = ParameterDirection.Input;
-                                               param.Value = ConvertForWrite(filter.CompareDataType, 0, true, c);
+                                               param.Value = ConvertForWrite(filter.BestDataType(), 0, true, c);
                                                param.ParameterName = $"@Filter{index1}ArrayValue{arrayIndex}";
                                                cmd.Parameters.Add(param);
 
@@ -455,7 +453,7 @@ namespace dexih.connections.sql
                             var param = cmd.CreateParameter();
                             param.ParameterName = $"@Filter{index}Value2";
                             param.Direction = ParameterDirection.Input;
-                            param.Value = filter.Value2;
+                            param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Value2);
                             cmd.Parameters.Add(param);
                             sql.Append($" {param.ParameterName} ");
                         }

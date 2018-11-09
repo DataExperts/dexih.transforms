@@ -1,10 +1,12 @@
 ﻿﻿using System;
-using System.Data.Common;
+ using System.Collections.Generic;
+ using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+ using Newtonsoft.Json.Linq;
 
 namespace dexih.transforms
 {
@@ -134,7 +136,6 @@ namespace dexih.transforms
                         _hasRows = false;
                         break;
                     }
-
                 }
 
                 _memoryStream.Position = 0;
@@ -146,7 +147,6 @@ namespace dexih.transforms
 
             return readCount;
         }
-
 
         public override long Seek(long offset, SeekOrigin origin)
         {
@@ -163,4 +163,5 @@ namespace dexih.transforms
             throw new NotSupportedException("The Write function is not supported.");
         }
     }
+    
 }

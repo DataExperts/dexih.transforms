@@ -161,6 +161,25 @@ namespace dexih.functions.Query
         public ECompare Operator { get; set; }
         public EAndOr AndOr { get; set; }
 
+        public ETypeCode BestDataType()
+        {
+            var typeCode = ETypeCode.String;
+
+            if (Column1 != null)
+            {
+                typeCode = Column1.DataType;
+            } else if (Column2 != null)
+            {
+                typeCode = Column2.DataType;
+            }
+            else
+            {
+                typeCode = CompareDataType;
+            }
+
+            return typeCode;
+        }
+
         public bool Evaluate(object column1Value, object column2Value)
         {
             var value1 = Column1 == null ? Value1 : column1Value;

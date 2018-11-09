@@ -485,7 +485,7 @@ namespace dexih.transforms
         /// <param name="value"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, long value, CancellationToken cancellationToken)
+        public virtual Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
