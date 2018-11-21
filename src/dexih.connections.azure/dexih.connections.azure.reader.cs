@@ -32,11 +32,9 @@ namespace dexih.connections.azure
             CacheTable = table;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Close()
         {
             _isOpen = false;
-
-            base.Dispose(disposing);
         }
 
         public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)

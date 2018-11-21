@@ -30,13 +30,11 @@ namespace dexih.connections.sql
             CacheTable = table;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Close()
         {
-            _sqlReader?.Dispose();
-            _sqlConnection?.Dispose();
+            _sqlReader?.Close();
+            _sqlConnection?.Close();
             _isOpen = false;
-
-            base.Dispose(disposing);
         }
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
@@ -134,6 +132,7 @@ namespace dexih.connections.sql
                 }
                 else
                 {
+                    Close();
                     return null;
                 }
             }

@@ -102,6 +102,10 @@ namespace dexih.transforms
 
         public DbDataReader InReader { get; set; }
 
+        public override void Close()
+        {
+            InReader?.Close();
+        }
 
         public override string Details()
         {

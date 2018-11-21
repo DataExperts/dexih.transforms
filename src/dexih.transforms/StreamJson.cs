@@ -89,6 +89,7 @@ namespace dexih.transforms
         {
             if(!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
             {
+                _reader.Close();
                 return 0;
             }
 

@@ -54,14 +54,11 @@ namespace dexih.transforms
             
             _fileNameOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileName);
         }
-
-        protected override void Dispose(bool disposing)
+        
+        public override void Close()
         {
             _fileHandler?.Dispose();
-
             _isOpen = false;
-
-            base.Dispose(disposing);
         }
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)

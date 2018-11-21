@@ -28,10 +28,9 @@ namespace dexih.connections.excel
             CacheTable = table;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Close()
         {
             _excelPackage?.Dispose();
-            base.Dispose(disposing);
         }
 
         public override Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)

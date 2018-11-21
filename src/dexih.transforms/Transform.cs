@@ -1079,6 +1079,7 @@ namespace dexih.transforms
                 {
                     CurrentRow = null;
                     IsReaderFinished = true;
+                    Close();
                 }
 
             }
@@ -1086,11 +1087,13 @@ namespace dexih.transforms
             catch (Exception ex) when (ex is OperationCanceledException || ex is TransformException)
             {
                 IsReaderFinished = true;
+                Close();
                 throw;
             }
             catch (Exception ex)
             {
                 IsReaderFinished = true;
+                Close();
                 throw new TransformException($"The transform {Name} failed to process record. {ex.Message}", ex);
             }
 
@@ -1108,6 +1111,7 @@ namespace dexih.transforms
                 catch (Exception ex)
                 {
                     IsReaderFinished = true;
+                    Close();
                     throw new TransformException($"The transform {Name} failed comparing the incremental update column.  " + ex.Message, ex);
                 }
 
@@ -1285,16 +1289,12 @@ namespace dexih.transforms
             return GetValue(i) is DBNull;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Close()
         {
-            if (disposing)
-            {
-                PrimaryTransform?.Dispose();
-                ReferenceTransform?.Dispose();
-
-                Reset();
-            }
-            base.Dispose(disposing);
+            PrimaryTransform?.Close();
+            ReferenceTransform?.Close();
+            IsReaderFinished = true;
+            // Reset();
         }
 
         public override bool NextResult()
