@@ -115,6 +115,7 @@ namespace dexih.transforms
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
+                        _reader.Close();
                         return 0;
                     }
 
@@ -162,6 +163,14 @@ namespace dexih.transforms
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException("The Write function is not supported.");
+        }
+        
+        public override void Close()
+        {
+            _streamWriter?.Close();
+            _memoryStream?.Close();
+            _reader?.Close();
+            base.Close();
         }
     }
     

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dexih.Utils.CopyProperties;
 using Newtonsoft.Json;
 
 namespace dexih.transforms
@@ -20,7 +21,7 @@ namespace dexih.transforms
         private readonly StreamWriter _streamWriter;
         private long _position;
 
-        private readonly char[] QuoteCharacters = new char[] { '"', ' ', ',' };
+        private readonly char[] _quoteCharacters = new char[] { '"', ' ', ',' };
 
         public StreamCsv(DbDataReader reader)
         {
@@ -47,7 +48,7 @@ namespace dexih.transforms
                     
                     if (s[j].Contains("\"")) //replace " with ""
                         s[j] = s[j].Replace("\"", "\"\"");
-                    if (s[j].IndexOfAny(QuoteCharacters) != -1) //add "'s around any string with space or "
+                    if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                         s[j] = "\"" + s[j] + "\"";
                 }
                 _streamWriter.WriteLine(string.Join(",", s));
@@ -62,7 +63,7 @@ namespace dexih.transforms
                     s[j] = reader.GetName(j);
                     if (s[j].Contains("\"")) //replace " with ""
                         s[j] = s[j].Replace("\"", "\"\"");
-                    if (s[j].IndexOfAny(QuoteCharacters) != -1) //add "'s around any string with space or "
+                    if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                         s[j] = "\"" + s[j] + "\"";
                 }
                 _streamWriter.WriteLine(string.Join(",", s));
@@ -94,6 +95,7 @@ namespace dexih.transforms
         {
             if(!_reader.HasRows && _memoryStream.Position >= _memoryStream.Length)
             {
+                _reader.Close();
                 return 0;
             }
 
@@ -108,7 +110,10 @@ namespace dexih.transforms
                 while (await _reader.ReadAsync(cancellationToken) )
                 {
                     if (cancellationToken.IsCancellationRequested)
+                    {
+                        _reader.Close();
                         return 0;
+                    }
 
                     var s = new string[_reader.FieldCount];
                     for (var j = 0; j < _reader.FieldCount; j++)
@@ -116,7 +121,7 @@ namespace dexih.transforms
                         s[j] = _reader.GetString(j);
                         if (s[j].Contains("\"")) //replace " with ""
                             s[j] = s[j].Replace("\"", "\"\"");
-                        if (s[j].IndexOfAny(QuoteCharacters) != -1) //add "'s around any string with space or "
+                        if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                             s[j] = "\"" + s[j] + "\"";
                     }
                     await _streamWriter.WriteLineAsync(string.Join(",", s));
@@ -132,6 +137,14 @@ namespace dexih.transforms
             _position += readCount;
 
             return readCount;
+        }
+        
+        public override void Close()
+        {
+            _streamWriter?.Close();
+            _memoryStream?.Close();
+            _reader?.Close();
+            base.Close();
         }
 
 
