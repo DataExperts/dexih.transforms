@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.Query
 {
-    public class SelectQuery
+    public class SelectQuery: IEquatable<SelectQuery>
     {
         public SelectQuery()
         {
@@ -74,5 +77,79 @@ namespace dexih.functions.Query
             }
         }
 
+        internal bool CompareSequences<T>(List<T> seq1, List<T> seq2)
+        {
+            if (seq1 == null && seq2 == null) return true;
+            if (seq1 == null || seq2 == null) return false;
+            return seq1.SequenceEqual(seq2);
+        }
+
+        public bool Equals(SelectQuery other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            
+            return CompareSequences<SelectColumn>(Columns, other.Columns) && 
+                   string.Equals(Table, other.Table) && 
+                   CompareSequences<Filter>(Filters, other.Filters) && 
+                   CompareSequences<Sort>(Sorts, other.Sorts) && 
+                   CompareSequences<TableColumn>(Groups, other.Groups) && 
+                   Rows == other.Rows && 
+                   string.Equals(FileName, other.FileName) && 
+                   Path == other.Path;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((SelectQuery) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = 0;
+                if (Columns != null && Columns.Count > 0)
+                {
+                    foreach (var column in Columns)
+                    {
+                        hashCode = (hashCode * 397) ^ column.GetHashCode();    
+                    }
+                }
+
+                hashCode = (hashCode * 397) ^ (Table != null ? Table.GetHashCode() : 0);
+
+                if (Filters != null && Filters.Count > 0)
+                {
+                    foreach (var filter in Filters)
+                    {
+                        hashCode = (hashCode * 397) ^ filter.GetHashCode();    
+                    }
+                }
+                if (Sorts != null && Sorts.Count > 0)
+                {
+                    foreach (var sort in Sorts)
+                    {
+                        hashCode = (hashCode * 397) ^ sort.GetHashCode();    
+                    }
+                }
+                if (Groups != null && Groups.Count > 0)
+                {
+                    foreach (var group in Groups)
+                    {
+                        hashCode = (hashCode * 397) ^ group.GetHashCode();    
+                    }
+                }
+                
+                hashCode = (hashCode * 397) ^ Rows;
+                hashCode = (hashCode * 397) ^ (FileName != null ? FileName.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (int) Path;
+
+                return hashCode;
+            }
+        }
     }
 }

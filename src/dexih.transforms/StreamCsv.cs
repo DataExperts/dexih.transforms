@@ -25,8 +25,6 @@ namespace dexih.transforms
 
         public StreamCsv(DbDataReader reader)
         {
-            
-
             _memoryStream = new MemoryStream(BufferSize);
             _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
             _position = 0;
@@ -71,6 +69,7 @@ namespace dexih.transforms
 
             _memoryStream.Position = 0;
         }
+        
         public override bool CanRead => true;
 
         public override bool CanSeek => false;

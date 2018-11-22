@@ -11,7 +11,7 @@ using Dexih.Utils.DataType;
 
 namespace dexih.functions.Query
 {
- public class Filter
+ public class Filter : IEquatable<Filter>
     {
         public Filter() { }
 
@@ -232,6 +232,43 @@ namespace dexih.functions.Query
                     throw new QueryException($"The {Operator} is not currently supported in the query evaluation.");
             }
 
+        }
+
+        public bool Equals(Filter other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return 
+                Equals(Column1, other.Column1) && 
+                Equals(Value1, other.Value1) && 
+                CompareDataType == other.CompareDataType && 
+                Equals(Column2, other.Column2) && 
+                Equals(Value2, other.Value2) && 
+                Operator == other.Operator && 
+                AndOr == other.AndOr;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Filter) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Column1 != null ? Column1.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Value1 != null ? Value1.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (int) CompareDataType;
+                hashCode = (hashCode * 397) ^ (Column2 != null ? Column2.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Value2 != null ? Value2.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (int) Operator;
+                hashCode = (hashCode * 397) ^ (int) AndOr;
+                return hashCode;
+            }
         }
     }
 }

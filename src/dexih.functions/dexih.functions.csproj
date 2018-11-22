@@ -15,7 +15,7 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>7.1</LangVersion>
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <!--<ItemGroup>
@@ -24,7 +24,7 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>-->
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="7.1.1" />
+    <PackageReference Include="CsvHelper" Version="9.2.3" />
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.60" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.9" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />

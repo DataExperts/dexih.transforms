@@ -132,10 +132,7 @@ namespace dexih.functions.BuiltIn
             Description = "Returns a copy of this string converted to uppercase.")]
         public string ToUpper(string value)
         {
-            var valueSpan = value.AsSpan();
-            var newSpan = new Span<char>(new char[valueSpan.Length]);
-            valueSpan.ToUpper(newSpan, CultureInfo.InvariantCulture);
-            return newSpan.ToString();
+            return value.ToUpper();
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Trim",

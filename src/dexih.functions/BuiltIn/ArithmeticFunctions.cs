@@ -51,4 +51,5 @@ namespace dexih.functions.BuiltIn
             return Operations.Subtract(value1, value2.Aggregate(Operations.Add));
         }
     }
+
 }

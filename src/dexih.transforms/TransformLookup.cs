@@ -77,6 +77,8 @@ namespace dexih.transforms
             //CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable, ReferenceTransform.CacheTable, ReferenceTableAlias);
             //CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
+            ReferenceTransform.SetCacheMethod(ECacheMethod.OnDemandCache, 1000);
+            
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
             return returnValue;
         }

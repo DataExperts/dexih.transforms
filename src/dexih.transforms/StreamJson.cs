@@ -121,6 +121,12 @@ namespace dexih.transforms
 
                     _reader.GetValues(_valuesArray);
 
+                    for(var i = 0; i < _valuesArray.Length; i++)
+                    {
+                        if (_valuesArray[i] is byte[])
+                            _valuesArray[i] = "binary data not available.";
+                    }
+
                     var row = JsonConvert.SerializeObject(_valuesArray);
 
                     await _streamWriter.WriteAsync(row);

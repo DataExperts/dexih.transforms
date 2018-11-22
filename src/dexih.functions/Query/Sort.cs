@@ -1,31 +1,59 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace dexih.functions.Query
 {
-    public class Sort
+    public class Sort: IEquatable<Sort>
+
     {
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum EDirection
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum EDirection
+    {
+        Ascending,
+        Descending
+    }
+
+    public Sort()
+    {
+    }
+
+    public Sort(TableColumn column, EDirection direction = EDirection.Ascending)
+    {
+        Column = column;
+        Direction = direction;
+    }
+
+    public Sort(string columnName, EDirection direction = EDirection.Ascending)
+    {
+        Column = new TableColumn(columnName);
+        Direction = direction;
+    }
+
+    public TableColumn Column { get; set; }
+    public EDirection Direction { get; set; }
+
+        public bool Equals(Sort other)
         {
-            Ascending,
-            Descending
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Equals(Column, other.Column) && Direction == other.Direction;
         }
 
-        public Sort() { }
-
-        public Sort(TableColumn column, EDirection direction = EDirection.Ascending)
+        public override bool Equals(object obj)
         {
-            Column = column;
-            Direction = direction;
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Sort) obj);
         }
 
-        public Sort(string columnName, EDirection direction = EDirection.Ascending)
+        public override int GetHashCode()
         {
-            Column = new TableColumn(columnName);
-            Direction = direction;
+            unchecked
+            {
+                return ((Column != null ? Column.GetHashCode() : 0) * 397) ^ (int) Direction;
+            }
         }
-        public TableColumn Column { get; set; }
-        public EDirection Direction { get; set; }
     }
 }
