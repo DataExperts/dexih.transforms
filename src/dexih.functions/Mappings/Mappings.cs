@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
@@ -44,6 +46,8 @@ namespace dexih.functions.Mappings
         /// Dictionary stores intput-output ordinal mapping for passthrough columns.
         /// </summary>
         private Dictionary<int, int> _referencePassthroughOrdinals;
+
+        private Task<bool>[] _tasks;
 
         private object[] _rowData;
         
@@ -149,6 +153,8 @@ namespace dexih.functions.Mappings
 
                 table.OutputSortFields = fields;
             }
+
+            _tasks = new Task<bool>[Count];
 
             return table;
         }
@@ -260,12 +266,12 @@ namespace dexih.functions.Mappings
             return 0;
         }
 
-        public bool ProcessInputData(object[] row)
+        public Task<bool> ProcessInputData(object[] row)
         {
             return ProcessInputData(_functionVariables, row, null);
         }
 
-        public bool ProcessInputData(object[] row, object[] joinRow)
+        public Task<bool> ProcessInputData(object[] row, object[] joinRow)
         {
             return ProcessInputData(_functionVariables, row, joinRow);
         }
@@ -277,16 +283,42 @@ namespace dexih.functions.Mappings
         /// <param name="row"></param>
         /// <param name="joinRow"></param>
         /// <returns></returns>
-        public bool ProcessInputData(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public async Task<bool> ProcessInputData(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             var result = true;
-            
-            foreach (var mapping in this)
+
+            for (var i = 0; i < this.Count; i++)
             {
-                result = result & mapping.ProcessInputRow(functionVariables, row, joinRow);
-                if (!result) break;
+                _tasks[i] = this[i].ProcessInputRow(functionVariables, row, joinRow);
             }
 
+            try
+            {
+                await Task.WhenAll(_tasks);
+            }
+            catch (TargetInvocationException targetInvocationException)
+            {
+                for (var i = 0; i < Count; i++)
+                {
+                    var task = _tasks[i];
+                    if (task.IsFaulted)
+                    {
+                        if (task.Exception.InnerException is TargetInvocationException targetInvocationException2)
+                        {
+                            throw new FunctionException(
+                                $"The mapping {this[i].Description()} failed due to {targetInvocationException2.InnerException.Message}.",
+                                targetInvocationException2);
+                        }
+                    }
+                }
+                throw;
+            }
+
+            for (var i = 0; i < this.Count; i++)
+            {
+                result = result & _tasks[i].Result;
+            }
+            
             _rowData = row;
 
             return result;

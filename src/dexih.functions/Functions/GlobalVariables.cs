@@ -7,6 +7,8 @@ namespace dexih.functions
         // used by encrypt functions.
         public string EncryptionKey { get; set; }
 
+        public FilePermissions FilePermissions { get; set; }
+
         // used by profiling functions to provide detailed output.
         public bool DetailedResults { get; set; }
 

@@ -36,10 +36,10 @@ namespace dexih.functions.Mappings
         {
         }
 
-        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             _rowData = row;
-            return true;
+            return Task.FromResult(true);
         }
 
         public override void MapOutputRow(object[] data) 
@@ -56,6 +56,11 @@ namespace dexih.functions.Mappings
             {
                 return row == null ? row[_inputOrdinal] : _rowData[_inputOrdinal];     
             }        
+        }
+
+        public override string Description()
+        {
+            return $"Sort {InputColumn?.Name} {Direction}";
         }
 
         public override void Reset(EFunctionType functionType)

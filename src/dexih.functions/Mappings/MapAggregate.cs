@@ -35,7 +35,7 @@ namespace dexih.functions.Mappings
             _outputOrdinal = table.Columns.Count - 1;
         }
 
-        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             Count++;
             var value = _inputOrdinal == -1 ? InputColumn.DefaultValue : row[_inputOrdinal];
@@ -70,13 +70,18 @@ namespace dexih.functions.Mappings
                         break;
                 }
             }
-            
-            return true;
+
+            return Task.FromResult(true);
         }
 
         public override void MapOutputRow(object[] row)
         {
             return;
+        }
+
+        public override string Description()
+        {
+            return $"{Aggregate}({InputColumn?.Name} => {OutputColumn?.Name}";
         }
 
         public override bool ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)

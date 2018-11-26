@@ -40,14 +40,22 @@ namespace dexih.functions.Mappings
             Parameters.InitializeOutputOrdinals(table);
         }
 
-        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             Parameters.SetFromRow(row, joinRow);
 
             //gets the parameters.
             var parameters = Parameters.GetFunctionParameters();
             
-            ReturnValue = Function.RunFunction(functionVariables, parameters, out Outputs);
+            var taskReturn = Function.RunFunction(functionVariables, parameters, out Outputs);
+
+            if (!taskReturn.IsCompleted)
+            {
+                await taskReturn;
+            }
+
+            var resultProp = taskReturn.GetType().GetProperty("Result");
+            ReturnValue = resultProp.GetValue(taskReturn);
             
             if (ReturnValue != null && ReturnValue is bool boolReturn)
             {
@@ -72,6 +80,12 @@ namespace dexih.functions.Mappings
         public override object GetInputValue(object[] row = null)
         {
             throw new NotSupportedException();
+        }
+
+        public override string Description()
+        {
+            return
+                $"{Function.FunctionName}({string.Join(",", Parameters.Inputs.Select(c => c.Name))}, {string.Join(",", Parameters.Outputs.Select(c => "out " + c.Name))}";
         }
 
         public override void MapOutputRow(object[] data)

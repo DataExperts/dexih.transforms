@@ -67,28 +67,37 @@ namespace dexih.functions.Mappings
             return;
         }
 
-        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             var value1 = _column1Ordinal == -1 ? Value1 : row[_column1Ordinal];
             var value2 = _column2Ordinal == -1 ? Value2 : row[_column2Ordinal];
-            
+
+            bool returnValue;
             switch (Compare)
             {
                 case Filter.ECompare.GreaterThan:
-                    return Operations.GreaterThan(Column1.DataType, value1, value2);
+                    returnValue = Operations.GreaterThan(Column1.DataType, value1, value2);
+                    break;
                 case Filter.ECompare.IsEqual:
-                    return Operations.Equal(Column1.DataType, value1, value2);
+                    returnValue = Operations.Equal(Column1.DataType, value1, value2);
+                    break;
                 case Filter.ECompare.GreaterThanEqual:
-                    return Operations.GreaterThanOrEqual(Column1.DataType, value1, value2);
+                    returnValue = Operations.GreaterThanOrEqual(Column1.DataType, value1, value2);
+                    break;
                 case Filter.ECompare.LessThan:
-                    return Operations.LessThan(Column1.DataType, value1, value2);
+                    returnValue = Operations.LessThan(Column1.DataType, value1, value2);
+                    break;
                 case Filter.ECompare.LessThanEqual:
-                    return Operations.LessThanOrEqual(Column1.DataType, value1, value2);
+                    returnValue = Operations.LessThanOrEqual(Column1.DataType, value1, value2);
+                    break;
                 case Filter.ECompare.NotEqual:
-                    return !Operations.Equal(Column1.DataType, value1, value2);
+                    returnValue = !Operations.Equal(Column1.DataType, value1, value2);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            return Task.FromResult(returnValue);
         }
 
         public override void MapOutputRow(object[] row)
@@ -100,8 +109,15 @@ namespace dexih.functions.Mappings
         {
             throw new NotSupportedException();
         }
-        
-      
+
+        public override string Description()
+        {
+            var item1 = _column1Ordinal == -1 ? Value1 : Column1.Name;
+            var item2 = _column2Ordinal == -1 ? Value2 : Column2.Name;
+            return $"Filter({item1} {Compare} {item2}";
+        }
+
+
         public MapFilter Copy()
         {
             var filter = new MapFilter()

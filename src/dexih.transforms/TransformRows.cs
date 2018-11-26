@@ -96,7 +96,7 @@ namespace dexih.transforms
             do
             {
                 // if the row generation function returns true, then add the row
-                if (Mappings.ProcessInputData(PrimaryTransform.CurrentRow))
+                if (await Mappings.ProcessInputData(PrimaryTransform.CurrentRow))
                 {
                     var newRow = new object[FieldCount];
                     Mappings.MapOutputRow(newRow);

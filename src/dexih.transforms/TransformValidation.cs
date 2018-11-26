@@ -155,7 +155,7 @@ namespace dexih.transforms
                 //run the validation functions
                 try
                 {
-                    passed = Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                    passed = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
                 }
                 catch (FunctionIgnoreRowException)
                 {

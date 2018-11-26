@@ -43,7 +43,6 @@ namespace dexih.functions.Mappings
             SeriesFinish = seriesFinish;
         }
 
-
         public ESeriesGrain SeriesGrain { get; set; }
         public DayOfWeek StartOfWeek { get; set; } = DayOfWeek.Sunday;
         public bool SeriesFill { get; set; }

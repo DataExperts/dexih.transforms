@@ -59,10 +59,10 @@ namespace dexih.functions.Mappings
             OutputOrdinal = AddOutputColumn(table, OutputColumn);
         }
 
-        public override bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
         {
             RowData = row;
-            return true;
+            return Task.FromResult(true);
         }
 
         public override void MapOutputRow(object[] data)
@@ -80,6 +80,11 @@ namespace dexih.functions.Mappings
             {
                 return row == null ? RowData?[InputOrdinal] : row[InputOrdinal];    
             }        
+        }
+
+        public override string Description()
+        {
+            return $"Mapping ({InputColumn?.Name} => {OutputColumn?.Name}";
         }
 
 //        public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)

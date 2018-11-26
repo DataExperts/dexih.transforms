@@ -699,12 +699,14 @@ namespace dexih.transforms
         /// The lookup will first attempt to retrieve a value from the cache (if cachemethod is set to PreLoad cache or OnDemandCache), and then a direct lookup if the transform supports it.
         /// </summary>
         /// <param name="filters">Lookup filters</param>
+        /// <param name="query"></param>
         /// <param name="duplicateStrategy">Action to take when duplicate rows are returned.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<IEnumerable<object[]>> Lookup(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
         {
 
+            // if the query has already been used, use the cache.
             if (_lookupCache != null && _lookupCache.ContainsKey(query))
             {
                 return _lookupCache[query];

@@ -19,6 +19,7 @@ namespace dexih.functions.Mappings
         {
             return Task.CompletedTask;
         }
+        
         /// <summary>
         /// Add the mapping columns to the table.
         /// </summary>
@@ -32,9 +33,9 @@ namespace dexih.functions.Mappings
         /// <param name="joinRow"></param>
         /// <param name="seriesValue"></param>
         /// <returns>0 filters or joins match, -1 row lessthan joinRow, 1 row greater than joinRow--></returns>
-        public abstract bool ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null);
+        public abstract Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null);
 
-        public bool ProcessInputRow(object[] row, object[] joinRow = null)
+        public Task<bool> ProcessInputRow(object[] row, object[] joinRow = null)
         {
             return ProcessInputRow(new FunctionVariables(), row, joinRow);
         }
@@ -46,6 +47,8 @@ namespace dexih.functions.Mappings
         public abstract void MapOutputRow(object[] row);
 
         public abstract object GetInputValue(object[] row = null);
+
+        public abstract string Description();
 
         /// <summary>
         /// Runs any aggregate functions, and populates the aggregate results.

@@ -3,6 +3,9 @@ using dexih.functions.Query;
 
 namespace dexih.functions
 {
+    /// <summary>
+    /// Used by series functions to store values in the series.
+    /// </summary>
     public class SeriesValue
     {
         public SeriesValue(object series, double value, SelectColumn.EAggregate aggregate)

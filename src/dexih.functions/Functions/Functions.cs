@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
 
@@ -155,7 +156,11 @@ namespace dexih.functions
             var parameterAttribute = parameterInfo.GetCustomAttribute<TransformFunctionParameterAttribute>();
 
             Type paramType;
-            if (parameterInfo.ParameterType.IsByRef)
+            if (parameterInfo.ParameterType.BaseType == typeof(Task))
+            {
+                paramType = parameterInfo.ParameterType.GetGenericArguments()[0];
+            }
+            else if (parameterInfo.ParameterType.IsByRef)
             {
                 paramType = parameterInfo.ParameterType.GetElementType();
             }
@@ -189,6 +194,7 @@ namespace dexih.functions
             if (p.ParameterType.IsEnum)
             {
                 return Enum.GetNames(p.ParameterType);
+                
             }
             else
             {

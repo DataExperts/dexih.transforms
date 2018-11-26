@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions.Exceptions;
@@ -42,11 +43,10 @@ namespace dexih.functions
 	{
 		public MethodInfo MethodInfo { get; set; }
 		public TransformParameter[] ParameterInfo { get; set; }
+		public bool IsAsync { get; set; }
 
 		public TransformMethod(MethodInfo methodInfo, Type genericType = null)
 		{
-			
-
             if(methodInfo.IsGenericMethod)
             {
                 MethodInfo = methodInfo.MakeGenericMethod(genericType);
@@ -63,7 +63,11 @@ namespace dexih.functions
 				ParameterType = p.ParameterType,
 				Variable = p.GetCustomAttribute<TransformFunctionVariableAttribute>()
 			}).ToArray();
-			
+
+			var asyncAttribute = (AsyncStateMachineAttribute)methodInfo.GetCustomAttribute(typeof(AsyncStateMachineAttribute));
+
+			IsAsync = asyncAttribute != null;
+
 		}
 	}
 
@@ -83,7 +87,7 @@ namespace dexih.functions
 
 		public bool GeneratesRows = false;
 
-		private object _returnValue;
+		private Task _returnValue;
 
 		[JsonConverter(typeof(StringEnumConverter))]
 		public enum EInvalidAction
@@ -169,6 +173,8 @@ namespace dexih.functions
 		private void Constructor(object target, MethodInfo functionMethod, Type genericType, Parameters parameters, GlobalVariables globalVariables)
 		{
 			FunctionMethod = new TransformMethod(functionMethod, genericType);
+			
+			
 			GlobalVariables = globalVariables;
 
 			var attribute = functionMethod.GetCustomAttribute<TransformFunctionAttribute>();
@@ -295,55 +301,65 @@ namespace dexih.functions
 			return (parameters, outputPos);
 		}
 
-		public object RunFunction(object[] inputParameters)
+		public Task RunFunction(object[] inputParameters)
 		{
 			return RunFunction(new FunctionVariables(), inputParameters, out _);
 		}
 
-		public object RunFunction(object[] inputParameters, out object[] outputs)
+		public Task RunFunction(object[] inputParameters, out object[] outputs)
 		{
 			return RunFunction(new FunctionVariables(), inputParameters, out outputs);
 		}
 
 
-		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters)
+		public Task RunFunction(FunctionVariables functionVariables, object[] inputParameters)
 		{
 			return RunFunction(functionVariables, inputParameters, out _);
 		}
 		
-		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public Task RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(FunctionMethod, functionVariables, inputParameters, out outputs);
 		}
 
-		public object RunResult(object[] inputParameters, out object[] outputs)
+		public Task RunResult(object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(ResultMethod, new FunctionVariables(), inputParameters, out outputs);
 		}
 		
-		public object RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public Task RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(ResultMethod, functionVariables, inputParameters, out outputs);
 		}
 
-		private object Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		private Task Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
 			var parameters = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
-			
-			_returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters.parameters);
 
-			if (parameters.outputPos >= 0)
+			if (methodInfo.IsAsync)
 			{
-				outputs = parameters.parameters.Skip(parameters.outputPos).ToArray();
+				var returnValue = (Task) methodInfo.MethodInfo.Invoke(ObjectReference, parameters.parameters);
+				_returnValue = returnValue;
+				outputs = new object[0];
 			}
 			else
 			{
-				outputs = new object[0];
+				var returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters.parameters);
+				_returnValue = Task.FromResult(returnValue);
+				
+				if (parameters.outputPos >= 0)
+				{
+					outputs = parameters.parameters.Skip(parameters.outputPos).ToArray();
+				}
+				else
+				{
+					outputs = new object[0];
+				}
 			}
 
 			return _returnValue;
 		}
-
+		
         public void Reset()
         {
             try

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace dexih.functions
 {
@@ -37,6 +38,46 @@ namespace dexih.functions
             }
 
             return false;
+        }
+        
+        public static bool IsPattern(this string value, string pattern)
+        {
+            if (value.Length != pattern.Length) return false;
+            for (var i = 0; i < pattern.Length; i++)
+            {
+                if ((pattern[i] == '9' && !char.IsNumber(value[i])) ||
+                    (pattern[i] == 'A' && !char.IsUpper(value[i])) ||
+                    (pattern[i] == 'a' && !char.IsLower(value[i])) ||
+                    (pattern[i] == 'Z' && !char.IsLetter(value[i])))
+                    return false;
+            }
+
+            return true;
+        }
+        
+        public static string CreateSHA1(this string value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            
+            var bytes = Encoding.UTF8.GetBytes(value);
+            using (var sha1 = System.Security.Cryptography.SHA1.Create())
+            {
+                var hash = sha1.ComputeHash(bytes);
+                // Loop through each byte of the hashed data 
+                // and format each one as a hexadecimal string.
+                var sBuilder = new StringBuilder();
+
+                for (var i = 0; i < hash.Length; i++)
+                {
+                    sBuilder.Append(hash[i].ToString("x2"));
+                }
+
+                // Return the hexadecimal string.
+                return sBuilder.ToString();
+            }
         }
     }
 }

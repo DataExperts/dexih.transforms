@@ -167,7 +167,7 @@ namespace dexih.transforms
 
 				try
 				{
-					Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+					await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
 					Mappings.MapOutputRow(newRow);
 				}
 				catch (FunctionIgnoreRowException)
