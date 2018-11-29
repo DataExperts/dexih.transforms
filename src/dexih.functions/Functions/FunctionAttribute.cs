@@ -54,6 +54,7 @@ namespace dexih.functions
     {
         public string Name { get; set; }
         public string Description { get; set; }
+        public string[] ListOfValues { get; set; }
 
         /// <summary>
         /// Identifies an array parameter is a twin with an output array parameter.

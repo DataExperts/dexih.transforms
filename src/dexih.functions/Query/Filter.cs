@@ -231,7 +231,6 @@ namespace dexih.functions.Query
                 default:
                     throw new QueryException($"The {Operator} is not currently supported in the query evaluation.");
             }
-
         }
 
         public bool Equals(Filter other)

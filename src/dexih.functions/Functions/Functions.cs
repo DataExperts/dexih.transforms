@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading.Tasks;
 using dexih.functions.Exceptions;
@@ -127,14 +128,14 @@ namespace dexih.functions
                     FunctionClassName = type.FullName,
                     GenericType = attribute.GenericType,
                     GenericTypeDefault = attribute.GenericTypeDefault,
-                    ReturnParameter = GetFunctionParameter(method.ReturnParameter, "Return"),
+                    ReturnParameters = GetResultParameters(method.ReturnParameter, "Return"),
                     InputParameters = method.GetParameters().Where(c =>
                     {
                         var variable = c.GetCustomAttribute<TransformFunctionVariableAttribute>();
                         return !c.IsOut && variable == null;
                     }).Select(p => GetFunctionParameter(p)).ToArray(),
                     OutputParameters = method.GetParameters().Where(c => c.IsOut).Select(p => GetFunctionParameter(p)).ToArray(),
-                    ResultReturnParameter = GetFunctionParameter(resultMethod?.ReturnParameter, "Group Return"),
+                    ResultReturnParameters = GetResultParameters(resultMethod?.ReturnParameter, "Group Return"),
                     ResultInputParameters = resultMethod?.GetParameters().Where(c =>
                     {
                         var variable = c.GetCustomAttribute<TransformFunctionVariableAttribute>();
@@ -147,6 +148,64 @@ namespace dexih.functions
             }
 
             return null;
+        }
+
+        private static FunctionParameter[] GetResultParameters(ParameterInfo parameterInfo, string name = null)
+        {
+            if (parameterInfo == null) return null;
+
+            var functionParameters = new List<FunctionParameter>();
+            
+            Type paramType;
+            if (parameterInfo.ParameterType.BaseType == typeof(Task))
+            {
+                paramType = parameterInfo.ParameterType.GetGenericArguments()[0];
+            }
+            else if (parameterInfo.ParameterType.IsByRef)
+            {
+                paramType = parameterInfo.ParameterType.GetElementType();
+            }
+            else
+            {
+                paramType = parameterInfo.ParameterType;
+            }
+
+            if (paramType.IsClass)
+            {
+                
+                var properties = paramType.GetProperties();
+
+                foreach (var property in properties)
+                {
+                    var propertyAttribute = property.GetCustomAttribute<TransformFunctionParameterAttribute>();
+                    
+                    var isGeneric = 
+                        (property.PropertyType.IsArray && property.PropertyType.GetElementType().IsGenericParameter) || 
+                        (property.PropertyType.IsGenericParameter);
+
+                    functionParameters.Add(new FunctionParameter()
+                    {
+                        ParameterName = property.Name,
+                        Name = propertyAttribute?.Name ?? property.Name,
+                        Description = propertyAttribute?.Description,
+                        IsGeneric = isGeneric,
+                        DataType = DataType.GetTypeCode(property.PropertyType, out var paramRank),
+                        AllowNull = Nullable.GetUnderlyingType(property.PropertyType) != null,
+                        Rank = paramRank,
+                        IsTwin = property.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
+                        ListOfValues = propertyAttribute?.ListOfValues,
+                        DefaultValue = null
+                    });
+                }
+
+                
+            }
+            else
+            {
+                functionParameters.Add(GetFunctionParameter(parameterInfo, name));
+            }
+            
+            return functionParameters.ToArray();
         }
 
         private static FunctionParameter GetFunctionParameter(ParameterInfo parameterInfo, string name = null)
@@ -183,7 +242,7 @@ namespace dexih.functions
                 AllowNull = Nullable.GetUnderlyingType(paramType) != null,
                 Rank = paramRank,
                 IsTwin = parameterInfo.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
-                ListOfValues = EnumValues(parameterInfo),
+                ListOfValues = parameterAttribute?.ListOfValues ?? EnumValues(parameterInfo),
                 DefaultValue = DefaultValue(parameterInfo)
             };
         }

@@ -9,12 +9,12 @@ namespace dexih.functions.Parameter
 {
     public class Parameters
     {
-        public Parameter ReturnParameter { get; set; }
+        public IList<Parameter> ReturnParameters { get; set; }
         public IList<Parameter> Inputs { get; set; }
         public IList<Parameter> Outputs { get; set; }
         public IList<Parameter> ResultInputs { get; set; }
         public IList<Parameter> ResultOutputs { get; set; }
-        public Parameter ResultReturnParameter { get; set; }
+        public IList<Parameter> ResultReturnParameters { get; set; }
 
         public Parameters()
         {
@@ -50,35 +50,32 @@ namespace dexih.functions.Parameter
             }    
         }
 
-        public void InitializeOutputs(Parameter returnParameter, IList<Parameter> outputs, Table table)
+        public void InitializeOutputs(IList<Parameter> returnParameters, IList<Parameter> outputs, Table table)
         {
             Outputs = outputs;
-            ReturnParameter = returnParameter;
+            ReturnParameters = returnParameters;
             InitializeOutputOrdinals(table);            
         }
 
         public void InitializeOutputOrdinals(Table table)
         {
-            if (Outputs != null)
-            {
-                foreach (var output in Outputs)
-                {
-                    output.InitializeOrdinal(table);
-                }
-            }
-
-            ReturnParameter?.InitializeOrdinal(table);
-            
-            if (ResultOutputs != null)
-            {
-                foreach (var output in ResultOutputs)
-                {
-                    output.InitializeOrdinal(table);
-                }
-            }
-
-            ResultReturnParameter?.InitializeOrdinal(table);
+            InitializeOutputs(Outputs, table);
+            InitializeOutputs(ReturnParameters, table);
+            InitializeOutputs(ResultOutputs, table);
+            InitializeOutputs(ResultReturnParameters, table);
         }
+
+        private void InitializeOutputs(IList<Parameter> parameters, Table table)
+        {
+            if (parameters != null)
+            {
+                foreach (var output in parameters)
+                {
+                    output.InitializeOrdinal(table);
+                }
+            }
+        }
+        
 
         public TableColumn[] OutputTableColumns(Parameter returnParameter, ICollection<Parameter> outputs)
         {
@@ -139,8 +136,25 @@ namespace dexih.functions.Parameter
         /// <param name="outputRow"></param>
         public void SetFunctionResult(object returnValue, object[] parameterValues, object[] outputRow)
         {
-            ReturnParameter?.PopulateRowData(returnValue, outputRow);
+            if (ReturnParameters != null)
+            {
+                if (ReturnParameters.Count == 1)
+                {
+                    ReturnParameters[0].PopulateRowData(returnValue, outputRow);    
+                }
+                else
+                {
+                    var returnType = returnValue.GetType();
 
+                    foreach (var parameter in ReturnParameters)
+                    {
+                        var property = returnType.GetProperty(parameter.Name);
+                        var value = property.GetValue(returnValue);
+                        parameter.PopulateRowData(value, outputRow);
+                    }
+                }
+            }
+            
             var outputIndex = 0; // Inputs?.Count??0;
 
             if (Outputs != null)
@@ -161,8 +175,25 @@ namespace dexih.functions.Parameter
         /// <param name="outputRow"></param>
         public void SetResultFunctionResult(object returnValue, object[] parameterValues, object[] outputRow)
         {
-            ResultReturnParameter?.PopulateRowData(returnValue, outputRow);
+            if (ResultReturnParameters != null)
+            {
+                if (ResultReturnParameters.Count == 1)
+                {
+                    ResultReturnParameters[0].PopulateRowData(returnValue, outputRow);    
+                }
+                else
+                {
+                    var returnType = returnValue.GetType();
 
+                    foreach (var parameter in ResultReturnParameters)
+                    {
+                        var property = returnType.GetProperty(parameter.Name);
+                        var value = property.GetValue(returnValue);
+                        parameter.PopulateRowData(value, outputRow);
+                    }
+                }
+            }
+            
             var outputIndex = 0; // ResultInputs?.Count??0;
 
             if (ResultOutputs != null)
@@ -238,11 +269,12 @@ namespace dexih.functions.Parameter
                 Outputs = Outputs?.Select(c=>c.Copy()).ToArray(),
                 ResultInputs =  ResultInputs?.Select(c=>c.Copy()).ToArray(),
                 ResultOutputs = ResultOutputs?.Select(c=>c.Copy()).ToArray(),
-                ReturnParameter = ReturnParameter?.Copy(),
-                ResultReturnParameter = ResultReturnParameter?.Copy()
+                ReturnParameters = ReturnParameters?.Select(c=>c.Copy()).ToArray(),
+                ResultReturnParameters = ResultReturnParameters?.Select(c=>c.Copy()).ToArray(),
             };
 
             return parameters;
         }
+
     }
 }

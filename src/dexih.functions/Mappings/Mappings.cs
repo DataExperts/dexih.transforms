@@ -314,7 +314,7 @@ namespace dexih.functions.Mappings
                 throw;
             }
 
-            for (var i = 0; i < this.Count; i++)
+            for (var i = 0; i < Count; i++)
             {
                 result = result & _tasks[i].Result;
             }

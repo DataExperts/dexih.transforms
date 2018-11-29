@@ -48,9 +48,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\dexih.utils.datatype\src\Dexih.Utils.DataType\Dexih.Utils.DataType.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BuiltIn" />
-  </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>
   </PropertyGroup>

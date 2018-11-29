@@ -66,8 +66,7 @@ namespace dexih.functions
 
 			var asyncAttribute = (AsyncStateMachineAttribute)methodInfo.GetCustomAttribute(typeof(AsyncStateMachineAttribute));
 
-			IsAsync = asyncAttribute != null;
-
+			IsAsync = asyncAttribute != null || methodInfo.ReturnType.BaseType == typeof(Task);
 		}
 	}
 

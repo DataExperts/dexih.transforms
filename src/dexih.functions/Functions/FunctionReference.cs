@@ -45,11 +45,11 @@ namespace dexih.functions
         
         public bool IsStandardFunction { get; set; }
 
-        public FunctionParameter ReturnParameter { get; set; }
+        public FunctionParameter[] ReturnParameters { get; set; }
         public FunctionParameter[] InputParameters { get; set; }
         public FunctionParameter[] OutputParameters { get; set; }
 
-        public FunctionParameter ResultReturnParameter { get; set; }
+        public FunctionParameter[] ResultReturnParameters { get; set; }
         public FunctionParameter[] ResultInputParameters { get; set; }
         public FunctionParameter[] ResultOutputParameters { get; set; }
 

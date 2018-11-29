@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace dexih.functions
@@ -78,6 +79,13 @@ namespace dexih.functions
                 // Return the hexadecimal string.
                 return sBuilder.ToString();
             }
+        }
+        
+        public static DateTime UnixTimeStampToDate(this long unixTimeStamp)
+        {
+            var origDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            var convertedDate = origDate.AddSeconds(unixTimeStamp).ToLocalTime();
+            return convertedDate;
         }
     }
 }

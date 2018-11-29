@@ -5,6 +5,7 @@ namespace dexih.functions.Mappings
 {
     public abstract class Mapping
     {
+        
         /// <summary>
         /// Initializes the mapping
         /// </summary>

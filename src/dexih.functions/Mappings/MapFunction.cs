@@ -1,34 +1,49 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Parameter;
 using Dexih.Utils.CopyProperties;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dexih.functions.Mappings
 {
     public class MapFunction: Mapping
     {
+        [JsonConverter(typeof(StringEnumConverter))]
+        public enum EFunctionCaching
+        {
+            NoCache,
+            EnableCache,
+            CallOnce
+        }
+
         public MapFunction()
         {
-            
         }
         
-        public MapFunction(TransformFunction function, Parameters parameters)
+        public MapFunction(TransformFunction function, Parameters parameters, EFunctionCaching functionCaching)
         {
             Function = function;
             Parameters = parameters;
+            FunctionCaching = functionCaching;
         }
         
         public TransformFunction Function { get; set; }
         public Parameters Parameters { get; set; }
+        public EFunctionCaching FunctionCaching { get; set; }
 
         public object ReturnValue;
         protected object[] Outputs;
 
         public object ResultReturnValue;
         private object[] _resultOutputs;
+        
+        private Dictionary<object[], (object, object[])> _cache;
+        private bool isFirst = true;
 
         public override void InitializeColumns(Table table, Table joinTable = null)
         {
@@ -46,18 +61,58 @@ namespace dexih.functions.Mappings
 
             //gets the parameters.
             var parameters = Parameters.GetFunctionParameters();
-            
-            var taskReturn = Function.RunFunction(functionVariables, parameters, out Outputs);
 
-            if (!taskReturn.IsCompleted)
+            var runFunction = true;
+
+            if (FunctionCaching == EFunctionCaching.EnableCache)
             {
-                await taskReturn;
+                if (_cache == null)
+                {
+                    _cache = new Dictionary<object[], (object, object[])>(new FunctionCacheComparer());
+                }
+
+                if (_cache.TryGetValue(parameters, out var result))
+                {
+                    ReturnValue = result.Item1;
+                    Outputs = result.Item2;
+                    runFunction = false;
+                }
             }
 
-            var resultProp = taskReturn.GetType().GetProperty("Result");
-            ReturnValue = resultProp.GetValue(taskReturn);
+            if (FunctionCaching == EFunctionCaching.CallOnce)
+            {
+                if (!isFirst)
+                {
+                    runFunction = false;
+                }
+            }
+
+            isFirst = false;
+
+            if (runFunction)
+            {
+                var taskReturn = Function.RunFunction(functionVariables, parameters, out Outputs);
+
+                if (!taskReturn.IsCompleted)
+                {
+                    await taskReturn;
+                }
+
+                var resultProp = taskReturn.GetType().GetProperty("Result");
+                ReturnValue = resultProp.GetValue(taskReturn);
+
+                if (FunctionCaching == EFunctionCaching.EnableCache)
+                {
+                    _cache.Add(parameters, (ReturnValue, Outputs));
+                }
+            }
+
+            if (ReturnValue == null)
+            {
+                return false;
+            }
             
-            if (ReturnValue != null && ReturnValue is bool boolReturn)
+            if (ReturnValue is bool boolReturn)
             {
                 return boolReturn;
             }
@@ -115,11 +170,44 @@ namespace dexih.functions.Mappings
             var mapFunction = new MapFunction()
             {
                 Function =  Function,
-                Parameters = Parameters.Copy()
+                Parameters = Parameters.Copy(),
+                FunctionCaching = FunctionCaching 
             };
 
             return mapFunction;
         }
 
+    }
+    
+    public class FunctionCacheComparer : IEqualityComparer<object[]>
+    {
+        public bool Equals(object[] x, object[] y)
+        {
+            if (x.Length != y.Length)
+            {
+                return false;
+            }
+            for (int i = 0; i < x.Length; i++)
+            {
+                if (!Equals(x[i],y[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public int GetHashCode(object[] obj)
+        {
+            int result = 17;
+            for (int i = 0; i < obj.Length; i++)
+            {
+                unchecked
+                {
+                    result = result * 23 + obj[i].GetHashCode();
+                }
+            }
+            return result;
+        }
     }
 }

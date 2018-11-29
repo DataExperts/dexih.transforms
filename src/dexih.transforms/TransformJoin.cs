@@ -186,7 +186,7 @@ namespace dexih.transforms
                         }).ToArray();
                         
                         var newParameters = new Parameters() {Inputs = newInputs};
-                        var newMapFunction = new MapFunction(mapFunction.Function, newParameters);
+                        var newMapFunction = new MapFunction(mapFunction.Function, newParameters, MapFunction.EFunctionCaching.NoCache);
                         referenceFilters.Add(newMapFunction);
                     }
                 }
