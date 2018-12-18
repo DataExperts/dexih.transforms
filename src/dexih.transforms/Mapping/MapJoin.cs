@@ -4,7 +4,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
-namespace dexih.transforms.Mappings
+namespace dexih.transforms.Mapping
 {
     public class MapJoin: Mapping
     {
@@ -24,8 +24,8 @@ namespace dexih.transforms.Mappings
 
         public TableColumn InputColumn { get; set; }
         public TableColumn JoinColumn { get; set; }
-        public Object InputValue { get; set; }
-        public Object JoinValue { get; set; }
+        public object InputValue { get; set; }
+        public object JoinValue { get; set; }
         
         public Filter.ECompare Compare { get; set; }
         
@@ -86,7 +86,7 @@ namespace dexih.transforms.Mappings
                 _joinRow = joinRow;
             }
 
-            var value1 = GetInputValue();
+            var value1 = GetOutputTransform();
             var value2 = GetJoinValue();
 
             CompareResult = Operations.Compare(InputColumn.DataType, value1, value2);
@@ -121,20 +121,16 @@ namespace dexih.transforms.Mappings
 
         public override void MapOutputRow(object[] row)
         {
-            return;
         }
-
        
-        public override object GetInputValue(object[] row = null)
+        public override object GetOutputTransform(object[] row = null)
         {
             if (_column1Ordinal == -1)
             {
                 return InputValue;
             }
-            else
-            {
-                return row == null ? _row[_column1Ordinal] : row[_column1Ordinal];    
-            }
+
+            return row == null ? _row[_column1Ordinal] : row[_column1Ordinal];
         }
 
         public override string Description()
@@ -150,14 +146,13 @@ namespace dexih.transforms.Mappings
             {
                 return JoinValue;
             }
-            else
+
+            if (_joinRow == null && row == null)
             {
-                if (_joinRow == null && row == null)
-                {
-                    return null;
-                }
-                return row == null ? _joinRow[_column2Ordinal] : row[_column2Ordinal];    
+                return null;
             }
+            
+            return row == null ? _joinRow[_column2Ordinal] : row[_column2Ordinal];
         }
 
 

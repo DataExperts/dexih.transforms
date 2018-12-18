@@ -14,8 +14,7 @@ using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using System.IO;
-using System.Text;
-using dexih.functions.File;
+using dexih.transforms.File;
 
 namespace dexih.connections.webservice
 {
@@ -282,7 +281,7 @@ namespace dexih.connections.webservice
             }
 
             HttpClientHandler handler = null;
-            if (!String.IsNullOrEmpty(Username))
+            if (!string.IsNullOrEmpty(Username))
             {
                 var credentials = new NetworkCredential(Username, Password);
                 var creds = new CredentialCache

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using dexih.functions;
 using dexih.functions.BuiltIn;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
+using dexih.transforms.Mapping;
 using Dexih.Utils.DataType;
 using Xunit;
 
@@ -16,7 +16,7 @@ namespace dexih.transforms.tests
         [Fact]
         public async void RowTest_CommaSeparated()
         {
-            var table = new Table("test", 0, new TableColumns()
+            var table = new Table("test", 0, new TableColumns
             {
                 new TableColumn("csvField", DataType.ETypeCode.String)
             });
@@ -29,9 +29,9 @@ namespace dexih.transforms.tests
             
             var mappings = new Mappings(false);
 
-            var split = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.SplitColumnToRows)).GetTransformFunction(typeof(string));
+            var split = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.SplitColumnToRows), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
             
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
                 Inputs = new Parameter[]
                 {
@@ -45,7 +45,7 @@ namespace dexih.transforms.tests
                 }
             };
             
-            mappings.Add(new MapFunction(split, parameters));
+            mappings.Add(new MapFunction(split, parameters, MapFunction.EFunctionCaching.NoCache));
             
             var transformRow = new TransformRows(source, mappings);
 
@@ -61,12 +61,12 @@ namespace dexih.transforms.tests
         [Fact]
         public async void RowTest_ColumnPivot()
         {
-            var table = new Table("test", 0, new TableColumns()
+            var table = new Table("test", 0, new TableColumns
             {
-                new TableColumn("col0", DataType.ETypeCode.String),
-                new TableColumn("col1", DataType.ETypeCode.String),
-                new TableColumn("col2", DataType.ETypeCode.String),
-                new TableColumn("col3", DataType.ETypeCode.String)
+                new TableColumn("col0"),
+                new TableColumn("col1"),
+                new TableColumn("col2"),
+                new TableColumn("col3")
             });
 
             var values = new object[] {"a", "b", "c", "d"};
@@ -77,11 +77,11 @@ namespace dexih.transforms.tests
             
             var mappings = new Mappings(false);
 
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterArray("columns", DataType.ETypeCode.String, 1, new List<Parameter>()
+                    new ParameterArray("columns", DataType.ETypeCode.String, 1, new List<Parameter>
                     {
                         new ParameterColumn("col0", DataType.ETypeCode.String),
                         new ParameterColumn("col1", DataType.ETypeCode.String),
@@ -96,9 +96,9 @@ namespace dexih.transforms.tests
                 }
             };
 
-            var function = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.ColumnsToRows)).GetTransformFunction(typeof(string), parameters);
+            var function = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.ColumnsToRows), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string), parameters);
 
-            mappings.Add(new MapFunction(function, parameters));
+            mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
             
             var transformRow = new TransformRows(source, mappings);
 

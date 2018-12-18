@@ -1,3 +1,17 @@
-{
-  
-}
+[
+  {
+    "name": "Harry",
+    "age": 10,
+    "numbers": [1,2,3]
+  },
+  {
+    "name": "Ron",
+    "age": 11,
+    "numbers": [1,2,3]
+  },
+  {
+    "name": "Hermione",
+    "age": 10,
+    "numbers": [1,2,3]
+  }
+]

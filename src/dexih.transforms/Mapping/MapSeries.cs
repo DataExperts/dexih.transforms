@@ -4,7 +4,7 @@ using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace dexih.transforms.Mappings
+namespace dexih.transforms.Mapping
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum ESeriesGrain
@@ -59,7 +59,7 @@ namespace dexih.transforms.Mappings
             return Operations.Parse(InputColumn.DataType, SeriesFinish);
         }
 
-        public override object GetInputValue(object[] row = null)
+        public override object GetOutputTransform(object[] row = null)
         {
             object value;
             if (InputOrdinal == -1)
@@ -130,7 +130,7 @@ namespace dexih.transforms.Mappings
         
         public object NextValue(int count, object[] row = null)
         {
-            var value = GetInputValue(row);
+            var value = GetOutputTransform(row);
             return CalculateNextValue(value, count);
             
         }

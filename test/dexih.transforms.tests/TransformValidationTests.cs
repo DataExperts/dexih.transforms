@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.BuiltIn;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
+using dexih.transforms.Mapping;
 using Xunit;
 using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
@@ -28,11 +28,11 @@ namespace dexih.transforms.tests
 
             //set a filter that filters all
             var function = Functions
-                .GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<string>.IsEqual))
+                .GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<string>.IsEqual), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(string));
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterArray("Compare", ETypeCode.String, 1, new List<Parameter>
                     {
@@ -42,7 +42,7 @@ namespace dexih.transforms.tests
                 },
             };
 
-            var mappings = new Mappings()
+            var mappings = new Mappings
             {
                 new MapValidation(function, parameters)
             };
@@ -82,23 +82,23 @@ namespace dexih.transforms.tests
             //set a validation that rejects and cleans
             //set a filter that filters all
             var function = Functions
-                .GetFunction(typeof(ValidationFunctions).FullName, nameof(ValidationFunctions.MaxLength))
+                .GetFunction(typeof(ValidationFunctions).FullName, nameof(ValidationFunctions.MaxLength), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(string));
             function.InvalidAction = TransformFunction.EInvalidAction.Clean;
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterColumn("value", new TableColumn("StringColumn")),
                     new ParameterValue("maxLength", ETypeCode.Int32, 5)
                 },
-                Outputs = new List<Parameter>()
+                Outputs = new List<Parameter>
                 {
                     new ParameterOutputColumn("StringColumn", ETypeCode.String)
                 }
             };
 
-            var mappings = new Mappings()
+            var mappings = new Mappings
             {
                 new MapValidation(function, parameters)
             };
@@ -143,23 +143,23 @@ namespace dexih.transforms.tests
             //set a validation that rejects and cleans
             //set a filter that filters all
             var function = Functions
-                .GetFunction(typeof(ValidationFunctions).FullName, nameof(ValidationFunctions.MaxValue))
+                .GetFunction(typeof(ValidationFunctions).FullName, nameof(ValidationFunctions.MaxValue), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(int));
             function.InvalidAction = TransformFunction.EInvalidAction.RejectClean;
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterColumn("value", new TableColumn("IntColumn", ETypeCode.Int32)),
                     new ParameterValue("cleanedValue", ETypeCode.Int32, 5)
                 },
-                Outputs = new List<Parameter>()
+                Outputs = new List<Parameter>
                 {
                     new ParameterOutputColumn("IntColumn", ETypeCode.Int32)
                 }
             };
 
-            var mappings = new Mappings()
+            var mappings = new Mappings
             {
                 new MapValidation(function, parameters)
             };

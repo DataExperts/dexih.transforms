@@ -10,8 +10,6 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
-using Dexih.Utils.DataType;
-using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
 using static Dexih.Utils.DataType.DataType;
 

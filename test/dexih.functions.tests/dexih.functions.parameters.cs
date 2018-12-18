@@ -121,7 +121,7 @@ namespace dexih.transforms.tests
             Assert.Equal("val3", ((object[])functionParameters[2])[1]);
         }
 
-        
+
         [Fact]
         public void Parameter_WriteOutputs()
         {
@@ -136,7 +136,8 @@ namespace dexih.transforms.tests
             table.Columns.Add(column2);
             table.Columns.Add(column3);
 
-            var returnParameter = new ParameterColumn("return", returnColumn);
+            var returnParameter = new List<Parameter> {new ParameterColumn("return", returnColumn)};
+
             var outputs = new Parameter[2];
             outputs[0] = new ParameterColumn("p2", column1);
             var arrayParameters = new List<Parameter>() {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};

@@ -3,10 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 using System.Collections;
-using System.Linq;
-using CsvHelper;
-using dexih.functions.Mappings;
-using dexih.functions.Parameter;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.Query
@@ -15,45 +11,7 @@ namespace dexih.functions.Query
     {
         public Filter() { }
 
-        /// <summary>
-        /// Converts a standard function to a filter object.
-        /// </summary>
-        /// <param name="mapFunction"></param>
-        public static Filter GetFilterFromFunction(MapFunction mapFunction)
-        {
-//            if (mapFunction.Function.Parameters.ReturnParameter.DataType != ETypeCode.Boolean)
-//            {
-//                throw new QueryException(
-//                    $"The function {mapFunction.Function.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
-//            }
-
-            if (mapFunction.Function.CompareEnum == null)
-            {
-                return null;
-            }
-
-            var inputsArray = mapFunction.Parameters.Inputs.ToArray();
-            if (inputsArray.Length != 2)
-            {
-                return null;
-            }
-            
-            var compare = (ECompare) mapFunction.Function.CompareEnum;
-
-            var filter = new Filter
-            {
-                
-                Column1 = inputsArray[0] is ParameterColumn parameterColumn1 ? parameterColumn1.Column : null,
-                Value1 = inputsArray[0] is ParameterColumn parameterValue1 ? parameterValue1.Value : null,
-                Column2 = inputsArray[1] is ParameterColumn parameterColumn2 ? parameterColumn2.Column : null,
-                Value2 = inputsArray[1] is ParameterColumn parameterValue2 ? parameterValue2.Value : null,
-                CompareDataType = inputsArray[0].DataType,
-                Operator = compare
-            };
-
-            return filter;
-        }
-        
+       
         /// <summary>
         /// Sets a simple filter comparing a column against a static value.
         /// </summary>

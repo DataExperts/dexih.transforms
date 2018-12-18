@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Exceptions;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 
-namespace dexih.transforms.Mappings
+namespace dexih.transforms.Mapping
 {
     public class Mappings : List<Mapping>
     {
@@ -31,19 +32,19 @@ namespace dexih.transforms.Mappings
         /// </summary>
         public bool GroupRows { get; set; }
 
-        private List<TableColumn> _passthroughColumns;
+        private List<TableColumn> _passThroughColumns;
 
         /// <summary>
         /// Dictionary stores intput-output ordinal mapping for passthrough columns.
         /// </summary>
-        private Dictionary<int, int> _passthroughOrdinals;
+        private Dictionary<int, int> _passThroughOrdinals;
 
-        private List<TableColumn> _referencePassthroughColumns;
+        private List<TableColumn> _referencePassThroughColumns;
 
         /// <summary>
         /// Dictionary stores intput-output ordinal mapping for passthrough columns.
         /// </summary>
-        private Dictionary<int, int> _referencePassthroughOrdinals;
+        private Dictionary<int, int> _referencePassThroughOrdinals;
 
         private Task<bool>[] _tasks;
 
@@ -52,24 +53,26 @@ namespace dexih.transforms.Mappings
         // empty function variables, so save recreating.
         private readonly FunctionVariables _functionVariables = new FunctionVariables();
 
+        // Create a table object containing the output columns for the mappings.
         public Table Initialize(Table inputTable, Table joinTable = null, string joinTableAlias = null, bool mapAllJoinColumns = true)
         {
+            var table = new Table("Mapping");
+            
             foreach (var mapping in this)
             {
                 mapping.InitializeColumns(inputTable, joinTable);
             }
             
-            var table = new Table("Mapping");
             foreach (var mapping in this)
             {
                 mapping.AddOutputColumns(table);
             }
-
+            
             if (PassThroughColumns)
             {
-                _passthroughOrdinals = new Dictionary<int, int>();
-                _passthroughColumns = new List<TableColumn>();
-                int targetOrdinal = table.Columns.Count - 1;
+                _passThroughOrdinals = new Dictionary<int, int>();
+                _passThroughColumns = new List<TableColumn>();
+                var targetOrdinal = table.Columns.Count - 1;
                 
                 for(var i = 0; i < inputTable.Columns.Count; i++)
                 {
@@ -79,36 +82,53 @@ namespace dexih.transforms.Mappings
                     {
                         targetOrdinal++;
                         table.Columns.Add(column.Copy());
-                        _passthroughColumns.Add(column);
-                        _passthroughOrdinals.Add(i, targetOrdinal);
+                        _passThroughColumns.Add(column);
+                        _passThroughOrdinals.Add(i, targetOrdinal);
                     }
                 }
 
                 if (joinTable != null)
                 {
-                    _referencePassthroughColumns = new List<TableColumn>();
-                    _referencePassthroughOrdinals = new Dictionary<int, int>();
+                    var mapArrays = this.OfType<MapJoinNode>().ToArray();
                     
-                    for (var i = 0; i < joinTable.Columns.Count; i++)
+                    if (mapArrays.Length > 1)
                     {
-                        var column = joinTable.Columns[i];
-                        
-                        var newColumn = column.Copy();
-                        newColumn.ReferenceTable = joinTableAlias;
-                        newColumn.IsIncrementalUpdate = false;
+                        throw new Exception("The mappings contain more than one node mapping.");
+                    }
 
-                        var ordinal = table.GetOrdinal(newColumn.TableColumnName());
-                        if (mapAllJoinColumns || ordinal < 0)
+                    // if there is an array column, link the join table into this.
+                    if (mapArrays.Length == 1)
+                    {
+                       //  var mapNode = mapArrays[0];
+                       //  mapNode.InputColumn.ChildColumns = joinTable.Columns;
+                    }
+                    else
+                    {
+                        // add the join columns to the main table.
+                        _referencePassThroughColumns = new List<TableColumn>();
+                        _referencePassThroughOrdinals = new Dictionary<int, int>();
+
+                        for (var i = 0; i < joinTable.Columns.Count; i++)
                         {
-                            targetOrdinal++;
-                            table.Columns.Add(newColumn);
-                            _referencePassthroughColumns.Add(newColumn);
-                            _referencePassthroughOrdinals.Add(i, targetOrdinal);
+                            var column = joinTable.Columns[i];
+
+                            var newColumn = column.Copy();
+                            newColumn.ReferenceTable = joinTableAlias;
+                            newColumn.IsIncrementalUpdate = false;
+
+                            var ordinal = table.GetOrdinal(newColumn.TableColumnName());
+                            if (mapAllJoinColumns || ordinal < 0)
+                            {
+                                targetOrdinal++;
+                                table.Columns.Add(newColumn);
+                                _referencePassThroughColumns.Add(newColumn);
+                                _referencePassThroughOrdinals.Add(i, targetOrdinal);
+                            }
                         }
                     }
                 }
             }
-
+            
             if (inputTable.OutputSortFields != null)
             {
                 //pass through the previous sort order, however limit to fields which have been mapped.
@@ -139,9 +159,9 @@ namespace dexih.transforms.Mappings
                         }
                     }
 
-                    if (!found && PassThroughColumns && _passthroughColumns != null)
+                    if (!found && PassThroughColumns && _passThroughColumns != null)
                     {
-                        var column = _passthroughColumns.SingleOrDefault(c => c.Compare(t.Column));
+                        var column = _passThroughColumns.SingleOrDefault(c => c.Compare(t.Column));
                         if (column != null)
                         {
                             fields.Add(new Sort(column, t.Direction));
@@ -177,7 +197,7 @@ namespace dexih.transforms.Mappings
         /// <returns></returns>
         public object[] GetGroupValues(object[] row = null)
         {
-            var groups = this.OfType<MapGroup>().Select(c=>c.GetInputValue(row)).ToArray();
+            var groups = this.OfType<MapGroup>().Select(c=>c.GetOutputTransform(row)).ToArray();
             return groups;
         }
         
@@ -233,7 +253,7 @@ namespace dexih.transforms.Mappings
         /// <returns></returns>
         public object[] GetJoinPrimaryKey()
         {
-            var inputs = this.OfType<MapJoin>().Select(c=>c.GetInputValue()).ToArray();
+            var inputs = this.OfType<MapJoin>().Select(c=>c.GetOutputTransform()).ToArray();
             return inputs;
         }
 
@@ -294,7 +314,7 @@ namespace dexih.transforms.Mappings
             {
                 await Task.WhenAll(_tasks);
             }
-            catch (TargetInvocationException targetInvocationException)
+            catch (TargetInvocationException)
             {
                 for (var i = 0; i < Count; i++)
                 {
@@ -333,9 +353,9 @@ namespace dexih.transforms.Mappings
                 mapping.MapOutputRow(row);
             }
 
-            if (_passthroughColumns != null)
+            if (_passThroughColumns != null)
             {
-                foreach (var ordinal in _passthroughOrdinals)
+                foreach (var ordinal in _passThroughOrdinals)
                 {
                     row[ordinal.Value] = _rowData[ordinal.Key];
                 }

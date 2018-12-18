@@ -28,7 +28,7 @@ namespace dexih.transforms.tests
             while (await transformDelta.ReadAsync())
             {
                 Assert.True((char) transformDelta["Operation"] == 'C');
-                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((int) transformDelta["SurrogateKey"] == count + 1);
                 Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
                 count++;
@@ -45,7 +45,7 @@ namespace dexih.transforms.tests
             while (await transformDelta.ReadAsync())
             {
                 Assert.True((char) transformDelta["Operation"] == 'C');
-                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((int) transformDelta["SurrogateKey"] == count + 1);
                 Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
                 count++;
@@ -74,7 +74,7 @@ namespace dexih.transforms.tests
             while (await transformDelta.ReadAsync())
             {
                 Assert.True((char) transformDelta["Operation"] == 'C');
-                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((int) transformDelta["SurrogateKey"] == count + 1);
                 Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
                 count++;
@@ -190,7 +190,7 @@ namespace dexih.transforms.tests
             var targetTable = source.CacheTable.Copy();
             targetTable.AddAuditColumns();
 
-            object surrrogateKey = 0;
+            object surrrogateKey = 0L;
 
             Transform target = new ReaderMemory(targetTable);
             target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);

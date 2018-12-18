@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
-using dexih.functions.Mappings;
 using dexih.functions.Query;
-using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
-using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -97,7 +94,7 @@ namespace dexih.transforms
                 Mappings.Reset(EFunctionType.Series);
                 
                 //populate the parameters with the current row.
-                Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
                 var cacheRow = new object[FieldCount];
                 Mappings.MapOutputRow(cacheRow);
                 _cachedRows.Enqueue(cacheRow);
@@ -149,7 +146,7 @@ namespace dexih.transforms
                     {
                  
                         // if the group has not changed, process the input row
-                        Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                        await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
 
                         //create a cached current row.  this will be output when the group has changed.
                         var cacheRow = new object[outputRow.Length];
@@ -159,7 +156,7 @@ namespace dexih.transforms
                     // when group has changed
                     else
                     {
-                        ProcessGroupChange(ref outputRow);
+                        outputRow = await ProcessGroupChange();
                         
                         //store the last groupValues read to start the next grouping.
                         _groupValues = nextGroupValues;
@@ -182,7 +179,7 @@ namespace dexih.transforms
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
-                ProcessGroupChange(ref outputRow);
+                outputRow = await ProcessGroupChange();
 
                 _lastRecord = true;
             }
@@ -192,7 +189,7 @@ namespace dexih.transforms
 
         }
 
-        private void ProcessGroupChange(ref object[] outputRow)
+        private async Task<object[]> ProcessGroupChange()
         {
             // if the group has changed, update all cached rows with aggregate functions.
             if (_cachedRows != null && _cachedRows.Any())
@@ -206,14 +203,14 @@ namespace dexih.transforms
                 List<(int index, object[] row)> additionalRows = null;
                 foreach (var row in _cachedRows)
                 {
-                    var moreRows = Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
+                    var moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
                     
                     // if the aggregate function wants more rows, store them in a separate collection.
                     while (moreRows)
                     {
                         var rowCopy = new object[FieldCount];
                         row.CopyTo(rowCopy, 0);
-                        moreRows = Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
+                        moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
 
                         if (additionalRows == null)
                         {
@@ -246,11 +243,11 @@ namespace dexih.transforms
                 }
                 
                 Mappings.Reset(EFunctionType.Aggregate);
-                outputRow = _cachedRows.Dequeue();
+                return _cachedRows.Dequeue();
             }
             else
             {
-                outputRow = null;
+                return null;
             }
         }
 

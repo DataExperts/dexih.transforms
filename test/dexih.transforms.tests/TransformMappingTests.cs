@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.BuiltIn;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
+using dexih.transforms.Mapping;
 using Xunit;
 using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
@@ -28,46 +28,46 @@ namespace dexih.transforms.tests
             var mappings = new Mappings(false);
 
             var function = new TransformFunction(new Func<string, int, string>((stringColumn, number) => stringColumn + number.ToString()), typeof(bool), null, null);
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterColumn("StringColumn", ETypeCode.String),
                     new ParameterValue("number", ETypeCode.Int32, 123),
                 },
-                ReturnParameter = new ParameterOutputColumn("CustomFunction", ETypeCode.String)
+                ReturnParameters =  new List<Parameter> { new ParameterOutputColumn("CustomFunction", ETypeCode.String)}
             };
 
             
-            mappings.Add(new MapFunction(function, parameters));
+            mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
             
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring)).GetTransformFunction(typeof(string));
-            parameters = new Parameters()
+            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
+            parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterColumn("name", new TableColumn("StringColumn")),
                     new ParameterValue("start", ETypeCode.Int32, 1),
                     new ParameterValue("end", ETypeCode.Int32, 3),
                 },
-                ReturnParameter = new ParameterOutputColumn("return", new TableColumn("Substring"))
+                ReturnParameters = new List<Parameter> { new ParameterOutputColumn("return", new TableColumn("Substring"))}
             };
-            mappings.Add(new MapFunction(function, parameters));
+            mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
             
             
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Concat)).GetTransformFunction(typeof(string));
-            parameters = new Parameters()
+            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Concat), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
+            parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterArray("value", ETypeCode.String, 1, new List<Parameter>
                     {
                         new ParameterColumn("value", new TableColumn("StringColumn")),
                     })
                 },
-                ReturnParameter = new ParameterOutputColumn("return", new TableColumn("Concat"))
+                ReturnParameters = new List<Parameter> {  new ParameterOutputColumn("return", new TableColumn("Concat"))}
             };
-            mappings.Add(new MapFunction(function, parameters));
+            mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
 
             mappings.Add(new MapColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)));
             mappings.Add(new MapColumn(new TableColumn("ArrayColumn", ETypeCode.DateTime), new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1)));
@@ -90,7 +90,7 @@ namespace dexih.transforms.tests
 
         [Theory]
         [InlineData(100000)] //should run in ~ 250ms
-        public async Task MappingPerformancePassthrough(int rows)
+        public async Task MappingPerformancePassThrough(int rows)
         {
             var data = Helpers.CreateLargeTable(rows);
             var transformMapping = new TransformMapping(data, new Mappings());
@@ -136,16 +136,16 @@ namespace dexih.transforms.tests
             for (var i = 0; i < data.FieldCount; i++)
             {
                 var function = new TransformFunction(new Func<object, object>((value) => value), typeof(string), null, null);
-                var parameters = new Parameters()
+                var parameters = new Parameters
                 {
-                    Inputs = new List<Parameter>()
+                    Inputs = new List<Parameter>
                     {
                         new ParameterColumn(data.GetName(i), ETypeCode.String)
                     },
-                    ReturnParameter = new ParameterOutputColumn(data.GetName(i), ETypeCode.String)
+                    ReturnParameters = new List<Parameter> { new ParameterOutputColumn(data.GetName(i), ETypeCode.String)}
                 };
                 
-                mappings.Add(new MapFunction(function, parameters));
+                mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
             }
 
             var transformMapping = new TransformMapping(data, mappings);

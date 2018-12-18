@@ -220,7 +220,6 @@
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.connections.flatfile.csproj" t="IncludeRecursive" />
           <e p="dexih.connections.flatfile.local.cs" t="Include" />
-          <e p="FlatFile.Local.Exceptions.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
               <e p="netcoreapp2.1" t="Include">
@@ -338,22 +337,6 @@
         </e>
         <e p="dexih.functions" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
-          <e p="BuiltIn" t="Include">
-            <e p="AggregateFunctions.cs" t="Include" />
-            <e p="ArithmeticFunctions.cs" t="Include" />
-            <e p="ArrayFunctions.cs" t="Include" />
-            <e p="CacheFunctions.cs" t="Include" />
-            <e p="CategorizeFunctions.cs" t="Include" />
-            <e p="ConditionFunctions.cs" t="Include" />
-            <e p="HierarchyFunctions.cs" t="Include" />
-            <e p="MapFunctions.cs" t="Include" />
-            <e p="MathFunctions.cs" t="Include" />
-            <e p="ProfileFunctions.cs" t="Include" />
-            <e p="RowFunctions.cs" t="Include" />
-            <e p="SeriesFunctions.cs" t="Include" />
-            <e p="SeriesValue.cs" t="Include" />
-            <e p="ValidationFunctions.cs" t="Include" />
-          </e>
           <e p="dexih.functions.csproj" t="IncludeRecursive" />
           <e p="DexihActiveAgent.cs" t="Include" />
           <e p="DownloadUrl.cs" t="Include" />
@@ -361,14 +344,7 @@
             <e p="FunctionException.cs" t="Include" />
           </e>
           <e p="Extensions.cs" t="Include" />
-          <e p="File" t="Include">
-            <e p="FileConfiguration.cs" t="Include" />
-            <e p="FileHandlerBase.cs" t="Include" />
-            <e p="FileHandlerExceptions.cs" t="Include" />
-            <e p="FileHandlerJson.cs" t="Include" />
-            <e p="FileHandlerText.cs" t="Include" />
-            <e p="FileHandlerXml.cs" t="Include" />
-          </e>
+          <e p="FilePermissions.cs" t="Include" />
           <e p="FlatFile.cs" t="Include" />
           <e p="Functions" t="Include">
             <e p="FunctionAttribute.cs" t="Include" />
@@ -378,19 +354,6 @@
             <e p="FunctionVariables.cs" t="Include" />
             <e p="GlobalVariables.cs" t="Include" />
             <e p="TransformFunction.cs" t="Include" />
-          </e>
-          <e p="Mappings" t="Include">
-            <e p="MapAggregate.cs" t="Include" />
-            <e p="MapColumn.cs" t="Include" />
-            <e p="MapFilter.cs" t="Include" />
-            <e p="MapFunction.cs" t="Include" />
-            <e p="MapGroup.cs" t="Include" />
-            <e p="MapJoin.cs" t="Include" />
-            <e p="Mapping.cs" t="Include" />
-            <e p="Mappings.cs" t="Include" />
-            <e p="MapSeries.cs" t="Include" />
-            <e p="MapSort.cs" t="Include" />
-            <e p="MapValidation.cs" t="Include" />
           </e>
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
@@ -420,11 +383,13 @@
             <e p="UpdateQuery.cs" t="Include" />
           </e>
           <e p="Retry.cs" t="Include" />
+          <e p="SeriesValue.cs" t="Include" />
           <e p="ShortGuid.cs" t="Include" />
           <e p="SortedRowsDictionary.cs" t="Include" />
           <e p="SymbolExtensions.cs" t="Include" />
           <e p="Table" t="Include">
             <e p="File.cs" t="Include" />
+            <e p="FileConfiguration.cs" t="Include" />
             <e p="Table.cs" t="Include" />
             <e p="TableCache.cs" t="Include" />
             <e p="TableColumn.cs" t="Include" />
@@ -433,6 +398,31 @@
             <e p="WebService.cs" t="Include" />
           </e>
           <e p="TaskTimer.cs" t="Include" />
+        </e>
+        <e p="dexih.functions.builtIn" t="IncludeRecursive">
+          <e p="AggregateFunctions.cs" t="Include" />
+          <e p="ArithmeticFunctions.cs" t="Include" />
+          <e p="ArrayFunctions.cs" t="Include" />
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="CacheFunctions.cs" t="Include" />
+          <e p="CategorizeFunctions.cs" t="Include" />
+          <e p="ConditionFunctions.cs" t="Include" />
+          <e p="dexih.functions.builtIn.csproj" t="IncludeRecursive" />
+          <e p="HierarchyFunctions.cs" t="Include" />
+          <e p="IOFunctions.cs" t="Include" />
+          <e p="MapFunctions.cs" t="Include" />
+          <e p="MathFunctions.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Release" t="Include">
+              <e p="netcoreapp2.1" t="Include">
+                <e p="dexih.functions.builtIn.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+          <e p="ProfileFunctions.cs" t="Include" />
+          <e p="RowFunctions.cs" t="Include" />
+          <e p="SeriesFunctions.cs" t="Include" />
+          <e p="ValidationFunctions.cs" t="Include" />
         </e>
         <e p="dexih.transforms" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
@@ -455,7 +445,29 @@
             <e p="TransformExceptions.cs" t="Include" />
             <e p="TransformWriterExceptions.cs" t="Include" />
           </e>
+          <e p="File" t="Include">
+            <e p="FileHandlerBase.cs" t="Include" />
+            <e p="FileHandlerExceptions.cs" t="Include" />
+            <e p="FileHandlerJson.cs" t="Include" />
+            <e p="FileHandlerText.cs" t="Include" />
+            <e p="FileHandlerXml.cs" t="Include" />
+          </e>
           <e p="FileEnum.cs" t="Include" />
+          <e p="Mapping" t="Include">
+            <e p="MapAggregate.cs" t="Include" />
+            <e p="MapColumn.cs" t="Include" />
+            <e p="MapFilter.cs" t="Include" />
+            <e p="MapFunction.cs" t="Include" />
+            <e p="MapGroup.cs" t="Include" />
+            <e p="MapJoin.cs" t="Include" />
+            <e p="MapJoinNode.cs" t="Include" />
+            <e p="MapNode.cs" t="Include" />
+            <e p="Mapping.cs" t="Include" />
+            <e p="Mappings.cs" t="Include" />
+            <e p="MapSeries.cs" t="Include" />
+            <e p="MapSort.cs" t="Include" />
+            <e p="MapValidation.cs" t="Include" />
+          </e>
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
               <e p="netcoreapp2.1" t="Include">
@@ -493,10 +505,12 @@
           <e p="TransformConcatinate.cs" t="Include" />
           <e p="TransformDelta.cs" t="Include" />
           <e p="TransformFilter.cs" t="Include" />
+          <e p="TransformFlattenNode.cs" t="Include" />
           <e p="TransformGroup.cs" t="Include" />
           <e p="TransformJoin.cs" t="Include" />
           <e p="TransformLookup.cs" t="Include" />
           <e p="TransformMapping.cs" t="Include" />
+          <e p="TransformNode.cs" t="Include" />
           <e p="TransformProfile.cs" t="Include" />
           <e p="TransformQuery.cs" t="Include" />
           <e p="TransformRows.cs" t="Include" />
@@ -508,13 +522,24 @@
           </e>
           <e p="TransformSeries.cs" t="Include" />
           <e p="TransformSort.cs" t="Include" />
-          <e p="TransformTrain.cs" t="Include" />
           <e p="TransformValidation.cs" t="Include" />
           <e p="TransformWriter.cs" t="Include" />
           <e p="TransformWriterResult.cs" t="Include" />
         </e>
       </e>
       <e p="test" t="Include">
+        <e p="dexih.benchmark" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.benchmark.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Release" t="Include">
+              <e p="netcoreapp2.1" t="Include">
+                <e p="dexih.benchmark.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+          <e p="Program.cs" t="Include" />
+        </e>
         <e p="dexih.connectinos.db2.tests" t="IncludeRecursive">
           <e p="appsettings.json" t="Include" />
           <e p="bin" t="ExcludeRecursive" />
@@ -718,14 +743,25 @@
             <e p="AssemblyInfo.cs" t="Include" />
           </e>
         </e>
+        <e p="dexih.functions.builtIn.tests" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="BuiltIn.cs" t="Include" />
+          <e p="dexih.functions.builtIn.tests.csproj" t="IncludeRecursive" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Release" t="Include">
+              <e p="netcoreapp2.1" t="Include">
+                <e p="dexih.functions.builtIn.tests.AssemblyInfo.cs" t="Include" />
+                <e p="dexih.functions.builtIn.tests.Program.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
         <e p="dexih.functions.tests" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.functions.initialize.cs" t="Include" />
           <e p="dexih.functions.parameters.cs" t="Include" />
-          <e p="dexih.functions.standard.cs" t="Include" />
           <e p="dexih.functions.tableCache.cs" t="Include" />
           <e p="dexih.functions.tests.csproj" t="IncludeRecursive" />
-          <e p="Mappings.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
               <e p="netcoreapp2.1" t="Include">
@@ -742,11 +778,16 @@
         </e>
         <e p="dexih.transforms.tests" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
+          <e p="Data" t="Include">
+            <e p="array.json" t="Include" />
+            <e p="weather.json" t="Include" />
+          </e>
           <e p="dataadapter.cs" t="Include" />
           <e p="DataReaderAdapterTests.cs" t="Include" />
           <e p="dexih.transforms.tests.csproj" t="IncludeRecursive" />
           <e p="Helpers.cs" t="Include" />
           <e p="lookup.cs" t="Include" />
+          <e p="Mappings.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
               <e p="netcoreapp2.1" t="Include">
@@ -762,6 +803,7 @@
           </e>
           <e p="samples.cs" t="Include" />
           <e p="StreamCsvTests.cs" t="Include" />
+          <e p="StreamJsonTests.cs" t="Include" />
           <e p="TestSoureDbReader.cs" t="Include" />
           <e p="TransformAggregateTests.cs" t="Include" />
           <e p="TransformConcatinateTests.cs" t="Include" />
@@ -771,6 +813,7 @@
           <e p="TransformJoinTests.cs" t="Include" />
           <e p="TransformLookupTests.cs" t="Include" />
           <e p="TransformMappingTests.cs" t="Include" />
+          <e p="TransformNodeTests.cs" t="Include" />
           <e p="TransformProfileTests.cs" t="Include" />
           <e p="TransformRowTests.cs" t="Include" />
           <e p="TransformSeriesTests.cs" t="Include" />

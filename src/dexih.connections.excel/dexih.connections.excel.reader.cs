@@ -33,7 +33,7 @@ namespace dexih.connections.excel
             _excelPackage?.Dispose();
         }
 
-        public override Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
             try

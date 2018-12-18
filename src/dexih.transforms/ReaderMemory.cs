@@ -1,6 +1,5 @@
 ﻿using dexih.functions;
 using dexih.functions.Query;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,6 +68,11 @@ namespace dexih.transforms
 
         protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
+            if (_data == null)
+            {
+                return null;
+                
+            }
             _currentRow++;
             while(!_cacheLoaded && _currentRow < _data.Count)
             {
@@ -91,10 +95,14 @@ namespace dexih.transforms
         }
 
         public override bool IsClosed => _currentRow >= _data.Count;
+        public override bool HasRows => _currentRow < _data.Count && _data.Count > 0;
         
         public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             Reset();
+            CacheTable.Data.Clear();
+            _cacheLoaded = false;
+            _currentRow = -1;
             return Open(auditKey, query, cancellationToken);
         }
     }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using dexih.transforms.File;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -40,7 +41,7 @@ namespace dexih.transforms.tests
             var stream = new StreamCsv(testData);
 
             // parse converted csv stream
-            var fileConfig = new FileConfiguration()
+            var fileConfig = new FileConfiguration
             {
                 Quote = '"'
             };

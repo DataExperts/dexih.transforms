@@ -1,5 +1,4 @@
-﻿using System;
-using Dexih.Utils.DataType;
+﻿using Dexih.Utils.DataType;
 
 namespace dexih.functions.Parameter
 {

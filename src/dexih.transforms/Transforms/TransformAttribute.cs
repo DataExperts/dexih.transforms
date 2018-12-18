@@ -9,7 +9,7 @@ namespace dexih.transforms.Transforms
         [JsonConverter(typeof(StringEnumConverter))]
         public enum ETransformType
         {
-            Mapping, Filter, Sort, Group, Aggregate, Series, Join, Rows, Lookup, Validation, Delta, Concatenate, Profile
+            Mapping, Filter, Sort, Group, Aggregate, Series, Join, Rows, Lookup, Validation, Delta, Concatenate, Profile, FlattenNode
         }
         
         public ETransformType TransformType { get; set; }

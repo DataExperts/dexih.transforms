@@ -8,7 +8,7 @@ namespace dexih.functions
     public class TableCache : IList<object[]>
     {
         private readonly int _maxRows;
-        private readonly List<object[]> _data;
+        private IList<object[]> _data;
         private int _startIndex;
 
         public TableCache()
@@ -37,14 +37,16 @@ namespace dexih.functions
             set => _data[InternalIndex(index)] = value;
         }
 
-        public int Count => _data.Count;
+        public int Count => _data?.Count ?? 0;
 
         public bool IsReadOnly => false;
 
 
         public void Add(object[] item)
         {
-            if (_maxRows <= 0 || _data.Count < _maxRows)
+            if (_data == null) _data = new List<object[]>();
+            
+            if (_maxRows <= 0 || Count < _maxRows)
             {
                 _data.Add(item);
             }
@@ -65,15 +67,20 @@ namespace dexih.functions
             }
         }
 
+        public void Set(IList<object[]> data)
+        {
+            _data = data;
+        }
+
         public void Clear()
         {
-            _data.Clear();
+            _data?.Clear();
             _startIndex = 0;
         }
 
         public bool Contains(object[] item)
         {
-            return _data.Contains(item);
+            return _data?.Contains(item) ?? false;
         }
 
         public void CopyTo(object[][] array, int arrayIndex)
@@ -151,7 +158,7 @@ namespace dexih.functions
     [Serializable]
     public class TableCacheEnumerator : IEnumerator<object[]>
     {
-        private List<object[]> _data;
+        private IList<object[]> _data;
         private int _startIndex;
 
         private int _enumeratorPosition;
@@ -159,7 +166,7 @@ namespace dexih.functions
         private bool _isFinished;
 
 
-        public TableCacheEnumerator(List<object[]> data, int startIndex)
+        public TableCacheEnumerator(IList<object[]> data, int startIndex)
         {
             _data = data;
             _startIndex = startIndex;

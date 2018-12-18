@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using dexih.transforms.Mappings;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
+using dexih.transforms.Mapping;
 using Dexih.Utils.DataType;
 using Xunit;
 
 namespace dexih.functions.tests
 {
-    public class Mappings
+    public class MappingsTests
     {
         [Fact]
         public void Mapping_Column()
@@ -184,16 +184,16 @@ namespace dexih.functions.tests
 //            var transformFunction = function.GetTransformFunction(typeof(string));
             var parameters = new Parameters
             {
-                Inputs = new List<Parameter.Parameter>()
+                Inputs = new List<Parameter.Parameter>
                 {
                     new ParameterArray("input", DataType.ETypeCode.String, 1,
-                        new List<Parameter.Parameter>()
+                        new List<Parameter.Parameter>
                         {
                             new ParameterColumn("values", inputColumn1),
                             new ParameterColumn("values", inputColumn2),
                         })
                 },
-                ReturnParameters = new List<Parameter.Parameter>() { new ParameterOutputColumn("return", outputColumn) }
+                ReturnParameters = new List<Parameter.Parameter> { new ParameterOutputColumn("return", outputColumn) }
             };
 
             // map a value

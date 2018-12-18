@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.BuiltIn;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
+using dexih.transforms.Mapping;
 using Dexih.Utils.DataType;
 using Xunit;
 
@@ -40,9 +40,9 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(false);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction(typeof(double));
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
                 Inputs = new Parameter[]
                 {
@@ -54,10 +54,10 @@ namespace dexih.transforms.tests
                     new ParameterValue("PreCount", DataType.ETypeCode.Int32, 3),
                     new ParameterValue("PostCount", DataType.ETypeCode.Int32, 3)
                 },
-                ResultReturnParameter = new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
             };
             
-            mappings.Add(new MapFunction(mavg, parameters));
+            mappings.Add(new MapFunction(mavg, parameters, MapFunction.EFunctionCaching.NoCache));
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, true, null, null));
             
             var transformGroup = new TransformSeries(source, mappings);
@@ -97,9 +97,9 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(false);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction(typeof(double));
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
                 Inputs = new Parameter[]
                 {
@@ -111,10 +111,10 @@ namespace dexih.transforms.tests
                     new ParameterValue("PreCount", DataType.ETypeCode.Int32, 3),
                     new ParameterValue("PostCount", DataType.ETypeCode.Int32, 3)
                 },
-                ResultReturnParameter = new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
             };
             
-            mappings.Add(new MapFunction(mavg, parameters));
+            mappings.Add(new MapFunction(mavg, parameters, MapFunction.EFunctionCaching.NoCache));
 
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
             
@@ -143,9 +143,9 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(true);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage)).GetTransformFunction(typeof(double));
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             
-            var parameters = new Parameters()
+            var parameters = new Parameters
             {
                 Inputs = new Parameter[]
                 {
@@ -157,13 +157,13 @@ namespace dexih.transforms.tests
                     new ParameterValue("PreCount", DataType.ETypeCode.Int32, 3),
                     new ParameterValue("PostCount", DataType.ETypeCode.Int32, 3)
                 },
-                ResultReturnParameter = new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
             };
             
-            mappings.Add(new MapFunction(mavg, parameters));
+            mappings.Add(new MapFunction(mavg, parameters, MapFunction.EFunctionCaching.NoCache));
             
-            var highest = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.HighestSince)).GetTransformFunction(typeof(double));
-            parameters = new Parameters()
+            var highest = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.HighestSince), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
+            parameters = new Parameters
             {
                 Inputs = new Parameter[]
                 {
@@ -175,9 +175,9 @@ namespace dexih.transforms.tests
                     new ParameterOutputColumn("Count", DataType.ETypeCode.Int32), 
                     new ParameterOutputColumn("HighestValue", DataType.ETypeCode.Double), 
                 },
-                ResultReturnParameter = new ParameterOutputColumn("Highest", DataType.ETypeCode.DateTime)
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("Highest", DataType.ETypeCode.DateTime)}
             };
-            mappings.Add(new MapFunction(highest, parameters));
+            mappings.Add(new MapFunction(highest, parameters, MapFunction.EFunctionCaching.NoCache));
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
 
             var transformGroup = new TransformSeries(source, mappings);

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using dexih.functions;
 using System.Threading;
-using dexih.functions.Mappings;
 using dexih.functions.Query;
+using dexih.transforms.Mapping;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Transforms;
 
@@ -25,8 +23,6 @@ namespace dexih.transforms
         private int _primaryFieldCount;
         private int _referenceFieldCount;
 
-        private string _referenceTableName;
-
         private IEnumerator<object[]> _lookupCache;
 
         public TransformLookup() { }
@@ -42,40 +38,8 @@ namespace dexih.transforms
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-
-//            if (ReferenceTransform == null)
-//                throw new Exception("There must be a lookup table specified");
-//
-//            CacheTable = new Table("Lookup");
-//
-//            var pos = 0;
-//            foreach (var column in PrimaryTransform.CacheTable.Columns)
-//            {
-//                CacheTable.Columns.Add(column.Copy());
-//                pos++;
-//            }
-//            foreach (var column in ReferenceTransform.CacheTable.Columns)
-//            {
-//                var newColumn = column.Copy();
-//                newColumn.ReferenceTable = ReferenceTableAlias;
-//                newColumn.IsIncrementalUpdate = false;
-//
-//                //if a column of the same name exists, append a 1 to the name
-//                //if (CacheTable.Columns.SingleOrDefault(c => c.Name == column.TableColumnName()) != null)
-//                //{
-//                //    throw new Exception("The lookup could not be initialized as the column " + column.TableColumnName() + " is ambiguous.");
-//                //}
-//                CacheTable.Columns.Add(newColumn);
-//                pos++;
-//            }
-
-            _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.Name : ReferenceTransform.ReferenceTableAlias;
-
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
-
-            //CacheTable = await Mappings.Initialize(PrimaryTransform.CacheTable, ReferenceTransform.CacheTable, ReferenceTableAlias);
-            //CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             ReferenceTransform.SetCacheMethod(ECacheMethod.OnDemandCache, 1000);
             
@@ -110,10 +74,8 @@ namespace dexih.transforms
 
                 return newRow;
             }
-            else
-            {
-                _lookupCache = null;
-            }
+
+            _lookupCache = null;
 
             if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
             {
@@ -130,7 +92,7 @@ namespace dexih.transforms
             }
 
             //set the values for the lookup
-            Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
             
             // create a select query with filters set to the values of the current row
             var selectQuery = new SelectQuery();
@@ -139,22 +101,9 @@ namespace dexih.transforms
                 Column1 = c.JoinColumn,
                 CompareDataType = ETypeCode.String,
                 Operator = Filter.ECompare.IsEqual,
-                Value2 = c.GetInputValue()
+                Value2 = c.GetOutputTransform()
             }).ToList();
             
-//            foreach (var joinPair in JoinPairs)
-//            {
-//                var value = joinPair.SourceColumn == null ? joinPair.JoinValue : PrimaryTransform[joinPair.SourceColumn];
-//
-//                selectQuery.Filters.Add(new Filter
-//                {
-//                    Column1 = joinPair.JoinColumn,
-//                    CompareDataType = ETypeCode.String,
-//                    Operator = Filter.ECompare.IsEqual,
-//                    Value2 = value
-//                });
-//            }
-
             var lookupResult = await ReferenceTransform.Lookup(selectQuery, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
             if (lookupResult != null)
             {

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using dexih.functions;
 using dexih.functions.Query;
 
-namespace dexih.functions.File
+namespace dexih.transforms.File
 {
     public abstract class FileHandlerBase : IDisposable
     {

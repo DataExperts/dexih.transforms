@@ -4,10 +4,11 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
+using Dexih.Utils.DataType;
 using Xunit;
 using static Dexih.Utils.DataType.DataType;
 
@@ -189,10 +190,10 @@ namespace dexih.transforms.tests
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
                 new MapFunction(
                     new TransformFunction(new Func<bool, bool>(isValid => isValid), typeof(bool), null, null),
-                    new Parameters()
+                    new Parameters
                     {
-                        Inputs = new List<Parameter>() {new ParameterJoinColumn("IsValid", ETypeCode.Boolean, 0)}
-                    })
+                        Inputs = new List<Parameter> {new ParameterJoinColumn("IsValid", ETypeCode.Boolean, 0)}
+                    }, MapFunction.EFunctionCaching.NoCache)
             };
             
             var transformJoin = new TransformJoin(source, sortedJoinData, mappings, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -375,10 +376,10 @@ namespace dexih.transforms.tests
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
                 new MapFunction(
                     new TransformFunction(new Func<bool, bool>(isValid => isValid), typeof(bool), null, null),
-                    new Parameters()
+                    new Parameters
                     {
-                        Inputs = new List<Parameter>() {new ParameterJoinColumn("IsValid", ETypeCode.Boolean, 0)}
-                    })
+                        Inputs = new List<Parameter> {new ParameterJoinColumn("IsValid", ETypeCode.Boolean, 0)}
+                    }, MapFunction.EFunctionCaching.NoCache)
             };
             
             var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -421,14 +422,14 @@ namespace dexih.transforms.tests
             {
                 new MapFunction(
                     new TransformFunction(new Func<int, int, bool>((source1, join) => source1 == join - 1), typeof(bool), null, null),
-                    new Parameters()
+                    new Parameters
                     {
-                        Inputs = new List<Parameter>()
+                        Inputs = new List<Parameter>
                         {
                             new ParameterColumn("IntColumn", ETypeCode.Int32),
                             new ParameterJoinColumn("Join", new TableColumn("IntColumn", ETypeCode.Int32, parentTable: "Join"))
                         }
-                    })
+                    }, MapFunction.EFunctionCaching.NoCache)
             };
             
             var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -472,14 +473,14 @@ namespace dexih.transforms.tests
             {
                 new MapFunction(
                     new TransformFunction(new Func<int, int, bool>((source1, join) => source1 == join - 1), typeof(bool), null, null),
-                    new Parameters()
+                    new Parameters
                     {
-                        Inputs = new List<Parameter>()
+                        Inputs = new List<Parameter>
                         {
                             new ParameterColumn("IntColumn", ETypeCode.Int32),
                             new ParameterJoinColumn("Join", new TableColumn("IntColumn", ETypeCode.Int32, parentTable: "Join"))
                         }
-                    })
+                    }, MapFunction.EFunctionCaching.NoCache)
             };
             
             var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, Transform.EDuplicateStrategy.Abend, null, "Join");
@@ -510,6 +511,72 @@ namespace dexih.transforms.tests
                     Assert.Null(transformJoin["LookupValue"]); //test the last join which is not found.
             }
             Assert.Equal(10, pos);
+        }
+        
+        [Fact]
+        public async Task Join_LinkArray()
+        {
+            var source = Helpers.CreateParentTableData();
+
+            var mappings = new Mappings
+            {
+                new MapNode(new TableColumn("array", DataType.ETypeCode.Node), source.CacheTable),
+                new MapJoin(new TableColumn("parent_id"), new TableColumn("parent_id"))
+            };
+            var link = new TransformJoin(source, Helpers.CreateChildTableData(), mappings, Transform.EDuplicateStrategy.All, null, "Join");
+
+            Assert.Equal(3, link.FieldCount);
+
+            await link.Open(1, null, CancellationToken.None);
+
+            var pos = 0;
+            
+            Assert.True(await link.ReadAsync());
+            Assert.Equal(1, link["parent_id"]);
+            Assert.Equal("parent 1", link["name"]);
+            var linkData = (Transform) link["array"];
+
+            Assert.True(await linkData.ReadAsync());
+            Assert.Equal(1, linkData["parent_id"]);
+            Assert.Equal(10, linkData["child_id"]);
+            Assert.Equal("child 10", linkData["name"]);
+
+            Assert.True(await linkData.ReadAsync());
+            Assert.Equal(1, linkData["parent_id"]);
+            Assert.Equal(11, linkData["child_id"]);
+            Assert.Equal("child 11", linkData["name"]);
+
+            Assert.False(await linkData.ReadAsync());
+            
+            Assert.True(await link.ReadAsync());
+            Assert.Equal(2, link["parent_id"]);
+            Assert.Equal("parent 2", link["name"]);
+            linkData = (Transform) link["array"];
+            Assert.Null(linkData);
+
+            Assert.True(await link.ReadAsync());
+            Assert.Equal(3, link["parent_id"]);
+            Assert.Equal("parent 3", link["name"]);
+            linkData = (Transform) link["array"];
+
+            Assert.True(await linkData.ReadAsync());
+            Assert.Equal(3, linkData["parent_id"]);
+            Assert.Equal(30, linkData["child_id"]);
+            Assert.Equal("child 30", linkData["name"]);
+            Assert.False(await linkData.ReadAsync());
+            
+            Assert.True(await link.ReadAsync());
+            Assert.Equal(4, link["parent_id"]);
+            Assert.Equal("parent 4", link["name"]);
+            linkData = (Transform) link["array"];
+
+            Assert.True(await linkData.ReadAsync());
+            Assert.Equal(4, linkData["parent_id"]);
+            Assert.Equal(40, linkData["child_id"]);
+            Assert.Equal("child 40", linkData["name"]);
+            Assert.False(await linkData.ReadAsync());
+
+            Assert.False(await link.ReadAsync());
         }
 
     }

@@ -13,7 +13,6 @@ using dexih.transforms;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.sql

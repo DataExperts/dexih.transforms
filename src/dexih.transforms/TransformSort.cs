@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Threading;
 using dexih.functions;
-using dexih.functions.Mappings;
 using dexih.functions.Query;
+using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 
 namespace dexih.transforms

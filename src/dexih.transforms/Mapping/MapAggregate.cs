@@ -4,7 +4,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
-namespace dexih.transforms.Mappings
+namespace dexih.transforms.Mapping
 {
     public class MapAggregate: Mapping
     {
@@ -115,7 +115,7 @@ namespace dexih.transforms.Mappings
         }
 
 
-        public override object GetInputValue(object[] row = null)
+        public override object GetOutputTransform(object[] row = null)
         {
             throw new NotSupportedException();
         }

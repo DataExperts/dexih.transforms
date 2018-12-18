@@ -14,36 +14,33 @@ namespace dexih.transforms
     /// Transform to flatten an array property into the parent row.
     /// </summary>
     [Transform(
-        Name = "Flatten Array",
-        Description = "Flatten an array into the repeating rows for the parent property.",
-        TransformType = TransformAttribute.ETransformType.Mapping
+        Name = "Flatten Node",
+        Description = "Flatten an node into the repeating rows for the parent property.",
+        TransformType = TransformAttribute.ETransformType.FlattenNode
     )]
-    public class TransformFlattenChapter : Transform
+    public class TransformFlattenNode : Transform
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="inTransform"></param>
         /// <param name="mappings"></param>
-        /// <param name="arrayPath">The path of columns to find the array</param>
-        /// <param name="flattenLevels">The number of parent levels to flatten.  If equal to 0, will flatten to the top row</param>
-        public TransformFlattenChapter(Transform inTransform, Mappings mappings, TableColumn[] arrayPath,
-            int flattenLevels = 0)
+        /// <param name="node">The node to flatten</param>
+        public TransformFlattenNode(Transform inTransform, Mappings mappings, TableColumn node)
         {
-            ArrayPath = arrayPath;
-            FlattenLevels = flattenLevels;
+            _node = node;
 
             Mappings = mappings;
             SetInTransform(inTransform);
         }
 
-        private int[] _chapterOrdinals;
-
-
+        private int _nodeOrdinal;
         private bool _writeCache;
         private int _writeCachePosition;
-        private List<object[]> _cacheRows;
-        
+        private TableColumn _node;
+
+        private object[] _cacheRow;
+        private Transform _childTransform;
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
@@ -52,186 +49,90 @@ namespace dexih.transforms
             if (!returnValue) return false;
 
             // convert the array path to a sequence of ordinals, to improve performance
-            _chapterOrdinals = new int[ArrayPath.Length];
+            _nodeOrdinal = PrimaryTransform.CacheTable.Columns.GetOrdinal(_node.Name);
 
-            // create the column ordinals to navigate the child columns.
-            var columns = PrimaryTransform.CacheTable.Columns;
-            for (var i = 0; i < ArrayPath.Length; i++)
+            var flattenedColumns = new TableColumns();
+            var sourceColumns = PrimaryTransform.CacheTable.Columns;
+
+            for (var i = 0; i < sourceColumns.Count; i++)
             {
-                var ordinal = columns.GetOrdinal(ArrayPath[i].Name);
-
-                if (ordinal < 0)
+                if (i == _nodeOrdinal)
                 {
-                    throw new Exception($"The column {ArrayPath[i].Name} could not be found in the source transform.");
+                    var nodeColumn = sourceColumns[i];
+                    if (nodeColumn.ChildColumns != null)
+                    {
+                        foreach (var childColumn in nodeColumn.ChildColumns)
+                        {
+                            var col = childColumn.Copy();
+                            // add a column group to the flattened column to ensure duplicate names can be distinguished when flattened.
+                            col.ColumnGroup = (string.IsNullOrEmpty(col.ColumnGroup) ? "" : ".") + nodeColumn.Name;
+                            flattenedColumns.Add(col);
+                        }
+                    }
                 }
-
-                _chapterOrdinals[i] = ordinal;
-                var column = columns[ordinal];
-                columns = column.ChildColumns;
+                else
+                {
+                    flattenedColumns.Add(sourceColumns[i]);
+                }
             }
-
-            var flattened = FlattenColumns(PrimaryTransform.CacheTable.Columns);
-            CacheTable = new Table("flattened", new TableColumns(flattened), null);
+            
+            CacheTable = new Table("flattened", flattenedColumns, null);
             return true;
-        }
-
-        /// <summary>
-        /// Recursively create a new set of columns with the required columns flattened.
-        /// </summary>
-        /// <param name="columns">Source columns</param>
-        /// <param name="arrayPath">Array of ordinals that points to the source columns that should be flattened</param>
-        /// <param name="flattenLevels">The number of levels (from the bottom) to flatten</param>
-        /// <param name="chapterPathLevel">The current level in the array path.</param>
-        /// <returns></returns>
-        private IEnumerable<TableColumn> FlattenColumns(TableColumns columns, int chapterPathLevel = 0, string group = null)
-        {
-            var newColumns = new List<TableColumn>();
-
-            if (chapterPathLevel < _chapterOrdinals.Length)
-            {
-                for (var i = 0; i < columns.Count; i++)
-                {
-                    if (i == _chapterOrdinals[chapterPathLevel])
-                    {
-                        if (chapterPathLevel >= _chapterOrdinals.Length - FlattenLevels)
-                        {
-                            var newGroup = group == null ? columns[i].Name : group + "." + columns[i].Name;
-
-                            newColumns.AddRange(FlattenColumns(columns[i].ChildColumns, chapterPathLevel + 1, newGroup));
-                        }
-                        else
-                        {
-                            var newColumn = columns[i].Copy();
-                            var cols = FlattenColumns(columns[i].ChildColumns, chapterPathLevel + 1, group);
-                            newColumn.ChildColumns = new TableColumns(cols);
-                        }
-                    }
-                    else
-                    {
-                        var newColumn = columns[i].Copy();
-                        newColumn.ColumnGroup = group;
-                        newColumns.Add(newColumn);
-                    }
-                }
-            }
-            else
-            {
-                for (var i = 0; i < columns.Count; i++)
-                {
-                    var newColumn = columns[i].Copy();
-                    newColumn.ColumnGroup = group;
-                    newColumns.Add(newColumn);
-                }
-            }
-
-            return newColumns;
         }
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            if (_writeCache)
+            var childTransform = _childTransform;
+            var hasChildRecords = false;
+
+            if (childTransform != null)
             {
-                var row = _cacheRows[_writeCachePosition++];
-                
-                if (_writeCachePosition >= _cacheRows.Count)
+                hasChildRecords = await childTransform.ReadAsync(cancellationToken);
+            }
+
+            // no records in the child transform, then get the next parent record.
+            if (!hasChildRecords)
+            {
+                if (!await PrimaryTransform.ReadAsync(cancellationToken))
                 {
-                    _writeCache = false;
-                    _cacheRows.Clear();
+                    return null;
                 }
-                
-                return row;
+
+                childTransform = (Transform) PrimaryTransform[_node];
+
+                await childTransform.ReadAsync(cancellationToken);
+                _childTransform = childTransform;
             }
 
-            if (!await PrimaryTransform.ReadAsync(cancellationToken))
+            var outputRow = new object[FieldCount];
+            var pos = 0;
+
+            for (var i = 0; i < PrimaryTransform.FieldCount; i++)
             {
-                return null;
-            }
-
-            var rows = await FlattenRow(PrimaryTransform.CurrentRow, null, 0, 0);
-
-            if (rows.Count == 0)
-            {
-                return null;
-            }
-
-            if (rows.Count > 1)
-            {
-                _cacheRows = rows;
-                _writeCache = true;
-                _writeCachePosition = 1;
-            }
-
-            return rows[0];
-
-        }
-        
-        private async  Task<List<object[]>> FlattenRow(object[] sourceRow, object[] outputRow, int pos, int arrayPathLevel)
-        {
-            if (arrayPathLevel < _chapterOrdinals.Length)
-            {
-                // create the flattened rows and add the input row.
-                var rows = new List<object[]> {outputRow ?? new object[FieldCount]};
-
-                for (var i = 0; i < sourceRow.Length; i++)
+                if (i == _nodeOrdinal)
                 {
-                    if (i == _chapterOrdinals[arrayPathLevel])
+                    if (!childTransform.IsReaderFinished)
                     {
-                        if (arrayPathLevel >= _chapterOrdinals.Length - FlattenLevels)
+                        for (var j = 0; j < childTransform.FieldCount; j++)
                         {
-                            // var newGroup = group == null ? columns[i].Name : group + "." + columns[i].Name;
-
-                            var childTransform = (Transform) sourceRow[i];
-
-                            var flattenedRows = new List<object[]>();
-
-                            // read each row and flatten into current row.
-
-                            if (childTransform.HasRows)
-                            {
-                                while (await childTransform.ReadAsync())
-                                {
-                                    foreach (var baseRow in rows)
-                                    {
-                                        flattenedRows.AddRange(await FlattenRow(childTransform.CurrentRow,
-                                            baseRow.ToArray(), pos, arrayPathLevel + 1));
-                                    }
-                                }
-                                rows = flattenedRows;
-                            }
-
-                            pos += childTransform.FieldCount;
-                        }
-                        else
-                        {
-                            foreach (var row in rows)
-                            {
-                                row[pos++] = sourceRow[i];
-                            }
-                            
+                            outputRow[pos++] = childTransform[j];
                         }
                     }
                     else
                     {
-                        foreach (var row in rows)
-                        {
-                            row[pos++] = sourceRow[i];
-                        }
+                        pos += childTransform.FieldCount;
                     }
-                    
                 }
-
-                return rows;
-            }
-            else
-            {
-                for (var i = 0; i < sourceRow.Length; i++)
+                else
                 {
-                    outputRow[pos++] = sourceRow[i];
+                    outputRow[pos++] = PrimaryTransform[i];
                 }
-                return new List<object[]> {outputRow};
             }
 
+            return outputRow;
         }
+
+
 
         public override string Details()
         {

@@ -7,13 +7,11 @@ using dexih.functions;
 using System.IO;
 using System.Data.Common;
 using System.Threading;
-using dexih.functions.Mappings;
 using OfficeOpenXml;
 using OfficeOpenXml.FormulaParsing.Utilities;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using Newtonsoft.Json;
 using Dexih.Utils.DataType;
 
 namespace dexih.connections.excel
@@ -252,7 +250,7 @@ namespace dexih.connections.excel
 	                            }
                                 else if (value.IsNumeric())
                                 {
-                                    if (Math.Abs((Double)value % 1) <= (Double.Epsilon * 100))
+                                    if (Math.Abs((double)value % 1) <= (double.Epsilon * 100))
                                     {
                                         dataType = ETypeCode.Int64;
                                         continue;
@@ -476,12 +474,12 @@ namespace dexih.connections.excel
 	    public object ParseExcelValue(object value, TableColumn column)
 	    {
 		    object parsedValue;
-		    if (value is Double && column.DataType == ETypeCode.DateTime)
+		    if (value is double && column.DataType == ETypeCode.DateTime)
 		    {
-			    parsedValue = FromExcelSerialDate((Double) value);
-		    } else if (value is Double && column.DataType == ETypeCode.Time)
+			    parsedValue = FromExcelSerialDate((double) value);
+		    } else if (value is double && column.DataType == ETypeCode.Time)
 		    {
-			    parsedValue = FromExcelSerialTime((Double) value);
+			    parsedValue = FromExcelSerialTime((double) value);
 		    }
 		    else
 		    {

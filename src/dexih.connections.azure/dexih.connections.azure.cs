@@ -12,7 +12,6 @@ using System.Threading;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using Newtonsoft.Json;
 using Dexih.Utils.DataType;
 
 namespace dexih.connections.azure
@@ -736,32 +735,32 @@ namespace dexih.connections.azure
             switch (typeCode)
             {
                 case ETypeCode.Byte:
-                    return new EntityProperty((Byte?)returnValue);
+                    return new EntityProperty((byte?)returnValue);
                 case ETypeCode.SByte:
-                    return new EntityProperty((SByte?)returnValue);
+                    return new EntityProperty((sbyte?)returnValue);
                 case ETypeCode.UInt16:
-                    return new EntityProperty((UInt16?)returnValue);
+                    return new EntityProperty((ushort?)returnValue);
                 case ETypeCode.UInt32:
-                    return new EntityProperty((UInt32?)returnValue);
+                    return new EntityProperty((uint?)returnValue);
                 case ETypeCode.UInt64:
                     return new EntityProperty(Convert.ToInt64(returnValue));
                 case ETypeCode.Int16:
-                    return new EntityProperty((Int16?)returnValue);
+                    return new EntityProperty((short?)returnValue);
                 case ETypeCode.Int32:
-                    return new EntityProperty((Int32?)returnValue);
+                    return new EntityProperty((int?)returnValue);
                 case ETypeCode.Int64:
-                    return new EntityProperty((Int64?)returnValue);
+                    return new EntityProperty((long?)returnValue);
                 case ETypeCode.Double:
-                    return new EntityProperty((Double?)returnValue);
+                    return new EntityProperty((double?)returnValue);
                 case ETypeCode.Single:
-                    return new EntityProperty((Single?)returnValue);
+                    return new EntityProperty((float?)returnValue);
                 case ETypeCode.String:
 				case ETypeCode.Text:
 				case ETypeCode.Json:
 				case ETypeCode.Xml:
-                    return new EntityProperty((String)returnValue);
+                    return new EntityProperty((string)returnValue);
                 case ETypeCode.Boolean:
-                    return new EntityProperty((Boolean?)returnValue);
+                    return new EntityProperty((bool?)returnValue);
                 case ETypeCode.DateTime:
                     return new EntityProperty((DateTime?)returnValue);
                 case ETypeCode.Guid:

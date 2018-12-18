@@ -6,10 +6,10 @@ using dexih.functions;
 using System.Text;
 using System.Threading;
 using dexih.functions.Exceptions;
-using dexih.functions.Mappings;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Dexih.Utils.DataType;
 

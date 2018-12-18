@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using dexih.functions.Mappings;
+using dexih.transforms.Mapping;
 using Xunit;
 using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;

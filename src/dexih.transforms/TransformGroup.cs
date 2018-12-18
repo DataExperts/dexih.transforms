@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
-using dexih.functions.Mappings;
 using dexih.functions.Query;
+using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 
 namespace dexih.transforms
@@ -78,7 +77,7 @@ namespace dexih.transforms
 
             if (!_firstRecord && !_lastRecord)
             {
-                Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
             }
 
             // used to track if the group fields have changed
@@ -124,12 +123,12 @@ namespace dexih.transforms
                     if (!groupChanged)
                     {
                         // if the group has not changed, process the input row
-                        Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                        await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
                     }
                     // when group has changed
                     else
                     {
-                        ProcessGroupChange(ref outputRow);
+                        await ProcessGroupChange(outputRow);
                         
                         //store the last groupValues read to start the next grouping.
                         _groupValues = nextGroupValues;
@@ -153,7 +152,7 @@ namespace dexih.transforms
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
-                ProcessGroupChange(ref outputRow);
+                await ProcessGroupChange(outputRow);
 
                 _lastRecord = true;
             }
@@ -163,10 +162,10 @@ namespace dexih.transforms
 
         }
 
-        private void ProcessGroupChange(ref object[] outputRow)
+        private async Task ProcessGroupChange(object[] outputRow)
         {
             Mappings.MapOutputRow(outputRow);
-            Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate);
+            await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate);
             Mappings.Reset(EFunctionType.Aggregate);
         }
 

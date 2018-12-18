@@ -1,6 +1,5 @@
 ﻿using dexih.transforms;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -37,7 +36,7 @@ namespace dexih.connections.azure
             _isOpen = false;
         }
 
-        public override async Task<bool> Open(Int64 auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
             if (_isOpen)

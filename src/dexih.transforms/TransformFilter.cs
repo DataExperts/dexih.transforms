@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using dexih.functions;
 using System.Threading;
-using dexih.functions.Mappings;
 using dexih.functions.Query;
-using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
-using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -42,7 +38,7 @@ namespace dexih.transforms
             //add any of the conditions that can be translated to filters
             foreach (var condition in Mappings.OfType<MapFunction>())
             {
-                var filter = Filter.GetFilterFromFunction(condition);
+                var filter = condition.GetFilterFromFunction();
                 if (filter != null)
                 {
                     filter.AndOr = Filter.EAndOr.And;
@@ -65,10 +61,6 @@ namespace dexih.transforms
             }
             
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-
-//            CacheTable = PrimaryTransform.CacheTable.Copy();
-//            CacheTable.Name = "Filter";
-//            CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
             return returnValue;
         }

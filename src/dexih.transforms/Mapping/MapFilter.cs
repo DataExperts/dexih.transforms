@@ -4,7 +4,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
-namespace dexih.transforms.Mappings
+namespace dexih.transforms.Mapping
 {
     public class MapFilter: Mapping
     {
@@ -17,7 +17,7 @@ namespace dexih.transforms.Mappings
             Compare = compare;
         }
 
-        public MapFilter(TableColumn column1, Object value2, Filter.ECompare compare = Filter.ECompare.IsEqual)
+        public MapFilter(TableColumn column1, object value2, Filter.ECompare compare = Filter.ECompare.IsEqual)
         {
             Column1 = column1;
             Value2 = value2;
@@ -26,8 +26,8 @@ namespace dexih.transforms.Mappings
 
         public TableColumn Column1 { get; set; }
         public TableColumn Column2 { get; set; }
-        public Object Value1 { get; set; }
-        public Object Value2 { get; set; }
+        public object Value1 { get; set; }
+        public object Value2 { get; set; }
         
         public Filter.ECompare Compare { get; set; }
 
@@ -106,7 +106,7 @@ namespace dexih.transforms.Mappings
             return;
         }
 
-        public override object GetInputValue(object[] row = null)
+        public override object GetOutputTransform(object[] row = null)
         {
             throw new NotSupportedException();
         }

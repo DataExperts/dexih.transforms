@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Dexih.Utils.CopyProperties;
 
@@ -34,7 +33,7 @@ namespace dexih.transforms
                     if (Directory.Exists(path.path))
                     {
                         var fileName = Path.Combine(path.path, assemblyName);
-                        if (File.Exists(fileName))
+                        if (System.IO.File.Exists(fileName))
                         {
                             var assembly = Assembly.LoadFile(fileName);
                             type = assembly.GetType(className);

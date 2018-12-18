@@ -10,13 +10,11 @@ using System.IO.Compression;
 using System.Linq;
 using CsvHelper;
 using System.Text.RegularExpressions;
-using dexih.functions.File;
 using Dexih.Utils.CopyProperties;
 using dexih.transforms.Exceptions;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
-using Newtonsoft.Json;
-using Dexih.Utils.DataType;
+using dexih.transforms.File;
 
 namespace dexih.transforms
 {

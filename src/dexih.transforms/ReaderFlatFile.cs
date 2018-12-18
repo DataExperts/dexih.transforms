@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
-using dexih.functions.File;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms.File;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms
@@ -169,10 +168,7 @@ namespace dexih.transforms
                         try
                         {
                             row = await _fileHandler.GetRow();
-                            if (_fileNameOrdinal >= 0)
-                            {
-                                row[_fileNameOrdinal] = _files.Current.FileName;
-                            }
+
                         }
                         catch (Exception ex)
                         {
@@ -183,6 +179,11 @@ namespace dexih.transforms
                             return await ReadRecord(cancellationToken); // this creates a recursive loop to cater for empty files.
                         }
                     }
+                }
+                
+                if (row != null && _fileNameOrdinal >= 0)
+                {
+                    row[_fileNameOrdinal] = _files.Current.FileName;
                 }
 
                 return row;

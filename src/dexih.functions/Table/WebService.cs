@@ -32,12 +32,6 @@ namespace dexih.functions
 		
 		// for text files
 		public FileConfiguration FileConfiguration { get; set; } = new FileConfiguration();
-
-
-		/// <summary>
-		/// Maximum levels to recurse through structured data when importing columns.
-		/// </summary>
-		public int MaxImportLevels { get; set; } = 1;
 	
 		public void AddInputParameter(string name, string defaultValue = null)
 		{

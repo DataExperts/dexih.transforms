@@ -8,13 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
-using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.DataType;
 using MySql.Data.MySqlClient;
-using MySql.Data.Types;
-using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.sql

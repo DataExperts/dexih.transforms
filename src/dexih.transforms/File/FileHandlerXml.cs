@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.XPath;
+using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
-namespace dexih.functions.File
+namespace dexih.transforms.File
 {
     public class FileHandlerXml : FileHandlerBase
     {

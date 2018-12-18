@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
@@ -13,7 +12,6 @@ using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
-using Newtonsoft.Json;
 
 namespace dexih.connections.sql
 {

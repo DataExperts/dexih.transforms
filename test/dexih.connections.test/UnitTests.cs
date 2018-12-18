@@ -133,7 +133,7 @@ namespace dexih.connections.test
 
                 //should return value2 from second row
                 var returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
-                Assert.True(Decimal.Compare(Convert.ToDecimal(returnScalar), (Decimal)1.2) == 0, "SelectQuery2 - returned value: " + returnScalar.ToString());
+                Assert.True(decimal.Compare(Convert.ToDecimal(returnScalar), (decimal)1.2) == 0, "SelectQuery2 - returned value: " + returnScalar.ToString());
             }
 
             if (connection.CanDelete)

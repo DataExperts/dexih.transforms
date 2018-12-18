@@ -8,12 +8,9 @@ using System.IO;
 using System.Data.Common;
 using System.Threading;
 using static Dexih.Utils.DataType.DataType;
-using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
-using Dexih.Utils.DataType;
 using Microsoft.Data.Sqlite;
-using Newtonsoft.Json;
 
 namespace dexih.connections.sql
 {

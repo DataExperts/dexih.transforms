@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Data.Common;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Dexih.Utils.CopyProperties;
-using Newtonsoft.Json;
 
 namespace dexih.transforms
 {

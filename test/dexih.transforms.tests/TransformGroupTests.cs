@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.BuiltIn;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
-using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
 using Xunit;
 using static Dexih.Utils.DataType.DataType;
 
@@ -24,65 +23,69 @@ namespace dexih.transforms.tests
             var intParameter = new ParameterColumn("IntColumn", ETypeCode.Int32);
             var stringParameter = new ParameterColumn("StringColumn", ETypeCode.String);
 
-            var sum = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Sum)).GetTransformFunction(typeof(int));
+            var sum = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Sum), Helpers.BuiltInAssembly).GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(sum,
-                new Parameters()
+                new Parameters
                 {
-                    Inputs = new[] {intParameter},
-                    ResultReturnParameter = new ParameterOutputColumn("Sum", ETypeCode.Int32)
-                }));
+                    Inputs = new Parameter[] {intParameter},
+                    ResultReturnParameters = new [] {new ParameterOutputColumn("Sum", ETypeCode.Int32)}
+                }, MapFunction.EFunctionCaching.NoCache)
+            );
 
-            var avg = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Average))
+            var avg = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Average), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(double));
             mappings.Add(new MapFunction(avg,
-                new Parameters()
+                new Parameters
                 {
-                    Inputs = new[] {intParameter},
-                    ResultReturnParameter = new ParameterOutputColumn("Average", ETypeCode.Double)
-                }));
+                    Inputs = new Parameter[] {intParameter},
+                    ResultReturnParameters = new [] {new ParameterOutputColumn("Average", ETypeCode.Double)}
+                }, MapFunction.EFunctionCaching.NoCache)
+            );
 
-            var min = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Min)).GetTransformFunction(typeof(int));
+            var min = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Min), Helpers.BuiltInAssembly).GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(min,
-                new Parameters()
+                new Parameters
                 {
-                    Inputs = new[] {intParameter},
-                    ResultReturnParameter = new ParameterOutputColumn("Minimum", ETypeCode.Int32)
-                }));
+                    Inputs = new Parameter[] {intParameter},
+                    ResultReturnParameters = new [] {new ParameterOutputColumn("Minimum", ETypeCode.Int32)}
+                }, MapFunction.EFunctionCaching.NoCache)
+            );
 
-            var max = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Max)).GetTransformFunction(typeof(int));
+            var max = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Max), Helpers.BuiltInAssembly).GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(max,
-                new Parameters()
+                new Parameters
                 {
-                    Inputs = new[] {intParameter},
-                    ResultReturnParameter = new ParameterOutputColumn("Maximum", ETypeCode.Int32)
-                }));
+                    Inputs = new Parameter[] {intParameter},
+                    ResultReturnParameters = new [] {new ParameterOutputColumn("Maximum", ETypeCode.Int32)}
+                }, MapFunction.EFunctionCaching.NoCache)
+            );
 
-            var count = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Count))
+            var count = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Count), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(count,
-                new Parameters() {ResultReturnParameter = new ParameterOutputColumn("Count", ETypeCode.Int32)}));
+                new Parameters {ResultReturnParameters = new [] { new ParameterOutputColumn("Count", ETypeCode.Int32)}}, MapFunction.EFunctionCaching.NoCache));
 
-            var countdistinct = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.CountDistinct))
+            var countDistinct = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.CountDistinct), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(int));
-            mappings.Add(new MapFunction(countdistinct,
-                new Parameters()
+            mappings.Add(new MapFunction(countDistinct,
+                new Parameters
                 {
-                    Inputs = new[] {intParameter},
-                    ResultReturnParameter = new ParameterOutputColumn("CountDistinct", ETypeCode.Int32)
-                }));
-
-            var concat = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<string>.ConcatAgg))
+                    Inputs = new Parameter[] {intParameter},
+                    ResultReturnParameters = new [] {new ParameterOutputColumn("CountDistinct", ETypeCode.Int32)}
+                }, MapFunction.EFunctionCaching.NoCache)
+            );
+            var concat = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<string>.ConcatAgg), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(string));
             mappings.Add(new MapFunction(concat,
-                new Parameters()
+                new Parameters
                 {
                     Inputs = new Parameter[]
                     {
                         new ParameterValue("separator", ETypeCode.String, ","),
                         new ParameterColumn("StringColumn", ETypeCode.String)
                     },
-                    ResultReturnParameter = new ParameterOutputColumn("Concat", ETypeCode.String)
-                }));
+                    ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("Concat", ETypeCode.String)}
+                }, MapFunction.EFunctionCaching.NoCache));
 
             return mappings;
         }

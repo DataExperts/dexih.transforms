@@ -10,15 +10,14 @@ using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Text;
-using dexih.functions.Mappings;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.Crypto;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json.Linq;
 
 namespace dexih.transforms
 {
@@ -47,12 +46,6 @@ namespace dexih.transforms
 
         protected Transform()
         {
-            //intialize standard objects.
-//            ColumnPairs = new List<ColumnPair>();
-//            JoinPairs = new List<Join>();
-//            FilterPairs = new List<FilterPair>();
-//            AggregatePairs = new List<AggregatePair>();
-//            Functions = new List<TransformFunction>();
             TransformTimer = new Stopwatch();
         }
 
@@ -85,12 +78,6 @@ namespace dexih.transforms
         // Generic transform contains properties for a list of Functions, Fields and simple Mappings
         public Mappings Mappings { get; set; }
 
-//        public List<TransformFunction> Functions { get; set; } //functions used for complex mapping, conditions.
-//        public List<ColumnPair> ColumnPairs { get; set; } //fields pairs, used for simple mappings.
-//        public List<Join> JoinPairs { get; set; } //fields pairs, used for table and service joins.
-//        public List<FilterPair> FilterPairs { get; set; } //fields pairs, used for simple filters
-//        public List<AggregatePair> AggregatePairs { get; set; } //fields pairs, used for simple filters
-
         public TableColumn JoinSortField { get; set; }
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
 
@@ -107,7 +94,7 @@ namespace dexih.transforms
         //indicates if the transform is a base reader.
         public bool IsReader { get; set; } = true;
 
-        public long AuditKey { get; set; }
+        protected long AuditKey { get; set; }
 
         #endregion
 
@@ -294,6 +281,11 @@ namespace dexih.transforms
             return match;
         }
 
+        public Task<bool> Open(CancellationToken cancellationToken = default)
+        {
+            return Open(0, null, cancellationToken);
+        }
+
         /// <summary>
         /// Opens underlying connections passing sort and filter requests through.
         /// </summary>
@@ -301,7 +293,7 @@ namespace dexih.transforms
         /// <param name="query">Query to apply (note only filters are used)</param>
         /// <param name="cancellationToken"></param>
         /// <returns>True is successful, False is unsuccessful.</returns>
-        public virtual async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public virtual async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
 
@@ -309,15 +301,15 @@ namespace dexih.transforms
 
             if (PrimaryTransform != null)
             {
-                result = result && await PrimaryTransform.Open(auditKey, query, cancellationToken);
+                result = await PrimaryTransform.Open(auditKey, query, cancellationToken);
                 if (!result)
-                    return result;
+                    return false;
                 
             }
 
             if (ReferenceTransform != null)
             {
-                result = result && await ReferenceTransform.Open(auditKey, null, cancellationToken);
+                result = await ReferenceTransform.Open(auditKey, null, cancellationToken);
             }
 
             return result;
@@ -605,12 +597,12 @@ namespace dexih.transforms
         #region Record Navigation
 
         /// <summary>
-        /// Inidicates if the source reader has completed, without moving to the next record.
+        /// Indicates if the source reader has completed, without moving to the next record.
         /// </summary>
         public bool IsReaderFinished { get; protected set; }
 
         private bool _isResetting = false; //flag to indicate reset is underway.
-        public object[] CurrentRow { get; protected set; } //stores data for the current row.
+        public virtual object[] CurrentRow { get; protected set; } //stores data for the current row.
         private bool _currentRowCached;
         protected int CurrentRowNumber = -1; //current row number
 
@@ -643,21 +635,14 @@ namespace dexih.transforms
 
                 returnValue = ResetTransform();
 
-                //if (!returnValue.Success)
-                //    return returnValue;
-
                 if (PrimaryTransform != null)
                 {
                     returnValue = returnValue && PrimaryTransform.Reset();
-                    //if (!returnValue.Success)
-                    //    return returnValue;
                 }
 
                 if (ReferenceTransform != null)
                 {
                     returnValue = returnValue && ReferenceTransform.Reset();
-                    //if (!returnValue.Success)
-                    //    return returnValue;
                 }
 
                 IsReaderFinished = false;
@@ -922,7 +907,7 @@ namespace dexih.transforms
                     column.DefaultValue = filter.Value2;
                 }
             }
-
+            
             if (PrimaryTransform == null)
             {
                 return false;
@@ -1003,6 +988,7 @@ namespace dexih.transforms
 
         #endregion
 
+        
         #region DbDataReader Implementation
 
         private bool _isFirstRead = true;
@@ -1042,6 +1028,7 @@ namespace dexih.transforms
                 }
 
                 _isFirstRead = false;
+                IsReaderFinished = false;
             }
 
             CurrentRowNumber++;
@@ -1168,6 +1155,7 @@ namespace dexih.transforms
                 return GetValue(ordinal);
             }
         }
+        
         public override object this[int ordinal] => GetValue(ordinal);
 
         public object this[TableColumn column]
@@ -1260,13 +1248,13 @@ namespace dexih.transforms
 
         public override object GetValue(int i)
         {
-            if (i < CurrentRow.Length)
+            if (CurrentRow != null && i < CurrentRow.Length)
             {
                 return CurrentRow[i];
             }
 
             throw new ArgumentOutOfRangeException(
-                $"The GetValue failed as the column at position {i} was greater than the number of columns {CurrentRow.Length}.");
+                $"The GetValue failed as the column at position {i} was greater than the number of columns {CurrentRow?.Length}.");
         }
 
         public override int GetValues(object[] values)
@@ -1306,7 +1294,36 @@ namespace dexih.transforms
 
         public override IEnumerator GetEnumerator()
         {
-            throw new NotImplementedException("This feature is not currently implemented.");
+            return new TransformEnumerator(this);
+        }
+        
+        public class TransformEnumerator : IEnumerator<object[]>
+        {
+            private readonly Transform _transform;
+            
+            public TransformEnumerator(Transform transform)
+            {
+                _transform = transform;
+            }
+
+            public bool MoveNext()
+            {
+                return _transform.Read();
+            }
+
+            public void Reset()
+            {
+                _transform.Reset();
+            }
+
+            public object[] Current => _transform.CurrentRow;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                _transform.Close();
+            }
         }
 
         public override bool HasRows => PrimaryTransform?.HasRows??IsReaderFinished;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace dexih.functions
+namespace dexih.transforms
 {
     public class FileHandlerException : Exception
     {

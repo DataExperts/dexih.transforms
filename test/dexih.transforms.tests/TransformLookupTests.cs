@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
-using dexih.functions.Mappings;
+using dexih.transforms.Mapping;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -24,10 +24,11 @@ namespace dexih.transforms.tests
 //                joinPairs, 
 //                "Lookup");
 
-            var mappings = new Mappings()
+            var mappings = new Mappings
             {
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))
             };
+            
             var transformLookup = new TransformLookup(source, Helpers.CreateUnSortedJoinData(), mappings, "Lookup");
                 
             Assert.Equal(9, transformLookup.FieldCount);

@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using dexih.functions;
 using dexih.functions.Query;
+using dexih.transforms.Mapping;
+using Dexih.Utils.DataType;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms.tests
 {
     public class Helpers
-    {
+    {        
+        
+        public const string BuiltInAssembly = "dexih.functions.builtIn.dll";
+
         public static ReaderMemory CreateSortedTestData()
         {
             var table = new Table("test", 0,
@@ -177,11 +183,91 @@ namespace dexih.transforms.tests
             return adapter;
         }
 
+        public static ReaderMemory CreateParentTableData()
+        {
+            var table = new Table("parent", 0, 
+                new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+                );
+            
+            table.AddRow(0, "parent 0");
+            table.AddRow(1, "parent 1");
+            table.AddRow(2, "parent 2");
+            table.AddRow(3, "parent 3");
+            
+            return new ReaderMemory(table);
+        }
 
+        public static ReaderMemory CreateChildTableData()
+        {
+            var table = new Table("child", 0, 
+                new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+            );
+            
+            table.AddRow(0, 0, "child 00");
+            table.AddRow(0, 1, "child 01");
+            table.AddRow(2, 20, "child 20");
+            table.AddRow(3, 30, "child 30");
+            
+            return new ReaderMemory(table);
+        }
+        
+        public static ReaderMemory CreateGrandChildTableData()
+        {
+            var table = new Table("grandChild", 0, 
+                new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("grandChild_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+            );
+            
+            table.AddRow(0, 0, "grandChild 000");
+            table.AddRow(0, 1, "grandChild 001");
+            table.AddRow(20, 200, "grandChild 200");
+            table.AddRow(30, 300, "grandChild 300");
+            
+            return new ReaderMemory(table);
+        }
+
+        // create a sample reader, containing child and grandchild arrays.
+        public static Transform CreateParentChildReader()
+        {
+            var parent = CreateParentTableData();
+            var child = CreateChildTableData();
+            var grandChild = CreateGrandChildTableData();
+            
+            var joinNode = new MapJoinNode(new TableColumn("children", ETypeCode.Node), parent.CacheTable, child.CacheTable); 
+            
+            var childMappings = new Mappings
+            {
+                new MapJoinNode(new TableColumn("grandChildren", ETypeCode.Node), child.CacheTable, grandChild.CacheTable),
+                new MapJoin(child.CacheTable["child_id"], grandChild.CacheTable["child_id"])
+            };
+            
+            var childTransform = new TransformJoin(joinNode.Transform, grandChild, childMappings, Transform.EDuplicateStrategy.All, null, "Join")
+            {
+                Name = "Join GrandChild"
+            };
+
+            joinNode.SetOutputTransform(childTransform);
+
+            var mappings = new Mappings
+            {
+                joinNode,
+                new MapJoin(child.CacheTable["parent_id"], child.CacheTable["parent_id"])
+            };
+            
+            var parentTransform = new TransformJoin(parent, child, mappings, Transform.EDuplicateStrategy.All, null, "Join")
+            {
+                Name = "Join Child"
+            };
+            
+            return parentTransform;
+        }
 
         public static ReaderMemory CreateLargeTable(int rows)
         {
-            object[] row;
             var table = new Table("test");
 
             for (var i = 0; i < 10; i++)
@@ -191,7 +277,7 @@ namespace dexih.transforms.tests
 
             for (var i = 0; i < rows; i++)
             {
-                row = new object[11];
+                var row = new object[11];
 
                 for (var j = 0; j < 10; j++)
                 {

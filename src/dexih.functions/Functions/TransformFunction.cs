@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -9,13 +7,8 @@ using System.Threading.Tasks;
 using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
-using Dexih.Utils.Crypto;
-using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
@@ -86,7 +79,7 @@ namespace dexih.functions
 
 		public bool GeneratesRows = false;
 
-		private Task _returnValue;
+		private Task<object> _returnValue;
 
 		[JsonConverter(typeof(StringEnumConverter))]
 		public enum EInvalidAction
@@ -125,6 +118,12 @@ namespace dexih.functions
 		
 		public GlobalVariables GlobalVariables { get; set; }
 
+		public TransformFunction(Delegate functionMethod):
+			this(functionMethod.Target, functionMethod.GetMethodInfo(), null, null, null)
+		{
+			
+		}
+
 		/// <summary>
 		/// Createa a new function from a "Delegate".
 		/// </summary>
@@ -158,7 +157,7 @@ namespace dexih.functions
 		/// <param name="methodName">The name of the method to call.</param>
 		/// <param name="parameters"></param>
 		/// <param name="globalVariables"></param>
-		public TransformFunction(object target, string methodName, Type genericType,  Parameters parameters, GlobalVariables globalVariables)
+		public TransformFunction(object target, string methodName, Type genericType = null,  Parameters parameters = null, GlobalVariables globalVariables = null)
 		{
 			FunctionName = methodName;
 			Constructor(target, target.GetType().GetMethod(methodName), genericType, parameters, globalVariables);
@@ -300,44 +299,44 @@ namespace dexih.functions
 			return (parameters, outputPos);
 		}
 
-		public Task RunFunction(object[] inputParameters)
+		public Task<object> RunFunction(object[] inputParameters)
 		{
 			return RunFunction(new FunctionVariables(), inputParameters, out _);
 		}
 
-		public Task RunFunction(object[] inputParameters, out object[] outputs)
+		public Task<object> RunFunction(object[] inputParameters, out object[] outputs)
 		{
 			return RunFunction(new FunctionVariables(), inputParameters, out outputs);
 		}
 
 
-		public Task RunFunction(FunctionVariables functionVariables, object[] inputParameters)
+		public Task<object> RunFunction(FunctionVariables functionVariables, object[] inputParameters)
 		{
 			return RunFunction(functionVariables, inputParameters, out _);
 		}
 		
-		public Task RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public Task<object> RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(FunctionMethod, functionVariables, inputParameters, out outputs);
 		}
 
-		public Task RunResult(object[] inputParameters, out object[] outputs)
+		public Task<object> RunResult(object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(ResultMethod, new FunctionVariables(), inputParameters, out outputs);
 		}
 		
-		public Task RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public Task<object> RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(ResultMethod, functionVariables, inputParameters, out outputs);
 		}
 
-		private Task Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		private Task<object> Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
 			var parameters = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
 
 			if (methodInfo.IsAsync)
 			{
-				var returnValue = (Task) methodInfo.MethodInfo.Invoke(ObjectReference, parameters.parameters);
+				var returnValue = (Task<object>) methodInfo.MethodInfo.Invoke(ObjectReference, parameters.parameters);
 				_returnValue = returnValue;
 				outputs = new object[0];
 			}

@@ -4,12 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
-using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
-using Newtonsoft.Json;
 
 namespace dexih.transforms
 {
@@ -65,7 +63,7 @@ namespace dexih.transforms
             if (!_lastRecord)
             {
                 var newRow = PrimaryTransform.CurrentRow;
-                Mappings.ProcessInputData(newRow);
+                await Mappings.ProcessInputData(newRow);
                 return newRow;
             }
             else
@@ -81,7 +79,7 @@ namespace dexih.transforms
                     // object profileResult = null;
                     try
                     {
-                        profile.ProcessResultRow(new FunctionVariables(), profileRow, EFunctionType.Profile);
+                        await profile.ProcessResultRow(new FunctionVariables(), profileRow, EFunctionType.Profile);
                         // profileResult = profile.ReturnValue;
                     }
                     catch (Exception ex)

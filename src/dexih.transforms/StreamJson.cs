@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
- using Newtonsoft.Json.Linq;
+ using dexih.functions;
+ using Newtonsoft.Json;
 
 namespace dexih.transforms
 {
@@ -47,8 +47,13 @@ namespace dexih.transforms
             // if this is a transform, then use the dataTypes from the cache table
             if (reader is Transform transform)
             {
-                var columns = JsonConvert.SerializeObject(transform.CacheTable.Columns.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType}));
-                _streamWriter.Write(columns);
+                object ColumnObject(IEnumerable<TableColumn> columns)
+                {
+                    return columns?.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType, childColumns = ColumnObject(c.ChildColumns)});
+                }
+                
+                var columnSerializeObject = JsonConvert.SerializeObject(ColumnObject( transform.CacheTable.Columns));
+                _streamWriter.Write(columnSerializeObject);
             }
             else
             {

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -44,7 +45,7 @@ namespace dexih.transforms
             if (deltaType == EUpdateStrategy.AppendUpdateDeletePreserve || deltaType == EUpdateStrategy.AppendUpdatePreserve)
                 DoPreserve = true;
 
-            Mappings = new functions.Mappings.Mappings();
+            Mappings = new Mappings();
 
             SetInTransform(inReader, referenceTransform, false);
         }
@@ -167,7 +168,7 @@ namespace dexih.transforms
 
             //do some integrity checks
             if (DoPreserve && _colSurrogateKey == null)
-                throw new Exception("The delta transform requires the table to have a single surrogate key field for row preservations to be possible.");
+                throw new Exception("The delta transform requires the table to have a single surrogate key field for row preservation to be possible.");
 
             if (DoUpdate && CacheTable.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.NaturalKey))
                 throw new Exception("The delta transform requires the table to have at least ont natrual key field for updates to be possible.");
@@ -458,7 +459,7 @@ namespace dexih.transforms
                 return returnValue;
             }
 
-            Object validFrom =  null;
+            object validFrom =  null;
             var readReferenceIfChanged = false;
 
             //this loop continues when there are matching source target rows.

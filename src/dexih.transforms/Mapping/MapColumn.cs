@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using dexih.functions;
 
-namespace dexih.transforms.Mappings
+namespace dexih.transforms.Mapping
 {
     public class MapColumn: Mapping
     {
@@ -44,13 +44,13 @@ namespace dexih.transforms.Mappings
 
         public override void InitializeColumns(Table table, Table joinTable = null)
         {
-            if (InputColumn != null)
+            if (InputColumn == null) return;
+            
+            InputOrdinal = table.GetOrdinal(InputColumn);
+            
+            if (InputOrdinal < 0 && InputValue == null)
             {
-                InputOrdinal = table.GetOrdinal(InputColumn);
-                if (InputOrdinal < 0 && InputValue == null)
-                {
-                    InputValue = InputColumn.DefaultValue;
-                }
+                InputValue = InputColumn.DefaultValue;
             }
         }
 
@@ -67,19 +67,17 @@ namespace dexih.transforms.Mappings
 
         public override void MapOutputRow(object[] data)
         {
-            data[OutputOrdinal] = GetInputValue();
+            data[OutputOrdinal] = GetOutputTransform();
         }
         
-        public override object GetInputValue(object[] row = null)
+        public override object GetOutputTransform(object[] row = null)
         {
             if (InputOrdinal == -1 )
             {
                 return InputValue;
             }
-            else
-            {
-                return row == null ? RowData?[InputOrdinal] : row[InputOrdinal];    
-            }        
+
+            return row == null ? RowData?[InputOrdinal] : row[InputOrdinal];
         }
 
         public override string Description()
@@ -87,15 +85,8 @@ namespace dexih.transforms.Mappings
             return $"Mapping ({InputColumn?.Name} => {OutputColumn?.Name}";
         }
 
-//        public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
-//        {
-//            fillerRow[InputOrdinal] = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];   
-//        }
-
         public override void Reset(EFunctionType functionType)
         {
-//            RowData = null;
-//            InputValue = null;
         }
 
     }

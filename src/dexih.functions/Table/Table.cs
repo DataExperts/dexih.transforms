@@ -1,7 +1,6 @@
 ﻿using dexih.functions.Query;
 using Dexih.Utils.DataType;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -168,26 +167,12 @@ namespace dexih.functions
 
         public TableColumn this[string columnName] => Columns[columnName];
 
-        //public string GetExtendedProperty(string name)
-        //{
-        //    if (ExtendedProperties == null)
-        //        return null;
-        //    else if (ExtendedProperties.ContainsKey(name))
-        //        return ExtendedProperties[name];
-        //    else
-        //        return null;
-        //}
+        public TableColumn this[string columnName, string columnGroup] => Columns[columnName, columnGroup];
 
-        //public void SetExtendedProperty(string name, string value)
-        //{
-        //    if (ExtendedProperties == null)
-        //        ExtendedProperties = new Dictionary<string, string>();
-
-        //    if (ExtendedProperties.ContainsKey(name))
-        //        ExtendedProperties[name] = value;
-        //    else
-        //        ExtendedProperties.Add(name, value);
-        //}
+        /// <summary>
+        /// Maximum levels to recurse through structured data when importing columns.
+        /// </summary>
+        public int MaxImportLevels { get; set; } = 1;
 
 
         #endregion

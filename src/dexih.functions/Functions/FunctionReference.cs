@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;

@@ -2,7 +2,7 @@
 using dexih.functions;
 using dexih.functions.Parameter;
 
-namespace dexih.transforms.Mappings
+namespace dexih.transforms.Mapping
 {
     public class MapValidation: MapFunction
     {

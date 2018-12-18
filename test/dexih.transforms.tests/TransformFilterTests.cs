@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.BuiltIn;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
+using dexih.transforms.Mapping;
 using Xunit;
 using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
@@ -40,7 +40,7 @@ namespace dexih.transforms.tests
         {
             var table = Helpers.CreateSortedTestData();
 
-            var mappings = new Mappings()
+            var mappings = new Mappings
             {
                 new MapFilter(new TableColumn(columnName, dataType), filterValue, filterCompare)
             };
@@ -75,10 +75,10 @@ namespace dexih.transforms.tests
             var table = Helpers.CreateSortedTestData();
 
             //set a filter that filters all
-            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.IsEqual)).GetTransformFunction(typeof(string));
-            var parameters = new Parameters()
+            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.IsEqual), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
+            var parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterArray("Compare", ETypeCode.String, 1, new List<Parameter>
                     {
@@ -88,9 +88,9 @@ namespace dexih.transforms.tests
                 },
             };
 
-            var mappings = new Mappings()
+            var mappings = new Mappings
             {
-                new MapFunction(function, parameters)
+                new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache)
             };
 
             var transformFilter = new TransformFilter(table, mappings);
@@ -113,10 +113,10 @@ namespace dexih.transforms.tests
             var table = Helpers.CreateSortedTestData();
 
             //set a filter than filters to 1 row.
-            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.IsEqual)).GetTransformFunction(typeof(string));
-            var parameters = new Parameters()
+            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.IsEqual), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
+            var parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterArray("Compare", ETypeCode.String, 1, new List<Parameter>
                     {
@@ -126,7 +126,7 @@ namespace dexih.transforms.tests
                 }
             };
 
-            var mappings = new Mappings() { new MapFunction(function, parameters) };
+            var mappings = new Mappings { new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache) };
 
             var transformFilter = new TransformFilter(table, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
@@ -151,10 +151,10 @@ namespace dexih.transforms.tests
 
             // use the "IN" function to filter 3 rows.
             //set a filter than filters to 1 row.
-            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<string>.ArrayContains)).GetTransformFunction(typeof(string));
-            var parameters = new Parameters()
+            var function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<string>.ArrayContains), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
+            var parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterColumn("StringColumn", new TableColumn("StringColumn")),
                     new ParameterArray("CompareTo", ETypeCode.String, 1, new List<Parameter>
@@ -165,7 +165,7 @@ namespace dexih.transforms.tests
                     })
                 }
             };
-            var mappings = new Mappings { new MapFunction(function, parameters) };
+            var mappings = new Mappings { new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache) };
             var transformFilter = new TransformFilter(table, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
 
@@ -184,31 +184,35 @@ namespace dexih.transforms.tests
             var table = Helpers.CreateSortedTestData();
 
             // create a mapping, and use the filter after the calculation.
-            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring)).GetTransformFunction(typeof(string));
-            var parameters = new Parameters()
+            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
+            var parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterColumn("name", new TableColumn("StringColumn")),
                     new ParameterValue("start", ETypeCode.Int32, 5),
                     new ParameterValue("end", ETypeCode.Int32, 50),
                 },
-                ReturnParameter = new ParameterOutputColumn("return", new TableColumn("Substring"))
+                ReturnParameters = new List<Parameter>
+                {
+                    new ParameterOutputColumn("return", new TableColumn("Substring"))
+                    
+                }
             };
             table.Reset();
-            var transformMapping = new TransformMapping(table, new Mappings { new MapFunction(function, parameters) });
+            var transformMapping = new TransformMapping(table, new Mappings { new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache) });
             
-            function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.LessThan)).GetTransformFunction(typeof(int));
-            parameters = new Parameters()
+            function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.LessThan), Helpers.BuiltInAssembly).GetTransformFunction(typeof(int));
+            parameters = new Parameters
             {
-                Inputs = new List<Parameter>()
+                Inputs = new List<Parameter>
                 {
                     new ParameterColumn("Substring", new TableColumn("Substring", ETypeCode.Int32)),
                     new ParameterValue("Compare", ETypeCode.Int32, 5),
                 },
             };
 
-            var mappings = new Mappings { new MapFunction(function, parameters) };
+            var mappings = new Mappings { new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache) };
             var transformFilter = new TransformFilter(transformMapping, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
 
@@ -246,15 +250,15 @@ namespace dexih.transforms.tests
             
             var function = new TransformFunction(new Func<int, bool>(value => value < 0), typeof(string), null, null);
 
-            var mappings = new Mappings()
+            var mappings = new Mappings
             {
-                new MapFunction(function, new Parameters()
+                new MapFunction(function, new Parameters
                 {
-                    Inputs = new List<Parameter>()
+                    Inputs = new List<Parameter>
                     {
                         new ParameterColumn("value", new TableColumn(data.GetName(0), ETypeCode.Int32))
                     }
-                })
+                }, MapFunction.EFunctionCaching.NoCache)
             };
 
             var transformFilter = new TransformFilter(data, mappings);

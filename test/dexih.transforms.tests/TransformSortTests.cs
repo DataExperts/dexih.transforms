@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
-using dexih.functions.Mappings;
 using dexih.functions.Query;
+using dexih.transforms.Mapping;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -46,7 +46,7 @@ namespace dexih.transforms.tests
         public async Task RunSingleColumnSort2(string column, Sort.EDirection direction, string checkColumn)
         {
             var source = Helpers.CreateUnSortedTestData();
-            var mappings = new Mappings() {new MapSort(new TableColumn(column), direction)};
+            var mappings = new Mappings {new MapSort(new TableColumn(column), direction)};
             var transformSort = new TransformSort(source, mappings);
             var sortCount = 1;
 
@@ -102,7 +102,7 @@ namespace dexih.transforms.tests
             while (await transformSort.ReadAsync())
             {
                 var value = (string)transformSort["random"];
-                Assert.True(String.Compare( previousValue, value) <= 0 );
+                Assert.True(string.Compare( previousValue, value) <= 0 );
             }
         }
     }

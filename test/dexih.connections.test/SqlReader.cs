@@ -101,7 +101,7 @@ namespace dexih.connections.test
 
             var finished = await reader.ReadAsync();
             Assert.True(finished);
-            Assert.Equal((Int64)1,  Int64.Parse(reader["IntColumn"].ToString()));
+            Assert.Equal((long)1,  long.Parse(reader["IntColumn"].ToString()));
             Assert.Equal("value1", reader["StringColumn"]);
             Assert.Equal(new DateTime(2001, 01, 21), DateTime.Parse(reader["DateColumn"].ToString()));
             Assert.Equal((decimal)1.1, reader.GetDecimal(reader.GetOrdinal("DecimalColumn")));

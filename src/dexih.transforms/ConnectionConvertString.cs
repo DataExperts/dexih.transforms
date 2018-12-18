@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
-using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {

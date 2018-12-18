@@ -84,7 +84,7 @@ namespace dexih.connections.sftp
             return client;
         }
 
-        public void ClientError(Object sender, EventArgs args)
+        public void ClientError(object sender, EventArgs args)
         {
             Debug.WriteLine("Error");
         }

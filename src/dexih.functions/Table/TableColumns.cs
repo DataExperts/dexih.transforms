@@ -27,15 +27,9 @@ namespace dexih.functions
 
         public TableColumn this[int index]
         {
-            get
-            {
-                return _tableColumns[index];
-            }
+            get => _tableColumns[index];
 
-            set
-            {
-                _tableColumns[index] = value;
-            }
+            set => _tableColumns[index] = value;
         }
 
         public TableColumn this[string columnName]
@@ -47,10 +41,19 @@ namespace dexih.functions
                 return null;
             }
 
-            set
+            set => _tableColumns[_columnOrdinals[columnName]] = value;
+        }
+        
+        public TableColumn this[string columnName, string columnGroup]
+        {
+            get
             {
-                _tableColumns[_columnOrdinals[columnName]] = value;
+                if (_columnOrdinals.ContainsKey(columnName))
+                    return _tableColumns[_columnOrdinals[columnName]];
+                return null;
             }
+
+            set => _tableColumns[_columnOrdinals[columnName]] = value;
         }
 
         public TableColumn this[TableColumn column]
@@ -66,10 +69,7 @@ namespace dexih.functions
                 return null;
             }
 
-            set
-            {
-				_tableColumns[_columnOrdinals[column.TableColumnName()]] = value;
-            }
+            set => _tableColumns[_columnOrdinals[column.TableColumnName()]] = value;
         }
 
         public int GetOrdinal(string columnName)
@@ -79,32 +79,42 @@ namespace dexih.functions
             return -1;
         }
 
-        public int Count
-        {
-            get
-            {
-                return _tableColumns.Count;
-            }
-        }
+        public int Count => _tableColumns.Count;
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         public void Add(TableColumn item)
         {
             _tableColumns.Add(item);
-			if (!_columnOrdinals.ContainsKey(item.TableColumnName()))
+            UpdateOrdinal(item);
+        }
+
+        private void UpdateOrdinal(TableColumn item)
+        {
+            var tableColumnName = item.TableColumnName();
+            if (tableColumnName == item.Name)
             {
-				_columnOrdinals.Add(item.TableColumnName(), _tableColumns.Count - 1);
+                if (_columnOrdinals.ContainsKey(item.Name))
+                {
+                    _columnOrdinals[item.Name] = _tableColumns.Count - 1;
+                }
+                else
+                {
+                    _columnOrdinals.Add(item.Name, _tableColumns.Count - 1);
+                }
+                    
             }
-            if (!_columnOrdinals.ContainsKey(item.Name))
+            else
             {
-                _columnOrdinals.Add(item.Name, _tableColumns.Count - 1);
+                if (!_columnOrdinals.ContainsKey(item.TableColumnName()))
+                {
+                    _columnOrdinals.Add(item.TableColumnName(), _tableColumns.Count - 1);
+                }
+
+                if (!_columnOrdinals.ContainsKey(item.Name))
+                {
+                    _columnOrdinals.Add(item.Name, _tableColumns.Count - 1);
+                }
             }
         }
 
@@ -169,13 +179,9 @@ namespace dexih.functions
         private void RebuildOrdinals()
         {
             _columnOrdinals.Clear();
-            for (var i = 0; i < _tableColumns.Count; i++)
+            foreach (var col in _tableColumns)
             {
-				_columnOrdinals.Add(_tableColumns[i].TableColumnName(), i);
-                if (!_columnOrdinals.ContainsKey(_tableColumns[i].Name))
-                {
-                    _columnOrdinals.Add(_tableColumns[i].Name, i);
-                }
+                UpdateOrdinal(col);
             }
         }
     }

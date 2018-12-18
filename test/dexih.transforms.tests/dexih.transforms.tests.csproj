@@ -25,10 +25,19 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\dexih.functions.builtIn\dexih.functions.builtIn.csproj" />
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />
     <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Data/weather.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data/array.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

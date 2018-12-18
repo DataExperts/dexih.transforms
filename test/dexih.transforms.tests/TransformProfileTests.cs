@@ -6,30 +6,30 @@ using dexih.functions.Query;
 using Xunit;
 using static Dexih.Utils.DataType.DataType;
 using dexih.functions.BuiltIn;
-using dexih.functions.Mappings;
 using dexih.functions.Parameter;
+using dexih.transforms.Mapping;
 
 namespace dexih.transforms.tests
 {
     public class TransformProfileTests
     {
-        private Mapping GetProfileReference(bool detailed, string methodName, string column)
+        private Mapping.Mapping GetProfileReference(bool detailed, string methodName, string column)
         {
-            var function = Functions.GetFunction(typeof(ProfileFunctions).FullName, methodName).GetTransformFunction(typeof(string), null,  new GlobalVariables() {DetailedResults = true});
-            var parameters = new Parameters()
+            var function = Functions.GetFunction(typeof(ProfileFunctions).FullName, methodName, Helpers.BuiltInAssembly).GetTransformFunction(typeof(string), null,  new GlobalVariables {DetailedResults = true});
+            var parameters = new Parameters
             {
                 Inputs = new Parameter[]
                 {
                     new ParameterColumn(column, ETypeCode.String)
                 },
-                ResultReturnParameter = new ParameterOutputColumn("Result", ETypeCode.String),
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("Result", ETypeCode.String)},
                 ResultOutputs = new Parameter[]
                 {
                     new ParameterOutputColumn("Distribution", ETypeCode.Unknown),
                 }
             };
 
-            var mappings = new MapFunction(function, parameters);
+            var mappings = new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache);
             return mappings;
 
 //            new[] { new TableColumn(column) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") }, detailed, new GlobalVariables(null));
@@ -87,7 +87,7 @@ namespace dexih.transforms.tests
 //                GetProfileReference(true, nameof(ProfileFunctions.Patterns), "PatternsColumn")
 //            };
             
-            var mappings = new Mappings()
+            var mappings = new Mappings
             {
                 GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "StringColumn"),
                 GetProfileReference(true, nameof(ProfileFunctions.BestDataType), "IntColumn"),

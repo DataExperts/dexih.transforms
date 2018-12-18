@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using dexih.functions.Exceptions;
-using dexih.functions.Mappings;
 using dexih.functions.Query;
-using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 
 namespace dexih.transforms
@@ -24,7 +22,7 @@ namespace dexih.transforms
         public TransformMapping(Transform inTransform, Mappings mappings)
         {
             Mappings = mappings;
-            SetInTransform(inTransform, null);
+            SetInTransform(inTransform);
         }
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
 using dexih.functions.Exceptions;
-using Dexih.Utils.CopyProperties;
 
 namespace dexih.functions.Parameter
 {
