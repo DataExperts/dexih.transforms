@@ -4,7 +4,7 @@ using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum ESeriesGrain

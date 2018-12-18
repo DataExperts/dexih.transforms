@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Exceptions;
 using dexih.functions.Query;
-using Dexih.Utils.DataType;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     public class Mappings : List<Mapping>
     {
@@ -352,13 +350,13 @@ namespace dexih.functions.Mappings
             }
         }
         
-        public bool ProcessAggregateRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public async Task<bool> ProcessAggregateRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
             var result = false;
             
             foreach (var mapping in this)
             {
-                result = result | mapping.ProcessResultRow(functionVariables, row, functionType);
+                result = result | await mapping.ProcessResultRow(functionVariables, row, functionType);
             }
 
             return result;

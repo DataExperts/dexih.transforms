@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using dexih.functions;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     public class MapColumn: Mapping
     {

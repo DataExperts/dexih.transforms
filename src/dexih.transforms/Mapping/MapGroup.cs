@@ -1,6 +1,6 @@
 ﻿using dexih.functions;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     public class MapGroup: MapColumn
     {

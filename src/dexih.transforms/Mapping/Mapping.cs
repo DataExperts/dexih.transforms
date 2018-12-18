@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using dexih.functions;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     public abstract class Mapping
     {
@@ -56,12 +56,12 @@ namespace dexih.functions.Mappings
         /// </summary>
         /// <param name="index">The row within the current group for aggregate functions.</param>
         /// <param name="row">The output row to populate</param>
-        public virtual bool ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public virtual Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
-        public bool ProcessResultRow(object[] row, EFunctionType functionType)
+        public Task<bool> ProcessResultRow(object[] row, EFunctionType functionType)
         {
             return ProcessResultRow(new FunctionVariables(), row, functionType);
         }

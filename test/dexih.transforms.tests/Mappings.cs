@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using dexih.functions.BuiltIn;
-using dexih.functions.Mappings;
+using dexih.transforms.Mappings;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -73,7 +71,7 @@ namespace dexih.functions.tests
         }
         
         [Fact]
-        public void Mapping_Filter()
+        public async void Mapping_Filter()
         {
             var inputColumn1 = new TableColumn("input1", DataType.ETypeCode.String);
             var inputColumn2 = new TableColumn("input2", DataType.ETypeCode.String);
@@ -88,24 +86,24 @@ namespace dexih.functions.tests
             // test filter
             var mapFilter = new MapFilter(inputColumn1, "val1");
             mapFilter.InitializeColumns(inputTable);
-            Assert.True(mapFilter.ProcessInputRow(inputRow));
+            Assert.True(await mapFilter.ProcessInputRow(inputRow));
             
             mapFilter = new MapFilter(inputColumn1, "not val1");
             mapFilter.InitializeColumns(inputTable);
-            Assert.False(mapFilter.ProcessInputRow(inputRow));
+            Assert.False(await mapFilter.ProcessInputRow(inputRow));
 
             mapFilter = new MapFilter(inputColumn1, inputColumn2);
             mapFilter.InitializeColumns(inputTable);
-            Assert.True(mapFilter.ProcessInputRow(inputRow));
+            Assert.True(await mapFilter.ProcessInputRow(inputRow));
 
             mapFilter = new MapFilter(inputColumn1, inputColumn3);
             mapFilter.InitializeColumns(inputTable);
-            Assert.False(mapFilter.ProcessInputRow(inputRow));
+            Assert.False(await mapFilter.ProcessInputRow(inputRow));
 
         }
         
         [Fact]
-        public void Mapping_Join()
+        public async void Mapping_Join()
         {
             var inputColumn1 = new TableColumn("input1", DataType.ETypeCode.String);
             var inputColumn2 = new TableColumn("input2", DataType.ETypeCode.String);
@@ -130,11 +128,11 @@ namespace dexih.functions.tests
 
             var mapJoin = new MapJoin(inputColumn1, inputColumn2);
             mapJoin.InitializeColumns(inputTable, joinTable);
-            Assert.True(mapJoin.ProcessInputRow(inputRow, joinRow));
+            Assert.True(await mapJoin.ProcessInputRow(inputRow, joinRow));
 
             mapJoin = new MapJoin(inputColumn1, inputColumn3);
             mapJoin.InitializeColumns(inputTable, joinTable);
-            Assert.False(mapJoin.ProcessInputRow(inputRow, joinRow));
+            Assert.False(await mapJoin.ProcessInputRow(inputRow, joinRow));
 
         }
         
@@ -178,9 +176,12 @@ namespace dexih.functions.tests
             inputTable.Columns.Add(inputColumn2);
             
             var outputTable = new Table("output");
+
+            string Concat(string[] a) => string.Concat(a);
+            var transformFunction = new TransformFunction((Func<string[], string>) Concat);
             
-            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Concat));
-            var transformFunction = function.GetTransformFunction(typeof(string));
+//            var function = Functions.GetFunction(typeof(SampleFunction), typeof(SampleFunction).GetMethod(nameof(SampleFunction.Concat)));
+//            var transformFunction = function.GetTransformFunction(typeof(string));
             var parameters = new Parameters
             {
                 Inputs = new List<Parameter.Parameter>()
@@ -192,11 +193,11 @@ namespace dexih.functions.tests
                             new ParameterColumn("values", inputColumn2),
                         })
                 },
-                ReturnParameter = new ParameterOutputColumn("return", outputColumn)
+                ReturnParameters = new List<Parameter.Parameter>() { new ParameterOutputColumn("return", outputColumn) }
             };
 
             // map a value
-            var mapFunction = new MapFunction(transformFunction, parameters);
+            var mapFunction = new MapFunction(transformFunction, parameters, MapFunction.EFunctionCaching.EnableCache);
             mapFunction.InitializeColumns(inputTable);
             mapFunction.AddOutputColumns(outputTable);
 

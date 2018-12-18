@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     public class MapAggregate: Mapping
     {
@@ -84,7 +85,7 @@ namespace dexih.functions.Mappings
             return $"{Aggregate}({InputColumn?.Name} => {OutputColumn?.Name}";
         }
 
-        public override bool ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public override Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
             if (functionType == EFunctionType.Aggregate)
             {
@@ -110,7 +111,7 @@ namespace dexih.functions.Mappings
                 row[_outputOrdinal] = value;
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
 

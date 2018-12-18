@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Parameter;
-using Dexih.Utils.CopyProperties;
+using dexih.functions.Query;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     public class MapFunction: Mapping
     {
@@ -148,12 +147,12 @@ namespace dexih.functions.Mappings
             Parameters.SetFunctionResult(ReturnValue, Outputs, data);
         }
         
-        public override bool ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public override async Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
             if (Function.FunctionType == functionType && Function.ResultMethod != null)
             {
                 var parameters = Parameters.GetResultFunctionParameters();
-                ResultReturnValue = Function.RunResult(functionVariables, parameters, out _resultOutputs);
+                ResultReturnValue = await Function.RunResult(functionVariables, parameters, out _resultOutputs);
                 Parameters.SetResultFunctionResult(ResultReturnValue, _resultOutputs, row);
                 
                 if (Function.GeneratesRows && ResultReturnValue != null && ResultReturnValue is bool boolReturn)
@@ -177,6 +176,44 @@ namespace dexih.functions.Mappings
             return mapFunction;
         }
 
+        /// <summary>
+        /// Converts a standard function to a filter object.
+        /// </summary>
+        /// <param name="mapFunction"></param>
+        public Filter GetFilterFromFunction()
+        {
+//            if (mapFunction.Function.Parameters.ReturnParameter.DataType != ETypeCode.Boolean)
+//            {
+//                throw new QueryException(
+//                    $"The function {mapFunction.Function.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
+//            }
+
+            if (Function.CompareEnum == null)
+            {
+                return null;
+            }
+
+            var inputsArray = Parameters.Inputs.ToArray();
+            if (inputsArray.Length != 2)
+            {
+                return null;
+            }
+            
+            var compare = (Filter.ECompare) Function.CompareEnum;
+
+            var filter = new Filter
+            {
+                
+                Column1 = inputsArray[0] is ParameterColumn parameterColumn1 ? parameterColumn1.Column : null,
+                Value1 = inputsArray[0] is ParameterColumn parameterValue1 ? parameterValue1.Value : null,
+                Column2 = inputsArray[1] is ParameterColumn parameterColumn2 ? parameterColumn2.Column : null,
+                Value2 = inputsArray[1] is ParameterColumn parameterValue2 ? parameterValue2.Value : null,
+                CompareDataType = inputsArray[0].DataType,
+                Operator = compare
+            };
+
+            return filter;
+        }
     }
     
     public class FunctionCacheComparer : IEqualityComparer<object[]>
@@ -209,5 +246,7 @@ namespace dexih.functions.Mappings
             }
             return result;
         }
+        
+
     }
 }

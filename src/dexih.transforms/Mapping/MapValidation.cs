@@ -1,10 +1,8 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.Linq;
+using dexih.functions;
 using dexih.functions.Parameter;
-using Dexih.Utils.MessageHelpers;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     public class MapValidation: MapFunction
     {

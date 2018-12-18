@@ -15,22 +15,20 @@ namespace dexih.functions.File
         private readonly Table _table;
         private readonly int _fieldCount;
         private IEnumerator<JToken> _jEnumerator;
-        private int _responseDataOrdinal;
-        private readonly Dictionary<string, (int Ordinal, DataType.ETypeCode Datatype)> _responseSegementOrdinals;
+        private readonly int _responseDataOrdinal;
+        private readonly Dictionary<string, (int Ordinal, TableColumn column)> _responseSegmentOrdinals;
 
         public FileHandlerJson(Table table, string rowPath)
         {
             _rowPath = rowPath;
             _table = table;
             _fieldCount = table.Columns.Count;
-            
             _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
-
-            _responseSegementOrdinals = new Dictionary<string, (int ordinal, DataType.ETypeCode typeCode)>();
+            _responseSegmentOrdinals = new Dictionary<string, (int ordinal, TableColumn column)>();
             
             foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
             {
-                _responseSegementOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column.DataType));
+                _responseSegmentOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column));
             }
         }
         
@@ -75,26 +73,25 @@ namespace dexih.functions.File
                 {
                     foreach (var child in tokens)
                     {
-                        columns.AddRange(GetColumns(child, 0, restFunction.MaxImportLevels));
+                        columns.Add(GetColumn(child, 0, restFunction.MaxImportLevels));
                     }
+                    
                 }
             }
             return columns;
         }
 
-        private IEnumerable<TableColumn> GetColumns(JToken jToken, int currentLevel, int maxLevels)
+        private TableColumn GetColumn(JToken jToken, int currentLevel, int maxLevels)
         {
-            var columns = new List<TableColumn>();
-
             if (jToken.Type == JTokenType.Property)
             {
                 var value = (JProperty) jToken;
 
-                if (value.Value.Type == JTokenType.Property || value.Value.Type == JTokenType.Object)
+                if (value.Value.Type == JTokenType.Property || value.Value.Type == JTokenType.Object || value.Value.Type == JTokenType.Array)
                 {
                     var col = new TableColumn
                     {
-                        Name = value.Path,
+                        Name = value.Name,
                         IsInput = false,
                         LogicalName = value.Name,
                         DataType = DataType.ETypeCode.Json,
@@ -104,28 +101,38 @@ namespace dexih.functions.File
                         AllowDbNull = true,
                         IsUnique = false
                     };
-                    columns.Add(col);
 
                     if (currentLevel < maxLevels)
                     {
-                        foreach (var child in value.Value.Children())
+                        var children = value.Value.Children();
+
+                        if (children.Any())
                         {
-                            columns.AddRange(GetColumns(child, currentLevel+1, maxLevels));
+                            if (value.Value.Type == JTokenType.Array)
+                            {
+                                col.DataType = DataType.ETypeCode.Array;
+                                children = children.First().Children();
+                            }
+                            else
+                            {
+                                col.DataType = DataType.ETypeCode.Property;
+                            }
+
+                            var columns = new List<TableColumn>();
+                            foreach (var child in children)
+                            {
+                                columns.Add(GetColumn(child, currentLevel + 1, maxLevels));
+                            }
+                            
+                            col.ChildColumns = new TableColumns(columns);
                         }
                     }
 
+                    return col;
                 }
                 else
                 {
-                    DataType.ETypeCode dataType;
-                    if (value.Value.Type == JTokenType.Array)
-                    {
-                        dataType = DataType.ETypeCode.Json;
-                    }
-                    else
-                    {
-                        dataType = DataType.GetTypeCode(value.Value.Type);
-                    }
+                    DataType.ETypeCode dataType = DataType.GetTypeCode(value.Value.Type);
 
                     var path = value.Path;
                     if (!string.IsNullOrEmpty(_rowPath) && path.StartsWith(_rowPath))
@@ -135,7 +142,7 @@ namespace dexih.functions.File
 
                     var col = new TableColumn
                     {
-                        Name = path,
+                        Name = value.Name,
                         IsInput = false,
                         LogicalName = value.Name,
                         DataType = dataType,
@@ -145,7 +152,7 @@ namespace dexih.functions.File
                         AllowDbNull = true,
                         IsUnique = false
                     };
-                    columns.Add(col);    
+                    return col;
                 }
             }
             else
@@ -162,10 +169,10 @@ namespace dexih.functions.File
                     AllowDbNull = true,
                     IsUnique = false
                 };
-                columns.Add(col);
+                return col;
             }
 
-            return columns;
+            return null;
         }
 
         public override async Task SetStream(Stream stream, SelectQuery selectQuery)
@@ -216,18 +223,27 @@ namespace dexih.functions.File
                     row[_responseDataOrdinal] = _jEnumerator.Current.ToString();
                 }
 
-                foreach (var column in _responseSegementOrdinals)
+                foreach (var column in _responseSegmentOrdinals)
                 {
                     var value = _jEnumerator.Current.SelectToken(column.Key);
                         
                     try
                     {
-                        row[column.Value.Ordinal] = Operations.Parse(column.Value.Datatype, value);
+                        var col = column.Value.column;
+                        if (col.ChildColumns?.Count > 0 && col.DataType == DataType.ETypeCode.Property)
+                        {
+                            row[column.Value.Ordinal] = GetChildRow(value, col);
+                        }
+                        else
+                        {
+                            row[column.Value.Ordinal] = Operations.Parse(col.DataType, value);    
+                        }
+                        
                     }
                     catch (Exception ex)
                     {
                         throw new FileHandlerException(
-                            $"Failed to convert value on column {column.Key} to datatype {column.Value.Datatype}. {ex.Message}",
+                            $"Failed to convert value on column {column.Key} to datatype {column.Value.column?.DataType}. {ex.Message}",
                             ex, value);
                     }
                 }
@@ -239,6 +255,36 @@ namespace dexih.functions.File
                 return Task.FromResult((object[])null);
             }
 
+        }
+
+        /// <summary>
+        /// Processes any child columns within a property column.
+        /// </summary>
+        /// <param name="jToken"></param>
+        /// <param name="column"></param>
+        /// <returns></returns>
+        private object[] GetChildRow(JToken jToken, TableColumn column)
+        {
+            var childRow = new object[column.ChildColumns.Count];
+
+            for (var i = 0; i < column.ChildColumns.Count; i++)
+            {
+                var childColumn = column.ChildColumns[i];
+                var value = jToken.SelectToken(childColumn.Name);
+                if (value != null)
+                {
+                    if (childColumn.ChildColumns?.Count > 0 && childColumn.DataType == DataType.ETypeCode.Property)
+                    {
+                        childRow = GetChildRow(value, childColumn);
+                    }
+                    else
+                    {
+                        childRow[i] = Operations.Parse(childColumn.DataType, value);    
+                    }
+                }
+            }
+
+            return childRow;
         }
 
     }

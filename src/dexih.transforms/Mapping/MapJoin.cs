@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
-namespace dexih.functions.Mappings
+namespace dexih.transforms.Mappings
 {
     public class MapJoin: Mapping
     {
