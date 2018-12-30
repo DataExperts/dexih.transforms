@@ -139,7 +139,7 @@ namespace dexih.transforms.tests
         [Fact]
         public async Task NodeMappingTest()
         {
-            var source = Helpers.CreateParentChildReader();
+            var sourceReader = Helpers.CreateParentChildReader();
             
             var nodeMappings = new Mappings();
             var function = new TransformFunction(new Func<string, string, string>((parent, child) => parent + "-" + child), typeof(string), null, null);
@@ -154,16 +154,16 @@ namespace dexih.transforms.tests
             };   
             nodeMappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
 
-            var children = source.CacheTable["children"];
+            var childrenTable = sourceReader.CacheTable["children"];
             
-            var mapNode = new MapNode(children, source.CacheTable);
+            var mapNode = new MapNode(childrenTable, sourceReader.CacheTable);
             var nodeTransform = mapNode.Transform;
             var nodeMapping = new TransformMapping(nodeTransform, nodeMappings);
             mapNode.OutputTransform = nodeMapping;
 
             var mappings = new Mappings {mapNode};
 
-            var mapping = new TransformMapping(source, mappings);
+            var mapping = new TransformMapping(sourceReader, mappings);
 
             await mapping.Open(0, null, CancellationToken.None);
 

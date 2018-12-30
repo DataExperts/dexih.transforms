@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -169,7 +170,8 @@ namespace dexih.functions
                 paramType = parameterInfo.ParameterType;
             }
 
-            if (paramType.IsClass)
+            // if the parameter is a custom class, then extract the properties from the class as return parameters.
+            if (paramType.IsClass && paramType != typeof(string) && paramType != typeof(decimal) && !paramType.IsEnum && !paramType.IsArray)
             {
                 
                 var properties = paramType.GetProperties();

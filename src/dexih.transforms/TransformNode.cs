@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
-using dexih.transforms.Mapping;
-using dexih.transforms.Transforms;
 
 namespace dexih.transforms
 {
@@ -18,12 +12,10 @@ namespace dexih.transforms
     public class TransformNode : Transform
     {
         private object[] _parentRow;
-        private Table _table;
         private Table _parentTable;
 
         public void SetTable(Table table, Table parentTable)
         {
-            _table = table;
             _parentTable = parentTable;
             
             var newTable = new Table("Node");
@@ -38,7 +30,7 @@ namespace dexih.transforms
                 foreach (var col in _parentTable.Columns)
                 {
                     var parentCol = col.Copy();
-                    parentCol.ColumnGroup = "parent";
+                    parentCol.IsParent = true;
                     newTable.Columns.Add(parentCol);
                 }
             }
@@ -82,9 +74,9 @@ namespace dexih.transforms
 
             if (_parentRow != null)
             {
-                for (var i = 0; i < _parentRow.Length; i++)
+                foreach (var item in _parentRow)
                 {
-                    row[pos++] = _parentRow[i];
+                    row[pos++] = item;
                 }
             }
 
@@ -100,7 +92,5 @@ namespace dexih.transforms
         {
             return PrimaryTransform?.ResetTransform() ?? true;
         }
-
-        // public override object[] CurrentRow => PrimaryTransform.CurrentRow;
     }
 }

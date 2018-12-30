@@ -27,7 +27,16 @@ namespace dexih.transforms.Mapping
         {
             if (OutputTransform == null)
             {
-                NodeColumn.ChildColumns = joinTable?.Columns;
+                NodeColumn.ChildColumns = new TableColumns();
+                if (joinTable?.Columns != null)
+                {
+                    foreach (var column in joinTable.Columns)
+                    {
+                        var col = column.Copy();
+                        col.ReferenceTable = "";
+                        NodeColumn.ChildColumns.Add(col);
+                    }
+                }
             }
             else
             {

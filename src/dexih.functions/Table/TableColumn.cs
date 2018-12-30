@@ -152,6 +152,9 @@ namespace dexih.functions
         public bool IsInput { get; set; }
 
         public bool IsIncrementalUpdate { get; set; }
+        
+        // used by the passthrough to indicate if the column is a part of the parent node, or part of current node.
+        public bool IsParent { get; set; } = false;
 
         public TableColumns ChildColumns { get; set; }
 
@@ -250,7 +253,7 @@ namespace dexih.functions
                 IsInput = IsInput,
                 IsMandatory = IsMandatory,
                 IsIncrementalUpdate = IsIncrementalUpdate,
-                Rank = Rank
+                Rank = Rank,
             };
 
             if (includeChildColumns && ChildColumns != null && ChildColumns.Count > 0)

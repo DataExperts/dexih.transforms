@@ -177,6 +177,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="primaryTransform">The primary input transform</param>
         /// <param name="referenceTransform">The secondary input, such as join table, target table, lookup table etc.</param>
+        /// <param name="mapAllReferenceColumns"></param>
         /// <returns></returns>
         public bool SetInTransform(Transform primaryTransform, Transform referenceTransform = null, bool mapAllReferenceColumns = true)
         {

@@ -18,7 +18,7 @@ namespace dexih.functions.BuiltIn
     {
         public GlobalVariables GlobalVariables { get; set; }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Concatenate",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Concatenate Strings",
             Description = "Concatenates multiple string fields.")]
         public string Concat([TransformFunctionParameter(Description = "Array of Values to Concatenate")] string[] values)
         {

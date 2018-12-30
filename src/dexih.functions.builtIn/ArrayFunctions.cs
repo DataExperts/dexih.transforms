@@ -23,7 +23,7 @@ namespace dexih.functions.BuiltIn
             return values.Length;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Concatenate",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Concatenate Arrays",
             Description = "Concatenate two arrays together", GenericType = EGenericType.All)]
         public T[] ArrayConcat(T[] array1, T[] array2)
         {

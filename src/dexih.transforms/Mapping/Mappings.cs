@@ -20,7 +20,7 @@ namespace dexih.transforms.Mapping
         private bool _doPassThroughColumns;
         
         /// <summary>
-        /// Pass through any unmapped columns (if groupRows is true, passthrough will be set to false)
+        /// Pass through any unmapped columns (if groupRows is true, passThrough will be set to false)
         /// </summary>
         public bool PassThroughColumns {
             get => _doPassThroughColumns && !GroupRows;
@@ -77,7 +77,10 @@ namespace dexih.transforms.Mapping
                 for(var i = 0; i < inputTable.Columns.Count; i++)
                 {
                     var column = inputTable.Columns[i];
-                    var ordinal = table.GetOrdinal(column.TableColumnName());
+
+                    if(column.IsParent) continue; // passThrough doesn't need to map parent columns
+
+                    var ordinal = table.GetOrdinal(column);
                     if (ordinal < 0)
                     {
                         targetOrdinal++;
@@ -305,7 +308,7 @@ namespace dexih.transforms.Mapping
         {
             var result = true;
 
-            for (var i = 0; i < this.Count; i++)
+            for (var i = 0; i < Count; i++)
             {
                 _tasks[i] = this[i].ProcessInputRow(functionVariables, row, joinRow);
             }
@@ -321,7 +324,7 @@ namespace dexih.transforms.Mapping
                     var task = _tasks[i];
                     if (task.IsFaulted)
                     {
-                        if (task.Exception.InnerException is TargetInvocationException targetInvocationException2)
+                        if (task.Exception?.InnerException is TargetInvocationException targetInvocationException2)
                         {
                             throw new FunctionException(
                                 $"The mapping {this[i].Description()} failed due to {targetInvocationException2.InnerException.Message}.",

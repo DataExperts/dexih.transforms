@@ -96,7 +96,7 @@ namespace dexih.functions
             {
                 if (_columnOrdinals.ContainsKey(item.Name))
                 {
-                    _columnOrdinals[item.Name] = _tableColumns.Count - 1;
+                //    _columnOrdinals[item.Name] = _tableColumns.Count - 1;
                 }
                 else
                 {

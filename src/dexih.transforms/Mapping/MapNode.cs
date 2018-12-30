@@ -18,7 +18,7 @@ namespace dexih.transforms.Mapping
         public MapNode(TableColumn inputColumn, Table parentTable)
         {
             InputColumn = inputColumn;
-            OutputColumn = inputColumn;
+            OutputColumn = inputColumn.Copy();
 
             var table = new Table("node", InputColumn.ChildColumns, null);
             Transform.SetTable(table, parentTable);
@@ -38,11 +38,12 @@ namespace dexih.transforms.Mapping
         {
             if (InputColumn == null) return;
             
-            InputOrdinal = table.GetOrdinal(InputColumn);
+            InputOrdinal = table.GetOrdinal(InputColumn.TableColumnName());
         }
 
         public override void AddOutputColumns(Table table)
         {
+            OutputColumn.ChildColumns = OutputTransform.CacheTable.Columns;
             OutputOrdinal = AddOutputColumn(table, OutputColumn);
         }
 

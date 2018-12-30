@@ -25,14 +25,14 @@ namespace dexih.functions.BuiltIn
         private object[] _cacheArray;
         private SortedRowsDictionary<T> _sortedRowsDictionary = null;
         private T _cacheNumber;
-        public int _cacheCount;
-        public HashSet<T> _hashSet;
+        private int _cacheCount;
+        private HashSet<T> _hashSet;
 
-        private bool isFirst = true;
+        private bool _isFirst = true;
 
         public bool Reset()
         {
-            isFirst = true;
+            _isFirst = true;
             // _cacheInt = null;
             _cacheDouble = 0;
             _cacheDate = null;
@@ -79,9 +79,9 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
         public void Min(T value)
         {
-            if (isFirst)
+            if (_isFirst)
             {
-                isFirst = false;
+                _isFirst = false;
                 _cacheNumber = value;
             }
             else if (Operations.LessThan<T>(value, _cacheNumber)) _cacheNumber = value;
@@ -90,9 +90,9 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Maximum", Description = "Maximum Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
         public void Max(T value)
         {
-            if (isFirst)
+            if (_isFirst)
             {
-                isFirst = false;
+                _isFirst = false;
                 _cacheNumber = value;
             }
             else if (Operations.GreaterThan<T>(value, _cacheNumber)) _cacheNumber = value;
@@ -102,9 +102,9 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First", Description = "First Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
         public void First(T value)
         {
-            if (isFirst)
+            if (_isFirst)
             {
-                isFirst = false;
+                _isFirst = false;
                 _cacheNumber = value;
             }
         }
