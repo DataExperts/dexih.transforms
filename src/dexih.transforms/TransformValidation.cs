@@ -45,37 +45,53 @@ namespace dexih.transforms
         private int _primaryFieldCount;
         private int _columnCount;
 
+        protected override Table InitializeCacheTable(bool mapAllReferenceColumns)
+        {
+            var table = new Table("Validate");
+            var mappingTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
+
+            var sourceTable = PrimaryTransform?.CacheTable;
+            
+            //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
+            var operation =
+                sourceTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) ?? 
+                new TableColumn("Operation", ETypeCode.Char)
+                {
+                    DeltaType = TableColumn.EDeltaType.DatabaseOperation
+                };
+
+            var rejectReason =
+                sourceTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.RejectedReason) ?? 
+                new TableColumn("RejectReason")
+                {
+                    DeltaType = TableColumn.EDeltaType.RejectedReason,
+                    AllowDbNull = true
+                };
+
+            var status =
+                sourceTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.ValidationStatus) ?? 
+                new TableColumn("ValidationStatus", ETypeCode.String)
+                {
+                    DeltaType = TableColumn.EDeltaType.ValidationStatus
+                };
+
+            table.Columns.Add(operation);
+
+            foreach (var column in mappingTable.Columns)
+            {
+                table.Columns.Add(column);
+            }
+
+            table.Columns.Add(rejectReason);
+            table.Columns.Add(status);
+
+            return table;
+        }
+        
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
             
-            //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
-            if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
-            {
-                CacheTable.Columns.Insert(0, new TableColumn("Operation", ETypeCode.Byte)
-                {
-                    DeltaType = TableColumn.EDeltaType.DatabaseOperation
-                });
-            }
-
-            //add the rejection reason, which details the reason for a rejection.
-            if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.RejectedReason) == null)
-            {
-                CacheTable.Columns.Add(new TableColumn("RejectReason", TableColumn.EDeltaType.RejectedReason)
-                {
-                    DeltaType = TableColumn.EDeltaType.RejectedReason
-                });
-            }
-
-            //add the rejection reason, which details the reason for a rejection.
-            if (CacheTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.ValidationStatus) == null)
-            {
-                CacheTable.Columns.Add(new TableColumn("ValidationStatus")
-                {
-                    DeltaType = TableColumn.EDeltaType.ValidationStatus
-                });
-            }
-
             var result = true;
 
             if (PrimaryTransform != null)

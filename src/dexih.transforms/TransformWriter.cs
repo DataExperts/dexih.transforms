@@ -125,6 +125,22 @@ namespace dexih.transforms
             var firstRead = true;
             Task writeTask = null;
 
+            async Task<bool> HandleWriteTask(Task task)
+            {
+                if (task != null)
+                {
+                    await task;
+                    if(task.IsFaulted)
+                    {
+                        var message = $"The transform writer failed writing data.  {task.Exception?.Message}";
+                        var newException = new TransformWriterException(message, task.Exception);
+                        await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, CancellationToken.None);
+                        return false;
+                    }
+                }
+
+                return true;
+            }
             
             while (await convertedTransform.ReadAsync(cancellationToken))
             {
@@ -138,17 +154,7 @@ namespace dexih.transforms
                     firstRead = false;
                 }
 
-                if (writeTask != null)
-                {
-                    await writeTask;
-                    if(writeTask.IsFaulted)
-                    {
-                        var message = $"The transform writer failed writing data.  {writeTask.Exception?.Message}";
-						var newException = new TransformWriterException(message, writeTask.Exception);
-                        await writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, CancellationToken.None);
-                        return false;
-                    }
-                }
+                if(!await HandleWriteTask(writeTask)) return false;
 
                 writeTask = WriteRecord(writerResult, convertedTransform);
 
@@ -158,6 +164,8 @@ namespace dexih.transforms
                     return runStatusResult;
                 }
             }
+
+            if(!await HandleWriteTask(writeTask)) return false;
 
             try
             {
@@ -282,7 +290,7 @@ namespace dexih.transforms
                 ordinals = _rejectFieldOrdinals;
                 if (_rejectTable == null)
                 {
-                    var rejectColumn = reader.GetOrdinal("RejectedReason");
+                    var rejectColumn = reader.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
                     var rejectReason = "";
                     if (rejectColumn > 0)
                         rejectReason = reader[rejectColumn].ToString();

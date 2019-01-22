@@ -56,6 +56,7 @@ namespace dexih.transforms.Mapping
 
             if (transform != _transform)
             {
+                _transform = transform;
                 _transformThread = transform.GetThread();
             }
             return await _transformThread.ReadAsync(cancellationToken);
