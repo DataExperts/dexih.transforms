@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Parameter;
@@ -54,7 +55,7 @@ namespace dexih.transforms.Mapping
             Parameters.InitializeOutputOrdinals(table);
         }
 
-        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             Parameters.SetFromRow(row, joinRow);
 
@@ -147,7 +148,7 @@ namespace dexih.transforms.Mapping
             Parameters.SetFunctionResult(ReturnValue, Outputs, data);
         }
         
-        public override async Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public override async Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
         {
             if (Function.FunctionType == functionType && Function.ResultMethod != null)
             {

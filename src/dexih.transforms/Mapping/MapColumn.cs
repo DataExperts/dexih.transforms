@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using dexih.functions;
 
 namespace dexih.transforms.Mapping
@@ -59,7 +60,7 @@ namespace dexih.transforms.Mapping
             OutputOrdinal = AddOutputColumn(table, OutputColumn);
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             RowData = row;
             return Task.FromResult(true);

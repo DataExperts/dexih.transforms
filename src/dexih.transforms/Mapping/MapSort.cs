@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Query;
 
@@ -37,7 +38,7 @@ namespace dexih.transforms.Mapping
         {
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             _rowData = row;
             return Task.FromResult(true);

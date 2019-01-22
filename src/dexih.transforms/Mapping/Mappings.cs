@@ -203,10 +203,11 @@ namespace dexih.transforms.Mapping
             var groups = this.OfType<MapGroup>().Select(c=>c.GetOutputTransform(row)).ToArray();
             return groups;
         }
-        
+
         /// <summary>
         /// Returns the series value + count
         /// </summary>
+        /// <param name="count"></param>
         /// <param name="row"></param>
         /// <returns></returns>
         public object GetSeriesValue(int count, object[] row = null)

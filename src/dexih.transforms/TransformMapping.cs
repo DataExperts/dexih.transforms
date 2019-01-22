@@ -81,7 +81,6 @@ namespace dexih.transforms
 							continue;
 					}
 
-
 					var newSort = new Sort
 					{
 						Column = column,
@@ -94,6 +93,13 @@ namespace dexih.transforms
 			}
 
 			var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+
+			foreach (var mapping in Mappings.OfType<MapNode>())
+			{
+				var transform = mapping.OutputTransform;
+				await transform.Open(auditKey, null, cancellationToken);
+			}
+			
 			return returnValue;
         }
 

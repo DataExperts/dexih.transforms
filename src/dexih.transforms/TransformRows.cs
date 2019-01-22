@@ -11,7 +11,7 @@ namespace dexih.transforms
 {
     [Transform(
         Name = "Rows",
-        Description = "Groups columns and generates rows.",
+        Description = "Groups columns, generates rows, and can un-group column nodes.",
         TransformType = TransformAttribute.ETransformType.Rows
     )]
     public class TransformRows : Transform
@@ -80,6 +80,7 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
+            var firstRead = false;
             if (_firstRecord)
             {
                 if(!await PrimaryTransform.ReadAsync(cancellationToken))
@@ -87,13 +88,14 @@ namespace dexih.transforms
                     return null;
                 }
 
+                firstRead = true;
                 _firstRecord = false;
             }
 
             do
             {
                 // if the row generation function returns true, then add the row
-                if (await Mappings.ProcessInputData(PrimaryTransform.CurrentRow))
+                if (await Mappings.ProcessInputData(PrimaryTransform.CurrentRow) || firstRead)
                 {
                     var newRow = new object[FieldCount];
                     Mappings.MapOutputRow(newRow);
@@ -104,7 +106,9 @@ namespace dexih.transforms
                 {
                     return null;
                 }
-                
+
+                firstRead = true;
+
             } while (true);
 
         }

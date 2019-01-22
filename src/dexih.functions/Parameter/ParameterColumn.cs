@@ -1,4 +1,5 @@
-﻿using Dexih.Utils.DataType;
+﻿using System;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.Parameter
 {
@@ -56,6 +57,11 @@ namespace dexih.functions.Parameter
         public override void InitializeOrdinal(Table table, Table joinTable = null)
         {
             _rowOrdinal = table.GetOrdinal(Column);
+
+            if (_rowOrdinal < 0)
+            {
+                throw new Exception($"Failed to initialize parameter.  Could not find the column {Column.Name} in table {table.Name}.");
+            }
         }
 
         public override void SetInputData(object[] data, object[] joinRow = null)

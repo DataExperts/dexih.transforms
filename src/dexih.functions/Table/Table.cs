@@ -3,6 +3,7 @@ using Dexih.Utils.DataType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using static Dexih.Utils.DataType.DataType;
 
@@ -471,6 +472,33 @@ namespace dexih.functions
 
 			return ordinal;
 		}
+
+        public int[] GetOrdinalPath(string schemaColumnName, TableColumns columns = null)
+        {
+            if (columns == null)
+            {
+                columns = Columns;
+            }
+
+            var ordinal = columns.GetOrdinal(schemaColumnName);
+            if (ordinal >= 0)
+            {
+                return new[] {ordinal};
+            }
+
+            for (var i = 0; i < columns.Count; i++)
+            {
+                var column = columns[i];
+                var ordinals = GetOrdinalPath(schemaColumnName, column.ChildColumns);
+
+                if (ordinals.Length > 0)
+                {
+                    return ordinals.Prepend(i).ToArray();
+                }
+            }
+
+            return new int[0];
+        }
 
         public TableColumn GetDeltaColumn(TableColumn.EDeltaType deltaType)
         {

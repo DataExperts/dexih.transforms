@@ -16,7 +16,7 @@ namespace dexih.transforms
         private int _currentRow;
         
         // flag used to indicate if the cache has loaded, so no more records will be loaded 
-        // after resets and row repositisons.
+        // after resets and row positions.
         private bool _cacheLoaded = false;
 
 //        public override ECacheMethod CacheMethod

@@ -24,13 +24,12 @@ namespace dexih.transforms.Mapping
             Transform.SetTable(table, parentTable);
         }
 
-        public Transform InputTransform { get; set; }
         public Transform OutputTransform { get; set; }
         public TableColumn InputColumn { get; set; }
         public TableColumn OutputColumn { get; set; }
 
-        protected int InputOrdinal = -1;
-        protected int OutputOrdinal = -1;
+        private int _inputOrdinal = -1;
+        private int _outputOrdinal = -1;
 
         protected object[] RowData;
 
@@ -38,24 +37,30 @@ namespace dexih.transforms.Mapping
         {
             if (InputColumn == null) return;
             
-            InputOrdinal = table.GetOrdinal(InputColumn.TableColumnName());
+            _inputOrdinal = table.GetOrdinal(InputColumn.TableColumnName());
+
+            if (_inputOrdinal < 0)
+            {
+                throw new Exception($"Could not find the column ${InputColumn.TableColumnName()} when mapping the node.");
+            }
         }
 
         public override void AddOutputColumns(Table table)
         {
             OutputColumn.ChildColumns = OutputTransform.CacheTable.Columns;
-            OutputOrdinal = AddOutputColumn(table, OutputColumn);
+            _outputOrdinal = AddOutputColumn(table, OutputColumn);
         }
 
-        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             RowData = row;
-            
-            Transform.PrimaryTransform = (Transform) row[InputOrdinal];
-            await Transform.Open(0, null, CancellationToken.None);
+
+            Transform.PrimaryTransform = (Transform) row[_inputOrdinal];
+            await Transform.Open(0, null, cancellationToken);
             Transform.SetParentRow(row);
 
             OutputTransform?.Reset();
+
             return true;
         }
 
@@ -63,10 +68,10 @@ namespace dexih.transforms.Mapping
         {
             if (OutputTransform == null)
             {
-                data[OutputOrdinal] = Transform;
+                data[_outputOrdinal] = Transform;
             }
 
-            data[OutputOrdinal] = OutputTransform;
+            data[_outputOrdinal] = OutputTransform;
         }
 
         public override object GetOutputTransform(object[] row = null)

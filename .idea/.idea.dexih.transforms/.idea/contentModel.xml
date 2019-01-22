@@ -466,6 +466,7 @@
             <e p="Mappings.cs" t="Include" />
             <e p="MapSeries.cs" t="Include" />
             <e p="MapSort.cs" t="Include" />
+            <e p="MapUnGroup.cs" t="Include" />
             <e p="MapValidation.cs" t="Include" />
           </e>
           <e p="obj" t="ExcludeRecursive">
@@ -505,7 +506,6 @@
           <e p="TransformConcatinate.cs" t="Include" />
           <e p="TransformDelta.cs" t="Include" />
           <e p="TransformFilter.cs" t="Include" />
-          <e p="TransformFlattenNode.cs" t="Include" />
           <e p="TransformGroup.cs" t="Include" />
           <e p="TransformJoin.cs" t="Include" />
           <e p="TransformLookup.cs" t="Include" />
@@ -821,6 +821,21 @@
           <e p="TransformValidationTests.cs" t="Include" />
         </e>
       </e>
+    </e>
+    <e p="$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties" t="IncludeRecursive">
+      <e p="bin" t="ExcludeRecursive" />
+      <e p="CopyProperties.cs" t="Include" />
+      <e p="CopyPropertyAttributes.cs" t="Include" />
+      <e p="CopyPropertyExceptions.cs" t="Include" />
+      <e p="Dexih.Utils.CopyProperties.csproj" t="IncludeRecursive" />
+      <e p="obj" t="ExcludeRecursive">
+        <e p="Release" t="Include">
+          <e p="netstandard1.3" t="Include">
+            <e p="Dexih.Utils.CopyProperties.AssemblyInfo.cs" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="PropertyStructure.cs" t="Include" />
     </e>
     <e p="$PROJECT_DIR$/../dexih.utils.datatype/src/dexih.utils.datatype" t="IncludeRecursive">
       <e p="bin" t="ExcludeRecursive" />

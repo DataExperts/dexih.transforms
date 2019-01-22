@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Query;
@@ -36,7 +37,7 @@ namespace dexih.transforms.Mapping
             _outputOrdinal = table.Columns.Count - 1;
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             Count++;
             var value = _inputOrdinal == -1 ? InputColumn.DefaultValue : row[_inputOrdinal];
@@ -85,7 +86,7 @@ namespace dexih.transforms.Mapping
             return $"{Aggregate}({InputColumn?.Name} => {OutputColumn?.Name}";
         }
 
-        public override Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public override Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
         {
             if (functionType == EFunctionType.Aggregate)
             {

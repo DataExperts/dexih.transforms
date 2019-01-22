@@ -236,34 +236,37 @@ namespace dexih.transforms.tests
             var parent = CreateParentTableData();
             var child = CreateChildTableData();
             var grandChild = CreateGrandChildTableData();
-            
-            var joinNode = new MapJoinNode(new TableColumn("children", ETypeCode.Node), parent.CacheTable, child.CacheTable); 
-            
-            var childMappings = new Mappings
-            {
-                new MapJoinNode(new TableColumn("grandChildren", ETypeCode.Node), child.CacheTable, grandChild.CacheTable),
-                new MapJoin(child.CacheTable["child_id"], grandChild.CacheTable["child_id"])
-            };
-            
-            var childTransform = new TransformJoin(joinNode.Transform, grandChild, childMappings, Transform.EDuplicateStrategy.All, null, "Join")
-            {
-                Name = "Join GrandChild"
-            };
 
-            joinNode.SetOutputTransform(childTransform);
+            var childrenColumn = new TableColumn("children", ETypeCode.Node);
 
+            // join parent to child
             var mappings = new Mappings
             {
-                joinNode,
+                new MapJoinNode(childrenColumn, child.CacheTable),
                 new MapJoin(child.CacheTable["parent_id"], child.CacheTable["parent_id"])
             };
-            
+
             var parentTransform = new TransformJoin(parent, child, mappings, Transform.EDuplicateStrategy.All, null, "Join")
             {
-                Name = "Join Child"
+                Name = "Join Child",
+                JoinDuplicateStrategy = Transform.EDuplicateStrategy.All
             };
+
+            var childMappings = new Mappings
+            {
+                new MapJoinNode(new TableColumn("grandChildren", ETypeCode.Node), grandChild.CacheTable),
+                new MapJoin(child.CacheTable["child_id"], grandChild.CacheTable["child_id"])
+            };
+
+            var childTransform = new TransformJoin()
+            {
+                JoinDuplicateStrategy = Transform.EDuplicateStrategy.All
+            };
+
+            var transform = childTransform.CreateNodeMapping(parentTransform, grandChild, childMappings,
+                new[] {childrenColumn});
             
-            return parentTransform;
+            return transform;
         }
 
         public static ReaderMemory CreateLargeTable(int rows)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Query;
@@ -68,7 +69,7 @@ namespace dexih.transforms.Mapping
             return;
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             var value1 = _column1Ordinal == -1 ? Value1 : row[_column1Ordinal];
             var value2 = _column2Ordinal == -1 ? Value2 : row[_column2Ordinal];

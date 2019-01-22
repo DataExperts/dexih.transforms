@@ -63,7 +63,7 @@ namespace dexih.transforms
         private int _primaryFieldCount;
         private int _referenceFieldCount;
 
-        public Task<bool> InitializeOutputFields()
+        private Task<bool> InitializeOutputFields()
         {
             if (ReferenceTransform == null)
             {
@@ -204,7 +204,7 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             if (query == null)
@@ -379,6 +379,8 @@ namespace dexih.transforms
             for (var i = 0; i < _primaryFieldCount; i++)
             {
                 if (pos == _nodeColumnOrdinal) pos++;
+
+                if (pos >= FieldCount) break;
                 
                 newRow[pos] = PrimaryTransform[i];
                 pos++;

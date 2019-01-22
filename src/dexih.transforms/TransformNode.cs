@@ -30,13 +30,13 @@ namespace dexih.transforms
                 foreach (var col in _parentTable.Columns)
                 {
                     var parentCol = col.Copy();
+                    parentCol.ColumnGroup = string.IsNullOrEmpty(parentCol.ColumnGroup) ? "parent" : "parent." + parentCol.ColumnGroup;
                     parentCol.IsParent = true;
                     newTable.Columns.Add(parentCol);
                 }
             }
 
             CacheTable = newTable;
-
         }
         
         public void SetParentRow(object[] parentRow)
@@ -44,15 +44,17 @@ namespace dexih.transforms
             _parentRow = parentRow;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
-            if (PrimaryTransform == null)
-            {
-                throw new TransformException("The transform node cannot be opened as a primary transform is not set.");
-            }
+            return Task.FromResult(true);
             
-            var openResult = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-            return openResult;
+//            if (PrimaryTransform == null)
+//            {
+//                throw new TransformException("The transform node cannot be opened as a primary transform is not set.");
+//            }
+//            
+//            var openResult = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+//            return openResult;
         }
         
         // not used as the ReadAsync is overridden.

@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 
@@ -13,7 +14,6 @@ namespace dexih.transforms.Mapping
         public MapJoinNode(TableColumn nodeColumn, Table joinTable)
         {
             NodeColumn = nodeColumn;
-            
             Transform.SetTable(joinTable, null);
         }
 
@@ -49,14 +49,14 @@ namespace dexih.transforms.Mapping
             NodeOrdinal = AddOutputColumn(table, NodeColumn);
         }
 
-        public void SetOutputTransform(Transform transform)
-        {
-            OutputTransform = transform;
-            Transform.SetTable(transform.CacheTable, null);
-        }
+//        public void SetOutputTransform(Transform transform)
+//        {
+//            OutputTransform = transform;
+//            Transform.SetTable(transform.CacheTable, null);
+//        }
 
         public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row,
-            object[] joinRow = null)
+            object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }

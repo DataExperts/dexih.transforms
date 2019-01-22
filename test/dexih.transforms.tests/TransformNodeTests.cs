@@ -84,52 +84,55 @@ namespace dexih.transforms.tests
         }
         
         [Fact]
-        public async Task FlattenChapterTest()
+        public async Task UnGroupChapterTest()
         {
             var source = Helpers.CreateParentChildReader();
-            var flatten = new TransformFlattenNode(source, null, source.CacheTable["children"]);
+            
+            var mapping = new MapUnGroup(source.CacheTable["children"]);
+            var mappings = new Mappings(true) {mapping};
+            var flatten = new TransformRows(source, mappings) {};
 
             await flatten.Open(0, null, CancellationToken.None);
             
-            Assert.Equal("parent_id", flatten.CacheTable.Columns[1].Name);
-            Assert.Equal("child_id", flatten.CacheTable.Columns[2].Name);
-            Assert.Equal("name", flatten.CacheTable.Columns[3].Name);
-            Assert.Equal("parent_id", flatten.CacheTable.Columns[4].Name);
-            Assert.Equal("name", flatten.CacheTable.Columns[5].Name);
+            Assert.Equal("children.parent_id", flatten.CacheTable.Columns[1].Name);
+            Assert.Equal("children.child_id", flatten.CacheTable.Columns[2].Name);
+            Assert.Equal("children.name", flatten.CacheTable.Columns[3].Name);
+            Assert.Equal("parent_id", flatten.CacheTable.Columns[5].Name);
+            Assert.Equal("name", flatten.CacheTable.Columns[6].Name);
 
             await flatten.ReadAsync();
             Assert.Equal(0, flatten["parent_id"]);
             Assert.Equal("parent 0", flatten["name"]);
             Assert.Equal(0, flatten["children.parent_id"]);
-            Assert.Equal(0, flatten["child_id"]);
+            Assert.Equal(0, flatten["children.child_id"]);
             Assert.Equal("child 00", flatten["children.name"]);
             
             await flatten.ReadAsync();
             Assert.Equal(0, flatten["parent_id"]);
             Assert.Equal("parent 0", flatten["name"]);
             Assert.Equal(0, flatten["children.parent_id"]);
-            Assert.Equal(1, flatten["child_id"]);
+            Assert.Equal(1, flatten["children.child_id"]);
             Assert.Equal("child 01", flatten["children.name"]);
 
             await flatten.ReadAsync();
             Assert.Equal(1, flatten["parent_id"]);
             Assert.Equal("parent 1", flatten["name"]);
             Assert.Equal(null, flatten["children.parent_id"]);
-            Assert.Equal(null, flatten["child_id"]);
+            Assert.Equal(null, flatten["children.child_id"]);
             Assert.Equal(null, flatten["children.name"]);
 
             await flatten.ReadAsync();
             Assert.Equal(2, flatten["parent_id"]);
             Assert.Equal("parent 2", flatten["name"]);
             Assert.Equal(2, flatten["children.parent_id"]);
-            Assert.Equal(20, flatten["child_id"]);
+            Assert.Equal(20, flatten["children.child_id"]);
             Assert.Equal("child 20", flatten["children.name"]);
 
             await flatten.ReadAsync();
             Assert.Equal(3, flatten["parent_id"]);
             Assert.Equal("parent 3", flatten["name"]);
             Assert.Equal(3, flatten["children.parent_id"]);
-            Assert.Equal(30, flatten["child_id"]);
+            Assert.Equal(30, flatten["children.child_id"]);
             Assert.Equal("child 30", flatten["children.name"]);
 
             Assert.False(await flatten.ReadAsync());
@@ -154,50 +157,54 @@ namespace dexih.transforms.tests
             };   
             nodeMappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
 
-            var childrenTable = sourceReader.CacheTable["children"];
+            var mapping = new TransformMapping();
+            var mappingTransform = mapping.CreateNodeMapping(sourceReader, null, nodeMappings,
+                new TableColumn[] {new TableColumn("children")});
             
-            var mapNode = new MapNode(childrenTable, sourceReader.CacheTable);
-            var nodeTransform = mapNode.Transform;
-            var nodeMapping = new TransformMapping(nodeTransform, nodeMappings);
-            mapNode.OutputTransform = nodeMapping;
+//            var childrenTable = sourceReader.CacheTable["children"];
+//            
+//            var mapNode = new MapNode(childrenTable, sourceReader.CacheTable);
+//            var nodeTransform = mapNode.Transform;
+//            var nodeMapping = new TransformMapping(nodeTransform, nodeMappings);
+//            mapNode.OutputTransform = nodeMapping;
+//
+//            var mappings = new Mappings {mapNode};
+//
+//            var mapping = new TransformMapping(sourceReader, mappings);
 
-            var mappings = new Mappings {mapNode};
+            await mappingTransform.Open(0, null, CancellationToken.None);
 
-            var mapping = new TransformMapping(sourceReader, mappings);
+            Assert.True(await mappingTransform.ReadAsync());
+            Assert.Equal(0, mappingTransform["parent_id"]);
+            Assert.Equal("parent 0", mappingTransform["name"]);
 
-            await mapping.Open(0, null, CancellationToken.None);
-
-            Assert.True(await mapping.ReadAsync());
-            Assert.Equal(0, mapping["parent_id"]);
-            Assert.Equal("parent 0", mapping["name"]);
-
-            var transform = (Transform) mapping["children"];
+            var transform = (Transform) mappingTransform["children"];
             Assert.True(await transform.ReadAsync());
             Assert.Equal("parent 0-child 00", transform["parent_child"]);
             Assert.True(await transform.ReadAsync());
             Assert.Equal("parent 0-child 01", transform["parent_child"]);
             Assert.False(await transform.ReadAsync());
             
-            Assert.True(await mapping.ReadAsync());
-            Assert.Equal(1, mapping["parent_id"]);
-            Assert.Equal("parent 1", mapping["name"]);
+            Assert.True(await mappingTransform.ReadAsync());
+            Assert.Equal(1, mappingTransform["parent_id"]);
+            Assert.Equal("parent 1", mappingTransform["name"]);
             Assert.False(await transform.ReadAsync());
 
-            Assert.True(await mapping.ReadAsync());
-            Assert.Equal(2, mapping["parent_id"]);
-            Assert.Equal("parent 2", mapping["name"]);
+            Assert.True(await mappingTransform.ReadAsync());
+            Assert.Equal(2, mappingTransform["parent_id"]);
+            Assert.Equal("parent 2", mappingTransform["name"]);
             Assert.True(await transform.ReadAsync());
             Assert.Equal("parent 2-child 20", transform["parent_child"]);
             Assert.False(await transform.ReadAsync());
 
-            Assert.True(await mapping.ReadAsync());
-            Assert.Equal(3, mapping["parent_id"]);
-            Assert.Equal("parent 3", mapping["name"]);
+            Assert.True(await mappingTransform.ReadAsync());
+            Assert.Equal(3, mappingTransform["parent_id"]);
+            Assert.Equal("parent 3", mappingTransform["name"]);
             Assert.True(await transform.ReadAsync());
             Assert.Equal("parent 3-child 30", transform["parent_child"]);
             Assert.False(await transform.ReadAsync());
 
-            Assert.False(await mapping.ReadAsync());
+            Assert.False(await mappingTransform.ReadAsync());
 
 
         }

@@ -191,7 +191,7 @@ namespace dexih.transforms
                 Mappings = new Mappings();
             }
 
-            CacheTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, null, mapAllReferenceColumns);
+            CacheTable = InitializeCacheTable(mapAllReferenceColumns); // Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
 
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
@@ -233,6 +233,65 @@ namespace dexih.transforms
                 referenceTransform.IsPrimaryTransform = false;
            
             return true;
+        }
+        
+        /// <summary>
+        /// This adjusts the node level which the transform should be applied to
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="primaryTransform">The primary transform containing inbound data.</param>
+        /// <param name="referenceTransform">The reference transform (for joins and concat).</param>
+        /// <param name="baseMappings">The mappings to be applied to the transform.</param>
+        /// <param name="columnPath">Array of columns which lead to the node</param>
+        /// <param name="pathNumber">Used to recurse through the columnPath</param>
+        /// <returns></returns>
+        public Transform CreateNodeMapping(Transform primaryTransform, Transform referenceTransform, Mappings baseMappings, TableColumn[] columnPath, int pathNumber = 0)
+        {
+            var column = columnPath[pathNumber];
+            var table = primaryTransform.CacheTable;
+            var nodeColumn = table[column.Name, column.ColumnGroup];
+            // create a new node mapping
+            var mapNode = new MapNode(nodeColumn, table);
+            var nodeTransform = mapNode.Transform;
+
+            // if we are at the last node, then this is where the base mappings need to be applied to.
+            if (columnPath.Length -1 == pathNumber)
+            {
+                // set the transform mappings
+                Mappings = baseMappings;
+
+                // set the transform mappings, using the transform from the new node
+                SetInTransform(nodeTransform, referenceTransform);
+
+                // the mapNode output transform contains 
+                mapNode.OutputTransform = this;
+
+            }
+            else
+            {
+                var childTable = new Table("Node");
+                foreach (var childColumn in nodeColumn.ChildColumns)
+                {
+                    childTable.Columns.Add(childColumn);
+                }
+                
+                foreach (var childColumn in table.Columns)
+                {
+                    childTable.Columns.Add(childColumn);
+                }
+                
+                var childTransform = CreateNodeMapping(nodeTransform, referenceTransform, baseMappings, columnPath, pathNumber + 1);
+                mapNode.OutputTransform = childTransform;
+            }
+
+            // create a mapping transform which maps node.
+            var transform = new TransformMapping();
+            var nodeMappings = new Mappings {mapNode};
+            transform.Mappings = nodeMappings;
+            transform.SetInTransform(primaryTransform);
+
+            return transform;
+
         }
 
         /// <summary>
@@ -280,6 +339,17 @@ namespace dexih.transforms
                 }
             }
             return match;
+        }
+
+        /// <summary>
+        /// Initializes the CacheTable.  This can be overridden for transforms which have
+        /// different column outputs.
+        /// </summary>
+        /// <param name="mapAllReferenceColumns"></param>
+        /// <returns></returns>
+        protected virtual Table InitializeCacheTable(bool mapAllReferenceColumns)
+        {
+            return Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
         }
 
         public Task<bool> Open(CancellationToken cancellationToken = default)
@@ -349,6 +419,44 @@ namespace dexih.transforms
         /// Indicates if the cache is complete or at maximum capacity
         /// </summary>
         public bool IsCacheFull { get; protected set; }
+        
+        /// <summary>
+        /// Gets a transform instance that can be used by a different thread to simultanously read the same transform.
+        /// </summary>
+        /// <returns></returns>
+        public Transform GetThread()
+        {
+            if (CacheMethod == ECacheMethod.NoCache)
+            {
+                CacheMethod = ECacheMethod.OnDemandCache;
+            }
+
+            return new TransformThread(this);
+        }
+
+        private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
+
+        public async Task<object[]> ReadThreadSafe(int row, CancellationToken cancellationToken)
+        {
+            while (row >= CacheTable.Data.Count)
+            {
+                await _semaphoreSlim.WaitAsync(cancellationToken);
+
+                try
+                {
+                    var result = await ReadAsync(cancellationToken);
+                    if (!result) return null;
+                }
+                finally
+                {
+                    _semaphoreSlim.Release();
+                }
+
+            }
+
+            return row > CacheTable.Data.Count ? null : CacheTable.Data[row];
+        }
+        
         #endregion
 
         #region Encryption 
@@ -1022,7 +1130,8 @@ namespace dexih.transforms
                     }
                     else if (incrementalCol.Length > 1)
                     {
-                        throw new Exception("Cannot run the transform as two columns have been defined with incremental update flags.");
+                        throw new Exception(
+                            "Cannot run the transform as two columns have been defined with incremental update flags.");
                     }
                     else
                         _incrementalColumnIndex = -1;
@@ -1088,12 +1197,13 @@ namespace dexih.transforms
             }
 
 
-            if(IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && CurrentRow != null)
+            if (IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && CurrentRow != null)
             {
                 try
                 {
-                    var compresult = Operations.GreaterThan(_incrementalColumnType, CurrentRow[_incrementalColumnIndex], _maxIncrementalValue);
-                    if (compresult)
+                    var compareResult = Operations.GreaterThan(_incrementalColumnType,
+                        CurrentRow[_incrementalColumnIndex], _maxIncrementalValue);
+                    if (compareResult)
                     {
                         _maxIncrementalValue = CurrentRow[_incrementalColumnIndex];
                     }
@@ -1102,20 +1212,22 @@ namespace dexih.transforms
                 {
                     IsReaderFinished = true;
                     Close();
-                    throw new TransformException($"The transform {Name} failed comparing the incremental update column.  " + ex.Message, ex);
+                    throw new TransformException(
+                        $"The transform {Name} failed comparing the incremental update column.  " + ex.Message, ex);
                 }
 
             }
 
-			if (IsReader && !IsPrimaryTransform && !IsReaderFinished)
+            if (IsReader && !IsPrimaryTransform && !IsReaderFinished)
                 TransformRowsReadReference++;
 
             //if this is a primary (i.e. starting reader), increment the rows read.
-            if (IsReader && !IsReaderFinished) 
-				TransformRowsReadPrimary++;
+            if (IsReader && !IsReaderFinished)
+                TransformRowsReadPrimary++;
 
             //add the row to the cache
-            if (CurrentRow != null && !_currentRowCached && (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
+            if (CurrentRow != null && !_currentRowCached &&
+                (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
                 CacheTable.Data.Add(CurrentRow);
 
             TransformTimer.Stop();
@@ -1304,7 +1416,7 @@ namespace dexih.transforms
             
             public TransformEnumerator(Transform transform)
             {
-                _transform = transform;
+                _transform = transform.GetThread();
             }
 
             public bool MoveNext()

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using dexih.functions;
 
 namespace dexih.transforms.Mapping
@@ -33,9 +34,9 @@ namespace dexih.transforms.Mapping
         /// <param name="row"></param>
         /// <param name="joinRow"></param>
         /// <returns>0 filters or joins match, -1 row less than joinRow, 1 row greater than joinRow--></returns>
-        public abstract Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null);
+        public abstract Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default);
 
-        public Task<bool> ProcessInputRow(object[] row, object[] joinRow = null)
+        public Task<bool> ProcessInputRow(object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             return ProcessInputRow(new FunctionVariables(), row, joinRow);
         }
@@ -56,7 +57,7 @@ namespace dexih.transforms.Mapping
         /// <param name="functionVariables"></param>
         /// <param name="row">The output row to populate</param>
         /// <param name="functionType"></param>
-        public virtual Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        public virtual Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(false);
         }

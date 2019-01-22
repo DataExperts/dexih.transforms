@@ -48,12 +48,16 @@ namespace dexih.functions
         {
             get
             {
-                if (_columnOrdinals.ContainsKey(columnName))
-                    return _tableColumns[_columnOrdinals[columnName]];
+                var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;
+                if (_columnOrdinals.ContainsKey(name))
+                    return _tableColumns[_columnOrdinals[name]];
                 return null;
             }
-
-            set => _tableColumns[_columnOrdinals[columnName]] = value;
+            set
+            {
+                var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;
+                _tableColumns[_columnOrdinals[name]] = value;
+            }
         }
 
         public TableColumn this[TableColumn column]
@@ -106,9 +110,9 @@ namespace dexih.functions
             }
             else
             {
-                if (!_columnOrdinals.ContainsKey(item.TableColumnName()))
+                if (!_columnOrdinals.ContainsKey(tableColumnName))
                 {
-                    _columnOrdinals.Add(item.TableColumnName(), _tableColumns.Count - 1);
+                    _columnOrdinals.Add(tableColumnName, _tableColumns.Count - 1);
                 }
 
                 if (!_columnOrdinals.ContainsKey(item.Name))
