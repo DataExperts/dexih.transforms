@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -170,10 +171,15 @@ namespace dexih.functions
                 paramType = parameterInfo.ParameterType;
             }
 
-            // if the parameter is a custom class, then extract the properties from the class as return parameters.
-            if (paramType.IsClass && paramType != typeof(string) && paramType != typeof(decimal) && !paramType.IsEnum && !paramType.IsArray)
+            if (typeof(IEnumerable).IsAssignableFrom(paramType))
             {
-                
+                var args = paramType.GetGenericArguments();
+                paramType = args.Length > 0 ? args[0] : null;
+            }
+
+            // if the parameter is a custom class, then extract the properties from the class as return parameters.
+            if (paramType != null && (paramType.IsClass || paramType.IsValueType) && paramType != typeof(string) && paramType != typeof(decimal) && !paramType.IsEnum && !paramType.IsArray)
+            {                
                 var properties = paramType.GetProperties();
 
                 foreach (var property in properties)
@@ -198,8 +204,6 @@ namespace dexih.functions
                         DefaultValue = null
                     });
                 }
-
-                
             }
             else
             {

@@ -2,8 +2,7 @@
 using System.IO;
 using System.Linq;
 using Microsoft.ML;
-using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Data;
 
 namespace dexih.functions.ml
 {
@@ -11,7 +10,7 @@ namespace dexih.functions.ml
     {
 
         private List<SentimentIssue> _data;
-        private PredictionFunction<SentimentIssue, SentimentPredictionResult> _predictionFunction;
+        private PredictionEngine<SentimentIssue, SentimentPredictionResult> _predictionFunction;
 
         private byte[] _sentimentModel;
 
@@ -96,7 +95,7 @@ namespace dexih.functions.ml
                 var mlContext = new MLContext();
                 var stream = new MemoryStream( sentimentModel );
                 var model = mlContext.Model.Load(stream);
-                _predictionFunction = model.MakePredictionFunction<SentimentIssue, SentimentPredictionResult>(mlContext);
+                _predictionFunction = model.CreatePredictionEngine<SentimentIssue, SentimentPredictionResult>(mlContext);
             }
 
             var sentimentIssue = new SentimentIssue(false, text);

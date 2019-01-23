@@ -15,7 +15,7 @@ namespace dexih.functions.external
     {
         public enum TemperatureScale
         {
-            Fahrenheit, Celcius, Kelvin
+            Fahrenheit, Celsius, Kelvin
         }
 
         public class WeatherDetails
@@ -99,7 +99,7 @@ namespace dexih.functions.external
             {
                 case TemperatureScale.Fahrenheit:
                     return ((9.0 / 5.0) * (kelvin - 273.15)) + 32;
-                case TemperatureScale.Celcius:
+                case TemperatureScale.Celsius:
                     return kelvin - 273.15;
                 case TemperatureScale.Kelvin:
                     return kelvin;

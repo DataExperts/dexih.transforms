@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -37,6 +38,7 @@ namespace dexih.transforms.Mapping
         public EFunctionCaching FunctionCaching { get; set; }
 
         public object ReturnValue;
+        private IEnumerator ReturnEnumerator;
         protected object[] Outputs;
 
         public object ResultReturnValue;
@@ -44,6 +46,7 @@ namespace dexih.transforms.Mapping
         
         private Dictionary<object[], (object, object[])> _cache;
         private bool isFirst = true;
+
 
         public override void InitializeColumns(Table table, Table joinTable = null)
         {
@@ -57,6 +60,20 @@ namespace dexih.transforms.Mapping
 
         public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
+            if (ReturnEnumerator != null)
+            {
+                if (ReturnEnumerator.MoveNext())
+                {
+                    ReturnValue = ReturnEnumerator.Current;
+                    return true;
+                }
+                else
+                {
+                    ReturnEnumerator = null;
+                    return false;
+                }
+            }
+            
             Parameters.SetFromRow(row, joinRow);
 
             //gets the parameters.
@@ -91,15 +108,14 @@ namespace dexih.transforms.Mapping
 
             if (runFunction)
             {
-                var taskReturn = Function.RunFunction(functionVariables, parameters, out Outputs);
-
-                if (!taskReturn.IsCompleted)
+                if (Function.FunctionMethod.IsAsync)
                 {
-                    await taskReturn;
+                    ReturnValue = await Function.RunFunctionAsync(functionVariables, parameters);
                 }
-
-                var resultProp = taskReturn.GetType().GetProperty("Result");
-                ReturnValue = resultProp.GetValue(taskReturn);
+                else
+                {
+                    ReturnValue = Function.RunFunction(functionVariables, parameters, out Outputs);
+                }
 
                 if (FunctionCaching == EFunctionCaching.EnableCache)
                 {
@@ -115,6 +131,25 @@ namespace dexih.transforms.Mapping
             if (ReturnValue is bool boolReturn)
             {
                 return boolReturn;
+            }
+
+            if (Function.FunctionType == EFunctionType.Rows)
+            {
+                if (ReturnValue is IEnumerable returnEnumerator)
+                {
+                    ReturnEnumerator = returnEnumerator.GetEnumerator();
+
+                    if (ReturnEnumerator.MoveNext())
+                    {
+                        ReturnValue = ReturnEnumerator.Current;
+                    }
+                    else
+                    {
+                        ReturnEnumerator = null;
+                        ReturnValue = null;
+                        return false;
+                    }
+                }
             }
                 
             return true;
@@ -153,7 +188,16 @@ namespace dexih.transforms.Mapping
             if (Function.FunctionType == functionType && Function.ResultMethod != null)
             {
                 var parameters = Parameters.GetResultFunctionParameters();
-                ResultReturnValue = await Function.RunResult(functionVariables, parameters, out _resultOutputs);
+
+                if (Function.ResultMethod.IsAsync)
+                {
+                    ResultReturnValue = await Function.RunResultAsync(functionVariables, parameters);
+                }
+                else
+                {
+                    ResultReturnValue = Function.RunResult(functionVariables, parameters, out _resultOutputs);    
+                }
+                
                 Parameters.SetResultFunctionResult(ResultReturnValue, _resultOutputs, row);
                 
                 if (Function.GeneratesRows && ResultReturnValue != null && ResultReturnValue is bool boolReturn)

@@ -79,7 +79,7 @@ namespace dexih.functions
 
 		public bool GeneratesRows = false;
 
-		private Task<object> _returnValue;
+		private object _returnValue;
 
 		[JsonConverter(typeof(StringEnumConverter))]
 		public enum EInvalidAction
@@ -299,60 +299,71 @@ namespace dexih.functions
 			return (parameters, outputPos);
 		}
 
-		public Task<object> RunFunction(object[] inputParameters)
+		public object RunFunction(object[] inputParameters)
 		{
 			return RunFunction(new FunctionVariables(), inputParameters, out _);
 		}
 
-		public Task<object> RunFunction(object[] inputParameters, out object[] outputs)
+		public object RunFunction(object[] inputParameters, out object[] outputs)
 		{
 			return RunFunction(new FunctionVariables(), inputParameters, out outputs);
 		}
 
 
-		public Task<object> RunFunction(FunctionVariables functionVariables, object[] inputParameters)
+		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters)
 		{
 			return RunFunction(functionVariables, inputParameters, out _);
 		}
 		
-		public Task<object> RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(FunctionMethod, functionVariables, inputParameters, out outputs);
 		}
 
-		public Task<object> RunResult(object[] inputParameters, out object[] outputs)
+		public object RunResult(object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(ResultMethod, new FunctionVariables(), inputParameters, out outputs);
 		}
 		
-		public Task<object> RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public object RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
 			return Invoke(ResultMethod, functionVariables, inputParameters, out outputs);
 		}
-
-		private Task<object> Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		
+		public Task<object> RunFunctionAsync(FunctionVariables functionVariables, object[] inputParameters)
 		{
-			var parameters = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
+			return InvokeAsync(FunctionMethod, functionVariables, inputParameters);
+		}
 
-			if (methodInfo.IsAsync)
+		public Task<object> RunResultAsync(FunctionVariables functionVariables, object[] inputParameters)
+		{
+			return InvokeAsync(ResultMethod, functionVariables, inputParameters);
+		}
+
+		private async Task<object> InvokeAsync(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters)
+		{
+			var (parameters, outputPos) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
+			var task = (Task) methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
+			await task.ConfigureAwait(false);
+			var resultProperty = task.GetType().GetProperty("Result");
+			_returnValue = resultProperty.GetValue(task);
+			return _returnValue;
+		}
+
+		private object Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		{
+			var (parameters, outputPos) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
+
+			var returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
+			_returnValue = returnValue;
+			
+			if (outputPos >= 0)
 			{
-				var returnValue = (Task<object>) methodInfo.MethodInfo.Invoke(ObjectReference, parameters.parameters);
-				_returnValue = returnValue;
-				outputs = new object[0];
+				outputs = parameters.Skip(outputPos).ToArray();
 			}
 			else
 			{
-				var returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters.parameters);
-				_returnValue = Task.FromResult(returnValue);
-				
-				if (parameters.outputPos >= 0)
-				{
-					outputs = parameters.parameters.Skip(parameters.outputPos).ToArray();
-				}
-				else
-				{
-					outputs = new object[0];
-				}
+				outputs = new object[0];
 			}
 
 			return _returnValue;

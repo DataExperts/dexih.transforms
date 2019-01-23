@@ -83,8 +83,7 @@ namespace dexih.functions.external
         private double _baseRate;
         private Dictionary<string, double>.Enumerator _ratesEnumerator;
         
-        private bool isFirst = true;
-        
+        private bool _isFirst = true;
         
         private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(string url, CancellationToken cancellationToken)
         {
@@ -178,9 +177,9 @@ namespace dexih.functions.external
 
         private async Task<CurrencyDetails> GetHistoricalRates(string key, DateTime dateTime)
         {
-            if (isFirst)
+            if (_isFirst)
             {
-                isFirst = false;
+                _isFirst = false;
                 _currencyHistory = new Dictionary<string, CurrencyDetails>();
             }
 
@@ -205,9 +204,9 @@ namespace dexih.functions.external
             if (from == to) return 1;
             
             // load the rates on the first call
-            if (isFirst)
+            if (_isFirst)
             {
-                isFirst = false;
+                _isFirst = false;
                 await LoadLiveRates(key);
             }
 
@@ -227,9 +226,9 @@ namespace dexih.functions.external
             if (from == to) return value;
             
             // load the rates on the first call
-            if (isFirst)
+            if (_isFirst)
             {
-                isFirst = false;
+                _isFirst = false;
                 await LoadLiveRates(key);
             }
 
@@ -248,9 +247,9 @@ namespace dexih.functions.external
             if (string.IsNullOrEmpty(from)) from = "USD";
             
             // load the rates on the first call
-            if (isFirst)
+            if (_isFirst)
             {
-                isFirst = false;
+                _isFirst = false;
                 await LoadLiveRates(key);
 
                 _baseRate = _liveCurrency.USDRate(from);
@@ -310,7 +309,7 @@ namespace dexih.functions.external
             if (string.IsNullOrEmpty(from)) from = "USD";
             
             // load the rates on the first call
-            if (isFirst)
+            if (_isFirst)
             {
                 var rates = await GetHistoricalRates(key, date);
                 _baseRate = rates.USDRate(from);

@@ -38,7 +38,7 @@ namespace dexih.transforms.Mapping
 
         public Task<bool> ProcessInputRow(object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
-            return ProcessInputRow(new FunctionVariables(), row, joinRow);
+            return ProcessInputRow(new FunctionVariables(), row, joinRow, cancellationToken);
         }
 
         /// <summary>

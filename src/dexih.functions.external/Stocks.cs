@@ -13,7 +13,7 @@ namespace dexih.functions.external
 {
     public class Stocks
     {
-        public class StockEntity
+        public struct StockEntity
         {
             public string Symbol { get; set; }
             public DateTime Time { get; set; }
@@ -22,9 +22,6 @@ namespace dexih.functions.external
             public double Low { get; set; }
             public double Close { get; set; }
             public long Volume { get; set; }
-
-            public string ResponseStatusCode { get; set; }
-            public bool ResponseSuccess { get; set; }
         }
 
         private string GetAlphaVantageUrl(string function, string interval, string symbol, string key)
@@ -50,7 +47,7 @@ namespace dexih.functions.external
             }
         }
         
-      private async Task<StockEntity[]> GetStockResponse(string uri, int maxCount = Int32.MaxValue)
+      private async Task<List<StockEntity>> GetStockResponse(string uri, int maxCount = Int32.MaxValue)
         {
             var response = await GetWebServiceResponse(uri, CancellationToken.None);
 
@@ -93,43 +90,46 @@ namespace dexih.functions.external
                 var count = 0;
                 foreach (JToken stock in timeSeries.Children())
                 {
-                    var stockEntity = new StockEntity
+                    foreach (var entity in stock.Children())
                     {
-                        ResponseSuccess = response.isSuccess,
-                        ResponseStatusCode = response.statusCode,
-                        Symbol = metadata["2. Symbol"].Value<string>()
-                    };
+                        if (entity is JProperty property)
+                        {
+                            var values = property.Children();
 
-                    var entity = stock.Children().First();
+                            var stockEntity = new StockEntity
+                            {
+                                Symbol = metadata["2. Symbol"].Value<string>(),
+                                Time = Convert.ToDateTime(property.Name),
+                                Open = values["1. open"].ElementAt(0).Value<double>(),
+                                High = values["2. high"].ElementAt(0).Value<double>(),
+                                Low = values["3. low"].ElementAt(0).Value<double>(),
+                                Close = values["4. close"].ElementAt(0).Value<double>(),
+                                Volume = values["5. volume"].ElementAt(0).Value<long>()
+                            };
+                            
+                            stockEntities.Add(stockEntity);
 
-                    if (entity is JProperty property)
-                    {
-                        stockEntity.Time = Convert.ToDateTime(property.Name);
-                        var values = property.Children();
-                        stockEntity.Open = values["1. open"].ElementAt(0).Value<double>();
-                        stockEntity.High = values["2. high"].ElementAt(0).Value<double>();
-                        stockEntity.Low = values["3. low"].ElementAt(0).Value<double>();
-                        stockEntity.Close = values["4. close"].ElementAt(0).Value<double>();
-                        stockEntity.Volume = values["5. volume"].ElementAt(0).Value<long>();
+                            count++;
+                            if (count > maxCount) return stockEntities;
+
+                        }
+                        else
+                        {
+                            throw new FunctionException("Could not receive stock data, due to unexpected response.");
+                        }
+
+                        count++;
+                        if (count > maxCount) break;
                     }
 
-                    stockEntities.Add(stockEntity);
-
-                    count++;
-                    if (count > maxCount) break;
                 }
             }
             else
             {
-                var stockEntity = new StockEntity
-                {
-                    ResponseSuccess = response.isSuccess,
-                    ResponseStatusCode = response.statusCode,
-                };
-                stockEntities.Add(stockEntity);
+                throw new FunctionException($"Could not receive stock data due to failure to connect to url ({uri}).  The response status was {response.statusCode}.");
             }
 
-            return stockEntities.ToArray();
+            return stockEntities;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Stocks", Name = "Latest Stock Information",
@@ -143,7 +143,7 @@ namespace dexih.functions.external
             var url = GetAlphaVantageUrl("TIME_SERIES_INTRADAY", interval, symbol, key);
             var entities = await GetStockResponse(url, 1);
 
-            if (entities.Length > 0)
+            if (entities.Count > 0)
             {
                 return entities[0];
             }
@@ -151,16 +151,17 @@ namespace dexih.functions.external
             throw new FunctionException("The stock data from AlphaVantage could not be retrieved.");
         }
         
-//        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Stocks", Name = "Latest Stock History",
-//            Description =
-//                "Gets the latest stock history time interval data for the specified stock.  Sign up for key at [alphavantage.co](https://www.alphavantage.co/support/#api-key).")]
-//        public Task<StockEntity[]> LatestStockHistory(
-//            string key, 
-//            string symbol,
-//            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval )
-//        {
-//            var url = GetAlphaVantageUrl("TIME_SERIES_INTRADAY", interval, symbol, key);
-//            return GetStockResponse(url);
-//        }
+        [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Stocks", Name = "Latest Stock History",
+            Description =
+                "Gets the latest stock history time interval data for the specified stock.  Sign up for key at [alphavantage.co](https://www.alphavantage.co/support/#api-key).")]
+        public Task<List<StockEntity>> LatestStockHistory(
+            string key, 
+            string symbol,
+            int count,
+            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval )
+        {
+            var url = GetAlphaVantageUrl("TIME_SERIES_INTRADAY", interval, symbol, key);
+            return GetStockResponse(url);
+        }
     }
 }
