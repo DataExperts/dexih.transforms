@@ -147,7 +147,7 @@ namespace dexih.functions.Parameter
                     foreach (var parameter in ReturnParameters)
                     {
                         var property = returnType.GetProperty(parameter.Name);
-                        var value = property.GetValue(returnValue);
+                        var value = property?.GetValue(returnValue);
                         parameter.PopulateRowData(value, outputRow);
                     }
                 }
@@ -186,7 +186,7 @@ namespace dexih.functions.Parameter
                     foreach (var parameter in ResultReturnParameters)
                     {
                         var property = returnType.GetProperty(parameter.Name);
-                        var value = property.GetValue(returnValue);
+                        var value = property?.GetValue(returnValue);
                         parameter.PopulateRowData(value, outputRow);
                     }
                 }

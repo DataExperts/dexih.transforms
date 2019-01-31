@@ -90,17 +90,12 @@ namespace dexih.functions
         public void Add(TableColumn item)
         {
             _tableColumns.Add(item);
-            UpdateOrdinal(item);
-        }
-
-        private void UpdateOrdinal(TableColumn item)
-        {
             var tableColumnName = item.TableColumnName();
             if (tableColumnName == item.Name)
             {
                 if (_columnOrdinals.ContainsKey(item.Name))
                 {
-                //    _columnOrdinals[item.Name] = _tableColumns.Count - 1;
+                    //    _columnOrdinals[item.Name] = _tableColumns.Count - 1;
                 }
                 else
                 {
@@ -121,6 +116,7 @@ namespace dexih.functions
                 }
             }
         }
+
 
         public void Clear()
         {
@@ -183,9 +179,35 @@ namespace dexih.functions
         private void RebuildOrdinals()
         {
             _columnOrdinals.Clear();
+            var ordinal = 0;
             foreach (var col in _tableColumns)
             {
-                UpdateOrdinal(col);
+                var tableColumnName = col.TableColumnName();
+                if (tableColumnName == col.Name)
+                {
+                    if (_columnOrdinals.ContainsKey(col.Name))
+                    {
+                        //    _columnOrdinals[item.Name] = _tableColumns.Count - 1;
+                    }
+                    else
+                    {
+                        _columnOrdinals.Add(col.Name, ordinal);
+                    }
+                }
+                else
+                {
+                    if (!_columnOrdinals.ContainsKey(tableColumnName))
+                    {
+                        _columnOrdinals.Add(tableColumnName, ordinal);
+                    }
+
+                    if (!_columnOrdinals.ContainsKey(col.Name))
+                    {
+                        _columnOrdinals.Add(col.Name, ordinal);
+                    }
+                }
+
+                ordinal++;
             }
         }
     }

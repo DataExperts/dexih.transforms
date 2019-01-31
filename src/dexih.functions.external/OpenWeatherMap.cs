@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions.Exceptions;
 using dexih.transforms;
 using Newtonsoft.Json.Linq;
 
@@ -20,8 +21,8 @@ namespace dexih.functions.external
 
         public class WeatherDetails
         {
-            public double Longitude { get; set; }
-            public double Latitude { get; set; }
+            public double? Longitude { get; set; }
+            public double? Latitude { get; set; }
 
             public string Weather { get; set; }
             public string Description { get; set; }
@@ -46,18 +47,14 @@ namespace dexih.functions.external
             public double? Snow1Hour { get; set; }
             public double? Snow3Hour { get; set; }
 
-            public DateTime ReadingTime { get; set; }
+            public DateTime? ReadingTime { get; set; }
             
             public string Country { get; set; }
-            public DateTime Sunrise { get; set; }
-            public DateTime Sunset { get; set; }
+            public DateTime? Sunrise { get; set; }
+            public DateTime? Sunset { get; set; }
 
             public int CityId { get; set; }
             public string CityName { get; set; }
-
-            public string ResponseStatusCode { get; set; }
-            public bool ResponseSuccess { get; set; }
-
         }
 
         public class CityDetails
@@ -140,94 +137,93 @@ namespace dexih.functions.external
             return GetWeatherResponse(key, $"&zip={zipCode},{country}", temperatureScale);
         }
 
-        
+
         private async Task<WeatherDetails> GetWeatherResponse(string key, string uri, TemperatureScale temperatureScale)
         {
-            var response = await GetWebServiceResponse(key, uri, CancellationToken.None);
+            var (url, statusCode, isSuccess, response) = await GetWebServiceResponse(key, uri, CancellationToken.None);
 
-            var weatherDetails = new WeatherDetails
+            if (!isSuccess)
             {
-                ResponseSuccess = response.isSuccess,
-                ResponseStatusCode = response.statusCode
-            };
-            
-            if (response.isSuccess)
-            {
-                var reader = new StreamReader(response.response);
-                var jsonString = await reader.ReadToEndAsync();
-            
-                JToken jToken;
-
-                try
-                {
-                    jToken = JToken.Parse(jsonString);
-                    if (jToken == null)
-                    {
-                        throw new FileHandlerException("The json data parsing returned nothing.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new FileHandlerException($"The json data could not be parsed.  {ex.Message}", ex);
-                }
-
-                var coord = jToken["coord"];
-                weatherDetails.Latitude = coord["lat"].Value<double>();
-                weatherDetails.Longitude = coord["lon"].Value<double>();
-
-                var weather = jToken["weather"][0];
-                weatherDetails.Weather = weather["main"].Value<string>();
-                weatherDetails.Description = weather["description"].Value<string>();
-
-                var main = jToken["main"];
-                weatherDetails.Temperature = ConvertTemperature(main["temp"].Value<double?>(), temperatureScale);
-                weatherDetails.Pressure = main["pressure"].Value<double?>();
-                weatherDetails.Humidity = main["humidity"].Value<double?>();
-                weatherDetails.TemperatureMin =  ConvertTemperature(main["temp_min"].Value<double?>(), temperatureScale);
-                weatherDetails.TemperatureMax =  ConvertTemperature(main["temp_max"].Value<double?>(), temperatureScale);
-
-                weatherDetails.Visibility = jToken["visibility"].Value<int?>();
-                
-                var wind = jToken["wind"];
-                if (wind != null)
-                {
-                    weatherDetails.WindSpeed = wind["speed"].Value<double?>();
-                    weatherDetails.WindDegrees = wind["deg"].Value<int?>();
-                }
-
-                var clouds = jToken["clouds"];
-                if (clouds != null)
-                {
-                    weatherDetails.Cloudiness = clouds["all"].Value<int?>();
-                }
-
-                var rain = jToken["rain"];
-                if (rain != null)
-                {
-                    weatherDetails.Rain1Hour = rain["1hr"].Value<double?>();
-                    weatherDetails.Rain3Hour = rain["3hr"].Value<double?>();
-                }
-
-                var snow = jToken["snow"];
-                if (snow != null)
-                {
-                    weatherDetails.Snow1Hour = snow["1hr"].Value<double?>();
-                    weatherDetails.Snow3Hour = snow["3hr"].Value<double?>();
-                }
-
-                weatherDetails.ReadingTime = jToken["dt"].Value<long>().UnixTimeStampToDate();
-
-                var sys = jToken["sys"];
-                if (sys != null)
-                {
-                    weatherDetails.Country = sys["country"].Value<string>();
-                    weatherDetails.Sunrise =  jToken["sunrise"].Value<long>().UnixTimeStampToDate(); 
-                    weatherDetails.Sunset =  jToken["sunset"].Value<long>().UnixTimeStampToDate(); 
-                }
-
-                weatherDetails.CityId = jToken["id"].Value<int>();
-                weatherDetails.CityName = jToken["name"].Value<string>();
+                throw new FunctionException(
+                    $"Could not receive weather data due to failure to connect to url ({url}).  The response status was {statusCode}.");
             }
+
+            var weatherDetails = new WeatherDetails();
+
+            var reader = new StreamReader(response);
+            var jsonString = await reader.ReadToEndAsync();
+
+            JToken jToken;
+
+            try
+            {
+                jToken = JToken.Parse(jsonString);
+                if (jToken == null)
+                {
+                    throw new FileHandlerException("The json data parsing returned nothing.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new FileHandlerException($"The json data could not be parsed.  {ex.Message}", ex);
+            }
+
+            var coord = jToken["coord"];
+            weatherDetails.Latitude = coord["lat"]?.Value<double>();
+            weatherDetails.Longitude = coord["lon"]?.Value<double>();
+
+            var weather = jToken["weather"][0];
+            weatherDetails.Weather = weather["main"]?.Value<string>();
+            weatherDetails.Description = weather["description"]?.Value<string>();
+
+            var main = jToken["main"];
+            weatherDetails.Temperature = ConvertTemperature(main["temp"]?.Value<double?>(), temperatureScale);
+            weatherDetails.Pressure = main["pressure"]?.Value<double?>();
+            weatherDetails.Humidity = main["humidity"]?.Value<double?>();
+            weatherDetails.TemperatureMin = ConvertTemperature(main["temp_min"]?.Value<double?>(), temperatureScale);
+            weatherDetails.TemperatureMax = ConvertTemperature(main["temp_max"]?.Value<double?>(), temperatureScale);
+
+            weatherDetails.Visibility = jToken["visibility"]?.Value<int?>();
+
+            var wind = jToken["wind"];
+            if (wind != null)
+            {
+                weatherDetails.WindSpeed = wind["speed"]?.Value<double?>();
+                weatherDetails.WindDegrees = wind["deg"]?.Value<int?>();
+            }
+
+            var clouds = jToken["clouds"];
+            if (clouds != null)
+            {
+                weatherDetails.Cloudiness = clouds["all"]?.Value<int?>();
+            }
+
+            var rain = jToken["rain"];
+            if (rain != null)
+            {
+                weatherDetails.Rain1Hour = rain["1hr"]?.Value<double?>();
+                weatherDetails.Rain3Hour = rain["3hr"]?.Value<double?>();
+            }
+
+            var snow = jToken["snow"];
+            if (snow != null)
+            {
+                weatherDetails.Snow1Hour = snow["1hr"]?.Value<double?>();
+                weatherDetails.Snow3Hour = snow["3hr"]?.Value<double?>();
+            }
+
+            weatherDetails.ReadingTime = jToken["dt"]?.Value<long>().UnixTimeStampToDate();
+
+            var sys = jToken["sys"];
+            if (sys != null)
+            {
+                weatherDetails.Country = sys["country"]?.Value<string>();
+                weatherDetails.Sunrise = sys["sunrise"]?.Value<long>().UnixTimeStampToDate();
+                weatherDetails.Sunset = sys["sunset"]?.Value<long>().UnixTimeStampToDate();
+            }
+
+            weatherDetails.CityId = jToken["id"].Value<int>();
+            weatherDetails.CityName = jToken["name"].Value<string>();
 
             return weatherDetails;
         }
