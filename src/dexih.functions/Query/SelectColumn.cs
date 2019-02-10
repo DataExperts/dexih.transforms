@@ -41,7 +41,7 @@ namespace dexih.functions.Query
             Max,
             Count,
             First,
-            Last
+            Last,
         }
         public TableColumn Column { get; set; }
         public EAggregate? Aggregate { get; set; }

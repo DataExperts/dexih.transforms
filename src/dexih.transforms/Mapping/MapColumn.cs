@@ -43,7 +43,7 @@ namespace dexih.transforms.Mapping
 
         protected object[] RowData;
 
-        public override void InitializeColumns(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             if (InputColumn == null) return;
             

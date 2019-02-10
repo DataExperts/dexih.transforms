@@ -33,7 +33,7 @@ namespace dexih.transforms.Mapping
         private Transform _transform;
         private Transform _transformThread;
         
-        public override void InitializeColumns(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             if (NodeColumn == null) return;
             

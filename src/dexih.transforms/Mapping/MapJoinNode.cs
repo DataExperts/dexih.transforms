@@ -23,7 +23,7 @@ namespace dexih.transforms.Mapping
         protected int NodeOrdinal = -1;
         protected int OutputOrdinal = -1;
 
-        public override void InitializeColumns(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             if (OutputTransform == null)
             {

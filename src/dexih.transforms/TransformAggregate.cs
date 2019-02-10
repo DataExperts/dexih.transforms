@@ -30,9 +30,13 @@ namespace dexih.transforms
         private object[] _groupValues;
         
         private Queue<object[]> _cachedRows;
+
+        private MapGroupNode _groupNode;
+        private int _groupNodeOrdinal;
+        
         public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
 
@@ -57,7 +61,27 @@ namespace dexih.transforms
             query.Sorts = requiredSorts;
 
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-            return returnValue;
+            if (!returnValue)
+            {
+                return false;
+            }
+            
+            var nodeMappings = Mappings.OfType<MapGroupNode>().ToArray();
+            if (nodeMappings.Length == 1)
+            {
+                _groupNode = nodeMappings[0];
+                var nodeColumn = _groupNode.NodeColumn;
+                if (nodeColumn != null)
+                {
+                    _groupNodeOrdinal = CacheTable.GetOrdinal(nodeColumn);
+                }
+            }
+            else
+            {
+                _groupNodeOrdinal = -1;
+            }
+            
+            return true;
         }
 
 
@@ -92,12 +116,19 @@ namespace dexih.transforms
                 //reset the aggregate functions
                 Mappings.Reset(EFunctionType.Aggregate);
                 Mappings.Reset(EFunctionType.Series);
-                
-                //populate the parameters with the current row.
-                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
-                var cacheRow = new object[FieldCount];
-                Mappings.MapOutputRow(cacheRow);
-                _cachedRows.Enqueue(cacheRow);
+
+                if (_groupNodeOrdinal < 0)
+                {
+                    //populate the parameters with the current row.
+                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                    var cacheRow = new object[FieldCount];
+                    Mappings.MapOutputRow(cacheRow);
+                    _cachedRows.Enqueue(cacheRow);
+                }
+                else
+                {
+                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                }
             }
 
             outputRow = new object[FieldCount];
@@ -141,27 +172,47 @@ namespace dexih.transforms
                             }
                         }
                     }
-                    
-                    if (!groupChanged)
-                    {
-                 
-                        // if the group has not changed, process the input row
-                        await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
 
-                        //create a cached current row.  this will be output when the group has changed.
-                        var cacheRow = new object[outputRow.Length];
-                        Mappings.MapOutputRow(cacheRow);
-                        _cachedRows.Enqueue(cacheRow);
+                    if (_groupNodeOrdinal >= 0)
+                    {
+                        if (!groupChanged)
+                        {
+                            // if the group has not changed, process the input row
+                            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                        }
+                        // when group has changed
+                        else
+                        {
+                            await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate);
+                            Mappings.MapOutputRow(outputRow);
+
+                            //store the last groupValues read to start the next grouping.
+                            _groupValues = nextGroupValues;
+                        }
+                        
                     }
-                    // when group has changed
                     else
                     {
-                        outputRow = await ProcessGroupChange();
-                        
-                        //store the last groupValues read to start the next grouping.
-                        _groupValues = nextGroupValues;
+                        if (!groupChanged)
+                        {
+                            // if the group has not changed, process the input row
+                            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+
+                            //create a cached current row.  this will be output when the group has changed.
+                            var cacheRow = new object[outputRow.Length];
+                            Mappings.MapOutputRow(cacheRow);
+                            _cachedRows.Enqueue(cacheRow);
+                        }
+                        // when group has changed
+                        else
+                        {
+                            outputRow = await ProcessGroupChange();
+
+                            //store the last groupValues read to start the next grouping.
+                            _groupValues = nextGroupValues;
+                        }
                     }
-                    
+
                     _firstRecord = false;
 
                     if (groupChanged)
@@ -179,7 +230,16 @@ namespace dexih.transforms
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
-                outputRow = await ProcessGroupChange();
+                if (_groupNodeOrdinal >= 0)
+                {
+                    await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate);
+                    Mappings.MapOutputRow(outputRow);
+                }
+                else
+                {
+                    outputRow = await ProcessGroupChange();    
+                }
+                
 
                 _lastRecord = true;
             }
@@ -205,7 +265,7 @@ namespace dexih.transforms
                 {
                     var moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
                     
-                    // if the aggregate function wants more rows, store them in a separate collection.
+                    // if the aggregate function wants to provide more rows, store them in a separate collection.
                     while (moreRows)
                     {
                         var rowCopy = new object[FieldCount];
@@ -245,10 +305,8 @@ namespace dexih.transforms
                 Mappings.Reset(EFunctionType.Aggregate);
                 return _cachedRows.Dequeue();
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         public override string Details()

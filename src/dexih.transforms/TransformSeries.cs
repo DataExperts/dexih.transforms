@@ -41,7 +41,7 @@ namespace dexih.transforms
 
         public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
-        public override  async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override  async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
 
@@ -56,7 +56,7 @@ namespace dexih.transforms
             {
                 for(var i =0; i<requiredSorts.Count; i++)
                 {
-                    if (query.Sorts[i].Column == requiredSorts[i].Column)
+                    if (query.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
                         requiredSorts[i].Direction = query.Sorts[i].Direction;
                     else
                         break;
@@ -208,6 +208,7 @@ namespace dexih.transforms
                     else
                     {
                         var startFilling = false;
+                        object fillValue = null;
 
                         // if the first record, then load the current row.
                         if (_seriesValue == null)
@@ -279,7 +280,7 @@ namespace dexih.transforms
                                     fillerRow);
                                 var cacheRow = new object[outputRow.Length];
                                 Mappings.MapOutputRow(cacheRow);
-                                await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate);
+                                await Mappings.ProcessFillerRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate);
                                 _cachedRows.Enqueue(cacheRow);
                             }
 

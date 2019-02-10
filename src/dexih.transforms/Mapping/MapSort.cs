@@ -22,7 +22,7 @@ namespace dexih.transforms.Mapping
 
         private object[] _rowData;
 
-        public override void InitializeColumns(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             if (InputColumn != null)
             {

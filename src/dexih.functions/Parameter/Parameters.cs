@@ -134,7 +134,7 @@ namespace dexih.functions.Parameter
         /// <param name="outputRow"></param>
         public void SetFunctionResult(object returnValue, object[] parameterValues, object[] outputRow)
         {
-            if (ReturnParameters != null)
+            if (ReturnParameters != null && ReturnParameters.Count > 0)
             {
                 if (ReturnParameters.Count == 1)
                 {

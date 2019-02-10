@@ -25,8 +25,9 @@ namespace dexih.transforms.Mapping
 
         public int Count { get; set; }
         public object Value { get; set; }
+        private bool _firstRow = true;
 
-        public override void InitializeColumns(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             _inputOrdinal = table.GetOrdinal(InputColumn);
         }
@@ -70,6 +71,16 @@ namespace dexih.transforms.Mapping
                             Value = value;
                         }
                         break;
+                    case SelectColumn.EAggregate.First:
+                        if (_firstRow)
+                        {
+                            Value = value;
+                            _firstRow = false;
+                        }
+                        break;
+                    case SelectColumn.EAggregate.Last:
+                        Value = value;
+                        break;
                 }
             }
 
@@ -96,6 +107,8 @@ namespace dexih.transforms.Mapping
                     case SelectColumn.EAggregate.Count:
                         value = Count;
                         break;
+                    case SelectColumn.EAggregate.First:
+                    case SelectColumn.EAggregate.Last:
                     case SelectColumn.EAggregate.Max:
                     case SelectColumn.EAggregate.Min:
                     case SelectColumn.EAggregate.Sum:
@@ -106,6 +119,30 @@ namespace dexih.transforms.Mapping
                     // TODO: Find way to avoid parse as this causes minor performance.
                         var input = Operations.Parse(OutputColumn.DataType, Value);
                         value = Count == 0 ? 0 : Operations.DivideInt(OutputColumn.DataType, input, Count);
+                        break;
+                }
+
+                row[_outputOrdinal] = value;
+            }
+
+            return Task.FromResult(false);
+        }
+
+        public override Task<bool> ProcessFillerRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
+        {
+            if (functionType == EFunctionType.Aggregate)
+            {
+                object value = null;
+                switch (Aggregate)
+                {
+                    case SelectColumn.EAggregate.Count:
+                        value = 0;
+                        break;
+                    case SelectColumn.EAggregate.Max:
+                    case SelectColumn.EAggregate.Min:
+                    case SelectColumn.EAggregate.Sum:
+                    case SelectColumn.EAggregate.Average:
+                        value = null;
                         break;
                 }
 
@@ -127,6 +164,7 @@ namespace dexih.transforms.Mapping
             {
                 Value = null;
                 Count = 0;
+                _firstRow = true;
             }
         }
         

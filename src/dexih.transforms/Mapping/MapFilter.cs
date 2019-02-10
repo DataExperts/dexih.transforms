@@ -35,7 +35,7 @@ namespace dexih.transforms.Mapping
         private int _column1Ordinal = -1;
         private int _column2Ordinal = -1;
 
-        public override void InitializeColumns(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             if (Column1 != null)
             {

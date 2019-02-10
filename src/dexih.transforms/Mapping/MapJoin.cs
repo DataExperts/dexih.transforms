@@ -41,7 +41,7 @@ namespace dexih.transforms.Mapping
         private object[] _row;
         private object[] _joinRow;
 
-        public override void InitializeColumns(Table table, Table joinTable)
+        public override void InitializeColumns(Table table, Table joinTable, Mappings mappings = null)
         {
             if (InputColumn != null)
             {

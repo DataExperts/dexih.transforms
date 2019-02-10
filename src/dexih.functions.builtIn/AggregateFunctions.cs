@@ -53,7 +53,7 @@ namespace dexih.functions.BuiltIn
         public DateTime? DateResult() => _cacheDate;
         public object ObjectResult() => _cacheObject;
         public T NumberResult() => _cacheNumber;
-        public object CountResult() => _cacheCount;
+        public int CountResult() => _cacheCount;
 
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]

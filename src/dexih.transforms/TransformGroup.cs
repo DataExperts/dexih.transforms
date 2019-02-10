@@ -100,7 +100,7 @@ namespace dexih.transforms
                     // get group values of the new row
                     var nextGroupValues = Mappings.GetGroupValues(PrimaryTransform.CurrentRow);
                     
-                    //if it's the first record then the groupvalues are being set for the first time.
+                    //if it's the first record then the group values are being set for the first time.
                     if (_firstRecord)
                     {
                         _groupValues = nextGroupValues;

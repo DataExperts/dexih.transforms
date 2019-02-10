@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Exceptions;
@@ -46,9 +47,14 @@ namespace dexih.transforms.Mapping
         /// </summary>
         private Dictionary<int, int> _referencePassThroughOrdinals;
 
+        private MapGroupNode _groupNode;
+
         private Task<bool>[] _tasks;
 
         private object[] _rowData;
+
+        private Mappings _primaryMappings;
+        private Mappings _detailMappings;
         
         // empty function variables, so save recreating.
         private readonly FunctionVariables _functionVariables = new FunctionVariables();
@@ -57,18 +63,47 @@ namespace dexih.transforms.Mapping
         public Table Initialize(Table inputTable, Table joinTable = null, string joinTableAlias = null, bool mapAllJoinColumns = true)
         {
             var table = new Table("Mapping");
-            
-            foreach (var mapping in this)
+
+            // if there is a group node, split the mappings up into a primary, and detail.
+            _groupNode = this.OfType<MapGroupNode>().FirstOrDefault();
+
+            if (_groupNode != null)
             {
-                mapping.InitializeColumns(inputTable, joinTable);
+                _primaryMappings = new Mappings(false);
+                _detailMappings = new Mappings(_doPassThroughColumns);
+                foreach (var mapping in this)
+                {
+                    switch (mapping)
+                    {
+                        case MapGroupNode groupNode:
+                        case MapGroup mapGroup:
+                            _primaryMappings.Add(mapping);
+                            break;
+                        default:
+                            _detailMappings.Add(mapping);
+                            break;
+                    }
+                }
+                
+                _groupNode.InitializeColumns(inputTable, joinTable, _detailMappings);
+            }
+            else
+            {
+                _primaryMappings = this;
+                _detailMappings = null;
+            }
+
+            foreach (var mapping in _primaryMappings)
+            {
+                mapping.InitializeColumns(inputTable, joinTable, _detailMappings);
             }
             
-            foreach (var mapping in this)
+            foreach (var mapping in _primaryMappings)
             {
                 mapping.AddOutputColumns(table);
             }
             
-            if (PassThroughColumns)
+            if (PassThroughColumns && _groupNode == null)
             {
                 _passThroughOrdinals = new Dictionary<int, int>();
                 _passThroughColumns = new List<TableColumn>();
@@ -92,7 +127,7 @@ namespace dexih.transforms.Mapping
 
                 if (joinTable != null)
                 {
-                    var mapArrays = this.OfType<MapJoinNode>().ToArray();
+                    var mapArrays = _primaryMappings.OfType<MapJoinNode>().ToArray();
                     
                     if (mapArrays.Length > 1)
                     {
@@ -139,7 +174,7 @@ namespace dexih.transforms.Mapping
                 foreach (var t in inputTable.OutputSortFields)
                 {
                     var found = false;
-                    foreach (var mapping in this)
+                    foreach (var mapping in _primaryMappings)
                     {
                         if (mapping is MapColumn mapColumn)
                         {
@@ -175,7 +210,7 @@ namespace dexih.transforms.Mapping
                 table.OutputSortFields = fields;
             }
 
-            _tasks = new Task<bool>[Count];
+            _tasks = new Task<bool>[_primaryMappings.Count];
 
             return table;
         }
@@ -187,7 +222,7 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public async Task Open()
         {
-            foreach (var mapping in this)
+            foreach (var mapping in _primaryMappings)
             {
                 await mapping.Open();
             }
@@ -200,7 +235,7 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public object[] GetGroupValues(object[] row = null)
         {
-            var groups = this.OfType<MapGroup>().Select(c=>c.GetOutputTransform(row)).ToArray();
+            var groups = _primaryMappings.OfType<MapGroup>().Select(c=>c.GetOutputTransform(row)).ToArray();
             return groups;
         }
 
@@ -212,13 +247,13 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public object GetSeriesValue(int count, object[] row = null)
         {
-            var series = this.OfType<MapSeries>().FirstOrDefault()?.NextValue(count, row);
+            var series = _primaryMappings.OfType<MapSeries>().FirstOrDefault()?.NextValue(count, row);
             return series;
         }
 
         public void CreateFillerRow(object[] row, object[] fillerRow, object seriesValue)
         {
-            foreach (var map in this)
+            foreach (var map in _primaryMappings)
             {
                 map.ProcessFillerRow(row, fillerRow, seriesValue);
             }
@@ -232,7 +267,7 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public void ProcessNextSeriesOutput(int count, object[] row = null)
         {
-            foreach (var map in this)
+            foreach (var map in _primaryMappings)
             {
                 if (map is MapSeries mapSeries)
                 {
@@ -257,7 +292,7 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public object[] GetJoinPrimaryKey()
         {
-            var inputs = this.OfType<MapJoin>().Select(c=>c.GetOutputTransform()).ToArray();
+            var inputs = _primaryMappings.OfType<MapJoin>().Select(c=>c.GetOutputTransform()).ToArray();
             return inputs;
         }
 
@@ -268,7 +303,7 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public object[] GetJoinReferenceKey(object[] joinRow)
         {
-            var joins = this.OfType<MapJoin>().Select(c=>c.GetJoinValue(joinRow)).ToArray();
+            var joins = _primaryMappings.OfType<MapJoin>().Select(c=>c.GetJoinValue(joinRow)).ToArray();
             return joins;
         }
 
@@ -279,7 +314,7 @@ namespace dexih.transforms.Mapping
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public int GetJoinCompareResult()
         {
-            foreach (var mapping in this.OfType<MapJoin>())
+            foreach (var mapping in _primaryMappings.OfType<MapJoin>())
             {
                 if (mapping.CompareResult != 0)
                     return mapping.CompareResult;
@@ -309,9 +344,9 @@ namespace dexih.transforms.Mapping
         {
             var result = true;
 
-            for (var i = 0; i < Count; i++)
+            for (var i = 0; i < _primaryMappings.Count; i++)
             {
-                _tasks[i] = this[i].ProcessInputRow(functionVariables, row, joinRow);
+                _tasks[i] = _primaryMappings[i].ProcessInputRow(functionVariables, row, joinRow);
             }
 
             try
@@ -320,7 +355,7 @@ namespace dexih.transforms.Mapping
             }
             catch (TargetInvocationException)
             {
-                for (var i = 0; i < Count; i++)
+                for (var i = 0; i < _primaryMappings.Count; i++)
                 {
                     var task = _tasks[i];
                     if (task.IsFaulted)
@@ -328,7 +363,7 @@ namespace dexih.transforms.Mapping
                         if (task.Exception?.InnerException is TargetInvocationException targetInvocationException2)
                         {
                             throw new FunctionException(
-                                $"The mapping {this[i].Description()} failed due to {targetInvocationException2.InnerException.Message}.",
+                                $"The mapping {_primaryMappings[i].Description()} failed due to {targetInvocationException2.InnerException.Message}.",
                                 targetInvocationException2);
                         }
                     }
@@ -336,7 +371,7 @@ namespace dexih.transforms.Mapping
                 throw;
             }
 
-            for (var i = 0; i < Count; i++)
+            for (var i = 0; i < _primaryMappings.Count; i++)
             {
                 result = result & _tasks[i].Result;
             }
@@ -352,7 +387,7 @@ namespace dexih.transforms.Mapping
         /// <param name="row"></param>
         public void MapOutputRow(object[] row)
         {
-            foreach (var mapping in this)
+            foreach (var mapping in _primaryMappings)
             {
                 mapping.MapOutputRow(row);
             }
@@ -368,7 +403,7 @@ namespace dexih.transforms.Mapping
 
         public void ProcessOutputRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
         {
-            foreach (var mapping in this)
+            foreach (var mapping in _primaryMappings)
             {
                 mapping.ProcessResultRow(functionVariables, row, functionType);
             }
@@ -378,9 +413,21 @@ namespace dexih.transforms.Mapping
         {
             var result = false;
             
-            foreach (var mapping in this)
+            foreach (var mapping in _primaryMappings)
             {
                 result = result | await mapping.ProcessResultRow(functionVariables, row, functionType);
+            }
+
+            return result;
+        }
+        
+        public async Task<bool> ProcessFillerRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)
+        {
+            var result = false;
+            
+            foreach (var mapping in _primaryMappings)
+            {
+                result = result | await mapping.ProcessFillerRow(functionVariables, row, functionType);
             }
 
             return result;

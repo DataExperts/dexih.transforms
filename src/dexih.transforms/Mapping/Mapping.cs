@@ -11,7 +11,7 @@ namespace dexih.transforms.Mapping
         /// </summary>
         /// <param name="table"></param>
         /// <param name="joinTable"></param>
-        public abstract void InitializeColumns(Table table, Table joinTable = null);
+        public abstract void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null);
         
         /// <summary>
         /// Runs any initialize functions for mappings, such as pre-loading data.
@@ -57,7 +57,20 @@ namespace dexih.transforms.Mapping
         /// <param name="functionVariables"></param>
         /// <param name="row">The output row to populate</param>
         /// <param name="functionType"></param>
+        /// <param name="cancellationToken"></param>
         public virtual Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(false);
+        }
+
+        /// <summary>
+        /// Runs any aggregate and other functions required a fill in a filler row (used by the series transform).
+        /// </summary>
+        /// <param name="functionVariables"></param>
+        /// <param name="row">The output row to populate</param>
+        /// <param name="functionType"></param>
+        /// <param name="cancellationToken"></param>
+        public virtual Task<bool> ProcessFillerRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(false);
         }

@@ -71,10 +71,15 @@ namespace dexih.connections.dexih
 		        {
 		            var url = ServerUrl() + "Reader/" + function;
 		            var response = await _httpClient.PostAsync(url, content);
-		            var responseString = await response.Content.ReadAsStringAsync();
-		            var result = JObject.Parse(responseString);
-		            return result;
-		        }
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        var result = JObject.Parse(responseString);
+                        return result;
+                    }
+                    
+                    throw new ConnectionException($"Could not connect to server {Server}\n. Response: {response.StatusCode.ToString()} - {response.ReasonPhrase}");
+                }
 		        catch (HttpRequestException ex)
 		        {
 		            throw new ConnectionException($"Could not connect to server {Server}\n. {ex.Message}", ex);

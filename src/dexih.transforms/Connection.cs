@@ -6,7 +6,9 @@ using System.Threading;
 using dexih.functions;
 using System.Diagnostics;
 using System.Data.Common;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using dexih.functions.Query;
@@ -574,6 +576,17 @@ namespace dexih.transforms
                 case ETypeCode.Time:
                     if (!CanUseTimeSpan) return Operations.Parse<string>(value);
                     goto default;
+                case ETypeCode.Node:
+                    if (value is DbDataReader reader)
+                    {
+                        var streamJson = new StreamJson("json", reader);
+
+                        // convert stream to string
+                        var streamReader = new StreamReader(streamJson);
+                        return(streamReader.ReadToEnd());
+                    }
+
+                    return null;
                 default:
                     return Operations.Parse(typeCode, rank, value);
             }

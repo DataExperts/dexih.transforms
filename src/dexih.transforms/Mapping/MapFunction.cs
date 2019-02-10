@@ -48,7 +48,7 @@ namespace dexih.transforms.Mapping
         private bool isFirst = true;
 
 
-        public override void InitializeColumns(Table table, Table joinTable = null)
+        public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             Parameters.InitializeColumns(table, joinTable);
         }

@@ -98,22 +98,39 @@ namespace dexih.transforms.Mapping
                 }
             }
 
+            if (SeriesGrain == ESeriesGrain.Year)
+            {
+                try
+                {
+                    var year = Operations.Parse<int>(value);
+                    if (year < 0 || year > 9999)
+                    {
+                        throw new Exception($"Cannot create a series grain of {SeriesGrain} on the value {year}");
+                    }
+
+                    return year;
+                } catch(Exception ex) 
+                {
+                    throw new Exception($"Cannot create a series grain of {SeriesGrain} on the data type {value.GetType().Name}");    
+                }
+            }
+
             if (SeriesGrain == ESeriesGrain.Number)
             {
                 switch (value)
                 {
                     case ushort valueShort:
-                        return valueShort + 1;
+                        return valueShort;
                     case uint valueUInt:
-                        return valueUInt + 1;
+                        return valueUInt;
                     case ulong valueULong:
-                        return valueULong + 1;
+                        return valueULong;
                     case short valueShort:
-                        return valueShort + 1;
+                        return valueShort;
                     case int valueInt:
-                        return valueInt + 1;
+                        return valueInt;
                     case long valueLong:
-                        return valueLong + 1;
+                        return valueLong;
                     case decimal valueDecimal:
                         return Math.Round(valueDecimal, 0);
                     case float valueFloat:
@@ -159,6 +176,23 @@ namespace dexih.transforms.Mapping
                         throw new Exception("Can generate an integer series on a date column.");
                     default:
                         throw new ArgumentOutOfRangeException();
+                }
+            }
+            
+            if (SeriesGrain == ESeriesGrain.Year)
+            {
+                try
+                {
+                    var year = Operations.Parse<int>(value);
+                    if (year < 0 || year > 9999)
+                    {
+                        throw new Exception($"Cannot create a series grain of {SeriesGrain} on the value {year}");
+                    }
+
+                    return year + count;
+                } catch(Exception ex) 
+                {
+                    throw new Exception($"Cannot create a series grain of {SeriesGrain} on the data type {value.GetType().Name}");    
                 }
             }
 
