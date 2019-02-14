@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed tests">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dexih.transforms.sln" beforeDir="false" afterPath="$PROJECT_DIR$/dexih.transforms.sln" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,41 +15,6 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1590">
-                  <caret line="123" selection-start-line="123" selection-end-line="123" />
-                  <folding>
-                    <marker date="1543810617255" expanded="false" signature="6:266" ph="..." />
-                    <marker date="1543810617255" expanded="true" signature="299:5513" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="347:5511" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="660:758" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="796:915" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="1033:2371" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="1059:2213" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="1140:1258" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="1648:2104" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="1830:2037" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="2245:2361" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="2413:2590" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="2808:5247" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="2854:2994" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="3010:4991" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="3091:4858" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="3236:4807" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="3286:4386" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="3393:4204" ph="/* if (column.IsArray()) ... */" />
-                    <marker date="1543810617255" expanded="true" signature="4431:4785" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="4879:4977" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="5038:5089" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="5121:5237" ph="{...}" />
-                    <marker date="1543810617255" expanded="true" signature="5379:5504" ph="{...}" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs">
               <provider selected="true" editor-type-id="text-editor">
@@ -185,7 +150,7 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="1207">
@@ -220,6 +185,15 @@
                     <marker date="1543812050173" expanded="true" signature="7586:8232" ph="{...}" />
                     <marker date="1543812050173" expanded="true" signature="7618:8222" ph="{...}" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/dexih.transforms/dexih.transforms.csproj">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="360">
+                  <caret line="24" column="10" selection-start-line="24" selection-start-column="10" selection-end-line="24" selection-end-column="10" />
                 </state>
               </provider>
             </entry>
@@ -705,8 +679,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="405">
-                  <caret line="27" column="44" selection-start-line="27" selection-start-column="44" selection-end-line="27" selection-end-column="44" />
+                <state relative-caret-position="810">
+                  <caret line="54" column="10" selection-start-line="54" selection-start-column="10" selection-end-line="54" selection-end-column="10" />
                 </state>
               </provider>
             </entry>
@@ -1476,24 +1450,28 @@
               <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
               <item name="src" type="24d0babc:SolutionExplorerModelNode" />
               <item name="dexih.functions" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="Dependencies" type="24d0babc:SolutionExplorerModelNode" />
-              <item name=".NETCoreApp 2.1" type="24d0babc:SolutionExplorerModelNode" />
-            </path>
-            <path>
-              <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
-              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="src" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="dexih.functions" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="Dependencies" type="24d0babc:SolutionExplorerModelNode" />
-              <item name=".NETCoreApp 2.1" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="Packages" type="24d0babc:SolutionExplorerModelNode" />
-            </path>
-            <path>
-              <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
-              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="src" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="dexih.functions" type="24d0babc:SolutionExplorerModelNode" />
               <item name="Query" type="24d0babc:SolutionExplorerModelNode" />
+            </path>
+            <path>
+              <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
+              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="src" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
+            </path>
+            <path>
+              <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
+              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="src" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="Dependencies" type="24d0babc:SolutionExplorerModelNode" />
+            </path>
+            <path>
+              <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
+              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="src" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="Dependencies" type="24d0babc:SolutionExplorerModelNode" />
+              <item name=".NETCoreApp 2.1" type="24d0babc:SolutionExplorerModelNode" />
             </path>
             <path>
               <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
@@ -1738,7 +1716,7 @@
       <workItem from="1550028678273" duration="3107000" />
       <workItem from="1550031990615" duration="20122000" />
       <workItem from="1550107759729" duration="15793000" />
-      <workItem from="1550133579800" duration="973000" />
+      <workItem from="1550133579800" duration="1240000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -2059,7 +2037,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="956382000" />
+    <option name="totallyTimeSpent" value="956649000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -2073,7 +2051,7 @@
   <component name="ToolWindowManager">
     <frame x="-1222" y="-2160" width="3840" height="2160" extended-state="0" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17772512" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17772512" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25387728" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info id="Image Layers" order="3" />
@@ -2086,12 +2064,12 @@
       <window_info anchor="bottom" id="Cvs" order="5" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="6" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48867825" weight="0.3277512" />
-      <window_info active="true" anchor="bottom" id="NuGet" order="8" sideWeight="0.6271722" visible="true" weight="0.27272728" />
+      <window_info anchor="bottom" id="NuGet" order="8" sideWeight="0.6271722" weight="0.27272728" />
       <window_info anchor="bottom" id="Unit Tests" order="9" sideWeight="0.8009768" weight="0.30382776" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.1990232" side_tool="true" weight="0.26938775" />
       <window_info anchor="bottom" id="Terminal" order="11" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.49157453" weight="0.18995215" />
-      <window_info anchor="bottom" id="Build" order="13" sideWeight="0.366772" weight="0.15406698" />
+      <window_info anchor="bottom" id="Build" order="13" sideWeight="0.366772" visible="true" weight="0.15406698" />
       <window_info anchor="bottom" id="Docker" order="14" show_stripe_button="false" />
       <window_info anchor="bottom" id="Stacktrace" order="15" sideWeight="0.4997367" weight="0.32966506" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -2723,25 +2701,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="35" selection-start-line="35" selection-end-line="35" />
-          <folding>
-            <marker date="1540942102821" expanded="false" signature="6:260" ph="..." />
-            <marker date="1540942102821" expanded="true" signature="294:4285" ph="{...}" />
-            <marker date="1540942102821" expanded="true" signature="328:4283" ph="{...}" />
-            <marker date="1540942102821" expanded="true" signature="415:4276" ph="{...}" />
-            <marker date="1540942102821" expanded="true" signature="1432:2124" ph="{...}" />
-            <marker date="1540942102821" expanded="true" signature="1639:1757" ph="{...}" />
-            <marker date="1540942102821" expanded="true" signature="1914:2066" ph="{...}" />
-            <marker date="1540942102821" expanded="true" signature="2203:2887" ph="{...}" />
-            <marker date="1540942102821" expanded="true" signature="2410:2540" ph="{...}" />
-            <marker date="1540942102821" expanded="true" signature="2692:2833" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/DataType.cs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="334">
@@ -5388,13 +5347,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" column="44" selection-start-line="27" selection-start-column="44" selection-end-line="27" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="487">
@@ -5459,6 +5411,20 @@
             <marker date="1543812050173" expanded="true" signature="7586:8232" ph="{...}" />
             <marker date="1543812050173" expanded="true" signature="7618:8222" ph="{...}" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="810">
+          <caret line="54" column="10" selection-start-line="54" selection-start-column="10" selection-end-line="54" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dexih.transforms/dexih.transforms.csproj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" column="10" selection-start-line="24" selection-start-column="10" selection-end-line="24" selection-end-column="10" />
         </state>
       </provider>
     </entry>
