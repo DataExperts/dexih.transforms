@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
+    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/.ftok" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/adm/db2trc" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bin/db2cli" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bin/db2level" t="Include" />
@@ -47,6 +48,7 @@
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/0954ucs2.cnv" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/5039ucs2.cnv" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/ucs20943.cnv" t="Include" />
+    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/db2dump/db2diag.log" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/ICCSIG.txt" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/libicclib082.dylib" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/libicclib084.dylib" t="Include" />
@@ -158,6 +160,7 @@
               <e p="alt" t="Include" />
               <e p="ms" t="Include" />
             </e>
+            <e p="db2dump" t="Include" />
             <e p="lib" t="Include">
               <e p="icc" t="Include">
                 <e p="c" t="Include">
