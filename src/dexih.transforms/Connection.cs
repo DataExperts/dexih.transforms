@@ -447,7 +447,7 @@ namespace dexih.transforms
         /// <param name="surrogateKeyColumn"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<long> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken)
+        public virtual async Task<long> GetNextKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken)
         {
             if(DynamicTableCreation)
             {
@@ -515,8 +515,10 @@ namespace dexih.transforms
         /// Converts a value to a datatype that can be written to the data source.
         /// This includes transforming json/xml/arrays into strings where necessary.
         /// </summary>
-        /// <param name="column"></param>
+        /// <param name="allowDbNull"></param>
         /// <param name="value"></param>
+        /// <param name="typeCode"></param>
+        /// <param name="rank"></param>
         /// <returns></returns>
         public virtual object ConvertForWrite(ETypeCode typeCode, int rank, bool allowDbNull, object value)
         {

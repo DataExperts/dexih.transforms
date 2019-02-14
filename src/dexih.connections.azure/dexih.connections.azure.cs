@@ -49,6 +49,26 @@ namespace dexih.connections.azure
         public override bool CanUseSql => false;
         public override bool CanUseAutoIncrement => false;
         public override bool DynamicTableCreation => true;
+        
+        public override bool CanUseGuid => true;
+
+        /// <summary>
+        /// Name of the table used to store surrogate keys.
+        /// </summary>
+        public string SurrogateKeyTable => "DexihKeys";
+        
+        /// <summary>
+        /// Name of the column in the surrogate key table to store latest incremental value.
+        /// </summary>
+        public string IncrementalValueName => "IncrementalValue";
+        
+        /// <summary>
+        /// Name of the property which is a guid and used to lock rows when updating.
+        /// </summary>
+        public string LockGuidName => "LockGuid";
+
+        public string AzurePartitionKeyDefaultValue => "default";
+        
 
 
         public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
@@ -170,7 +190,7 @@ namespace dexih.connections.azure
                         {
                             //if the reader does not have the azure fields, then just add defaults.
                             if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AzurePartitionKey)
-                                row[i] = "default";
+                                row[i] = AzurePartitionKeyDefaultValue;
                             else if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AzureRowKey)
                             {
                                 if (sk != null)
@@ -202,7 +222,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
+        private Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
         {
             var connection = GetCloudTableClient();
             var cloudTable = connection.GetTableReference(targetTableName);
@@ -222,12 +242,12 @@ namespace dexih.connections.azure
                     {
                         var value = row[i];
                         if (value == DBNull.Value) value = null;
-                        properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].DataType, value));
+                        properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].DataType, value, table.Columns[i].Rank));
                     }
 
-                var partionKeyValue = partitionKey >= 0 ? row[partitionKey] : "default";
+                var partitionKeyValue = partitionKey >= 0 ? row[partitionKey] : AzurePartitionKeyDefaultValue;
                 var rowKeyValue = rowKey >= 0 ? row[rowKey] : surrogateKey >= 0 ? ((long)row[surrogateKey]).ToString("D20") : Guid.NewGuid().ToString();
-                var entity = new DynamicTableEntity(partionKeyValue.ToString(), rowKeyValue.ToString(), "*", properties);
+                var entity = new DynamicTableEntity(partitionKeyValue.ToString(), rowKeyValue.ToString(), "*", properties);
 
                 batchOperation.Insert(entity);
             }
@@ -299,6 +319,10 @@ namespace dexih.connections.azure
             }
         }
 
+        /// <summary>
+        /// Gets a connection refererence to the Azure server.
+        /// </summary>
+        /// <returns></returns>
         public CloudTableClient GetCloudTableClient()
         {
             CloudStorageAccount storageAccount;
@@ -308,19 +332,26 @@ namespace dexih.connections.azure
             else
                 storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + Username + ";AccountKey=" + Password + ";TableEndpoint=" + Server);
 
-            //ServicePoint tableServicePoint = ServicePointManager.FindServicePoint(storageAccount.TableEndpoint);
-            //tableServicePoint.UseNagleAlgorithm = false;
-            //tableServicePoint.ConnectionLimit = 10000;
-
             // Create the table client.
             return storageAccount.CreateCloudTableClient();
         }
 
+        /// <summary>
+        /// Azure does not have databases, so this is a dummy function.
+        /// </summary>
+        /// <param name="databaseName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Azure does not have databases, so this returns a dummy value.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
         {
             var list = new List<string> { "Default" };
@@ -409,20 +440,22 @@ namespace dexih.connections.azure
         /// Azure can always return true for CompareTable, as the columns are not created in the same way relational tables are.
         /// </summary>
         /// <param name="table"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public override Task<bool> CompareTable(Table table, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }
 
+        /// <inheritdoc />
         /// <summary>
-        /// Azure does not have a max function, so use a different method to generate a surrogate key.
+        /// Note: Azure does not have a max function, so we used a key's table to store surrogate keys for each table.
         /// </summary>
         /// <param name="table"></param>
         /// <param name="surrogateKeyColumn"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<long> GetIncrementalKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken)
+        public override async Task<long> GetNextKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken)
         {
             try
             {
@@ -442,30 +475,30 @@ namespace dexih.connections.azure
                 do
                 {
                     //get the last key value if it exists.
-                    var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { "IncrementalValue", "LockGuid" }));
+                    var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
                     if (tableResult.Result == null)
                     {
                         entity = new DynamicTableEntity(table.Name, surrogateKeyColumn.Name);
-                        entity.Properties.Add("IncrementalValue", new EntityProperty((long)1));
-                        entity.Properties.Add("LockGuid", new EntityProperty(lockGuid));
+                        entity.Properties.Add(IncrementalValueName, new EntityProperty((long)1));
+                        entity.Properties.Add(LockGuidName, new EntityProperty(lockGuid));
                         incrementalKey = 1;
                     }
                     else
                     {
                         entity = tableResult.Result as DynamicTableEntity;
-                        incrementalKey = entity.Properties["IncrementalValue"].Int64Value.Value;
+                        incrementalKey = entity.Properties[IncrementalValueName].Int64Value.Value;
                         incrementalKey++;
-                        entity.Properties["IncrementalValue"] = new EntityProperty(incrementalKey);
-                        entity.Properties["LockGuid"] = new EntityProperty(lockGuid);
+                        entity.Properties[IncrementalValueName] = new EntityProperty(incrementalKey);
+                        entity.Properties[LockGuidName] = new EntityProperty(lockGuid);
                     }
 
-                    //update the record with the new incrementalvalue and the guid.
+                    //update the record with the new incremental value and the guid.
                     await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
 
-                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { "IncrementalValue", "LockGuid" }));
+                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
                     entity = tableResult.Result as DynamicTableEntity;
 
-                } while (entity.Properties["LockGuid"].GuidValue.Value != lockGuid);
+                } while (entity.Properties[LockGuidName].GuidValue.Value != lockGuid);
 
                 return incrementalKey;
             }
@@ -492,28 +525,28 @@ namespace dexih.connections.azure
                 switch (value)
                 {
                     case short shortValue:
-                        entity.Properties.Add("IncrementalValue", new EntityProperty(shortValue));
+                        entity.Properties.Add(IncrementalValueName, new EntityProperty(shortValue));
                         break;
                     case int intValue:
-                        entity.Properties.Add("IncrementalValue", new EntityProperty(intValue));
+                        entity.Properties.Add(IncrementalValueName, new EntityProperty(intValue));
                         break;
                     case long longValue:
-                        entity.Properties.Add("IncrementalValue", new EntityProperty(longValue));
+                        entity.Properties.Add(IncrementalValueName, new EntityProperty(longValue));
                         break;
                     case ushort ushortValue:
-                        entity.Properties.Add("IncrementalValue", new EntityProperty(ushortValue));
+                        entity.Properties.Add(IncrementalValueName, new EntityProperty(ushortValue));
                         break;
                     case uint uintValue:
-                        entity.Properties.Add("IncrementalValue", new EntityProperty(uintValue));
+                        entity.Properties.Add(IncrementalValueName, new EntityProperty(uintValue));
                         break;
                     case ulong ulongValue:
-                        entity.Properties.Add("IncrementalValue", new EntityProperty(ulongValue));
+                        entity.Properties.Add(IncrementalValueName, new EntityProperty(ulongValue));
                         break;
                     default:
                         throw new ConnectionException($"The datatype {value.GetType()} is not supported for incremental columns.  Use an integer type instead.");
                 }
 
-                entity.Properties.Add("LockGuid", new EntityProperty(Guid.NewGuid()));
+                entity.Properties.Add(LockGuidName, new EntityProperty(Guid.NewGuid()));
 
                 //update the record with the new incremental value and the guid.
                 await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
@@ -721,17 +754,13 @@ namespace dexih.connections.azure
             return Task.FromResult(table);
         }
 
-        private EntityProperty NewEntityProperty(ETypeCode typeCode, object value)
+        private EntityProperty NewEntityProperty(ETypeCode typeCode, object value, int rank)
         {
-            object returnValue;
-            try
-            {
-                returnValue = Operations.Parse(typeCode, value);
-            }
-            catch(Exception ex)
-            {
-                throw new ConnectionException($"Azure failed to create new entity of type {typeCode} due to incompatible value.", ex, value);
-            }
+            var returnValue = ConvertForWrite(typeCode, rank, true, value);
+
+            if (rank > 0) typeCode = ETypeCode.String;
+
+            if (returnValue is DBNull) returnValue = null;
 
             switch (typeCode)
             {
@@ -747,6 +776,7 @@ namespace dexih.connections.azure
                     return new EntityProperty(Convert.ToInt64(returnValue));
                 case ETypeCode.Int16:
                     return new EntityProperty((short?)returnValue);
+                case ETypeCode.Enum:
                 case ETypeCode.Int32:
                     return new EntityProperty((int?)returnValue);
                 case ETypeCode.Int64:
@@ -755,10 +785,14 @@ namespace dexih.connections.azure
                     return new EntityProperty((double?)returnValue);
                 case ETypeCode.Single:
                     return new EntityProperty((float?)returnValue);
+                case ETypeCode.Object:
+                case ETypeCode.CharArray:
+                case ETypeCode.Char:
                 case ETypeCode.String:
 				case ETypeCode.Text:
 				case ETypeCode.Json:
 				case ETypeCode.Xml:
+                case ETypeCode.Node:
                     return new EntityProperty((string)returnValue);
                 case ETypeCode.Boolean:
                     return new EntityProperty((bool?)returnValue);
@@ -768,13 +802,13 @@ namespace dexih.connections.azure
                     return new EntityProperty((Guid?)returnValue);
                 case ETypeCode.Decimal:
                 case ETypeCode.Unknown:
-                    return new EntityProperty(value.ToString()); //decimal not supported, so convert to string
+                    return new EntityProperty(returnValue?.ToString()); //decimal not supported, so convert to string
                 case ETypeCode.Time:
-                    return new EntityProperty(((TimeSpan)value).Ticks); //timespan not supported, so use ticks.
+                    return new EntityProperty(returnValue == null ? 0L : ((TimeSpan)value).Ticks); //timespan not supported, so use ticks.
                 case ETypeCode.Binary:
                     return new EntityProperty((byte[])value);
                 default:
-                    throw new Exception("Cannot create new azure entity as the data type: " + typeCode.ToString() + " is not suppored.");
+                    throw new Exception("Cannot create new azure entity as the data type: " + typeCode.ToString() + " is not supported.");
             }
 
         }
@@ -861,15 +895,15 @@ namespace dexih.connections.azure
                     foreach (var field in query.InsertColumns)
                     {
                         if (!(field.Column.Name == "RowKey" || field.Column.Name == "PartitionKey" || field.Column.Name == "Timestamp"))
-                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column].DataType, field.Value));
+                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column].DataType, field.Value, field.Column.Rank));
                     }
 
                     if (autoIncrement != null)
                     {
-                        var autoIncrementResult = await GetIncrementalKey(table, autoIncrement, CancellationToken.None);
+                        var autoIncrementResult = await GetNextKey(table, autoIncrement, CancellationToken.None);
                         lastAutoIncrement = autoIncrementResult;
 
-                        properties.Add(autoIncrement.Name, NewEntityProperty(ETypeCode.Int64, lastAutoIncrement));
+                        properties.Add(autoIncrement.Name, NewEntityProperty(ETypeCode.Int64, lastAutoIncrement, autoIncrement.Rank));
                     }
 
                     string partitionKeyValue = null;
@@ -1010,7 +1044,8 @@ namespace dexih.connections.azure
                                         entity.PartitionKey = column.Value.ToString();
                                         break;
                                     default:
-                                        entity.Properties[column.Column.Name] = NewEntityProperty(table[column.Column.Name].DataType, column.Value);
+                                        var col = table[column.Column.Name];
+                                        entity.Properties[column.Column.Name] = NewEntityProperty(col.DataType, column.Value, col.Rank);
                                         break;
                                 }
                             }
