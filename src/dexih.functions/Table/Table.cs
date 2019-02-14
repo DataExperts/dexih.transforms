@@ -26,7 +26,7 @@ namespace dexih.functions
             Name = tableName;
             LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
-            Columns = columns;
+            Columns = columns??new TableColumns();
             Data = data;
         }
 

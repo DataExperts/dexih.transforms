@@ -31,8 +31,6 @@ namespace dexih.transforms.Mapping
         private int _inputOrdinal = -1;
         private int _outputOrdinal = -1;
 
-        protected object[] RowData;
-
         public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             if (InputColumn == null) return;
@@ -41,7 +39,7 @@ namespace dexih.transforms.Mapping
 
             if (_inputOrdinal < 0)
             {
-                throw new Exception($"Could not find the column ${InputColumn.TableColumnName()} when mapping the node.");
+                throw new Exception($"Could not find the column {InputColumn.TableColumnName()} when mapping the node.");
             }
         }
 
@@ -53,13 +51,11 @@ namespace dexih.transforms.Mapping
 
         public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
-            RowData = row;
-
             Transform.PrimaryTransform = (Transform) row[_inputOrdinal];
             await Transform.Open(0, null, cancellationToken);
             Transform.SetParentRow(row);
 
-            OutputTransform?.Reset();
+            OutputTransform?.Reset(true);
 
             return true;
         }

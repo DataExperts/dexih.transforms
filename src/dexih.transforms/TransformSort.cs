@@ -21,11 +21,10 @@ namespace dexih.transforms
         private SortedRowsDictionary<object> _sortedDictionary;
         private SortedDictionary<object[], object[]>.KeyCollection.Enumerator _iterator;
 
-        private readonly List<Sort> _sortFields;
+        private List<Sort> _sortFields;
 
         public TransformSort()
         {
-            _sortFields = new List<Sort>();
         }
 
         public TransformSort(Transform inTransform, Mappings mappings)
@@ -33,7 +32,7 @@ namespace dexih.transforms
             Mappings = mappings;
             SetInTransform(inTransform);
             
-            _sortFields = Mappings.OfType<MapSort>().Select(c => new Sort(c.InputColumn, c.Direction)).ToList();
+            
         }
 
         public TransformSort(Transform inTransform, List<Sort> sortFields)
@@ -53,7 +52,12 @@ namespace dexih.transforms
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             _firstRead = true;
-            
+
+            if (_sortFields == null)
+            {
+                _sortFields = Mappings.OfType<MapSort>().Select(c => new Sort(c.InputColumn, c.Direction)).ToList();
+            }
+
             AuditKey = auditKey;
 
             if (query == null)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -10,6 +11,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 using Oracle.ManagedDataAccess.Client;
 using static Dexih.Utils.DataType.DataType;
 
@@ -39,13 +41,20 @@ namespace dexih.connections.sql
         public override bool CanUseBinary => true;
         public override bool CanUseBoolean => false;
         public override bool CanUseTimeSpan => false;
+
+        public override bool CanUseUnsigned => false;
+        
+        public override bool CanUseSByte { get; } = false;
+
+
+        protected override char SqlParameterIdentifier => ':';
         
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
-                    return new DateTime(9999,12,31, 23, 59, 59, 999);
+                    return new DateTime(9999,12,31, 23, 59, 59, 0);
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
                 //TODO Oracle driver giving error when converting any numeric with scientific number 
@@ -108,24 +117,18 @@ namespace dexih.connections.sql
                     connectionString = ConnectionString;
                 else
                 {
-                    var hostport = Server.Split(':');
-                    string port;
-                    if (hostport.Count() == 1)
+                    if (string.IsNullOrEmpty(Server))
                     {
-                        port = "";
+                        throw new ConnectionException("There was no server name specified for the oracle connection.");
                     }
-                    else
-                    {
-                        port = ":" + hostport[1];
-                    }
+                    
+                    connectionString = "Data Source=" + Server + "; User Id=" + Username + "; Password=" + Password;
 
-                    connectionString = "Data Source=" + hostport[0] + port + "; User Id=" + Username + "; Password=" + Password;
-
-                    if (Username == "SYS")
+                    var userName = Username.ToLower();
+                    if (userName == "sys")
                     {
                         connectionString = connectionString + "; DBA Privilege=SYSDBA";
                     }
-                    
                 }
 
                 connection = new OracleConnection(connectionString);
@@ -156,6 +159,12 @@ namespace dexih.connections.sql
                 connection?.Dispose();
                 throw new ConnectionException($"Oracle connection failed. {ex.Message}", ex);
             }
+        }
+        
+        protected override DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
+        {
+            var cmd = new OracleCommand(commandText, (OracleConnection) connection) {BindByName = true, Transaction = (OracleTransaction) transaction};
+            return cmd;
         }
 
      protected override string GetSqlType(TableColumn column)
@@ -202,6 +211,7 @@ namespace dexih.connections.sql
 				case ETypeCode.Text:
                 case ETypeCode.Json:
                 case ETypeCode.Xml:
+                case ETypeCode.Node:
                     sqlType = "CLOB";
 					break;
                 case ETypeCode.Single:
@@ -214,10 +224,10 @@ namespace dexih.connections.sql
                     sqlType = "NUMBER(1,0)";
                     break;
                 case ETypeCode.DateTime:
-                    sqlType = "TIMESTAMP";
+                    sqlType = "DATE";
                     break;
                 case ETypeCode.Time:
-                    sqlType = "CHAR(20)";
+                    sqlType = "CHAR(40)";
                     break;
                 case ETypeCode.Guid:
                     sqlType = "CHAR(36)";
@@ -260,7 +270,7 @@ namespace dexih.connections.sql
         /// Gets the start quote to go around the values in sql insert statement based in the column type.
         /// </summary>
         /// <returns></returns>
-//        protected override string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
+//        protected string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
 //        {
 //            string returnValue;
 //
@@ -299,20 +309,21 @@ namespace dexih.connections.sql
 //                    break;
 //                case ETypeCode.DateTime:
 //                    if (value is DateTime)
-//                        returnValue = "TO_DATE('" + EscapeString(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss")) + "', 'YYYY-MM-DD HH24:MI:SS.')";
+//                        returnValue = "TO_DATE('" + EscapeString(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss")) + "', 'YYYY-MM-DD HH24:MI:SS')";
 //                    else
-//						returnValue = "STR_TO_DATE('"+ EscapeString((string)value) + "', 'YYYY-MM-DD HH24:MI:SS.')";
+//						returnValue = "STR_TO_DATE('"+ EscapeString((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
 //                    break;
 //                case ETypeCode.Time:
 //                    if (value is TimeSpan span)
-//						returnValue = "TO_TIMESTAMP('" + EscapeString(span.ToString("c")) + "', 'HH24:MI:SS.')";
+//						returnValue = "'" + EscapeString(span.ToString("c")) + "'";
 //					else
-//                        returnValue = "TO_TIMESTAMP('" + EscapeString((string)value) + "', 'HH24:MI:SS.')";
+//                        returnValue = "'" + EscapeString((string)value) + "'";
 //					break;
 //                case ETypeCode.Boolean:
 //                    var v = (bool) Operations.Parse(ETypeCode.Boolean, value);
 //                    return v ? "1" : "0";
 //                case ETypeCode.Binary:
+//
 //                    return "'" + Operations.Parse(ETypeCode.String, value) + "'";
 //                default:
 //                    throw new Exception($"The datatype {typeCode} is not compatible with the sql insert statement.");
@@ -330,7 +341,7 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 {
                     using (var cmd = CreateCommand(connection,
-                        $"create user {AddDelimiter(databaseName)} identified by {AddDelimiter(databaseName)}"))
+                        $"create user {AddDelimiter(databaseName)} identified by {AddDelimiter(databaseName)} CONTAINER=CURRENT"))
                     {
                         var value = await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
@@ -557,7 +568,7 @@ namespace dexih.connections.sql
             }
             return ETypeCode.Unknown;
         }
-
+        
         public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
         {
             if (originalTable.UseQuery)
@@ -723,12 +734,13 @@ ORDER BY cols.table_name, cols.position"))
 				case ETypeCode.Text:
                 case ETypeCode.Json:
                 case ETypeCode.Xml:
+                case ETypeCode.Node:
                 case ETypeCode.Unknown:
 				    return OracleDbType.Clob;
                 case ETypeCode.Boolean:
                     return OracleDbType.Byte;
                 case ETypeCode.DateTime:
-                    return OracleDbType.TimeStamp;
+                    return OracleDbType.Date;
                 case ETypeCode.Time:
                     return OracleDbType.Varchar2;
                 case ETypeCode.Guid:
@@ -740,101 +752,104 @@ ORDER BY cols.table_name, cols.position"))
             }
         }
         
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
-        {
-            try
-            {
-                using (var connection = (OracleConnection) await NewConnection())
-                {
-                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement)
-                        .ToArray();
-                    var ordinals = new int[columns.Length];
-                    var types = new OracleDbType[columns.Length];
-
-                    var insert = new StringBuilder();
-                    var values = new StringBuilder();
-
-                    insert.Append("INSERT INTO " + SqlTableName(table) + " (");
-                    values.Append("VALUES (");
-
-                    for (var i = 0; i < columns.Length; i++)
-                    {
-                        ordinals[i] = reader.GetOrdinal(columns[i].Name);
-                        types[i] = GetSqlDbType(columns[i].DataType, columns[i].Rank);
-                        if (ordinals[i] >= 0)
-                        {
-                            insert.Append(AddDelimiter(columns[i].Name) + ",");
-                            values.Append(":col" + i + ",");
-                        }
-                    }
-
-                    var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
-                                        values.Remove(values.Length - 1, 1) + ") ";
-
-                    using (var transaction = connection.BeginTransaction())
-                    {
-                        using (var cmd = connection.CreateCommand())
-                        {
-                            cmd.CommandText = insertCommand;
-                            //cmd.Transaction = transaction;
-
-                            var parameters = new OracleParameter[columns.Length];
-                            for (var i = 0; i < columns.Length; i++)
-                            {
-                                var param = cmd.CreateParameter();
-                                param.ParameterName = "col" + i;
-                                cmd.Parameters.Add(param);
-                                parameters[i] = param;
-                            }
-
-                            while (await reader.ReadAsync(cancellationToken))
-                            {
-                                for (var i = 0; i < columns.Length; i++)
-                                {
-                                    if (ordinals[i] >= 0)
-                                    {
-                                        parameters[i].OracleDbType = types[i];
-                                        parameters[i].Value = reader[ordinals[i]];
-                                    }
-                                }
-
-                                try
-                                {
-                                    await cmd.ExecuteNonQueryAsync(cancellationToken);
-                                }
-                                catch (Exception ex)
-                                {
-#if DEBUG
-                                    var v = new object[reader.FieldCount];
-                                    reader.GetValues(v);
-                                    throw new ConnectionException($"Bulk insert failed: {ex.Message}", v);
-#else
-                                    throw new ConnectionException("Bulk insert failed, error on row");
-#endif
-                                }
-
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    transaction.Rollback();
-                                    cancellationToken.ThrowIfCancellationRequested();
-                                }
-                            }
-                        }
-
-                        transaction.Commit();
-                    }
-                }
-            }
-            catch (ConnectionException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Bulk insert failed.  {ex.Message}", ex);
-            }
-        }
-
+//          public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+//          {
+//              MaxSqlSize = 40000;
+//            try
+//            {
+//                var timer = Stopwatch.StartNew();
+//                using (var connection = await NewConnection())
+//                {
+//                    var fieldCount = reader.FieldCount;
+//                    var row = new StringBuilder();
+//                    
+//                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement).ToArray();
+//                    var ordinals = new int[columns.Length];
+//                    
+//                    for(var i = 0; i< columns.Length; i++)
+//                    {
+//                        ordinals[i] = reader.GetOrdinal(columns[i].Name);
+//                    }
+//
+//                    while (!reader.IsClosed || row.Length > 0)
+//                    {
+//                        var insert = new StringBuilder();
+//
+//                        // build an sql command that looks like
+//                        // INSERT ALL
+//                        //     INTO User (FirstName, LastName) VALUES ('gary','holland'),('jack','doe')
+//                        //     INTO User (FirstName, LastName) VALUES ('gary','holland'),('jack','doe')
+//                        //     INTO User (FirstName, LastName) VALUES ('gary','holland'),('jack','doe')
+//                        // select 1 from dual
+//                        insert.Append("INSERT ALL " );
+//
+//                        var isFirstRow = true;
+//                        
+//                        // if there is a cached row from previous loop, add it to the sql.
+//                        if (row.Length > 0)
+//                        {
+//                            insert.Append(row);
+//                            row.Clear();
+//                            isFirstRow = false;
+//                        }
+//
+//                        while (await reader.ReadAsync(cancellationToken))
+//                        {
+//                            row.AppendLine(" INTO " + SqlTableName(table) + " (" + string.Join(',', columns.Select(c => AddDelimiter(c.Name))) + ")");
+//                            row.AppendLine(" values ");
+//
+//                            row.Append("(");
+//                            row.Append(string.Join(',', columns.Select((c, i) => GetSqlFieldValueQuote(c.DataType, c.Rank, reader[ordinals[i]]))));
+//                            row.Append(")");
+//
+//                            // if the maximum sql size will be exceeded with this value, then break, so the command can be executed.
+//                            if (insert.Length + row.Length + 2 > MaxSqlSize)
+//                                break;
+//
+//                            // if(!isFirstRow) insert.Append(",");
+//                            insert.Append(row);
+//                            row.Clear();
+//                            isFirstRow = false;
+//                        }
+//
+//                        if (!isFirstRow)
+//                        {
+//                            // sql statement is going to be too large to handle, so exit.
+//                            if (insert.Length > MaxSqlSize)
+//                            {
+//                                throw new ConnectionException($"The generated sql was too large to execute.  The size was {(insert.Length + row.Length)} and the maximum supported by MySql is {MaxSqlSize}.  To fix this, either reduce the fields being used or increase the `max_allow_packet` variable in the MySql database.");
+//                            }
+//
+//                            insert.AppendLine(" select 1 from dual");
+//
+//                            using (var cmd = new OracleCommand(insert.ToString(), (OracleConnection)connection))
+//                            {
+//                                cmd.CommandType = CommandType.Text;
+//                                try
+//                                {
+//                                    cmd.ExecuteNonQuery();
+//                                }
+//                                catch (Exception ex)
+//                                {
+//#if DEBUG
+//                                    throw new ConnectionException("Error running following sql command: " + insert.ToString(0, 500), ex);
+//#else
+//                                    throw new ConnectionException("Error running following sql command", ex);
+//#endif                                
+//                                }
+//                            
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            catch (Exception ex)
+//            {
+//                throw new ConnectionException($"Bulk insert failed. {ex.Message}", ex);
+//            }
+//        }
+          
+       
         public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
         {
              try
@@ -922,74 +937,74 @@ ORDER BY cols.table_name, cols.position"))
             }        
         }
         
-        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
-        {
-            try
-            {
-                using (var connection = (OracleConnection) await NewConnection())
-                {
-
-                    var sql = new StringBuilder();
-
-                    var rows = 0;
-
-                    using (var transaction = connection.BeginTransaction())
-                    {
-                        foreach (var query in queries)
-                        {
-                            sql.Clear();
-
-                            sql.Append("update " + SqlTableName(table) + " set ");
-
-                            var count = 0;
-                            foreach (var column in query.UpdateColumns)
-                            {
-                                sql.Append(AddDelimiter(column.Column.Name) + " = :col" + count + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
-                                count++;
-                            }
-                            sql.Remove(sql.Length - 1, 1); //remove last comma
-
-                            //  Retrieving schema for columns from a single table
-                            using (var cmd = connection.CreateCommand())
-                            {
-                                sql.Append(" " + BuildFiltersString(query.Filters, cmd));
-
-                                cmd.Transaction = transaction;
-                                cmd.CommandText = sql.ToString();
-
-                                var parameters = new DbParameter[query.UpdateColumns.Count];
-                                for (var i = 0; i < query.UpdateColumns.Count; i++)
-                                {
-                                    var param = cmd.CreateParameter();
-                                    param.ParameterName = "col" + i;
-                                    param.OracleDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank);
-                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
-                                    
-                                    cmd.Parameters.Add(param);
-                                    parameters[i] = param;
-                                }
-
-                                cancellationToken.ThrowIfCancellationRequested();
-
-                                try
-                                {
-                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
-                                }
-                                catch (Exception ex)
-                                {
-                                    throw new ConnectionException($"The update query failed. {ex.Message}", ex);
-                                }
-                            }
-                        }
-                        transaction.Commit();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Update table {table.Name} failed.  {ex.Message}", ex);
-            }
-        }
+//        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+//        {
+//            try
+//            {
+//                using (var connection = (OracleConnection) await NewConnection())
+//                {
+//
+//                    var sql = new StringBuilder();
+//
+//                    var rows = 0;
+//
+//                    using (var transaction = connection.BeginTransaction())
+//                    {
+//                        foreach (var query in queries)
+//                        {
+//                            sql.Clear();
+//
+//                            sql.Append("update " + SqlTableName(table) + " set ");
+//
+//                            var count = 0;
+//                            foreach (var column in query.UpdateColumns)
+//                            {
+//                                sql.Append(AddDelimiter(column.Column.Name) + " = :col" + count + ",");
+//                                count++;
+//                            }
+//                            sql.Remove(sql.Length - 1, 1); //remove last comma
+//
+//                            //  Retrieving schema for columns from a single table
+//                            using (var cmd = connection.CreateCommand())
+//                            {
+//                                sql.Append(" " + BuildFiltersString(query.Filters, cmd));
+//
+//                                cmd.Transaction = transaction;
+//                                cmd.CommandText = sql.ToString();
+//
+//                                var parameters = new DbParameter[query.UpdateColumns.Count];
+//                                for (var i = 0; i < query.UpdateColumns.Count; i++)
+//                                {
+//                                    var param = cmd.CreateParameter();
+//                                    param.ParameterName = ":col" + i;
+//                                    param.OracleDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank);
+//                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
+//                                    
+//                                    cmd.Parameters.Add(param);
+//                                    parameters[i] = param;
+//                                }
+//
+//                                cancellationToken.ThrowIfCancellationRequested();
+//
+//                                try
+//                                {
+//                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
+//                                }
+//                                catch (Exception ex)
+//                                {
+//                                    throw new ConnectionException($"The update query failed. {ex.Message}", ex);
+//                                }
+//                            }
+//                        }
+//                        transaction.Commit();
+//                    }
+//                }
+//            }
+//            catch (Exception ex)
+//            {
+//                throw new ConnectionException($"Update table {table.Name} failed.  {ex.Message}", ex);
+//            }
+//        }
 
         public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
         {

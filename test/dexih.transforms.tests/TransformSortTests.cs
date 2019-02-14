@@ -48,6 +48,7 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateUnSortedTestData();
             var mappings = new Mappings {new MapSort(new TableColumn(column), direction)};
             var transformSort = new TransformSort(source, mappings);
+            await transformSort.Open();
             var sortCount = 1;
 
             Assert.Equal(6, transformSort.FieldCount);

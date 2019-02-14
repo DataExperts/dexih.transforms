@@ -138,7 +138,7 @@ namespace dexih.connections.sql
                                 cmd.CommandType = CommandType.Text;
                                 try
                                 {
-                                 //   cmd.ExecuteNonQuery();
+                                     cmd.ExecuteNonQuery();
                                 }
                                 catch (Exception ex)
                                 {
@@ -253,7 +253,7 @@ namespace dexih.connections.sql
 
             if (column.Rank > 0)
             {
-                return "nvarchar(8000)";
+                return "text";
             }
 
             switch (column.DataType)
@@ -291,6 +291,7 @@ namespace dexih.connections.sql
 				case ETypeCode.Text:
                 case ETypeCode.Json:
                 case ETypeCode.Xml:
+                case ETypeCode.Node:
                     sqlType = "longtext";
 					break;
                 case ETypeCode.Single:
@@ -367,6 +368,7 @@ namespace dexih.connections.sql
                 case ETypeCode.String:
 				case ETypeCode.Text:
                 case ETypeCode.Json:
+                case ETypeCode.Node:
                 case ETypeCode.Xml:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:

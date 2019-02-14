@@ -33,14 +33,14 @@ namespace dexih.connections.flatfile
         public string FilePath()
         {
             var path = Path.Combine(Server ?? "" ,DefaultDatabase ?? "");
-            FilePermissions.ValidatePath(path);
+            FilePermissions?.ValidatePath(path);
             return path;
         }
 
         public override string GetFullPath(FlatFile file, EFlatFilePath path)
         {
             var fullPath = Path.Combine(FilePath(), file.FileRootPath ?? "", file.GetPath(path));
-            FilePermissions.ValidatePath(fullPath);
+            FilePermissions?.ValidatePath(fullPath);
             return fullPath;
         }
 
@@ -48,7 +48,7 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                FilePermissions.ValidatePath(Server);
+                FilePermissions?.ValidatePath(Server);
 
                 var fileShares = new List<string>();
                 var directories = Directory.GetDirectories(Server);

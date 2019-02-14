@@ -304,6 +304,7 @@ namespace dexih.connections.sql
                 case ETypeCode.Text:
                 case ETypeCode.Json:
                 case ETypeCode.Xml:
+                case ETypeCode.Node:
 					sqlType = "text";
 					break;
                 case ETypeCode.Single:

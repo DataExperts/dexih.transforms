@@ -52,7 +52,7 @@ namespace dexih.connections.test
             {
                 if (typeCode == ETypeCode.Binary && !connection.CanUseBinary) continue;
                 if (typeCode == ETypeCode.CharArray && !connection.CanUseCharArray) continue;
-                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown || typeCode == ETypeCode.Char) continue;
+                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown || typeCode == ETypeCode.Char || typeCode == ETypeCode.Node) continue;
 
                 table.Columns.Add(new TableColumn()
                 {

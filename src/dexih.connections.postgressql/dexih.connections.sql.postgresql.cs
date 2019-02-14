@@ -263,6 +263,7 @@ namespace dexih.connections.sql
                     sqlType = (column.IsUnicode == true ? "n" : "") + "text";
                     break;
                 case ETypeCode.Json:
+                case ETypeCode.Node:
                     sqlType = "json";
                     break;
                 case ETypeCode.Xml:
@@ -847,6 +848,7 @@ ORDER BY c.ordinal_position"))
                 case ETypeCode.Binary:
                     return NpgsqlDbType.Bytea;
                 case ETypeCode.Json:
+                case ETypeCode.Node:
                     return NpgsqlDbType.Json;
                 case ETypeCode.Xml:
                     return NpgsqlDbType.Xml;

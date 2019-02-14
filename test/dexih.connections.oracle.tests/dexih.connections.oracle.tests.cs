@@ -35,7 +35,7 @@ namespace dexih.connections.sql
         [Fact]
         public async Task TestOracle_BasicTests()
         {
-            string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
+            string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
             await new UnitTests().Unit(connection, database);
         }
@@ -43,7 +43,7 @@ namespace dexih.connections.sql
         [Fact]
         public async Task TestOracle_TransformTests()
         {
-            string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
+            string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
 
             await new TransformTests().Transform(GetConnection(), database);
         }
@@ -51,14 +51,14 @@ namespace dexih.connections.sql
         [Fact]
         public async Task TestOracle_PerformanceTests()
         {
-            string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
+            string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
             await new PerformanceTests(_output).Performance(GetConnection(), database, 10000);
         }
         
         [Fact]
         public async Task TestOracle_TransformWriter()
         {
-            string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
+            string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
 
             await new PerformanceTests(_output).PerformanceTransformWriter(GetConnection(), database, 100000);
         }
@@ -66,7 +66,7 @@ namespace dexih.connections.sql
         [Fact]
         public async Task TestOracle_SqlReader()
         {
-            string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
+            string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
 
             await new SqlReaderTests().Unit(connection, database);

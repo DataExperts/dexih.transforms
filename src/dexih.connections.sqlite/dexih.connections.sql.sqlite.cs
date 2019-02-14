@@ -206,6 +206,7 @@ namespace dexih.connections.sql
 				case ETypeCode.Text:
                 case ETypeCode.Xml:
                 case ETypeCode.Json:
+                case ETypeCode.Node:
                     sqlType = (column.IsUnicode == true ? "n" : "") + "text";
 					break;
                 case ETypeCode.Single:

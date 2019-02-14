@@ -66,10 +66,10 @@ namespace dexih.connections.test
                 var fileConnection = (ConnectionFlatFile)connection;
                 var filename = fileConnection.LastWrittenFile;
 
-                var filemoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
+                var fileMoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
                     EFlatFilePath.Outgoing, EFlatFilePath.Incoming);
                     
-                Assert.True(filemoveResult);
+                Assert.True(fileMoveResult);
             }
             
             SelectQuery selectQuery;
@@ -100,7 +100,7 @@ namespace dexih.connections.test
                 var updateQuery = new UpdateQuery()
                 {
                     UpdateColumns = new List<QueryColumn>() { new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc)) },
-                    Filters = new List<Filter>() { new Filter() { Column1 = new TableColumn("IntColumn"), Operator = Filter.ECompare.IsEqual, Value2 = 2, CompareDataType = ETypeCode.Int32 } }
+                    Filters = new List<Filter>() { new Filter() { Column1 = new TableColumn("IntColumn", ETypeCode.Int32), Operator = Filter.ECompare.IsEqual, Value2 = 2, CompareDataType = ETypeCode.Int32 } }
                 };
 
                 await connection.ExecuteUpdate(table, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
@@ -109,7 +109,7 @@ namespace dexih.connections.test
                 selectQuery = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("DateColumn", ETypeCode.DateTime)) },
-                    Filters = new List<Filter>() { new Filter(new TableColumn("IntColumn"), Filter.ECompare.IsEqual, 2) },
+                    Filters = new List<Filter>() { new Filter(new TableColumn("IntColumn", ETypeCode.Int32), Filter.ECompare.IsEqual, 2) },
                     Rows = 1,
                     Table = "test_table"
                 };

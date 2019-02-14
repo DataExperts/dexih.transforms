@@ -124,6 +124,11 @@ namespace dexih.transforms
         /// The connection can natively accept unsigned numeric types.
         /// </summary>
         public virtual bool CanUseUnsigned { get; } = true;
+        
+        /// <summary>
+        /// The connection can natively accept a signed byte.
+        /// </summary>
+        public virtual bool CanUseSByte { get; } = true;
 
         public abstract bool CanUseSql { get; }
         
@@ -572,6 +577,9 @@ namespace dexih.transforms
                     goto default;
                 case ETypeCode.UInt64:
                     if (!CanUseUnsigned) return Operations.Parse<long>(value);
+                    goto default;
+                case ETypeCode.SByte:
+                    if (!CanUseSByte) return Operations.Parse<short>(value);
                     goto default;
                 case ETypeCode.Time:
                     if (!CanUseTimeSpan) return Operations.Parse<string>(value);

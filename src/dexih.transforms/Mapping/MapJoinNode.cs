@@ -74,7 +74,7 @@ namespace dexih.transforms.Mapping
         public override object GetOutputTransform(object[] row = null)
         {
             var transform = OutputTransform ?? Transform;
-            transform.Reset();
+            transform.Reset(true);
             transform.SetInTransform(InputTransform, transform.ReferenceTransform);
             return transform;
         }

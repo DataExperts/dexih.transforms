@@ -189,6 +189,7 @@ namespace dexih.connections.db2
 				case ETypeCode.Text:
                 case ETypeCode.Xml:
                 case ETypeCode.Json:
+                case ETypeCode.Node:
                     sqlType = "clob";
 					break;
                 case ETypeCode.Single:

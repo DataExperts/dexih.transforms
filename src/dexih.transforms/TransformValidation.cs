@@ -53,37 +53,37 @@ namespace dexih.transforms
             var sourceTable = PrimaryTransform?.CacheTable;
             
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
-            var operation =
-                sourceTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) ?? 
-                new TableColumn("Operation", ETypeCode.Char)
+            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
+            {
+                table.Columns.Add(new TableColumn("Operation")
                 {
-                    DeltaType = TableColumn.EDeltaType.DatabaseOperation
-                };
-
-            var rejectReason =
-                sourceTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.RejectedReason) ?? 
-                new TableColumn("RejectReason")
-                {
-                    DeltaType = TableColumn.EDeltaType.RejectedReason,
+                    DeltaType = TableColumn.EDeltaType.DatabaseOperation,
                     AllowDbNull = true
-                };
-
-            var status =
-                sourceTable.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.ValidationStatus) ?? 
-                new TableColumn("ValidationStatus", ETypeCode.String)
-                {
-                    DeltaType = TableColumn.EDeltaType.ValidationStatus
-                };
-
-            table.Columns.Add(operation);
+                });
+            } 
 
             foreach (var column in mappingTable.Columns)
             {
                 table.Columns.Add(column);
             }
 
-            table.Columns.Add(rejectReason);
-            table.Columns.Add(status);
+            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.RejectedReason) == null)
+            {
+                table.Columns.Add(new TableColumn("RejectReason")
+                {
+                    DeltaType = TableColumn.EDeltaType.RejectedReason,
+                    AllowDbNull = true
+                });
+            } 
+
+            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.ValidationStatus) == null)
+            {
+                table.Columns.Add(new TableColumn("ValidationStatus")
+                {
+                    DeltaType = TableColumn.EDeltaType.ValidationStatus,
+                    AllowDbNull = true
+                });
+            } 
 
             return table;
         }

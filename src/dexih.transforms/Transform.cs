@@ -32,7 +32,8 @@ namespace dexih.transforms
         {
             NoCache = 0,
             OnDemandCache = 1,
-            PreLoadCache = 2
+            PreLoadCache = 2,
+            LookupCache = 3
         }
 
         public enum EEncryptionMethod
@@ -184,7 +185,7 @@ namespace dexih.transforms
             PrimaryTransform = primaryTransform;
             ReferenceTransform = referenceTransform;
 
-            Reset();
+            Reset(true);
 
             if (Mappings == null)
             {
@@ -421,7 +422,7 @@ namespace dexih.transforms
         public bool IsCacheFull { get; protected set; }
         
         /// <summary>
-        /// Gets a transform instance that can be used by a different thread to simultanously read the same transform.
+        /// Gets a transform instance that can be used by a different thread to simultaneously read the same transform.
         /// </summary>
         /// <returns></returns>
         public Transform GetThread()
@@ -719,7 +720,7 @@ namespace dexih.transforms
         /// Resets the transform and any source transforms.
         /// </summary>
         /// <returns></returns>
-        public bool Reset()
+        public bool Reset(bool resetCache = false)
         {
             if (!_isResetting) //stops recursive loops where intertwined transforms are resetting each other
             {
@@ -730,7 +731,7 @@ namespace dexih.transforms
                 _isFirstRead = true;
                 IsCacheFull = false;
                 IsReaderFinished = false;
-                // CacheTable.Data.Clear();
+                if(resetCache) CacheTable?.Data.Clear();
                 CurrentRowNumber = -1;
 
                 //reset stats.
@@ -853,7 +854,7 @@ namespace dexih.transforms
                     break;
             }
 
-            if (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache)
+            if (CacheMethod == ECacheMethod.LookupCache)
             {
                 if (_lookupCache == null)
                 {

@@ -34,10 +34,8 @@ namespace dexih.connections.webservice.restful.tests
 
             var table = await connection.GetSourceTableInfo("get", CancellationToken.None);
             Assert.True(table.Columns.GetOrdinal("args") >= 0);
-            Assert.True(table.Columns.GetOrdinal("headers") >= 0);
-            // Assert.True(table.Columns.GetOrdinal("headers.Accept") >= 0);
-            // Assert.True(table.Columns.GetOrdinal("headers.Connection") >= 0);
-            // Assert.True(table.Columns.GetOrdinal("headers.Host") >= 0);
+            Assert.True(table.Columns.GetOrdinal("Connection") >= 0);
+            Assert.True(table.Columns.GetOrdinal("Host") >= 0);
             Assert.True(table.Columns.GetOrdinal("origin") >= 0);
             Assert.True(table.Columns.GetOrdinal("url") >= 0);
 
@@ -68,6 +66,7 @@ namespace dexih.connections.webservice.restful.tests
             {
                 Name = "users",
                 RestfulUri = "users",
+                MaxImportLevels = 2
             };
 
             var table = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
@@ -75,7 +74,17 @@ namespace dexih.connections.webservice.restful.tests
             Assert.True(table.Columns.GetOrdinal("name") >= 0);
             Assert.True(table.Columns.GetOrdinal("username") >= 0);
             Assert.True(table.Columns.GetOrdinal("email") >= 0);
-            Assert.True(table.Columns.GetOrdinal("address") >= 0);
+            Assert.True(table.Columns.GetOrdinal("street") >= 0);
+            Assert.True(table.Columns.GetOrdinal("suite") >= 0);
+            Assert.True(table.Columns.GetOrdinal("city") >= 0);
+            Assert.True(table.Columns.GetOrdinal("zipcode") >= 0);
+            Assert.True(table.Columns.GetOrdinal("lat") >= 0);
+            Assert.True(table.Columns.GetOrdinal("lng") >= 0);
+            Assert.True(table.Columns.GetOrdinal("phone") >= 0);
+            Assert.True(table.Columns.GetOrdinal("website") >= 0);
+            Assert.True(table.Columns.GetOrdinal("company.name") >= 0);
+            Assert.True(table.Columns.GetOrdinal("catchPhrase") >= 0);
+            Assert.True(table.Columns.GetOrdinal("bs") >= 0);
 
             var reader = connection.GetTransformReader(table);
             var openResult = await reader.Open(0, null, CancellationToken.None);

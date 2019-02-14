@@ -610,6 +610,7 @@ namespace dexih.connections.azure
                 case ETypeCode.String:
 				case ETypeCode.Text:
 				case ETypeCode.Json:
+                case ETypeCode.Node:
 				case ETypeCode.Xml:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
@@ -809,6 +810,7 @@ namespace dexih.connections.azure
                 case ETypeCode.String:
 				case ETypeCode.Text:
 				case ETypeCode.Json:
+                case ETypeCode.Node:
 				case ETypeCode.Xml:
                 case ETypeCode.Boolean:
                 case ETypeCode.Guid:

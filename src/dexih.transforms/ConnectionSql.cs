@@ -43,7 +43,9 @@ namespace dexih.connections.sql
         public virtual string SqlValueClose { get; } = "'";
         protected virtual string SqlFromAttribute(Table table) => "";
 
-        protected long MaxSqlSize { get; set; } = 4000000; // the largest size the sql command can be (default 4mb)
+        protected virtual char SqlParameterIdentifier => '@';
+
+        protected virtual long MaxSqlSize { get; set; } = 4000000; // the largest size the sql command can be (default 4mb)
 
 
         protected string AddDelimiter(string name)
@@ -78,7 +80,7 @@ namespace dexih.connections.sql
         // protected abstract string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value);
 
 
-        protected DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
+        protected virtual DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = commandText;
@@ -115,11 +117,11 @@ namespace dexih.connections.sql
                     for(var i = 0; i< columns.Length; i++)
                     {
                         insert.Append(AddDelimiter(columns[i].Name) + ",");
-                        values.Append("@col" + i + ",");
+                        values.Append($"{SqlParameterIdentifier}col{i},");
                         ordinals[i] = reader.GetOrdinal(columns[i].Name);
                     }
 
-                    var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " + values.Remove(values.Length - 1, 1) + ");";
+                    var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " + values.Remove(values.Length - 1, 1) + ") ";
 
                     using (var transaction = connection.BeginTransaction())
                     {
@@ -133,17 +135,11 @@ namespace dexih.connections.sql
                             for (var i = 0; i < columns.Count(); i++)
                             {
                                 var param = cmd.CreateParameter();
-                                param.ParameterName = "@col" + i;
+                                param.ParameterName = $"{SqlParameterIdentifier}col{i}";
                                 cmd.Parameters.Add(param);
                                 parameters[i] = param;
                             }
-//                            for (var i = 0; i < fieldCount; i++)
-//                            {
-//                                var param = cmd.CreateParameter();
-//                                param.ParameterName = "@col" + i;
-//                                cmd.Parameters.Add(param);
-//                                parameters[i] = param;
-//                            }
+
 
                             while (await reader.ReadAsync(cancellationToken))
                             {
@@ -152,10 +148,6 @@ namespace dexih.connections.sql
                                     parameters[i].Value = reader[ordinals[i]];
                                 }
 
-//                                for (var i = 0; i < fieldCount; i++)
-//                                {
-//                                    parameters[i].Value = reader[i];
-//                                }
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 if (cancellationToken.IsCancellationRequested)
                                 {
@@ -378,7 +370,8 @@ namespace dexih.connections.sql
                     {
                         // sql.Append(" " + GetSqlFieldValueQuote(filter.Column1.DataType, filter.Column1.Rank, filter.Column1.DefaultValue) + " ");
                         var param = cmd.CreateParameter();
-                        param.ParameterName = $"@Filter{index}Column1Default";
+                        param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Column1Default";
+                        // param.DbType = GetDbType(filter.Column1.DataType);
                         param.Direction = ParameterDirection.Input;
                         param.Value = filter.Column1.DefaultValue;
                         cmd.Parameters.Add(param);
@@ -393,7 +386,8 @@ namespace dexih.connections.sql
                 {
                     // sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, 0, filter.Value1) + " ");
                     var param = cmd.CreateParameter();
-                    param.ParameterName = $"@Filter{index}Value1";
+                    param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Value1";
+                    // param.DbType = GetDbType(filter.BestDataType());
                     param.Direction = ParameterDirection.Input;
                     param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Value1);
                     cmd.Parameters.Add(param);
@@ -414,7 +408,8 @@ namespace dexih.connections.sql
                         {
                             // sql.Append(" " + GetSqlFieldValueQuote(filter.Column2.DataType, filter.Column2.Rank, filter.Column2.DefaultValue) + " ");
                             var param = cmd.CreateParameter();
-                            param.ParameterName = $"@Filter{index}Column2Default";
+                            param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Column2Default";
+                            // param.DbType = GetDbType(filter.Column2.DataType);
                             param.Direction = ParameterDirection.Input;
                             param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Column2.DefaultValue);
                             cmd.Parameters.Add(param);
@@ -438,8 +433,9 @@ namespace dexih.connections.sql
                                                // return GetSqlFieldValueQuote(filter.CompareDataType, 0, c);
                                                var param = cmd.CreateParameter();
                                                param.Direction = ParameterDirection.Input;
+                                               // param.DbType = GetDbType(filter.BestDataType());
                                                param.Value = ConvertForWrite(filter.BestDataType(), 0, true, c);
-                                               param.ParameterName = $"@Filter{index1}ArrayValue{arrayIndex}";
+                                               param.ParameterName = $"{SqlParameterIdentifier}Filter{index1}ArrayValue{arrayIndex}";
                                                cmd.Parameters.Add(param);
 
                                                return $"{param.ParameterName}";
@@ -450,7 +446,8 @@ namespace dexih.connections.sql
                         {
                             // sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, 0, filter.Value2) + " ");
                             var param = cmd.CreateParameter();
-                            param.ParameterName = $"@Filter{index}Value2";
+                            param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Value2";
+                            // param.DbType  = GetDbType(filter.BestDataType());
                             param.Direction = ParameterDirection.Input;
                             param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Value2);
                             cmd.Parameters.Add(param);
@@ -493,7 +490,7 @@ namespace dexih.connections.sql
                             for (var i = 0; i < query.InsertColumns.Count; i++)
                             {
                                 insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
-                                values.Append("@col" + i + ",");
+                                values.Append($"{SqlParameterIdentifier}col{i},");
                             }
 
                             var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
@@ -509,7 +506,7 @@ namespace dexih.connections.sql
                                     for (var i = 0; i < query.InsertColumns.Count; i++)
                                     {
                                         var param = cmd.CreateParameter();
-                                        param.ParameterName = "@col" + i;
+                                        param.ParameterName = $"{SqlParameterIdentifier}col{i}";
                                         param.Value = ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
                                         // param.DbType = GetDbType(query.InsertColumns[i].Column.DataType);
                                         cmd.Parameters.Add(param);
@@ -570,7 +567,7 @@ namespace dexih.connections.sql
                             var count = 0;
                             foreach (var column in query.UpdateColumns)
                             {
-                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
+                                sql.Append(AddDelimiter(column.Column.Name) + $" = {SqlParameterIdentifier}col{count},");
                                 count++;
                             }
                             sql.Remove(sql.Length - 1, 1); //remove last comma
@@ -578,22 +575,20 @@ namespace dexih.connections.sql
                             //  Retrieving schema for columns from a single table
                             using (var cmd = connection.CreateCommand())
                             {
-                                sql.Append(" " + BuildFiltersString(query.Filters, cmd) + ";");
-
                                 cmd.Transaction = transaction;
-                                cmd.CommandText = sql.ToString();
 
                                 var parameters = new DbParameter[query.UpdateColumns.Count];
                                 for (var i = 0; i < query.UpdateColumns.Count; i++)
                                 {
                                     var param = cmd.CreateParameter();
-                                    param.ParameterName = "@col" + i;
+                                    param.ParameterName = $"{SqlParameterIdentifier}col{i}";
                                     // param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
                                     // param.Size = -1;
 
-                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
+                                    var value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
+                                    param.Value = value;
 
-                                    // replaced with ConvertParamterType above.
+                                    // replaced with ConvertParameterType above.
                                     //// GUID's get parameterized as binary.  So need to explicitly convert to string.
                                     //if (query.UpdateColumns[i].Column.DataType == ETypeCode.Guid)
                                     //{
@@ -608,6 +603,9 @@ namespace dexih.connections.sql
                                     cmd.Parameters.Add(param);
                                     parameters[i] = param;
                                 }
+
+                                sql.Append(" " + BuildFiltersString(query.Filters, cmd) );
+                                cmd.CommandText = sql.ToString();
 
                                 cancellationToken.ThrowIfCancellationRequested();
 

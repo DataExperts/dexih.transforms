@@ -154,7 +154,7 @@ namespace dexih.transforms.Mapping
                             newColumn.ReferenceTable = joinTableAlias;
                             newColumn.IsIncrementalUpdate = false;
 
-                            var ordinal = table.GetOrdinal(newColumn.TableColumnName());
+                            var ordinal = table.GetOrdinal(newColumn);
                             if (mapAllJoinColumns || ordinal < 0)
                             {
                                 targetOrdinal++;

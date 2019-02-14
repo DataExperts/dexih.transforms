@@ -520,7 +520,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings
             {
-                new MapNode(new TableColumn("array", DataType.ETypeCode.Node), source.CacheTable),
+                new MapJoinNode(new TableColumn("array", DataType.ETypeCode.Node), source.CacheTable),
                 new MapJoin(new TableColumn("parent_id"), new TableColumn("parent_id"))
             };
             var link = new TransformJoin(source, Helpers.CreateChildTableData(), mappings, Transform.EDuplicateStrategy.All, null, "Join");
@@ -529,31 +529,40 @@ namespace dexih.transforms.tests
 
             await link.Open(1, null, CancellationToken.None);
 
-            var pos = 0;
-            
             Assert.True(await link.ReadAsync());
-            Assert.Equal(1, link["parent_id"]);
-            Assert.Equal("parent 1", link["name"]);
+            Assert.Equal(0, link["parent_id"]);
+            Assert.Equal("parent 0", link["name"]);
             var linkData = (Transform) link["array"];
 
             Assert.True(await linkData.ReadAsync());
-            Assert.Equal(1, linkData["parent_id"]);
-            Assert.Equal(10, linkData["child_id"]);
-            Assert.Equal("child 10", linkData["name"]);
+            Assert.Equal(0, linkData["parent_id"]);
+            Assert.Equal(0, linkData["child_id"]);
+            Assert.Equal("child 00", linkData["name"]);
 
             Assert.True(await linkData.ReadAsync());
-            Assert.Equal(1, linkData["parent_id"]);
-            Assert.Equal(11, linkData["child_id"]);
-            Assert.Equal("child 11", linkData["name"]);
+            Assert.Equal(0, linkData["parent_id"]);
+            Assert.Equal(1, linkData["child_id"]);
+            Assert.Equal("child 01", linkData["name"]);
 
             Assert.False(await linkData.ReadAsync());
             
             Assert.True(await link.ReadAsync());
+            Assert.Equal(1, link["parent_id"]);
+            Assert.Equal("parent 1", link["name"]);
+            linkData = (Transform) link["array"];
+            Assert.False(await linkData.ReadAsync());
+
+            Assert.True(await link.ReadAsync());
             Assert.Equal(2, link["parent_id"]);
             Assert.Equal("parent 2", link["name"]);
             linkData = (Transform) link["array"];
-            Assert.Null(linkData);
 
+            Assert.True(await linkData.ReadAsync());
+            Assert.Equal(2, linkData["parent_id"]);
+            Assert.Equal(20, linkData["child_id"]);
+            Assert.Equal("child 20", linkData["name"]);
+            Assert.False(await linkData.ReadAsync());
+            
             Assert.True(await link.ReadAsync());
             Assert.Equal(3, link["parent_id"]);
             Assert.Equal("parent 3", link["name"]);
@@ -563,17 +572,6 @@ namespace dexih.transforms.tests
             Assert.Equal(3, linkData["parent_id"]);
             Assert.Equal(30, linkData["child_id"]);
             Assert.Equal("child 30", linkData["name"]);
-            Assert.False(await linkData.ReadAsync());
-            
-            Assert.True(await link.ReadAsync());
-            Assert.Equal(4, link["parent_id"]);
-            Assert.Equal("parent 4", link["name"]);
-            linkData = (Transform) link["array"];
-
-            Assert.True(await linkData.ReadAsync());
-            Assert.Equal(4, linkData["parent_id"]);
-            Assert.Equal(40, linkData["child_id"]);
-            Assert.Equal("child 40", linkData["name"]);
             Assert.False(await linkData.ReadAsync());
 
             Assert.False(await link.ReadAsync());

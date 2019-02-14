@@ -155,6 +155,11 @@ namespace dexih.transforms.File
                         }
                     }
 
+                    if (columns.Count == 0)
+                    {
+                        return new[] {col};
+                    }
+
                     return columns;
                 }
                 else

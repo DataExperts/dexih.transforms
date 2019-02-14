@@ -99,8 +99,7 @@ namespace dexih.transforms
         
         public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
-            Reset();
-            CacheTable.Data.Clear();
+            Reset(true);
             _cacheLoaded = false;
             _currentRow = -1;
             return Open(auditKey, query, cancellationToken);

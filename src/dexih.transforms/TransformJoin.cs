@@ -402,7 +402,7 @@ namespace dexih.transforms
                         var matchFound = true;
                         foreach (var mapFunction in Mappings.OfType<MapFunction>())
                         {
-                            matchFound = await mapFunction.ProcessInputRow(new FunctionVariables(), PrimaryTransform.CurrentRow, row);
+                            matchFound = await mapFunction.ProcessInputRow(new FunctionVariables(), PrimaryTransform.CurrentRow, row, cancellationToken);
                             if (!matchFound)
                             {
                                 break;
@@ -442,7 +442,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    joinRow = groupData[0];
+                    joinRow = groupData.Count == 0 ? null : groupData[0];
                 }
 
                 if (_nodeColumnOrdinal >= 0)
@@ -457,11 +457,14 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    for (var i = 0; i < _referenceFieldCount; i++)
+                    if (joinRow != null)
                     {
-                        if (pos == _nodeColumnOrdinal) pos++;
-                        newRow[pos] = joinRow[i];
-                        pos++;
+                        for (var i = 0; i < _referenceFieldCount; i++)
+                        {
+                            if (pos == _nodeColumnOrdinal) pos++;
+                            newRow[pos] = joinRow[i];
+                            pos++;
+                        }
                     }
                 }
             }

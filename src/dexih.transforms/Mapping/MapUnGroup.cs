@@ -54,11 +54,12 @@ namespace dexih.transforms.Mapping
             var transform = (Transform) row[_nodeColumnOrdinal];
             if (transform == null) return false;
 
-            if (transform != _transform)
+            if (transform.CurrentRow ==null )
             {
-                _transform = transform;
+                _transform = transform.PrimaryTransform.PrimaryTransform;
                 _transformThread = transform.GetThread();
             }
+
             return await _transformThread.ReadAsync(cancellationToken);
         }
 

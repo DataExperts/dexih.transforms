@@ -41,7 +41,7 @@ namespace dexih.transforms
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 
-            ReferenceTransform.SetCacheMethod(ECacheMethod.OnDemandCache, 1000);
+            ReferenceTransform.SetCacheMethod(ECacheMethod.LookupCache, 1000);
             
             var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
             return returnValue;
