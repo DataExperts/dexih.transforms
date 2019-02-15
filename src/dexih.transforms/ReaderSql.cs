@@ -36,7 +36,7 @@ namespace dexih.connections.sql
             _isOpen = false;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             try
             {

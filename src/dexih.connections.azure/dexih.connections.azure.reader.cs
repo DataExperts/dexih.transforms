@@ -8,6 +8,7 @@ using Microsoft.WindowsAzure.Storage;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.azure
 {
@@ -144,13 +145,16 @@ namespace dexih.connections.azure
 
             foreach (var value in currentEntity.Properties)
             {
+                var column = CacheTable[value.Key];
                 var returnValue = value.Value.PropertyAsObject;
-                if (returnValue == null)
-                    row[CacheTable.GetOrdinal(value.Key)] = DBNull.Value;
-                else
-                {
-                    row[CacheTable.GetOrdinal(value.Key)] = _connection.ConvertEntityProperty(CacheTable[value.Key].DataType, returnValue);
-                }
+                row[CacheTable.GetOrdinal(value.Key)] = Operations.Parse(column.DataType, column.Rank, returnValue);
+
+                //if (returnValue == null)
+                //    row[CacheTable.GetOrdinal(value.Key)] = DBNull.Value;
+                //else
+                //{
+                //    row[CacheTable.GetOrdinal(value.Key)] = _connection.ConvertEntityProperty(CacheTable[value.Key].DataType, returnValue);
+                //}
             }
 
             return row;

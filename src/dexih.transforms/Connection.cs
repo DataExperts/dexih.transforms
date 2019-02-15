@@ -508,7 +508,7 @@ namespace dexih.transforms
 
         public virtual object ConvertForWrite(TableColumn column, object value)
         {
-            return ConvertForWrite(column.DataType, column.Rank, column.AllowDbNull, value);
+            return ConvertForWrite(column.Name, column.DataType, column.Rank, column.AllowDbNull, value);
         }
 
         /// <summary>
@@ -520,7 +520,7 @@ namespace dexih.transforms
         /// <param name="typeCode"></param>
         /// <param name="rank"></param>
         /// <returns></returns>
-        public virtual object ConvertForWrite(ETypeCode typeCode, int rank, bool allowDbNull, object value)
+        public virtual object ConvertForWrite(string name, ETypeCode typeCode, int rank, bool allowDbNull, object value)
         {
             if (value == null || value == DBNull.Value)
             {
@@ -530,7 +530,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    throw new ConnectionException($"The value null could not be inserted into the column which does not allow nulls.");
+                    throw new ConnectionException($"The {name} item has a value null which could not be inserted as the column does not allow nulls.");
                 }
             }
 

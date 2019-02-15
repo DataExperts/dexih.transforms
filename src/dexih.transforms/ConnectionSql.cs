@@ -389,7 +389,7 @@ namespace dexih.connections.sql
                     param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Value1";
                     // param.DbType = GetDbType(filter.BestDataType());
                     param.Direction = ParameterDirection.Input;
-                    param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Value1);
+                    param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true, filter.Value1);
                     cmd.Parameters.Add(param);
                     sql.Append($" {param.ParameterName} ");
                 }
@@ -411,7 +411,7 @@ namespace dexih.connections.sql
                             param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Column2Default";
                             // param.DbType = GetDbType(filter.Column2.DataType);
                             param.Direction = ParameterDirection.Input;
-                            param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Column2.DefaultValue);
+                            param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true, filter.Column2.DefaultValue);
                             cmd.Parameters.Add(param);
                             sql.Append($" {param.ParameterName} ");
                         }
@@ -434,7 +434,7 @@ namespace dexih.connections.sql
                                                var param = cmd.CreateParameter();
                                                param.Direction = ParameterDirection.Input;
                                                // param.DbType = GetDbType(filter.BestDataType());
-                                               param.Value = ConvertForWrite(filter.BestDataType(), 0, true, c);
+                                               param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true, c);
                                                param.ParameterName = $"{SqlParameterIdentifier}Filter{index1}ArrayValue{arrayIndex}";
                                                cmd.Parameters.Add(param);
 
@@ -449,7 +449,7 @@ namespace dexih.connections.sql
                             param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Value2";
                             // param.DbType  = GetDbType(filter.BestDataType());
                             param.Direction = ParameterDirection.Input;
-                            param.Value = ConvertForWrite(filter.BestDataType(), 0, true, filter.Value2);
+                            param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true, filter.Value2);
                             cmd.Parameters.Add(param);
                             sql.Append($" {param.ParameterName} ");
                         }

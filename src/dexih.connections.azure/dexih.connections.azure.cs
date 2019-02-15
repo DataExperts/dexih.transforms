@@ -19,7 +19,7 @@ namespace dexih.connections.azure
     [Connection(
         ConnectionCategory = EConnectionCategory.NoSqlDatabase,
         Name = "Azure Storage Tables", 
-        Description = "A NoSQL key-value store which supports massive semi-structured datasets",
+        Description = "A NoSQL key-value store which supports massive semi-structured data-sets",
         DatabaseDescription = "Database Name",
         ServerDescription = "Azure End Point",
         AllowsConnectionString = true,
@@ -237,13 +237,17 @@ namespace dexih.connections.azure
             foreach (var row in buffer)
             {
                 var properties = new Dictionary<string, EntityProperty>();
-                for (var i = 0; i < table.Columns.Count; i++)
-                    if (table.Columns[i].DeltaType != TableColumn.EDeltaType.AzureRowKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.AzurePartitionKey && table.Columns[i].DeltaType != TableColumn.EDeltaType.TimeStamp)
-                    {
-                        var value = row[i];
-                        if (value == DBNull.Value) value = null;
-                        properties.Add(table.Columns[i].Name, NewEntityProperty(table.Columns[i].DataType, value, table.Columns[i].Rank));
-                    }
+                var pos = 0;
+                foreach (var column in table.Columns)
+                {
+                    if (column.DeltaType == TableColumn.EDeltaType.AzureRowKey ||
+                        column.DeltaType == TableColumn.EDeltaType.AzurePartitionKey ||
+                        column.DeltaType == TableColumn.EDeltaType.TimeStamp ) continue;
+
+                    var value = row[pos++];
+                    if (value == DBNull.Value) value = null;
+                    properties.Add(column.Name, NewEntityProperty(column, value));
+                }
 
                 var partitionKeyValue = partitionKey >= 0 ? row[partitionKey] : AzurePartitionKeyDefaultValue;
                 var rowKeyValue = rowKey >= 0 ? row[rowKey] : surrogateKey >= 0 ? ((long)row[surrogateKey]).ToString("D20") : Guid.NewGuid().ToString();
@@ -388,7 +392,7 @@ namespace dexih.connections.azure
                 var connection = GetCloudTableClient();
 
 
-                //The new datatable that will contain the table schema
+                //The new data table that will contain the table schema
                 var table = new Table(originalTable.Name)
                 {
                     LogicalName = originalTable.Name,
@@ -754,12 +758,11 @@ namespace dexih.connections.azure
             return Task.FromResult(table);
         }
 
-        private EntityProperty NewEntityProperty(ETypeCode typeCode, object value, int rank)
+        private EntityProperty NewEntityProperty(TableColumn column, object value)
         {
-            var returnValue = ConvertForWrite(typeCode, rank, true, value);
-
-            if (rank > 0) typeCode = ETypeCode.String;
-
+            var returnValue = ConvertForWrite(column, value);
+            var typeCode = column.DataType;
+            if (column.Rank > 0) typeCode = ETypeCode.String;
             if (returnValue is DBNull) returnValue = null;
 
             switch (typeCode)
@@ -773,7 +776,7 @@ namespace dexih.connections.azure
                 case ETypeCode.UInt32:
                     return new EntityProperty((uint?)returnValue);
                 case ETypeCode.UInt64:
-                    return new EntityProperty(Convert.ToInt64(returnValue));
+                    return new EntityProperty(returnValue == null ? (long?) null : Convert.ToInt64(returnValue));
                 case ETypeCode.Int16:
                     return new EntityProperty((short?)returnValue);
                 case ETypeCode.Enum:
@@ -804,7 +807,7 @@ namespace dexih.connections.azure
                 case ETypeCode.Unknown:
                     return new EntityProperty(returnValue?.ToString()); //decimal not supported, so convert to string
                 case ETypeCode.Time:
-                    return new EntityProperty(returnValue == null ? 0L : ((TimeSpan)value).Ticks); //timespan not supported, so use ticks.
+                    return new EntityProperty(returnValue == null ? (long?) null : ((TimeSpan)value).Ticks); //timespan not supported, so convert to string.
                 case ETypeCode.Binary:
                     return new EntityProperty((byte[])value);
                 default:
@@ -869,7 +872,7 @@ namespace dexih.connections.azure
                 var cTable = connection.GetTableReference(table.Name);
 
                 var rowsInserted = 0;
-                var rowcount = 0;
+                var rowCount = 0;
 
                 var batchTasks = new List<Task>();
 
@@ -895,7 +898,7 @@ namespace dexih.connections.azure
                     foreach (var field in query.InsertColumns)
                     {
                         if (!(field.Column.Name == "RowKey" || field.Column.Name == "PartitionKey" || field.Column.Name == "Timestamp"))
-                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column].DataType, field.Value, field.Column.Rank));
+                            properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column], field.Value));
                     }
 
                     if (autoIncrement != null)
@@ -903,7 +906,7 @@ namespace dexih.connections.azure
                         var autoIncrementResult = await GetNextKey(table, autoIncrement, CancellationToken.None);
                         lastAutoIncrement = autoIncrementResult;
 
-                        properties.Add(autoIncrement.Name, NewEntityProperty(ETypeCode.Int64, lastAutoIncrement, autoIncrement.Rank));
+                        properties.Add(autoIncrement.Name, NewEntityProperty(autoIncrement, lastAutoIncrement));
                     }
 
                     string partitionKeyValue = null;
@@ -933,12 +936,12 @@ namespace dexih.connections.azure
 
                     batchOperation.Insert(entity);
 
-                    rowcount++;
+                    rowCount++;
                     rowsInserted++;
 
-                    if (rowcount > 99)
+                    if (rowCount > 99)
                     {
-                        rowcount = 0;
+                        rowCount = 0;
                         batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken));
 
                         if (cancellationToken.IsCancellationRequested)
@@ -1045,7 +1048,7 @@ namespace dexih.connections.azure
                                         break;
                                     default:
                                         var col = table[column.Column.Name];
-                                        entity.Properties[column.Column.Name] = NewEntityProperty(col.DataType, column.Value, col.Rank);
+                                        entity.Properties[column.Column.Name] = NewEntityProperty(col, column.Value);
                                         break;
                                 }
                             }

@@ -56,7 +56,8 @@ namespace dexih.connections.test
                 Name = "AutoIncrement",
                 Description = "A key column",
                 DataType = ETypeCode.Int32,
-                DeltaType = TableColumn.EDeltaType.AutoIncrement
+                DeltaType = TableColumn.EDeltaType.AutoIncrement,
+                AllowDbNull = true
             });
 
             table.Columns.Add(new TableColumn()
