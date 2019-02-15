@@ -192,19 +192,32 @@ namespace dexih.connections.azure
                         var ordinal = ordinals[i];
                         if (ordinal >= 0)
                         {
-                            row[i] = reader[ordinal];
+                            if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AutoIncrement &&
+                                (reader[ordinal] == null || reader[ordinal] is DBNull))
+                            {
+                                row[i] = 0;
+                            }
+                            else
+                            {
+                                row[i] = reader[ordinal];
+                            }
                         }
                         else
                         {
-                            //if the reader does not have the azure fields, then just add defaults.
-                            if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AzurePartitionKey)
-                                row[i] = AzurePartitionKeyDefaultValue;
-                            else if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AzureRowKey)
+                            switch (table.Columns[i].DeltaType)
                             {
-                                if (sk != null)
-                                    row[i] = reader[sk.Name];
-                                else
-                                    row[i] = Guid.NewGuid().ToString();
+                                case TableColumn.EDeltaType.AzurePartitionKey:
+                                    row[i] = AzurePartitionKeyDefaultValue;
+                                    break;
+                                case TableColumn.EDeltaType.AzureRowKey:
+                                    if (sk != null)
+                                        row[i] = reader[sk.Name];
+                                    else
+                                        row[i] = Guid.NewGuid().ToString();
+                                    break;
+                                case TableColumn.EDeltaType.AutoIncrement:
+                                    row[i] = 0;
+                                    break;
                             }
                         }
                     }
