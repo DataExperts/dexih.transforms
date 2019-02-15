@@ -159,6 +159,13 @@ namespace dexih.connections.azure
 
                 var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
 
+                var ordinals = new int[table.Columns.Count];
+
+                for (var i = 0; i < table.Columns.Count; i++)
+                {
+                    ordinals[i] = reader.GetOrdinal(table.Columns[i].Name);
+                }
+
                 while (await reader.ReadAsync(cancellationToken))
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -182,9 +189,10 @@ namespace dexih.connections.azure
 
                     for (var i = 0; i < table.Columns.Count; i++)
                     {
-                        if (i < reader.FieldCount)
+                        var ordinal = ordinals[i];
+                        if (ordinal >= 0)
                         {
-                            row[i] = reader[i];
+                            row[i] = reader[ordinal];
                         }
                         else
                         {
@@ -237,14 +245,14 @@ namespace dexih.connections.azure
             foreach (var row in buffer)
             {
                 var properties = new Dictionary<string, EntityProperty>();
-                var pos = 0;
-                foreach (var column in table.Columns)
+                for(var i = 0; i < table.Columns.Count; i++)
                 {
+                    var column = table.Columns[i];
                     if (column.DeltaType == TableColumn.EDeltaType.AzureRowKey ||
                         column.DeltaType == TableColumn.EDeltaType.AzurePartitionKey ||
                         column.DeltaType == TableColumn.EDeltaType.TimeStamp ) continue;
 
-                    var value = row[pos++];
+                    var value = row[i];
                     if (value == DBNull.Value) value = null;
                     properties.Add(column.Name, NewEntityProperty(column, value));
                 }
