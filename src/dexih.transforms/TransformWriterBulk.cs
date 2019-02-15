@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace dexih.transforms
 {
-    public class TransformWriter
+    public class TransformWriterBulk
     {
         /// <summary>
         /// Indicates the rows buffer per commit.  
