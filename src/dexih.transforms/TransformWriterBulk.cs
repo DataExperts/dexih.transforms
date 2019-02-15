@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace dexih.transforms
 {
+    /// <summary>
+    /// Bulk writes the contents of a transform into a single target table.
+    /// </summary>
     public class TransformWriterBulk
     {
         /// <summary>

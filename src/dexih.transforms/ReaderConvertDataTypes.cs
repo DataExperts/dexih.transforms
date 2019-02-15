@@ -8,13 +8,18 @@ namespace dexih.transforms
     /// <summary>
     /// This reader can be used to convert any data into datatypes supported by a target connection.
     /// </summary>
-    public class ReaderConvertDataTypes: Transform
+    public sealed class ReaderConvertDataTypes: Transform
     {
         private Transform _transform;
         private Connection _connection;
 
         private int _operationOrdinal;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection">The target connection to standardise on</param>
+        /// <param name="transform">The inbound transform</param>
         public ReaderConvertDataTypes(Connection connection, Transform transform)
         {
             _transform = transform;
@@ -36,7 +41,7 @@ namespace dexih.transforms
             return _transform.ResetTransform();
         }
 
-        protected async override Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             if(await _transform.ReadAsync(cancellationToken) == false)
             {

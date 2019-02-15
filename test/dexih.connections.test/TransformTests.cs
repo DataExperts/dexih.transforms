@@ -24,7 +24,7 @@ namespace dexih.connections.test
             //create a new table and write some data to it.  
             Transform reader = DataSets.CreateTestData();
             await connection.CreateTable(table, true, CancellationToken.None);
-            var writer = new TransformWriter();
+            var writer = new TransformWriterBulk();
 
             var writerResult = new TransformWriterResult();
             await connection.InitializeAudit(writerResult, 0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);

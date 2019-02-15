@@ -537,8 +537,9 @@
           <e p="TransformSort.cs" t="Include" />
           <e p="TransformThread.cs" t="Include" />
           <e p="TransformValidation.cs" t="Include" />
-          <e p="TransformWriter.cs" t="Include" />
+          <e p="TransformWriterBulk.cs" t="Include" />
           <e p="TransformWriterResult.cs" t="Include" />
+          <e p="TransformWriterTransaction.cs" t="Include" />
         </e>
       </e>
       <e p="test" t="Include">

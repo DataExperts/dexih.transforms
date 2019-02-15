@@ -86,7 +86,7 @@ namespace dexih.transforms.tests
 
             //write result to a memory table
             var memoryConnection = new ConnectionMemory();
-            var writer = new TransformWriter();
+            var writer = new TransformWriterBulk();
             var result = new TransformWriterResult();
             result.SetProperties(0, 10, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null,
                 TransformWriterResult.ETriggerMethod.Manual, "Test");
@@ -230,7 +230,7 @@ namespace dexih.transforms.tests
             await memoryConnection.CreateTable(table, false, CancellationToken.None);
 
             // write result to a memory table
-            var writer = new TransformWriter();
+            var writer = new TransformWriterBulk();
             var result = new TransformWriterResult();
             result.SetProperties(0, 1, 2, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
             await writer.WriteAllRecords(result, transformDelta, table, memoryConnection, CancellationToken.None);
