@@ -661,7 +661,8 @@ namespace dexih.connections.sql
 				    return ETypeCode.DateTime;
 				case "time": 
 				    return ETypeCode.Time;
-				case "char": 
+				case "char":
+                    return ETypeCode.Char;
 				case "varchar": 
 				case "enum": 
 				case "set": 

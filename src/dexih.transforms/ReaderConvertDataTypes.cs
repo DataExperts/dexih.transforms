@@ -54,6 +54,12 @@ namespace dexih.transforms
             var row = new object[_transform.FieldCount];
             for(var i = 0; i < _transform.FieldCount; i++)
             {
+                if (CacheTable.Columns[i].DeltaType == TableColumn.EDeltaType.DatabaseOperation)
+                {
+                    row[i] = _transform[i];
+                    continue;
+                } 
+
                 row[i] = _connection.ConvertForWrite(CacheTable.Columns[i], _transform[i]);
             }
 
