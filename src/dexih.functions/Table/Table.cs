@@ -302,7 +302,7 @@ namespace dexih.functions
             var colValidTo = GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
             var colCreateDate = GetDeltaColumn(TableColumn.EDeltaType.CreateDate);
             var colUpdateDate = GetDeltaColumn(TableColumn.EDeltaType.UpdateDate);
-            var colSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+            var colSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
             var colIsCurrentField = GetDeltaColumn(TableColumn.EDeltaType.IsCurrentField);
             var colVersionField = GetDeltaColumn(TableColumn.EDeltaType.Version);
             var colCreateAuditKey = GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
@@ -336,7 +336,7 @@ namespace dexih.functions
             
             if (colSurrogateKey == null)
             {
-                colSurrogateKey = new TableColumn("SurrogateKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.SurrogateKey };
+                colSurrogateKey = new TableColumn("SurrogateKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.AutoIncrement };
                 Columns.Add(colSurrogateKey);
             }
 

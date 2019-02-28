@@ -70,5 +70,14 @@ namespace dexih.connections.sql
 
             await new SqlReaderTests().Unit(connection, database);
         }
+        
+        [Fact]
+        public async Task Test_Transaction_Writer()
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new TransformWriterTransactional().Unit(connection, database);
+        }
     }
 }

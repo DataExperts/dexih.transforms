@@ -105,11 +105,18 @@ namespace dexih.transforms.Mapping
                     var year = Operations.Parse<int>(value);
                     if (year < 0 || year > 9999)
                     {
-                        throw new Exception($"Cannot create a series grain of {SeriesGrain} on the value {year}");
+                        throw new ArgumentOutOfRangeException(
+                            $"Cannot create a series grain of {SeriesGrain} on the value {year}");
                     }
 
                     return year;
-                } catch(Exception ex) 
+
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    throw;
+                }
+                catch(Exception) 
                 {
                     throw new Exception($"Cannot create a series grain of {SeriesGrain} on the data type {value.GetType().Name}");    
                 }
@@ -186,11 +193,16 @@ namespace dexih.transforms.Mapping
                     var year = Operations.Parse<int>(value);
                     if (year < 0 || year > 9999)
                     {
-                        throw new Exception($"Cannot create a series grain of {SeriesGrain} on the value {year}");
+                        throw new ArgumentOutOfRangeException($"Cannot create a series grain of {SeriesGrain} on the value {year}");
                     }
 
                     return year + count;
-                } catch(Exception ex) 
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    throw;
+                }
+                catch(Exception) 
                 {
                     throw new Exception($"Cannot create a series grain of {SeriesGrain} on the data type {value.GetType().Name}");    
                 }

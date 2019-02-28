@@ -26,7 +26,8 @@ namespace dexih.connections.sql
             {
                 Name = "Test Connection",
                 UseWindowsAuth = Convert.ToBoolean(Configuration.AppSettings["Sqlite:NTAuthentication"]),
-                Server = Configuration.AppSettings["Sqlite:ServerName"].ToString()
+                Server = Configuration.AppSettings["Sqlite:ServerName"],
+                DefaultDatabase = "Test-" + Guid.NewGuid()
             };
         }
 
@@ -59,6 +60,23 @@ namespace dexih.connections.sql
             var connection = GetConnection();
 
             await new SqlReaderTests().Unit(connection, database);
+        }
+
+        [Fact]
+        public async Task TestSqlite_Transaction_Writer()
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new TransformWriterTransactional().Unit(connection, database);
+        }
+        
+        [Fact]
+        public async Task TestSqlite_TransformWriter()
+        {
+            string database = "Test-" + Guid.NewGuid().ToString();
+
+            await new PerformanceTests(_output).PerformanceTransformWriter(GetConnection(), database, 100000);
         }
     }
 }

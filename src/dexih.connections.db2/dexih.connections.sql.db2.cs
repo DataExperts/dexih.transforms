@@ -117,14 +117,6 @@ namespace dexih.connections.db2
                             createSql.Append("NOT NULL ");
                         else
                             createSql.Append("NULL ");
-
-                        if (col.DeltaType == TableColumn.EDeltaType.SurrogateKey)
-                        {
-                            if (table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null)
-                                createSql.Append("PRIMARY KEY ASC ");
-                            else
-                                createSql.Append("UNIQUE ");
-                        }
                     }
 
                     if (i < table.Columns.Count - 1)

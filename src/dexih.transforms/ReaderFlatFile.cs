@@ -53,6 +53,7 @@ namespace dexih.transforms
             
             _fileNameOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileName);
         }
+
         
         public override void Close()
         {
@@ -60,7 +61,7 @@ namespace dexih.transforms
             _isOpen = false;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             _selectQuery = query;
@@ -130,7 +131,7 @@ namespace dexih.transforms
                 }
                 catch (Exception ex)
                 {
-                    throw new ConnectionException("The flatfile reader failed with the following message: " + ex.Message, ex);
+                    throw new ConnectionException("The flat file reader failed with the following message: " + ex.Message, ex);
                 }
 
                 if (row == null)

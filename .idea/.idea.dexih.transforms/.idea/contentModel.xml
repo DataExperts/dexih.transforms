@@ -508,6 +508,7 @@
           <e p="ReaderConvertDataTypes.cs" t="Include" />
           <e p="ReaderDbDataReader.cs" t="Include" />
           <e p="ReaderDynamic.cs" t="Include" />
+          <e p="ReaderFileHandler.cs" t="Include" />
           <e p="ReaderFlatFile.cs" t="Include" />
           <e p="ReaderMemory.cs" t="Include" />
           <e p="ReaderRowCreator.cs" t="Include" />
@@ -537,8 +538,14 @@
           <e p="TransformSort.cs" t="Include" />
           <e p="TransformThread.cs" t="Include" />
           <e p="TransformValidation.cs" t="Include" />
+          <e p="TransformWriter.cs" t="Include" />
           <e p="TransformWriterBulk.cs" t="Include" />
           <e p="TransformWriterResult.cs" t="Include" />
+          <e p="TransformWriterTarget.cs" t="Include" />
+          <e p="TransformWriterTargets.cs" t="Include" />
+          <e p="TransformWriterTask.cs" t="Include" />
+          <e p="TransformWriterTaskBulk.cs" t="Include" />
+          <e p="TransformWriterTaskTransaction.cs" t="Include" />
           <e p="TransformWriterTransaction.cs" t="Include" />
         </e>
       </e>
@@ -722,6 +729,9 @@
           <e p="appsettings.json" t="Include" />
           <e p="bin" t="ExcludeRecursive" />
           <e p="Configuration.cs" t="Include" />
+          <e p="Data" t="Include">
+            <e p="transactions.json" t="Include" />
+          </e>
           <e p="DataSets.cs" t="Include" />
           <e p="dexih.connections.test.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
@@ -739,6 +749,7 @@
           </e>
           <e p="SqlReader.cs" t="Include" />
           <e p="TransformTests.cs" t="Include" />
+          <e p="TransformWriterTransactional.cs" t="Include" />
           <e p="UnitTests.cs" t="Include" />
         </e>
         <e p="dexih.connections.webservice.restful.tests" t="IncludeRecursive">

@@ -47,6 +47,7 @@ namespace dexih.transforms
             TargetTableKey = targetTableKey;
             TargetTableName = targetTableName;
             _auditConnection = auditConnection;
+            
             LastRowTotal = lastSuccessfulResult?.RowsTotal ?? 0;
             LastMaxIncrementalValue = lastSuccessfulResult?.MaxIncrementalValue;
 
@@ -258,7 +259,9 @@ namespace dexih.transforms
         {
             try
             {
+                LastUpdateTime = DateTime.Now;
                 RunStatus = newStatus;
+
                 if (!string.IsNullOrEmpty(message))
                 {
                     Message = message;
@@ -274,12 +277,13 @@ namespace dexih.transforms
                             property.Name,
                             Value = property.GetValue(exception, null)
                         })
-                        .Select(x => string.Format(
-                            "{0} = {1}",
-                            x.Name,
-                            x.Value != null ? x.Value.ToString() : string.Empty
-                        ));
+                        .Select(x => $"{x.Name} = {(x.Value != null ? x.Value.ToString() : string.Empty)}");
                     ExceptionDetails = string.Join("\n", fields);
+                }
+                
+                if (RunStatus == ERunStatus.Started)
+                {
+                    StartTime = DateTime.Now;
                 }
 
                 if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
@@ -317,31 +321,13 @@ namespace dexih.transforms
         }
 
         [PocoColumn(Skip = true)]
-        public bool IsRunning
-        {
-            get
-            {
-                return RunStatus == ERunStatus.Running || RunStatus == ERunStatus.RunningErrors || RunStatus == ERunStatus.Initialised || RunStatus == ERunStatus.Started;
-            }
-        }
+        public bool IsRunning => RunStatus == ERunStatus.Running || RunStatus == ERunStatus.RunningErrors || RunStatus == ERunStatus.Initialised || RunStatus == ERunStatus.Started;
 
         [PocoColumn(Skip = true)]
-        public bool IsFinished
-        {
-            get
-            {
-                return RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Cancelled || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors;
-            }
-        }
+        public bool IsFinished => RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Cancelled || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors;
 
         [PocoColumn(Skip = true)]
-        public bool IsScheduled
-        {
-            get
-            {
-                return RunStatus == ERunStatus.Scheduled;
-            }
-        }
+        public bool IsScheduled => RunStatus == ERunStatus.Scheduled;
 
         public TimeSpan? ScheduleDuration()
         {

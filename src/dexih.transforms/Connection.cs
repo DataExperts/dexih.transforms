@@ -268,6 +268,12 @@ namespace dexih.transforms
             await picoTable.ExecuteInsert(this, writreResult, cancellationToken);
         }
 
+        public async Task InitializeAudit(TransformWriterResult writerResult, CancellationToken cancellationToken)
+        {
+            var pocoTable = new PocoTable<TransformWriterResult>();
+            await pocoTable.ExecuteInsert(this, writerResult, cancellationToken);
+        }
+
         public virtual async Task UpdateAudit(TransformWriterResult writerResult, CancellationToken cancellationToken )
         {
             var picoTable = new PocoTable<TransformWriterResult>();
@@ -515,10 +521,11 @@ namespace dexih.transforms
         /// Converts a value to a datatype that can be written to the data source.
         /// This includes transforming json/xml/arrays into strings where necessary.
         /// </summary>
-        /// <param name="allowDbNull"></param>
-        /// <param name="value"></param>
+        /// <param name="name"></param>
         /// <param name="typeCode"></param>
         /// <param name="rank"></param>
+        /// <param name="allowDbNull"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         public virtual object ConvertForWrite(string name, ETypeCode typeCode, int rank, bool allowDbNull, object value)
         {
@@ -551,12 +558,9 @@ namespace dexih.transforms
                         {
                             return b ? 1 : 0;
                         }
-                        else
-                        {
-                            var b1 = Operations.Parse<bool>(value);
-                            return b1 ? 1 : 0;
 
-                        }
+                        var b1 = Operations.Parse<bool>(value);
+                        return b1 ? 1 : 0;
                     }
                     goto default;
                 case ETypeCode.Json:
@@ -593,7 +597,7 @@ namespace dexih.transforms
 
                         // convert stream to string
                         var streamReader = new StreamReader(streamJson);
-                        return(streamReader.ReadToEnd());
+                        return streamReader.ReadToEnd();
                     }
 
                     return null;

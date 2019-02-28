@@ -84,7 +84,7 @@ namespace dexih.transforms.tests
         }
         
         [Fact]
-        public async Task UnGroupChapterTest()
+        public async Task UnGroupNodeTest()
         {
             var source = Helpers.CreateParentChildReader();
             
@@ -117,9 +117,9 @@ namespace dexih.transforms.tests
             await flatten.ReadAsync();
             Assert.Equal(1, flatten["parent_id"]);
             Assert.Equal("parent 1", flatten["name"]);
-            Assert.Equal(null, flatten["children.parent_id"]);
-            Assert.Equal(null, flatten["children.child_id"]);
-            Assert.Equal(null, flatten["children.name"]);
+            Assert.Null(flatten["children.parent_id"]);
+            Assert.Null(flatten["children.child_id"]);
+            Assert.Null(flatten["children.name"]);
 
             await flatten.ReadAsync();
             Assert.Equal(2, flatten["parent_id"]);

@@ -433,7 +433,7 @@ namespace dexih.connections.sql
                         await command.ExecuteNonQueryAsync(cancellationToken);
                     }
 
-                    var skCol = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+                    var skCol = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
                     if (skCol != null)
                     {
                         using (var command = connection.CreateCommand())

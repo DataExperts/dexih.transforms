@@ -216,7 +216,7 @@ namespace dexih.connections.sql
                 }
 
 				//Add the primary key using surrogate key or autoincrement.
-				var key = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) ?? table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+				var key = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) ?? table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
 
                 if (key != null)
 					createSql.Append("PRIMARY KEY (" + AddDelimiter(key.Name) + "),");

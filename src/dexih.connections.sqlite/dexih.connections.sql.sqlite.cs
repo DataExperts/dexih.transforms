@@ -33,6 +33,10 @@ namespace dexih.connections.sql
     )]
     public class ConnectionSqlite : ConnectionSql
     {
+     
+        protected override string SqlDelimiterOpen { get; } = "[";
+
+        protected override string SqlDelimiterClose { get; } = "]";
         
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
@@ -133,7 +137,7 @@ namespace dexih.connections.sql
                         else
                             createSql.Append("NULL ");
 
-                        if (col.DeltaType == TableColumn.EDeltaType.SurrogateKey)
+                        if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
                         {
                             if (table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null)
                                 createSql.Append("PRIMARY KEY ASC ");

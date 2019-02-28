@@ -1,3 +1,38 @@
-{
-  
-}
+  [
+    {
+      "id" : 1, 
+      "desc": "product 1",
+      "items": [
+        {
+          "item_id": 11,
+          "desc": "component 1"
+        },
+        {
+          "item_id": 12,
+          "desc": "component 2"
+        },
+        {
+          "item_id": 13,
+          "desc": "component 3"
+        }
+      ]
+    },
+    {
+      "id" : 2,
+      "desc": "product 2",
+      "items": [
+        {
+          "item_id": 21,
+          "desc": "component 1"
+        },
+        {
+          "item_id": 22,
+          "desc": "component 2"
+        },
+        {
+          "item_id": 23,
+          "desc": "component 3"
+        }
+      ]
+    }
+  ]

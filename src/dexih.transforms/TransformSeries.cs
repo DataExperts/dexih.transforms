@@ -208,7 +208,6 @@ namespace dexih.transforms
                     else
                     {
                         var startFilling = false;
-                        object fillValue = null;
 
                         // if the first record, then load the current row.
                         if (_seriesValue == null)

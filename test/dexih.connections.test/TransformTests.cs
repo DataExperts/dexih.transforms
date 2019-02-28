@@ -18,18 +18,18 @@ namespace dexih.connections.test
         public async Task Transform(Connection connection, string databaseName)
         {
             var table = DataSets.CreateTable();
-
             await connection.CreateDatabase(databaseName, CancellationToken.None);
+            
+            var writerResult = new TransformWriterResult();
 
             //create a new table and write some data to it.  
             Transform reader = DataSets.CreateTestData();
             await connection.CreateTable(table, true, CancellationToken.None);
-            var writer = new TransformWriterBulk();
-
-            var writerResult = new TransformWriterResult();
             await connection.InitializeAudit(writerResult, 0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
-            var writeRecords = await writer.WriteAllRecords(writerResult, reader, table, connection, null, null, null, null, CancellationToken.None);
-
+            
+            var writer = new TransformWriter();
+            var writeRecords = await writer.WriteRecordsAsync(writerResult, reader, TransformWriterTarget.ETransformWriterMethod.Bulk, table, connection, CancellationToken.None);
+            
             Assert.True(writeRecords, $"WriteAllRecords failed with message {writerResult.Message}.  Details:{writerResult.ExceptionDetails}");
 
             //check database can sort 
@@ -89,7 +89,7 @@ namespace dexih.connections.test
             writerResult = new TransformWriterResult();
             await connection.InitializeAudit(writerResult, 0, 1, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
 
-            var writeAllResult = await writer.WriteAllRecords(writerResult, transformDelta, deltaTable, connection, CancellationToken.None);
+            var writeAllResult = await writer.WriteRecordsAsync( writerResult, transformDelta, TransformWriterTarget.ETransformWriterMethod.Bulk, deltaTable, connection, CancellationToken.None);
             Assert.True(writeAllResult, writerResult.Message);
             Assert.Equal(10L, writerResult.RowsCreated);
 

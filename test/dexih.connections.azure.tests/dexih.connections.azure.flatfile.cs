@@ -39,8 +39,7 @@ namespace dexih.connections.azure.tests
 
             Assert.NotNull(con);
 
-            if (con != null)
-                await new UnitTests().Unit(con, database);
+            await new UnitTests().Unit(con, database);
         }
 
     }

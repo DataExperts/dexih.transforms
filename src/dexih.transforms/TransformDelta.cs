@@ -26,7 +26,7 @@ namespace dexih.transforms
         public TransformDelta(Transform inReader, Transform referenceTransform, EUpdateStrategy deltaType, object surrogateKey, bool addDefaultRow)
         {
             DeltaType = deltaType;
-            SurrogateKey = surrogateKey;
+            _surrogateKey = surrogateKey;
 
             // create a copy of the target table without the schem or any deltaType = Ignore columns
             // CacheTable = referenceTransform.CacheTable.Copy(true, true);
@@ -55,7 +55,6 @@ namespace dexih.transforms
         {
             Reload, //truncates the table and reloads
             Append, //inserts records.  use if the data feed is always new data.
-            //Bulk, //same is insert, however uses database bulk load feature.
             AppendUpdate, //inserts new records, and updates records.  use if the data feed is new and existing data.
             AppendUpdateDelete, //inserts new records, updates existing records, and (logically) deletes removed records.  use to maintain an exact copy of the data feed.
             AppendUpdatePreserve, //inserts new records, updates existing records, and preserves the changes.
@@ -105,10 +104,12 @@ namespace dexih.transforms
 
         private int _columnCount;
 
+        private object _surrogateKey;
+
         private TableColumn[] _colNatrualKey;
 
         private EUpdateStrategy DeltaType { get; set; }
-        public object SurrogateKey { get; set; }
+        public override object SurrogateKey => _surrogateKey;
         public bool AddDefaultRow { get; set; }
         
 
@@ -209,7 +210,7 @@ namespace dexih.transforms
             _colValidTo = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
             _colCreateDate = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.CreateDate);
             _colUpdateDate = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.UpdateDate);
-            _colSurrogateKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+            _colSurrogateKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
             _colIsCurrentField = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.IsCurrentField);
             _colSourceSurrogateKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
             _colCreateAuditKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
@@ -243,7 +244,7 @@ namespace dexih.transforms
 
             _referenceIsValidOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
             _referenceVersionOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Version);
-            _referenceSurrogateKeyOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SurrogateKey);
+            _referenceSurrogateKeyOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AutoIncrement);
             _referenceCreateAuditOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateAuditKey);
             _referenceCreateDateOrginal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateDate);
             _referenceValidToOridinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
@@ -886,8 +887,8 @@ namespace dexih.transforms
                     case TableColumn.EDeltaType.Version:
                         newRow[referenceOrdinal] = 1;
                         break;
-                    case TableColumn.EDeltaType.SurrogateKey:
-                        SurrogateKey = Operations.Increment(SurrogateKey); //increment now that key has been used.
+                    case TableColumn.EDeltaType.AutoIncrement:
+                        _surrogateKey = Operations.Increment(_surrogateKey); //increment now that key has been used.
                         newRow[referenceOrdinal] = SurrogateKey;
                         break;
                     case TableColumn.EDeltaType.SourceSurrogateKey:
@@ -969,8 +970,8 @@ namespace dexih.transforms
                         case TableColumn.EDeltaType.IsCurrentField:
                             newRow[referenceOrdinal] = true;
                             break;
-                        case TableColumn.EDeltaType.SurrogateKey:
-                            SurrogateKey = Operations.Increment(SurrogateKey); //increment now that key has been used.
+                        case TableColumn.EDeltaType.AutoIncrement:
+                            _surrogateKey = Operations.Increment(_surrogateKey); //increment now that key has been used.
                             newRow[referenceOrdinal] = 0;
                             break;
                         case TableColumn.EDeltaType.SourceSurrogateKey:

@@ -157,7 +157,7 @@ namespace dexih.connections.azure
                 var bufferSize = 0;
                 var buffer = new List<object[]>();
 
-                var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+                var sk = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
 
                 var ordinals = new int[table.Columns.Count];
 
@@ -253,7 +253,7 @@ namespace dexih.connections.azure
 
             var partitionKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
             var rowKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
-            var surrogateKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.SurrogateKey);
+            var surrogateKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AutoIncrement);
 
             foreach (var row in buffer)
             {
@@ -942,7 +942,7 @@ namespace dexih.connections.azure
 
                     if (string.IsNullOrEmpty(rowKeyValue))
                     {
-                        var sk = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey)?.Name;
+                        var sk = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement)?.Name;
 
                         if (sk == null)
                             if (autoIncrement == null)
@@ -1004,7 +1004,7 @@ namespace dexih.connections.azure
                 //start a batch operation to update the rows.
                 var batchOperation = new TableBatchOperation();
 
-                var surrogateKeyColumn = table.GetDeltaColumn(TableColumn.EDeltaType.SurrogateKey);
+                var surrogateKeyColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
 
                 //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)

@@ -29,7 +29,6 @@ namespace dexih.transforms
         protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             return _transform.ReadThreadSafe(_currentRow++, cancellationToken);
-            
         }
 
         public override bool ResetTransform()

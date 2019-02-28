@@ -45,7 +45,7 @@ namespace dexih.connections.test
 
             //create a table that utilizes every available datatype.
             var table = new Table("LargeTable" + (DataSets.counter++));
-            table.Columns.Add(new TableColumn("SurrogateKey", ETypeCode.Int64, TableColumn.EDeltaType.SurrogateKey));
+            table.Columns.Add(new TableColumn("SurrogateKey", ETypeCode.Int64, TableColumn.EDeltaType.AutoIncrement));
             table.Columns.Add(new TableColumn("UpdateTest", ETypeCode.Int32));
 
             foreach (ETypeCode typeCode in Enum.GetValues(typeof(ETypeCode)))
@@ -183,7 +183,7 @@ namespace dexih.connections.test
                 var updateColumns = new List<QueryColumn>();
 
                 //use this column to validate the update success
-                var updateColumn = new QueryColumn(table.Columns[1], 1);
+                var updateColumn = new QueryColumn(table.Columns["UpdateTest"], 1);
                 updateColumns.Add(updateColumn);
 
                 //load the columns with random values.
@@ -195,7 +195,7 @@ namespace dexih.connections.test
                 }
                 updateQueries.Add(new UpdateQuery()
                 {
-                    Filters = new List<Filter>() {new Filter("SurrogateKey", Filter.ECompare.IsEqual, i)},
+                    Filters = new List<Filter>() {new Filter("SurrogateKey", Filter.ECompare.IsEqual, i+1)},
                     Table = table.Name,
                     UpdateColumns = updateColumns
                 });
@@ -207,7 +207,7 @@ namespace dexih.connections.test
             });
             
 
-            //check the table loaded 1,000 rows updated successully
+            //check the table loaded 1,000 rows updated successfully
             var selectQuery = new SelectQuery()
             {
                 Columns = new List<SelectColumn>() {new SelectColumn("UpdateTest")},
@@ -282,7 +282,7 @@ namespace dexih.connections.test
             var table = new Table("LargeTable" + (DataSets.counter++));
 
             table.Columns.Add(
-                new TableColumn("SurrogateKey", ETypeCode.Int32, TableColumn.EDeltaType.SurrogateKey)
+                new TableColumn("SurrogateKey", ETypeCode.Int32, TableColumn.EDeltaType.AutoIncrement)
                 {
                     IsIncrementalUpdate = true
                 });
@@ -352,12 +352,12 @@ namespace dexih.connections.test
             transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, false);
             await transform.Open(0, null, CancellationToken.None);
 
-            var writer = new TransformWriterBulk();
+            var writer = new TransformWriter();
             var writerResult = new TransformWriterResult();
             await connection.InitializeAudit(writerResult, 0, 0, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
             Assert.NotNull(writerResult);
 
-            var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, null, null, CancellationToken.None);
+            var result = await writer.WriteRecordsAsync(writerResult, transform, TransformWriterTarget.ETransformWriterMethod.Bulk, targetTable, connection, CancellationToken.None);
 
             Assert.Equal(rows, writerResult.RowsCreated);
 
@@ -365,8 +365,8 @@ namespace dexih.connections.test
             var auditTable = await connection.GetTransformWriterResults(0, 1, null, "Datalink", writerResult.AuditKey, null, true,
                 false, false, null, 1, 2, false, CancellationToken.None);
             
-            Assert.Equal(writerResult.RowsCreated, auditTable[0].RowsCreated);
-            Assert.Equal(rows + 1, Convert.ToInt64(auditTable[0].MaxIncrementalValue));
+            Assert.Equal(rows, auditTable[0].RowsCreated);
+            Assert.Equal(rows, Convert.ToInt64(auditTable[0].MaxIncrementalValue));
         }
     }
 }

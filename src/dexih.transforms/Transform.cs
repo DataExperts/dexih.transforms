@@ -161,6 +161,11 @@ namespace dexih.transforms
         public virtual List<Sort> RequiredReferenceSortFields() { return null; }
         public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input 
 
+        public virtual object SurrogateKey
+        {
+            get => PrimaryTransform?.SurrogateKey ?? -1;
+        }
+
         #endregion
 
         #region Abstract Properties
@@ -452,7 +457,6 @@ namespace dexih.transforms
                 {
                     _semaphoreSlim.Release();
                 }
-
             }
 
             return row > CacheTable.Data.Count ? null : CacheTable.Data[row];
@@ -1102,14 +1106,23 @@ namespace dexih.transforms
         #region DbDataReader Implementation
 
         private bool _isFirstRead = true;
+        
+        private bool _nextReadInProgress = false;
+        private object[] _nextRow;
 
-        public override bool Read()
+        /// <summary>
+        /// Starts a read process from the underlying transforms, but does not update the current row.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        /// <exception cref="TransformException"></exception>
+        public async Task<bool> ReadPrepareAsync(CancellationToken cancellationToken)
         {
-            return ReadAsync(CancellationToken.None).Result;
-        }
-
-        public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
-        {
+            //TODO need to test impacts of read prepare with child nodes which are transform readers.
+            
+            _nextReadInProgress = true;
+            
             //starts  a timer that can be used to measure downstream transform and database performance.
             TransformTimer.Start();
 
@@ -1149,16 +1162,18 @@ namespace dexih.transforms
             {
                 if (CurrentRowNumber < CacheTable.Data.Count)
                 {
-                    CurrentRow = CacheTable.Data[CurrentRowNumber];
+                    _nextRow = CacheTable.Data[CurrentRowNumber];
                     TransformTimer.Stop();
+                    _nextReadInProgress = false;
                     return true;
                 }
             }
 
             if (IsReaderFinished)
             {
-                CurrentRow = null;
+                _nextRow = null;
                 TransformTimer.Stop();
+                _nextReadInProgress = false;
                 return false;
             }
 
@@ -1173,11 +1188,11 @@ namespace dexih.transforms
                     if (EncryptionMethod != EEncryptionMethod.NoEncryption)
                         EncryptRow(returnRecord);
 
-                    CurrentRow = returnRecord;
+                    _nextRow = returnRecord;
                 }
                 else
                 {
-                    CurrentRow = null;
+                    _nextRow = null;
                     IsReaderFinished = true;
                     Close();
                 }
@@ -1187,6 +1202,7 @@ namespace dexih.transforms
             catch (Exception ex) when (ex is OperationCanceledException || ex is TransformException)
             {
                 IsReaderFinished = true;
+                _nextReadInProgress = false;
                 Close();
                 throw;
             }
@@ -1198,15 +1214,15 @@ namespace dexih.transforms
             }
 
 
-            if (IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && CurrentRow != null)
+            if (IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && _nextRow != null)
             {
                 try
                 {
                     var compareResult = Operations.GreaterThan(_incrementalColumnType,
-                        CurrentRow[_incrementalColumnIndex], _maxIncrementalValue);
+                        _nextRow[_incrementalColumnIndex], _maxIncrementalValue);
                     if (compareResult)
                     {
-                        _maxIncrementalValue = CurrentRow[_incrementalColumnIndex];
+                        _maxIncrementalValue = _nextRow[_incrementalColumnIndex];
                     }
                 }
                 catch (Exception ex)
@@ -1227,12 +1243,40 @@ namespace dexih.transforms
                 TransformRowsReadPrimary++;
 
             //add the row to the cache
-            if (CurrentRow != null && !_currentRowCached &&
+            if (_nextRow != null && !_currentRowCached &&
                 (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
-                CacheTable.Data.Add(CurrentRow);
+                CacheTable.Data.Add(_nextRow);
 
             TransformTimer.Stop();
+            _nextReadInProgress = false;
             return !IsReaderFinished;
+        }
+
+        /// <summary>
+        /// Applies the prepared row to the current row.  Must call ReadPrepareAsync first.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="TransformException"></exception>
+        public void ReadApply()
+        {
+            if (_nextReadInProgress)
+            {
+                throw new TransformException("The transform read could not be applied as there is still a ReadPrepareAsync process underway.");
+            }
+
+            CurrentRow = _nextRow;
+        }
+
+        public override bool Read()
+        {
+            return ReadAsync(CancellationToken.None).Result;
+        }
+
+        public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
+        {
+            var returnValue = await ReadPrepareAsync(cancellationToken);
+            ReadApply();
+            return returnValue;
         }
 
         public override int FieldCount => CacheTable.Columns.Count;
@@ -1362,13 +1406,19 @@ namespace dexih.transforms
 
         public override object GetValue(int i)
         {
-            if (CurrentRow != null && i < CurrentRow.Length)
+            if (CurrentRow == null)
             {
-                return CurrentRow[i];
+                throw new ArgumentOutOfRangeException(
+                    $"The GetValue failed as there is no current row available.");
             }
 
-            throw new ArgumentOutOfRangeException(
+            if (i >= CurrentRow.Length)
+            {
+                throw new ArgumentOutOfRangeException(
                 $"The GetValue failed as the column at position {i} was greater than the number of columns {CurrentRow?.Length}.");
+            }
+
+            return CurrentRow[i];            
         }
 
         public override int GetValues(object[] values)
@@ -1559,10 +1609,10 @@ namespace dexih.transforms
                     false,
                     false,
                     false,
-                    col.DeltaType == EDeltaType.SurrogateKey,
+                    col.DeltaType == EDeltaType.AutoIncrement,
                     col.DataType == ETypeCode.Int64,
                     false,
-                    col.DeltaType == EDeltaType.SurrogateKey,
+                    col.DeltaType == EDeltaType.AutoIncrement,
                     col.Precision,
                     col.Scale
                     );

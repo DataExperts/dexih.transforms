@@ -232,7 +232,7 @@ namespace dexih.connections.sql
                         else
                             createSql.Append("NULL ");
 
-                        if (col.DeltaType == TableColumn.EDeltaType.SurrogateKey)
+                        if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
                             createSql.Append("PRIMARY KEY ASC ");
 
                         if (i < table.Columns.Count - 1)
@@ -553,9 +553,8 @@ namespace dexih.connections.sql
             {
                 using (var connection = await NewConnection())
                 {
-
                     var sql = new StringBuilder();
-
+                    int rows = 0;
                     using (var transaction = connection.BeginTransaction())
                     {
                         foreach (var query in queries)
@@ -612,12 +611,15 @@ namespace dexih.connections.sql
                                 try
                                 {
                                     await cmd.ExecuteNonQueryAsync(cancellationToken);
+                                    rows++;
                                 }
                                 catch (Exception ex)
                                 {
                                     throw new ConnectionException($"The update query failed. {ex.Message}", ex);
                                 }
                             }
+
+                            
                         }
                         transaction.Commit();
                     }
