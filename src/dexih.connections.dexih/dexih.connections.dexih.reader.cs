@@ -18,10 +18,6 @@ namespace dexih.connections.dexih
 {
     public class ReaderDexih : Transform
     {
-        private bool _isOpen = false;
-
-        // private int[] _columnOrdinals;
-
 		private string _dataUrl;
         
         private FileHandlerBase _fileHandler;
@@ -37,10 +33,14 @@ namespace dexih.connections.dexih
 
         protected override void Dispose(bool disposing)
         {
-            _isOpen = false;
+            IsOpen = false;
 
             base.Dispose(disposing);
         }
+        
+        public override string TransformName { get; } = "Information Hub Reader";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
@@ -48,13 +48,15 @@ namespace dexih.connections.dexih
 
             try
             {
-                if (_isOpen)
+                if (IsOpen)
                 {
                     throw new ConnectionException("The information hub connection is already open.");
                 }
 
+                IsOpen = true;
+
                 var downloadUrl = await _dexihConnection.GetDownloadUrl();
-                var intanceId = await _dexihConnection.GetRemoteAgentInstanceId();
+                var instanceId = await _dexihConnection.GetRemoteAgentInstanceId();
 
                 // call the central web server to requet the query start.
                 var message = Json.SerializeObject(new
@@ -65,7 +67,7 @@ namespace dexih.connections.dexih
                     TableSchema = CacheTable.Schema,
                     Query = query,
                     DownloadUrl = downloadUrl,
-                    InstanceId = intanceId
+                    InstanceId = instanceId
                 }, "");
                 
                 var content = new StringContent(message, Encoding.UTF8, "application/json");
@@ -108,17 +110,13 @@ namespace dexih.connections.dexih
             }
         }
 
-        public override string Details()
-        {
-            return "Information Hub Reader";
-        }
 
         public override bool ResetTransform()
         {
             return true;
         }
 
- protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
             while (true)
             {

@@ -32,6 +32,9 @@ namespace dexih.transforms
 
         private Table _profileResults;
 
+        public override string TransformName { get; } = "Profile Data";
+        public override string TransformDetails => $"";
+
 
         public override Transform GetProfileResults()
         {
@@ -126,9 +129,5 @@ namespace dexih.transforms
 
         }
 
-        public override string Details()
-        {
-            return "Profile";
-        }
     }
 }

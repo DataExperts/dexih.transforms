@@ -35,9 +35,14 @@ namespace dexih.transforms
 
             SetInTransform(primaryTransform, joinTransform);
         }
+        
+        public override string TransformName { get; } = "Lookup";
+        public override string TransformDetails => $"Primary: {PrimaryTransform.Name}, Join: {ReferenceTransform.Name}";
+
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
+            IsOpen = true;
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 
@@ -136,10 +141,6 @@ namespace dexih.transforms
             return true;
         }
 
-        public override string Details()
-        {
-            return "Lookup";
-        }
 
         public override List<Sort> RequiredSortFields()
         {

@@ -11,7 +11,6 @@ namespace dexih.transforms.Poco
     /// </summary>
     public class PocoReader<T> : Transform
     {
-        private readonly IEnumerable<T> _items;
         private readonly IEnumerator<T> _enumerator;
 
         private readonly PocoTable<T> _pocoTable;
@@ -25,8 +24,7 @@ namespace dexih.transforms.Poco
         #region Constructors
         public PocoReader(PocoTable<T> pocoTable, IEnumerable<T> items)
         {
-            _items = items;
-            _enumerator = _items.GetEnumerator();
+            _enumerator = items.GetEnumerator();
             _pocoTable = pocoTable;
             CacheTable = _pocoTable.Table;
             Reset();
@@ -34,8 +32,7 @@ namespace dexih.transforms.Poco
 
         public PocoReader(IEnumerable<T> items)
         {
-            _items = items;
-            _enumerator = _items.GetEnumerator();
+            _enumerator = items.GetEnumerator();
             _pocoTable = new PocoTable<T>();
             CacheTable = _pocoTable.Table;
             Reset();
@@ -46,10 +43,9 @@ namespace dexih.transforms.Poco
 
         #endregion
 
-        public override string Details()
-        {
-            return "Source Table " + CacheTable.Name;
-        }
+        public override string TransformName { get; } = "Poco Reader";
+        public override string TransformDetails => _pocoTable?.Table.Name ?? "Unknown";
+
 
         public override bool ResetTransform()
         {

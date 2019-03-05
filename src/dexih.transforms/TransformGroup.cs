@@ -31,9 +31,13 @@ namespace dexih.transforms
         
         public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
+        public override string TransformName { get; } = "Group";
+        public override string TransformDetails => ( Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Columns:" + Mappings.OfType<MapGroup>().Count() + ", Functions: " + Mappings.OfType<MapAggregate>().Count();
+
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
+            IsOpen = true;
 
             if (query == null)
             {
@@ -167,11 +171,6 @@ namespace dexih.transforms
             Mappings.MapOutputRow(outputRow);
             await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate);
             Mappings.Reset(EFunctionType.Aggregate);
-        }
-
-        public override string Details()
-        {
-            return "Group Transform: Group Columns:" + (Mappings.OfType<MapGroup>().Count() + ", Aggregate Functions: " + Mappings.OfType<MapAggregate>().Count());
         }
 
         public override List<Sort> RequiredSortFields()

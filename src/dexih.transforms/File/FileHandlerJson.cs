@@ -32,7 +32,9 @@ namespace dexih.transforms.File
                 _responseSegmentOrdinals.Add(column.TableColumnName(), (_table.GetOrdinal(column.TableColumnName()), column));
             }
         }
-        
+
+        public override string FileType { get; } = "Json";
+
         public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream stream)
         {
             var restFunction = _table;

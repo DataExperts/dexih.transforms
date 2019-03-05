@@ -9,6 +9,8 @@ namespace dexih.transforms.File
 {
     public abstract class FileHandlerBase : IDisposable
     {
+        public abstract string FileType { get; }
+        
         /// <summary>
         /// Infers the source columns from the table.sample data
         /// </summary>

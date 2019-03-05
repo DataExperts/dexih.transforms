@@ -166,7 +166,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2955">
+            <state relative-caret-position="2835">
               <caret line="312" column="8" selection-start-line="312" selection-start-column="8" selection-end-line="312" selection-end-column="8" />
               <folding>
                 <marker date="1551319051503" expanded="false" signature="6:273" ph="..." />
@@ -781,7 +781,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>String</find>
       <find>EscapeString</find>
       <find>timestamp</find>
       <find>Convert</find>
@@ -811,6 +810,7 @@
       <find>MaxIncrementalValue</find>
       <find>LastMaxIncrementalValue</find>
       <find>_maxIncrementalValue</find>
+      <find>base</find>
     </findStrings>
     <replaceStrings>
       <replace>CombinePath</replace>
@@ -1392,7 +1392,7 @@
       <workItem from="1550459777100" duration="25626000" />
       <workItem from="1551067395714" duration="18000" />
       <workItem from="1551067439967" duration="37848000" />
-      <workItem from="1551336692811" duration="250000" />
+      <workItem from="1551336692811" duration="418000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -1727,7 +1727,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1030115000" />
+    <option name="totallyTimeSpent" value="1030283000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1755,11 +1755,11 @@
       <window_info anchor="bottom" id="Inspection" order="6" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48867825" weight="0.21100478" />
       <window_info anchor="bottom" id="NuGet" order="8" sideWeight="0.6271722" weight="0.272449" />
-      <window_info anchor="bottom" id="Unit Tests" order="9" sideWeight="0.8009768" weight="0.17799044" />
+      <window_info active="true" anchor="bottom" id="Unit Tests" order="9" sideWeight="0.8009768" visible="true" weight="0.17799044" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.1990232" side_tool="true" weight="0.26938775" />
       <window_info anchor="bottom" id="Terminal" order="11" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.49157453" weight="0.18995215" />
-      <window_info active="true" anchor="bottom" id="Build" order="13" sideWeight="0.366772" visible="true" weight="0.23444976" />
+      <window_info anchor="bottom" id="Build" order="13" sideWeight="0.366772" weight="0.23444976" />
       <window_info anchor="bottom" id="Docker" order="14" show_stripe_button="false" />
       <window_info anchor="bottom" id="Stacktrace" order="15" sideWeight="0.4997367" weight="0.32966506" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -3912,7 +3912,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2955">
+        <state relative-caret-position="2835">
           <caret line="312" column="8" selection-start-line="312" selection-start-column="8" selection-end-line="312" selection-end-column="8" />
           <folding>
             <marker date="1551319051503" expanded="false" signature="6:273" ph="..." />

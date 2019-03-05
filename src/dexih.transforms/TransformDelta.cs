@@ -124,9 +124,13 @@ namespace dexih.transforms
 
         private DateTime _currentDateTime;
 
+        public override string TransformName { get; } = "Delta";
+        public override string TransformDetails => $"{DeltaType} on {ReferenceTransform.Name}"; 
+
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
+            IsOpen = true;
             bool returnValue;
 
             if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
@@ -1030,10 +1034,6 @@ namespace dexih.transforms
             return true;
         }
 
-        public override string Details()
-        {
-            return "Delta: " + DeltaType.ToString();
-        }
 
         public override List<Sort> RequiredSortFields()
         {

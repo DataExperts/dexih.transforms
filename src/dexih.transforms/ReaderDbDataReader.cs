@@ -107,10 +107,9 @@ namespace dexih.transforms
             InReader?.Close();
         }
 
-        public override string Details()
-        {
-            return "DataSource";
-        }
+        public override string TransformName { get; } = "Generic Database Reader";
+        public override string TransformDetails => "";
+
 
         public override List<Sort> SortFields => _sortFields;
 

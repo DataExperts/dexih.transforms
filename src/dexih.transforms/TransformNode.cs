@@ -14,6 +14,9 @@ namespace dexih.transforms
         private object[] _parentRow;
         private Table _parentTable;
 
+        public override string TransformName { get; } = "Node Transform";
+        public override string TransformDetails => "";
+
         public void SetTable(Table table, Table parentTable)
         {
             _parentTable = parentTable;
@@ -46,6 +49,8 @@ namespace dexih.transforms
 
         public override Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
+            AuditKey = auditKey;
+            IsOpen = true;
             return Task.FromResult(true);
             
 //            if (PrimaryTransform == null)
@@ -83,11 +88,6 @@ namespace dexih.transforms
             }
 
             return row;
-        }
-
-        public override string Details()
-        {
-            return "Internal";
         }
 
         public override bool ResetTransform()

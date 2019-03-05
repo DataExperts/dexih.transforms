@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions.Query;
 using dexih.transforms.Poco;
 using static Dexih.Utils.DataType.DataType;
 
@@ -29,15 +30,14 @@ namespace dexih.transforms
         {
 
         }
-
-        public void SetProperties(long hubKey, long auditConnectionKey, long auditKey, string auditType, long referenceKey,
+        
+        public TransformWriterResult(long hubKey, long auditConnectionKey, string auditType, long referenceKey,
             long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName,
             long targetTableKey, string targetTableName, Connection auditConnection,
-            TransformWriterResult lastSuccessfulResult, ETriggerMethod triggerMethod, string triggerInfo)
+            TransformWriterOptions transformWriterOptions )
         {
             HubKey = hubKey;
             AuditConnectionKey = auditConnectionKey;
-            AuditKey = auditKey;
             AuditType = auditType;
             ReferenceKey = referenceKey;
             ParentAuditKey = parentAuditKey;
@@ -46,16 +46,20 @@ namespace dexih.transforms
             SourceTableName = sourceTableName;
             TargetTableKey = targetTableKey;
             TargetTableName = targetTableName;
-            _auditConnection = auditConnection;
+            AuditConnection = auditConnection;
             
-            LastRowTotal = lastSuccessfulResult?.RowsTotal ?? 0;
-            LastMaxIncrementalValue = lastSuccessfulResult?.MaxIncrementalValue;
-
             InitializeTime = DateTime.Now;
             LastUpdateTime = InitializeTime;
             RunStatus = ERunStatus.Initialised;
-            TriggerMethod = triggerMethod;
-            TriggerInfo = triggerInfo;
+
+            if (transformWriterOptions != null)
+            {
+                TriggerMethod = transformWriterOptions.TriggerMethod;
+                TriggerInfo = transformWriterOptions.TriggerInfo;
+                ResetIncremental = transformWriterOptions.ResetIncremental;
+                ResetIncrementalValue = transformWriterOptions.ResetIncrementalValue;
+                TruncateTarget = transformWriterOptions.TruncateTarget;
+            }
 
             IsCurrent = true;
             IsPrevious = false;
@@ -172,8 +176,8 @@ namespace dexih.transforms
         [PocoColumn(MaxLength = 1024)]
         public string TriggerInfo { get; set; }
 
-        [PocoColumn(MaxLength = 4000, AllowDbNull = true)]
-        public string PerformanceSummary { get; set; }
+        [PocoColumn(DataType = ETypeCode.Text, AllowDbNull = true)]
+        public List<TransformPerformance> PerformanceSummary { get; set; }
 
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
         public string ProfileTableName { get; set; }
@@ -196,10 +200,11 @@ namespace dexih.transforms
         public bool IsPrevious { get; set; }
         public bool IsPreviousSuccess { get; set; }
 
-        Connection _auditConnection;
+        [PocoColumn(Skip = true)]
+        public Connection AuditConnection { get; set; }
 
         [PocoColumn(Skip = true)]
-        public IEnumerable<TransformWriterResult> ChildResults { get; set; }
+        public List<TransformWriterResult> ChildResults { get; set; } = new List<TransformWriterResult>();
 
         [JsonConverter(typeof(StringEnumConverter))]
 
@@ -247,6 +252,27 @@ namespace dexih.transforms
             }
         }
 
+        public async Task<bool> Initialize(CancellationToken cancellationToken)
+        {
+            if (AuditConnection != null)
+            {
+                LastUpdateTime = DateTime.Now;
+
+                try
+                {
+                    await AuditConnection.InitializeAudit(this, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    RunStatus = ERunStatus.Abended;
+                    AddMessage($"An error occurred when updating the audit table of connection {AuditConnection.Name}.  {ex.Message}");
+                    AddExceptionDetails(ex);
+                }
+            }
+
+            return true;
+        }
+
 
         /// <summary>
         /// Updates the run status, the audit table, and sends a status update event
@@ -262,25 +288,9 @@ namespace dexih.transforms
                 LastUpdateTime = DateTime.Now;
                 RunStatus = newStatus;
 
-                if (!string.IsNullOrEmpty(message))
-                {
-                    Message = message;
-                }
+                AddMessage(message);
+                AddExceptionDetails(exception);
 
-                if (exception != null)
-                {
-                    // pull out the full details of the exception.
-                    var properties = exception.GetType().GetProperties();
-                    var fields = properties
-                        .Select(property => new
-                        {
-                            property.Name,
-                            Value = property.GetValue(exception, null)
-                        })
-                        .Select(x => $"{x.Name} = {(x.Value != null ? x.Value.ToString() : string.Empty)}");
-                    ExceptionDetails = string.Join("\n", fields);
-                }
-                
                 if (RunStatus == ERunStatus.Started)
                 {
                     StartTime = DateTime.Now;
@@ -292,18 +302,19 @@ namespace dexih.transforms
                     OnFinish?.Invoke(this);
                 }
 
-                if (_auditConnection != null)
+                if (AuditConnection != null)
                 {
                     LastUpdateTime = DateTime.Now;
 
                     try
                     {
-                        await _auditConnection.UpdateAudit(this, cancellationToken);
+                        await AuditConnection.UpdateAudit(this, cancellationToken);
                     }
                     catch (Exception ex)
                     {
+                        AddExceptionDetails(ex);
                         RunStatus = ERunStatus.Abended;
-                        Message = Message??"" + "\n" + $"An error occurred when updating the audit table of connection {_auditConnection.Name}.  {ex.Message}";
+                        AddMessage($"An error occurred when updating the audit table of connection {AuditConnection.Name}.  {ex.Message}");
                         return false;
                     }
                 }
@@ -314,9 +325,56 @@ namespace dexih.transforms
             }
             catch(Exception ex)
             {
+                AddExceptionDetails(ex);
                 RunStatus = ERunStatus.Abended;
-                Message = Message??"" + "\n" + $"An error occurred when updating run status.  {ex.Message}";
+                AddMessage($"An error occurred when updating run status.  {ex.Message}");
                 return false;
+            }
+        }
+
+        private void AddExceptionDetails(Exception exception)
+        {
+            if (exception == null)
+            {
+                return;
+            }
+            
+            // pull out the full details of the exception.
+            var properties = exception.GetType().GetProperties();
+            var fields = properties
+                .Select(property => new
+                {
+                    property.Name,
+                    Value = property.GetValue(exception, null)
+                })
+                .Select(x => $"{x.Name} = {(x.Value != null ? x.Value.ToString() : string.Empty)}");
+            var details = string.Join("\n", fields);
+
+            if (string.IsNullOrEmpty(ExceptionDetails))
+            {
+                ExceptionDetails = details;
+            }
+            else
+            {
+                ExceptionDetails += details + "\n\n" + ExceptionDetails;
+            }
+        }
+
+        private void AddMessage(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+            {
+                return;
+                
+            }
+            
+            if (string.IsNullOrEmpty(Message))
+            {
+                Message = message;
+            }
+            else
+            {
+                Message += message + "\n\n" + Message;
             }
         }
 

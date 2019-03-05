@@ -44,9 +44,13 @@ namespace dexih.transforms
 
       public override bool RequiresSort => false;
 
+      public override string TransformName { get; } = "Concatenate Rows";
+      public override string TransformDetails => $"{PrimaryTransform?.Name} + ${ReferenceTransform?.Name}";
+
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
+            IsOpen = true;
 
             var primarySorts = new List<Sort>();
             var referenceSorts = new List<Sort>();
@@ -352,10 +356,7 @@ namespace dexih.transforms
             return true;
         }
 
-        public override string Details()
-        {
-            return "Concatenate";
-        }
+
 
     }
 

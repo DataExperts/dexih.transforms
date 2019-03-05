@@ -32,10 +32,15 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
+        public override string TransformName { get; } = "Transform Query";
+        public override string TransformDetails => "Query: Rows= " + _selectQuery?.Rows + ", conditions=" + _selectQuery?.Filters?.Count;
+
+        
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
            
             AuditKey = auditKey;
+            IsOpen = true;
 
             var pushQuery = new SelectQuery();
 
@@ -174,10 +179,6 @@ namespace dexih.transforms
             return true;
         }
 
-        public override string Details()
-        {
-            return "Query: Rows= " + _selectQuery?.Rows + ", conditions=" + _selectQuery?.Filters?.Count;
-        }
 
         public override List<Sort> RequiredSortFields()
         {

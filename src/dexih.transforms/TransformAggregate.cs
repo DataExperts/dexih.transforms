@@ -36,9 +36,14 @@ namespace dexih.transforms
         
         public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
+        public override string TransformName { get; } = "Aggregate";
+        public override string TransformDetails => ( Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Mapped Columns:" + (Mappings.Count);
+
+        
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
+            IsOpen = true;
 
             if (query == null)
             {
@@ -309,10 +314,6 @@ namespace dexih.transforms
             return null;
         }
 
-        public override string Details()
-        {
-            return "Group: " + ( Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Mapped Columns:" + (Mappings.Count());
-        }
 
         public override List<Sort> RequiredSortFields()
         {

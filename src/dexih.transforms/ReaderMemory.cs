@@ -41,6 +41,7 @@ namespace dexih.transforms
 
         public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
+            IsOpen = true;
             _selectQuery = query;
 
             return Task.FromResult(true);
@@ -55,10 +56,8 @@ namespace dexih.transforms
 
         #endregion
 
-        public override string Details()
-        {
-            return "Memory Table " + CacheTable.Name;
-        }
+        public override string TransformName { get; } = "Memory Reader";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
         public override bool ResetTransform()
         {

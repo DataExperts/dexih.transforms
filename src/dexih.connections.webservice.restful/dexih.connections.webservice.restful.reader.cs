@@ -12,7 +12,6 @@ namespace dexih.connections.webservice
 {
     public class ReaderRestful : Transform
     {
-        private bool _isOpen;
         private IEnumerator<object[]> _cachedRows;
 
         private List<Filter> _filter;
@@ -29,10 +28,14 @@ namespace dexih.connections.webservice
 
         protected override void Dispose(bool disposing)
         {
-            _isOpen = false;
+            IsOpen = false;
 
             base.Dispose(disposing);
         }
+        
+        public override string TransformName { get; } = "Restful Web Service Reader";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
 
         public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
@@ -55,7 +58,7 @@ namespace dexih.connections.webservice
                     _filter = new List<Filter>();
                 }
                 
-                _isOpen = true;
+                IsOpen = true;
 
                 //create a dummy inreader to allow fieldcount and other queries to work.
                 return Task.FromResult(true);
@@ -66,10 +69,6 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override string Details()
-        {
-            return "Restful WebService";
-        }
 
         public override bool ResetTransform()
         {
@@ -80,7 +79,7 @@ namespace dexih.connections.webservice
         {
             try
             {
-                if(!_isOpen)
+                if(!IsOpen)
                 {
                     throw new ConnectionException($"The web service is not open");
                 }

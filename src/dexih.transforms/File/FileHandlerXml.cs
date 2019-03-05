@@ -35,6 +35,9 @@ namespace dexih.transforms.File
             }
 
         }
+        
+        public override string FileType { get; } = "Xml";
+
         public override Task<ICollection<TableColumn>> GetSourceColumns(Stream stream)
         {
             XPathNavigator xPathNavigator;

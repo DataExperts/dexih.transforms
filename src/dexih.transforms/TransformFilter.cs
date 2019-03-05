@@ -23,11 +23,16 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
         
+        public override string TransformName { get; } = "Group";
+        public override string TransformDetails => "Filters:" + Mappings.OfType<MapFilter>().Count() + ", Filter Functions: " + Mappings.OfType<MapFunction>().Count();
+
+        
         public override bool RequiresSort => false;
        
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
+            IsOpen = true;
 
             if (query == null)
                 query = new SelectQuery();
@@ -105,10 +110,7 @@ namespace dexih.transforms
             return true;
         }
 
-        public override string Details()
-        {
-            return "Filter: Number of filters= " + Mappings?.OfType<MapFilter>().Count() + ", functions= " + Mappings?.OfType<MapFunction>();
-        }
+
 
         public override List<Sort> RequiredSortFields()
         {

@@ -101,7 +101,7 @@ namespace dexih.transforms.Poco
         }
 
         /// <summary>
-        /// Inserts the item into the connection.
+        /// Creates a table in the underlying connection
         /// </summary>
         /// <returns>The insert.</returns>
         /// <param name="connection">Connection.</param>

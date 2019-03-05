@@ -18,6 +18,7 @@ using Dexih.Utils.Crypto;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using Dexih.Utils.DataType;
+using Newtonsoft.Json.Serialization;
 
 namespace dexih.transforms
 {
@@ -170,7 +171,9 @@ namespace dexih.transforms
 
         #region Abstract Properties
 
-        public abstract string Details();
+        public abstract string TransformName { get; }
+        public abstract string TransformDetails { get; }
+
         protected abstract Task<object[]> ReadRecord(CancellationToken cancellationToken);
         public abstract bool ResetTransform();
 
@@ -232,7 +235,7 @@ namespace dexih.transforms
 
             
             //IsReader indicates if this is a base transform.
-            IsReader = primaryTransform == null ? true : false;
+            IsReader = primaryTransform == null;
             if (primaryTransform != null)
                 primaryTransform.IsPrimaryTransform = true;
             if (referenceTransform != null)
@@ -373,22 +376,12 @@ namespace dexih.transforms
         public virtual async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
+            IsOpen = true;
 
-            var result = true;
+            var primaryOpen = PrimaryTransform != null ? PrimaryTransform.Open(auditKey, query, cancellationToken) : Task.FromResult(true);
+            var referenceOpen = ReferenceTransform != null ? ReferenceTransform.Open(auditKey, query, cancellationToken) : Task.FromResult(true);
 
-            if (PrimaryTransform != null)
-            {
-                result = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-                if (!result)
-                    return false;
-                
-            }
-
-            if (ReferenceTransform != null)
-            {
-                result = await ReferenceTransform.Open(auditKey, null, cancellationToken);
-            }
-
+            var result = await primaryOpen && await referenceOpen;
             return result;
         }
 
@@ -680,30 +673,33 @@ namespace dexih.transforms
         public TimeSpan TimerTicks() => TransformTimer.Elapsed;
 
 
-        public string PerformanceSummary()
+        public List<TransformPerformance> PerformanceSummary()
         {
-            var performance = new StringBuilder();
+            List<TransformPerformance> performance;
 
             if (PrimaryTransform != null)
-                performance.AppendLine(PrimaryTransform.PerformanceSummary());
-
-			var timeSpan = TransformTimerTicks();
-
-            if (timeSpan.Ticks == 0)
             {
-                performance.AppendLine(
-                    $"{Details()} - Not used.");
+                performance = PrimaryTransform.PerformanceSummary();
             }
             else
             {
-                performance.AppendLine($"{Details()} - Time: {timeSpan:c}, Rows: {TotalRowsReadPrimary}, Performance: {(TotalRowsReadPrimary/timeSpan.TotalSeconds):F} rows/second");
+                performance = new List<TransformPerformance>();
             }
 
+            var timeSpan = TransformTimerTicks();
+
+            var item = new TransformPerformance(TransformName + "(" + Name + ")", TransformDetails,
+                TotalRowsReadPrimary, timeSpan.TotalSeconds);
 
             if (ReferenceTransform != null)
-                performance.AppendLine("\tReference: " + ReferenceTransform.PerformanceSummary());
+            {
+                var childPerformance = ReferenceTransform.PerformanceSummary();
+                item.Children = childPerformance;
+            }
 
-            return performance.ToString();
+            performance.Add(item);
+            
+            return performance.ToList();
         }
 
         #endregion
@@ -1332,6 +1328,8 @@ namespace dexih.transforms
         }
 
         public override int Depth => throw new NotImplementedException();
+
+        public bool IsOpen { get; set; } = false;
 
         public override bool IsClosed => PrimaryTransform?.IsClosed??!IsReaderFinished;
 

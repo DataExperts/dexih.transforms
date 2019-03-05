@@ -24,6 +24,10 @@ namespace dexih.transforms
         private bool _doLookup = false;
         private int? _lookupRow = null;
 
+        public override string TransformName { get; } = "Row Generator";
+        public override string TransformDetails => $"Starts At: {StartAt}, Ends At: {EndAt}, Increments: {Increment}";
+
+        
         public Table GetTable()
         {
             var table = new Table("RowCreator");
@@ -78,11 +82,6 @@ namespace dexih.transforms
         {
             _currentRow = null;
             return true;
-        }
-
-        public override string Details()
-        {
-            return $"RowCreator: Starts at: {StartAt} , Ends At: {EndAt}, Increments by {Increment}";
         }
 
         public override List<Sort> RequiredSortFields()

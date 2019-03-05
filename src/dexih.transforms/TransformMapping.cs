@@ -24,10 +24,15 @@ namespace dexih.transforms
             Mappings = mappings;
             SetInTransform(inTransform);
         }
+        
+        public override string TransformName { get; } = "Map";
+        public override string TransformDetails => "Mappings:" + Mappings.OfType<MapColumn>().Count() + ", Functions: " + Mappings.OfType<MapFunction>().Count();
+
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
+            IsOpen = true;
 
 	        //we need to translate filters and sorts to source column names before passing them through.
             if(query?.Filters != null)
@@ -139,11 +144,6 @@ namespace dexih.transforms
 			}
 
 	        return null;
-        }
-
-        public override string Details()
-        {
-			return "Mapping(" + Name + "):  Mappings:" + (Mappings?.Count.ToString() ?? "None");
         }
 
         #region Transform Implementations

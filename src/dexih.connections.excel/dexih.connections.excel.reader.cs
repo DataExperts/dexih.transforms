@@ -12,7 +12,6 @@ namespace dexih.connections.excel
 {
     public class ReaderExcel : Transform
     {
-        private bool _isOpen = false;
         private ExcelPackage _excelPackage;
         private ExcelWorksheet _excelWorkSheet;
         private int _excelWorkSheetRows;
@@ -32,16 +31,22 @@ namespace dexih.connections.excel
         {
             _excelPackage?.Dispose();
         }
+        
+        public override string TransformName { get; } = "Excel Reader";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
 
         public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
             try
             {
-                if (_isOpen)
+                if (IsOpen)
                 {
                     throw new ConnectionException("The excel file is already open.");
                 }
+
+                IsOpen = true;
 
                 var connection = ((ConnectionExcel)ReferenceConnection);
                 _excelPackage = connection.NewConnection();
@@ -71,7 +76,7 @@ namespace dexih.connections.excel
 
                 _headerOrdinals = ((ConnectionExcel)ReferenceConnection).GetHeaderOrdinals(_excelWorkSheet);
 
-                _isOpen = true;
+                IsOpen = true;
                 _excelWorkSheetRows = _excelWorkSheet.Dimension.Rows;
 
                 return Task.FromResult(true);
@@ -82,10 +87,6 @@ namespace dexih.connections.excel
             }
         }
 
-        public override string Details()
-        {
-            return "Excel Database Service";
-        }
 
         public override bool ResetTransform()
         {
@@ -97,7 +98,7 @@ namespace dexih.connections.excel
         {
             try
             {
-                if(!_isOpen)
+                if(!IsOpen)
                 {
                     throw new ConnectionException("The excel file has not been opened");
                 }

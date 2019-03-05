@@ -2,6 +2,8 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -13,22 +15,40 @@ namespace dexih.transforms
     {
         public TransformThread(Transform transform)
         {
-            PrimaryTransform = transform.PrimaryTransform;
-            _transform = transform;
+            SetInTransform(transform, null, true);
+//            PrimaryTransform = transform;
+//            _transform = transform;
             _currentRow = 0;
         }
 
-        private readonly Transform _transform;
         private int _currentRow;
+        
+        public override string TransformName { get; } = "Transform Thread";
+        public override string TransformDetails => "";
 
-        public override string Details()
+
+        public override Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
-            return $"Transform Thread";
-        }
+            AuditKey = auditKey;
+            IsOpen = true;
 
+            if (PrimaryTransform == null)
+            {
+                throw new TransformException("Open failed, there is no primary transform set fo the transform thread.");
+            }
+
+            if (!PrimaryTransform.IsOpen)
+            {
+                return PrimaryTransform.Open(auditKey, query, cancellationToken);
+            }
+
+            return Task.FromResult(true);
+        }
+        
+ 
         protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {
-            return _transform.ReadThreadSafe(_currentRow++, cancellationToken);
+            return PrimaryTransform.ReadThreadSafe(_currentRow++, cancellationToken);
         }
 
         public override bool ResetTransform()
@@ -37,6 +57,6 @@ namespace dexih.transforms
             return true;
         }
 
-        public override Table CacheTable => _transform.CacheTable;
+        public override Table CacheTable => PrimaryTransform.CacheTable;
     }
 }

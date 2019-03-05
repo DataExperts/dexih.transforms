@@ -62,6 +62,10 @@ namespace dexih.transforms
 
         private int _primaryFieldCount;
         private int _referenceFieldCount;
+        
+        public override string TransformName { get; } = "Join";
+        public override string TransformDetails => $"Join Method: {JoinAlgorithm}, Primary: {PrimaryTransform.Name}, Join: {ReferenceTransform.Name}";
+
 
         private Task<bool> InitializeOutputFields()
         {
@@ -207,6 +211,8 @@ namespace dexih.transforms
         public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
+            IsOpen = true;
+            
             if (query == null)
                 query = new SelectQuery();
 
@@ -567,11 +573,6 @@ namespace dexih.transforms
         public override bool ResetTransform()
         {
             return true;
-        }
-
-        public override string Details()
-        {
-            return "Join";
         }
 
         public override List<Sort> RequiredSortFields()

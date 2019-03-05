@@ -31,10 +31,8 @@ namespace dexih.transforms
 
         public override bool IsClosed => _transform.IsClosed;
 
-        public override string Details()
-        {
-            return $"Conversion for connection: {_connection.Name}";
-        }
+        public override string TransformName { get; } = "Data Type Converter";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
         public override bool ResetTransform()
         {

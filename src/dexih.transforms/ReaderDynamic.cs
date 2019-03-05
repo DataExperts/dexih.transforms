@@ -36,6 +36,7 @@ namespace dexih.transforms
 
         public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
+            IsOpen = true;
             ResetTransform();
             CacheTable.Data.Clear();
 
@@ -68,10 +69,9 @@ namespace dexih.transforms
 
         #endregion
 
-        public override string Details()
-        {
-            return "Dynamic Table " + CacheTable.Name;
-        }
+        public override string TransformName { get; } = "Dynamic Row Creator";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
 
         public override bool ResetTransform()
         {
@@ -85,7 +85,7 @@ namespace dexih.transforms
             if (CurrentRowNumber < CacheTable.Data.Count)
             {
                 var row = CacheTable.Data[CurrentRowNumber];
-                return Task.FromResult<object[]>(row);
+                return Task.FromResult(row);
             }
             return Task.FromResult<object[]>(null);
         }

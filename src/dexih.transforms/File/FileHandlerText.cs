@@ -24,6 +24,8 @@ namespace dexih.transforms.File
         private readonly int _responseDataOrdinal;
         private readonly int _fieldCount;
 
+        public override string FileType { get; } = "Csv";
+
         private struct CsvField
         {
             public DataType.ETypeCode TypeCode { get; set; }

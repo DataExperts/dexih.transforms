@@ -11,8 +11,6 @@ namespace dexih.transforms
 {
     public class ReaderFlatFile : Transform
     {
-        private bool _isOpen = false;
-
         private DexihFiles _files;
 
         private readonly FileHandlerBase _fileHandler;
@@ -53,12 +51,15 @@ namespace dexih.transforms
             
             _fileNameOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileName);
         }
+        
+        public override string TransformName { get; } = "Flat File Reader";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
         
         public override void Close()
         {
             _fileHandler?.Dispose();
-            _isOpen = false;
+            IsOpen = false;
         }
 
         public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
@@ -66,10 +67,12 @@ namespace dexih.transforms
             AuditKey = auditKey;
             _selectQuery = query;
 
-            if (_isOpen)
+            if (IsOpen)
             {
                 throw new ConnectionException("The file reader connection is already open.");
             }
+
+            IsOpen = true;
             
             // if a filename was specified in the query, use this, otherwise, get a list of files from the incoming directory.
             if (string.IsNullOrEmpty(query?.FileName))
@@ -103,14 +106,9 @@ namespace dexih.transforms
 
         }
 
-        public override string Details()
-        {
-            return "FlatFile";
-        }
-
         public override bool ResetTransform()
         {
-            if (_isOpen)
+            if (IsOpen)
             {
                 return true;
             }
@@ -153,7 +151,7 @@ namespace dexih.transforms
                     }
 
                     if (_files.MoveNext() == false)
-                        _isOpen = false;
+                        IsOpen = false;
                     else
                     {
                         try

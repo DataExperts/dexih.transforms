@@ -227,50 +227,67 @@ namespace dexih.transforms
 
         #region Audit
 
-        /// <summary>
-        /// Propulates the writerResult with a initial values, and writes the status to the database table.
-        /// </summary>
-        /// <param name="writreResult"></param>
-        /// <param name="hubKey"></param>
-        /// <param name="connectionKey"></param>
-        /// <param name="auditType"></param>
-        /// <param name="referenceKey"></param>
-        /// <param name="parentAuditKey"></param>
-        /// <param name="referenceName"></param>
-        /// <param name="sourceTableKey"></param>
-        /// <param name="sourceTableName"></param>
-        /// <param name="targetTableKey"></param>
-        /// <param name="targetTableName"></param>
-        /// <param name="triggerMethod"></param>
-        /// <param name="triggerInfo"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public virtual async Task InitializeAudit(TransformWriterResult writreResult, long hubKey, long connectionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterResult.ETriggerMethod triggerMethod, string triggerInfo, CancellationToken cancellationToken)
-        {
-            var picoTable = new PocoTable<TransformWriterResult>();
-
-            TransformWriterResult previousResult = null;
-
-            //create the audit table if it does not exist.
-            var tableExistsResult = await picoTable.TableExists(this, cancellationToken);
-            if (tableExistsResult == false)
-            {
-                //create the table if it doesn't already exist.
-                await picoTable.CreateTable(this, false, cancellationToken);
-            }
-            else
-            {
-                //get the last audit result for this reference to collect previous run information
-                previousResult = await GetPreviousResult(hubKey, connectionKey, referenceKey, CancellationToken.None);
-            }
-
-            writreResult.SetProperties(hubKey, connectionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, triggerMethod, triggerInfo);
-            await picoTable.ExecuteInsert(this, writreResult, cancellationToken);
-        }
+//        /// <summary>
+//        /// Propulates the writerResult with a initial values, and writes the status to the database table.
+//        /// </summary>
+//        /// <param name="hubKey"></param>
+//        /// <param name="auditConnectionKey"></param>
+//        /// <param name="auditType"></param>
+//        /// <param name="referenceKey"></param>
+//        /// <param name="parentAuditKey"></param>
+//        /// <param name="referenceName"></param>
+//        /// <param name="sourceTableKey"></param>
+//        /// <param name="sourceTableName"></param>
+//        /// <param name="targetTableKey"></param>
+//        /// <param name="targetTableName"></param>
+//        /// <param name="triggerMethod"></param>
+//        /// <param name="triggerInfo"></param>
+//        /// <param name="cancellationToken"></param>
+//        /// <returns></returns>
+//        public virtual async Task<TransformWriterResult> InitializeAudit(long hubKey, long auditConnectionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterOptions transformWriterOptions, CancellationToken cancellationToken)
+//        {
+//            var writerResult = new TransformWriterResult();
+//            
+//            var picoTable = new PocoTable<TransformWriterResult>();
+//
+//            TransformWriterResult previousResult = null;
+//
+//            //create the audit table if it does not exist.
+//            var tableExistsResult = await picoTable.TableExists(this, cancellationToken);
+//            if (tableExistsResult == false)
+//            {
+//                //create the table if it doesn't already exist.
+//                await picoTable.CreateTable(this, false, cancellationToken);
+//            }
+//            else
+//            {
+//                //get the last audit result for this reference to collect previous run information
+//                previousResult = await GetPreviousResult(hubKey, auditConnectionKey, referenceKey, CancellationToken.None);
+//            }
+//
+//            writerResult.SetProperties(hubKey, auditConnectionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, transformWriterOptions);
+//            await picoTable.ExecuteInsert(this, writerResult, cancellationToken);
+//
+//            return writerResult;
+//        }
 
         public async Task InitializeAudit(TransformWriterResult writerResult, CancellationToken cancellationToken)
         {
             var pocoTable = new PocoTable<TransformWriterResult>();
+            if(!await pocoTable.TableExists(this, cancellationToken))
+            {
+                await pocoTable.CreateTable(this, false, cancellationToken);
+                
+            }
+            else
+            {
+                var previousSuccess = await GetPreviousSuccessResult(writerResult.HubKey, writerResult.AuditConnectionKey,
+                    writerResult.ReferenceKey, cancellationToken);
+            
+                writerResult.LastRowTotal = previousSuccess?.RowsTotal ?? 0;
+                writerResult.LastMaxIncrementalValue = previousSuccess?.MaxIncrementalValue;
+            }
+
             await pocoTable.ExecuteInsert(this, writerResult, cancellationToken);
         }
 
@@ -415,7 +432,7 @@ namespace dexih.transforms
                 
                 if(childItems)
                 {
-                    result.ChildResults = await GetTransformWriterResults(hubKey, connectionKey, null, null, null, null, previousResult, previousSuccessResult, currentResult, null, 0, result.AuditKey, false, cancellationToken);
+                    result.ChildResults = await GetTransformWriterResults(hubKey, connectionKey, null, null, null, null, previousResult, previousSuccessResult, currentResult, null, rows, result.AuditKey, false, cancellationToken);
                 }
 
                 if (cancellationToken.IsCancellationRequested)

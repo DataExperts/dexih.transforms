@@ -11,9 +11,6 @@ namespace dexih.transforms
 {
     public sealed class ReaderFileHandler : Transform
     {
-        private bool _isOpen = false;
-
-
         private readonly FileHandlerBase _fileHandler;
 
         private SelectQuery _selectQuery;
@@ -29,7 +26,7 @@ namespace dexih.transforms
         public override void Close()
         {
             _fileHandler?.Dispose();
-            _isOpen = false;
+            IsOpen = false;
         }
 
         public override Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
@@ -37,23 +34,24 @@ namespace dexih.transforms
             AuditKey = auditKey;
             _selectQuery = query;
 
-            if (_isOpen)
+            if (IsOpen)
             {
                 throw new ConnectionException("The file reader connection is already open.");
             }
+
+            IsOpen = true;
             
             return Task.FromResult(true);
 
         }
 
-        public override string Details()
-        {
-            return "FileHandler";
-        }
+        public override string TransformName => $"File Reader: {_fileHandler?.FileType}";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
 
         public override bool ResetTransform()
         {
-            return _isOpen;
+            return IsOpen;
         }
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
@@ -73,7 +71,7 @@ namespace dexih.transforms
                 if (row != null) return row;
                 
                 _fileHandler.Dispose();
-                _isOpen = false;
+                IsOpen = false;
 
                 return null;
 

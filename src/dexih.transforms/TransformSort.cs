@@ -48,6 +48,10 @@ namespace dexih.transforms
         }
 
         public override bool RequiresSort => false;
+        
+        public override string TransformName { get; } = "Sort";
+        public override string TransformDetails =>  string.Join(",", _sortFields?.Select(c=> c.Column.Name + " " + c.Direction.ToString()).ToArray());
+
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
@@ -59,6 +63,7 @@ namespace dexih.transforms
             }
 
             AuditKey = auditKey;
+            IsOpen = true;
 
             if (query == null)
                 query = new SelectQuery();
@@ -142,15 +147,6 @@ namespace dexih.transforms
             return true;
         }
 
-        public override string Details()
-        {
-            if (_sortFields == null)
-            {
-                return "";
-            }
-            
-            return "Sort: "+ string.Join(",", _sortFields?.Select(c=> c.Column + " " + c.Direction.ToString()).ToArray());
-        }
 
         public override List<Sort> RequiredSortFields()
         {

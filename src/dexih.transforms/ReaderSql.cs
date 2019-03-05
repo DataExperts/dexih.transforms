@@ -13,7 +13,6 @@ namespace dexih.connections.sql
 {
     public sealed class ReaderSql : Transform
     {
-        private bool _isOpen = false;
         private DbDataReader _sqlReader;
         private DbConnection _sqlConnection;
 
@@ -28,12 +27,16 @@ namespace dexih.connections.sql
             ReferenceConnection = connection;
             CacheTable = table;
         }
+        
+        public override string TransformName => $"Database Reader - {ReferenceConnection?.Name}";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
 
         public override void Close()
         {
             _sqlReader?.Close();
             _sqlConnection?.Close();
-            _isOpen = false;
+            IsOpen = false;
         }
 
         public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
@@ -42,7 +45,7 @@ namespace dexih.connections.sql
             {
                 AuditKey = auditKey;
 
-                if (_isOpen)
+                if (IsOpen)
                 {
                     throw new ConnectionException("The reader is already open.");
                 }
@@ -65,7 +68,7 @@ namespace dexih.connections.sql
 
                 _sortFields = query?.Sorts;
 
-				_isOpen = true;
+                IsOpen = true;
                 return true;
             }
             catch(Exception ex)
@@ -74,14 +77,8 @@ namespace dexih.connections.sql
             }
         }
 
-        public override string Details()
-        {
-            
-            return ReferenceConnection == null ? "SqlReader" : $"SqlReader - {ReferenceConnection.Name}({ReferenceConnection.GetType().Name})";
-        }
-
         public override List<Sort> SortFields => _sortFields;
-        public override bool ResetTransform() => _isOpen;
+        public override bool ResetTransform() => IsOpen;
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
         {

@@ -259,16 +259,12 @@ namespace dexih.transforms
             //calculate the throughput figures
             var rowsWritten = WriterResult.RowsTotal - WriterResult.RowsIgnored;
 
-            var performance = new StringBuilder();
-            performance.AppendLine(inTransform.PerformanceSummary());
+            var performance = inTransform.PerformanceSummary();
+            performance.Add(new TransformPerformance(TargetTable.Name, "Write Rows", rowsWritten, _transformWriterTask.WriteDataTicks.TotalSeconds));
 
-            var writeDataTicks = _transformWriterTask.WriteDataTicks;
-            performance.AppendLine($"Target {TargetConnection.Name} - Time: {writeDataTicks:c}, Rows: {rowsWritten}, Performance: {(rowsWritten/writeDataTicks.TotalSeconds):F} rows/second");
+            WriterResult.PerformanceSummary = performance;
 
-            WriterResult.PerformanceSummary = performance.ToString();
-
-
-            WriterResult.WriteTicks = writeDataTicks.Ticks;
+            WriterResult.WriteTicks = _transformWriterTask.WriteDataTicks.Ticks;
             WriterResult.ReadTicks = inTransform.ReaderTimerTicks().Ticks;
             WriterResult.ProcessingTicks = inTransform.ProcessingTimerTicks().Ticks;
 

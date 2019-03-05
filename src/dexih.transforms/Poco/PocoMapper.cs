@@ -2,7 +2,9 @@
 using System.Data.Common;
 using System.Reflection;
 using dexih.functions;
+using Dexih.Utils.Crypto;
 using Dexih.Utils.DataType;
+using Newtonsoft.Json;
 
 namespace dexih.transforms.Poco
 {
@@ -70,13 +72,18 @@ namespace dexih.transforms.Poco
 
                     try
                     {
-                        if (mapping.PropertyInfo.PropertyType.GetTypeInfo().IsEnum && value is string)
+                        var typeInfo = mapping.PropertyInfo.PropertyType.GetTypeInfo();
+                        if(typeInfo.IsEnum && value is string s)
                         {
-                            value = Enum.Parse(mapping.PropertyInfo.PropertyType, (string)value);
+                            value = Enum.Parse(mapping.PropertyInfo.PropertyType, s);
+                        }
+                        else if (!DataType.IsSimple(mapping.PropertyInfo.PropertyType) && value is string s1)
+                        {
+                            value = JsonConvert.DeserializeObject(s1, mapping.PropertyInfo.PropertyType);
                         }
                         else
                         {
-                            value =Operations.Parse(column.DataType, value);
+                            value = Operations.Parse(column.DataType, value);
                         }
 
                         mapping.PropertyInfo.SetValue(item, value is DBNull ? null : value);

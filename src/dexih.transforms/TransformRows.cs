@@ -25,10 +25,16 @@ namespace dexih.transforms
         }
 
         private bool _firstRecord;
+        
+        public override string TransformName { get; } = "Rows";
+        public override string TransformDetails => "Columns:" + Mappings.OfType<MapGroup>().Count() + ", Functions: " + Mappings.OfType<MapAggregate>().Count();
+
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
+            IsOpen = true;
+            
             if (query == null)
             {
                 query = new SelectQuery();
@@ -113,11 +119,6 @@ namespace dexih.transforms
 
         }
 
-        public override string Details()
-        {
-            return "Row Transform";
-            // return "Row Transform: " + (Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Grouped Columns:" + (GroupFields?.Count.ToString() ?? "Nill") + ", Series/Aggregate Functions:" + (Functions?.Count.ToString() ?? "Nill");
-        }
 
         public override List<Sort> RequiredSortFields()
         {

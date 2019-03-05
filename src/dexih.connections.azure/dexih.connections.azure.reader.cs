@@ -14,8 +14,6 @@ namespace dexih.connections.azure
 {
     public class ReaderAzure : Transform
     {
-        private bool _isOpen = false;
-
         private TableContinuationToken _token;
 
         private TableQuerySegment<DynamicTableEntity> _tableResult;
@@ -31,19 +29,25 @@ namespace dexih.connections.azure
             _connection = (ConnectionAzureTable)connection;
             CacheTable = table;
         }
+        
+        public override string TransformName { get; } = "Azure Reader";
+        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
 
         public override void Close()
         {
-            _isOpen = false;
+            IsOpen = false;
         }
 
         public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
         {
             AuditKey = auditKey;
-            if (_isOpen)
+            if (IsOpen)
             {
                 throw new ConnectionException($"The current connection is already open");
             }
+
+            IsOpen = true;
 
             var tableClient = _connection.GetCloudTableClient();
             _tableReference = tableClient.GetTableReference(CacheTable.Name);
@@ -76,14 +80,10 @@ namespace dexih.connections.azure
             return true;
         }
 
-        public override string Details()
-        {
-            return "AzureConnection";
-        }
 
         public override bool ResetTransform()
         {
-            if (_isOpen)
+            if (IsOpen)
             {
                 return true;
             }
