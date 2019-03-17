@@ -1,36 +1,36 @@
   [
     {
-      "id" : 1, 
+      "transactionId": 1,
       "desc": "product 1",
       "items": [
         {
-          "item_id": 11,
+          "itemId": 11,
           "desc": "component 11"
         },
         {
-          "item_id": 12,
+          "itemId": 12,
           "desc": "component 12"
         },
         {
-          "item_id": 13,
+          "itemId": 13,
           "desc": "component 13"
         }
       ]
     },
     {
-      "id" : 2,
+      "transactionId": 2,
       "desc": "product 2",
       "items": [
         {
-          "item_id": 21,
+          "itemId": 21,
           "desc": "component 21"
         },
         {
-          "item_id": 22,
+          "itemId": 22,
           "desc": "component 22"
         },
         {
-          "item_id": 23,
+          "itemId": 23,
           "desc": "component 23"
         }
       ]

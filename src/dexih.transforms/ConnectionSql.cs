@@ -32,7 +32,7 @@ namespace dexih.connections.sql
         public override bool CanUseJson => false;
         public override bool CanUseXml => false;
         public override bool CanUseSql => true;
-        public override bool CanUseDbAutoIncrement => false;
+        public override bool CanUseDbAutoIncrement => true;
         public override bool CanUseTransaction => true;
         public override bool DynamicTableCreation => false;
 

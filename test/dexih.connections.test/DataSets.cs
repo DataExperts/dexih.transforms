@@ -39,7 +39,7 @@ namespace dexih.connections.test
             return Adapter;
         }
 
-        public static Table CreateTable()
+        public static Table CreateTable(bool useDbAutoIncrement)
         {
             Table table = new Table("testtable" + (counter++).ToString())
             {
@@ -51,7 +51,7 @@ namespace dexih.connections.test
                 Name = "AutoIncrement",
                 Description = "A key column",
                 DataType = ETypeCode.Int32,
-                DeltaType = TableColumn.EDeltaType.DbAutoIncrement
+                DeltaType = useDbAutoIncrement ? TableColumn.EDeltaType.DbAutoIncrement : TableColumn.EDeltaType.AutoIncrement
             });
 
             table.Columns.Add(new TableColumn()

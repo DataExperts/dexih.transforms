@@ -212,11 +212,19 @@ namespace dexih.transforms
 
                 await TargetConnection.DataWriterStart(TargetTable);
 
-                //if the truncate table flag is set, then truncate the target table.
-                if (WriterOptions.TargetAction == TransformWriterOptions.eTargetAction.Truncate)
+                switch (WriterOptions.TargetAction)
                 {
-                    await TargetConnection.TruncateTable(TargetTable, cancellationToken);
-                    _truncateComplete = true;
+                    case TransformWriterOptions.eTargetAction.Truncate:
+                        await TargetConnection.TruncateTable(TargetTable, cancellationToken);
+                        _truncateComplete = true;
+                        break;
+                    case TransformWriterOptions.eTargetAction.DropCreate:
+                        await TargetConnection.CreateTable(TargetTable, true, cancellationToken);
+                        break;
+                    case TransformWriterOptions.eTargetAction.CreateNotExists:
+                        await TargetConnection.CreateTable(TargetTable, false, cancellationToken);
+                        break;
+
                 }
                 
                 // get the last surrogate key it there is one on the table.
@@ -239,11 +247,17 @@ namespace dexih.transforms
             _ordinalsInitialized = false;
         }
 
+        public Task WriteRecordsAsync(Transform transform, CancellationToken cancellationToken = default)
+        {
+            return WriteRecordsAsync(transform, TransformDelta.EUpdateStrategy.Append, cancellationToken);
+        }
+
         /// <summary>
         /// Writes records from the transform to the target table (and child nodes).
         /// This will add a delta transform to perform delta and add auditing column values.
         /// </summary>
         /// <param name="transform"></param>
+        /// <param name="updateStrategy"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="TransformWriterException"></exception>

@@ -13,7 +13,7 @@ namespace dexih.connections.test
 
         public async Task Transform(Connection connection, string databaseName)
         {
-            var table = DataSets.CreateTable();
+            var table = DataSets.CreateTable(connection.CanUseDbAutoIncrement);
             await connection.CreateDatabase(databaseName, CancellationToken.None);
             
             var writerResult = new TransformWriterResult(connection)
@@ -73,7 +73,7 @@ namespace dexih.connections.test
                 Assert.Equal(5, count);
             }
 
-            var deltaTable = DataSets.CreateTable();
+            var deltaTable = DataSets.CreateTable(connection.CanUseDbAutoIncrement);
             deltaTable.AddAuditColumns();
             deltaTable.Name = "DeltaTable";
             await connection.CreateTable(deltaTable, true, CancellationToken.None);
@@ -94,9 +94,9 @@ namespace dexih.connections.test
             writerResult = new TransformWriterResult(connection) {HubKey = 0, AuditType = "Datalink", AuditConnectionKey = 1};
             await writerResult.Initialize(CancellationToken.None);
             
-            var options = new TransformWriterOptions() { UpdateStrategy = TransformDelta.EUpdateStrategy.Reload};
+            var options = new TransformWriterOptions();
             var target = new transforms.TransformWriterTarget(connection, deltaTable, writerResult);
-            await target.WriteRecordsAsync(reader, CancellationToken.None);
+            await target.WriteRecordsAsync(reader, TransformDelta.EUpdateStrategy.Reload, CancellationToken.None);
 
             Assert.Equal(10L, writerResult.RowsCreated);
 

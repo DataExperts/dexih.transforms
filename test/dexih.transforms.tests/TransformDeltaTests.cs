@@ -87,7 +87,7 @@ namespace dexih.transforms.tests
             //write result to a memory table
             var memoryConnection = new ConnectionMemory();
             var targetWriter = new TransformWriterTarget(memoryConnection, targetTable );
-            await targetWriter.WriteRecordsAsync(transformDelta, false, CancellationToken.None);
+            await targetWriter.WriteRecordsAsync(transformDelta, null, CancellationToken.None);
 
             target = memoryConnection.GetTransformReader(target.CacheTable); // new ReaderMemory(target.CacheTable, null);
             target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
@@ -227,7 +227,7 @@ namespace dexih.transforms.tests
 
             // write result to a memory table
             var targetWriter = new TransformWriterTarget(memoryConnection, table );
-            await targetWriter.WriteRecordsAsync(transformDelta, false, CancellationToken.None);
+            await targetWriter.WriteRecordsAsync(transformDelta, null, CancellationToken.None);
 
 //            var writer = new TransformWriterTarget(memoryConnection, target.CacheTable);
 //            await writer.WriteRecordsAsync(transformDelta, CancellationToken.None);
@@ -300,7 +300,7 @@ namespace dexih.transforms.tests
 
             // write result to a memory table
             targetWriter = new TransformWriterTarget(memoryConnection, table );
-            await targetWriter.WriteRecordsAsync(transformDelta, false, CancellationToken.None);
+            await targetWriter.WriteRecordsAsync(transformDelta, null, CancellationToken.None);
 
 //            writer = new TransformWriterTarget(memoryConnection, target.CacheTable);
 //            await writer.WriteRecordsAsync(transformDelta, CancellationToken.None);

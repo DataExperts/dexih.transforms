@@ -18,7 +18,7 @@ namespace dexih.connections.test
         {
             await connection.CreateDatabase(databaseName, CancellationToken.None);
 
-            var newTable = DataSets.CreateTable();
+            var newTable = DataSets.CreateTable(connection.CanUseDbAutoIncrement);
             var table = await connection.InitializeTable(newTable, 1000);
 
             //create the table

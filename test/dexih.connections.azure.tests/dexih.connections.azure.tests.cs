@@ -52,7 +52,17 @@ namespace dexih.connections.azure
             await new PerformanceTests(_output).Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 100);
         }
 
+        [Theory]
+        [InlineData(false, false)]
+        //[InlineData(false, true)]
+        //[InlineData(true, true)]
+        public async Task MySql_ParentChild_Write(bool useDbAutoIncrement, bool useTransaction)
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
 
+            await new TransformWriterTarget().ParentChild_Write(connection, database, useDbAutoIncrement, useTransaction);
+        }
 
     }
 }
