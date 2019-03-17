@@ -1,6 +1,6 @@
 namespace dexih.connections.test
 {
-    public class TableStubs
+    public static class TableStubs
     {
         
     }

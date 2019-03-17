@@ -18,7 +18,6 @@ using Dexih.Utils.Crypto;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json.Serialization;
 
 namespace dexih.transforms
 {
@@ -599,6 +598,25 @@ namespace dexih.transforms
             }
         }
 
+        private void SetNodes(object[] row)
+        {
+            for (var i = 0; i < CacheTable.Columns.Count; i++)
+            {
+                if (CacheTable.Columns[i].DataType == ETypeCode.Node)
+                {
+                    var transform = (Transform) row[i];
+                    if (row[i] == null) return;
+                    
+                    var newNode = new TransformNode();
+                    newNode.SetTable(transform.CacheTable, CacheTable);
+                    newNode.PrimaryTransform = transform;
+                    newNode.SetParentRow(row);
+                    newNode.Open().Wait();
+                    row[i] = newNode;
+                }
+            }
+        }
+
 
         #endregion
 
@@ -700,6 +718,33 @@ namespace dexih.transforms
             performance.Add(item);
             
             return performance.ToList();
+        }
+
+        /// <summary>
+        /// Gets a string containing details of the transform performance.
+        /// </summary>
+        /// <returns></returns>
+        public string PerformanceDetails()
+        {
+            var performanceSummary = PerformanceSummary();
+            var value = new StringBuilder();
+
+            void WritePerformance(List<TransformPerformance> performance, int depth)
+            {
+                foreach (var item in performance)
+                {
+                    value.AppendLine($"{new string('\t', depth)} Transform: {item.TransformName}, Action: {item.Action}, Rows: {item.Rows}, Seconds: {item.Seconds}");
+
+                    if (item.Children != null && item.Children.Count > 0)
+                    {
+                        WritePerformance(item.Children, depth+1);
+                    }
+                }
+            }
+
+            WritePerformance(performanceSummary, 0);
+
+            return value.ToString();
         }
 
         #endregion
@@ -1184,6 +1229,8 @@ namespace dexih.transforms
                     if (EncryptionMethod != EEncryptionMethod.NoEncryption)
                         EncryptRow(returnRecord);
 
+                    SetNodes(returnRecord);
+                    
                     _nextRow = returnRecord;
                 }
                 else
@@ -1607,10 +1654,10 @@ namespace dexih.transforms
                     false,
                     false,
                     false,
-                    col.DeltaType == EDeltaType.AutoIncrement,
+                    col.IsAutoIncrement(),
                     col.DataType == ETypeCode.Int64,
                     false,
-                    col.DeltaType == EDeltaType.AutoIncrement,
+                    col.IsAutoIncrement(),
                     col.Precision,
                     col.Scale
                     );
@@ -1673,7 +1720,8 @@ namespace dexih.transforms
         }
     }
 #endif
-    #endregion
+    
+#endregion
 
 
 }

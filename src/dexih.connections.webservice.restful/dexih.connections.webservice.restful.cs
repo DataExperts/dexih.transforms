@@ -14,6 +14,8 @@ using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using System.IO;
+using System.Net.Http.Headers;
+using System.Security;
 using dexih.transforms.File;
 
 namespace dexih.connections.webservice
@@ -21,7 +23,7 @@ namespace dexih.connections.webservice
 	[Connection(
 		ConnectionCategory = EConnectionCategory.WebService,
 		Name = "RESTFul Web Service", 
-		Description = "RESTful Web Services is a popular specification for web services.  These are only supported for readonly operations.",
+		Description = "RESTful Web Services is a popular specification for web services.  These are only supported for readonly operations.  For bearer authentication set user=\"bearer\" and password to the token value.",
 		DatabaseDescription = "",
 		ServerDescription = "Restful Service Url (use {0},{1} for parameters)",
 		AllowsConnectionString = false,
@@ -49,7 +51,7 @@ namespace dexih.connections.webservice
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
-	    public override bool CanUseAutoIncrement => false;
+	    public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
         public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
@@ -279,7 +281,7 @@ namespace dexih.connections.webservice
                     uri = uri.Replace("{" + column.Name + "}", column.DefaultValue.ToString());
                 }
             }
-
+            
             HttpClientHandler handler = null;
             if (!string.IsNullOrEmpty(Username))
             {
@@ -287,7 +289,7 @@ namespace dexih.connections.webservice
                 var creds = new CredentialCache
                     {
                         { new Uri(Server), "basic", credentials },
-                        { new Uri(Server), "digest", credentials }
+                        { new Uri(Server), "digest", credentials },
                     };
                 handler = new HttpClientHandler { Credentials = creds };
             }
@@ -295,6 +297,8 @@ namespace dexih.connections.webservice
             {
                 handler = new HttpClientHandler();
             }
+            
+
 
 			Uri completeUri;
 
@@ -312,7 +316,12 @@ namespace dexih.connections.webservice
 				client.BaseAddress = new Uri(completeUri.GetLeftPart(UriPartial.Authority));
                 client.DefaultRequestHeaders.Accept.Clear();
 
-				var response = await client.GetAsync(completeUri.PathAndQuery, cancellationToken);
+                if (string.Compare(Username, "bearer", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+	                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Password);
+                }
+
+                var response = await client.GetAsync(completeUri.PathAndQuery, cancellationToken);
 
 				return (completeUri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
             }
@@ -432,7 +441,7 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
         {
 			throw new ConnectionException("Truncate table cannot be used as the webservice is readonly.");
         }
@@ -453,17 +462,17 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
 			throw new ConnectionException("Update table cannot be used as the webservice is readonly.");
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
 			throw new ConnectionException("Delete from table cannot be used as the webservice is readonly.");
         }
 
-        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
 			throw new ConnectionException("Insert into table cannot be used as the webservice is readonly.");
         }

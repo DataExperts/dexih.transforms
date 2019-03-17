@@ -1,8 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using dexih.functions;
 using dexih.functions.Query;
-using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -13,10 +13,11 @@ namespace dexih.transforms
     {
         private object[] _parentRow;
         private Table _parentTable;
+        private int _parentAutoIncrementOrdinal = -1;
 
         public override string TransformName { get; } = "Node Transform";
         public override string TransformDetails => "";
-
+        
         public void SetTable(Table table, Table parentTable)
         {
             _parentTable = parentTable;
@@ -37,6 +38,7 @@ namespace dexih.transforms
                     parentCol.IsParent = true;
                     newTable.Columns.Add(parentCol);
                 }
+                _parentAutoIncrementOrdinal = _parentTable.GetAutoIncrementOrdinal();
             }
 
             CacheTable = newTable;
@@ -47,19 +49,19 @@ namespace dexih.transforms
             _parentRow = parentRow;
         }
 
+        public void SetParentAutoIncrement(object value)
+        {
+            if (_parentRow != null && _parentAutoIncrementOrdinal >= 0)
+            {
+                _parentRow[_parentAutoIncrementOrdinal] = value;
+            }
+        }
+
         public override Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
             return Task.FromResult(true);
-            
-//            if (PrimaryTransform == null)
-//            {
-//                throw new TransformException("The transform node cannot be opened as a primary transform is not set.");
-//            }
-//            
-//            var openResult = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-//            return openResult;
         }
         
         // not used as the ReadAsync is overridden.
@@ -83,7 +85,8 @@ namespace dexih.transforms
             {
                 foreach (var item in _parentRow)
                 {
-                    row[pos++] = item;
+                    if (pos < row.Length) row[pos++] = item;
+                    // row[pos++] = item;
                 }
             }
 

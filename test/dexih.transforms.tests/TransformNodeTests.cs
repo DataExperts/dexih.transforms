@@ -158,7 +158,7 @@ namespace dexih.transforms.tests
             nodeMappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
 
             var mapping = new TransformMapping();
-            var mappingTransform = mapping.CreateNodeMapping(sourceReader, null, nodeMappings,
+            var parentTransform = mapping.CreateNodeMapping(sourceReader, null, nodeMappings,
                 new TableColumn[] {new TableColumn("children")});
             
 //            var childrenTable = sourceReader.CacheTable["children"];
@@ -172,39 +172,44 @@ namespace dexih.transforms.tests
 //
 //            var mapping = new TransformMapping(sourceReader, mappings);
 
-            await mappingTransform.Open(0, null, CancellationToken.None);
+            await parentTransform.Open(0, null, CancellationToken.None);
 
-            Assert.True(await mappingTransform.ReadAsync());
-            Assert.Equal(0, mappingTransform["parent_id"]);
-            Assert.Equal("parent 0", mappingTransform["name"]);
+            Assert.True(await parentTransform.ReadAsync());
+            Assert.Equal(0, parentTransform["parent_id"]);
+            Assert.Equal("parent 0", parentTransform["name"]);
 
-            var transform = (Transform) mappingTransform["children"];
-            Assert.True(await transform.ReadAsync());
-            Assert.Equal("parent 0-child 00", transform["parent_child"]);
-            Assert.True(await transform.ReadAsync());
-            Assert.Equal("parent 0-child 01", transform["parent_child"]);
-            Assert.False(await transform.ReadAsync());
+            var childTransform = (Transform) parentTransform["children"];
+            Assert.True(await childTransform.ReadAsync());
+            Assert.Equal("parent 0-child 00", childTransform["parent_child"]);
+            Assert.True(await childTransform.ReadAsync());
+            Assert.Equal("parent 0-child 01", childTransform["parent_child"]);
+            Assert.False(await childTransform.ReadAsync());
             
-            Assert.True(await mappingTransform.ReadAsync());
-            Assert.Equal(1, mappingTransform["parent_id"]);
-            Assert.Equal("parent 1", mappingTransform["name"]);
-            Assert.False(await transform.ReadAsync());
+            Assert.True(await parentTransform.ReadAsync());
+            Assert.Equal(1, parentTransform["parent_id"]);
+            Assert.Equal("parent 1", parentTransform["name"]);
+            childTransform = (Transform) parentTransform["children"];
+            Assert.False(await childTransform.ReadAsync());
 
-            Assert.True(await mappingTransform.ReadAsync());
-            Assert.Equal(2, mappingTransform["parent_id"]);
-            Assert.Equal("parent 2", mappingTransform["name"]);
-            Assert.True(await transform.ReadAsync());
-            Assert.Equal("parent 2-child 20", transform["parent_child"]);
-            Assert.False(await transform.ReadAsync());
+            Assert.True(await parentTransform.ReadAsync());
+            Assert.Equal(2, parentTransform["parent_id"]);
+            Assert.Equal("parent 2", parentTransform["name"]);
+            childTransform = (Transform) parentTransform["children"];
+            Assert.True(await childTransform.ReadAsync());
+            Assert.Equal("parent 2-child 20", childTransform["parent_child"]);
+            childTransform = (Transform) parentTransform["children"];
+            Assert.False(await childTransform.ReadAsync());
 
-            Assert.True(await mappingTransform.ReadAsync());
-            Assert.Equal(3, mappingTransform["parent_id"]);
-            Assert.Equal("parent 3", mappingTransform["name"]);
-            Assert.True(await transform.ReadAsync());
-            Assert.Equal("parent 3-child 30", transform["parent_child"]);
-            Assert.False(await transform.ReadAsync());
+            Assert.True(await parentTransform.ReadAsync());
+            Assert.Equal(3, parentTransform["parent_id"]);
+            Assert.Equal("parent 3", parentTransform["name"]);
+            childTransform = (Transform) parentTransform["children"];
+            Assert.True(await childTransform.ReadAsync());
+            Assert.Equal("parent 3-child 30", childTransform["parent_child"]);
+            childTransform = (Transform) parentTransform["children"];
+            Assert.False(await childTransform.ReadAsync());
 
-            Assert.False(await mappingTransform.ReadAsync());
+            Assert.False(await parentTransform.ReadAsync());
 
 
         }

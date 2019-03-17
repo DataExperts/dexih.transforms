@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -31,7 +32,8 @@ namespace dexih.connections.sql
         public override bool CanUseJson => false;
         public override bool CanUseXml => false;
         public override bool CanUseSql => true;
-        public override bool CanUseAutoIncrement => false;
+        public override bool CanUseDbAutoIncrement => false;
+        public override bool CanUseTransaction => true;
         public override bool DynamicTableCreation => false;
 
 
@@ -42,6 +44,8 @@ namespace dexih.connections.sql
         public virtual string SqlValueOpen { get; } = "'";
         public virtual string SqlValueClose { get; } = "'";
         protected virtual string SqlFromAttribute(Table table) => "";
+
+        public virtual bool AllowsTruncate { get; } = false;
 
         protected virtual char SqlParameterIdentifier => '@';
 
@@ -70,6 +74,9 @@ namespace dexih.connections.sql
 
             return AddDelimiter(table.Name);
         }
+
+        private int _currentTransactionKey = 0;
+        private ConcurrentDictionary<int, (DbConnection connection, DbTransaction transaction)> _transactions = new ConcurrentDictionary<int, (DbConnection, DbTransaction)>();
 
          protected string AddEscape(string value) => value.Replace("'", "''");
 
@@ -111,7 +118,7 @@ namespace dexih.connections.sql
                     insert.Append("INSERT INTO " + SqlTableName(table) + " (");
                     values.Append("VALUES (");
 
-                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement).ToArray();
+                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.DbAutoIncrement).ToArray();
                     var ordinals = new int[columns.Length];
                     
                     for(var i = 0; i< columns.Length; i++)
@@ -232,7 +239,7 @@ namespace dexih.connections.sql
                         else
                             createSql.Append("NULL ");
 
-                        if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                        if (col.IsAutoIncrement())
                             createSql.Append("PRIMARY KEY ASC ");
 
                         if (i < table.Columns.Count - 1)
@@ -291,6 +298,42 @@ namespace dexih.connections.sql
             }
 
             return ""; //not possible to get here.
+        }
+
+        public override async Task<int> StartTransaction()
+        {
+            var key = Interlocked.Increment(ref _currentTransactionKey);
+            var connection = await NewConnection();
+            var transaction = connection.BeginTransaction();
+            if(!_transactions.TryAdd(key, (connection, transaction) ))
+            {
+                throw new ConnectionException("Failed to start the transaction.");
+            }
+            return key;
+        }
+
+        public override void CommitTransaction(int transactionReference)
+        {
+            if (!_transactions.TryRemove(transactionReference, out var transaction))
+            {
+                throw new ConnectionException("Failed to commit the transaction.");
+            }
+            transaction.transaction.Commit();
+            transaction.transaction.Dispose();
+            transaction.connection.Close();
+            transaction.connection.Dispose();
+        }
+
+        public override void RollbackTransaction(int transactionReference)
+        {
+            if (!_transactions.TryRemove(transactionReference, out var transaction))
+            {
+                throw new ConnectionException("Failed to commit the transaction.");
+            }
+            transaction.transaction.Rollback(); 
+            transaction.transaction.Dispose();
+            transaction.connection.Close();
+            transaction.connection.Dispose();
         }
 
         private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
@@ -464,165 +507,222 @@ namespace dexih.connections.sql
             return sql.ToString();
         }
         
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        
+        /// <summary>
+        /// Either gets an active transaction, or creates a new transaction
+        /// </summary>
+        /// <param name="transactionReference"></param>
+        /// <returns></returns>
+        /// <exception cref="ConnectionException"></exception>
+        protected async Task<(DbConnection connection, DbTransaction transaction)> GetTransaction(int transactionReference)
+        {
+            if (transactionReference > 0)
+            {
+                if (!_transactions.TryGetValue(transactionReference, out var connectionTransaction))
+                {
+                    throw new ConnectionException("Failed to get the transaction.");
+                }
+
+                return connectionTransaction;
+            }
+            else
+            {
+                var connection = await NewConnection();
+                var transaction = connection.BeginTransaction();
+                return (connection, transaction);
+            }
+        }
+
+        /// <summary>
+        /// Ends the transaction if it is not active
+        /// </summary>
+        /// <param name="transactionReference"></param>
+        /// <param name="transaction"></param>
+        protected void EndTransaction(int transactionReference, (DbConnection connection, DbTransaction transaction) transaction)
+        {
+            if (transactionReference <= 0)
+            {
+                transaction.transaction?.Commit();
+                transaction.transaction?.Dispose();
+                transaction.connection?.Close();
+                transaction.connection?.Dispose();
+            }
+        }
+        
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
                 long identityValue = 0;
 
-                using (var connection = await NewConnection())
+                var transaction = await GetTransaction(transactionReference);
+
+                try
                 {
+
                     var insert = new StringBuilder();
                     var values = new StringBuilder();
 
-                    using (var transaction = connection.BeginTransaction())
+                    foreach (var query in queries)
                     {
-                        foreach (var query in queries)
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        insert.Clear();
+                        values.Clear();
+
+                        insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
+                        values.Append("VALUES (");
+
+                        for (var i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
+                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                                continue;
 
-                            insert.Clear();
-                            values.Clear();
+                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                                identityValue = Convert.ToInt64(query.InsertColumns[i].Value);
 
-                            insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
-                            values.Append("VALUES (");
+                            insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
+                            values.Append($"{SqlParameterIdentifier}col{i},");
+                        }
 
-                            for (var i = 0; i < query.InsertColumns.Count; i++)
+                        var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                            values.Remove(values.Length - 1, 1) + "); ";
+
+                        try
+                        {
+                            using (var cmd = transaction.connection.CreateCommand())
                             {
-                                insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
-                                values.Append($"{SqlParameterIdentifier}col{i},");
-                            }
+                                cmd.CommandText = insertCommand;
+                                cmd.Transaction = transaction.transaction;
 
-                            var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
-                                                values.Remove(values.Length - 1, 1) + "); ";
-
-                            try
-                            {
-                                using (var cmd = connection.CreateCommand())
+                                for (var i = 0; i < query.InsertColumns.Count; i++)
                                 {
-                                    cmd.CommandText = insertCommand;
-                                    cmd.Transaction = transaction;
-
-                                    for (var i = 0; i < query.InsertColumns.Count; i++)
-                                    {
-                                        var param = cmd.CreateParameter();
-                                        param.ParameterName = $"{SqlParameterIdentifier}col{i}";
-                                        param.Value = ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
-                                        // param.DbType = GetDbType(query.InsertColumns[i].Column.DataType);
-                                        cmd.Parameters.Add(param);
-                                    }
-
-                                    await cmd.ExecuteNonQueryAsync(cancellationToken);
-
+                                    var param = cmd.CreateParameter();
+                                    param.ParameterName = $"{SqlParameterIdentifier}col{i}";
+                                    param.Value = ConvertForWrite(query.InsertColumns[i].Column,
+                                        query.InsertColumns[i].Value);
+                                    // param.DbType = GetDbType(query.InsertColumns[i].Column.DataType);
+                                    cmd.Parameters.Add(param);
                                 }
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new ConnectionException($"The insert query failed.  {ex.Message}", ex);
-                            }
-                        }
-                        
-                        var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-                        if (deltaColumn != null)
-                        {
-                            var autoIncrementSql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
-                            using (var cmd = connection.CreateCommand())
-                            {
-                                cmd.CommandText = autoIncrementSql;
-                                cmd.Transaction = transaction;
-                                var identity = await cmd.ExecuteScalarAsync(cancellationToken);
-                                identityValue = Convert.ToInt64(identity);
-                            }
-                        }
 
-                        transaction.Commit();
+                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new ConnectionException($"The insert query failed.  {ex.Message}", ex);
+                        }
                     }
 
-                    return identityValue; //sometimes reader returns -1, when we want this to be error condition.
+                    var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+
+                    if (deltaColumn != null)
+                    {
+                        var autoIncrementSql =
+                            $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
+                        using (var cmd = transaction.connection.CreateCommand())
+                        {
+                            cmd.CommandText = autoIncrementSql;
+                            cmd.Transaction = transaction.transaction;
+                            var identity = await cmd.ExecuteScalarAsync(cancellationToken);
+                            identityValue = Convert.ToInt64(identity);
+                        }
+                    }
                 }
+                finally
+                {
+                    EndTransaction(transactionReference, transaction);
+                }
+
+                return identityValue; //sometimes reader returns -1, when we want this to be error condition.
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
             }
         }
 
-        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
-                using (var connection = await NewConnection())
+                var transaction = await GetTransaction(transactionReference);
+                try
                 {
+
                     var sql = new StringBuilder();
                     int rows = 0;
-                    using (var transaction = connection.BeginTransaction())
+                    foreach (var query in queries)
                     {
-                        foreach (var query in queries)
+                        sql.Clear();
+
+                        sql.Append("update " + SqlTableName(table) + " set ");
+
+                        var count = 0;
+                        foreach (var column in query.UpdateColumns)
                         {
-                            sql.Clear();
-
-                            sql.Append("update " + SqlTableName(table) + " set ");
-
-                            var count = 0;
-                            foreach (var column in query.UpdateColumns)
-                            {
-                                sql.Append(AddDelimiter(column.Column.Name) + $" = {SqlParameterIdentifier}col{count},");
-                                count++;
-                            }
-                            sql.Remove(sql.Length - 1, 1); //remove last comma
-
-                            //  Retrieving schema for columns from a single table
-                            using (var cmd = connection.CreateCommand())
-                            {
-                                cmd.Transaction = transaction;
-
-                                var parameters = new DbParameter[query.UpdateColumns.Count];
-                                for (var i = 0; i < query.UpdateColumns.Count; i++)
-                                {
-                                    var param = cmd.CreateParameter();
-                                    param.ParameterName = $"{SqlParameterIdentifier}col{i}";
-                                    // param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
-                                    // param.Size = -1;
-
-                                    var value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
-                                    param.Value = value;
-
-                                    // replaced with ConvertParameterType above.
-                                    //// GUID's get parameterized as binary.  So need to explicitly convert to string.
-                                    //if (query.UpdateColumns[i].Column.DataType == ETypeCode.Guid)
-                                    //{
-                                    //    param.Value = query.UpdateColumns[i].Value == null ? (object)DBNull.Value : query.UpdateColumns[i].Value.ToString();
-                                    //}
-                                    //else
-                                    //{
-                                    //    param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value
-                                    //        : query.UpdateColumns[i].Value;
-                                    //}
-
-                                    cmd.Parameters.Add(param);
-                                    parameters[i] = param;
-                                }
-
-                                sql.Append(" " + BuildFiltersString(query.Filters, cmd) );
-                                cmd.CommandText = sql.ToString();
-
-                                cancellationToken.ThrowIfCancellationRequested();
-
-                                try
-                                {
-                                    await cmd.ExecuteNonQueryAsync(cancellationToken);
-                                    rows++;
-                                }
-                                catch (Exception ex)
-                                {
-                                    throw new ConnectionException($"The update query failed. {ex.Message}", ex);
-                                }
-                            }
-
-                            
+                            sql.Append(AddDelimiter(column.Column.Name) +
+                                       $" = {SqlParameterIdentifier}col{count},");
+                            count++;
                         }
-                        transaction.Commit();
+
+                        sql.Remove(sql.Length - 1, 1); //remove last comma
+
+                        //  Retrieving schema for columns from a single table
+                        using (var cmd = transaction.connection.CreateCommand())
+                        {
+                            cmd.Transaction = transaction.transaction;
+
+                            var parameters = new DbParameter[query.UpdateColumns.Count];
+                            for (var i = 0; i < query.UpdateColumns.Count; i++)
+                            {
+                                var param = cmd.CreateParameter();
+                                param.ParameterName = $"{SqlParameterIdentifier}col{i}";
+                                // param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
+                                // param.Size = -1;
+
+                                var value = ConvertForWrite(query.UpdateColumns[i].Column,
+                                    query.UpdateColumns[i].Value);
+                                param.Value = value;
+
+                                // replaced with ConvertParameterType above.
+                                //// GUID's get parameterized as binary.  So need to explicitly convert to string.
+                                //if (query.UpdateColumns[i].Column.DataType == ETypeCode.Guid)
+                                //{
+                                //    param.Value = query.UpdateColumns[i].Value == null ? (object)DBNull.Value : query.UpdateColumns[i].Value.ToString();
+                                //}
+                                //else
+                                //{
+                                //    param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value
+                                //        : query.UpdateColumns[i].Value;
+                                //}
+
+                                cmd.Parameters.Add(param);
+                                parameters[i] = param;
+                            }
+
+                            sql.Append(" " + BuildFiltersString(query.Filters, cmd));
+                            cmd.CommandText = sql.ToString();
+
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            try
+                            {
+                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+                                rows++;
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new ConnectionException($"The update query failed. {ex.Message}", ex);
+                            }
+                        }
                     }
+                }
+                finally
+                {
+                    EndTransaction(transactionReference, transaction);
                 }
             }
             catch (Exception ex)
@@ -631,45 +731,46 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
+        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
-                using (var connection = await NewConnection())
+                var transaction = await GetTransaction(transactionReference);
+                try
                 {
                     var sql = new StringBuilder();
                     var rows = 0;
 
                     var timer = Stopwatch.StartNew();
 
-                    using (var transaction = connection.BeginTransaction())
+                    foreach (var query in queries)
                     {
-                        foreach (var query in queries)
+                        sql.Clear();
+                        sql.Append("delete from " + SqlTableName(table) + " ");
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        using (var cmd = transaction.connection.CreateCommand())
                         {
-                            sql.Clear();
-                            sql.Append("delete from " + SqlTableName(table) + " ");
+                            sql.Append(BuildFiltersString(query.Filters, cmd));
 
-                            cancellationToken.ThrowIfCancellationRequested();
+                            cmd.Transaction = transaction.transaction;
+                            cmd.CommandText = sql.ToString();
 
-                            using (var cmd = connection.CreateCommand())
+                            try
                             {
-                                sql.Append(BuildFiltersString(query.Filters, cmd));
-
-                                cmd.Transaction = transaction;
-                                cmd.CommandText = sql.ToString();
-
-                                try
-                                {
-                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
-                                }
-                                catch (Exception ex)
-                                {
-                                    throw new ConnectionException($"The delete query failed. {ex.Message}", ex);
-                                }
+                                rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new ConnectionException($"The delete query failed. {ex.Message}", ex);
                             }
                         }
-                        transaction.Commit();
                     }
+                }
+                finally
+                {
+                    EndTransaction(transactionReference, transaction);
                 }
             }
             catch (Exception ex)
@@ -720,31 +821,61 @@ namespace dexih.connections.sql
 
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override async Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
-
-                using (var connection = await NewConnection())
-                using (var cmd = connection.CreateCommand())
+                var transaction = await GetTransaction(transactionReference);
+                
+                try
                 {
-                    cmd.CommandText = "delete from " + SqlTableName(table);
+                    var cmd = transaction.connection.CreateCommand();
+                    cmd.Transaction = transaction.transaction;
+                    
+                    // if there is no transaction, then use truncate
+                    if (transactionReference <= 0 && AllowsTruncate)
+                    {
+                        cmd.CommandText = "truncate table " + SqlTableName(table);
 
-                    try
-                    {
-                        await cmd.ExecuteNonQueryAsync(cancellationToken);
+                        try
+                        {
+                            await cmd.ExecuteNonQueryAsync(cancellationToken);
+                        }
+                        catch (Exception)
+                        {
+                            cmd.CommandText = "delete from " + SqlTableName(table);
+                            try
+                            {
+                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+                            }
+                            catch (Exception ex2)
+                            {
+                                throw new ConnectionException($"Truncate and delete query failed. {ex2.Message}", ex2);
+                            }
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        throw new ConnectionException($"The truncate query failed. {ex.Message}", ex);
+                        cmd.CommandText = "delete from " + SqlTableName(table);
+                        try
+                        {
+                            await cmd.ExecuteNonQueryAsync(cancellationToken);
+                        }
+                        catch (Exception ex2)
+                        {
+                            throw new ConnectionException($"Delete query failed. {ex2.Message}", ex2);
+                        }
                     }
                 }
+                finally
+                {
+                    EndTransaction(transactionReference, transaction);
+                }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                throw new ConnectionException($"Truncate table {table.Name} failed.  {ex.Message}", ex);
+                throw new ConnectionException($"Truncate table {table.Name} failed. {ex.Message}", ex);
             }
-
         }
 
         public override Task<Table> InitializeTable(Table table, int position)

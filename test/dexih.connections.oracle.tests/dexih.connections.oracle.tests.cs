@@ -1,9 +1,5 @@
 ﻿using dexih.connections.test;
-using dexih.functions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,7 +29,7 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestOracle_BasicTests()
+        public async Task Oracle_Basic()
         {
             string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
@@ -41,7 +37,7 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestOracle_TransformTests()
+        public async Task Oracle_TransformTests()
         {
             string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
 
@@ -49,14 +45,14 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestOracle_PerformanceTests()
+        public async Task Oracle_PerformanceTests()
         {
             string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
             await new PerformanceTests(_output).Performance(GetConnection(), database, 10000);
         }
         
         [Fact]
-        public async Task TestOracle_TransformWriter()
+        public async Task Oracle_TransformWriter()
         {
             string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
 
@@ -64,12 +60,24 @@ namespace dexih.connections.sql
         }
         
         [Fact]
-        public async Task TestOracle_SqlReader()
+        public async Task Oracle_SqlReader()
         {
             string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
 
             await new SqlReaderTests().Unit(connection, database);
+        }
+        
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public async Task Oracle_ParentChild_Write(bool useDbAutoIncrement, bool useTransaction)
+        {
+            var database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
+            var connection = GetConnection();
+
+            await new TransformWriterTarget().ParentChild_Write(connection, database, useDbAutoIncrement, useTransaction);
         }
     }
 }

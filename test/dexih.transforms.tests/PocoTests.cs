@@ -225,7 +225,7 @@ namespace dexih.transforms.tests
             TheDate = theDate;
         }
 
-        [PocoColumn(DeltaType = TableColumn.EDeltaType.AutoIncrement)]
+        [PocoColumn(DeltaType = TableColumn.EDeltaType.DbAutoIncrement)]
         public long Incremental { get; set; }
 
         [PocoColumn(DeltaType = TableColumn.EDeltaType.NaturalKey)]

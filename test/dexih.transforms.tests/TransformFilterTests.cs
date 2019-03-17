@@ -239,7 +239,7 @@ namespace dexih.transforms.tests
 
             Assert.Equal(rows, count);
 
-            _output.WriteLine(transformFilter.PerformanceSummary());
+            _output.WriteLine(transformFilter.PerformanceDetails());
         }
 
         [Theory]
@@ -269,7 +269,7 @@ namespace dexih.transforms.tests
 
             Assert.Equal(0, count);
 
-            _output.WriteLine(transformFilter.PerformanceSummary());
+            _output.WriteLine(transformFilter.PerformanceDetails());
         }
 
     }

@@ -108,14 +108,7 @@ namespace dexih.transforms
 
         public override bool ResetTransform()
         {
-            if (IsOpen)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return IsOpen;
         }
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)

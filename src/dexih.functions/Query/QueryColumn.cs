@@ -18,8 +18,8 @@ namespace dexih.functions.Query
             Value = value;
         }
 
-        public TableColumn Column { get; set; }
-        public object Value { get; set; }
+        public TableColumn Column { get; }
+        public object Value { get; }
 
         public bool Equals(QueryColumn other)
         {
@@ -32,7 +32,7 @@ namespace dexih.functions.Query
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((QueryColumn) obj);
         }
 

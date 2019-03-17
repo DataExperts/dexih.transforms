@@ -1,11 +1,6 @@
 ﻿using dexih.functions;
 using dexih.transforms;
-using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test
@@ -56,7 +51,7 @@ namespace dexih.connections.test
                 Name = "AutoIncrement",
                 Description = "A key column",
                 DataType = ETypeCode.Int32,
-                DeltaType = TableColumn.EDeltaType.AutoIncrement
+                DeltaType = TableColumn.EDeltaType.DbAutoIncrement
             });
 
             table.Columns.Add(new TableColumn()

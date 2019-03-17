@@ -127,7 +127,7 @@ namespace dexih.transforms
         public override string TransformName { get; } = "Delta";
         public override string TransformDetails => $"{DeltaType} on {ReferenceTransform.Name}"; 
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
@@ -137,7 +137,7 @@ namespace dexih.transforms
             {
                 returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
                 
-                }
+            }
             else
             {
                 if (query == null)
@@ -214,7 +214,7 @@ namespace dexih.transforms
             _colValidTo = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
             _colCreateDate = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.CreateDate);
             _colUpdateDate = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.UpdateDate);
-            _colSurrogateKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+            _colSurrogateKey = CacheTable.GetAutoIncrementColumn();
             _colIsCurrentField = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.IsCurrentField);
             _colSourceSurrogateKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
             _colCreateAuditKey = CacheTable.GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
@@ -248,7 +248,7 @@ namespace dexih.transforms
 
             _referenceIsValidOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.IsCurrentField);
             _referenceVersionOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Version);
-            _referenceSurrogateKeyOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AutoIncrement);
+            _referenceSurrogateKeyOrdinal = ReferenceTransform.CacheTable.GetAutoIncrementOrdinal();
             _referenceCreateAuditOrdinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateAuditKey);
             _referenceCreateDateOrginal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.CreateDate);
             _referenceValidToOridinal = ReferenceTransform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
@@ -327,7 +327,7 @@ namespace dexih.transforms
                 //query the reference transform to check if the row already exists.
                 var filters = new List<Filter>();
 
-                //lookup the default value by the surrogate key (always = 0) or natrual key if a target surrogate key does not exist.
+                //lookup the default value by the surrogate key (always = 0) or natural key if a target surrogate key does not exist.
                 if (_colSurrogateKey != null)
                 {
                     filters.Add(new Filter(_colSurrogateKey, Filter.ECompare.IsEqual, "0"));
@@ -975,7 +975,6 @@ namespace dexih.transforms
                             newRow[referenceOrdinal] = true;
                             break;
                         case TableColumn.EDeltaType.AutoIncrement:
-                            _surrogateKey = Operations.Increment(_surrogateKey); //increment now that key has been used.
                             newRow[referenceOrdinal] = 0;
                             break;
                         case TableColumn.EDeltaType.SourceSurrogateKey:

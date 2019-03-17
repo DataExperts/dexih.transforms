@@ -101,7 +101,7 @@ namespace dexih.transforms.tests
 
             Assert.Equal(rows, count);
 
-            output.WriteLine(transformMapping.PerformanceSummary());
+            output.WriteLine(transformMapping.PerformanceDetails());
         }
 
         [Theory]
@@ -123,7 +123,7 @@ namespace dexih.transforms.tests
 
             Assert.Equal(rows, count);
 
-            output.WriteLine(transformMapping.PerformanceSummary());
+            output.WriteLine(transformMapping.PerformanceDetails());
 
         }
 
@@ -156,7 +156,7 @@ namespace dexih.transforms.tests
 
             Assert.Equal(rows, count);
 
-            output.WriteLine(transformMapping.PerformanceSummary());
+            output.WriteLine(transformMapping.PerformanceDetails());
 
         }
 

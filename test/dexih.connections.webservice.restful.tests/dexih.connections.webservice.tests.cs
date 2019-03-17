@@ -1,9 +1,7 @@
 ﻿using dexih.functions;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.transforms.Exceptions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -32,25 +30,19 @@ namespace dexih.connections.webservice.restful.tests
                 DefaultDatabase = "",
             };
 
-            var table = await connection.GetSourceTableInfo("get", CancellationToken.None);
+            var reader = await connection.GetTransformReader("get");
+
+            var table = reader.CacheTable;
             Assert.True(table.Columns.GetOrdinal("args") >= 0);
-            Assert.True(table.Columns.GetOrdinal("Connection") >= 0);
             Assert.True(table.Columns.GetOrdinal("Host") >= 0);
             Assert.True(table.Columns.GetOrdinal("origin") >= 0);
             Assert.True(table.Columns.GetOrdinal("url") >= 0);
 
-            var reader = connection.GetTransformReader(table);
-            var openResult = await reader.Open(0, null, CancellationToken.None);
+            var openResult = await reader.Open();
             Assert.True(openResult, "Reader open failed");
-
-            var result = await reader.ReadAsync();
-            Assert.True(result, "No rows found.");
-
-            Assert.Equal("https://httpbin.org/get", reader["url"].ToString());
-
-            result = await reader.ReadAsync();
-            Assert.False(result, "More rows found.");
-
+            Assert.True(await reader.ReadAsync());
+            Assert.Equal("https://httpbin.org/get", reader["url"]);
+            Assert.False(await reader.ReadAsync());
         }
 
         [Fact]
@@ -87,7 +79,7 @@ namespace dexih.connections.webservice.restful.tests
             Assert.True(table.Columns.GetOrdinal("bs") >= 0);
 
             var reader = connection.GetTransformReader(table);
-            var openResult = await reader.Open(0, null, CancellationToken.None);
+            var openResult = await reader.Open();
             Assert.True(openResult, "Reader open failed");
 
             var id = 0;
@@ -101,12 +93,16 @@ namespace dexih.connections.webservice.restful.tests
        
         }
 
-        [Fact]
-        public async Task WebService_Basic_Authenticated()
+        [Theory]
+        [InlineData("https://httpbin.org",  "basic-auth/{userParam}/{passParam}")]
+        [InlineData("https://httpbin.org",  "digest-auth/auth/{userParam}/{passParam}")]
+        [InlineData("https://httpbin.org",  "digest-auth/auth/{userParam}/{passParam}/sha-256")]
+        [InlineData("https://httpbin.org",  "digest-auth/auth/{userParam}/{passParam}/sha-512")]
+        public async Task WebService_Authentication(string server, string uri)
         {
             var connection = new ConnectionRestful()
             {
-                Server = "https://httpbin.org",
+                Server = server,
                 DefaultDatabase = "",
                 Username = "user",
                 Password = "passwd"
@@ -114,72 +110,75 @@ namespace dexih.connections.webservice.restful.tests
 
             var restFunction = new WebService()
             {
-                Name = "basic-auth",
-                RestfulUri = "basic-auth/{user1}/{passwd1}",
+                Name = "auth",
+                RestfulUri = uri,
             };
 
-            restFunction.AddInputParameter("user1", "user");
-            restFunction.AddInputParameter("passwd1", "passwd");
-            
+            // call with valid password
+            restFunction.AddInputParameter("userParam", "user");
+            restFunction.AddInputParameter("passParam", "passwd");
             var table = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
+
             Assert.True(table.Columns.GetOrdinal("authenticated") >= 0);
             Assert.True(table.Columns.GetOrdinal("user") >= 0);
 
             var reader = connection.GetTransformReader(table);
-            var openResult = await reader.Open(0, null, CancellationToken.None);
+            var openResult = await reader.Open();
             Assert.True(openResult, "Reader open failed");
 
             var result = await reader.ReadAsync();
             Assert.True(result, "No rows found.");
 
             Assert.Equal("user", reader["user"].ToString());
+            Assert.Equal(true, reader["authenticated"]);
 
             result = await reader.ReadAsync();
             Assert.False(result, "More rows found.");
 
+            restFunction.Columns.Clear();
+            
+            // call with invalid password
+            restFunction.AddInputParameter("userParam", "user");
+            restFunction.AddInputParameter("passParam", "badpassword");
+            await Assert.ThrowsAsync<ConnectionException>(async ()  => await connection.GetSourceTableInfo(restFunction, CancellationToken.None));
         }
+        
+        [Fact]
+        public async Task WebService_Authentication_Bearer()
+        {
+            var connection = new ConnectionRestful()
+            {
+                Server = "https://httpbin.org",
+                DefaultDatabase = "",
+                Username = "bearer",
+                Password = "user123"
+            };
 
-        // TBD get this authentication working.
-        //[Fact]
-        //public async Task WebService_MD5_Authenticated()
-        //{
-        //    var connection = new ConnectionRestful()
-        //    {
-        //        Server = "https://httpbin.org",
-        //        DefaultDatabase = "",
-        //        Username = "user",
-        //        Password = "passwd"
-        //    };
+            var restFunction = new WebService()
+            {
+                Name = "bearer",
+                RestfulUri = "bearer",
+            };
 
-        //    var restFunction = new RestFunction()
-        //    {
-        //        Name = "digest-auth",
-        //        RestfulUri = "digest-auth/auth/{user1}/{passwd1}",
-        //    };
+            // call with valid password
+            var table = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
 
-        //    restFunction.AddInputParameter("user1", "user");
-        //    restFunction.AddInputParameter("passwd1", "passwd");
-        //    //restFunction.AddInputParameter("method", "MD5");
+            Assert.True(table.Columns.GetOrdinal("authenticated") >= 0);
+            Assert.True(table.Columns.GetOrdinal("token") >= 0);
 
-        //    var sourceTableResult = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
-        //    Assert.True(sourceTableResult.Success, "GetSourceTableInfo failed: " + sourceTableResult.Message);
+            var reader = connection.GetTransformReader(table);
+            var openResult = await reader.Open();
+            Assert.True(openResult, "Reader open failed");
 
-        //    var table = sourceTableResult.Value;
-        //    Assert.True(table.Columns.GetOrdinal("authenticated") >= 0);
-        //    Assert.True(table.Columns.GetOrdinal("user") >= 0);
+            var result = await reader.ReadAsync();
+            Assert.True(result, "No rows found.");
 
-        //    var reader = connection.GetTransformReader(table);
-        //    var openResult = await reader.Open(0, null, CancellationToken.None);
-        //    Assert.True(openResult.Success, "Reader open failed: " + openResult.Message);
+            Assert.Equal("user123", reader["token"].ToString());
+            Assert.Equal(true, reader["authenticated"]);
 
-        //    var result = await reader.ReadAsync();
-        //    Assert.True(result, "No rows found.");
-
-        //    Assert.Equal("user", reader["user"].ToString());
-
-        //    result = await reader.ReadAsync();
-        //    Assert.False(result, "More rows found.");
-
-        //}
+            result = await reader.ReadAsync();
+            Assert.False(result, "More rows found.");
+        }
+       
     }
 }

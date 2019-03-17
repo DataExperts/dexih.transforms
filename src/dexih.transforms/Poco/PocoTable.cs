@@ -37,28 +37,14 @@ namespace dexih.transforms.Poco
             {
                 var field = propertyInfo.GetCustomAttribute<PocoColumnAttribute>(false) ?? new PocoColumnAttribute(propertyInfo.Name);
 
-                // no attributes, then just create a columns with the same name as the property.
-//                if(field == null)
-//                {
-//                    var column = new TableColumn(propertyInfo.Name)
-//                    {
-//                        DeltaType = TableColumn.EDeltaType.TrackingField,
-//                        DataType = Dexih.Utils.DataType.DataType.GetTypeCode(propertyInfo.PropertyType)
-//                    };
-//
-//                    table.Columns.Add(column);
-//                    mappings.Add(new PocoTableMapping(propertyInfo, position, false));
-//                    position++; 
-//                }
-//                else 
                 if (field.DeltaType != TableColumn.EDeltaType.IgnoreField && !field.Skip)
                 {
                     var column = new TableColumn()
                     {
                         Name = string.IsNullOrEmpty(field.Name) ? propertyInfo.Name : field.Name,
                         DeltaType = field.DeltaType,
-                        DataType = field.DataType == ETypeCode.Unknown ? DataType.GetTypeCode(propertyInfo.PropertyType, out _) : field.DataType,
-                        AllowDbNull = Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null || field.AllowDbNull,
+                        DataType = field.DataType == ETypeCode.Unknown ? GetTypeCode(propertyInfo.PropertyType, out _) : field.DataType,
+                        AllowDbNull = propertyInfo.PropertyType == typeof(string) || Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null || field.AllowDbNull,
                         MaxLength = field.MaxLength >= 0 ? (int?)field.MaxLength : null,
                         Precision = field.Precision >= 0 ? (int?)field.Precision : null,
                         Scale = field.Scale >= 0 ? (int?)field.Scale : null,
@@ -67,7 +53,7 @@ namespace dexih.transforms.Poco
                     table.Columns.Add(column);
                     mappings.Add(new PocoTableMapping(propertyInfo, position,field.IsKey));
 
-                    if(field.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                    if(field.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
                     {
                         AutoIncrementProperty = propertyInfo;
                     }
@@ -107,9 +93,9 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="item">Item.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public async Task CreateTable(Connection connection, bool dropTable, CancellationToken cancellationToken)
+        public Task CreateTable(Connection connection, bool dropTable, CancellationToken cancellationToken)
         {
-            await connection.CreateTable(Table, dropTable, cancellationToken);
+            return connection.CreateTable(Table, dropTable, cancellationToken);
         }
 
         /// <summary>
@@ -118,9 +104,9 @@ namespace dexih.transforms.Poco
         /// <returns>True = table exists.</returns>
         /// <param name="connection">Connection.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public async Task<bool> TableExists(Connection connection, CancellationToken cancellationToken)
+        public Task<bool> TableExists(Connection connection, CancellationToken cancellationToken)
         {
-            return await connection.TableExists(Table, cancellationToken);
+            return connection.TableExists(Table, cancellationToken);
         }
 
         /// <summary>
@@ -137,7 +123,7 @@ namespace dexih.transforms.Poco
             foreach (var mapping in TableMappings)
             {
                 var column = Table.Columns[mapping.Position];
-                if (column.DeltaType != TableColumn.EDeltaType.AutoIncrement)
+                if (column.DeltaType != TableColumn.EDeltaType.DbAutoIncrement)
                 {
                     var value = Operations.Parse(column.DataType, mapping.PropertyInfo.GetValue(item));
                     var queryColumn = new QueryColumn(column, value);
@@ -154,7 +140,6 @@ namespace dexih.transforms.Poco
             {
                 AutoIncrementProperty.SetValue(item, insertResult);
             }
-
         }
 
         /// <summary>
@@ -164,7 +149,7 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="item">Item to delete</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public async Task ExecuteDelete(Connection connection, T item, CancellationToken cancellationToken)
+        public Task ExecuteDelete(Connection connection, T item, CancellationToken cancellationToken)
         {
             var filters = new List<Filter>();
 
@@ -180,7 +165,7 @@ namespace dexih.transforms.Poco
 
             var deleteQuery = new DeleteQuery(Table.Name, filters);
 
-            await connection.ExecuteDelete(Table, new List<DeleteQuery>() { deleteQuery }, cancellationToken);
+            return connection.ExecuteDelete(Table, new List<DeleteQuery>() { deleteQuery }, cancellationToken);
         }
 
         /// <summary>
@@ -190,7 +175,7 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="item">Item to delete</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public async Task ExecuteUpdate(Connection connection, T item, CancellationToken cancellationToken)
+        public Task ExecuteUpdate(Connection connection, T item, CancellationToken cancellationToken)
         {
             var filters = new List<Filter>();
             var updateColumns = new List<QueryColumn>();
@@ -214,7 +199,7 @@ namespace dexih.transforms.Poco
 
             var updateQuery = new UpdateQuery(Table.Name, updateColumns, filters);
 
-            await connection.ExecuteUpdate(Table, new List<UpdateQuery>() { updateQuery }, cancellationToken);
+            return connection.ExecuteUpdate(Table, new List<UpdateQuery>() { updateQuery }, cancellationToken);
         }
 
         /// <summary>
@@ -224,12 +209,12 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="items">Item.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public async Task ExecuteInsertBulk(Connection connection, IEnumerable<T> items, CancellationToken cancellationToken)
+        public Task ExecuteInsertBulk(Connection connection, IEnumerable<T> items, CancellationToken cancellationToken)
         {
             var pocoTable = new PocoTable<T>(Table.Copy());
 
             var pocoReader = new PocoReader<T>(pocoTable, items);
-            await connection.ExecuteInsertBulk(Table, pocoReader, cancellationToken);
+            return connection.ExecuteInsertBulk(Table, pocoReader, cancellationToken);
         }
     }
 

@@ -1,11 +1,7 @@
-﻿using dexih.connections;
-using dexih.functions;
-using dexih.functions.Query;
+﻿using dexih.functions.Query;
 using dexih.transforms;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -20,18 +16,19 @@ namespace dexih.connections.test
             var table = DataSets.CreateTable();
             await connection.CreateDatabase(databaseName, CancellationToken.None);
             
-            var writerResult = new TransformWriterResult();
-
+            var writerResult = new TransformWriterResult(connection)
+            {
+                HubKey = 0, AuditConnectionKey = 1, AuditType = "Datalink"
+            };
+            
             //create a new table and write some data to it.  
             Transform reader = DataSets.CreateTestData();
             await connection.CreateTable(table, true, CancellationToken.None);
-            await connection.InitializeAudit(writerResult, 0, 1, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
+            await connection.InitializeAudit(writerResult, CancellationToken.None);
             
-            var writer = new TransformWriter();
-            var writeRecords = await writer.WriteRecordsAsync(writerResult, reader, TransformWriterTarget.ETransformWriterMethod.Bulk, table, connection, CancellationToken.None);
+            var writer = new transforms.TransformWriterTarget(connection, table, writerResult);
+            await writer.WriteRecordsAsync(reader, CancellationToken.None);
             
-            Assert.True(writeRecords, $"WriteAllRecords failed with message {writerResult.Message}.  Details:{writerResult.ExceptionDetails}");
-
             //check database can sort 
             if (connection.CanSort)
             {
@@ -83,14 +80,24 @@ namespace dexih.connections.test
 
             var targetReader = connection.GetTransformReader(deltaTable);
             reader = connection.GetTransformReader(table);
-            var transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
-            await transformDelta.Open(0, null, CancellationToken.None);
+            
+//            var transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
+//            await transformDelta.Open(0, null, CancellationToken.None);
+//
+//            writerResult = new TransformWriterResult(0, 1, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", null, null);
+//            await connection.InitializeAudit(writerResult, CancellationToken.None);
+//
+//            var writeAllResult = await writer.WriteRecordsAsync( writerResult, transformDelta, TransformWriterTarget.ETransformWriterMethod.Bulk, deltaTable, connection, null, CancellationToken.None);
+//            Assert.True(writeAllResult, writerResult.Message);
+//            Assert.Equal(10L, writerResult.RowsCreated);
 
-            writerResult = new TransformWriterResult();
-            await connection.InitializeAudit(writerResult, 0, 1, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
+            writerResult = new TransformWriterResult(connection) {HubKey = 0, AuditType = "Datalink", AuditConnectionKey = 1};
+            await writerResult.Initialize(CancellationToken.None);
+            
+            var options = new TransformWriterOptions() { UpdateStrategy = TransformDelta.EUpdateStrategy.Reload};
+            var target = new transforms.TransformWriterTarget(connection, deltaTable, writerResult);
+            await target.WriteRecordsAsync(reader, CancellationToken.None);
 
-            var writeAllResult = await writer.WriteRecordsAsync( writerResult, transformDelta, TransformWriterTarget.ETransformWriterMethod.Bulk, deltaTable, connection, CancellationToken.None);
-            Assert.True(writeAllResult, writerResult.Message);
             Assert.Equal(10L, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.

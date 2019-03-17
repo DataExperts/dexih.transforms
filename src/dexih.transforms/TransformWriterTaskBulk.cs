@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -34,7 +34,20 @@ namespace dexih.transforms
             _deleteRows = new TableCache();
             _rejectRows = new TableCache();
         }
-        
+
+        public override Task<int> StartTransaction(int transactionReference = -1)
+        {
+            return Task.FromResult(-1);
+        }
+
+        public override void CommitTransaction()
+        {
+        }
+
+        public override void RollbackTransaction()
+        {
+        }
+
         public override async Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken)
         {
             switch (operation)
@@ -69,10 +82,24 @@ namespace dexih.transforms
                         await DoRejects(cancellationToken);
                     }
                     break;
-                            
+                case 'T':
+                    if (!TargetConnection.DynamicTableCreation && !TruncateComplete)
+                    {
+                        await TargetConnection.TruncateTable(TargetTable, cancellationToken);
+                        TruncateComplete = true;
+                    }
+
+                    break;
             }
 
-            return 0;
+            if (AutoIncrementOrdinal >= 0)
+            {
+                var value = row[AutoIncrementOrdinal];
+                if (value == null) return 0;
+                return Operations.Parse<long>(value);
+            }
+
+            return AutoIncrementOrdinal >= 0 ? (long?)row[AutoIncrementOrdinal] ?? 0 : 0;
         }
 
         public override async Task FinalizeRecords(CancellationToken cancellationToken)
@@ -163,8 +190,8 @@ namespace dexih.transforms
             {
                 var updateQuery = new UpdateQuery(
                 TargetTable.Name,
-                TargetTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement).Select(c => new QueryColumn(c, row[TargetTable.GetOrdinal(c.Name)])).ToList(),
-                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.AutoIncrement).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
+                TargetTable.Columns.Where(c => !c.IsAutoIncrement()).Select(c => new QueryColumn(c, row[TargetTable.GetOrdinal(c.Name)])).ToList(),
+                TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
                 );
 
                 updateQueries.Add(updateQuery);
@@ -203,7 +230,7 @@ namespace dexih.transforms
             {
                 var deleteQuery = new DeleteQuery(
                 TargetTable.Name,
-                TargetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.AutoIncrement).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
+                TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
                 );
 
                 deleteQueries.Add(deleteQuery);

@@ -1,6 +1,5 @@
 ﻿using System;
 using dexih.functions;
-using dexih.transforms;
 using dexih.transforms.Poco;
 
 namespace FunctionExamples

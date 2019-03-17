@@ -11,7 +11,7 @@ using Xunit;
 
 namespace dexih.connections.test
 {
-    public class TransformWriterTransactional
+    public class TransformWriterTarget
     {
         private async Task<Transform> GetReader()
         {
@@ -39,8 +39,8 @@ namespace dexih.connections.test
                 : TableColumn.EDeltaType.AutoIncrement;
 
             var transactionType = useTransaction
-                ? TransformWriterTarget.ETransformWriterMethod.Transaction
-                : TransformWriterTarget.ETransformWriterMethod.Bulk;
+                ? transforms.TransformWriterTarget.ETransformWriterMethod.Transaction
+                : transforms.TransformWriterTarget.ETransformWriterMethod.Bulk;
                 
             
             await connection.CreateDatabase(databaseName, CancellationToken.None);
@@ -61,12 +61,14 @@ namespace dexih.connections.test
             // var writerResult = await connection.InitializeAudit(CancellationToken.None);
 
             // add two target tables
-            var targets = new TransformWriterTarget(connection, transactionTable, transactionType);
-            targets.Add(new TransformWriterTarget(connection, componentTable,transactionType, new TransformWriterResult()), new[] {"items"});
+            var targets = new transforms.TransformWriterTarget(connection, transactionTable, transactionType);
+            targets.Add(new transforms.TransformWriterTarget(connection, componentTable,transactionType, new TransformWriterResult()), new[] {"items"});
             
             await targets.WriteRecordsAsync(reader, CancellationToken.None);
 
             var transactionReader = connection.GetTransformReader(transactionTable);
+            transactionReader = new TransformSort(transactionReader, "id");
+            
             await transactionReader.Open();
 
             await transactionReader.ReadAsync();

@@ -13,7 +13,8 @@ namespace dexih.functions
         [JsonConverter(typeof(StringEnumConverter))]
         public enum EDeltaType
         {
-            AutoIncrement, // column is auto incremented by the ExecuteInsert function.
+            AutoIncrement, // column is auto incremented by the dexih
+            DbAutoIncrement, // column is auto incremented by the database
             SourceSurrogateKey,
             ValidFromDate,
             ValidToDate,
@@ -157,6 +158,9 @@ namespace dexih.functions
 
         public TableColumns ChildColumns { get; set; }
 
+        public bool IsAutoIncrement() => DeltaType == EDeltaType.DbAutoIncrement || DeltaType == EDeltaType.AutoIncrement;
+
+        
         [JsonIgnore, CopyIgnore]
         public Type ColumnGetType
         {
@@ -204,6 +208,7 @@ namespace dexih.functions
                 case EDeltaType.CreateDate:
                 case EDeltaType.UpdateDate:
                 case EDeltaType.AutoIncrement:
+                case EDeltaType.DbAutoIncrement:
                 case EDeltaType.ValidationStatus:
                     return true;
             }

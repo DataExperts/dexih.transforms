@@ -54,7 +54,6 @@ namespace dexih.transforms.Mapping
             Transform.PrimaryTransform = (Transform) row[_inputOrdinal];
             await Transform.Open(0, null, cancellationToken);
             Transform.SetParentRow(row);
-
             OutputTransform?.Reset(true);
 
             return true;

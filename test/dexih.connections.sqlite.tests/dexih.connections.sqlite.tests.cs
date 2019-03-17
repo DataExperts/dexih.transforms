@@ -1,8 +1,6 @@
 ﻿using dexih.connections.test;
-using dexih.functions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -32,7 +30,7 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestSqlite_BasicTests()
+        public async Task Sqlite_Basic()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
             ConnectionSqlite connection = GetConnection();
@@ -40,7 +38,7 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestSqlite_TransformTests()
+        public async Task Sqlite_Transform()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -48,13 +46,13 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestSqlite_PerformanceTests()
+        public async Task Sqlite_Performance()
         {
             await new PerformanceTests(_output).Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 50000);
         }
         
         [Fact]
-        public async Task TestSqlite_SqlReader()
+        public async Task Sqlite_SqlReader()
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
@@ -62,17 +60,20 @@ namespace dexih.connections.sql
             await new SqlReaderTests().Unit(connection, database);
         }
 
-        [Fact]
-        public async Task TestSqlite_Transaction_Writer()
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public async Task Sqlite_ParentChild_Write(bool useDbAutoIncrement, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
 
-            await new TransformWriterTransactional().Unit(connection, database);
+            await new TransformWriterTarget().ParentChild_Write(connection, database, useDbAutoIncrement, useTransaction);
         }
         
         [Fact]
-        public async Task TestSqlite_TransformWriter()
+        public async Task Sqlite_TransformWriter()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 

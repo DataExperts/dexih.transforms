@@ -37,6 +37,8 @@ namespace dexih.connections.sql
         protected override string SqlDelimiterOpen { get; } = "[";
 
         protected override string SqlDelimiterClose { get; } = "]";
+
+        public override bool AllowsTruncate { get; } = false;
         
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
@@ -124,7 +126,7 @@ namespace dexih.connections.sql
                     var col = table.Columns[i];
 
                     //ignore datatypes for autoincrement and create a primary key.
-                    if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
                     {
                         createSql.Append(AddDelimiter(col.Name) + " INTEGER PRIMARY KEY ");
                     }
@@ -139,10 +141,8 @@ namespace dexih.connections.sql
 
                         if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
                         {
-                            if (table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null)
-                                createSql.Append("PRIMARY KEY ASC ");
-                            else
-                                createSql.Append("UNIQUE ");
+                            // createSql.Append("PRIMARY KEY ASC ");
+                            createSql.Append("UNIQUE");
                         }
                     }
 

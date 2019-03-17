@@ -47,7 +47,7 @@ namespace dexih.connections.azure
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
-        public override bool CanUseAutoIncrement => false;
+        public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => true;
         
         public override bool CanUseGuid => true;
@@ -157,7 +157,7 @@ namespace dexih.connections.azure
                 var bufferSize = 0;
                 var buffer = new List<object[]>();
 
-                var sk = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+                var sk = table.GetAutoIncrementColumn();
 
                 var ordinals = new int[table.Columns.Count];
 
@@ -192,7 +192,7 @@ namespace dexih.connections.azure
                         var ordinal = ordinals[i];
                         if (ordinal >= 0)
                         {
-                            if (table.Columns[i].DeltaType == TableColumn.EDeltaType.AutoIncrement &&
+                            if (table.Columns[i].DeltaType == TableColumn.EDeltaType.DbAutoIncrement &&
                                 (reader[ordinal] == null || reader[ordinal] is DBNull))
                             {
                                 row[i] = 0;
@@ -215,7 +215,7 @@ namespace dexih.connections.azure
                                     else
                                         row[i] = Guid.NewGuid().ToString();
                                     break;
-                                case TableColumn.EDeltaType.AutoIncrement:
+                                case TableColumn.EDeltaType.DbAutoIncrement:
                                     row[i] = 0;
                                     break;
                             }
@@ -253,7 +253,7 @@ namespace dexih.connections.azure
 
             var partitionKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
             var rowKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
-            var surrogateKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AutoIncrement);
+            var surrogateKey = table.GetAutoIncrementOrdinal();
 
             foreach (var row in buffer)
             {
@@ -704,7 +704,7 @@ namespace dexih.connections.azure
             return filterString;
         }
 
-        public override Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
@@ -885,7 +885,7 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
@@ -942,15 +942,10 @@ namespace dexih.connections.azure
 
                     if (string.IsNullOrEmpty(rowKeyValue))
                     {
-                        var sk = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement)?.Name;
-
-                        if (sk == null)
-                            if (autoIncrement == null)
-                                rowKeyValue = Guid.NewGuid().ToString();
-                            else
-                                rowKeyValue = lastAutoIncrement.ToString("D20");
+                        if (autoIncrement == null)
+                            rowKeyValue = Guid.NewGuid().ToString();
                         else
-                            rowKeyValue = ((long)query.InsertColumns.Single(c => c.Column.Name == sk).Value).ToString("D20");
+                            rowKeyValue = ((long)query.InsertColumns.Single(c => c.Column.Name == autoIncrement.Name).Value).ToString("D20");
                     }
 
                     var entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
@@ -989,7 +984,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
@@ -1004,7 +999,7 @@ namespace dexih.connections.azure
                 //start a batch operation to update the rows.
                 var batchOperation = new TableBatchOperation();
 
-                var surrogateKeyColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+                var surrogateKeyColumn = table.GetAutoIncrementColumn();
 
                 //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
@@ -1019,8 +1014,8 @@ namespace dexih.connections.azure
                     //the rowkey is the same as the surrogate key, so add this to the filter string if the surrogate key is used.
                     if (surrogateKeyColumn != null)
                     {
-                        var filtercount = query.Filters.Count;
-                        for (var i = 0; i < filtercount; i++)
+                        var filterCount = query.Filters.Count;
+                        for (var i = 0; i < filterCount; i++)
                         {
                             if (query.Filters[i].Column1.Name == surrogateKeyColumn.Name)
                             {
@@ -1104,7 +1099,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
+        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {

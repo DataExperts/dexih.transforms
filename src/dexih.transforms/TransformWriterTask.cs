@@ -11,16 +11,31 @@ namespace dexih.transforms
         protected Connection TargetConnection;
         protected Table RejectTable;
         protected Connection RejectConnection;
+        protected bool TruncateComplete = false;
         
         public TimeSpan WriteDataTicks;
+
+        protected int DbAutoIncrementOrdinal;
+        protected int AutoIncrementOrdinal;
         
-        public void Initialize(Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection)
+        public virtual void Initialize(Table targetTable, Connection targetConnection, Table rejectTable, Connection rejectConnection)
         {
             TargetTable = targetTable;
             TargetConnection = targetConnection;
             RejectTable = rejectTable;
             RejectConnection = rejectConnection;
+            TruncateComplete = false;
+
+            AutoIncrementOrdinal = targetTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AutoIncrement);
+            DbAutoIncrementOrdinal = targetTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DbAutoIncrement);
         }
+
+        public abstract Task<int> StartTransaction(int transactionReference = -1);
+        public abstract void CommitTransaction();
+        
+        public abstract void RollbackTransaction();
+        
+        
         
         public abstract Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken);
 

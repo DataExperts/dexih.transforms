@@ -5,6 +5,7 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using dexih.transforms.Mapping;
 
 namespace dexih.transforms
 {
@@ -36,7 +37,7 @@ namespace dexih.transforms
         public override string TransformDetails => "Query: Rows= " + _selectQuery?.Rows + ", conditions=" + _selectQuery?.Filters?.Count;
 
         
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
            
             AuditKey = auditKey;
@@ -49,6 +50,7 @@ namespace dexih.transforms
                 pushQuery.Rows = _selectQuery.Rows;
                 pushQuery.Filters = _selectQuery.Filters;
                 pushQuery.Sorts = _selectQuery.Sorts;
+                pushQuery.Groups = _selectQuery.Groups;
             }
             else if(query != null)
             {
@@ -68,7 +70,17 @@ namespace dexih.transforms
                 {
                     pushQuery.Sorts = query.Sorts;
                 }
+
+                if (_selectQuery?.Groups != null && _selectQuery.Groups.Count > 0)
+                {
+                    pushQuery.Groups = _selectQuery.Groups;
+                }
+                else
+                {
+                    pushQuery.Groups = query.Groups;
+                }
             }
+            
             _rowCount = 0;
 
             // if there are sorts, insert a sort transform.
@@ -76,6 +88,28 @@ namespace dexih.transforms
             {
                 var sortTransform = new TransformSort(PrimaryTransform, pushQuery.Sorts);
                 PrimaryTransform = sortTransform;
+            }
+            
+            // if there are aggregates ,insert a group transform.
+            if (pushQuery.Columns.Any(c => c.Aggregate != null) || pushQuery.Groups?.Count > 0)
+            {
+                if (pushQuery.Columns.Any(c => c.Aggregate == null))
+                {
+                    throw new TransformException("The query transform failed as there was a mix of aggregate and non aggregate columns in the one query.");
+                }
+
+                var mappings = new Mappings(false);
+                foreach(var group in pushQuery.Groups)
+                {
+                    mappings.Add(new MapGroup(group));
+                }
+
+                foreach (var column in pushQuery.Columns)
+                {
+                    mappings.Add(new MapAggregate(column.Column, column.Column, column.Aggregate.Value));
+                }
+                var groupTransform = new TransformGroup(PrimaryTransform, mappings);
+                PrimaryTransform = groupTransform;
             }
 
             var returnValue = await PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);

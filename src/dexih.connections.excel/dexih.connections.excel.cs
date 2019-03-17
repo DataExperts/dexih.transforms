@@ -53,7 +53,7 @@ namespace dexih.connections.excel
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
 	    public override bool CanUseSql => false;
-	    public override bool CanUseAutoIncrement => false;
+	    public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
 	    public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
@@ -295,7 +295,7 @@ namespace dexih.connections.excel
             }
         }
 	    
-        public override  Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override  Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
         {
 		    using (var package = NewConnection())
 		    {
@@ -320,7 +320,7 @@ namespace dexih.connections.excel
             return Task.FromResult(table);
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
@@ -378,7 +378,7 @@ namespace dexih.connections.excel
         }
 	    
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
@@ -434,9 +434,9 @@ namespace dexih.connections.excel
 		    var columnMappings = new Dictionary<string, int>();
 		    for (var col = ExcelHeaderCol; col <= worksheet.Dimension.Columns && col <= ExcelHeaderColMax; col++)
 		    {
-			    var columName = worksheet.GetValue(ExcelHeaderRow, col).ToString();
-			    if (string.IsNullOrEmpty(columName)) columName = "Column-" + col.ToString();
-			    columnMappings.Add(columName, col);
+			    var columnName = worksheet.GetValue(ExcelHeaderRow, col)?.ToString();
+			    if (string.IsNullOrEmpty(columnName)) columnName = "Column-" + col;
+			    columnMappings.Add(columnName, col);
 		    }
 
 		    return columnMappings;
@@ -548,12 +548,13 @@ namespace dexih.connections.excel
 		    return filterResult;
 	    }
 
-        public override  Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        public override  Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
                 long rowsInserted = 0;
                 long autoIncrementValue = -1;
+                long identityValue = 0;
 
                 using (var package = NewConnection())
                 {
@@ -561,7 +562,7 @@ namespace dexih.connections.excel
 
                     var columnMappings = GetHeaderOrdinals(worksheet);
 
-                    var autoIncrementColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+                    var autoIncrementColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
                     var autoIncrementOrdinal = -1;
                     if (autoIncrementColumn != null && columnMappings.ContainsKey(autoIncrementColumn.Name))
                     {
@@ -592,6 +593,9 @@ namespace dexih.connections.excel
 
                         foreach (var column in query.InsertColumns)
                         {
+	                        if (column.Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+		                        identityValue = Convert.ToInt64(column.Value);
+	                        
                             if (!columnMappings.ContainsKey(column.Column.Name))
                             {
                                 throw new ConnectionException($"The column with the name ${column.Column.Name} could not be found.");
@@ -607,8 +611,9 @@ namespace dexih.connections.excel
                     }
                 }
 
+                if (identityValue > 0) return Task.FromResult(identityValue);
 
-                return Task.FromResult<long>(autoIncrementValue);
+                return Task.FromResult(autoIncrementValue);
             }
             catch (Exception ex)
             {
@@ -708,15 +713,16 @@ namespace dexih.connections.excel
                 using (var package = NewConnection())
                 {
                     long rowsInserted = 0;
+                    long autoIncrementValue = 0;
 
                     var worksheet = GetWorkSheet(package, table.Name);
 
                     // get the position of each of the column names.
                     var columnMappings = GetHeaderOrdinals(worksheet);
 
-	                var autoIncrementColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+	                var autoIncrementColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
 	                var autoIncrementOrdinal = -1;
-	                if (autoIncrementColumn != null && columnMappings.ContainsKey(autoIncrementColumn.Name))
+	                if (autoIncrementColumn != null)
 	                {
 		                autoIncrementOrdinal = columnMappings[autoIncrementColumn.Name];
 	                }
@@ -730,17 +736,13 @@ namespace dexih.connections.excel
 		                    throw new ConnectionException("Insert bulk operation cancelled.");
 	                    }
 
-	                    if (autoIncrementOrdinal >= 0)
-	                    {
-		                    worksheet.SetValue(row, autoIncrementOrdinal, row);
-	                    }
-	                    
                         foreach (var mapping in columnMappings)
                         {
 	                        var ordinal = reader.GetOrdinal(mapping.Key);
-	                        if (ordinal >= 0 && mapping.Value != autoIncrementOrdinal)
+	                        if (ordinal >= 0)
 	                        {
-		                        worksheet.SetValue(row, mapping.Value, reader[ordinal]);
+		                        worksheet.SetValue(row, mapping.Value,
+			                        mapping.Value == autoIncrementOrdinal ? autoIncrementValue++ : reader[ordinal]);
 	                        }
                         }
 

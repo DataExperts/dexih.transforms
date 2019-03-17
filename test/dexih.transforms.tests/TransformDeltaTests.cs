@@ -86,12 +86,8 @@ namespace dexih.transforms.tests
 
             //write result to a memory table
             var memoryConnection = new ConnectionMemory();
-            var writer = new TransformWriter();
-            var result = new TransformWriterResult();
-            result.SetProperties(0, 10, 10, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null,
-                TransformWriterResult.ETriggerMethod.Manual, "Test");
-            var writeResult = await writer.WriteRecordsAsync(result, transformDelta, TransformWriterTarget.ETransformWriterMethod.Bulk, target.CacheTable, memoryConnection, CancellationToken.None);
-            Assert.True(writeResult);
+            var targetWriter = new TransformWriterTarget(memoryConnection, targetTable );
+            await targetWriter.WriteRecordsAsync(transformDelta, false, CancellationToken.None);
 
             target = memoryConnection.GetTransformReader(target.CacheTable); // new ReaderMemory(target.CacheTable, null);
             target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
@@ -230,10 +226,12 @@ namespace dexih.transforms.tests
             await memoryConnection.CreateTable(table, false, CancellationToken.None);
 
             // write result to a memory table
-            var writer = new TransformWriter();
-            var result = new TransformWriterResult();
-            result.SetProperties(0, 1, 2, "DataLink", 1, 2, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
-            await writer.WriteRecordsAsync(result, transformDelta, TransformWriterTarget.ETransformWriterMethod.Bulk, table, memoryConnection, CancellationToken.None);
+            var targetWriter = new TransformWriterTarget(memoryConnection, table );
+            await targetWriter.WriteRecordsAsync(transformDelta, false, CancellationToken.None);
+
+//            var writer = new TransformWriterTarget(memoryConnection, target.CacheTable);
+//            await writer.WriteRecordsAsync(transformDelta, CancellationToken.None);
+
             target = memoryConnection.GetTransformReader(table);
             target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
 
@@ -299,10 +297,14 @@ namespace dexih.transforms.tests
 
             //run the delta again.  this should ignore all 10 records.
             transformDelta.SetRowNumber(0);
-            result = new TransformWriterResult();
-            result.SetProperties(0, 1, 2, "DataLink", 30, 40, "Test", 1, "Source", 2, "Target", null, null, TransformWriterResult.ETriggerMethod.Manual, "Test");
-            await writer.WriteRecordsAsync(result, transformDelta, TransformWriterTarget.ETransformWriterMethod.Bulk, table, memoryConnection, CancellationToken.None);
 
+            // write result to a memory table
+            targetWriter = new TransformWriterTarget(memoryConnection, table );
+            await targetWriter.WriteRecordsAsync(transformDelta, false, CancellationToken.None);
+
+//            writer = new TransformWriterTarget(memoryConnection, target.CacheTable);
+//            await writer.WriteRecordsAsync(transformDelta, CancellationToken.None);
+//            
             target = memoryConnection.GetTransformReader(table);
             transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
             await transformDelta.Open(0, null, CancellationToken.None);
@@ -450,7 +452,7 @@ namespace dexih.transforms.tests
             else
                 Assert.True(count == rows);
 
-            WriteTransformPerformance(transformDelta);
+            Trace.WriteLine(transformDelta.PerformanceDetails());
 
             ////write result to a memory table
             //ConnectionMemory memoryConnection = new ConnectionMemory();
@@ -461,14 +463,5 @@ namespace dexih.transforms.tests
             //Assert.True(transformDelta.RowsCreated == 100000);
         }
 
-        void WriteTransformPerformance(Transform transform)
-        {
-            if (transform != null)
-            {
-                Trace.WriteLine(transform.Details() + " performance: " + transform.TransformTimerTicks());
-                WriteTransformPerformance(transform.PrimaryTransform);
-                WriteTransformPerformance(transform.ReferenceTransform);
-            }
-        }
     }
 }

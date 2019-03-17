@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Xml;
 using dexih.functions.BuiltIn;
 using Dexih.Utils.DataType;

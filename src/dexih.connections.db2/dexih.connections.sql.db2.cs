@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using dexih.functions;
-using System.IO;
 using System.Data.Common;
 using System.Threading;
 using dexih.connections.sql;
@@ -37,7 +36,7 @@ namespace dexih.connections.db2
     {
         public override bool CanUseUnsigned => false;
         public override bool CanUseBoolean => false;
-        public override bool CanUseAutoIncrement => true;
+        public override bool CanUseDbAutoIncrement => true;
         public override bool CanUseArray => false;
         
         // this is creator for linux/ owner for zos (stupid IBM!!!!)
@@ -105,7 +104,7 @@ namespace dexih.connections.db2
                     var col = table.Columns[i];
 
                     //ignore datatypes for autoincrement and create a primary key.
-                    if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
                     {
                         createSql.Append($"{AddDelimiter(col.Name)} {GetSqlType(col)} NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) ");
                     }

@@ -38,7 +38,7 @@ namespace dexih.transforms
 
         public override bool CanUseSql => throw new NotImplementedException();
 
-        public override bool CanUseAutoIncrement => false;
+        public override bool CanUseDbAutoIncrement => false;
 
 
         public override bool DynamicTableCreation => throw new NotImplementedException();
@@ -53,12 +53,12 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -73,7 +73,7 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -113,7 +113,7 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

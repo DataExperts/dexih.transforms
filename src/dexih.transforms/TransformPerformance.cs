@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using dexih.functions.Query;
 
 namespace dexih.transforms
 {

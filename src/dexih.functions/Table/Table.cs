@@ -3,8 +3,9 @@ using Dexih.Utils.DataType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
@@ -21,7 +22,7 @@ namespace dexih.functions
             Columns = new TableColumns();
         }
 
-        public Table(string tableName, TableColumns columns, TableCache data) 
+        public Table(string tableName, TableColumns columns, TableCache data = null) 
         {
             Name = tableName;
             LogicalName = DefaultLogicalName();
@@ -231,8 +232,6 @@ namespace dexih.functions
                 throw new TableException("The lookup multiple rows failed.  " + ex.Message, ex);
             }
         }
-
-
 
         public bool RowMatch(IEnumerable<Filter> filters, object[] row)
         {
@@ -473,33 +472,6 @@ namespace dexih.functions
 			return ordinal;
 		}
 
-        public int[] GetOrdinalPath(string schemaColumnName, TableColumns columns = null)
-        {
-            if (columns == null)
-            {
-                columns = Columns;
-            }
-
-            var ordinal = columns.GetOrdinal(schemaColumnName);
-            if (ordinal >= 0)
-            {
-                return new[] {ordinal};
-            }
-
-            for (var i = 0; i < columns.Count; i++)
-            {
-                var column = columns[i];
-                var ordinals = GetOrdinalPath(schemaColumnName, column.ChildColumns);
-
-                if (ordinals.Length > 0)
-                {
-                    return ordinals.Prepend(i).ToArray();
-                }
-            }
-
-            return new int[0];
-        }
-
         public TableColumn GetDeltaColumn(TableColumn.EDeltaType deltaType)
         {
             try
@@ -516,6 +488,22 @@ namespace dexih.functions
         {
             for (var i = 0; i < Columns.Count; i++)
                 if (Columns[i].DeltaType == deltaType)
+                    return i;
+
+            return -1;
+        }
+
+        public TableColumn GetAutoIncrementColumn()
+        {
+            return GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement) ??
+                   GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+
+        }
+
+        public int GetAutoIncrementOrdinal()
+        {
+            for (var i = 0; i < Columns.Count; i++)
+                if (Columns[i].DeltaType == TableColumn.EDeltaType.AutoIncrement || Columns[i].DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
                     return i;
 
             return -1;

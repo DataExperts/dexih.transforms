@@ -2,11 +2,9 @@
 using dexih.transforms;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using dexih.connections.flatfile;
 using Xunit;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
@@ -41,7 +39,7 @@ namespace dexih.connections.test
 
             var identity = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
             
-            if(connection.CanUseAutoIncrement) Assert.Equal(1, identity);
+            if(connection.CanUseDbAutoIncrement) Assert.Equal(1, identity);
 
             //insert a second row
             insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
@@ -58,7 +56,7 @@ namespace dexih.connections.test
 
             identity = await connection.ExecuteInsert(table, new List<InsertQuery>() { insertQuery }, CancellationToken.None);
 
-            if(connection.CanUseAutoIncrement) Assert.Equal(2, identity);
+            if(connection.CanUseDbAutoIncrement) Assert.Equal(2, identity);
 
             ////if the write was a file.  move it back to the incoming directory to read it.
             if(connection.Attributes.ConnectionCategory == Connection.EConnectionCategory.File)

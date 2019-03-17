@@ -27,7 +27,7 @@ namespace dexih.transforms
         public override bool CanUseXml => true;
         public override bool CanUseCharArray => true;
         public override bool CanUseSql => false;
-        public override bool CanUseAutoIncrement => false;
+        public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
         public override Task<Table> InitializeTable(Table table, int position) => Task.FromResult<Table>(null);
@@ -51,7 +51,7 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, int transactionReference, CancellationToken cancellationToken)
         {
             var deleteTable = _tables[table.Name];
 
@@ -94,13 +94,13 @@ namespace dexih.transforms
         }
 
 
-        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             var insertTable = _tables[table.Name];
 
             long maxIncrement = 0;
             var autoIncrementOrdinal = -1;
-            var autoIncrement = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+            var autoIncrement = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
             if(autoIncrement != null)
             {
                 autoIncrementOrdinal = table.GetOrdinal(autoIncrement.Name);
@@ -143,11 +143,17 @@ namespace dexih.transforms
         public TableCache GetTableData(Table table)
         {
             var returnTable = _tables[table.Name];
-            if(returnTable != null)
+            return returnTable?.Data;
+        }
+
+        public Table GetTable(string tableName)
+        {
+            if (_tables.TryGetValue(tableName, out var getTable))
             {
-                return returnTable.Data;
+                return getTable;
             }
-            return null;
+            
+            throw new ConnectionException($"The table {tableName} does not exist in the memory connection.");
         }
 
         public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
@@ -156,14 +162,33 @@ namespace dexih.transforms
             return Task.FromResult<DbDataReader>(reader);
         }
 
-        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
         {
-            //TODO Implement ExecuteScalar in ConnectionMemory.
+            var t = GetTable(table.Name);
+            var reader = new ReaderMemory(t);
+            await reader.Open(0, query, cancellationToken);
+            var hasRow = await reader.ReadAsync(cancellationToken);
 
-            throw new NotImplementedException();
+            object value;
+            if (!hasRow)
+            {
+                value = null;
+            }
+            else if (query.Columns.Count == 0)
+            {
+                value = reader[0];
+            }
+            else
+            {
+                value = reader[query.Columns[0].Column.Name];
+            }
+            reader.Close();
+            reader.Dispose();
+
+            return value;
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, int transactionReference, CancellationToken cancellationToken)
         {
             var updateTable = _tables[table.Name];
 
@@ -214,7 +239,7 @@ namespace dexih.transforms
             return Task.FromResult(_tables.Values.ToList());
         }
 
-        public override Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
         {
             _tables[table.Name].Data.Clear();
             return Task.CompletedTask;

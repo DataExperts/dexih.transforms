@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Diagnostics;
-using System.Runtime.InteropServices.ComTypes;
-using dexih.transforms;
 using dexih.transforms.Poco;
-using dexih.transforms.tests;
 
 namespace FunctionExamples
 {

@@ -1,10 +1,5 @@
 ﻿using dexih.connections.test;
-using dexih.functions;
-using dexih.transforms;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -72,6 +67,18 @@ namespace dexih.connections.sql.sqlserver
             var connection = GetConnection();
 
             await new SqlReaderTests().Unit(connection, database);
+        }
+        
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public async Task SqlServer_ParentChild_Write(bool useDbAutoIncrement, bool useTransaction)
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new TransformWriterTarget().ParentChild_Write(connection, database, useDbAutoIncrement, useTransaction);
         }
 
         //[Fact]

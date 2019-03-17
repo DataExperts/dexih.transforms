@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using dexih.functions.Query;
 using dexih.transforms.Poco;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms
 {
+    /// <summary>
+    /// Stores auditing information captured when using the TransformWriter.
+    /// </summary>
     [PocoTable(Name = "DexihResults")]
     public class TransformWriterResult
     {
@@ -25,45 +27,22 @@ namespace dexih.transforms
         public event Finish OnFinish;
 
         #endregion
+        
 
         public TransformWriterResult()
         {
-
-        }
-        
-        public TransformWriterResult(long hubKey, long auditConnectionKey, string auditType, long referenceKey,
-            long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName,
-            long targetTableKey, string targetTableName, Connection auditConnection,
-            TransformWriterOptions transformWriterOptions )
-        {
-            HubKey = hubKey;
-            AuditConnectionKey = auditConnectionKey;
-            AuditType = auditType;
-            ReferenceKey = referenceKey;
-            ParentAuditKey = parentAuditKey;
-            ReferenceName = referenceName;
-            SourceTableKey = sourceTableKey;
-            SourceTableName = sourceTableName;
-            TargetTableKey = targetTableKey;
-            TargetTableName = targetTableName;
-            AuditConnection = auditConnection;
-            
+           
             InitializeTime = DateTime.Now;
             LastUpdateTime = InitializeTime;
             RunStatus = ERunStatus.Initialised;
-
-            if (transformWriterOptions != null)
-            {
-                TriggerMethod = transformWriterOptions.TriggerMethod;
-                TriggerInfo = transformWriterOptions.TriggerInfo;
-                ResetIncremental = transformWriterOptions.ResetIncremental;
-                ResetIncrementalValue = transformWriterOptions.ResetIncrementalValue;
-                TruncateTarget = transformWriterOptions.TruncateTarget;
-            }
-
             IsCurrent = true;
             IsPrevious = false;
             IsPreviousSuccess = false;
+        }
+        
+        public TransformWriterResult(Connection auditConnection) : this()
+        {
+            AuditConnection = auditConnection;
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
@@ -93,9 +72,12 @@ namespace dexih.transforms
             External,
             Datajob
         }
+        
+        [PocoColumn(Skip = true)]
+        public TransformWriterOptions TransformWriterOptions { get; set; }
 
 
-        [PocoColumn(DeltaType = TableColumn.EDeltaType.AutoIncrement, IsKey = true)]
+        [PocoColumn(DeltaType = TableColumn.EDeltaType.DbAutoIncrement, IsKey = true)]
         public long AuditKey { get; set; }
 
         [PocoColumn(MaxLength = 30)]
@@ -186,14 +168,14 @@ namespace dexih.transforms
         public string RejectTableName { get; set; }
 
 
-        [PocoColumn(Skip = true)]
-        public bool TruncateTarget { get; set; } //once off truncate of the target table.  
-
-        [PocoColumn(Skip = true)]
-        public bool ResetIncremental { get; set; }
-
-        [PocoColumn(Skip = true)]
-        public object ResetIncrementalValue { get; set; }
+//        [PocoColumn(Skip = true)]
+//        public bool TruncateTarget { get; set; } //once off truncate of the target table.  
+//
+//        [PocoColumn(Skip = true)]
+//        public bool ResetIncremental { get; set; }
+//
+//        [PocoColumn(Skip = true)]
+//        public object ResetIncrementalValue { get; set; }
 
         /// these are used when reading the from table, if record is the current version, previous version, or the previous version that was successful.
         public bool IsCurrent { get; set; }
@@ -257,23 +239,19 @@ namespace dexih.transforms
             if (AuditConnection != null)
             {
                 LastUpdateTime = DateTime.Now;
-
-                try
-                {
-                    await AuditConnection.InitializeAudit(this, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    RunStatus = ERunStatus.Abended;
-                    AddMessage($"An error occurred when updating the audit table of connection {AuditConnection.Name}.  {ex.Message}");
-                    AddExceptionDetails(ex);
-                }
+                await AuditConnection.InitializeAudit(this, cancellationToken);
             }
 
             return true;
         }
 
-
+        private void DbOperationFailed(Task task, Exception exception)
+        {
+            AddExceptionDetails(exception);
+            RunStatus = ERunStatus.Abended;
+            AddMessage($"An error occurred when updating the audit table of connection {AuditConnection.Name}.  {exception.Message}");
+        }
+        
         /// <summary>
         /// Updates the run status, the audit table, and sends a status update event
         /// </summary>
@@ -281,7 +259,7 @@ namespace dexih.transforms
         /// <param name="message"></param>
         /// <param name="exception"></param>
         /// <returns></returns>
-        public async Task<bool> SetRunStatus(ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken)
+        public bool SetRunStatus(ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken)
         {
             try
             {
@@ -305,18 +283,7 @@ namespace dexih.transforms
                 if (AuditConnection != null)
                 {
                     LastUpdateTime = DateTime.Now;
-
-                    try
-                    {
-                        await AuditConnection.UpdateAudit(this, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        AddExceptionDetails(ex);
-                        RunStatus = ERunStatus.Abended;
-                        AddMessage($"An error occurred when updating the audit table of connection {AuditConnection.Name}.  {ex.Message}");
-                        return false;
-                    }
+                    UpdateDatabaseTask();
                 }
 
                 OnStatusUpdate?.Invoke(this);
@@ -330,6 +297,30 @@ namespace dexih.transforms
                 AddMessage($"An error occurred when updating run status.  {ex.Message}");
                 return false;
             }
+        }
+
+        private Task _task;
+        private bool _databaseUpdating;
+        private async Task UpdateDatabaseTask()
+        {
+            if (_databaseUpdating) return;
+            
+            if (_task != null)
+            {
+                _databaseUpdating = true;
+                await _task;
+                _task = null;
+                _databaseUpdating = false;
+            }
+            
+            _task = AuditConnection.UpdateAudit(this, CancellationToken.None);
+        }
+
+        public Task Finalize()
+        {
+            if (_task == null) return Task.CompletedTask;
+            
+            return _task;
         }
 
         private void AddExceptionDetails(Exception exception)

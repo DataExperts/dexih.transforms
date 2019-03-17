@@ -1,8 +1,6 @@
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using dexih.functions;
-using dexih.functions.File;
 using dexih.transforms.File;
 using Dexih.Utils.DataType;
 using Xunit;

@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using dexih.functions.Query;
@@ -113,7 +112,7 @@ namespace dexih.transforms
         /// <summary>
         /// Allows for columns which are automatically incremented by the database
         /// </summary>
-        public abstract  bool CanUseAutoIncrement { get; }
+        public abstract  bool CanUseDbAutoIncrement { get; }
 
         /// <summary>
         /// The connection can natively insert timespan.
@@ -131,25 +130,66 @@ namespace dexih.transforms
         public virtual bool CanUseSByte { get; } = true;
 
         public abstract bool CanUseSql { get; }
-        
+
+        public virtual bool CanUseTransaction { get; } = false;
+
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
+
+        public virtual Task<int> StartTransaction()
+        {
+            throw new ConnectionException($"The current connection {Name} does not support transactions.");
+        }
+
+        public virtual void CommitTransaction(int transactionReference)
+        {
+            throw new ConnectionException($"The current connection {Name} does not support transactions.");
+        }
+
+        public virtual void RollbackTransaction(int transactionReference)
+        {
+            throw new ConnectionException($"The current connection {Name} does not support transactions.");
+        }
 
         public FilePermissions FilePermissions { get; set; }
         
         //Functions required for managed connection
         public abstract Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken);
-        //public abstract Task TestConnection();
-        public abstract Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken);
-        public abstract Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken);
+
+        public Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        {
+            return ExecuteUpdate(table, queries, -1, cancellationToken);
+        }
+
+        public Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
+        {
+            return ExecuteDelete(table, queries, -1, cancellationToken);
+        }
+
+        public Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        {
+            return ExecuteInsert(table, queries, -1, cancellationToken);
+        }
+
+        public Task TruncateTable(Table table, CancellationToken cancellationToken)
+        {
+            return TruncateTable(table, -1, cancellationToken);
+        }
+
+        
+        public abstract Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken);
+        public abstract Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="table"></param>
         /// <param name="queries"></param>
+        /// <param name="transactionReference"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>The last autoincrement value</returns>
-        public abstract Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken);
+        public abstract Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken);
+
+        public abstract Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken);
 
         /// <summary>
         /// Runs a bulk insert operation for the connection.  
@@ -161,7 +201,6 @@ namespace dexih.transforms
         public abstract Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken);
         public abstract Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken);
         public abstract Transform GetTransformReader(Table table, bool previewMode = false);
-        public abstract Task TruncateTable(Table table, CancellationToken cancellationToken);
         public abstract Task<bool> TableExists(Table table, CancellationToken cancellationToken);
 
         /// <summary>
@@ -271,6 +310,13 @@ namespace dexih.transforms
 //            return writerResult;
 //        }
 
+        public async Task<TransformWriterResult> InitializeAudit(CancellationToken cancellationToken)
+        {
+            var writerResult = new TransformWriterResult(this);
+            await InitializeAudit(writerResult, cancellationToken);
+            return writerResult;
+        }
+        
         public async Task InitializeAudit(TransformWriterResult writerResult, CancellationToken cancellationToken)
         {
             var pocoTable = new PocoTable<TransformWriterResult>();
@@ -462,6 +508,13 @@ namespace dexih.transforms
             return true;
         }
 
+        public async Task<Transform> GetTransformReader(string tableName, CancellationToken cancellationToken = default)
+        {
+            var table = await GetSourceTableInfo(tableName, cancellationToken);
+            var transform = GetTransformReader(table, true);
+            return transform;
+        }
+
 
         /// <summary>
         /// Gets the next surrogatekey.
@@ -470,7 +523,7 @@ namespace dexih.transforms
         /// <param name="surrogateKeyColumn"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<long> GetNextKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken)
+        public virtual async Task<long> GetNextKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken = default)
         {
             if(DynamicTableCreation)
             {
@@ -479,7 +532,7 @@ namespace dexih.transforms
 
             var query = new SelectQuery()
             {
-                Columns = new List<SelectColumn>() { new SelectColumn(surrogateKeyColumn, SelectColumn.EAggregate.Max) },
+                Columns = new List<SelectColumn> { new SelectColumn(surrogateKeyColumn, SelectColumn.EAggregate.Max) },
                 Table = table.Name
             };
 
@@ -493,7 +546,7 @@ namespace dexih.transforms
                 try
                 {
                     var convertResult = Operations.Parse<long>(executeResult);
-                    surrogateKeyValue = (long)convertResult;
+                    surrogateKeyValue = convertResult;
                 } 
                 catch(Exception ex)
                 {
@@ -502,7 +555,6 @@ namespace dexih.transforms
             }
 
             return surrogateKeyValue;
-
         }
 
         /// <summary>
@@ -514,7 +566,7 @@ namespace dexih.transforms
         /// <param name="value"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken)
+        public virtual Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
@@ -529,7 +581,7 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
-        public virtual object ConvertForWrite(TableColumn column, object value)
+        public object ConvertForWrite(TableColumn column, object value)
         {
             return ConvertForWrite(column.Name, column.DataType, column.Rank, column.AllowDbNull, value);
         }
@@ -656,7 +708,7 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
-        public async Task<Table> GetPreview(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public async Task<Table> GetPreview(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -743,7 +795,7 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>true if table matches, throw an exception is it does not match</returns>
-        public virtual async Task<bool> CompareTable(Table table, CancellationToken cancellationToken)
+        public virtual async Task<bool> CompareTable(Table table, CancellationToken cancellationToken = default)
         {
             var physicalTable = await GetSourceTableInfo(table, cancellationToken);
             if (physicalTable == null)

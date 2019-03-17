@@ -19,13 +19,6 @@ namespace dexih.transforms
         // after resets and row positions.
         private bool _cacheLoaded = false;
 
-//        public override ECacheMethod CacheMethod
-//        {
-//            get => ECacheMethod.NoCache;
-//            protected set =>
-//                throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
-//        }
-
         #region Constructors
 
         public ReaderMemory(Table dataTable, List<Sort> sortFields = null)

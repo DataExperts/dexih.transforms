@@ -1,5 +1,4 @@
 using dexih.functions.Query;
-using Dexih.Utils.DataType;
 using Xunit;
 
 namespace dexih.functions.tests

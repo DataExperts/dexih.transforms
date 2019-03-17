@@ -2,11 +2,7 @@
 using dexih.transforms;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Reflection;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test

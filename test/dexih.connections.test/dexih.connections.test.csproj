@@ -26,7 +26,19 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\dexih.connections.azure\dexih.connections.azure.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.db2\dexih.connections.db2.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.dexih\dexih.connections.dexih.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.excel\dexih.connections.excel.csproj" />
     <ProjectReference Include="..\..\src\dexih.connections.flatfile\dexih.connections.flatfile.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.ftp\dexih.connections.ftp.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.mysql\dexih.connections.mysql.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.oracle\dexih.connections.oracle.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.postgressql\dexih.connections.postgressql.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.sftp\dexih.connections.sftp.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.sqlite\dexih.connections.sqlite.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.sqlserver\dexih.connections.sqlserver.csproj" />
+    <ProjectReference Include="..\..\src\dexih.connections.webservice.restful\dexih.connections.webservice.restful.csproj" />
     <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj">
     </ProjectReference>
     <ProjectReference Include="..\..\src\dexih.functions\dexih.functions.csproj" />

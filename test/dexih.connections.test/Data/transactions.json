@@ -5,15 +5,15 @@
       "items": [
         {
           "item_id": 11,
-          "desc": "component 1"
+          "desc": "component 11"
         },
         {
           "item_id": 12,
-          "desc": "component 2"
+          "desc": "component 12"
         },
         {
           "item_id": 13,
-          "desc": "component 3"
+          "desc": "component 13"
         }
       ]
     },
@@ -23,15 +23,15 @@
       "items": [
         {
           "item_id": 21,
-          "desc": "component 1"
+          "desc": "component 21"
         },
         {
           "item_id": 22,
-          "desc": "component 2"
+          "desc": "component 22"
         },
         {
           "item_id": 23,
-          "desc": "component 3"
+          "desc": "component 23"
         }
       ]
     }

@@ -1,8 +1,5 @@
 ﻿using dexih.connections.test;
-using dexih.functions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,7 +30,7 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestMySql_BasicTests()
+        public async Task MySql_Basic()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
             ConnectionMySql connection = GetConnection();
@@ -41,7 +38,7 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestMySql_TransformTests()
+        public async Task MySql_TransformTests()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -49,13 +46,13 @@ namespace dexih.connections.sql
         }
 
         [Fact]
-        public async Task TestMySql_PerformanceTests()
+        public async Task MySql_PerformanceTests()
         {
             await new PerformanceTests(_output).Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 10000);
         }
         
         [Fact]
-        public async Task TestMySql_TransformWriter()
+        public async Task MySql_TransformWriter()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
@@ -63,7 +60,7 @@ namespace dexih.connections.sql
         }
         
         [Fact]
-        public async Task TestMySql_SqlReader()
+        public async Task MySql_SqlReader()
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
@@ -72,12 +69,24 @@ namespace dexih.connections.sql
         }
         
         [Fact]
-        public async Task Test_Transaction_Writer()
+        public async Task MySql_Transaction_Writer()
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
 
-            await new TransformWriterTransactional().Unit(connection, database);
+            await new TransformWriterTarget().ParentChild_Write(connection, database, false, true);
+        }
+        
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public async Task MySql_ParentChild_Write(bool useDbAutoIncrement, bool useTransaction)
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new TransformWriterTarget().ParentChild_Write(connection, database, useDbAutoIncrement, useTransaction);
         }
     }
 }

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +9,6 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
-using Dexih.Utils.DataType;
 using Oracle.ManagedDataAccess.Client;
 using static Dexih.Utils.DataType.DataType;
 
@@ -48,6 +45,8 @@ namespace dexih.connections.sql
 
 
         protected override char SqlParameterIdentifier => ':';
+        public override bool AllowsTruncate { get; } = false;
+
         
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
@@ -408,7 +407,7 @@ namespace dexih.connections.sql
 
                         createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col) + " ");
                         
-                        if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                        if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
                             createSql.Append("GENERATED ALWAYS as IDENTITY(START with 1 INCREMENT by 1) ");
 
                         if (col.AllowDbNull == false)
@@ -433,7 +432,7 @@ namespace dexih.connections.sql
                         await command.ExecuteNonQueryAsync(cancellationToken);
                     }
 
-                    var skCol = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+                    var skCol = table.GetAutoIncrementColumn();
                     if (skCol != null)
                     {
                         using (var command = connection.CreateCommand())
@@ -850,85 +849,103 @@ ORDER BY cols.table_name, cols.position"))
 //        }
           
        
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
              try
             {
-                var autoIncrementSql = "";
-                var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-                if (deltaColumn != null)
-                {
-                    autoIncrementSql = "SELECT max(" + AddDelimiter(deltaColumn.Name) + ") from " + SqlTableName(table);
-                }
+                if (queries.Count == 0) return 0;
+                
+                long identityValue = 0;
+                long autoIncrementValue = 0;
 
-                using (var connection = (OracleConnection) await NewConnection())
+                var transactionConnection = await GetTransaction(transactionReference);
+                var connection = (OracleConnection) transactionConnection.connection;
+                var transaction = (OracleTransaction) transactionConnection.transaction;
+
+                try
                 {
                     var insert = new StringBuilder();
                     var values = new StringBuilder();
 
-                    using (var transaction = connection.BeginTransaction())
+                    foreach (var query in queries)
                     {
-                        foreach (var query in queries)
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        insert.Clear();
+                        values.Clear();
+
+                        insert.Append("INSERT INTO " + SqlTableName(table) + " (");
+                        values.Append("VALUES (");
+
+                        for (var i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            insert.Clear();
-                            values.Clear();
-
-                            insert.Append("INSERT INTO " + SqlTableName(table) + " (");
-                            values.Append("VALUES (");
-
-                            for (var i = 0; i < query.InsertColumns.Count; i++)
-                            {
-                                insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
-                                values.Append(":col" + i + " ,");
-                            }
-
-                            var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
-                                values.Remove(values.Length - 1, 1) + ") ";
-
-                            try
-                            {
-                                using (var cmd = connection.CreateCommand())
-                                {
-                                    cmd.CommandText = insertCommand;
-                                    cmd.Transaction = transaction;
-
-                                    for (var i = 0; i < query.InsertColumns.Count; i++)
-                                    {
-                                        var param = cmd.CreateParameter();
-                                        param.ParameterName = $"col{i}";
-                                        param.OracleDbType = GetSqlDbType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank);
-                                        param.Value =ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
-                                        cmd.Parameters.Add(param);
-                                    }
-
-                                    await cmd.ExecuteNonQueryAsync(cancellationToken);
-
-                                }
-
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new ConnectionException($"The insert query failed.  {ex.Message}", ex);
-                            }
+                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                                continue;
+                            
+                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                                autoIncrementValue = Convert.ToInt64(query.InsertColumns[i].Value);
+                            
+                            insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
+                            values.Append(":col" + i + " ,");
                         }
-                        transaction.Commit();
+
+                        var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                            values.Remove(values.Length - 1, 1) + ") ";
+
+                        try
+                        {
+                            using (var cmd = connection.CreateCommand())
+                            {
+                                cmd.CommandText = insertCommand;
+                                cmd.Transaction = transaction;
+
+                                for (var i = 0; i < query.InsertColumns.Count; i++)
+                                {
+                                    var param = cmd.CreateParameter();
+                                    param.ParameterName = $"col{i}";
+                                    param.OracleDbType = GetSqlDbType(query.InsertColumns[i].Column.DataType,
+                                        query.InsertColumns[i].Column.Rank);
+                                    param.Value = ConvertForWrite(query.InsertColumns[i].Column,
+                                        query.InsertColumns[i].Value);
+                                    cmd.Parameters.Add(param);
+                                }
+                                
+                                cancellationToken.ThrowIfCancellationRequested();
+
+                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                            }
+
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new ConnectionException($"The insert query failed.  {ex.Message}", ex);
+                        }
+                    }
+                    
+                    if (autoIncrementValue > 0)
+                    {
+                        return autoIncrementValue;
                     }
 
-                    long identityValue = 0;
-
-                    if (!string.IsNullOrEmpty(autoIncrementSql))
+                    var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    if (deltaColumn != null)
                     {
+                        var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
                         using (var cmd = connection.CreateCommand())
                         {
-                            cmd.CommandText = autoIncrementSql;
+                            cmd.CommandText = sql;
+                            cmd.Transaction = transaction;
                             var identity = await cmd.ExecuteScalarAsync(cancellationToken);
                             identityValue = Convert.ToInt64(identity);
                         }
                     }
-
-                    return identityValue;
+                    
+                    return identityValue; //sometimes reader returns -1, when we want this to be error condition.
+                }
+                finally
+                {
+                    EndTransaction(transactionReference, transactionConnection);
                 }
             }
             catch(Exception ex)

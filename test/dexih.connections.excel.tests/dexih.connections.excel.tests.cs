@@ -1,8 +1,6 @@
 ﻿using dexih.connections.test;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -66,6 +64,16 @@ namespace dexih.connections.excel
             var connection = GetLocalConnection();
 
             await new SqlReaderTests().Unit(connection, database);
+        }
+        
+        [Theory]
+        [InlineData(false, false)]
+        public async Task Excel_ParentChild_Write(bool useDbAutoIncrement, bool useTransaction)
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetLocalConnection();
+
+            await new TransformWriterTarget().ParentChild_Write(connection, database, useDbAutoIncrement, useTransaction);
         }
 
     }

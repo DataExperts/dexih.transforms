@@ -63,7 +63,7 @@ namespace dexih.connections.excel
 
                 for (var col = headerCol; col <= _excelWorkSheet.Dimension.Columns && col <= headerMaxCol; col++)
                 {
-                    var columName = _excelWorkSheet.Cells[headerRow, col].Value.ToString();
+                    var columName = _excelWorkSheet.Cells[headerRow, col].Value?.ToString();
                     if (string.IsNullOrEmpty(columName)) columName = "Column-" + col;
                     var column = CacheTable.Columns[columName];
                     var ordinal = CacheTable.GetOrdinal(columName);

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace dexih.functions.tests
@@ -10,7 +6,7 @@ namespace dexih.functions.tests
     public class FunctionInitializers
     {
         [Fact]
-        public void FunctionFromDelegate()
+        public void TransformFunction_RunFunction_UsingDelegate()
         {
             //create a custom function
             TransformFunction function1 = new TransformFunction(new Func<int, int, int>((i, j) => i + j));
@@ -18,7 +14,7 @@ namespace dexih.functions.tests
         }
 
         [Fact]
-        public void FunctionFromMethod()
+        public void TransformFunction_RunFunction_UsingMethod()
         {
             //create a custom function
             var globalVariable = new GlobalVariables(null);
@@ -29,7 +25,7 @@ namespace dexih.functions.tests
         }
 
         [Fact]
-        public void FunctionFromReflection()
+        public void TransformFunction_RunFunction_UsingReflection()
         {
             //create a custom function
             TransformFunction function1 = new TransformFunction(this, this.GetType().GetMethod(nameof(TestMethod)), typeof(string), null, new GlobalVariables(null));

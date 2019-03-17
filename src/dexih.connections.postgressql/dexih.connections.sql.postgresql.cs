@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
@@ -38,6 +40,8 @@ namespace dexih.connections.sql
         public override bool CanUseArray => true;
         public override bool CanUseCharArray => true;
         public override bool CanUseUnsigned => false;
+        public override bool AllowsTruncate { get; } = true;
+
 
 
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
@@ -63,7 +67,7 @@ namespace dexih.connections.sql
                 var copyCommand = new StringBuilder();
                 copyCommand.Append($"COPY {SqlTableName(table)} (");
 
-                var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement).ToArray();
+                var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.DbAutoIncrement).ToArray();
                 var ordinals = new int[columns.Length];
                 var types = new NpgsqlDbType[columns.Length];
                     
@@ -176,30 +180,31 @@ namespace dexih.connections.sql
                 createSql.Append("create table " + AddDelimiter(table.Name) + " ( ");
                 foreach (var col in table.Columns)
                 {
-                    if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
-                        createSql.Append(AddDelimiter(col.Name) + " SERIAL"); //TODO autoincrement for postgresql
+                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                        createSql.Append(AddDelimiter(col.Name) + " BIGSERIAL"); //TODO autoincrement for postgresql
                     else
                     {
                         createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col));
-                        if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
-                            createSql.Append(" IDENTITY(1,1)"); //TODO autoincrement for postgresql
                         if (col.AllowDbNull == false)
+                        {
                             createSql.Append(" NOT NULL");
+                        }
                         else
+                        {
                             createSql.Append(" NULL");
+                        }
                     }
                     createSql.Append(",");
                 }
 
                 //Add the primary key using surrogate key or autoincrement.
-                var key = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-                if (key == null)
-                {
-                    key = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-                }
+                var key = table.GetAutoIncrementColumn();
 
                 if (key != null)
-                    createSql.Append("CONSTRAINT \"PK_" + AddEscape(table.Name) + "\" PRIMARY KEY (" + AddDelimiter(key.Name) + "),");
+                {
+                    createSql.Append("CONSTRAINT \"PK_" + AddEscape(table.Name) + "\" PRIMARY KEY (" +
+                                     AddDelimiter(key.Name) + "),");
+                }
 
 
                 //remove the last comma
@@ -660,105 +665,103 @@ ORDER BY c.ordinal_position"))
             return ETypeCode.Unknown;
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
+
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
-                using (var connection = await NewConnection())
-                using (var cmd = connection.CreateCommand())
-                {
-
-                    cmd.CommandText = "truncate table " + AddDelimiter(table.Name);
-
-                    try
-                    {
-                        await cmd.ExecuteNonQueryAsync(cancellationToken);
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                    catch (Exception)
-                    {
-                        // if truncate fails, try a delete from
-                        cmd.CommandText = "delete from " + AddDelimiter(table.Name);
-                        await cmd.ExecuteNonQueryAsync(cancellationToken);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Truncate table {table.Name} failed. {ex.Message}", ex);
-            }
-        }
-
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var autoIncrementSql = "";
-                var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-                if (deltaColumn != null)
-                {
-                    autoIncrementSql = "SELECT max(" + AddDelimiter(deltaColumn.Name) + ") from " + AddDelimiter(table.Name);
-                }
-
+                if (queries.Count == 0) return 0;
+                
                 long identityValue = 0;
+                long autoIncrementValue = 0;
 
-                using (var connection = (NpgsqlConnection) await NewConnection())
+                var transactionConnection = await GetTransaction(transactionReference);
+                var connection = (NpgsqlConnection) transactionConnection.connection;
+                var transaction = (NpgsqlTransaction) transactionConnection.transaction;
+
+                try
                 {
                     var insert = new StringBuilder();
                     var values = new StringBuilder();
 
-                    using (var transaction = connection.BeginTransaction())
+                    foreach (var query in queries)
                     {
-                        foreach (var query in queries)
+                        insert.Clear();
+                        values.Clear();
+
+                        insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
+                        values.Append("VALUES (");
+
+                        for (var i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            insert.Clear();
-                            values.Clear();
-
-                            insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
-                            values.Append("VALUES (");
-
-                            for (var i = 0; i < query.InsertColumns.Count; i++)
-                            {
-                                insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
-                                values.Append("@col" + i + ",");
-                            }
-
-                            var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
-                                values.Remove(values.Length - 1, 1) + "); " + autoIncrementSql;
-
-                            try
-                            {
-                                using (var cmd = connection.CreateCommand())
-                                {
-                                    cmd.CommandText = insertCommand;
-                                    cmd.Transaction = transaction;
-
-                                    for (var i = 0; i < query.InsertColumns.Count; i++)
-                                    {
-                                        var param = cmd.CreateParameter();
-                                        param.ParameterName = "@col" + i;
-                                        param.NpgsqlDbType = GetTypeCodeDbType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank);
-                                        param.Size = -1;
-                                        param.NpgsqlValue = ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
-                                        cmd.Parameters.Add(param);
-                                    }
-
-                                    var identity = await cmd.ExecuteScalarAsync(cancellationToken);
-                                    identityValue = Convert.ToInt64(identity);
-
-                                    cancellationToken.ThrowIfCancellationRequested();
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new ConnectionException($"Insert query failed.  {ex.Message}", ex);
-                            }
+                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                                continue;
+                            
+                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                                autoIncrementValue = Convert.ToInt64(query.InsertColumns[i].Value);
+                            
+                            insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
+                            values.Append("@col" + i + ",");
                         }
-                        transaction.Commit();
+
+                        var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                            values.Remove(values.Length - 1, 1) + "); ";
+
+                        try
+                        {
+                            using (var cmd = connection.CreateCommand())
+                            {
+                                cmd.CommandText = insertCommand;
+                                cmd.Transaction = transaction;
+
+                                for (var i = 0; i < query.InsertColumns.Count; i++)
+                                {
+                                    var param = cmd.CreateParameter();
+                                    param.ParameterName = "@col" + i;
+                                    param.NpgsqlDbType = GetTypeCodeDbType(query.InsertColumns[i].Column.DataType,
+                                        query.InsertColumns[i].Column.Rank);
+                                    param.Size = -1;
+                                    param.NpgsqlValue = ConvertForWrite(query.InsertColumns[i].Column,
+                                        query.InsertColumns[i].Value);
+                                    cmd.Parameters.Add(param);
+                                }
+                                
+                                cancellationToken.ThrowIfCancellationRequested();
+
+                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+                            }
+                            
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new ConnectionException($"Insert query failed.  {ex.Message}", ex);
+                        }
                     }
 
+                    if (autoIncrementValue > 0)
+                    {
+                        return autoIncrementValue;
+                    }
+
+                    var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    if (deltaColumn != null)
+                    {
+                        var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
+                        using (var cmd = connection.CreateCommand())
+                        {
+                            cmd.CommandText = sql;
+                            cmd.Transaction = transaction;
+                            var identity = await cmd.ExecuteScalarAsync(cancellationToken);
+                            identityValue = Convert.ToInt64(identity);
+                        }
+                    }
+                    
                     return identityValue; //sometimes reader returns -1, when we want this to be error condition.
 
+                }
+                finally
+                {
+                    EndTransaction(transactionReference, transactionConnection);
                 }
             }
             catch (Exception ex)
@@ -768,38 +771,6 @@ ORDER BY c.ordinal_position"))
 
         }
 
-//        private (NpgsqlDbType type, object value) GetSqlDbType(TableColumn tableColumn, object value)
-//        {
-//            if (tableColumn.IsArray())
-//            {
-//                var values =(IEnumerable)value;
-//
-//                var parsedValues = new List<object>();
-//                var type = NpgsqlDbType.Varchar;
-//
-//                var i = 0;
-//                foreach (var v in values)
-//                {
-//                    var result = GetSqlDbType(tableColumn.DataType, tableColumn.Rank, v);
-//                    type = result.type;
-//                    parsedValues.Add(result.value);
-//                    i++;
-//                }
-//
-//                if (i == 0)
-//                {
-//                    return GetSqlDbType(tableColumn.DataType, tableColumn.Rank, null);
-//                }
-//
-//                return (NpgsqlDbType.Array | type, parsedValues);
-//            }
-//            else
-//            {
-//                return GetSqlDbType(tableColumn.DataType, tableColumn.Rank, value);
-//            }
-//        }
-        
-       
         private NpgsqlDbType GetTypeCodeDbType(ETypeCode typeCode, int rank)
         {
             if (rank > 0)
@@ -859,66 +830,71 @@ ORDER BY c.ordinal_position"))
             }
         }
 
-        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {
-                using (var connection = (NpgsqlConnection) await NewConnection())
-                {
+                var transactionConnection = await GetTransaction(transactionReference);
+                var connection = (NpgsqlConnection) transactionConnection.connection;
+                var transaction = (NpgsqlTransaction) transactionConnection.transaction;
 
+                try
+                {
                     var sql = new StringBuilder();
 
-                    var rows = 0;
-
-                    using (var transaction = connection.BeginTransaction())
+                    foreach (var query in queries)
                     {
-                        foreach (var query in queries)
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        sql.Clear();
+
+                        sql.Append("update " + AddDelimiter(table.Name) + " set ");
+
+                        var count = 0;
+                        foreach (var column in query.UpdateColumns)
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
+                            sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count +
+                                       ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
+                            count++;
+                        }
 
-                            sql.Clear();
+                        sql.Remove(sql.Length - 1, 1); //remove last comma
 
-                            sql.Append("update " + AddDelimiter(table.Name) + " set ");
+                        //  Retrieving schema for columns from a single table
+                        using (var cmd = connection.CreateCommand())
+                        {
+                            sql.Append(" " + BuildFiltersString(query.Filters, cmd) + ";");
 
-                            var count = 0;
-                            foreach (var column in query.UpdateColumns)
+                            cmd.Transaction = transaction;
+                            cmd.CommandText = sql.ToString();
+
+                            for (var i = 0; i < query.UpdateColumns.Count; i++)
                             {
-                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count + ","); // cstr(count)" + GetSqlFieldValueQuote(column.Column.DataType, column.Value) + ",");
-                                count++;
+                                var param = cmd.CreateParameter();
+                                param.ParameterName = "@col" + i;
+                                param.NpgsqlDbType = GetTypeCodeDbType(query.UpdateColumns[i].Column.DataType,
+                                    query.UpdateColumns[i].Column.Rank);
+                                param.Size = -1;
+                                param.Value = ConvertForWrite(query.UpdateColumns[i].Column,
+                                    query.UpdateColumns[i].Value);
+                                cmd.Parameters.Add(param);
                             }
-                            sql.Remove(sql.Length - 1, 1); //remove last comma
 
-                            //  Retrieving schema for columns from a single table
-                            using (var cmd = connection.CreateCommand())
+                            try
                             {
-                                sql.Append(" " + BuildFiltersString(query.Filters, cmd) + ";");
-                                
-                                cmd.Transaction = transaction;
-                                cmd.CommandText = sql.ToString();
-
-                                for (var i = 0; i < query.UpdateColumns.Count; i++)
-                                {
-                                    var param = cmd.CreateParameter();
-                                    param.ParameterName = "@col" + i;
-                                    param.NpgsqlDbType = GetTypeCodeDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank);
-                                    param.Size = -1;
-                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
-                                    cmd.Parameters.Add(param);
-                                }
-
-                                try
-                                {
-                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
-                                }
-                                catch (Exception ex)
-                                {
-                                    throw new ConnectionException($"The update query failed.  {ex.Message}", ex);
-                                }
+                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new ConnectionException($"The update query failed.  {ex.Message}", ex);
                             }
                         }
-                        transaction.Commit();
                     }
-				}
+                }
+                finally
+                {
+                    EndTransaction(transactionReference, transactionConnection);
+                }
             }
             catch (Exception ex)
             {

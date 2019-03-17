@@ -47,6 +47,13 @@ namespace dexih.transforms
             _sortFields = sortFields;
         }
 
+        public TransformSort(Transform inTransform, string columnName, Sort.EDirection direction = Sort.EDirection.Ascending)
+        {
+            var column = new TableColumn(columnName);
+            Mappings = new Mappings {new MapSort(column, direction)};
+            SetInTransform(inTransform);
+        }
+
         public override bool RequiresSort => false;
         
         public override string TransformName { get; } = "Sort";

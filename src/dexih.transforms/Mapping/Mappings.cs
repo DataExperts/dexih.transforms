@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Exceptions;
 using dexih.functions.Query;
-using Dexih.Utils.DataType;
 
 namespace dexih.transforms.Mapping
 {

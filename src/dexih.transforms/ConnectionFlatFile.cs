@@ -44,7 +44,7 @@ namespace dexih.transforms
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
-        public override bool CanUseAutoIncrement => false;
+        public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => true;
 
         private Stream _fileStream;
@@ -309,7 +309,7 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override async Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
         {
             var flatFile = (FlatFile)table;
             var fileEnumerator = await GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern);
@@ -343,17 +343,17 @@ namespace dexih.transforms
             return flatFile;
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
         {
             try
             {

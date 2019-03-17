@@ -18,6 +18,7 @@ namespace dexih.transforms.File
         private IEnumerator<JToken> _jEnumerator;
         private readonly int _responseDataOrdinal;
         private readonly Dictionary<string, (int Ordinal, TableColumn column)> _responseSegmentOrdinals;
+        private readonly Dictionary<string, TransformNode> _nodeTransforms;
 
         public FileHandlerJson(Table table, string rowPath)
         {
@@ -27,10 +28,16 @@ namespace dexih.transforms.File
             _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
             _responseSegmentOrdinals = new Dictionary<string, (int ordinal, TableColumn column)>();
             
+            _nodeTransforms = new Dictionary<string, TransformNode>();
+            
             foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
             {
                 _responseSegmentOrdinals.Add(column.TableColumnName(), (_table.GetOrdinal(column.TableColumnName()), column));
             }
+            
+            _nodeTransforms.Clear();
+            InitializeNodeTransforms(_table.Columns);
+
         }
 
         public override string FileType { get; } = "Json";
@@ -74,7 +81,23 @@ namespace dexih.transforms.File
                     
                 }
             }
+            
             return columns;
+        }
+
+        private void InitializeNodeTransforms(ICollection<TableColumn> columns)
+        {
+            foreach (var column in columns.Where(c => c.DataType == DataType.ETypeCode.Node && c.ChildColumns.Count > 0))
+            {
+                var parentTable = new Table("parent", new TableColumns(columns));
+                var childTable = new Table(column.Name, column.ChildColumns);
+                var node = new TransformNode();
+                node.SetTable(childTable, parentTable);
+                
+                _nodeTransforms.Add(column.LogicalName, node);
+
+                InitializeNodeTransforms(column.ChildColumns);
+            }
         }
 
         private IEnumerable<TableColumn> GetColumns(JToken jToken, int currentLevel, int maxLevels, List<string> groups)
@@ -107,15 +130,11 @@ namespace dexih.transforms.File
 
                     return new [] { col};
                 }
-//                else if (value.Value.Type == JTokenType.Object)
-//                {
-//                    return new[] {col};
-//                }
                 else if (value.Value.Type == JTokenType.Array)
                 {
                     col.DataType = DataType.ETypeCode.Node;
                     col.Description = "Json arrays values at " + value.Path + " path";
-
+                    
                     if (currentLevel < maxLevels)
                     {
                         var children = value.Value.Children();
@@ -229,30 +248,32 @@ namespace dexih.transforms.File
 
         public override Task<object[]> GetRow()
         {
-            if (_jEnumerator != null && _jEnumerator.MoveNext())
+            if (_jEnumerator == null || !_jEnumerator.MoveNext()) return Task.FromResult((object[]) null);
+            
+            var row = new object[_fieldCount];
+
+            if (_responseDataOrdinal >= 0)
             {
-                var row = new object[_fieldCount];
-
-                if (_responseDataOrdinal >= 0)
-                {
-                    row[_responseDataOrdinal] = _jEnumerator.Current.ToString();
-                }
-
-                foreach (var column in _responseSegmentOrdinals)
-                {
-                    var path = (column.Value.column.ColumnGroup == null ? "" : column.Value.column.ColumnGroup + ".") +
-                               column.Value.column.Name;
-                    var value = _jEnumerator.Current.SelectToken(path);
-                    row[column.Value.Ordinal] = GetValue(value, column.Value.column);
-                        
-                }
-
-                return Task.FromResult(row);
+                row[_responseDataOrdinal] = _jEnumerator.Current.ToString();
             }
-            else
+
+            foreach (var column in _responseSegmentOrdinals.Values)
             {
-                return Task.FromResult((object[])null);
+                var path = (column.column.ColumnGroup == null ? "" : column.column.ColumnGroup + ".") +
+                           column.column.Name;
+                var value = _jEnumerator.Current.SelectToken(path);
+                row[column.Ordinal] = GetValue(value, column.column);
             }
+            
+            foreach (var column in _responseSegmentOrdinals.Values)
+            {
+                var path = (column.column.ColumnGroup == null ? "" : column.column.ColumnGroup + ".") +
+                           column.column.Name;
+                var value = _jEnumerator.Current.SelectToken(path);
+                row[column.Ordinal] = GetValue(value, column.column);
+            }
+
+            return Task.FromResult(row);
         }
 
         private object GetValue(JToken jToken, TableColumn column)
@@ -303,13 +324,19 @@ namespace dexih.transforms.File
                             childRow[i] = GetValue(value, childColumn);
                         }
                     }
-                    
                     data.Add(childRow);
                 }
             }
             
             var table = new Table(column.Name, column.ChildColumns, data);
-            return new ReaderMemory(table);
+            var reader = new ReaderMemory(table);
+            return reader;
+            
+//            var nodeTransform = _nodeTransforms[column.LogicalName];
+//            nodeTransform.PrimaryTransform = reader;
+//            nodeTransform.Open().Wait();  // this wait is ok as the ReaderMemory/NodeTransform open methods dont' use any "await".
+//
+//            return nodeTransform;
         }
 
     }

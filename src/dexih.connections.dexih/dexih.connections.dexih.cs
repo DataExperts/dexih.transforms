@@ -42,7 +42,7 @@ namespace dexih.connections.dexih
         public override bool CanUseJson => true;
         public override bool CanUseXml => true;
         public override bool CanUseCharArray => true;
-        public override bool CanUseAutoIncrement => false;
+        public override bool CanUseDbAutoIncrement => false;
 	    public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
         
@@ -294,7 +294,7 @@ namespace dexih.connections.dexih
 			throw new NotImplementedException();
 		}
 
-        public override Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -304,17 +304,17 @@ namespace dexih.connections.dexih
             return Task.FromResult(table);
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> query, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> query, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> query, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> query, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> query, CancellationToken cancellationToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> query, int transactionReference, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

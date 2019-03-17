@@ -1,12 +1,11 @@
-﻿using dexih.connections;
-using dexih.functions;
+﻿using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using Dexih.Utils.DataType;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.transforms.Mapping;
@@ -311,7 +310,7 @@ namespace dexih.connections.test
             {
                 var row = new object[table.Columns.Count];
 
-                row[0] = i;
+                row[0] = i+1;
                 row[1] = 0;
 
                 //load the rows with random values.
@@ -349,16 +348,18 @@ namespace dexih.connections.test
             var mappings = new Mappings(true);
             transform = new TransformMapping(transform, mappings);
             transform = new TransformValidation(transform, null, false);
-            transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.Reload, 1, false);
-            await transform.Open(0, null, CancellationToken.None);
 
-            var writer = new TransformWriter();
-            var writerResult = new TransformWriterResult();
-            await connection.InitializeAudit(writerResult, 0, 0, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", TransformWriterResult.ETriggerMethod.Manual, "Test", CancellationToken.None);
+            var writerResult = new TransformWriterResult(connection)
+            {
+                HubKey = 0, AuditConnectionKey = 1, AuditType = "Datalink", ParentAuditKey = 2
+            };
+            
+            await connection.InitializeAudit(writerResult, CancellationToken.None);
             Assert.NotNull(writerResult);
 
-            var result = await writer.WriteRecordsAsync(writerResult, transform, TransformWriterTarget.ETransformWriterMethod.Bulk, targetTable, connection, CancellationToken.None);
-
+            var target = new transforms.TransformWriterTarget(connection, targetTable, writerResult);
+            await target.WriteRecordsAsync(transform, CancellationToken.None);
+            
             Assert.Equal(rows, writerResult.RowsCreated);
 
             //check the audit table loaded correctly.

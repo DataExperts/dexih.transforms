@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
-using Dexih.Utils.DataType;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms.tests

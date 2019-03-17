@@ -37,6 +37,7 @@ namespace dexih.connections.sql
     {
         protected override string SqlDelimiterOpen { get; } = "`";
         protected override string SqlDelimiterClose { get; } = "`";
+        public override bool AllowsTruncate { get; } = true;
 
        
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
@@ -81,7 +82,7 @@ namespace dexih.connections.sql
                     var fieldCount = reader.FieldCount;
                     var row = new StringBuilder();
                     
-                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement).ToArray();
+                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.DbAutoIncrement).ToArray();
                     var ordinals = new int[columns.Length];
                     
                     for(var i = 0; i< columns.Length; i++)
@@ -208,7 +209,7 @@ namespace dexih.connections.sql
                 {
                     createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col));
                     
-                    if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
                         createSql.Append(" auto_increment");
 
                     createSql.Append(col.AllowDbNull == false ? " NOT NULL" : " NULL");
@@ -216,7 +217,7 @@ namespace dexih.connections.sql
                 }
 
 				//Add the primary key using surrogate key or autoincrement.
-				var key = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) ?? table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
+                var key = table.GetAutoIncrementColumn();
 
                 if (key != null)
 					createSql.Append("PRIMARY KEY (" + AddDelimiter(key.Name) + "),");
@@ -683,34 +684,6 @@ namespace dexih.connections.sql
             return ETypeCode.Unknown;
         }
 
-        public override async Task TruncateTable(Table table, CancellationToken cancellationToken)
-        {
-            try
-            {
-                using (var connection = await NewConnection())
-                using (var cmd = connection.CreateCommand())
-                {
-
-                    cmd.CommandText = "truncate table " + AddDelimiter(table.Name);
-
-                    try
-                    {
-                        await cmd.ExecuteNonQueryAsync(cancellationToken);
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                    catch (Exception)
-                    {
-                        cmd.CommandText = "delete from " + AddDelimiter(table.Name);
-                        await cmd.ExecuteNonQueryAsync(cancellationToken);
-                    }
-                }
-            }
-            catch(Exception ex)
-            {
-                throw new ConnectionException($"Truncate table {table.Name} failed. {ex.Message}", ex);
-
-            }
-        }
 
 //        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
 //        {
