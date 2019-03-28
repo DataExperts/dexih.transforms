@@ -158,8 +158,7 @@ namespace dexih.transforms.tests
             nodeMappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
 
             var mapping = new TransformMapping();
-            var parentTransform = mapping.CreateNodeMapping(sourceReader, null, nodeMappings,
-                new TableColumn[] {new TableColumn("children")});
+            var parentTransform = mapping.CreateNodeMapping(sourceReader, null, nodeMappings,new[] {new TableColumn("children")});
             
 //            var childrenTable = sourceReader.CacheTable["children"];
 //            
@@ -172,7 +171,7 @@ namespace dexih.transforms.tests
 //
 //            var mapping = new TransformMapping(sourceReader, mappings);
 
-            await parentTransform.Open(0, null, CancellationToken.None);
+            await parentTransform.Open();
 
             Assert.True(await parentTransform.ReadAsync());
             Assert.Equal(0, parentTransform["parent_id"]);
@@ -195,6 +194,7 @@ namespace dexih.transforms.tests
             Assert.Equal(2, parentTransform["parent_id"]);
             Assert.Equal("parent 2", parentTransform["name"]);
             childTransform = (Transform) parentTransform["children"];
+            await childTransform.Open();
             Assert.True(await childTransform.ReadAsync());
             Assert.Equal("parent 2-child 20", childTransform["parent_child"]);
             childTransform = (Transform) parentTransform["children"];
@@ -204,6 +204,7 @@ namespace dexih.transforms.tests
             Assert.Equal(3, parentTransform["parent_id"]);
             Assert.Equal("parent 3", parentTransform["name"]);
             childTransform = (Transform) parentTransform["children"];
+            await childTransform.Open();
             Assert.True(await childTransform.ReadAsync());
             Assert.Equal("parent 3-child 30", childTransform["parent_child"]);
             childTransform = (Transform) parentTransform["children"];

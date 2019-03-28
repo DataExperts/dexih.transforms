@@ -32,7 +32,7 @@ namespace dexih.functions.Exceptions
             get
             {
 #if DEBUG
-                if (Values == null)
+                if (Values == null  || Values.Length == 0)
                 {
                     return base.Message;
                 }
@@ -70,7 +70,7 @@ namespace dexih.functions.Exceptions
 
     public class FunctionIgnoreRowException : FunctionException
     {
-        public FunctionIgnoreRowException() : base()
+        public FunctionIgnoreRowException()
         {
         }
 

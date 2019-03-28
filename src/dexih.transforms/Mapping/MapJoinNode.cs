@@ -9,7 +9,7 @@ namespace dexih.transforms.Mapping
         /// <summary>
         /// Broker transform that site between the source transform, and target transforms.
         /// </summary>
-        public TransformNode Transform { get; } = new TransformNode();
+        public override TransformNode Transform { get; } = new TransformNode();
 
         public MapJoinNode(TableColumn nodeColumn, Table joinTable)
         {
@@ -51,12 +51,15 @@ namespace dexih.transforms.Mapping
             data[NodeOrdinal] = Transform;
         }
 
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
-            var transform = Transform;
-            transform.Reset(true);
-            transform.SetInTransform(InputTransform, transform.ReferenceTransform);
-            return transform;
+//            var transform = Transform;
+//            transform.Reset(true);
+//            transform.PrimaryTransform = InputTransform;
+//            // transform.SetInTransform(InputTransform, transform.ReferenceTransform);
+//            return transform;
+
+            return InputTransform;
         }
 
         public override string Description()

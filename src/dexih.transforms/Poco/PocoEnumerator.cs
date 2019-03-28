@@ -26,7 +26,7 @@ namespace dexih.transforms.Poco
             return MoveNextAsync(CancellationToken.None).Result;
         }
         
-        public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
+        public async Task<bool> MoveNextAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -55,7 +55,7 @@ namespace dexih.transforms.Poco
         public T this[int index] => throw new NotImplementedException();
 
         public int Count { get; }
-        public Task<int> CountAsync(CancellationToken cancellationToken)
+        public Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

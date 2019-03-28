@@ -107,7 +107,7 @@ namespace dexih.transforms.Mapping
             return;
         }
 
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             throw new NotSupportedException();
         }

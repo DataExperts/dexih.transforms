@@ -17,8 +17,8 @@ namespace dexih.transforms.Poco
 
         public override ECacheMethod CacheMethod
         {
-            get => ECacheMethod.PreLoadCache;
-            protected set => throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
+            get => ECacheMethod.DemandCache;
+            protected set => throw new Exception("Cache method is always Demand in the Poco Reader and cannot be set.");
         }
 
         #region Constructors
@@ -53,7 +53,7 @@ namespace dexih.transforms.Poco
             return true;
         }
 
-        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (_enumerator.MoveNext())
             {

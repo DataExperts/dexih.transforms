@@ -1,6 +1,7 @@
 ﻿using dexih.connections.test;
 using System;
 using System.Threading.Tasks;
+using dexih.transforms;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -53,15 +54,16 @@ namespace dexih.connections.azure
         }
 
         [Theory]
-        [InlineData(false, false)]
+        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
+        [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
         //[InlineData(false, true)]
         //[InlineData(true, true)]
-        public async Task MySql_ParentChild_Write(bool useDbAutoIncrement, bool useTransaction)
+        public async Task MySql_ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
 
-            await new TransformWriterTarget().ParentChild_Write(connection, database, useDbAutoIncrement, useTransaction);
+            await new TransformWriterTargetTests().ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
         }
 
     }

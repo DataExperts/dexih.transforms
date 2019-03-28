@@ -389,7 +389,7 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {

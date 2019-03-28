@@ -78,8 +78,8 @@ namespace dexih.transforms.File
                 _fileConfiguration.Delimiter = _fileConfiguration.Delimiter.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\r", "\r");
             }
             
-            _fileRowNumberOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileRowNumber);
-            _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
+            _fileRowNumberOrdinal = table.GetOrdinal(TableColumn.EDeltaType.FileRowNumber);
+            _responseDataOrdinal = _table.GetOrdinal(TableColumn.EDeltaType.ResponseData);
         }
 
         public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream stream)

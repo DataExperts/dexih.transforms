@@ -29,16 +29,16 @@ namespace dexih.transforms
         
         public override bool RequiresSort => false;
        
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            if (query == null)
-                query = new SelectQuery();
+            if (selectQuery == null)
+                selectQuery = new SelectQuery();
 
-            if (query.Filters == null)
-                query.Filters = new List<Filter>();
+            if (selectQuery.Filters == null)
+                selectQuery.Filters = new List<Filter>();
 
             //add any of the conditions that can be translated to filters
             foreach (var condition in Mappings.OfType<MapFunction>())
@@ -47,7 +47,7 @@ namespace dexih.transforms
                 if (filter != null)
                 {
                     filter.AndOr = Filter.EAndOr.And;
-                    query.Filters.Add(filter);
+                    selectQuery.Filters.Add(filter);
                 }
             }
 
@@ -56,21 +56,21 @@ namespace dexih.transforms
                 if (filterPair.Column2 == null)
                 {
                     var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Value2);
-                    query.Filters.Add(filter);
+                    selectQuery.Filters.Add(filter);
                 }
                 else
                 {
                     var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Column2);
-                    query.Filters.Add(filter);
+                    selectQuery.Filters.Add(filter);
                 }
             }
             
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 
             return returnValue;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (!await PrimaryTransform.ReadAsync(cancellationToken))
             {

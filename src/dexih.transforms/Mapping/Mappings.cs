@@ -100,6 +100,7 @@ namespace dexih.transforms.Mapping
             {
                 mapping.AddOutputColumns(table);
             }
+
             
             if (PassThroughColumns && _groupNode == null)
             {
@@ -111,16 +112,15 @@ namespace dexih.transforms.Mapping
                 {
                     var column = inputTable.Columns[i];
 
-                    if(column.IsParent) continue; // passThrough doesn't need to map parent columns
-
-                    var ordinal = table.GetOrdinal(column);
-                    if (ordinal < 0)
+                    var parentOrdinal = table.Columns.GetOrdinal(column.Name, column.ColumnGroup);
+                    if (parentOrdinal < 0)
                     {
                         targetOrdinal++;
                         table.Columns.Add(column.Copy());
                         _passThroughColumns.Add(column);
                         _passThroughOrdinals.Add(i, targetOrdinal);
                     }
+
                 }
 
                 if (joinTable != null)
@@ -208,6 +208,12 @@ namespace dexih.transforms.Mapping
                 table.OutputSortFields = fields;
             }
 
+
+            foreach (var mapping in this.Where(c => c.Transform != null))
+            {
+                mapping.Transform?.SetParentTable(table);
+            }
+            
             _tasks = new Task<bool>[_primaryMappings.Count];
 
             return table;
@@ -233,7 +239,7 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public object[] GetGroupValues(object[] row = null)
         {
-            var groups = _primaryMappings.OfType<MapGroup>().Select(c=>c.GetOutputTransform(row)).ToArray();
+            var groups = _primaryMappings.OfType<MapGroup>().Select(c=>c.GetOutputValue(row)).ToArray();
             return groups;
         }
 
@@ -290,7 +296,7 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public object[] GetJoinPrimaryKey()
         {
-            var inputs = _primaryMappings.OfType<MapJoin>().Select(c=>c.GetOutputTransform()).ToArray();
+            var inputs = _primaryMappings.OfType<MapJoin>().Select(c=>c.GetOutputValue()).ToArray();
             return inputs;
         }
 
@@ -397,6 +403,7 @@ namespace dexih.transforms.Mapping
                     row[ordinal.Value] = _rowData[ordinal.Key];
                 }
             }
+            
         }
 
         public void ProcessOutputRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType)

@@ -25,7 +25,7 @@ namespace dexih.transforms.Poco
             _data = new List<T>();
         }
         
-        public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
+        public async Task<bool> MoveNextAsync(CancellationToken cancellationToken = default)
         {
             if (!_open && _rowNumber > _maxRow)
             {
@@ -41,7 +41,7 @@ namespace dexih.transforms.Poco
             return _open;
         }
 
-        private async Task<bool> ReadNextAsync(CancellationToken cancellationToken)
+        private async Task<bool> ReadNextAsync(CancellationToken cancellationToken = default)
         {
             if (_open)
             {
@@ -99,7 +99,7 @@ namespace dexih.transforms.Poco
             }
         }
 
-        public async Task<int> CountAsync(CancellationToken cancellationToken)
+        public async Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
             while (_open && await ReadNextAsync(cancellationToken))
             {

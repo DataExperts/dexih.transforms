@@ -15,7 +15,6 @@ using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using System.IO;
 using System.Net.Http.Headers;
-using System.Security;
 using dexih.transforms.File;
 
 namespace dexih.connections.webservice
@@ -54,12 +53,12 @@ namespace dexih.connections.webservice
 	    public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
-        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
 			throw new ConnectionException("Create table cannot be used as the webservice is readonly.");
         }
 
-        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new List<string>());
         }
@@ -70,7 +69,7 @@ namespace dexih.connections.webservice
 		/// <param name="table"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public override async Task<Table> GetSourceTableInfo(Table table, CancellationToken cancellationToken)
+		public override async Task<Table> GetSourceTableInfo(Table table, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -260,12 +259,12 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new List<Table>());
         }
 
-        private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(WebService restFunction, List<Filter> filters, CancellationToken cancellationToken)
+        private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(WebService restFunction, List<Filter> filters, CancellationToken cancellationToken = default)
         {
             var uri = restFunction.RestfulUri;
 
@@ -334,7 +333,7 @@ namespace dexih.connections.webservice
         /// <param name="filters"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ICollection<object[]>> LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken)
+        public async Task<ICollection<object[]>> LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -342,11 +341,11 @@ namespace dexih.connections.webservice
 
                 var response = await GetWebServiceResponse(restFunction, filters, cancellationToken);
 
-                var responseStatusOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseStatus);
-                var responseSuccessOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseSuccess);
-                var responseDataOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
-				var urlOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Url);
-				var errorOrdinal = restFunction.GetDeltaColumnOrdinal(TableColumn.EDeltaType.Error);
+                var responseStatusOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.ResponseStatus);
+                var responseSuccessOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.ResponseSuccess);
+                var responseDataOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.ResponseData);
+				var urlOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.Url);
+				var errorOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.Error);
 
                 var lookupResult = new List<object[]>();
 
@@ -441,7 +440,7 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
 			throw new ConnectionException("Truncate table cannot be used as the webservice is readonly.");
         }
@@ -462,22 +461,22 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
 			throw new ConnectionException("Update table cannot be used as the webservice is readonly.");
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
 			throw new ConnectionException("Delete from table cannot be used as the webservice is readonly.");
         }
 
-        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
 			throw new ConnectionException("Insert into table cannot be used as the webservice is readonly.");
         }
 
-        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -496,17 +495,17 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
 			throw new ConnectionException("Create database cannot be used as the webservice is readonly.");
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
 			throw new ConnectionException("Webservices do not have database readers.  Use the GetTransformReader function to simulate this.");
         }
 
-        public override Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken)
+        public override Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken = default)
         {
 			throw new ConnectionException("Bulk insert into table cannot be used as the webservice is readonly.");
         }
@@ -517,7 +516,7 @@ namespace dexih.connections.webservice
             return reader;
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
 			return Task.FromResult(true);
         }

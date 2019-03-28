@@ -6,9 +6,9 @@ namespace dexih.transforms.Poco
 {
     public interface IPocoEnumerator<out T>: IEnumerator<T>
     {
-        Task<bool> MoveNextAsync(CancellationToken cancellationToken);
+        Task<bool> MoveNextAsync(CancellationToken cancellationToken = default);
         T this[int index] { get; }
         int Count { get; }
-        Task<int> CountAsync(CancellationToken cancellationToken);
+        Task<int> CountAsync(CancellationToken cancellationToken = default);
     }  
 }

@@ -24,7 +24,7 @@ namespace dexih.transforms.tests
         public async Task Validations_Simple()
         {
             var table = Helpers.CreateValidationTestData();
-            table.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            table.SetCacheMethod(Transform.ECacheMethod.DemandCache);
 
             //set a filter that filters all
             var function = Functions
@@ -76,7 +76,7 @@ namespace dexih.transforms.tests
         public async Task Validations_Clean()
         {
             var table = Helpers.CreateValidationTestData();
-            table.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            table.SetCacheMethod(Transform.ECacheMethod.DemandCache);
 
 
             //set a validation that rejects and cleans
@@ -103,7 +103,8 @@ namespace dexih.transforms.tests
                 new MapValidation(function, parameters)
             };
             var transformValidation = new TransformValidation(table, mappings, true);
-            await transformValidation.Open(0, null, CancellationToken.None);
+            await transformValidation.Open();
+
             //            validations = new List<TransformFunction>();
             //
             //            //create a simple clean function that set's the max value.
@@ -138,7 +139,7 @@ namespace dexih.transforms.tests
         public async Task Validations_RejectClean()
         {
             var table = Helpers.CreateValidationTestData();
-            table.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            table.SetCacheMethod(Transform.ECacheMethod.DemandCache);
 
             //set a validation that rejects and cleans
             //set a filter that filters all

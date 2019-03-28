@@ -30,7 +30,7 @@ namespace dexih.connections.sftp
             return _stream.Read(buffer, offset, count);
         }
 
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
         {
             return _stream.ReadAsync(buffer, offset, count, cancellationToken);
         }
@@ -50,7 +50,7 @@ namespace dexih.connections.sftp
             _stream.Write(buffer, offset, count);
         }
 
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
         {
             return _stream.WriteAsync(buffer, offset, count, cancellationToken);
         }

@@ -22,6 +22,8 @@ namespace dexih.transforms.tests
         {
             var source = Helpers.CreateUnSortedTestData();
             var transformSort = new TransformSort(source, new List<Sort> { new Sort(column, direction ) });
+            await transformSort.Open();
+            
             var sortCount = 1;
 
             Assert.Equal(6, transformSort.FieldCount);
@@ -65,7 +67,8 @@ namespace dexih.transforms.tests
         {
             var source = Helpers.CreateUnSortedTestData();
             var transformSort = new TransformSort(source, new List <Sort> { new Sort("GroupColumn"), new Sort("IntColumn") });
-
+            await transformSort.Open();
+            
             Assert.Equal(6, transformSort.FieldCount);
 
             Assert.True(await transformSort.ReadAsync());
@@ -97,6 +100,7 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateLargeTable(100000);
             var transformSort = new TransformSort(source, new List <Sort> { new Sort("random", Sort.EDirection.Ascending) });
             transformSort.SetInTransform(source);
+            await transformSort.Open();
 
             var previousValue = "";
             while (await transformSort.ReadAsync())

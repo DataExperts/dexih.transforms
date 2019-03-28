@@ -92,7 +92,8 @@ namespace dexih.transforms.tests
             };
             
             var pocoReader = new PocoReader<SamplePocoClass>(items);
-
+            await pocoReader.Open();
+            
             var count = 0;
             while (await pocoReader.ReadAsync())
             {
@@ -155,6 +156,7 @@ namespace dexih.transforms.tests
             await pocoTable.ExecuteInsertBulk(connection, items, CancellationToken.None);
 
             var reader = connection.GetTransformReader(pocoTable.Table);
+            await reader.Open();
 
             var count = 0;
             while (await reader.ReadAsync())

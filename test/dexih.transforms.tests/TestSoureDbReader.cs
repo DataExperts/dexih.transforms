@@ -29,6 +29,7 @@ namespace dexih.transforms.tests
             //run tests with no cache.
             var dbReader = new ReaderDbDataReader(reader, null);
             dbReader.SetCacheMethod(Transform.ECacheMethod.NoCache);
+            await dbReader.Open();
 
             //check the fields load correctly
             Assert.Equal("StringColumn", dbReader.GetName(0));
@@ -49,7 +50,8 @@ namespace dexih.transforms.tests
 
             //run tests with pre-load cache.
             dbReader = new ReaderDbDataReader(reader, null);
-            dbReader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            dbReader.SetCacheMethod(Transform.ECacheMethod.DemandCache);
+            await dbReader.Open();
 
             //check the fields load correctly
             Assert.Equal("StringColumn", dbReader.GetName(0));

@@ -218,7 +218,7 @@ namespace dexih.functions
 			ObjectReference = target;
 		}
 
-		public async Task Initialize(CancellationToken cancellationToken)
+		public async Task Initialize(CancellationToken cancellationToken = default)
 		{
 			if (InitializeMethod != null)
 			{

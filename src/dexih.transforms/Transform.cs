@@ -31,8 +31,8 @@ namespace dexih.transforms
         public enum ECacheMethod
         {
             NoCache = 0,
-            OnDemandCache = 1,
-            PreLoadCache = 2,
+            DemandCache = 1,
+            // PreLoadCache = 2,
             LookupCache = 3
         }
 
@@ -50,6 +50,7 @@ namespace dexih.transforms
             TransformTimer = new Stopwatch();
         }
 
+        
         #region Generic Properties
 		[JsonConverter(typeof(StringEnumConverter))]
         public enum EDuplicateStrategy
@@ -161,10 +162,7 @@ namespace dexih.transforms
         public virtual List<Sort> RequiredReferenceSortFields() { return null; }
         public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input 
 
-        public virtual object SurrogateKey
-        {
-            get => PrimaryTransform?.SurrogateKey ?? -1;
-        }
+        public virtual long AutoIncrementValue => PrimaryTransform?.AutoIncrementValue ?? 0;
 
         #endregion
 
@@ -173,7 +171,7 @@ namespace dexih.transforms
         public abstract string TransformName { get; }
         public abstract string TransformDetails { get; }
 
-        protected abstract Task<object[]> ReadRecord(CancellationToken cancellationToken);
+        protected abstract Task<object[]> ReadRecord(CancellationToken cancellationToken = default);
         public abstract bool ResetTransform();
 
         #endregion
@@ -192,12 +190,12 @@ namespace dexih.transforms
             PrimaryTransform = primaryTransform;
             ReferenceTransform = referenceTransform;
 
-            Reset(true);
+            Reset(false, false);
 
-            if (Mappings == null)
-            {
-                Mappings = new Mappings();
-            }
+//            if (Mappings == null)
+//            {
+//                Mappings = new Mappings();
+//            }
 
             CacheTable = InitializeCacheTable(mapAllReferenceColumns); // Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
 
@@ -242,11 +240,10 @@ namespace dexih.transforms
            
             return true;
         }
-        
+
         /// <summary>
         /// This adjusts the node level which the transform should be applied to
         /// </summary>
-        /// <param name="table"></param>
         /// <param name="primaryTransform">The primary transform containing inbound data.</param>
         /// <param name="referenceTransform">The reference transform (for joins and concat).</param>
         /// <param name="baseMappings">The mappings to be applied to the transform.</param>
@@ -357,6 +354,11 @@ namespace dexih.transforms
         /// <returns></returns>
         protected virtual Table InitializeCacheTable(bool mapAllReferenceColumns)
         {
+            if (Mappings == null)
+            {
+                return PrimaryTransform.CacheTable.Copy();
+            }
+
             return Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
         }
 
@@ -365,20 +367,25 @@ namespace dexih.transforms
             return Open(0, null, cancellationToken);
         }
 
+        public Task<bool> Open(SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        {
+            return Open(0, selectQuery, cancellationToken);
+        }
+
         /// <summary>
         /// Opens underlying connections passing sort and filter requests through.
         /// </summary>
         /// <param name="auditKey"></param>
-        /// <param name="query">Query to apply (note only filters are used)</param>
+        /// <param name="selectQuery">Query to apply (note only filters are used)</param>
         /// <param name="cancellationToken"></param>
         /// <returns>True is successful, False is unsuccessful.</returns>
-        public virtual async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            var primaryOpen = PrimaryTransform != null ? PrimaryTransform.Open(auditKey, query, cancellationToken) : Task.FromResult(true);
-            var referenceOpen = ReferenceTransform != null ? ReferenceTransform.Open(auditKey, query, cancellationToken) : Task.FromResult(true);
+            var primaryOpen = PrimaryTransform != null ? PrimaryTransform.Open(auditKey, selectQuery, cancellationToken) : Task.FromResult(true);
+            var referenceOpen = ReferenceTransform != null ? ReferenceTransform.Open(auditKey, selectQuery, cancellationToken) : Task.FromResult(true);
 
             var result = await primaryOpen && await referenceOpen;
             return result;
@@ -411,7 +418,7 @@ namespace dexih.transforms
         /// <summary>
         /// Table containing the cached reader data.
         /// </summary>
-        public virtual Table CacheTable { get; protected set; }
+        public Table CacheTable { get; protected set; }
 
         /// <summary>
         /// Indicates if the cache is complete or at maximum capacity
@@ -426,7 +433,7 @@ namespace dexih.transforms
         {
             if (CacheMethod == ECacheMethod.NoCache)
             {
-                CacheMethod = ECacheMethod.OnDemandCache;
+                CacheMethod = ECacheMethod.DemandCache;
             }
 
             return new TransformThread(this);
@@ -434,21 +441,24 @@ namespace dexih.transforms
 
         private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
 
-        public async Task<object[]> ReadThreadSafe(int row, CancellationToken cancellationToken)
+        public async Task<object[]> ReadThreadSafe(int row, CancellationToken cancellationToken = default)
         {
-            while (row >= CacheTable.Data.Count)
-            {
-                await _semaphoreSlim.WaitAsync(cancellationToken);
+            // wait for any other threads to read data.
+            await _semaphoreSlim.WaitAsync(cancellationToken);
 
-                try
+            try
+            {
+
+                while (row >= CacheTable.Data.Count)
                 {
+
                     var result = await ReadAsync(cancellationToken);
                     if (!result) return null;
                 }
-                finally
-                {
-                    _semaphoreSlim.Release();
-                }
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
             }
 
             return row > CacheTable.Data.Count ? null : CacheTable.Data[row];
@@ -602,17 +612,26 @@ namespace dexih.transforms
         {
             for (var i = 0; i < CacheTable.Columns.Count; i++)
             {
-                if (CacheTable.Columns[i].DataType == ETypeCode.Node)
+                var column = CacheTable.Columns[i];
+                if (!column.IsParent && column.DataType == ETypeCode.Node)
                 {
-                    var transform = (Transform) row[i];
-                    if (row[i] == null) return;
+                    if (row[i] == null) continue;
                     
-                    var newNode = new TransformNode();
-                    newNode.SetTable(transform.CacheTable, CacheTable);
-                    newNode.PrimaryTransform = transform;
-                    newNode.SetParentRow(row);
-                    newNode.Open().Wait();
-                    row[i] = newNode;
+                    var transform = (Transform) row[i];
+
+                    if (transform is TransformNode transformNode)
+                    {
+                        transformNode.SetParentTable(CacheTable);
+                        transformNode.SetParentRow(row);
+                    }
+                    else
+                    {
+                        var newNode = new TransformNode {PrimaryTransform = transform};
+                        newNode.SetTable(transform.CacheTable, CacheTable);
+                        newNode.SetParentRow(row);
+                        newNode.Open().Wait();
+                        row[i] = newNode;
+                    }
                 }
             }
         }
@@ -757,7 +776,8 @@ namespace dexih.transforms
         public bool IsReaderFinished { get; protected set; }
 
         private bool _isResetting = false; //flag to indicate reset is underway.
-        public virtual object[] CurrentRow { get; protected set; } //stores data for the current row.
+        public object[] CurrentRow { get; private set; } //stores data for the current row.
+        
         private bool _currentRowCached;
         protected int CurrentRowNumber = -1; //current row number
 
@@ -765,18 +785,20 @@ namespace dexih.transforms
         /// Resets the transform and any source transforms.
         /// </summary>
         /// <returns></returns>
-        public bool Reset(bool resetCache = false)
+        public bool Reset(bool resetCache = false, bool resetIsOpen = true)
         {
             if (!_isResetting) //stops recursive loops where intertwined transforms are resetting each other
             {
                 _isResetting = true;
 
-                var returnValue = true;
-
                 _isFirstRead = true;
                 IsCacheFull = false;
                 IsReaderFinished = false;
-                if(resetCache) CacheTable?.Data.Clear();
+                if (resetCache)
+                {
+                    CacheTable?.Data.Clear();
+                }
+
                 CurrentRowNumber = -1;
 
                 //reset stats.
@@ -788,19 +810,20 @@ namespace dexih.transforms
                 TransformRowsReadReference = 0;
                 TransformRowsRejected = 0;
 
-                returnValue = ResetTransform();
+                var returnValue = ResetTransform();
 
                 if (PrimaryTransform != null)
                 {
-                    returnValue = returnValue && PrimaryTransform.Reset();
+                    returnValue = returnValue && PrimaryTransform.Reset(resetCache, resetIsOpen);
                 }
 
                 if (ReferenceTransform != null)
                 {
-                    returnValue = returnValue && ReferenceTransform.Reset();
+                    returnValue = returnValue && ReferenceTransform.Reset(resetCache, resetIsOpen);
                 }
 
-                IsReaderFinished = false;
+                if(resetIsOpen) IsOpen = true;
+//                IsReaderFinished = false;
 
                 _isResetting = false;
                 return returnValue;
@@ -813,7 +836,9 @@ namespace dexih.transforms
         public void SetRowNumber(int rowNumber = 0)
         {
             if (rowNumber <= CacheTable.Data.Count)
+            {
                 CurrentRowNumber = rowNumber - 1;
+            }
             else
                 throw new Exception("SetRowNumber failed, as the row exceeded the number of rows in the cache");
         }
@@ -843,7 +868,7 @@ namespace dexih.transforms
         /// <param name="duplicateStrategy">Action to take when duplicate rows are returned.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<object[]>> Lookup(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+        public virtual async Task<IEnumerable<object[]>> Lookup(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken = default)
         {
 
             // if the query has already been used, use the cache.
@@ -1049,7 +1074,7 @@ namespace dexih.transforms
         /// <param name="filters"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public virtual async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             
@@ -1090,7 +1115,7 @@ namespace dexih.transforms
 //        /// <param name="duplicateStrategy"></param>
 //        /// <param name="cancellationToken"></param>
 //        /// <returns></returns>
-//        public virtual Task<ICollection<object[]>> LookupRowDirect(ICollection<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken)
+//        public virtual Task<ICollection<object[]>> LookupRowDirect(ICollection<Filter> filters, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken = default)
 //        {
 //            throw new TransformException($"The transform {Name} does not support direct lookups.");
 //            
@@ -1158,140 +1183,143 @@ namespace dexih.transforms
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         /// <exception cref="TransformException"></exception>
-        public async Task<bool> ReadPrepareAsync(CancellationToken cancellationToken)
+        public async Task<bool> ReadPrepareAsync(CancellationToken cancellationToken = default)
         {
-            //TODO need to test impacts of read prepare with child nodes which are transform readers.
-            
             _nextReadInProgress = true;
-            
-            //starts  a timer that can be used to measure downstream transform and database performance.
-            TransformTimer.Start();
-
-            if (_isFirstRead)
-            {
-                if (Mappings != null)
-                {
-                    await Mappings.Open();
-                }
-
-                if (IsReader && IsPrimaryTransform)
-                {
-                    //get the incremental column (if it exists)
-                    var incrementalCol = CacheTable.Columns.Where(c => c.IsIncrementalUpdate).ToArray();
-                    if (incrementalCol.Length == 1)
-                    {
-                        _incrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].Name);
-                        _incrementalColumnType = incrementalCol[0].DataType;
-                    }
-                    else if (incrementalCol.Length > 1)
-                    {
-                        throw new Exception(
-                            "Cannot run the transform as two columns have been defined with incremental update flags.");
-                    }
-                    else
-                        _incrementalColumnIndex = -1;
-                }
-
-                _isFirstRead = false;
-                IsReaderFinished = false;
-            }
-
-            CurrentRowNumber++;
-
-            //check cache for a row first.
-            if (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache)
-            {
-                if (CurrentRowNumber < CacheTable.Data.Count)
-                {
-                    _nextRow = CacheTable.Data[CurrentRowNumber];
-                    TransformTimer.Stop();
-                    _nextReadInProgress = false;
-                    return true;
-                }
-            }
-
-            if (IsReaderFinished)
-            {
-                _nextRow = null;
-                TransformTimer.Stop();
-                _nextReadInProgress = false;
-                return false;
-            }
-
-            _currentRowCached = false;
 
             try
             {
-                var returnRecord = await ReadRecord(cancellationToken);
 
-                if (returnRecord != null)
+                //starts  a timer that can be used to measure downstream transform and database performance.
+                TransformTimer.Start();
+
+                _nextRow = null;
+
+                if (_isFirstRead)
                 {
-                    if (EncryptionMethod != EEncryptionMethod.NoEncryption)
-                        EncryptRow(returnRecord);
+                    if (Mappings != null)
+                    {
+                        await Mappings.Open();
+                    }
 
-                    SetNodes(returnRecord);
-                    
-                    _nextRow = returnRecord;
+                    if (IsReader && IsPrimaryTransform)
+                    {
+                        //get the incremental column (if it exists)
+                        var incrementalCol = CacheTable.Columns.Where(c => c.IsIncrementalUpdate).ToArray();
+                        if (incrementalCol.Length == 1)
+                        {
+                            _incrementalColumnIndex = CacheTable.GetOrdinal(incrementalCol[0].Name);
+                            _incrementalColumnType = incrementalCol[0].DataType;
+                        }
+                        else if (incrementalCol.Length > 1)
+                        {
+                            throw new Exception(
+                                "Cannot run the transform as two columns have been defined with incremental update flags.");
+                        }
+                        else
+                            _incrementalColumnIndex = -1;
+                    }
+
+                    _isFirstRead = false;
+                    IsReaderFinished = false;
                 }
-                else
+
+                CurrentRowNumber++;
+
+                //check cache for a row first.
+                if (CacheMethod == ECacheMethod.DemandCache)
                 {
-                    _nextRow = null;
-                    IsReaderFinished = true;
-                    Close();
+                    if (CurrentRowNumber < CacheTable.Data.Count)
+                    {
+                        _nextRow = CacheTable.Data[CurrentRowNumber];
+                        _currentRowCached = true;
+                        TransformTimer.Stop();
+                        return true;
+                    }
                 }
 
-            }
-            // cancelled or transform exception, bubble the exception up.
-            catch (Exception ex) when (ex is OperationCanceledException || ex is TransformException)
-            {
-                IsReaderFinished = true;
-                _nextReadInProgress = false;
-                Close();
-                throw;
-            }
-            catch (Exception ex)
-            {
-                IsReaderFinished = true;
-                Close();
-                throw new TransformException($"The transform {Name} failed to process record. {ex.Message}", ex);
-            }
+                if (IsReaderFinished)
+                {
+                    TransformTimer.Stop();
+                    _nextReadInProgress = false;
+                    return false;
+                }
 
+                if (!IsOpen)
+                {
+                    throw new TransformException("The read operation failed as the transform is not open.");
+                }
 
-            if (IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && _nextRow != null)
-            {
+                _currentRowCached = false;
+
                 try
                 {
-                    var compareResult = Operations.GreaterThan(_incrementalColumnType,
-                        _nextRow[_incrementalColumnIndex], _maxIncrementalValue);
-                    if (compareResult)
+                    var returnRecord = await ReadRecord(cancellationToken);
+
+                    if (returnRecord != null)
                     {
-                        _maxIncrementalValue = _nextRow[_incrementalColumnIndex];
+                        if (EncryptionMethod != EEncryptionMethod.NoEncryption)
+                            EncryptRow(returnRecord);
+
+                        SetNodes(returnRecord);
+
+                        _nextRow = returnRecord;
+
                     }
+                }
+                // cancelled or transform exception, bubble the exception up.
+                catch (Exception ex) when (ex is OperationCanceledException || ex is TransformException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
-                    IsReaderFinished = true;
-                    Close();
-                    throw new TransformException(
-                        $"The transform {Name} failed comparing the incremental update column.  " + ex.Message, ex);
+                    throw new TransformException($"The transform {Name} failed to process record. {ex.Message}", ex);
                 }
 
+
+                if (IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && _nextRow != null)
+                {
+                    try
+                    {
+                        var compareResult = Operations.GreaterThan(_incrementalColumnType,
+                            _nextRow[_incrementalColumnIndex], _maxIncrementalValue);
+                        if (compareResult)
+                        {
+                            _maxIncrementalValue = _nextRow[_incrementalColumnIndex];
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Close();
+                        throw new TransformException(
+                            $"The transform {Name} failed comparing the incremental update column.  " + ex.Message, ex);
+                    }
+                }
+            }
+            finally
+            {
+                if (_nextRow == null)
+                {
+                    Close();
+                }
+
+                if (IsReader && !IsPrimaryTransform && !IsReaderFinished)
+                    TransformRowsReadReference++;
+
+                //if this is a primary (i.e. starting reader), increment the rows read.
+                if (IsReader && !IsReaderFinished)
+                    TransformRowsReadPrimary++;
+
+                //add the row to the cache
+                if (_nextRow != null && !_currentRowCached &&
+                    (CacheMethod == ECacheMethod.DemandCache))
+                    CacheTable.Data.Add(_nextRow);
+
+                TransformTimer.Stop();
+                _nextReadInProgress = false;
             }
 
-            if (IsReader && !IsPrimaryTransform && !IsReaderFinished)
-                TransformRowsReadReference++;
-
-            //if this is a primary (i.e. starting reader), increment the rows read.
-            if (IsReader && !IsReaderFinished)
-                TransformRowsReadPrimary++;
-
-            //add the row to the cache
-            if (_nextRow != null && !_currentRowCached &&
-                (CacheMethod == ECacheMethod.OnDemandCache || CacheMethod == ECacheMethod.PreLoadCache))
-                CacheTable.Data.Add(_nextRow);
-
-            TransformTimer.Stop();
-            _nextReadInProgress = false;
             return !IsReaderFinished;
         }
 
@@ -1322,61 +1350,94 @@ namespace dexih.transforms
             return returnValue;
         }
 
-        public override int FieldCount => CacheTable.Columns.Count;
-
-        public override int GetOrdinal(string name)
+        /// <summary>
+        /// Loads the incoming dataset into the transform cache, and resets the reader to the first row.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<Transform> CreateCachedTransform(CancellationToken cancellationToken = default)
         {
-            return CacheTable.GetOrdinal(name);
+            var transform = new TransformCache(this);
+            await transform.Open(AuditKey, null, cancellationToken);
+            return transform;
         }
 
-        public int GetOrdinal(TableColumn column)
-		{
-			var ordinal = GetOrdinal(column.TableColumnName());
-			if (ordinal < 0)
-			{
-				ordinal = GetOrdinal(column.Name);
-			}
+        public override int FieldCount => CacheTable?.Columns.Count ?? -1;
 
-			return ordinal;
-		}
+        /// <summary>
+        /// Gets the Field count excluding any columns from parent nodes.
+        /// </summary>
+        public int BaseFieldCount => CacheTable?.Columns.Count(c => !c.IsParent) ?? -1;
 
-        public override string GetName(int i)
+        /// <summary>
+        /// Gets the current row excluding any columns from the parent nodes.
+        /// </summary>
+        /// <returns></returns>
+        public object[] GetBaseCurrentRow()
         {
-            return CacheTable.Columns[i].Name;
-        }
-
-        public override object this[string name]
-        {
-            get
+            if (CurrentRow == null)
             {
-                var ordinal = GetOrdinal(name);
-                if (ordinal < 0)
-                    throw new Exception("The column " + name + " could not be found in the table.");
-
-                return GetValue(ordinal);
+                return null;
             }
+
+            var row = new object[BaseFieldCount];
+            var baseCount = 0;
+            for (var count = 0; count < FieldCount; count++)
+            {
+                if (!CacheTable.Columns[count].IsParent)
+                {
+                    row[baseCount++] = CurrentRow[count];
+                }
+            }
+
+            return row;
         }
+
+
+        /// <summary>
+        /// Gets a table which excludes any column from parent nodes.
+        /// </summary>
+        /// <returns></returns>
+        public Table GetBaseTable()
+        {
+            var baseFieldCount = BaseFieldCount;
+            if (baseFieldCount == 0 || baseFieldCount == FieldCount) return CacheTable;
+
+            var table = new Table(CacheTable.Name)
+            {
+                LogicalName = CacheTable.LogicalName
+            };
+            
+            foreach (var column in CacheTable.Columns.Where(c => !c.IsParent))
+            {
+                table.Columns.Add(column);
+            }
+
+            return table;
+        }
+
+
+        public override int GetOrdinal(string name) => CacheTable.GetOrdinal(name);
+
+        public int GetOrdinal(EDeltaType deltaType) => CacheTable.GetOrdinal(deltaType);
+
+        public int GetOrdinal(TableColumn column) => CacheTable.GetOrdinal(column);
+        public int GetAutoIncrementOrdinal() => CacheTable.GetAutoIncrementOrdinal();
+
+
+        public override string GetName(int i) => CacheTable.Columns[i].Name;
+
+        // public object this[EDeltaType deltaType] => GetValue(deltaType);
+
+        public override object this[string name] => GetValue(name);
         
         public override object this[int ordinal] => GetValue(ordinal);
 
-        public object this[TableColumn column]
-        {
-            get
-            {
-				var ordinal = GetOrdinal(column);
-
-				if(ordinal < 0)
-				{
-					throw new Exception("The column " + column.TableColumnName() + " could not be found in the table.");
-				}
-					
-                return this[ordinal];
-            }
-        }
+        public object this[TableColumn column] => GetValue(column);
 
         public override int Depth => throw new NotImplementedException();
 
-        public bool IsOpen { get; set; } = false;
+        public bool IsOpen { get; protected set; } = false;
 
         public override bool IsClosed => PrimaryTransform?.IsClosed??!IsReaderFinished;
 
@@ -1384,11 +1445,11 @@ namespace dexih.transforms
 
         public override bool GetBoolean(int i)
         {
-            return Convert.ToBoolean(GetValue(i));
+            return GetValue<bool>(i);
         }
         public override byte GetByte(int i)
         {
-            return Convert.ToByte(GetValue(i));
+            return GetValue<byte>(i);
         }
         public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
         {
@@ -1396,7 +1457,7 @@ namespace dexih.transforms
         }
         public override char GetChar(int i)
         {
-            return Convert.ToChar(GetValue(i));
+            return GetValue<char>(i);
         }
         public override long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
         {
@@ -1405,19 +1466,19 @@ namespace dexih.transforms
 
         public override string GetDataTypeName(int i)
         {
-            return GetValue(i).GetType().Name;
+            return GetValue(i)?.GetType().Name;
         }
         public override DateTime GetDateTime(int i)
         {
-            return Convert.ToDateTime(GetValue(i));
+            return GetValue<DateTime>(i);
         }
         public override decimal GetDecimal(int i)
         {
-            return Convert.ToDecimal(GetValue(i));
+            return GetValue<decimal>(i);
         }
         public override double GetDouble(int i)
         {
-            return Convert.ToDouble(GetValue(i));
+            return GetValue<double>(i);
         }
         public override Type GetFieldType(int i)
         {
@@ -1425,23 +1486,23 @@ namespace dexih.transforms
         }
         public override float GetFloat(int i)
         {
-            return Convert.ToSingle(GetValue(i));
+            return GetValue<float>(i);
         }
         public override Guid GetGuid(int i)
         {
-            return (Guid)GetValue(i);
+            return GetValue<Guid>(i);
         }
         public override short GetInt16(int i)
         {
-            return Convert.ToInt16(GetValue(i));
+            return GetValue<short>(i);
         }
         public override int GetInt32(int i)
         {
-            return Convert.ToInt32(GetValue(i));
+            return GetValue<int>(i);
         }
         public override long GetInt64(int i)
         {
-            return Convert.ToInt64(GetValue(i));
+            return GetValue<long>(i);
         }
 
         public override string GetString(int i)
@@ -1454,7 +1515,7 @@ namespace dexih.transforms
             if (CurrentRow == null)
             {
                 throw new ArgumentOutOfRangeException(
-                    $"The GetValue failed as there is no current row available.");
+                    $"Fails to get the value at position {i} as there is no current row available.");
             }
 
             if (i >= CurrentRow.Length)
@@ -1465,9 +1526,40 @@ namespace dexih.transforms
 
             return CurrentRow[i];            
         }
+        
+        
+        /// <summary>
+        /// Gets the value at the ordinal.
+        /// Returns the defaultValue if the ordinal is outside the row range or is null
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="defaultValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T GetValue<T>(int i, T defaultValue = default)
+        {
+            var value = GetValue(i);
+
+            if (value is null)
+            {
+                return defaultValue;
+            }
+
+            if (value is T tValue)
+            {
+                return tValue;
+            }
+
+            return Operations.Parse<T>(value);
+        }
 
         public override int GetValues(object[] values)
         {
+            if (CurrentRow == null)
+            {
+                throw new Exception("Could not GetValues as there is no current row.");
+            }
+
             if (values.Length > CurrentRow.Length)
             {
                 throw new Exception("Could not GetValues as the input array was length " + values.Length +
@@ -1483,6 +1575,77 @@ namespace dexih.transforms
             return values.GetLength(0);
         }
 
+        public object GetValue(TableColumn column)
+        {
+            var ordinal = GetOrdinal(column);
+
+            if(ordinal < 0)
+            {
+                throw new Exception("The column " + column.TableColumnName() + " could not be found in the table.");
+            }
+					
+            return this[ordinal];
+        }
+
+        public object GetValue(string name)
+        {
+            var ordinal = GetOrdinal(name);
+            if (ordinal < 0)
+                throw new Exception("The column " + name + " could not be found in the table.");
+
+            return GetValue(ordinal);
+        }
+
+        public T GetValue<T>(string name, T defaultValue = default)
+        {
+            var ordinal = GetOrdinal(name);
+            return GetValue<T>(ordinal, defaultValue);
+        }
+
+        public object GetValue(EDeltaType deltaType)
+        {
+            var ordinal = GetOrdinal(deltaType);
+            return ordinal >= 0 ? GetValue(ordinal) : null;
+        }
+
+        public T GetValue<T>(EDeltaType deltaType, T defaultValue = default)
+        {
+            var ordinal = GetOrdinal(deltaType);
+            return GetValue<T>(ordinal, defaultValue);
+        }
+
+        public long GetAutoIncrementValue()
+        {
+            var ordinal = GetAutoIncrementOrdinal();
+            return ordinal >= 0 ? GetValue(ordinal, 0) : 0;
+        }
+
+        public DeltaValues GetDeltaValues()
+        {
+            T GetValueOrNull<T>(EDeltaType deltaType, T defaultValue = default)
+            {
+                var ordinal = GetOrdinal(deltaType);
+                if (ordinal < 0 || CurrentRow == null) return defaultValue;
+                return GetValue<T>(ordinal);
+            }
+
+            var deltaValues = new DeltaValues(
+                GetValueOrNull(EDeltaType.DatabaseOperation, 'C'),
+                GetAutoIncrementValue(),
+                GetValueOrNull(EDeltaType.IsCurrentField, true),
+                GetValueOrNull<DateTime>(EDeltaType.CreateDate),
+                GetValueOrNull<DateTime>(EDeltaType.UpdateDate),
+                GetValueOrNull<DateTime>(EDeltaType.ValidFromDate),
+                GetValueOrNull<DateTime>(EDeltaType.ValidToDate),
+                GetValueOrNull<long>(EDeltaType.CreateAuditKey),
+                GetValueOrNull<long>(EDeltaType.UpdateAuditKey),
+                GetValueOrNull<int>(EDeltaType.Version)
+            );
+
+            return deltaValues;
+        }
+
+
         public override bool IsDBNull(int i)
         {
             return GetValue(i) is DBNull;
@@ -1490,10 +1653,20 @@ namespace dexih.transforms
 
         public override void Close()
         {
-            PrimaryTransform?.Close();
-            ReferenceTransform?.Close();
-            IsReaderFinished = true;
+            if (!IsReaderFinished && IsOpen)
+            {
+                PrimaryTransform?.Close();
+                ReferenceTransform?.Close();
+                CloseConnections();
+                IsReaderFinished = true;
+                IsOpen = false;
+            }
+
             // Reset();
+        }
+
+        protected virtual void CloseConnections()
+        {
         }
 
         public override bool NextResult()
@@ -1513,6 +1686,7 @@ namespace dexih.transforms
             public TransformEnumerator(Transform transform)
             {
                 _transform = transform.GetThread();
+                _transform.Open().Wait();
             }
 
             public bool MoveNext()
@@ -1525,7 +1699,7 @@ namespace dexih.transforms
                 _transform.Reset();
             }
 
-            public object[] Current => _transform.CurrentRow;
+            public object[] Current => _transform.GetBaseCurrentRow();
 
             object IEnumerator.Current => Current;
 

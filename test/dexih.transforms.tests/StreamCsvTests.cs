@@ -12,6 +12,8 @@ namespace dexih.transforms.tests
         public async Task StreamCsv_CheckHeaders_Test()
         {
             var testData = Helpers.CreateSortedTestData();
+            await testData.Open();
+            
             var stream = new StreamCsv(testData);
 
             var handler = new FileHandlerText(testData.CacheTable, new FileConfiguration());
@@ -33,6 +35,7 @@ namespace dexih.transforms.tests
         public async Task StreamCsv_CheckData_Test()
         {
             var testData = Helpers.CreateSortedTestData();
+            await testData.Open();
 
             // convert to csv stream.
             var stream = new StreamCsv(testData);

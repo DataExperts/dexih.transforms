@@ -192,12 +192,12 @@ namespace dexih.connections.dexih
             return _downloadUrl;
         }
 
-        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
-        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -219,7 +219,7 @@ namespace dexih.connections.dexih
             }
         }
 
-		public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+		public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
 		{
             try
             {
@@ -253,7 +253,7 @@ namespace dexih.connections.dexih
         /// <param name="importTable"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancellationToken)
+        public override async Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancellationToken = default)
          {
 			try
 			{
@@ -289,12 +289,12 @@ namespace dexih.connections.dexih
         /// <param name="filters"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public object[] LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken)
+        public object[] LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken = default)
         {
 			throw new NotImplementedException();
 		}
 
-        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -304,37 +304,37 @@ namespace dexih.connections.dexih
             return Task.FromResult(table);
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> query, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> query, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> query, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> query, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> query, int transactionReference, CancellationToken cancellationToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> query, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
 			throw new NotImplementedException();
 		}
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        public override Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -345,12 +345,12 @@ namespace dexih.connections.dexih
             return reader;
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }
 
-        public override Task<bool> CompareTable(Table table, CancellationToken cancellationToken)
+        public override Task<bool> CompareTable(Table table, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }

@@ -299,7 +299,7 @@ namespace dexih.transforms.tests
             var mappings = new Mappings
             {
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
-                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: "Join"), true )
+                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: sortedJoinData.CacheTable.Name), true )
             };
             var transformJoin = new TransformJoin(source, sortedJoinData, mappings, Transform.EDuplicateStrategy.Abend, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
 
@@ -310,7 +310,7 @@ namespace dexih.transforms.tests
 //            }, null, Transform.EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(10, transformJoin.FieldCount);
 
-            await transformJoin.Open(1, null, CancellationToken.None);
+            await transformJoin.Open();
             Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
 
             var pos = 0;

@@ -37,7 +37,7 @@ namespace dexih.transforms
         public override string TransformDetails => "Query: Rows= " + _selectQuery?.Rows + ", conditions=" + _selectQuery?.Filters?.Count;
 
         
-        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
            
             AuditKey = auditKey;
@@ -45,18 +45,19 @@ namespace dexih.transforms
 
             var pushQuery = new SelectQuery();
 
-            if (query == null && _selectQuery != null)
+            if (selectQuery == null && _selectQuery != null)
             {
                 pushQuery.Rows = _selectQuery.Rows;
                 pushQuery.Filters = _selectQuery.Filters;
                 pushQuery.Sorts = _selectQuery.Sorts;
                 pushQuery.Groups = _selectQuery.Groups;
+                pushQuery.Columns = _selectQuery.Columns;
             }
-            else if(query != null)
+            else if(selectQuery != null)
             {
-                pushQuery.Rows = _selectQuery.Rows < query.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : query.Rows;
+                pushQuery.Rows = _selectQuery.Rows < selectQuery.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : selectQuery.Rows;
 
-                pushQuery.Filters = query.Filters;
+                pushQuery.Filters = selectQuery.Filters;
                 if (_selectQuery?.Filters != null)
                 {
                     pushQuery.Filters.AddRange(_selectQuery.Filters);
@@ -68,7 +69,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    pushQuery.Sorts = query.Sorts;
+                    pushQuery.Sorts = selectQuery.Sorts;
                 }
 
                 if (_selectQuery?.Groups != null && _selectQuery.Groups.Count > 0)
@@ -77,7 +78,16 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    pushQuery.Groups = query.Groups;
+                    pushQuery.Groups = selectQuery.Groups;
+                }
+                
+                if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
+                {
+                    pushQuery.Columns = _selectQuery.Columns;
+                }
+                else
+                {
+                    pushQuery.Columns = selectQuery.Columns;
                 }
             }
             
@@ -104,7 +114,7 @@ namespace dexih.transforms
                     mappings.Add(new MapGroup(group));
                 }
 
-                foreach (var column in pushQuery.Columns)
+                foreach (var column in pushQuery.Columns.Where(c => c.Aggregate != null))
                 {
                     mappings.Add(new MapAggregate(column.Column, column.Column, column.Aggregate.Value));
                 }
@@ -142,7 +152,7 @@ namespace dexih.transforms
             return returnValue;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
                 return null;

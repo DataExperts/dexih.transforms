@@ -381,7 +381,7 @@ namespace dexih.connections.sftp
             }
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {

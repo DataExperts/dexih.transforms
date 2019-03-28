@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
@@ -73,7 +71,7 @@ namespace dexih.functions
 
         protected string DefaultLogicalName()
         {
-            var name = Name.Replace("\"", "");
+            var name = Name?.Replace("\"", "")??"";
 
             if (string.IsNullOrEmpty(Schema))
             {
@@ -156,10 +154,10 @@ namespace dexih.functions
         /// <returns></returns>
         public virtual List<Sort> OutputSortFields { get; set; }
 
-        /// <summary>
-        /// Indicates the key that should be used when running update/delete operations against the target.
-        /// </summary>
-        public List<string> KeyFields { get; set; }
+//        /// <summary>
+//        /// Indicates the key that should be used when running update/delete operations against the target.
+//        /// </summary>
+//        public List<string> KeyFields { get; set; }
 
         public TableCache Data { get; set; }
 
@@ -170,6 +168,8 @@ namespace dexih.functions
         public TableColumn this[string columnName] => Columns[columnName];
 
         public TableColumn this[string columnName, string columnGroup] => Columns[columnName, columnGroup];
+
+        public TableColumn this[int ordinal] => Columns[ordinal];
 
         /// <summary>
         /// Maximum levels to recurse through structured data when importing columns.
@@ -292,20 +292,20 @@ namespace dexih.functions
         /// <summary>
         /// Adds the standard set of audit columns to the table.  
         /// </summary>
-        public void AddAuditColumns()
+        public void AddAuditColumns(string surrogateKeyName = "SurrogateKey")
         {
 
             //add the audit columns if they don't exist
             //get some of the key fields to save looking up for each row.
-            var colValidFrom = GetDeltaColumn(TableColumn.EDeltaType.ValidFromDate);
-            var colValidTo = GetDeltaColumn(TableColumn.EDeltaType.ValidToDate);
-            var colCreateDate = GetDeltaColumn(TableColumn.EDeltaType.CreateDate);
-            var colUpdateDate = GetDeltaColumn(TableColumn.EDeltaType.UpdateDate);
-            var colSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-            var colIsCurrentField = GetDeltaColumn(TableColumn.EDeltaType.IsCurrentField);
-            var colVersionField = GetDeltaColumn(TableColumn.EDeltaType.Version);
-            var colCreateAuditKey = GetDeltaColumn(TableColumn.EDeltaType.CreateAuditKey);
-            var colUpdateAuditKey = GetDeltaColumn(TableColumn.EDeltaType.UpdateAuditKey);
+            var colValidFrom = GetColumn(TableColumn.EDeltaType.ValidFromDate);
+            var colValidTo = GetColumn(TableColumn.EDeltaType.ValidToDate);
+            var colCreateDate = GetColumn(TableColumn.EDeltaType.CreateDate);
+            var colUpdateDate = GetColumn(TableColumn.EDeltaType.UpdateDate);
+            var colSurrogateKey = GetColumn(TableColumn.EDeltaType.AutoIncrement);
+            var colIsCurrentField = GetColumn(TableColumn.EDeltaType.IsCurrentField);
+            var colVersionField = GetColumn(TableColumn.EDeltaType.Version);
+            var colCreateAuditKey = GetColumn(TableColumn.EDeltaType.CreateAuditKey);
+            var colUpdateAuditKey = GetColumn(TableColumn.EDeltaType.UpdateAuditKey);
 //            var colSourceSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
 //            var colRejectedReason = GetDeltaColumn(TableColumn.EDeltaType.RejectedReason);
 
@@ -335,7 +335,7 @@ namespace dexih.functions
             
             if (colSurrogateKey == null)
             {
-                colSurrogateKey = new TableColumn("SurrogateKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.AutoIncrement };
+                colSurrogateKey = new TableColumn(surrogateKeyName, ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.AutoIncrement };
                 Columns.Add(colSurrogateKey);
             }
 
@@ -383,7 +383,7 @@ namespace dexih.functions
             table.Name = rejectedTableName;
             table.Description = "Rejected table for: " + Description;
 
-            if(GetDeltaColumn(TableColumn.EDeltaType.RejectedReason) == null)
+            if(GetColumn(TableColumn.EDeltaType.RejectedReason) == null)
                 table.Columns.Add(new TableColumn("RejectedReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason));
 
             return table;
@@ -456,69 +456,27 @@ namespace dexih.functions
             Data.Add(values);
         }
 
-        public int GetOrdinal(string schemaColumnName)
-        {
-            return Columns.GetOrdinal(schemaColumnName);
-        }
+        public int GetOrdinal(string schemaColumnName) => Columns.GetOrdinal(schemaColumnName);
+        public int GetOrdinal(TableColumn column) => Columns.GetOrdinal(column);
+        public int GetOrdinal(string tableName, string columnGroup) => Columns.GetOrdinal(tableName, columnGroup);
 
-		public int GetOrdinal(TableColumn column)
-		{
-			var ordinal = GetOrdinal(column.TableColumnName());
-			if(ordinal < 0) 
-			{
-				ordinal = GetOrdinal(column.Name);
-			}
+        public bool TryGetColumn(string columnName, out TableColumn column) => Columns.TryGetColumn(columnName, out column);
 
-			return ordinal;
-		}
-
-        public TableColumn GetDeltaColumn(TableColumn.EDeltaType deltaType)
-        {
-            try
-            {
-                return Columns.SingleOrDefault(c => c.DeltaType == deltaType);
-            }
-            catch(Exception ex)
-            {
-                throw new TableException($"The column with the deltaType {deltaType} could not be determined.  {ex.Message}", ex);
-            }
-        }
-
-        public int GetDeltaColumnOrdinal(TableColumn.EDeltaType deltaType)
-        {
-            for (var i = 0; i < Columns.Count; i++)
-                if (Columns[i].DeltaType == deltaType)
-                    return i;
-
-            return -1;
-        }
-
-        public TableColumn GetAutoIncrementColumn()
-        {
-            return GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement) ??
-                   GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-
-        }
-
-        public int GetAutoIncrementOrdinal()
-        {
-            for (var i = 0; i < Columns.Count; i++)
-                if (Columns[i].DeltaType == TableColumn.EDeltaType.AutoIncrement || Columns[i].DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
-                    return i;
-
-            return -1;
-        }
-
-        public TableColumn[] GetColumnsByDeltaType(TableColumn.EDeltaType deltaType)
-        {
-            var columns = (from s in Columns where s.DeltaType == deltaType select s).ToArray();
-            return columns;
-        }
+        public bool TryGetColumn(TableColumn inColumn, out TableColumn column) => Columns.TryGetColumn(inColumn, out column);
+        public bool TryGetColumn(TableColumn.EDeltaType deltaType, out TableColumn column) => Columns.TryGetColumn(deltaType, out column);
         
-        public TableColumn GetIncrementalUpdateColumn()
-        {
-            return Columns.SingleOrDefault(c => c.IsIncrementalUpdate);
-        }
+        public TableColumn GetColumn(TableColumn.EDeltaType deltaType) => Columns.GetColumn(deltaType);
+
+        public int GetOrdinal(TableColumn.EDeltaType deltaType) => Columns.GetOrdinal(deltaType);
+
+        public IEnumerable<int> GetOrdinals(TableColumn.EDeltaType deltaType) => Columns.GetOrdinals(deltaType);
+
+        public TableColumn GetAutoIncrementColumn() => Columns.GetAutoIncrementColumn();
+
+        public int GetAutoIncrementOrdinal() => Columns.GetAutoIncrementOrdinal();
+
+        public TableColumn[] GetColumns(TableColumn.EDeltaType deltaType) => Columns.GetColumns(deltaType);
+        
 
         //creates a simple select query with all fields and no sorts, filters
         public SelectQuery DefaultSelectQuery(int rows = -1)

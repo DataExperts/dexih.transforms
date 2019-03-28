@@ -11,7 +11,7 @@ namespace dexih.transforms.Mapping
         /// <summary>
         /// Broker transform that site between the source transform, and target transforms.
         /// </summary>
-        public TransformNode Transform { get; } = new TransformNode();
+        public override TransformNode Transform { get; } = new TransformNode();
 
         public MapGroupNode(TableColumn nodeColumn)
         {
@@ -23,14 +23,16 @@ namespace dexih.transforms.Mapping
         public Table GroupTable;
 
         private Queue<object[]> _cachedRows = new Queue<object[]>();
-        
-        protected ReaderMemory OutputTransform { get; set; }
+
         protected int NodeOrdinal = -1;
 
         public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
-            GroupMappings = mappings;
             NodeColumn.ChildColumns = new TableColumns();
+            
+            if (mappings == null) return;
+
+            GroupMappings = mappings;
             GroupTable = GroupMappings.Initialize(table);
             foreach (var column in GroupTable.Columns)
             {
@@ -75,7 +77,7 @@ namespace dexih.transforms.Mapping
             data[NodeOrdinal] = transform;
         }
 
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             throw new System.NotImplementedException();
         }

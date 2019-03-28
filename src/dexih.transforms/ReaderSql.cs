@@ -26,35 +26,36 @@ namespace dexih.connections.sql
         {
             ReferenceConnection = connection;
             CacheTable = table;
+            Name = table.Name;
         }
         
         public override string TransformName => $"Database Reader - {ReferenceConnection?.Name}";
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override void Close()
+        protected override void CloseConnections()
         {
             _sqlReader?.Close();
             _sqlConnection?.Close();
-            IsOpen = false;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
+            if (IsOpen)
+            {
+                throw new ConnectionException("The file reader connection is already open.");
+            }
+
             try
             {
                 AuditKey = auditKey;
-
-                if (IsOpen)
-                {
-                    throw new ConnectionException("The reader is already open.");
-                }
+                IsOpen = true;
 
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
-                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, query, cancellationToken);
-
+                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, selectQuery, cancellationToken);
                 _fieldCount = _sqlReader.FieldCount;
                 _fieldOrdinals = new List<int>();
+                
                 for (var i = 0; i < _sqlReader.FieldCount; i++)
                 {
                     var fieldName = _sqlReader.GetName(i);
@@ -66,9 +67,7 @@ namespace dexih.connections.sql
                     _fieldOrdinals.Add(ordinal);
                 }
 
-                _sortFields = query?.Sorts;
-
-                IsOpen = true;
+                _sortFields = selectQuery?.Sorts;
                 return true;
             }
             catch(Exception ex)
@@ -80,7 +79,7 @@ namespace dexih.connections.sql
         public override List<Sort> SortFields => _sortFields;
         public override bool ResetTransform() => IsOpen;
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (_sqlReader == null)
             {
@@ -142,7 +141,7 @@ namespace dexih.connections.sql
             }
         }
         
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             Reset();
             Dispose();

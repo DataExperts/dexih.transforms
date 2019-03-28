@@ -56,7 +56,7 @@ namespace dexih.transforms
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (_lastRecord)
                 return null;

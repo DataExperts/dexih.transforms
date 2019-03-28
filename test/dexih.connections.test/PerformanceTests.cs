@@ -67,7 +67,6 @@ namespace dexih.connections.test
             await connection.CreateTable(table, true, CancellationToken.None);
 
             //add rows using the min/max values for each of the datatypes.
-            var buffer = 0;
             for (long i = 0; i < rows; i++)
             {
                 var row = new object[table.Columns.Count];
@@ -98,6 +97,7 @@ namespace dexih.connections.test
 
             var readerMemory = new ReaderMemory(table);
             var cleanedReader = new ReaderConvertDataTypes(connection, readerMemory);
+            await cleanedReader.Open();
 
             var time = await Timer($"Reader with data converter applied", async () =>
             {
@@ -112,7 +112,8 @@ namespace dexih.connections.test
             await connection.DataWriterStart(table);
                     
             readerMemory = new ReaderMemory(table);
-            cleanedReader = new ReaderConvertDataTypes(connection, readerMemory); 
+            cleanedReader = new ReaderConvertDataTypes(connection, readerMemory);
+            await cleanedReader.Open();
                     
             time = await Timer($"Run bulk insert for {rows} rows.", async () =>
             {
@@ -150,7 +151,7 @@ namespace dexih.connections.test
                     {
                         if (reader[j] == null)
                         {
-                            Assert.Equal(connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value), "");
+                            Assert.Equal("", connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value));
                         }
                         else
                         {
@@ -195,7 +196,6 @@ namespace dexih.connections.test
                 updateQueries.Add(new UpdateQuery()
                 {
                     Filters = new List<Filter>() {new Filter("SurrogateKey", Filter.ECompare.IsEqual, i+1)},
-                    Table = table.Name,
                     UpdateColumns = updateColumns
                 });
             }
@@ -270,7 +270,7 @@ namespace dexih.connections.test
 
 
         /// <summary>
-        /// Perfromance tests should run in around 1 minute. 
+        /// Performance tests should run in around 1 minute. 
         /// </summary>
         /// <param name="connection"></param>
         public async Task PerformanceTransformWriter(Connection connection, string databaseName, long rows)
@@ -341,8 +341,6 @@ namespace dexih.connections.test
             targetTable.Name = "TargetTable";
             await connection.CreateTable(targetTable, false, CancellationToken.None);
 
-            var targetTransform = connection.GetTransformReader(targetTable);
-
             //count rows using reader
             var transform = connection.GetTransformReader(table);
             var mappings = new Mappings(true);
@@ -354,10 +352,7 @@ namespace dexih.connections.test
                 HubKey = 0, AuditConnectionKey = 1, AuditType = "Datalink", ParentAuditKey = 2
             };
             
-            await connection.InitializeAudit(writerResult, CancellationToken.None);
-            Assert.NotNull(writerResult);
-
-            var target = new transforms.TransformWriterTarget(connection, targetTable, writerResult);
+            var target = new TransformWriterTarget(connection, targetTable, writerResult);
             await target.WriteRecordsAsync(transform, CancellationToken.None);
             
             Assert.Equal(rows, writerResult.RowsCreated);

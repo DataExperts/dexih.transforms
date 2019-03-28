@@ -34,32 +34,32 @@ namespace dexih.transforms
         public override string TransformName { get; } = "Group";
         public override string TransformDetails => ( Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Columns:" + Mappings.OfType<MapGroup>().Count() + ", Functions: " + Mappings.OfType<MapAggregate>().Count();
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            if (query == null)
+            if (selectQuery == null)
             {
-                query = new SelectQuery();
+                selectQuery = new SelectQuery();
             }
 
             var requiredSorts = RequiredSortFields();
 
-            if(query.Sorts != null && query.Sorts.Count > 0)
+            if(selectQuery.Sorts != null && selectQuery.Sorts.Count > 0)
             {
                 for(var i =0; i<requiredSorts.Count; i++)
                 {
-                    if (query.Sorts[i].Column == requiredSorts[i].Column)
-                        requiredSorts[i].Direction = query.Sorts[i].Direction;
+                    if (selectQuery.Sorts[i].Column == requiredSorts[i].Column)
+                        requiredSorts[i].Direction = selectQuery.Sorts[i].Direction;
                     else
                         break;
                 }
             }
 
-            query.Sorts = requiredSorts;
+            selectQuery.Sorts = requiredSorts;
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             return returnValue;
         }
 
@@ -75,7 +75,7 @@ namespace dexih.transforms
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             var outputRow = new object[FieldCount];
 

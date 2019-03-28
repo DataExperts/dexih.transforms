@@ -98,6 +98,7 @@ namespace dexih.transforms.tests
 
             // run the group transform with no group, this should aggregate to one row.
             var transformGroup = new TransformGroup(source, mappings);
+            await transformGroup.Open();
             
             Assert.Equal(7, transformGroup.FieldCount);
 
@@ -126,7 +127,8 @@ namespace dexih.transforms.tests
             var mappings = AggregateMappings();
             mappings.Add(new MapGroup(new TableColumn("StringColumn")));
             var transformGroup = new TransformGroup(source, mappings);
-
+            await transformGroup.Open();
+            
             var counter = 0;
             while (await transformGroup.ReadAsync())
             {
@@ -175,7 +177,7 @@ namespace dexih.transforms.tests
                 SelectColumn.EAggregate.Count));
 
             var transformGroup = new TransformGroup(source, mappings);
-
+            await transformGroup.Open();
 
             Assert.Equal(5, transformGroup.FieldCount);
 
@@ -218,7 +220,8 @@ namespace dexih.transforms.tests
 
             mappings.Add(new MapGroup(new TableColumn("StringColumn")));
             var transformGroup = new TransformGroup(source, mappings);
-
+            await transformGroup.Open();
+            
             var counter = 0;
             while (await transformGroup.ReadAsync())
             {

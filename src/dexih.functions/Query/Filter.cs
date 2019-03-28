@@ -65,6 +65,14 @@ namespace dexih.functions.Query
             Column1 = new TableColumn(columnName1, CompareDataType);
         }
 
+        public Filter(string columnName1, object value2): this(columnName1, ECompare.IsEqual, value2)
+        {
+        }
+        
+        public Filter(TableColumn column1, object value2): this(column1, ECompare.IsEqual, value2)
+        {
+        }
+
         /// <summary>
         /// Sets a simple filter comparing two columns against each other.
         /// </summary>

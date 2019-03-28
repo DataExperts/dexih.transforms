@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
 using static Dexih.Utils.DataType.DataType;
 
@@ -15,7 +16,7 @@ namespace dexih.transforms
     /// Stores auditing information captured when using the TransformWriter.
     /// </summary>
     [PocoTable(Name = "DexihResults")]
-    public class TransformWriterResult
+    public class TransformWriterResult: IDisposable
     {
         #region Events
         public delegate void ProgressUpdate(TransformWriterResult transformWriterResult);
@@ -155,7 +156,7 @@ namespace dexih.transforms
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
         public ETriggerMethod TriggerMethod { get; set; }
 
-        [PocoColumn(MaxLength = 1024)]
+        [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
         public string TriggerInfo { get; set; }
 
         [PocoColumn(DataType = ETypeCode.Text, AllowDbNull = true)]
@@ -198,7 +199,7 @@ namespace dexih.transforms
             if (EndTime == null || StartTime == null)
                 return null;
             else
-                return EndTime.Value.Subtract((DateTime)StartTime.Value);
+                return EndTime.Value.Subtract(StartTime.Value);
         }
 
         public decimal WriteThroughput()
@@ -234,7 +235,7 @@ namespace dexih.transforms
             }
         }
 
-        public async Task<bool> Initialize(CancellationToken cancellationToken)
+        public async Task<bool> Initialize(CancellationToken cancellationToken = default)
         {
             if (AuditConnection != null)
             {
@@ -251,15 +252,16 @@ namespace dexih.transforms
             RunStatus = ERunStatus.Abended;
             AddMessage($"An error occurred when updating the audit table of connection {AuditConnection.Name}.  {exception.Message}");
         }
-        
+
         /// <summary>
         /// Updates the run status, the audit table, and sends a status update event
         /// </summary>
         /// <param name="newStatus"></param>
         /// <param name="message"></param>
         /// <param name="exception"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public bool SetRunStatus(ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken)
+        public bool SetRunStatus(ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -300,27 +302,63 @@ namespace dexih.transforms
         }
 
         private Task _task;
-        private bool _databaseUpdating;
-        private async Task UpdateDatabaseTask()
+        private bool _updateAudit;
+        private void UpdateDatabaseTask()
         {
-            if (_databaseUpdating) return;
-            
-            if (_task != null)
+            _updateAudit = true;
+
+            if (_task != null && _task.IsCompleted)
             {
-                _databaseUpdating = true;
-                await _task;
+                if (_task.IsFaulted)
+                {
+                    throw new TransformWriterException(
+                        $"Error occurred saving audit data.  {_task.Exception?.Message}", _task.Exception);
+                }
+
                 _task = null;
-                _databaseUpdating = false;
+            }
+
+            if (_task == null)
+            {
+                _task = Task.Run(async () =>
+                {
+                    while (_updateAudit)
+                    {
+                        _updateAudit = false;
+                        await AuditConnection.UpdateAudit(this, CancellationToken.None);
+                    }
+                });
+            }
+            else
+            {
             }
             
-            _task = AuditConnection.UpdateAudit(this, CancellationToken.None);
+            
         }
 
-        public Task Finalize()
+        public async Task CompleteDatabaseWrites()
         {
-            if (_task == null) return Task.CompletedTask;
-            
-            return _task;
+            if (_task == null) return;
+
+            try
+            {
+                await _task;
+            }
+            catch (Exception ex)
+            {
+                throw new TransformWriterException(
+                    $"Error occurred saving audit data.  {ex.Message}",ex);
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_task == null || _task.IsCompleted)
+            {
+                return;
+            }
+
+            _task.Wait();
         }
 
         private void AddExceptionDetails(Exception exception)

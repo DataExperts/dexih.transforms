@@ -256,6 +256,7 @@ namespace dexih.functions
                 IsUnique = IsUnique,
                 IsInput = IsInput,
                 IsMandatory = IsMandatory,
+                IsParent = IsParent,
                 IsIncrementalUpdate = IsIncrementalUpdate,
                 Rank = Rank,
             };

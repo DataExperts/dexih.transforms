@@ -38,14 +38,14 @@ namespace dexih.transforms.Mapping
         public EFunctionCaching FunctionCaching { get; set; }
 
         public object ReturnValue;
-        private IEnumerator ReturnEnumerator;
+        private IEnumerator _returnEnumerator;
         protected object[] Outputs;
 
         public object ResultReturnValue;
         private object[] _resultOutputs;
         
         private Dictionary<object[], (object, object[])> _cache;
-        private bool isFirst = true;
+        private bool _isFirst = true;
 
 
         public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
@@ -60,16 +60,16 @@ namespace dexih.transforms.Mapping
 
         public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
-            if (ReturnEnumerator != null)
+            if (_returnEnumerator != null)
             {
-                if (ReturnEnumerator.MoveNext())
+                if (_returnEnumerator.MoveNext())
                 {
-                    ReturnValue = ReturnEnumerator.Current;
+                    ReturnValue = _returnEnumerator.Current;
                     return true;
                 }
                 else
                 {
-                    ReturnEnumerator = null;
+                    _returnEnumerator = null;
                     return false;
                 }
             }
@@ -98,13 +98,13 @@ namespace dexih.transforms.Mapping
 
             if (FunctionCaching == EFunctionCaching.CallOnce)
             {
-                if (!isFirst)
+                if (!_isFirst)
                 {
                     runFunction = false;
                 }
             }
 
-            isFirst = false;
+            _isFirst = false;
 
             if (runFunction)
             {
@@ -137,15 +137,15 @@ namespace dexih.transforms.Mapping
             {
                 if (ReturnValue is IEnumerable returnEnumerator)
                 {
-                    ReturnEnumerator = returnEnumerator.GetEnumerator();
+                    _returnEnumerator = returnEnumerator.GetEnumerator();
 
-                    if (ReturnEnumerator.MoveNext())
+                    if (_returnEnumerator.MoveNext())
                     {
-                        ReturnValue = ReturnEnumerator.Current;
+                        ReturnValue = _returnEnumerator.Current;
                     }
                     else
                     {
-                        ReturnEnumerator = null;
+                        _returnEnumerator = null;
                         ReturnValue = null;
                         return false;
                     }
@@ -167,7 +167,7 @@ namespace dexih.transforms.Mapping
             }
         }
 
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             throw new NotSupportedException();
         }

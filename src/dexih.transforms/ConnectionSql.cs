@@ -105,7 +105,7 @@ namespace dexih.connections.sql
             return param;
         }
 
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -173,6 +173,24 @@ namespace dexih.connections.sql
             }
         }
 
+        public override async Task<long> RowCount(Table table, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                using (var connection = await NewConnection())
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = $"select count(*) from {SqlTableName(table)} ";
+                    var count = await cmd.ExecuteScalarAsync(cancellationToken);
+                    return Convert.ToInt64(count);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"The count failed to for table {table.Name} on {Name}", ex);
+            }
+        }
 
         public virtual async Task<bool> DropTable(Table table)
         {
@@ -181,9 +199,8 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "drop table " + SqlTableName(table);
+                    command.CommandText = $"drop table {SqlTableName(table)}";
                     await command.ExecuteNonQueryAsync();
-
                     return true;
                 }
             }
@@ -197,7 +214,7 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -220,7 +237,7 @@ namespace dexih.connections.sql
                     var createSql = new StringBuilder();
 
                     //Create the table
-                    createSql.Append("create table " + SqlTableName(table) + " ");
+                    createSql.Append($"create table {SqlTableName(table)}");
 
                     //sqlite does not support table/column comments, so add a comment string into the ddl.
                     if (!string.IsNullOrEmpty(table.Description))
@@ -549,7 +566,7 @@ namespace dexih.connections.sql
             }
         }
         
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -570,7 +587,7 @@ namespace dexih.connections.sql
                         insert.Clear();
                         values.Clear();
 
-                        insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
+                        insert.Append("INSERT INTO " + SqlTableName(table) + " (");
                         values.Append("VALUES (");
 
                         for (var i = 0; i < query.InsertColumns.Count; i++)
@@ -615,7 +632,7 @@ namespace dexih.connections.sql
                         }
                     }
 
-                    var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    var deltaColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
 
                     if (deltaColumn != null)
                     {
@@ -644,7 +661,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -731,7 +748,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -780,7 +797,7 @@ namespace dexih.connections.sql
 
         }
 
-        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -818,10 +835,9 @@ namespace dexih.connections.sql
             {
                 throw new ConnectionException($"Get value from table {table.Name} failed.  {ex.Message}", ex);
             }
-
         }
 
-        public override async Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
+        public override async Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -883,7 +899,7 @@ namespace dexih.connections.sql
             return Task.FromResult(table);
         }
 
-        public async Task<Table> GetQueryTable(Table table, CancellationToken cancellationToken)
+        public async Task<Table> GetQueryTable(Table table, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -933,7 +949,7 @@ namespace dexih.connections.sql
 
         }
 
-        public override async Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
             try
             {

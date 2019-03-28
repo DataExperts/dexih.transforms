@@ -72,7 +72,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -161,7 +161,7 @@ namespace dexih.connections.sql
             }
         }
         
-        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -183,7 +183,7 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -459,7 +459,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -479,7 +479,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -502,7 +502,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -533,7 +533,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
+        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
         {
             if (originalTable.UseQuery)
             {
@@ -685,7 +685,7 @@ namespace dexih.connections.sql
         }
 
 
-//        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+//        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken = default)
 //        {
 //            try
 //            {
@@ -761,7 +761,7 @@ namespace dexih.connections.sql
 //            }
 //        }
 
-//        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+//        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken = default)
 //        {
 //            try
 //            {

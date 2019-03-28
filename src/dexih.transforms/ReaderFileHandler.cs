@@ -22,26 +22,22 @@ namespace dexih.transforms
             _fileHandler = fileHandler;
         }
         
-        public override void Close()
+        protected override void CloseConnections()
         {
             _fileHandler?.Dispose();
-            IsOpen = false;
         }
 
-        public override Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
-            AuditKey = auditKey;
-            _selectQuery = query;
-
             if (IsOpen)
             {
                 throw new ConnectionException("The file reader connection is already open.");
             }
-
-            IsOpen = true;
             
+            AuditKey = auditKey;
+            IsOpen = true;
+            _selectQuery = selectQuery;
             return Task.FromResult(true);
-
         }
 
         public override string TransformName => $"File Reader: {_fileHandler?.FileType}";
@@ -53,7 +49,7 @@ namespace dexih.transforms
             return IsOpen;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             while (true)
             {
@@ -67,18 +63,12 @@ namespace dexih.transforms
                     throw new ConnectionException("The flat file reader failed with the following message: " + ex.Message, ex);
                 }
 
-                if (row != null) return row;
-                
-                _fileHandler.Dispose();
-                IsOpen = false;
-
-                return null;
-
+                return row;
             }
 
         }
         
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             Reset();
             return Open(auditKey, query, cancellationToken);

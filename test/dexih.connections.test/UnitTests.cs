@@ -25,7 +25,7 @@ namespace dexih.connections.test
             await connection.CreateTable(table, true, CancellationToken.None);
 
             //insert a single row
-            var insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
+            var insertQuery = new InsertQuery(new List<QueryColumn>() {
                     new QueryColumn(new TableColumn("IntColumn", ETypeCode.Int32), 1),
                     new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value1" ),
                     new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
@@ -42,7 +42,7 @@ namespace dexih.connections.test
             if(connection.CanUseDbAutoIncrement) Assert.Equal(1, identity);
 
             //insert a second row
-            insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
+            insertQuery = new InsertQuery(new List<QueryColumn>() {
                     new QueryColumn(new TableColumn("IntColumn", ETypeCode.Int32), 2 ),
                     new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value2" ),
                     new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), false ),
@@ -199,6 +199,7 @@ namespace dexih.connections.test
                 var testData = DataSets.CreateTestData();
 
                 var convertedTestData = new ReaderConvertDataTypes(connection, testData);
+                await convertedTestData.Open();
                 await connection.ExecuteInsertBulk(table, convertedTestData, CancellationToken.None);
 
                 await connection.DataWriterFinish(table);
@@ -235,6 +236,7 @@ namespace dexih.connections.test
 
                 //should return value5
                 var reader = connection.GetTransformReader(table, true);
+                await reader.Open();
 
                 var stringColumn = table.GetOrdinal("StringColumn");
                 var returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
@@ -242,9 +244,8 @@ namespace dexih.connections.test
 
                 //run lookup again with caching set.
                 reader = connection.GetTransformReader(table);
-                // var openResult = await reader.Open(0, null, CancellationToken.None);
-                // Assert.True(openResult, "Open Reader");
-                reader.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+                await reader.Open();
+                reader.SetCacheMethod(Transform.ECacheMethod.LookupCache);
                 returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
                 Assert.True(Convert.ToString(returnLookup.First()[stringColumn]) == "value5", "Select count - value :" + returnLookup.First()[stringColumn]);
 

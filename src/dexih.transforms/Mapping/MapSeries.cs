@@ -59,7 +59,7 @@ namespace dexih.transforms.Mapping
             return Operations.Parse(InputColumn.DataType, SeriesFinish);
         }
 
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             object value;
             if (InputOrdinal == -1)
@@ -154,7 +154,7 @@ namespace dexih.transforms.Mapping
         
         public object NextValue(int count, object[] row = null)
         {
-            var value = GetOutputTransform(row);
+            var value = GetOutputValue(row);
             return CalculateNextValue(value, count);
             
         }

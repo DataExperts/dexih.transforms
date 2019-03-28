@@ -31,18 +31,11 @@ namespace dexih.connections.dexih
             CacheTable = table;
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            IsOpen = false;
-
-            base.Dispose(disposing);
-        }
-        
         public override string TransformName { get; } = "Information Hub Reader";
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
 
@@ -65,7 +58,7 @@ namespace dexih.connections.dexih
                     CacheTable.SourceConnectionName,
                     TableName = CacheTable.Name,
                     TableSchema = CacheTable.Schema,
-                    Query = query,
+                    Query = selectQuery,
                     DownloadUrl = downloadUrl,
                     InstanceId = instanceId
                 }, "");
@@ -116,7 +109,7 @@ namespace dexih.connections.dexih
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             while (true)
             {
@@ -175,7 +168,7 @@ namespace dexih.connections.dexih
         }
 
 
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException("Direct lookup not supported with dexih connections.");
         }

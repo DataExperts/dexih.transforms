@@ -73,7 +73,8 @@ namespace dexih.transforms.tests
             mappings.Add(new MapColumn(new TableColumn("ArrayColumn", ETypeCode.DateTime), new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1)));
             
             var transformMapping = new TransformMapping(source, mappings);
-
+            await transformMapping.Open();
+            
             Assert.Equal(5, transformMapping.FieldCount);
 
             var count = 0;
@@ -94,7 +95,8 @@ namespace dexih.transforms.tests
         {
             var data = Helpers.CreateLargeTable(rows);
             var transformMapping = new TransformMapping(data, new Mappings());
-
+            await transformMapping.Open();
+            
             var count = 0;
             while (await transformMapping.ReadAsync())
                 count++;
@@ -116,6 +118,7 @@ namespace dexih.transforms.tests
             }
 
             var transformMapping = new TransformMapping(data, mappings);
+            await transformMapping.Open();
 
             var count = 0;
             while (await transformMapping.ReadAsync())
@@ -149,7 +152,8 @@ namespace dexih.transforms.tests
             }
 
             var transformMapping = new TransformMapping(data, mappings);
-
+            await transformMapping.Open();
+            
             var count = 0;
             while (await transformMapping.ReadAsync())
                 count++;

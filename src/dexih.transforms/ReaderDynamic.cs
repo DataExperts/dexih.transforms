@@ -16,9 +16,9 @@ namespace dexih.transforms
     {
         public override ECacheMethod CacheMethod
         {
-            get => ECacheMethod.PreLoadCache;
+            get => ECacheMethod.DemandCache;
             protected set =>
-                throw new Exception("Cache method is always PreLoadCache in the DataTable adapater and cannot be set.");
+                throw new Exception("Cache method is always PreLoadCache in the ReaderDynamic and cannot be set.");
         }
 
         #region Constructors
@@ -34,7 +34,7 @@ namespace dexih.transforms
 
         public override List<Sort> SortFields { get; }
 
-        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
             ResetTransform();
@@ -44,9 +44,9 @@ namespace dexih.transforms
             for(var i =0; i < CacheTable.Columns.Count; i++)
             {
                 var column = CacheTable.Columns[i];
-                if (query?.Filters != null)
+                if (selectQuery?.Filters != null)
                 {
-                    var filter = query.Filters.SingleOrDefault(c => c.Column1 != null && c.Column1.Name == column.Name);
+                    var filter = selectQuery.Filters.SingleOrDefault(c => c.Column1 != null && c.Column1.Name == column.Name);
                     if(filter == null)
                     {
                         row[i] = column.DefaultValue;
@@ -79,7 +79,7 @@ namespace dexih.transforms
             return true;
         }
 
-        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             CurrentRowNumber++;
             if (CurrentRowNumber < CacheTable.Data.Count)
@@ -92,7 +92,7 @@ namespace dexih.transforms
 
         public override bool IsClosed => CurrentRowNumber >= CacheTable.Data.Count;
         
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             return Task.FromResult(true);

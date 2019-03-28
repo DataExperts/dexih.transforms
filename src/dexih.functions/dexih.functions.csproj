@@ -46,11 +46,6 @@
     <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.8" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="dexih.transforms, Version=1.0.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\dexih.connections.azure\bin\Release\netcoreapp2.1\dexih.transforms.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>
   </PropertyGroup>

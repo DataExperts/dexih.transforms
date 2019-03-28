@@ -6,6 +6,9 @@ namespace dexih.transforms.Mapping
 {
     public abstract class Mapping
     {
+
+        public virtual TransformNode Transform { get; } = null;
+        
         /// <summary>
         /// Initializes the mapping
         /// </summary>
@@ -47,7 +50,7 @@ namespace dexih.transforms.Mapping
         /// <param name="row">The output row to populate</param>
         public abstract void MapOutputRow(object[] row);
 
-        public abstract object GetOutputTransform(object[] row = null);
+        public abstract object GetOutputValue(object[] row = null);
 
         public abstract string Description();
 

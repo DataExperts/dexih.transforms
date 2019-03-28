@@ -208,18 +208,21 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
             
-            if (query == null)
-                query = new SelectQuery();
+            if (selectQuery == null)
+                selectQuery = new SelectQuery();
 
+            await InitializeOutputFields();
+
+            
             //only apply a sort if there is not already a sort applied.
-            query.Sorts = RequiredSortFields();
+            selectQuery.Sorts = RequiredSortFields();
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             if (!returnValue)
             {
                 return false;
@@ -230,14 +233,13 @@ namespace dexih.transforms
                 Sorts = RequiredReferenceSortFields()
             };
 
+
             returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
             if (!returnValue)
             {
                 return false;
             }
-
-            await InitializeOutputFields();
-
+            
             //check if the primary and reference transform are sorted in the join
             if (SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) &&
                 SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))
@@ -252,7 +254,7 @@ namespace dexih.transforms
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             object[] newRow = null;
             var pos = 0;
@@ -287,7 +289,7 @@ namespace dexih.transforms
             }
 
             //read a new row from the primary table.
-            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
+            if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
             {
                 return null;
             }
@@ -453,9 +455,10 @@ namespace dexih.transforms
 
                 if (_nodeColumnOrdinal >= 0)
                 {
-                    _referenceTable.Data.Set(_groupData);
-                    _nodeMapping.InputTransform = new ReaderMemory(_referenceTable);
-                    var outTransform = (Transform) _nodeMapping.GetOutputTransform();
+                    var table = _referenceTable.Copy();
+                    table.Data.Set(_groupData);
+                    _nodeMapping.InputTransform = new ReaderMemory(table);
+                    var outTransform = (Transform) _nodeMapping.GetOutputValue();
                     await outTransform.Open(AuditKey, null, cancellationToken);
                     newRow[_nodeColumnOrdinal] = outTransform;
                     _groupData = null;
@@ -479,8 +482,9 @@ namespace dexih.transforms
                 if(_nodeColumnOrdinal >= 0)
                 {
                     _referenceTable.Data.Clear();
-                    _nodeMapping.InputTransform = new ReaderMemory(_referenceTable);
-                    var outTransform = (Transform) _nodeMapping.GetOutputTransform();
+                    var table = _referenceTable.Copy();
+                    _nodeMapping.InputTransform = new ReaderMemory(table);
+                    var outTransform = (Transform) _nodeMapping.GetOutputValue();
                     await outTransform.Open(AuditKey, null, cancellationToken);
                     newRow[_nodeColumnOrdinal] = outTransform;
                 }

@@ -48,7 +48,7 @@ namespace dexih.transforms.Mapping
         {
         }
 
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             if (_inputOrdinal == -1)
             {

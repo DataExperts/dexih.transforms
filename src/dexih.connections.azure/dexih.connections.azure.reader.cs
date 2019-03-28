@@ -34,12 +34,7 @@ namespace dexih.connections.azure
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override void Close()
-        {
-            IsOpen = false;
-        }
-
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             if (IsOpen)
@@ -54,16 +49,16 @@ namespace dexih.connections.azure
 
             _tableQuery = new TableQuery<DynamicTableEntity>().Take(1000);
 
-            if (query?.Columns?.Count > 0)
-                _tableQuery.SelectColumns = query.Columns.Select(c => c.Column.Name).ToArray();
+            if (selectQuery?.Columns?.Count > 0)
+                _tableQuery.SelectColumns = selectQuery.Columns.Select(c => c.Column.Name).ToArray();
             else
                 _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => c.Name).ToArray();
 
-            if (query?.Filters != null)
-                _tableQuery.FilterString = _connection.BuildFilterString(query.Filters);
+            if (selectQuery?.Filters != null)
+                _tableQuery.FilterString = _connection.BuildFilterString(selectQuery.Filters);
 
-            if(query?.Rows > 0 && query?.Rows < 1000)
-                _tableQuery.TakeCount = query.Rows;
+            if(selectQuery?.Rows > 0 && selectQuery?.Rows < 1000)
+                _tableQuery.TakeCount = selectQuery.Rows;
 
             try
             {
@@ -93,7 +88,7 @@ namespace dexih.connections.azure
             }
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -131,15 +126,15 @@ namespace dexih.connections.azure
         {
             var row = new object[CacheTable.Columns.Count];
 
-            var partitionKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
+            var partitionKeyOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
             if(partitionKeyOrdinal >= 0)
                 row[partitionKeyOrdinal] = currentEntity.PartitionKey;
 
-            var rowKeyOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            var rowKeyOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.AzureRowKey);
             if (rowKeyOrdinal >= 0)
                 row[rowKeyOrdinal] = currentEntity.RowKey;
 
-            var timestampOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.TimeStamp);
+            var timestampOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.TimeStamp);
             if (timestampOrdinal >= 0)
                 row[timestampOrdinal] = currentEntity.Timestamp;
 
@@ -160,7 +155,7 @@ namespace dexih.connections.azure
             return row;
         }
 
-        public override async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             Reset();
             return await Open(auditKey, query, cancellationToken);

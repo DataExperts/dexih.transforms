@@ -46,7 +46,7 @@ namespace dexih.transforms
             _transactionReference = -1;
         }
 
-        public override async Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken)
+        public override async Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken = default)
         {
             var surrogateKey = 0L;
             switch (operation)
@@ -62,7 +62,7 @@ namespace dexih.transforms
                         }
                     }
 
-                    var insertQuery = new InsertQuery(TargetTable.Name, queryColumns);
+                    var insertQuery = new InsertQuery(queryColumns);
                     surrogateKey = await TargetConnection.ExecuteInsert(TargetTable,
                         new List<InsertQuery>() {insertQuery}, _transactionReference, cancellationToken);
                     break;
@@ -77,21 +77,20 @@ namespace dexih.transforms
                         }
                     }
 
-                    var rejectQuery = new InsertQuery(TargetTable.Name, rejectQueryColumns);
+                    var rejectQuery = new InsertQuery(rejectQueryColumns);
                     surrogateKey = await RejectConnection.ExecuteInsert(RejectTable,
                         new List<InsertQuery>() {rejectQuery}, cancellationToken);
                     break;
                     
                 case 'U':
                     var updateQuery = new UpdateQuery(
-                        TargetTable.Name,
                         TargetTable.Columns.Where(c => !c.IsAutoIncrement())
                             .Select((c, index) => new QueryColumn(c, row[index])).ToList(),
                         TargetTable.Columns.Where(c => c.IsAutoIncrement())
                             .Select((c, index) => new Filter(c, Filter.ECompare.IsEqual, row[index])).ToList()
                     );
                     await TargetConnection.ExecuteUpdate(TargetTable, new List<UpdateQuery>() {updateQuery}, _transactionReference, 
-                        cancellationToken);
+                        cancellationToken = default);
                     break;
 
                 case 'D':
@@ -101,7 +100,7 @@ namespace dexih.transforms
                             .Select((c, index) => new Filter(c, Filter.ECompare.IsEqual, row[index])).ToList()
                     );
                     await TargetConnection.ExecuteDelete(TargetTable, new List<DeleteQuery>() {deleteQuery}, _transactionReference,
-                        cancellationToken);
+                        cancellationToken = default);
                     break;
                 case 'T':
                     if (!TargetConnection.DynamicTableCreation && !TruncateComplete)
@@ -116,7 +115,7 @@ namespace dexih.transforms
             return surrogateKey;
         }
 
-        public override Task FinalizeRecords(CancellationToken cancellationToken)
+        public override Task FinalizeWrites(CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }

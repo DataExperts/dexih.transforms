@@ -127,7 +127,7 @@ namespace dexih.connections.azure
             return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,254}$");
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -145,7 +145,7 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -187,7 +187,7 @@ namespace dexih.connections.azure
 
                     if (bufferSize > 99)
                     {
-                        tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancellationToken));
+                        tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancellationToken = default));
                         if (cancellationToken.IsCancellationRequested)
                         {
                             throw new ConnectionException($"Bulk insert operation was cancelled.");
@@ -237,7 +237,7 @@ namespace dexih.connections.azure
                     buffer.Add(row);
                     bufferSize++;
                 }
-                tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancellationToken));
+                tasks.Add(WriteDataBuffer(table, buffer, targetTableName, cancellationToken = default));
                 if (cancellationToken.IsCancellationRequested)
                 {
                     throw new ConnectionException($"Bulk insert operation was cancelled.");
@@ -260,7 +260,7 @@ namespace dexih.connections.azure
             }
         }
 
-        private Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken)
+        private Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken = default)
         {
             var connection = GetCloudTableClient();
             var cloudTable = connection.GetTableReference(targetTableName);
@@ -268,8 +268,8 @@ namespace dexih.connections.azure
             // Create the batch operation.
             var batchOperation = new TableBatchOperation();
 
-            var partitionKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
-            var rowKey = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            var partitionKey = table.GetOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
+            var rowKey = table.GetOrdinal(TableColumn.EDeltaType.AzureRowKey);
             var surrogateKey = table.GetAutoIncrementOrdinal();
 
             foreach (var row in buffer)
@@ -321,7 +321,7 @@ namespace dexih.connections.azure
         /// <param name="dropTable"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -401,7 +401,7 @@ namespace dexih.connections.azure
         /// <param name="databaseName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
@@ -411,13 +411,13 @@ namespace dexih.connections.azure
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             var list = new List<string> { "Default" };
             return Task.FromResult(list);
         }
 
-        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -440,7 +440,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
+        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -567,7 +567,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken)
+        public override async Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -738,7 +738,7 @@ namespace dexih.connections.azure
             return filterString;
         }
 
-        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -919,7 +919,7 @@ namespace dexih.connections.azure
         }
 
 
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -933,7 +933,7 @@ namespace dexih.connections.azure
 
                 long keyValue = -1;
 
-                var dbAutoIncrement = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                var dbAutoIncrement = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
                 if (dbAutoIncrement != null)
                 {
                     keyValue = await GetNextKey(table, dbAutoIncrement, cancellationToken);
@@ -944,8 +944,8 @@ namespace dexih.connections.azure
                 //start a batch operation to update the rows.
                 var batchOperation = new TableBatchOperation();
 
-                var partitionKey = table.GetDeltaColumn(TableColumn.EDeltaType.AzurePartitionKey);
-                var rowKey = table.GetDeltaColumn(TableColumn.EDeltaType.AzureRowKey);
+                var partitionKey = table.GetColumn(TableColumn.EDeltaType.AzurePartitionKey);
+                var rowKey = table.GetColumn(TableColumn.EDeltaType.AzureRowKey);
 
                 //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
@@ -1011,7 +1011,7 @@ namespace dexih.connections.azure
                     if (rowCount > 99)
                     {
                         rowCount = 0;
-                        batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken));
+                        batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken = default));
 
                         if (cancellationToken.IsCancellationRequested)
                         {
@@ -1037,7 +1037,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -1152,7 +1152,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -1219,7 +1219,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -1282,7 +1282,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException("A native database reader is not available for Azure table connections.");
         }

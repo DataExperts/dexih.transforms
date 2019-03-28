@@ -1,6 +1,7 @@
 ﻿using dexih.functions;
 using dexih.transforms;
 using System;
+using dexih.transforms.Mapping;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test
@@ -133,6 +134,113 @@ namespace dexih.connections.test
             });
             
             return table;
+        }
+        
+            public static Table CreateParentTable()
+        {
+            var table = new Table("parent", 0, 
+                new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+            );
+
+            return table;
+        }
+
+        public static ReaderMemory CreateParentTableData(int rows)
+        {
+            var table = CreateParentTable();
+            
+            for(var i = 0; i < rows; i++)
+            {
+                table.AddRow(i, $"parent {i}");
+            }
+            
+            return new ReaderMemory(table);
+        }
+
+        public static Table CreateChildTable()
+        {
+            var table = new Table("child", 0, 
+                new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+            );
+
+            return table;
+        }
+
+        public static ReaderMemory CreateChildTableData(int rows)
+        {
+            var table = CreateChildTable();
+
+            for(var i = 0; i < rows; i++)
+            {
+                table.AddRow(i, i, $"child {i}");
+            }
+            
+            return new ReaderMemory(table);
+        }
+
+        public static Table CreateGrandChildTable()
+        {
+            var table = new Table("grandChild", 0, 
+                new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("grandChild_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+            );
+
+            return table;
+        }
+        
+        public static ReaderMemory CreateGrandChildTableData(int rows)
+        {
+            var table = CreateGrandChildTable();
+
+            for(var i = 0; i < rows; i++)
+            {
+                table.AddRow(i, i, $"grandChild {i}");
+            }
+
+            return new ReaderMemory(table);
+        }
+
+        // create a sample reader, containing child and grandchild arrays.
+        public static Transform CreateParentChildReader(int rows)
+        {
+            var parent = CreateParentTableData(rows);
+            var child = CreateChildTableData(rows);
+            var grandChild = CreateGrandChildTableData(rows);
+
+            var childrenColumn = new TableColumn("children", ETypeCode.Node);
+
+            // join parent to child
+            var mappings = new Mappings
+            {
+                new MapJoinNode(childrenColumn, child.CacheTable),
+                new MapJoin(child.CacheTable["parent_id"], child.CacheTable["parent_id"])
+            };
+
+            var parentTransform = new TransformJoin(parent, child, mappings, Transform.EDuplicateStrategy.All, null, "Join")
+            {
+                Name = "Join Child",
+                JoinDuplicateStrategy = Transform.EDuplicateStrategy.All
+            };
+
+            var childMappings = new Mappings
+            {
+                new MapJoinNode(new TableColumn("grandChildren", ETypeCode.Node), grandChild.CacheTable),
+                new MapJoin(child.CacheTable["child_id"], grandChild.CacheTable["child_id"])
+            };
+
+            var childTransform = new TransformJoin()
+            {
+                JoinDuplicateStrategy = Transform.EDuplicateStrategy.All
+            };
+
+            var transform = childTransform.CreateNodeMapping(parentTransform, grandChild, childMappings,
+                new[] {childrenColumn});
+            
+            return transform;
         }
     }
 }

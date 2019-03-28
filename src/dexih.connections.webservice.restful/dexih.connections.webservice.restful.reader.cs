@@ -26,18 +26,11 @@ namespace dexih.connections.webservice
             _restFunction = (WebService)table;
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            IsOpen = false;
-
-            base.Dispose(disposing);
-        }
-        
         public override string TransformName { get; } = "Restful Web Service Reader";
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
 
@@ -52,7 +45,7 @@ namespace dexih.connections.webservice
                 rowCreator.InitializeRowCreator(1, 1, 1);
                 ReferenceTransform = rowCreator;
 
-                _filter = query?.Filters;
+                _filter = selectQuery?.Filters;
                 if (_filter == null)
                 {
                     _filter = new List<Filter>();
@@ -75,7 +68,7 @@ namespace dexih.connections.webservice
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -125,7 +118,7 @@ namespace dexih.connections.webservice
             }
         }
 
-        public override async Task<bool> InitializeLookup(long auditKey,SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> InitializeLookup(long auditKey,SelectQuery query, CancellationToken cancellationToken = default)
         {
             Reset();
             return await Open(auditKey, query, cancellationToken);

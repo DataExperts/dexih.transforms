@@ -54,7 +54,7 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (_doLookup)
             {
@@ -99,7 +99,7 @@ namespace dexih.transforms
             new Sort(new TableColumn("RowNumber", ETypeCode.Int32), Increment > 0 ? Sort.EDirection.Ascending : Sort.EDirection.Descending)
         };
 
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             Reset();

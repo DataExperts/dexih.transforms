@@ -23,12 +23,24 @@ namespace dexih.functions
 	/// </summary>
 	public static class TaskTimer
 	{
-		public static async Task<TimeSpan> Start(Func<Task> func)
+		public static async Task<TimeSpan> StartAsync(Func<Task> func)
 		{
 			var timer = Stopwatch.StartNew();
 			await func();
 			timer.Stop();
 			return timer.Elapsed;
 		}
+		
+		public static TimeSpan Start(Action action)
+		{
+			var timer = Stopwatch.StartNew();
+			action();
+			timer.Stop();
+			return timer.Elapsed;
+		}
+
+
+		
+		
 	}
 }

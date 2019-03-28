@@ -5,7 +5,7 @@ namespace dexih.transforms
 {
     public class TransformWriterOptions
     {
-        public enum eTargetAction
+        public enum ETargetAction
         {
             None,
             Truncate,
@@ -16,7 +16,7 @@ namespace dexih.transforms
         /// <summary>
         /// Indicates the preload action to be applied to the target table.
         /// </summary>
-        public eTargetAction TargetAction { get; set; } = eTargetAction.None;  
+        public ETargetAction TargetAction { get; set; } = ETargetAction.None;  
 
         /// <summary>
         /// Indicates any previously stored incremental values should be ignored and <see cref="ResetIncremental"/> used instead
@@ -52,7 +52,7 @@ namespace dexih.transforms
 
         public bool IsEmptyTarget()
         {
-            return TargetAction == eTargetAction.Truncate || TargetAction == eTargetAction.DropCreate;
+            return TargetAction == ETargetAction.Truncate || TargetAction == ETargetAction.DropCreate;
         }
     }
 }

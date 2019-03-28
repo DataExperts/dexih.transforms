@@ -371,12 +371,12 @@ namespace dexih.connections.azure
         }
 
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {

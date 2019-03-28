@@ -73,8 +73,8 @@ namespace dexih.transforms.Poco
             foreach (var propertyInfo in typeof(T).GetProperties())
             {
                 var field = propertyInfo.GetCustomAttribute<PocoColumnAttribute>(false) ?? new PocoColumnAttribute(propertyInfo.Name);
-                var fieldName = string.IsNullOrEmpty(field?.Name) ? propertyInfo.Name : field.Name;
-                var isKey = field != null && field.IsKey;
+                var fieldName = string.IsNullOrEmpty(field.Name) ? propertyInfo.Name : field.Name;
+                var isKey = field.IsKey;
 
                 var position = table.Columns.GetOrdinal(fieldName);
                 if(position >= 0)
@@ -91,9 +91,9 @@ namespace dexih.transforms.Poco
         /// </summary>
         /// <returns>The insert.</returns>
         /// <param name="connection">Connection.</param>
-        /// <param name="item">Item.</param>
+        /// <param name="dropTable"></param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public Task CreateTable(Connection connection, bool dropTable, CancellationToken cancellationToken)
+        public Task CreateTable(Connection connection, bool dropTable, CancellationToken cancellationToken = default)
         {
             return connection.CreateTable(Table, dropTable, cancellationToken);
         }
@@ -104,7 +104,7 @@ namespace dexih.transforms.Poco
         /// <returns>True = table exists.</returns>
         /// <param name="connection">Connection.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public Task<bool> TableExists(Connection connection, CancellationToken cancellationToken)
+        public Task<bool> TableExists(Connection connection, CancellationToken cancellationToken = default)
         {
             return connection.TableExists(Table, cancellationToken);
         }
@@ -116,7 +116,7 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="item">Item.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public async Task ExecuteInsert(Connection connection, T item, CancellationToken cancellationToken)
+        public async Task ExecuteInsert(Connection connection, T item, CancellationToken cancellationToken = default)
         {
             var columns = new List<QueryColumn>();
 
@@ -132,7 +132,7 @@ namespace dexih.transforms.Poco
             }
 
 
-            var insertQuery = new InsertQuery(Table.Name, columns);
+            var insertQuery = new InsertQuery(columns);
 
             var insertResult = await connection.ExecuteInsert(Table, new List<InsertQuery>() { insertQuery }, cancellationToken);
 
@@ -149,7 +149,7 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="item">Item to delete</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public Task ExecuteDelete(Connection connection, T item, CancellationToken cancellationToken)
+        public Task ExecuteDelete(Connection connection, T item, CancellationToken cancellationToken = default)
         {
             var filters = new List<Filter>();
 
@@ -175,7 +175,7 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="item">Item to delete</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public Task ExecuteUpdate(Connection connection, T item, CancellationToken cancellationToken)
+        public Task ExecuteUpdate(Connection connection, T item, CancellationToken cancellationToken = default)
         {
             var filters = new List<Filter>();
             var updateColumns = new List<QueryColumn>();
@@ -197,7 +197,7 @@ namespace dexih.transforms.Poco
                 }
             }
 
-            var updateQuery = new UpdateQuery(Table.Name, updateColumns, filters);
+            var updateQuery = new UpdateQuery(updateColumns, filters);
 
             return connection.ExecuteUpdate(Table, new List<UpdateQuery>() { updateQuery }, cancellationToken);
         }
@@ -209,7 +209,7 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="items">Item.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public Task ExecuteInsertBulk(Connection connection, IEnumerable<T> items, CancellationToken cancellationToken)
+        public Task ExecuteInsertBulk(Connection connection, IEnumerable<T> items, CancellationToken cancellationToken = default)
         {
             var pocoTable = new PocoTable<T>(Table.Copy());
 

@@ -102,7 +102,7 @@ namespace dexih.transforms
 
         public DbDataReader InReader { get; set; }
 
-        public override void Close()
+        protected override void CloseConnections()
         {
             InReader?.Close();
         }
@@ -118,7 +118,7 @@ namespace dexih.transforms
             throw new TransformException("The source reader cannot be reset as the DbReader is a forward only reader");
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             var success = await InReader.ReadAsync(cancellationToken);
             object[] newRow;

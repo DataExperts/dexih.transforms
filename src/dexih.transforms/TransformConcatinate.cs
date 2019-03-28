@@ -47,7 +47,7 @@ namespace dexih.transforms
       public override string TransformName { get; } = "Concatenate Rows";
       public override string TransformDetails => $"{PrimaryTransform?.Name} + ${ReferenceTransform?.Name}";
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
@@ -56,9 +56,9 @@ namespace dexih.transforms
             var referenceSorts = new List<Sort>();
             
             //we need to translate filters and sorts to source column names before passing them through.
-            if (query?.Sorts != null)
+            if (selectQuery?.Sorts != null)
             {
-                foreach (var sort in query.Sorts)
+                foreach (var sort in selectQuery.Sorts)
                 {
                     if (sort.Column != null)
                     {
@@ -157,7 +157,7 @@ namespace dexih.transforms
             return returnValue;
         }
         
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             // sorted merge will concatenate 2 sorted incoming datasets, and maintain the sort order.
             if (_sortedMerge)

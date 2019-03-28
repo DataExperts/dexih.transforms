@@ -331,7 +331,7 @@ namespace dexih.connections.sql
 //            return returnValue;
 //        }
 
-        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -369,7 +369,7 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -449,7 +449,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -472,7 +472,7 @@ namespace dexih.connections.sql
             }
         }
         
-        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -568,7 +568,7 @@ namespace dexih.connections.sql
             return ETypeCode.Unknown;
         }
         
-        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
+        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
         {
             if (originalTable.UseQuery)
             {
@@ -751,7 +751,7 @@ ORDER BY cols.table_name, cols.position"))
             }
         }
         
-//          public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+//          public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
 //          {
 //              MaxSqlSize = 40000;
 //            try
@@ -849,7 +849,7 @@ ORDER BY cols.table_name, cols.position"))
 //        }
           
        
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
              try
             {
@@ -928,7 +928,7 @@ ORDER BY cols.table_name, cols.position"))
                         return autoIncrementValue;
                     }
 
-                    var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    var deltaColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
                     if (deltaColumn != null)
                     {
                         var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
@@ -954,7 +954,7 @@ ORDER BY cols.table_name, cols.position"))
             }        
         }
         
-//        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+//        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken = default)
 //        {
 //            try
 //            {
@@ -1023,7 +1023,7 @@ ORDER BY cols.table_name, cols.position"))
 //            }
 //        }
 
-        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {

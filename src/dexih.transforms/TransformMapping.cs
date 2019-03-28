@@ -29,16 +29,16 @@ namespace dexih.transforms
         public override string TransformDetails => "Mappings:" + Mappings.OfType<MapColumn>().Count() + ", Functions: " + Mappings.OfType<MapFunction>().Count();
 
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
 	        //we need to translate filters and sorts to source column names before passing them through.
-            if(query?.Filters != null)
+            if(selectQuery?.Filters != null)
             {
                 var newFilters = new List<Filter>();
-                foreach(var filter in query.Filters)
+                foreach(var filter in selectQuery.Filters)
                 {
                     TableColumn column1 = null;
                     TableColumn column2 = null;
@@ -69,14 +69,14 @@ namespace dexih.transforms
 					newFilters.Add(newFilter);
 				}
 
-				query.Filters = newFilters;
+				selectQuery.Filters = newFilters;
 			}
 
 			//we need to translate filters and sorts to source column names before passing them through.
-			if (query?.Sorts != null)
+			if (selectQuery?.Sorts != null)
 			{
 				var newSorts = new List<Sort>();
-				foreach (var sort in query.Sorts)
+				foreach (var sort in selectQuery.Sorts)
 				{
 					TableColumn column = null;
 					if (sort.Column != null)
@@ -94,16 +94,10 @@ namespace dexih.transforms
 					newSorts.Add(newSort);
 				}
 
-				query.Sorts = newSorts;
+				selectQuery.Sorts = newSorts;
 			}
 
-			var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
-
-			foreach (var mapping in Mappings.OfType<MapNode>())
-			{
-				var transform = mapping.OutputTransform;
-				await transform.Open(auditKey, null, cancellationToken);
-			}
+			var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 			
 			return returnValue;
         }
@@ -157,7 +151,7 @@ namespace dexih.transforms
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
 			while (true) // while loop is used to allow a function with skip record to work.
 			{

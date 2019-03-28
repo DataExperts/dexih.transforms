@@ -14,9 +14,8 @@ namespace dexih.transforms
     {
         public TransformThread(Transform transform)
         {
-            SetInTransform(transform, null, true);
-//            PrimaryTransform = transform;
-//            _transform = transform;
+            PrimaryTransform = transform;
+            CacheTable = PrimaryTransform.CacheTable;
             _currentRow = 0;
         }
 
@@ -26,7 +25,7 @@ namespace dexih.transforms
         public override string TransformDetails => "";
 
 
-        public override Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
@@ -36,16 +35,17 @@ namespace dexih.transforms
                 throw new TransformException("Open failed, there is no primary transform set fo the transform thread.");
             }
 
-            if (!PrimaryTransform.IsOpen)
+            if (!PrimaryTransform.IsOpen && !PrimaryTransform.IsReaderFinished)
             {
-                return PrimaryTransform.Open(auditKey, query, cancellationToken);
+                return PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             }
+            
 
             return Task.FromResult(true);
         }
         
  
-        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             return PrimaryTransform.ReadThreadSafe(_currentRow++, cancellationToken);
         }
@@ -56,6 +56,5 @@ namespace dexih.transforms
             return true;
         }
 
-        public override Table CacheTable => PrimaryTransform.CacheTable;
     }
 }

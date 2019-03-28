@@ -60,7 +60,7 @@ namespace dexih.transforms
         public override string TransformDetails =>  string.Join(",", _sortFields?.Select(c=> c.Column.Name + " " + c.Direction.ToString()).ToArray());
 
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             _firstRead = true;
 
@@ -72,12 +72,12 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
-            if (query == null)
-                query = new SelectQuery();
+            if (selectQuery == null)
+                selectQuery = new SelectQuery();
 
-            query.Sorts = RequiredSortFields();
+            selectQuery.Sorts = RequiredSortFields();
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 
             CacheTable = PrimaryTransform.CacheTable.Copy();
             CacheTable.OutputSortFields = _sortFields;
@@ -90,7 +90,7 @@ namespace dexih.transforms
         }
 
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if(_alreadySorted)
             {

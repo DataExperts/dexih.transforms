@@ -26,7 +26,7 @@ namespace dexih.transforms
             _connection = connection;
             CacheTable = _transform.CacheTable;
 
-            _operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+            _operationOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
         }
 
         public override bool IsClosed => _transform.IsClosed;
@@ -39,7 +39,7 @@ namespace dexih.transforms
             return _transform.ResetTransform();
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if(await _transform.ReadAsync(cancellationToken) == false)
             {
@@ -48,7 +48,7 @@ namespace dexih.transforms
 
             if (_operationOrdinal >= 0)
             {
-                if (object.Equals(_transform[_operationOrdinal],'T'))
+                if (Equals(_transform[_operationOrdinal],'T'))
                 {
                     return _transform.CurrentRow;
                 }

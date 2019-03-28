@@ -13,23 +13,25 @@ namespace dexih.transforms.Mapping
         /// <summary>
         /// Broker transform that site between the source transform, and target transforms.
         /// </summary>
-        public TransformNode Transform { get; } = new TransformNode();
+        public sealed override TransformNode Transform { get; } = new TransformNode();
 
         public MapNode(TableColumn inputColumn, Table parentTable)
         {
             InputColumn = inputColumn;
             OutputColumn = inputColumn.Copy();
 
-            var table = new Table("node", InputColumn.ChildColumns, null);
+            var table = new Table("node", InputColumn.ChildColumns);
             Transform.SetTable(table, parentTable);
         }
 
-        public Transform OutputTransform { get; set; }
+        public Transform OutputTransform { private get; set; }
         public TableColumn InputColumn { get; set; }
         public TableColumn OutputColumn { get; set; }
 
         private int _inputOrdinal = -1;
         private int _outputOrdinal = -1;
+
+        private Transform _cachedTransform;
 
         public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
@@ -54,22 +56,29 @@ namespace dexih.transforms.Mapping
             Transform.PrimaryTransform = (Transform) row[_inputOrdinal];
             await Transform.Open(0, null, cancellationToken);
             Transform.SetParentRow(row);
-            OutputTransform?.Reset(true);
+            
+            OutputTransform?.Reset(false);
+
+            if (OutputTransform == null)
+            {
+                _cachedTransform = new TransformCache(Transform);
+            }
+            else
+            {
+                _cachedTransform = new TransformCache(OutputTransform);
+            }
+
+            // await _cachedTransform.Open(cancellationToken);
 
             return true;
         }
 
         public override void MapOutputRow(object[] data)
         {
-            if (OutputTransform == null)
-            {
-                data[_outputOrdinal] = Transform;
-            }
-
-            data[_outputOrdinal] = OutputTransform;
+            data[_outputOrdinal] = _cachedTransform;
         }
 
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             throw new NotImplementedException();
         }

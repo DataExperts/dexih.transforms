@@ -24,7 +24,6 @@ namespace dexih.connections.test
             //create a new table and write some data to it.  
             Transform reader = DataSets.CreateTestData();
             await connection.CreateTable(table, true, CancellationToken.None);
-            await connection.InitializeAudit(writerResult, CancellationToken.None);
             
             var writer = new transforms.TransformWriterTarget(connection, table, writerResult);
             await writer.WriteRecordsAsync(reader, CancellationToken.None);
@@ -92,7 +91,6 @@ namespace dexih.connections.test
 //            Assert.Equal(10L, writerResult.RowsCreated);
 
             writerResult = new TransformWriterResult(connection) {HubKey = 0, AuditType = "Datalink", AuditConnectionKey = 1};
-            await writerResult.Initialize(CancellationToken.None);
             
             var options = new TransformWriterOptions();
             var target = new transforms.TransformWriterTarget(connection, deltaTable, writerResult);

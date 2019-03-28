@@ -26,8 +26,8 @@ namespace dexih.transforms
             RejectConnection = rejectConnection;
             TruncateComplete = false;
 
-            AutoIncrementOrdinal = targetTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.AutoIncrement);
-            DbAutoIncrementOrdinal = targetTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DbAutoIncrement);
+            AutoIncrementOrdinal = targetTable.GetOrdinal(TableColumn.EDeltaType.AutoIncrement);
+            DbAutoIncrementOrdinal = targetTable.GetOrdinal(TableColumn.EDeltaType.DbAutoIncrement);
         }
 
         public abstract Task<int> StartTransaction(int transactionReference = -1);
@@ -37,8 +37,8 @@ namespace dexih.transforms
         
         
         
-        public abstract Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken);
+        public abstract Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken = default);
 
-        public abstract Task FinalizeRecords(CancellationToken cancellationToken);
+        public abstract Task FinalizeWrites(CancellationToken cancellationToken = default);
     }
 }

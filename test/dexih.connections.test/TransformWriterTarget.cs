@@ -7,22 +7,23 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.File;
+using dexih.transforms.tests;
 using Dexih.Utils.DataType;
 using Xunit;
 
 namespace dexih.connections.test
 {
-    public class TransformWriterTarget
+    public class TransformWriterTargetTests
     {
         private async Task<Transform> GetReader()
         {
             var stream = System.IO.File.OpenRead("Data/transactions.json");
-            var table = new WebService();
+            var table = new WebService() { Name = "transactions"};
 
             var handler = new FileHandlerJson(table, null);
             var columns = (await handler.GetSourceColumns(stream)).ToArray();
             table.Columns = new TableColumns(columns);
-            
+
             stream = System.IO.File.OpenRead("Data/transactions.json");
             handler = new FileHandlerJson(table, null);
 
@@ -33,7 +34,7 @@ namespace dexih.connections.test
             return transform;
         }
         
-        public async Task ParentChild_Write(Connection connection, string databaseName, bool useDbAutoIncrement, bool useTransaction)
+        public async Task ParentChild_Write(Connection connection, string databaseName, bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var autoIncrement = useDbAutoIncrement
                 ? TableColumn.EDeltaType.DbAutoIncrement
@@ -47,30 +48,27 @@ namespace dexih.connections.test
             await connection.CreateDatabase(databaseName, CancellationToken.None);
             
             var transactionTable = new Table("transaction");
-            transactionTable.Columns.Add(new TableColumn("transactionId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField));
+            transactionTable.Columns.Add(new TableColumn("transactionId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey));
             transactionTable.Columns.Add(new TableColumn("desc", DataType.ETypeCode.String, TableColumn.EDeltaType.TrackingField));
             transactionTable.Columns.Add(new TableColumn("transactionKey", DataType.ETypeCode.Int64, autoIncrement));
 
             var componentTable = new Table("component");
-            componentTable.Columns.Add(new TableColumn("itemId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField));
+            componentTable.Columns.Add(new TableColumn("itemId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey));
             componentTable.Columns.Add(new TableColumn("desc", DataType.ETypeCode.String, TableColumn.EDeltaType.TrackingField));
             componentTable.Columns.Add(new TableColumn("componentKey", DataType.ETypeCode.Int64, autoIncrement));
             componentTable.Columns.Add(new TableColumn("transactionKey", DataType.ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
 
             var reader = await GetReader();
-           
-            // var writerResult = await connection.InitializeAudit(CancellationToken.None);
 
             // add two target tables
-            var transactionOptions = new TransformWriterOptions() {TargetAction = TransformWriterOptions.eTargetAction.DropCreate};
-            var targets = new transforms.TransformWriterTarget(connection, transactionTable, transactionType, null, transactionOptions);
-            targets.Add(new transforms.TransformWriterTarget(connection, componentTable,transactionType, new TransformWriterResult(), transactionOptions), new[] {"items"});
+            var transactionOptions = new TransformWriterOptions() {TargetAction = TransformWriterOptions.ETargetAction.DropCreate};
+            var targets = new transforms.TransformWriterTarget(connection, transactionTable, null, transactionOptions);
+            targets.Add(new transforms.TransformWriterTarget(connection, componentTable, new TransformWriterResult(), transactionOptions), new[] {"items"});
             
-            await targets.WriteRecordsAsync(reader, CancellationToken.None);
+            await targets.WriteRecordsAsync(reader, updateStrategy, transactionType, CancellationToken.None);
 
             var transactionReader = connection.GetTransformReader(transactionTable);
             transactionReader = new TransformSort(transactionReader, "transactionId");
-            
             await transactionReader.Open();
 
             await transactionReader.ReadAsync();
@@ -120,6 +118,46 @@ namespace dexih.connections.test
                     Assert.Equal(componentKey++, componentReader["componentKey"]);
                 }
             }
+        }
+        
+
+
+        public async Task ParentChild_Write_Large(Connection connection, int rows, string databaseName, bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        {
+            await connection.CreateDatabase(databaseName, CancellationToken.None);
+            
+            var parentTable = DataSets.CreateParentTable();
+            parentTable.AddAuditColumns("parent_key");
+
+            var childTable = DataSets.CreateChildTable();
+            childTable.AddAuditColumns("child_key");
+            childTable.AddColumn("parent_key", DataType.ETypeCode.Int64);
+
+            var grandChildTable = DataSets.CreateGrandChildTable();
+            grandChildTable.AddAuditColumns("grandChild_key");
+            grandChildTable.AddColumn("child_key", DataType.ETypeCode.Int64);
+
+            if (useDbAutoIncrement)
+            {
+                parentTable["parent_key"].DeltaType = TableColumn.EDeltaType.DbAutoIncrement;
+                childTable["child_key"].DeltaType = TableColumn.EDeltaType.DbAutoIncrement;
+                grandChildTable["grandChild_key"].DeltaType = TableColumn.EDeltaType.DbAutoIncrement;
+            }
+
+            var parentTarget = new TransformWriterTarget(connection, parentTable);
+            var childTarget = new TransformWriterTarget(connection, childTable);
+            var grandChildTarget = new TransformWriterTarget(connection, grandChildTable);
+            parentTarget.Add(childTarget, new[] {"children"});
+            parentTarget.Add(grandChildTarget, new[] {"children", "grandChildren"});
+
+            // creates a three level hierarchy parent/child/grandchild.
+            var reader = DataSets.CreateParentChildReader(rows);
+
+            await parentTarget.WriteRecordsAsync(reader, updateStrategy);
+            
+            Assert.Equal(rows, await connection.RowCount("parent"));
+            Assert.Equal(rows, await connection.RowCount("child"));
+            Assert.Equal(rows, await connection.RowCount("grandChild"));
         }
     }
 }

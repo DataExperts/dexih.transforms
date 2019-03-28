@@ -48,7 +48,7 @@ namespace dexih.transforms
         {
         }
 
-        public override async Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken)
+        public override async Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken = default)
         {
             switch (operation)
             {
@@ -99,10 +99,10 @@ namespace dexih.transforms
                 return Operations.Parse<long>(value);
             }
 
-            return AutoIncrementOrdinal >= 0 ? (long?)row[AutoIncrementOrdinal] ?? 0 : 0;
+            return 0;
         }
 
-        public override async Task FinalizeRecords(CancellationToken cancellationToken)
+        public override async Task FinalizeWrites(CancellationToken cancellationToken = default)
         {
             //write out the remaining rows.
             if (_createRows.Count > 0)
@@ -153,7 +153,7 @@ namespace dexih.transforms
 
 
         
-        private async Task DoCreates( CancellationToken cancellationToken)
+        private async Task DoCreates( CancellationToken cancellationToken = default)
         {
             //wait for the previous create task to finish before writing next buffer.
             if (_createRecordsTask != null)
@@ -165,12 +165,12 @@ namespace dexih.transforms
             var createTable = new Table(TargetTable.Name, TargetTable.Columns, _createRows);
             var createReader = new ReaderMemory(createTable);
 
-			_createRecordsTask = TaskTimer.Start(() => TargetConnection.ExecuteInsertBulk(TargetTable, createReader, cancellationToken));  //this has no await to ensure processing continues.
+			_createRecordsTask = TaskTimer.StartAsync(() => TargetConnection.ExecuteInsertBulk(TargetTable, createReader, cancellationToken));  //this has no await to ensure processing continues.
 
             _createRows = new TableCache();
         }
 
-        private async Task DoUpdates( CancellationToken cancellationToken)
+        private async Task DoUpdates( CancellationToken cancellationToken = default)
         {
             //update must wait for any inserts to complete (to avoid updates on records that haven't been inserted yet)
             if (_createRecordsTask != null)
@@ -189,7 +189,6 @@ namespace dexih.transforms
             foreach(var row in _updateRows)
             {
                 var updateQuery = new UpdateQuery(
-                TargetTable.Name,
                 TargetTable.Columns.Where(c => !c.IsAutoIncrement()).Select(c => new QueryColumn(c, row[TargetTable.GetOrdinal(c.Name)])).ToList(),
                 TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
                 );
@@ -197,12 +196,12 @@ namespace dexih.transforms
                 updateQueries.Add(updateQuery);
             }
 
-			_updateRecordsTask = TaskTimer.Start(() => TargetConnection.ExecuteUpdate(TargetTable, updateQueries, cancellationToken));  //this has no await to ensure processing continues.
+			_updateRecordsTask = TaskTimer.StartAsync(() => TargetConnection.ExecuteUpdate(TargetTable, updateQueries, cancellationToken));  //this has no await to ensure processing continues.
 
             _updateRows = new TableCache();
         }
 
-        private async Task DoDeletes( CancellationToken cancellationToken)
+        private async Task DoDeletes( CancellationToken cancellationToken = default)
         {
             //delete must wait for any inserts to complete (to avoid updates on records that haven't been inserted yet)
             if (_createRecordsTask != null)
@@ -236,12 +235,12 @@ namespace dexih.transforms
                 deleteQueries.Add(deleteQuery);
             }
 
-			_deleteRecordsTask = TaskTimer.Start(() => TargetConnection.ExecuteDelete(TargetTable, deleteQueries, cancellationToken));  //this has no await to ensure processing continues.
+			_deleteRecordsTask = TaskTimer.StartAsync(() => TargetConnection.ExecuteDelete(TargetTable, deleteQueries, cancellationToken));  //this has no await to ensure processing continues.
 
             _deleteRows = new TableCache();
         }
 
-        private async Task DoRejects( CancellationToken cancellationToken)
+        private async Task DoRejects( CancellationToken cancellationToken = default)
         {
             //wait for the previous create task to finish before writing next buffer.
             if (_rejectRecordsTask != null)
@@ -280,7 +279,7 @@ namespace dexih.transforms
 
             var rejectReader = new ReaderMemory(rejectTable);
 
-			_rejectRecordsTask = TaskTimer.Start(() => TargetConnection.ExecuteInsertBulk(rejectTable, rejectReader, cancellationToken));  //this has no await to ensure processing continues.
+			_rejectRecordsTask = TaskTimer.StartAsync(() => TargetConnection.ExecuteInsertBulk(rejectTable, rejectReader, cancellationToken));  //this has no await to ensure processing continues.
 			
 			_rejectRows = new TableCache();
 

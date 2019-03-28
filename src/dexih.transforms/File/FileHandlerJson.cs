@@ -25,7 +25,7 @@ namespace dexih.transforms.File
             _rowPath = rowPath;
             _table = table;
             _fieldCount = table.Columns.Count;
-            _responseDataOrdinal = _table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ResponseData);
+            _responseDataOrdinal = _table.GetOrdinal(TableColumn.EDeltaType.ResponseData);
             _responseSegmentOrdinals = new Dictionary<string, (int ordinal, TableColumn column)>();
             
             _nodeTransforms = new Dictionary<string, TransformNode>();

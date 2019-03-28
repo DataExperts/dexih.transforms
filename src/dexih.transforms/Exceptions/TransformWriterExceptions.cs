@@ -32,7 +32,7 @@ namespace dexih.transforms.Exceptions
             get
             {
 #if DEBUG
-                if (Values == null)
+                if (Values == null || Values.Length == 0)
                 {
                     return base.Message;
                 }

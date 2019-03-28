@@ -4,9 +4,8 @@ namespace dexih.functions.Query
 {
     public class UpdateQuery
     {
-        public UpdateQuery(string table, List<QueryColumn> updateColumns, List<Filter> filters)
+        public UpdateQuery(List<QueryColumn> updateColumns, List<Filter> filters)
         {
-            Table = table;
             UpdateColumns = updateColumns;
             Filters = filters;
         }
@@ -17,8 +16,17 @@ namespace dexih.functions.Query
             Filters = new List<Filter>();
         }
 
+        public UpdateQuery(string updateColumn, object updateValue, string filterColumn = null, object filterValue = null)
+        {
+            UpdateColumns = new QueryColumns(updateColumn, updateValue);
+
+            if (filterColumn != null)
+            {
+                Filters = new Filters(filterColumn, filterValue);
+            }
+        }
+
         public List<QueryColumn> UpdateColumns { get; set; }
-        public string Table { get; set; }
         public List<Filter> Filters { get; set; }
     }
 }

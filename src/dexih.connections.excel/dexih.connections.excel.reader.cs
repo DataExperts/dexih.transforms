@@ -27,7 +27,7 @@ namespace dexih.connections.excel
             CacheTable = table;
         }
 
-        public override void Close()
+        protected override void CloseConnections()
         {
             _excelPackage?.Dispose();
         }
@@ -36,7 +36,7 @@ namespace dexih.connections.excel
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             try
@@ -53,7 +53,7 @@ namespace dexih.connections.excel
                 _currentRow = connection.ExcelDataRow;
                 _excelWorkSheet = connection.GetWorkSheet(_excelPackage, CacheTable.Name);
 
-                _query = query;
+                _query = selectQuery;
 
                 // get the position of each of the column names.
                 _columnMappings = new Dictionary<int, (int ordinal, TableColumn column)>();
@@ -94,7 +94,7 @@ namespace dexih.connections.excel
             return true;
         }
 
-        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -149,7 +149,7 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException("Direct lookup not supported with excel files.");
         }

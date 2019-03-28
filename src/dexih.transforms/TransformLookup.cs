@@ -40,7 +40,7 @@ namespace dexih.transforms
         public override string TransformDetails => $"Primary: {PrimaryTransform.Name}, Join: {ReferenceTransform.Name}";
 
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
             _primaryFieldCount = PrimaryTransform.FieldCount;
@@ -48,14 +48,14 @@ namespace dexih.transforms
 
             ReferenceTransform.SetCacheMethod(ECacheMethod.LookupCache, 1000);
             
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             return returnValue;
         }
 
 
         public override bool RequiresSort => false;
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             object[] newRow = null;
 
@@ -82,7 +82,7 @@ namespace dexih.transforms
 
             _lookupCache = null;
 
-            if (await PrimaryTransform.ReadAsync(cancellationToken)== false)
+            if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
             {
                 return null;
             }
@@ -106,7 +106,7 @@ namespace dexih.transforms
                 Column1 = c.JoinColumn,
                 CompareDataType = ETypeCode.String,
                 Operator = Filter.ECompare.IsEqual,
-                Value2 = c.GetOutputTransform()
+                Value2 = c.GetOutputValue()
             }).ToList();
             
             var lookupResult = await ReferenceTransform.Lookup(selectQuery, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);

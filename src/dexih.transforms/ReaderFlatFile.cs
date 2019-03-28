@@ -49,23 +49,22 @@ namespace dexih.transforms
                             $"The format type {table.FormatType} is not currently supported.");
             }
             
-            _fileNameOrdinal = table.GetDeltaColumnOrdinal(TableColumn.EDeltaType.FileName);
+            _fileNameOrdinal = table.GetOrdinal(TableColumn.EDeltaType.FileName);
         }
         
         public override string TransformName { get; } = "Flat File Reader";
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
         
-        public override void Close()
+        protected override void CloseConnections()
         {
             _fileHandler?.Dispose();
-            IsOpen = false;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
-            _selectQuery = query;
+            _selectQuery = selectQuery;
 
             if (IsOpen)
             {
@@ -75,15 +74,15 @@ namespace dexih.transforms
             IsOpen = true;
             
             // if a filename was specified in the query, use this, otherwise, get a list of files from the incoming directory.
-            if (string.IsNullOrEmpty(query?.FileName))
+            if (string.IsNullOrEmpty(selectQuery?.FileName))
             {
                 _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, EFlatFilePath.Incoming,
                     CacheFlatFile.FileMatchPattern);
             }
             else
             {
-                _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, query.Path,
-                    query.FileName);
+                _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, selectQuery.Path,
+                    selectQuery.FileName);
             }
             
             if (_files.MoveNext() == false)
@@ -95,7 +94,7 @@ namespace dexih.transforms
 
             try
             {
-                await _fileHandler.SetStream(fileStream, query);
+                await _fileHandler.SetStream(fileStream, selectQuery);
             }
             catch (Exception ex)
             {
@@ -111,7 +110,7 @@ namespace dexih.transforms
             return IsOpen;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             while (true)
             {
@@ -144,36 +143,36 @@ namespace dexih.transforms
                     }
 
                     if (_files.MoveNext() == false)
-                        IsOpen = false;
-                    else
                     {
-                        try
-                        {
-                            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
-                            await _fileHandler.SetStream(fileStream, _selectQuery);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ConnectionException($"Failed to read the file {_files.Current.FileName}.  {ex.Message}", ex);
-                        }
-                        
-                        try
-                        {
-                            row = await _fileHandler.GetRow();
+                        return null;
+                    }
 
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ConnectionException($"Flat file reader failed during the reading the file {_files.Current.FileName}.  {ex.Message}", ex);
-                        }
-                        if (row == null)
-                        {
-                            return await ReadRecord(cancellationToken); // this creates a recursive loop to cater for empty files.
-                        }
+                    try
+                    {
+                        var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
+                        await _fileHandler.SetStream(fileStream, _selectQuery);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ConnectionException($"Failed to read the file {_files.Current.FileName}.  {ex.Message}", ex);
+                    }
+                        
+                    try
+                    {
+                        row = await _fileHandler.GetRow();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ConnectionException($"Flat file reader failed during the reading the file {_files.Current.FileName}.  {ex.Message}", ex);
+                    }
+                    if (row == null)
+                    {
+                        return await ReadRecord(cancellationToken); // this creates a recursive loop to cater for empty files.
                     }
                 }
                 
-                if (row != null && _fileNameOrdinal >= 0)
+                if (_fileNameOrdinal >= 0)
                 {
                     row[_fileNameOrdinal] = _files.Current.FileName;
                 }
@@ -184,7 +183,7 @@ namespace dexih.transforms
 
         }
         
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             Reset();
             return Open(auditKey, query, cancellationToken);

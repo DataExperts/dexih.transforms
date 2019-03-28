@@ -91,18 +91,17 @@ namespace dexih.transforms
             return table;
         }
         
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
+            IsOpen = true;
             
             var result = true;
 
             if (PrimaryTransform != null)
             {
-                result = result && await PrimaryTransform.Open(auditKey, query, cancellationToken);
-                if (!result)
-                    return result;
-                
+                result = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+                if (!result) return false;
             }
 
             if (ReferenceTransform != null)
@@ -111,11 +110,11 @@ namespace dexih.transforms
             }
 
             //store reject column details to improve performance.
-            _rejectReasonOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
-            _operationOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
-            _validationStatusOrdinal = CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.ValidationStatus);
+            _rejectReasonOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.RejectedReason);
+            _operationOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+            _validationStatusOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.ValidationStatus);
 
-            _primaryFieldCount = PrimaryTransform.FieldCount;
+            _primaryFieldCount = PrimaryTransform?.FieldCount ?? 0;
             _columnCount = CacheTable.Columns.Count;
             _mapFieldOrdinals = new List<int>();
 
@@ -135,7 +134,7 @@ namespace dexih.transforms
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             //the saved reject row is when a validation outputs two rows (pass & fail).
             if (_savedRejectRow != null)

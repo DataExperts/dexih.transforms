@@ -232,6 +232,7 @@ namespace dexih.transforms.tests
             var data = Helpers.CreateLargeTable(rows);
             var transformFilter = new TransformFilter();
             transformFilter.SetInTransform(data);
+            await transformFilter.Open();
 
             var count = 0;
             while (await transformFilter.ReadAsync())
@@ -262,7 +263,8 @@ namespace dexih.transforms.tests
             };
 
             var transformFilter = new TransformFilter(data, mappings);
-
+            await transformFilter.Open();
+            
             var count = 0;
             while (await transformFilter.ReadAsync())
                 count++;

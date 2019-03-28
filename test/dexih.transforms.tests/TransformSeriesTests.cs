@@ -61,6 +61,7 @@ namespace dexih.transforms.tests
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, true, null, null));
             
             var transformGroup = new TransformSeries(source, mappings);
+            await transformGroup.Open();
             
             Assert.Equal(2, transformGroup.FieldCount);
 
@@ -119,7 +120,8 @@ namespace dexih.transforms.tests
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
             
             var transformGroup = new TransformSeries(source, mappings);
-
+            await transformGroup.Open();
+            
             var counter = 0;
             double[] mAvgExpectedValues = { 3, 3 };
             string[] expectedDates = { "2015/01/01", "2015/01/02",  };
@@ -181,6 +183,7 @@ namespace dexih.transforms.tests
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
 
             var transformGroup = new TransformSeries(source, mappings);
+            await transformGroup.Open();
             Assert.Equal(10, transformGroup.FieldCount);
 
             var counter = 0;

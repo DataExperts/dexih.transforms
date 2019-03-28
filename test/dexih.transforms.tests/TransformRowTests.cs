@@ -46,7 +46,8 @@ namespace dexih.transforms.tests
             mappings.Add(new MapFunction(split, parameters, MapFunction.EFunctionCaching.NoCache));
             
             var transformRow = new TransformRows(source, mappings);
-
+            await transformRow.Open();
+            
             var pos = 0;
             while (await transformRow.ReadAsync())
             {
@@ -99,6 +100,7 @@ namespace dexih.transforms.tests
             mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
             
             var transformRow = new TransformRows(source, mappings);
+            await transformRow.Open();
 
             var pos = 0;
             while (await transformRow.ReadAsync())

@@ -30,49 +30,49 @@ namespace dexih.transforms
         public override string TransformDetails => "Columns:" + Mappings.OfType<MapGroup>().Count() + ", Functions: " + Mappings.OfType<MapAggregate>().Count();
 
 
-        public override async Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
             
-            if (query == null)
+            if (selectQuery == null)
             {
-                query = new SelectQuery();
+                selectQuery = new SelectQuery();
             }
 
             var groupFields = Mappings.OfType<MapGroup>().ToArray();
             
             // pass through sorts where the column is part of the group field
-            if (query.Sorts != null && query.Sorts.Count > 0)
+            if (selectQuery.Sorts != null && selectQuery.Sorts.Count > 0)
             {
                 if (groupFields.Any())
                 {
                     var groupNames = groupFields.Select(c => c.InputColumn.Name).ToArray();
-                    query.Sorts = query.Sorts.Where(c => c.Column != null && groupNames.Contains(c.Column.Name)).ToList();
+                    selectQuery.Sorts = selectQuery.Sorts.Where(c => c.Column != null && groupNames.Contains(c.Column.Name)).ToList();
                 }
                 else
                 {
-                    query.Sorts = null;
+                    selectQuery.Sorts = null;
                 }
             }
             
             // pass through filters where the columns are part of the group fields.
-            if (query.Filters != null && query.Filters.Count > 0)
+            if (selectQuery.Filters != null && selectQuery.Filters.Count > 0)
             {
                 if (groupFields.Any())
                 {
                     var groupNames = groupFields.Select(c => c.InputColumn.Name).ToArray();
-                    query.Filters = query.Filters.Where(c =>
+                    selectQuery.Filters = selectQuery.Filters.Where(c =>
                         (c.Column1 != null && groupNames.Contains(c.Column1.Name)) && 
                         (c.Column2 != null &&  groupNames.Contains((c.Column2.Name)))).ToList();
                 }
                 else
                 {
-                    query.Filters = null;
+                    selectQuery.Filters = null;
                 }
             }            
 
-            var returnValue = await PrimaryTransform.Open(auditKey, query, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             _firstRecord = true;
             return returnValue;
         }
@@ -84,7 +84,7 @@ namespace dexih.transforms
             return true;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             var firstRead = false;
             if (_firstRecord)

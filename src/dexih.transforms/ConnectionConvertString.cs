@@ -43,57 +43,57 @@ namespace dexih.transforms
 
         public override bool DynamicTableCreation => throw new NotImplementedException();
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken)
+        public override Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<Table> GetSourceTableInfo(Table table, CancellationToken cancellationToken)
+        public override Task<Table> GetSourceTableInfo(Table table, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -108,12 +108,12 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

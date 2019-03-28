@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
@@ -59,11 +57,10 @@ namespace dexih.connections.sql
         
 
         
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
             {
-                var fieldCount = reader.FieldCount;
                 var copyCommand = new StringBuilder();
                 copyCommand.Append($"COPY {SqlTableName(table)} (");
 
@@ -133,7 +130,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -156,7 +153,7 @@ namespace dexih.connections.sql
         /// This creates a table in a managed database.  Only works with tables containing a surrogate key.
         /// </summary>
         /// <returns></returns>
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -171,7 +168,7 @@ namespace dexih.connections.sql
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    var dropResult = await DropTable(table);
+                    await DropTable(table);
                 }
 
                 var createSql = new StringBuilder();
@@ -429,7 +426,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -437,7 +434,7 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
                 {
-                    var value = await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
 
                 DefaultDatabase = databaseName;
@@ -448,7 +445,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -471,7 +468,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -503,7 +500,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
+        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -559,7 +556,7 @@ ORDER BY c.ordinal_position"))
                                 Name = reader["column_name"].ToString(),
                                 LogicalName = reader["column_name"].ToString(),
                                 IsInput = false,
-                                Rank = (string)reader["data_type"] == "ARRAY" ? (byte) 1 : (byte) 0,
+                                Rank = (string)reader["data_type"] == "ARRAY" ? 1 : 0,
                                 DataType = (string)reader["data_type"] == "ARRAY" ? ConvertSqlToTypeCode(reader["element_type"].ToString()) : ConvertSqlToTypeCode(reader["data_type"].ToString())
                             };
 
@@ -666,7 +663,7 @@ ORDER BY c.ordinal_position"))
         }
 
 
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -743,7 +740,7 @@ ORDER BY c.ordinal_position"))
                         return autoIncrementValue;
                     }
 
-                    var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    var deltaColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
                     if (deltaColumn != null)
                     {
                         var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
@@ -830,7 +827,7 @@ ORDER BY c.ordinal_position"))
             }
         }
 
-        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {

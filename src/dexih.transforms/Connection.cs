@@ -153,31 +153,47 @@ namespace dexih.transforms
         public FilePermissions FilePermissions { get; set; }
         
         //Functions required for managed connection
-        public abstract Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken);
+        public abstract Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default);
 
-        public Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken)
+        public Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken = default)
         {
             return ExecuteUpdate(table, queries, -1, cancellationToken);
         }
 
-        public Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken)
+        public Task ExecuteUpdate(string tableName, List<UpdateQuery> queries, CancellationToken cancellationToken = default)
+        {
+            var table = new Table(tableName);
+            return ExecuteUpdate(table, queries, cancellationToken);
+        }
+
+        public Task ExecuteUpdate(Table table, UpdateQuery query, CancellationToken cancellationToken = default)
+        {
+            return ExecuteUpdate(table, new List<UpdateQuery>() {query}, -1, cancellationToken);
+        }
+
+        public Task ExecuteUpdate(string tableName, UpdateQuery query, CancellationToken cancellationToken = default)
+        {
+            var table = new Table(tableName);
+            return ExecuteUpdate(table, new List<UpdateQuery>() {query}, -1, cancellationToken);
+        }
+
+        public Task ExecuteDelete(Table table, List<DeleteQuery> queries, CancellationToken cancellationToken = default)
         {
             return ExecuteDelete(table, queries, -1, cancellationToken);
         }
 
-        public Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken)
+        public Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken = default)
         {
             return ExecuteInsert(table, queries, -1, cancellationToken);
         }
 
-        public Task TruncateTable(Table table, CancellationToken cancellationToken)
+        public Task TruncateTable(Table table, CancellationToken cancellationToken = default)
         {
             return TruncateTable(table, -1, cancellationToken);
         }
-
         
-        public abstract Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken);
-        public abstract Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken);
+        public abstract Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default);
+        public abstract Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 
@@ -187,9 +203,9 @@ namespace dexih.transforms
         /// <param name="transactionReference"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>The last autoincrement value</returns>
-        public abstract Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken);
+        public abstract Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default);
 
-        public abstract Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken);
+        public abstract Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Runs a bulk insert operation for the connection.  
@@ -198,10 +214,10 @@ namespace dexih.transforms
         /// <param name="sourceData"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>ReturnValue with the value = elapsed timer ticks taken to write the record.</returns>
-        public abstract Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken);
-        public abstract Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken);
+        public abstract Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken = default);
+        public abstract Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default);
         public abstract Transform GetTransformReader(Table table, bool previewMode = false);
-        public abstract Task<bool> TableExists(Table table, CancellationToken cancellationToken);
+        public abstract Task<bool> TableExists(Table table, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// If database connection supports direct DbDataReader.
@@ -211,12 +227,12 @@ namespace dexih.transforms
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public abstract Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken);
+        public abstract Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default);
 
         //Functions required for data point.
-        public abstract Task CreateDatabase(string databaseName, CancellationToken cancellationToken);
-        public abstract Task<List<string>> GetDatabaseList(CancellationToken cancellationToken);
-        public abstract Task<List<Table>> GetTableList(CancellationToken cancellationToken);
+        public abstract Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default);
+        public abstract Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default);
+        public abstract Task<List<Table>> GetTableList(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Interrogates the underlying data to get the Table structure.
@@ -224,11 +240,11 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public abstract Task<Table> GetSourceTableInfo(Table table, CancellationToken cancellationToken);
+        public abstract Task<Table> GetSourceTableInfo(Table table, CancellationToken cancellationToken = default);
 
-        public async Task<Table> GetSourceTableInfo(string TableName, CancellationToken cancellationToken)
+        public async Task<Table> GetSourceTableInfo(string tableName, CancellationToken cancellationToken = default)
         {
-            var table = new Table(TableName);
+            var table = new Table(tableName);
             var initResult = await InitializeTable(table, 0);
             if(initResult == null)
             {
@@ -283,7 +299,7 @@ namespace dexih.transforms
 //        /// <param name="triggerInfo"></param>
 //        /// <param name="cancellationToken"></param>
 //        /// <returns></returns>
-//        public virtual async Task<TransformWriterResult> InitializeAudit(long hubKey, long auditConnectionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterOptions transformWriterOptions, CancellationToken cancellationToken)
+//        public virtual async Task<TransformWriterResult> InitializeAudit(long hubKey, long auditConnectionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterOptions transformWriterOptions, CancellationToken cancellationToken = default)
 //        {
 //            var writerResult = new TransformWriterResult();
 //            
@@ -310,14 +326,14 @@ namespace dexih.transforms
 //            return writerResult;
 //        }
 
-        public async Task<TransformWriterResult> InitializeAudit(CancellationToken cancellationToken)
+        public async Task<TransformWriterResult> InitializeAudit(CancellationToken cancellationToken = default)
         {
             var writerResult = new TransformWriterResult(this);
             await InitializeAudit(writerResult, cancellationToken);
             return writerResult;
         }
         
-        public async Task InitializeAudit(TransformWriterResult writerResult, CancellationToken cancellationToken)
+        public async Task InitializeAudit(TransformWriterResult writerResult, CancellationToken cancellationToken = default)
         {
             var pocoTable = new PocoTable<TransformWriterResult>();
             if(!await pocoTable.TableExists(this, cancellationToken))
@@ -359,7 +375,7 @@ namespace dexih.transforms
                     new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
                 };
 
-                var updateIsLatest = new UpdateQuery(picoTable.Table.Name, updateLatestColumn, updateLatestFilters);
+                var updateIsLatest = new UpdateQuery(updateLatestColumn, updateLatestFilters);
                 await ExecuteUpdate(picoTable.Table, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
 
                 writerResult.IsPreviousSuccess = true;
@@ -379,7 +395,7 @@ namespace dexih.transforms
                     new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
                 };
 
-                var updateIsLatest = new UpdateQuery(picoTable.Table.Name, updateLatestColumn, updateLatestFilters);
+                var updateIsLatest = new UpdateQuery(updateLatestColumn, updateLatestFilters);
                 await ExecuteUpdate(picoTable.Table, new List<UpdateQuery>() { updateIsLatest }, CancellationToken.None);
 
                 writerResult.IsCurrent = false;
@@ -391,7 +407,7 @@ namespace dexih.transforms
         }
 
 
-        public virtual async Task<TransformWriterResult> GetPreviousResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetPreviousResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken = default)
         {
             var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
@@ -401,7 +417,7 @@ namespace dexih.transforms
             return results[0];
         }
 
-        public virtual async Task<TransformWriterResult> GetPreviousSuccessResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetPreviousSuccessResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken = default)
         {
             var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
@@ -411,7 +427,7 @@ namespace dexih.transforms
             return results[0];
         }
 
-        public virtual async Task<TransformWriterResult> GetCurrentResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken)
+        public virtual async Task<TransformWriterResult> GetCurrentResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken = default)
         {
             var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
@@ -421,22 +437,22 @@ namespace dexih.transforms
             return results[0];
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetPreviousResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetPreviousResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken = default)
         {
             return await GetTransformWriterResults(hubKey, connectionKey, referenceKeys, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetPreviousSuccessResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetPreviousSuccessResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken = default)
         {
             return await GetTransformWriterResults(hubKey, connectionKey, referenceKeys, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetCurrentResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetCurrentResults(long hubKey, long connectionKey, long[] referenceKeys, CancellationToken cancellationToken = default)
         {
             return await GetTransformWriterResults(hubKey, connectionKey, referenceKeys, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
         }
 
-        public virtual async Task<List<TransformWriterResult>> GetTransformWriterResults(long? hubKey, long connectionKey, long[] referenceKeys, string auditType, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken)
+        public virtual async Task<List<TransformWriterResult>> GetTransformWriterResults(long? hubKey, long connectionKey, long[] referenceKeys, string auditType, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken = default)
         {
             Transform reader = null;
             var watch = new Stopwatch();
@@ -511,6 +527,12 @@ namespace dexih.transforms
         public async Task<Transform> GetTransformReader(string tableName, CancellationToken cancellationToken = default)
         {
             var table = await GetSourceTableInfo(tableName, cancellationToken);
+
+            if (table == null)
+            {
+                throw new ConnectionException($"The table {tableName} could not be found.");
+            }
+            
             var transform = GetTransformReader(table, true);
             return transform;
         }
@@ -707,8 +729,14 @@ namespace dexih.transforms
         {
             return Task.CompletedTask;
         }
+        
+        public Task<Table> GetPreview(string tableName, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        {
+            var table = new Table(tableName);
+            return GetPreview(table, selectQuery, cancellationToken);
+        }
 
-        public async Task<Table> GetPreview(Table table, SelectQuery query, CancellationToken cancellationToken = default)
+        public async Task<Table> GetPreview(Table table, SelectQuery query = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -725,7 +753,7 @@ namespace dexih.transforms
                         throw new ConnectionException($"The reader failed to open for table {table.Name} on {Name}");
                     }
 
-                    reader.SetCacheMethod(Transform.ECacheMethod.OnDemandCache);
+                    reader.SetCacheMethod(Transform.ECacheMethod.DemandCache);
                     reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
 
                     var count = 0;
@@ -749,6 +777,50 @@ namespace dexih.transforms
             }
         }
 
+        public Task<long> RowCount(string tableName, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        {
+            var table = new Table(tableName);
+            return RowCount(table, selectQuery, cancellationToken);
+        }
+
+        public virtual async Task<long> RowCount(Table table, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var watch = new Stopwatch();
+                watch.Start();
+
+                var rows = selectQuery?.Rows ?? -1;
+
+                using (var reader = GetTransformReader(table, true))
+                {
+                    var returnValue = await reader.Open(0, selectQuery, cancellationToken);
+                    if (!returnValue)
+                    {
+                        throw new ConnectionException($"The reader failed to open for table {table.Name} on {Name}");
+                    }
+
+                    var count = 0;
+                    while (
+                        (count < rows || rows < 0) &&
+                        cancellationToken.IsCancellationRequested == false &&
+                        await reader.ReadAsync(cancellationToken)
+                    )
+                    {
+                        count++;
+                    }
+
+                    watch.Stop();
+                    return count;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"The count failed to for table {table.Name} on {Name}", ex);
+            }
+        }
+
         /// <summary>
         /// Returns a hashset table containing all the values in a table column.
         /// </summary>
@@ -757,7 +829,7 @@ namespace dexih.transforms
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="ConnectionException"></exception>
-        public async Task<HashSet<object>> GetColumnValues(Table table, TableColumn column, CancellationToken cancellationToken)
+        public async Task<HashSet<object>> GetColumnValues(Table table, TableColumn column, CancellationToken cancellationToken = default)
         {
             var query = new SelectQuery()
             {

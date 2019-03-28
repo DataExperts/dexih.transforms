@@ -28,7 +28,7 @@ namespace dexih.transforms.tests
             while (await transformDelta.ReadAsync())
             {
                 Assert.True((char) transformDelta["Operation"] == 'C');
-                Assert.True((int) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
                 Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
                 count++;
@@ -45,7 +45,7 @@ namespace dexih.transforms.tests
             while (await transformDelta.ReadAsync())
             {
                 Assert.True((char) transformDelta["Operation"] == 'C');
-                Assert.True((int) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
                 Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
                 count++;
@@ -58,7 +58,7 @@ namespace dexih.transforms.tests
         public async Task RunDeltaTest_update()
         {
             var source = Helpers.CreateUnSortedTestData();
-            source.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            source.SetCacheMethod(Transform.ECacheMethod.DemandCache);
 
             var targetTable = source.CacheTable.Copy();
             targetTable.AddAuditColumns();
@@ -67,14 +67,14 @@ namespace dexih.transforms.tests
 
             //run an update load with nothing in the target, which will result in 10 rows created.
             var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
-            transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            transformDelta.SetCacheMethod(Transform.ECacheMethod.DemandCache);
             await transformDelta.Open(0, null, CancellationToken.None);
 
             var count = 0;
             while (await transformDelta.ReadAsync())
             {
                 Assert.True((char) transformDelta["Operation"] == 'C');
-                Assert.True((int) transformDelta["SurrogateKey"] == count + 1);
+                Assert.True((long) transformDelta["SurrogateKey"] == count + 1);
                 Assert.True((int) transformDelta["IntColumn"] == count + 1);
 
                 count++;
@@ -90,7 +90,7 @@ namespace dexih.transforms.tests
             await targetWriter.WriteRecordsAsync(transformDelta, null, CancellationToken.None);
 
             target = memoryConnection.GetTransformReader(target.CacheTable); // new ReaderMemory(target.CacheTable, null);
-            target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            target.SetCacheMethod(Transform.ECacheMethod.DemandCache);
 
             //Set the target pointer back to the start and rerun.  Now 10 rows should be ignored.
             source.SetRowNumber(0);
@@ -98,7 +98,7 @@ namespace dexih.transforms.tests
 
             //run an append.  (only difference from reload is no truncate record at start.
             transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
-            await transformDelta.Open(0, null, CancellationToken.None);
+            await transformDelta.Open();
 
             count = 0;
             while (await transformDelta.ReadAsync())
@@ -109,7 +109,7 @@ namespace dexih.transforms.tests
             Assert.Equal(10, transformDelta.TotalRowsIgnored);
             Assert.Equal(0, count);
 
-            //change 3 rows. (first, middle, last) to similate target table data changes
+            //change 3 rows. (first, middle, last) to simulate target table data changes
             target.CacheTable.Data[0][4] = 100;
             target.CacheTable.Data[5][4] = 200;
             target.CacheTable.Data[9][4] = 300;
@@ -181,19 +181,19 @@ namespace dexih.transforms.tests
         public async Task RunDeltaTest_updatePreserve()
         {
             var source = Helpers.CreateUnSortedTestData();
-            source.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            source.SetCacheMethod(Transform.ECacheMethod.DemandCache);
 
             var targetTable = source.CacheTable.Copy();
             targetTable.AddAuditColumns();
 
-            object surrrogateKey = 0L;
+            var surrrogateKey = 0L;
 
             Transform target = new ReaderMemory(targetTable);
-            target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            target.SetCacheMethod(Transform.ECacheMethod.DemandCache);
 
             //run an update load with nothing in the target.  
             var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve,  surrrogateKey, false);
-            transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            transformDelta.SetCacheMethod(Transform.ECacheMethod.DemandCache);
             await transformDelta.Open(0, null, CancellationToken.None);
 
             var count = 0;
@@ -216,7 +216,7 @@ namespace dexih.transforms.tests
             var createDateMax = DateTime.Now;
 
             Assert.Equal(10, count);
-            surrrogateKey = transformDelta.SurrogateKey;
+            surrrogateKey = transformDelta.AutoIncrementValue;
 
             transformDelta.SetRowNumber(0);
 
@@ -233,7 +233,7 @@ namespace dexih.transforms.tests
 //            await writer.WriteRecordsAsync(transformDelta, CancellationToken.None);
 
             target = memoryConnection.GetTransformReader(table);
-            target.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            target.SetCacheMethod(Transform.ECacheMethod.DemandCache);
 
             //run an append.  (only difference from reload is no truncate record at start.
             transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,  surrrogateKey, false);
@@ -257,7 +257,7 @@ namespace dexih.transforms.tests
             table.Data.Add(row);
 
             transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
-            transformDelta.SetCacheMethod(Transform.ECacheMethod.PreLoadCache);
+            transformDelta.SetCacheMethod(Transform.ECacheMethod.DemandCache);
             await transformDelta.Open(0, null, CancellationToken.None);
 
             count = 0;

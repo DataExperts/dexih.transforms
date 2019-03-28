@@ -68,10 +68,10 @@ namespace dexih.transforms.Mapping
 
         public override void MapOutputRow(object[] data)
         {
-            data[OutputOrdinal] = GetOutputTransform();
+            data[OutputOrdinal] = GetOutputValue();
         }
         
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             if (InputOrdinal == -1 )
             {

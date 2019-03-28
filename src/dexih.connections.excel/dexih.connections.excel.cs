@@ -91,7 +91,7 @@ namespace dexih.connections.excel
 		    
 	    }
 	    
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -133,7 +133,7 @@ namespace dexih.connections.excel
             }
         }
 
-		public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+		public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
 		{
 			try
 			{
@@ -172,7 +172,7 @@ namespace dexih.connections.excel
             return worksheet;
         }
 
-        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
 		{
             try
             {
@@ -201,7 +201,7 @@ namespace dexih.connections.excel
 	    /// <param name="importTable"></param>
 	    /// <param name="cancellationToken"></param>
 	    /// <returns></returns>
-	    public override Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancellationToken)
+	    public override Task<Table> GetSourceTableInfo(Table importTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -295,7 +295,7 @@ namespace dexih.connections.excel
             }
         }
 	    
-        public override  Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
+        public override  Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
 		    using (var package = NewConnection())
 		    {
@@ -320,7 +320,7 @@ namespace dexih.connections.excel
             return Task.FromResult(table);
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -378,7 +378,7 @@ namespace dexih.connections.excel
         }
 	    
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -548,7 +548,7 @@ namespace dexih.connections.excel
 		    return filterResult;
 	    }
 
-        public override  Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override  Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -562,7 +562,7 @@ namespace dexih.connections.excel
 
                     var columnMappings = GetHeaderOrdinals(worksheet);
 
-                    var autoIncrementColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    var autoIncrementColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
                     var autoIncrementOrdinal = -1;
                     if (autoIncrementColumn != null && columnMappings.ContainsKey(autoIncrementColumn.Name))
                     {
@@ -621,7 +621,7 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
 	        try
 	        {
@@ -674,7 +674,7 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -701,12 +701,12 @@ namespace dexih.connections.excel
             }
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -720,7 +720,7 @@ namespace dexih.connections.excel
                     // get the position of each of the column names.
                     var columnMappings = GetHeaderOrdinals(worksheet);
 
-	                var autoIncrementColumn = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+	                var autoIncrementColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
 	                var autoIncrementOrdinal = -1;
 	                if (autoIncrementColumn != null)
 	                {
@@ -768,7 +768,7 @@ namespace dexih.connections.excel
             return reader;
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {

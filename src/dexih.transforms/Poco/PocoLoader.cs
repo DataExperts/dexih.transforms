@@ -17,7 +17,7 @@ namespace dexih.transforms.Poco
             return await ToListAsync(reader, CancellationToken.None);
         }
 
-        public async Task<List<T>> ToListAsync(DbDataReader reader, CancellationToken cancellationToken)
+        public async Task<List<T>> ToListAsync(DbDataReader reader, CancellationToken cancellationToken = default)
         {
             var pocoMapping = new PocoMapper<T>(reader);
             var data = new List<T>();
@@ -30,7 +30,7 @@ namespace dexih.transforms.Poco
             return data;
         }
 
-        public async Task<List<T>> ToListAsync(DbDataReader reader, long rows, CancellationToken cancellationToken)
+        public async Task<List<T>> ToListAsync(DbDataReader reader, long rows, CancellationToken cancellationToken = default)
         {
             var pocoMapping = new PocoMapper<T>(reader);
             var data = new List<T>();
@@ -66,7 +66,7 @@ namespace dexih.transforms.Poco
             return GetEnumerator();
         }
 
-        public async Task ReadToEndAsync(CancellationToken cancellationToken)
+        public async Task ReadToEndAsync(CancellationToken cancellationToken = default)
         {
             while (!cancellationToken.IsCancellationRequested && await _enumerator.MoveNextAsync(cancellationToken))
             {

@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Xml.Schema;
 using dexih.functions.Query;
 using MathNet.Numerics;
-using MathNet.Numerics.LinearAlgebra;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.maths
 {

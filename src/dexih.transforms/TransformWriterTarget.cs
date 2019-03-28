@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -30,26 +31,20 @@ namespace dexih.transforms
         public enum ETransformWriterMethod
         {
             Bulk, 
-            Transaction,
-            None
+            Transaction
         }
 
         #region Initialize
 
         public TransformWriterTarget() :
-            this( null, null, ETransformWriterMethod.Bulk, null, null, null, null)
+            this( null, null)
         {
             
         }
 
-        public TransformWriterTarget(Connection targetConnection, Table targetTable, TransformWriterResult writerResult):
-            this(targetConnection, targetTable, ETransformWriterMethod.Bulk, writerResult, null,  null, null)
-        {}
 
-
-        public TransformWriterTarget(Connection targetConnection, Table targetTable, ETransformWriterMethod transformWriterMethod = ETransformWriterMethod.Bulk, TransformWriterResult writerResult = null,  TransformWriterOptions writerOptions = null,  Connection rejectConnection = null, Table rejectTable = null)
+        public TransformWriterTarget(Connection targetConnection, Table targetTable, TransformWriterResult writerResult = null,  TransformWriterOptions writerOptions = null,  Connection rejectConnection = null, Table rejectTable = null)
         {
-            TransformWriterMethod = transformWriterMethod;
             TargetConnection = targetConnection;
             TargetTable = targetTable;
             RejectTable = rejectTable;
@@ -66,25 +61,12 @@ namespace dexih.transforms
             WriterOptions = writerOptions ?? new TransformWriterOptions();
 
             if (TargetTable == null) return;
-            
-            switch (transformWriterMethod)
-            {
-                case ETransformWriterMethod.Bulk:
-                    _transformWriterTask = new TransformWriterTaskBulk(WriterOptions.CommitSize);
-                    break;
-                case ETransformWriterMethod.Transaction:
-                    _transformWriterTask = new TransformWriterTaskTransaction();
-                    break;
-            }
-
-            _transformWriterTask.Initialize(targetTable, targetConnection, rejectTable, rejectConnection);
         }
         
         #endregion
 
         #region Public Properties
         
-        public ETransformWriterMethod TransformWriterMethod { get; set; }
         
         public TransformWriterResult WriterResult { get; private set; }
         
@@ -104,7 +86,7 @@ namespace dexih.transforms
         [CopyReference]
         public Table RejectTable { get; set; }
         
-        public long CurrentAutoIncrementKey { get; set; }
+//        public long CurrentAutoIncrementKey { get; set; }
         
         [CopyReference]
         public List<TransformWriterTarget> ChildWriterTargets { get; set; } = new List<TransformWriterTarget>();
@@ -114,12 +96,13 @@ namespace dexih.transforms
         #endregion
         
         #region Private Properties
+        
         private int[] _fieldOrdinals;
         private int[] _rejectFieldOrdinals;
         private int _operationOrdinal;
         private bool _ordinalsInitialized = false;
-        private readonly TransformWriterTask _transformWriterTask;
-        private bool _truncateComplete = false; // used to stop multiple truncates
+        private TransformWriterTask _transformWriterTask;
+        private long _autoIncrementKey = 0;
         
         #endregion
 
@@ -134,6 +117,17 @@ namespace dexih.transforms
             if (nodePath == null || nodePath.Length == 0)
             {
                 throw new TransformWriterException("The node path requires a value.");
+            }
+            
+            if (transformWriterTarget.WriterResult != null)
+            {
+                transformWriterTarget.WriterResult.OnStatusUpdate += Writer_OnStatusUpdate;
+                transformWriterTarget.WriterResult.OnProgressUpdate += Writer_OnProgressUpdate;
+                transformWriterTarget.WriterResult.OnFinish += Writer_OnFinish;
+                
+                transformWriterTarget.OnStatusUpdate += Writer_OnStatusUpdate;
+                transformWriterTarget.OnProgressUpdate += Writer_OnProgressUpdate;
+                transformWriterTarget.OnFinish += Writer_OnFinish;
             }
 
             var nodeName = nodePath[0];
@@ -191,15 +185,15 @@ namespace dexih.transforms
 
             return items;
         }
-        
+
         /// <summary>
         /// Initializes all target tables, including truncating, and creating missing tables.
         /// </summary>
+        /// <param name="transformWriterMethod"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task InitializeAsync(CancellationToken cancellationToken)
+        private async Task InitializeAsync(ETransformWriterMethod transformWriterMethod, CancellationToken cancellationToken = default)
         {
-            _truncateComplete = false;
             
             if (TargetConnection != null && TargetTable != null)
             {
@@ -214,175 +208,249 @@ namespace dexih.transforms
 
                 switch (WriterOptions.TargetAction)
                 {
-                    case TransformWriterOptions.eTargetAction.Truncate:
+                    case TransformWriterOptions.ETargetAction.Truncate:
                         await TargetConnection.TruncateTable(TargetTable, cancellationToken);
-                        _truncateComplete = true;
                         break;
-                    case TransformWriterOptions.eTargetAction.DropCreate:
+                    case TransformWriterOptions.ETargetAction.DropCreate:
                         await TargetConnection.CreateTable(TargetTable, true, cancellationToken);
                         break;
-                    case TransformWriterOptions.eTargetAction.CreateNotExists:
+                    case TransformWriterOptions.ETargetAction.CreateNotExists:
                         await TargetConnection.CreateTable(TargetTable, false, cancellationToken);
                         break;
-
                 }
                 
-                // get the last surrogate key it there is one on the table.
-                var autoIncrement = TargetTable.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-                if (autoIncrement != null)
-                {
-                    CurrentAutoIncrementKey = await TargetConnection.GetNextKey(TargetTable, autoIncrement, cancellationToken);
-                }
-                else
-                {
-                    CurrentAutoIncrementKey = -1;
-                }
             }
+
+            switch (transformWriterMethod)
+            {
+                case ETransformWriterMethod.Bulk:
+                    _transformWriterTask = new TransformWriterTaskBulk(WriterOptions.CommitSize);
+                    break;
+                case ETransformWriterMethod.Transaction:
+                    _transformWriterTask = new TransformWriterTaskTransaction();
+                    break;
+            }
+
+            _transformWriterTask.Initialize(TargetTable, TargetConnection, RejectTable, RejectConnection);
             
+            if (WriterResult != null)
+            {
+                await WriterResult.Initialize(cancellationToken);
+            }
+
             foreach(var childWriterTarget in ChildWriterTargets)
             {
-                await childWriterTarget.InitializeAsync(cancellationToken);
+                await childWriterTarget.InitializeAsync(transformWriterMethod, cancellationToken);
             }
 
             _ordinalsInitialized = false;
         }
 
-        public Task WriteRecordsAsync(Transform transform, CancellationToken cancellationToken = default)
+        private async Task<long> GetIncrementalKey(CancellationToken cancellationToken = default)
         {
-            return WriteRecordsAsync(transform, TransformDelta.EUpdateStrategy.Append, cancellationToken);
+            if (_autoIncrementKey > 0)
+            {
+                return _autoIncrementKey;
+                
+            }
+            // get the last surrogate key it there is one on the table.
+            var autoIncrement = TargetTable.GetColumn(TableColumn.EDeltaType.AutoIncrement);
+            if (autoIncrement != null)
+            {
+                return await TargetConnection.GetNextKey(TargetTable, autoIncrement, cancellationToken);
+            }
+
+            return -1;
         }
 
+        public Task WriteRecordsAsync(Transform transform, CancellationToken cancellationToken = default)
+        {
+            return WriteRecordsAsync(transform, TransformDelta.EUpdateStrategy.Append, ETransformWriterMethod.Bulk, cancellationToken);
+        }
+
+        public Task WriteRecordsAsync(Transform transform, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken)
+        {
+            return WriteRecordsAsync(transform, updateStrategy, ETransformWriterMethod.Bulk, cancellationToken);
+        }
+        
+        public Task WriteRecordsAsync(Transform transform, ETransformWriterMethod transformWriterMethod, CancellationToken cancellationToken = default)
+        {
+            return WriteRecordsAsync(transform, TransformDelta.EUpdateStrategy.Append, transformWriterMethod, cancellationToken);
+        }
+        
         /// <summary>
         /// Writes records from the transform to the target table (and child nodes).
         /// This will add a delta transform to perform delta and add auditing column values.
         /// </summary>
         /// <param name="transform"></param>
         /// <param name="updateStrategy"></param>
+        /// <param name="transformWriterMethod"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="TransformWriterException"></exception>
-        public async Task WriteRecordsAsync(Transform transform, TransformDelta.EUpdateStrategy? updateStrategy = null, CancellationToken cancellationToken = default)
+        public async Task WriteRecordsAsync(Transform transform, TransformDelta.EUpdateStrategy? updateStrategy = null, ETransformWriterMethod transformWriterMethod = ETransformWriterMethod.Bulk, CancellationToken cancellationToken = default)
         {
-            
-
-            if (WriterResult != null)
-            {
-                var updateResult = WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Started, null, null, cancellationToken);
-                if (!updateResult)
-                {
-                    return;
-                }
-            }
-
             try
             {
-                await InitializeAsync(cancellationToken);
+                var updateResult = SetRunStatus(TransformWriterResult.ERunStatus.Started, null, null, cancellationToken);
+                if (!updateResult)
+                {
+                    throw new TransformWriterException("Failed to start the transform writer.");
+                }
+
+                try
+                {
+                    await InitializeAsync(transformWriterMethod, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    var message = $"Failed to initialize the transform writer.  {ex.Message}";
+                    throw new TransformWriterException(message, ex);
+                }
+
+                using (var targetReader = TargetConnection.GetTransformReader(TargetTable))
+                {
+                    if (updateStrategy != null)
+                    {
+                        var autoIncrementKey = await GetIncrementalKey(cancellationToken);
+                        transform = new TransformDelta(transform, targetReader, updateStrategy.Value,
+                            autoIncrementKey,
+                            WriterOptions.AddDefaultRow, new DeltaValues('C'));
+                        transform.SetEncryptionMethod(Transform.EEncryptionMethod.EncryptDecryptSecureFields,
+                            WriterOptions?.GlobalVariables?.EncryptionKey);
+
+                        if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken))
+                        {
+                            throw new TransformWriterException($"Failed to open the data reader {transform.Name}.");
+                        }
+                    }
+
+                    await ProcessRecords(transform, targetReader, -1, updateStrategy, cancellationToken);
+                    await UpdateWriterResult(transform, cancellationToken);
+                    await FinishTasks(cancellationToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                SetRunStatus(TransformWriterResult.ERunStatus.Cancelled, "The transform writer was cancelled", null,
+                    CancellationToken.None);
+                throw new TransformWriterException($"The datalink was cancelled.");
+
             }
             catch (Exception ex)
             {
-                var message = $"The transform writer failed to start.  {ex.Message}";
-                var newException = new TransformWriterException(message, ex);
-                WriterResult?.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, cancellationToken);
-                throw newException;
+                var message = $"The transform writer failed.  {ex.Message}";
+                var newEx = new TransformWriterException(message, ex);
+                SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newEx, CancellationToken.None);
+                throw newEx;
             }
-
-            var targetReader = TargetConnection.GetTransformReader(TargetTable);
-            await ProcessRecords(transform, targetReader, -1, updateStrategy, cancellationToken);
-            await WriterFinalize(transform, cancellationToken);
-            
+            finally
+            {
+                // don't pass cancel token, as we want writer result updated when a cancel occurs.
+                await WriterTargetFinalize(CancellationToken.None);
+            }
         }
 
-        public async Task WriteChildRecordsAsync(TransformNode transform, TableColumn keyColumn, object parentAutoIncrement, char parentOperation, Connection parentConnection, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken)
+        private async Task WriteChildRecordsAsync(TransformNode transformNode, TableColumn keyColumn, DeltaValues deltaValues, Connection parentConnection, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
         {
-            if(transform == null) return;
-            
-            transform.SetParentAutoIncrement(parentAutoIncrement);
 
             if (parentConnection != TargetConnection)
             {
                 transactionReference = -1;
             }
 
-            switch (parentOperation)
+            if (transformNode == null)
             {
-                case 'C': 
-                case 'U':
-                    var targetReader = TargetConnection.GetTransformReader(TargetTable);
-                    if (keyColumn != null)
-                    {
-                        var targetFilter = TargetTable.Columns[keyColumn];
-                        if (targetFilter != null)
-                        {
-                            var mappings = new Mappings()
-                            {
-                                new MapFilter(targetFilter, parentAutoIncrement)
-                            };
-                            targetReader = new TransformFilter(targetReader, mappings);
-                        }
-                    }
-                    
-                    // if parent operation is create/update then parent key hasn't changed, so process the records normally.
-                    await ProcessRecords(transform, targetReader, transactionReference, updateStrategy, cancellationToken);
-                    await WriterFinalize(transform, cancellationToken);
-                    break;
-                case 'D':
-                    // if parent operation is delete, the child records will need to be deleted.
-                    
-                    break;
-                case 'T':
-                    // if parent operation is truncate, child table should be truncated also.
-                    if (!_truncateComplete)
-                    {
-                        await TargetConnection.TruncateTable(TargetTable, cancellationToken);
-                        _truncateComplete = true;
-                    }
+                throw new TransformWriterException("The transform node was set to null.");
+            }
 
-                    break;
+            transformNode?.SetParentAutoIncrement(deltaValues.AutoIncrementValue);
+
+            Transform transform = transformNode;
+
+            using (var targetReader = TargetConnection.GetTransformReader(TargetTable))
+            {
+                var target = targetReader;
+                
+                if (keyColumn != null)
+                {
+                    var targetFilter = TargetTable.Columns[keyColumn];
+                    if (targetFilter != null)
+                    {
+                        var mappings = new Mappings()
+                        {
+                            new MapFilter(targetFilter, deltaValues.AutoIncrementValue)
+                        };
+                        target = new TransformFilter(targetReader, mappings);
+                    }
+                }
+
+                // if the update strategy is reload, change it to append to avoid the delta pushing a truncate on every set of child rows.
+                var childUpdateStrategy = updateStrategy == TransformDelta.EUpdateStrategy.Reload
+                    ? TransformDelta.EUpdateStrategy.Append
+                    : updateStrategy;
+
+                if (updateStrategy != null)
+                {
+                    var autoIncrementKey = await GetIncrementalKey(cancellationToken);
+                    transform = new TransformDelta(transform, target, childUpdateStrategy.Value, autoIncrementKey,
+                        WriterOptions.AddDefaultRow, deltaValues);
+                    transform.SetEncryptionMethod(Transform.EEncryptionMethod.EncryptDecryptSecureFields,
+                        WriterOptions?.GlobalVariables?.EncryptionKey);
+
+                    if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken = default))
+                    {
+                        throw new TransformWriterException("Failed to open the data reader.");
+                    }
+                }
+
+                // if parent operation is create/update then parent key hasn't changed, so process the records normally.
+                await ProcessRecords(transform, target, transactionReference, childUpdateStrategy, cancellationToken);
             }
         }
 
-        private async Task ProcessRecords(Transform transform, Transform targetTransform, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken)
+        private async Task ProcessRecords(Transform transform, Transform targetTransform, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
         {
             var firstRead = true;
-            
-            if (updateStrategy != null)
-            {
-                transform = new TransformDelta(transform, targetTransform, updateStrategy.Value, CurrentAutoIncrementKey, WriterOptions.AddDefaultRow);
-                transform.SetEncryptionMethod(Transform.EEncryptionMethod.EncryptDecryptSecureFields, WriterOptions?.GlobalVariables?.EncryptionKey);
 
-                if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken))
-                {
-                    throw new TransformWriterException("Failed to open the data reader.");
-                }
-            }
-
-            while (await transform.ReadAsync(cancellationToken))
+            try
             {
-                if (firstRead && transactionReference <= 0)
+
+                while (await transform.ReadAsync(cancellationToken))
                 {
-                    if (WriterResult != null)
+                    if (firstRead && transactionReference <= 0)
                     {
-                        var runStatusResult = WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Running, null, null, cancellationToken);
-                        if (!runStatusResult)
+                        if (WriterResult != null)
                         {
-                            return;
+                            var runStatusResult = WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Running,
+                                null, null, cancellationToken);
+                            if (!runStatusResult)
+                            {
+                                return;
+                            }
                         }
+
+                        firstRead = false;
                     }
 
-                    firstRead = false;
-                }
+                    await WriteRecord(transform, transactionReference, updateStrategy, cancellationToken);
 
-                await WriteRecord(transform, transactionReference, updateStrategy, cancellationToken);
 
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    if (WriterResult != null)
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        WriterResult?.SetRunStatus(TransformWriterResult.ERunStatus.Cancelled, null, null, cancellationToken);
-                        return;
+                        throw new TaskCanceledException();
                     }
                 }
             }
+            catch (TaskCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new TransformWriterException($"Failed to process records for the target table {targetTransform.Name}.  Message: {ex.Message}", ex);
+            }
+
         }
 
 
@@ -391,33 +459,41 @@ namespace dexih.transforms
         /// 
         /// </summary>
         /// <param name="transform"></param>
-        /// <param name="isChildRecord"></param>
+        /// <param name="updateStrategy"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="transactionReference"></param>
         /// <returns>The operation, and the tableCache if the rows have been exceeded.</returns>
-        private async Task WriteRecord(Transform transform, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken)
+        private async Task WriteRecord(Transform transform, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
         {
             // initialize the ordinal lookups if this is the first write.
             if (!_ordinalsInitialized)
             {
-                var count = TargetTable.Columns.Count;
-                _fieldOrdinals = new int[count];
-                for (var i = 0; i < count; i++)
+                try
                 {
-                    _fieldOrdinals[i] = transform.GetOrdinal(TargetTable.Columns[i].Name);
-                }
-
-                if (RejectTable != null)
-                {
-                    count = RejectTable.Columns.Count;
-                    _rejectFieldOrdinals = new int[count];
+                    var count = TargetTable.Columns.Count;
+                    _fieldOrdinals = new int[count];
                     for (var i = 0; i < count; i++)
                     {
-                        _rejectFieldOrdinals[i] = transform.GetOrdinal(RejectTable.Columns[i].Name);
+                        _fieldOrdinals[i] = transform.GetOrdinal(TargetTable.Columns[i].Name);
                     }
-                }
 
-                _operationOrdinal = transform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.DatabaseOperation);
-                _ordinalsInitialized = true;
+                    if (RejectTable != null)
+                    {
+                        count = RejectTable.Columns.Count;
+                        _rejectFieldOrdinals = new int[count];
+                        for (var i = 0; i < count; i++)
+                        {
+                            _rejectFieldOrdinals[i] = transform.GetOrdinal(RejectTable.Columns[i].Name);
+                        }
+                    }
+
+                    _operationOrdinal = transform.CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+                    _ordinalsInitialized = true;
+                }
+                catch (Exception ex)
+                {
+                    throw new TransformWriterException($"Failed to initialize the column ordinals.  Message: {ex.Message}", ex);
+                }
             }
             
             Table table;
@@ -431,7 +507,7 @@ namespace dexih.transforms
                 ordinals = _rejectFieldOrdinals;
                 if (table == null)
                 {
-                    var rejectColumn = transform.CacheTable.GetDeltaColumnOrdinal(TableColumn.EDeltaType.RejectedReason);
+                    var rejectColumn = transform.CacheTable.GetOrdinal(TableColumn.EDeltaType.RejectedReason);
                     var rejectReason = "";
                     rejectReason = rejectColumn > 0 ? transform[rejectColumn].ToString() : "No reject reason found.";
                     throw new TransformWriterException($"Transform write failed as a record was rejected, however there is no reject table set.  The reject reason was: {rejectReason}.");
@@ -477,12 +553,18 @@ namespace dexih.transforms
                 }
             }
 
-            var transaction = await _transformWriterTask.StartTransaction(transactionReference);
 
             try
             {
+                var transaction = await _transformWriterTask.StartTransaction(transactionReference);
 
-                CurrentAutoIncrementKey = await _transformWriterTask.AddRecord(operation, row, cancellationToken);
+                var currentKey = await _transformWriterTask.AddRecord(operation, row, cancellationToken);
+
+                // if the operation is a create, the newKey will be the latest.
+                if (operation == 'C')
+                {
+                    _autoIncrementKey = currentKey;
+                }
 
                 //process childNodes
                 foreach (var childWriterTarget in ChildWriterTargets)
@@ -490,8 +572,10 @@ namespace dexih.transforms
                     var childTransform = (TransformNode) transform[childWriterTarget.NodeName];
                     var keyColumn = TargetTable.GetAutoIncrementColumn();
 
-                    await childWriterTarget.WriteChildRecordsAsync(childTransform, keyColumn, CurrentAutoIncrementKey,
-                        operation,
+                    var deltaValues = transform.GetDeltaValues();
+                    deltaValues.AutoIncrementValue = currentKey;
+
+                    await childWriterTarget.WriteChildRecordsAsync(childTransform, keyColumn, deltaValues, 
                         TargetConnection,
                         transaction,
                         updateStrategy,
@@ -514,9 +598,18 @@ namespace dexih.transforms
             }
         }
 
-        private async Task WriterFinalize(Transform inTransform, CancellationToken cancellationToken)
+        private async Task FinishTasks(CancellationToken cancellationToken = default)
         {
-            await _transformWriterTask.FinalizeRecords(cancellationToken);
+            try
+            {
+                await _transformWriterTask.FinalizeWrites(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                WriterResult?.SetRunStatus(TransformWriterResult.ERunStatus.Failed,
+                    $"Failed to read record.  Message: {ex.Message}", ex, cancellationToken);
+                throw;
+            }
 
 //            if (ProfileTable != null)
 //            {
@@ -551,20 +644,23 @@ namespace dexih.transforms
             }
             catch(Exception ex)
             {
-                throw new TransformWriterException($"The transform writer failed to finish when attempting a finish on the target table {TargetTable.Name} in {TargetConnection.Name}.  {ex.Message}.", ex);
+                var newEx = new TransformWriterException($"Failed finishing final write tasks.  Message: {ex.Message}", ex);
+                throw newEx;
             }
+        }
 
+        private async Task UpdateWriterResult(Transform inTransform, CancellationToken cancellationToken = default)
+        {
             if (WriterResult != null)
             {
-
                 //update the statistics.
-                WriterResult.RowsFiltered = inTransform.TotalRowsFiltered;
-                WriterResult.RowsSorted = inTransform.TotalRowsSorted;
-                WriterResult.RowsRejected = inTransform.TotalRowsRejected;
-                WriterResult.RowsPreserved = inTransform.TotalRowsPreserved;
-                WriterResult.RowsIgnored = inTransform.TotalRowsIgnored;
-                WriterResult.RowsReadPrimary = inTransform.TotalRowsReadPrimary;
-                WriterResult.RowsReadReference = inTransform.TotalRowsReadReference;
+                WriterResult.RowsFiltered += inTransform.TotalRowsFiltered;
+                WriterResult.RowsSorted += inTransform.TotalRowsSorted;
+                WriterResult.RowsRejected += inTransform.TotalRowsRejected;
+                WriterResult.RowsPreserved += inTransform.TotalRowsPreserved;
+                WriterResult.RowsIgnored += inTransform.TotalRowsIgnored;
+                WriterResult.RowsReadPrimary += inTransform.TotalRowsReadPrimary;
+                WriterResult.RowsReadReference += inTransform.TotalRowsReadReference;
 
                 //calculate the throughput figures
                 var rowsWritten = WriterResult.RowsTotal - WriterResult.RowsIgnored;
@@ -575,36 +671,57 @@ namespace dexih.transforms
 
                 WriterResult.PerformanceSummary = performance;
 
-                WriterResult.WriteTicks = _transformWriterTask.WriteDataTicks.Ticks;
-                WriterResult.ReadTicks = inTransform.ReaderTimerTicks().Ticks;
-                WriterResult.ProcessingTicks = inTransform.ProcessingTimerTicks().Ticks;
-
-                WriterResult.EndTime = DateTime.Now;
+                WriterResult.WriteTicks = +_transformWriterTask.WriteDataTicks.Ticks;
+                WriterResult.ReadTicks = +inTransform.ReaderTimerTicks().Ticks;
+                WriterResult.ProcessingTicks = +inTransform.ProcessingTimerTicks().Ticks;
 
                 if (WriterResult.RowsTotal == 0)
                     WriterResult.MaxIncrementalValue = WriterResult.LastMaxIncrementalValue;
                 else
                     WriterResult.MaxIncrementalValue = inTransform.GetMaxIncrementalValue();
 
-                if (CurrentAutoIncrementKey != -1)
+            }
+            
+            // update the autoincrement value for databases which don't have native datatype.
+            var autoIncrementValue = inTransform.AutoIncrementValue;
+            if (autoIncrementValue > 0)
+            {
+                var surrogateKey = TargetTable.GetAutoIncrementColumn();
+                if (surrogateKey != null)
                 {
-                    var surrogateKey = TargetTable.GetAutoIncrementColumn();
-                    if (surrogateKey != null)
-                    {
-                        await TargetConnection.UpdateIncrementalKey(TargetTable, surrogateKey.Name,
-                            inTransform.SurrogateKey, cancellationToken);
-                    }
+                    await TargetConnection.UpdateIncrementalKey(TargetTable, surrogateKey.Name,
+                        inTransform.AutoIncrementValue, cancellationToken);
                 }
-                
-                WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished, null, null, cancellationToken);
-                await WriterResult.Finalize();
             }
 
-            inTransform.Dispose();
-  
+            // inTransform.Dispose();
         }
-        
-        public void Writer_OnProgressUpdate(TransformWriterResult writer)
+
+        private async Task WriterTargetFinalize(CancellationToken cancellationToken = default)
+        {
+            await FinishTasks(cancellationToken);
+
+            var endTime = DateTime.Now;
+
+            async Task SetFinished(TransformWriterResult writerResult)
+            {
+                if (writerResult != null && writerResult.IsRunning)
+                {
+                    writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished, null, null, cancellationToken);
+                    await writerResult.CompleteDatabaseWrites();
+                }
+            }
+
+            await SetFinished(WriterResult);
+            
+            foreach (var childWriterTarget in ChildWriterTargets)
+            {
+                await childWriterTarget.WriterTargetFinalize(cancellationToken);
+            }
+            
+        }
+
+        private void Writer_OnProgressUpdate(TransformWriterResult writer)
         {
             OnProgressUpdate?.Invoke(writer);
         }
@@ -613,13 +730,13 @@ namespace dexih.transforms
         {
             OnStatusUpdate?.Invoke(writer);
         }
-        
-        public void Writer_OnFinish(TransformWriterResult writer)
+
+        private void Writer_OnFinish(TransformWriterResult writer)
         {
             OnFinish?.Invoke(writer);
         }
         
-        public bool SetRunStatus(TransformWriterResult.ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken)
+        public bool SetRunStatus(TransformWriterResult.ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken = default)
         {
             var result = WriterResult == null || WriterResult.SetRunStatus(newStatus, message, exception, cancellationToken);
 

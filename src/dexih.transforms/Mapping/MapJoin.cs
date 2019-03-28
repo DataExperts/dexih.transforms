@@ -41,7 +41,7 @@ namespace dexih.transforms.Mapping
         private object[] _row;
         private object[] _joinRow;
 
-        public override void InitializeColumns(Table table, Table joinTable, Mappings mappings = null)
+        public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
             if (InputColumn != null)
             {
@@ -87,7 +87,7 @@ namespace dexih.transforms.Mapping
                 _joinRow = joinRow;
             }
 
-            var value1 = GetOutputTransform();
+            var value1 = GetOutputValue();
             var value2 = GetJoinValue();
 
             CompareResult = Operations.Compare(InputColumn.DataType, value1, value2);
@@ -124,7 +124,7 @@ namespace dexih.transforms.Mapping
         {
         }
        
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             if (_column1Ordinal == -1)
             {

@@ -181,12 +181,19 @@ namespace dexih.transforms.tests
             return adapter;
         }
 
-        public static ReaderMemory CreateParentTableData()
+        public static Table CreateParentTable()
         {
             var table = new Table("parent", 0, 
                 new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
-                );
+            );
+
+            return table;
+        }
+
+        public static ReaderMemory CreateParentTableData()
+        {
+            var table = CreateParentTable();
             
             table.AddRow(0, "parent 0");
             table.AddRow(1, "parent 1");
@@ -196,13 +203,20 @@ namespace dexih.transforms.tests
             return new ReaderMemory(table);
         }
 
-        public static ReaderMemory CreateChildTableData()
+        public static Table CreateChildTable()
         {
             var table = new Table("child", 0, 
                 new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
             );
+
+            return table;
+        }
+
+        public static ReaderMemory CreateChildTableData()
+        {
+            var table = CreateChildTable();
             
             table.AddRow(0, 0, "child 00");
             table.AddRow(0, 1, "child 01");
@@ -211,15 +225,21 @@ namespace dexih.transforms.tests
             
             return new ReaderMemory(table);
         }
-        
-        public static ReaderMemory CreateGrandChildTableData()
+
+        public static Table CreateGrandChildTable()
         {
             var table = new Table("grandChild", 0, 
                 new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("grandChild_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
             );
-            
+
+            return table;
+        }
+        
+        public static ReaderMemory CreateGrandChildTableData()
+        {
+            var table = CreateGrandChildTable();
             table.AddRow(0, 0, "grandChild 000");
             table.AddRow(0, 1, "grandChild 001");
             table.AddRow(20, 200, "grandChild 200");

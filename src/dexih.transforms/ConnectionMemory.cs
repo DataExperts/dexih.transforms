@@ -30,11 +30,11 @@ namespace dexih.transforms
         public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
-        public override Task<Table> InitializeTable(Table table, int position) => Task.FromResult<Table>(null);
+        public override Task<Table> InitializeTable(Table table, int position) => Task.FromResult(table);
 
-        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken) => Task.FromResult(true);
+        public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default) => Task.FromResult(true);
 
-        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             if (_tables.ContainsKey(table.Name))
             {
@@ -51,7 +51,7 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> deleteQueries, int transactionReference, CancellationToken cancellationToken = default)
         {
             var deleteTable = _tables[table.Name];
 
@@ -76,7 +76,7 @@ namespace dexih.transforms
 			return Task.CompletedTask;
         }
 
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader sourceData, CancellationToken cancellationToken = default)
         {
             var insertTable = _tables[table.Name];
 
@@ -94,13 +94,13 @@ namespace dexih.transforms
         }
 
 
-        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             var insertTable = _tables[table.Name];
 
             long maxIncrement = 0;
             var autoIncrementOrdinal = -1;
-            var autoIncrement = table.GetDeltaColumn(TableColumn.EDeltaType.DbAutoIncrement);
+            var autoIncrement = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
             if(autoIncrement != null)
             {
                 autoIncrementOrdinal = table.GetOrdinal(autoIncrement.Name);
@@ -156,17 +156,17 @@ namespace dexih.transforms
             throw new ConnectionException($"The table {tableName} does not exist in the memory connection.");
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
             var reader = new ReaderMemory(_tables[table.Name], null);
             return Task.FromResult<DbDataReader>(reader);
         }
 
-        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             var t = GetTable(table.Name);
-            var reader = new ReaderMemory(t);
-            await reader.Open(0, query, cancellationToken);
+            var reader = new TransformQuery(new ReaderMemory(t), query);
+            await reader.Open(cancellationToken);
             var hasRow = await reader.ReadAsync(cancellationToken);
 
             object value;
@@ -188,7 +188,7 @@ namespace dexih.transforms
             return value;
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> updateQueries, int transactionReference, CancellationToken cancellationToken = default)
         {
             var updateTable = _tables[table.Name];
 
@@ -216,12 +216,12 @@ namespace dexih.transforms
 			return Task.CompletedTask;
         }
 
-        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(new List<string>() { "" });
         }
 
-        public override Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
+        public override Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
         {
             if (_tables.Keys.Contains(originalTable.Name))
             {
@@ -234,12 +234,12 @@ namespace dexih.transforms
             }
         }
 
-        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_tables.Values.ToList());
         }
 
-        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
+        public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
             _tables[table.Name].Data.Clear();
             return Task.CompletedTask;
@@ -252,7 +252,7 @@ namespace dexih.transforms
             return reader;
         }
 
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken)
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_tables.ContainsKey(table.Name));
         }

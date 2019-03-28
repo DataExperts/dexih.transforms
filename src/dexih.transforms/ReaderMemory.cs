@@ -29,13 +29,15 @@ namespace dexih.transforms
             
             Reset();
 
+            IsOpen = true;
+            
             SortFields = sortFields;
         }
-
-        public override Task<bool> Open(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
-            _selectQuery = query;
+            _selectQuery = selectQuery;
 
             return Task.FromResult(true);
         }
@@ -58,13 +60,13 @@ namespace dexih.transforms
             return true;
         }
 
-        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (_data == null)
             {
-                return null;
-                
+                return Task.FromResult<object[]>(null);
             }
+
             _currentRow++;
             while(!_cacheLoaded && _currentRow < _data.Count)
             {
@@ -89,7 +91,7 @@ namespace dexih.transforms
         public override bool IsClosed => _currentRow >= _data.Count;
         public override bool HasRows => _currentRow < _data.Count && _data.Count > 0;
         
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             Reset(true);
             _cacheLoaded = false;

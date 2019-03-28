@@ -29,7 +29,7 @@ namespace dexih.connections.test
             var guid = Guid.NewGuid();
             
             //insert a single row
-            var insertQuery = new InsertQuery("test_table", new List<QueryColumn>() {
+            var insertQuery = new InsertQuery( new List<QueryColumn>() {
                 new QueryColumn(new TableColumn("IntColumn", ETypeCode.Int32), 1),
                 new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value1" ),
                 new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21) ),

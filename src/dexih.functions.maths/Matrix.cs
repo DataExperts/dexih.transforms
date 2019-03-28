@@ -1,6 +1,3 @@
-using System;
-using MathNet.Numerics.LinearAlgebra.Double;
-
 namespace dexih.functions.maths
 {
     public class Matrix

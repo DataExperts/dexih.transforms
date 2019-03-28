@@ -17,21 +17,20 @@ namespace dexih.transforms.Mapping
         {
             NodeColumn = nodeColumn;
 
-            Columns = columns ?? NodeColumn.ChildColumns.Select(column =>
+            _columns = columns ?? NodeColumn.ChildColumns.Where(c=> !c.IsParent).Select(column =>
             {
                 var newColumn = column.Copy();
                 newColumn.Name = nodeColumn.Name + "." + newColumn.Name;
                 return newColumn;
             }).ToArray();
         }
-        
-        public TableColumn NodeColumn { get; set; }
-        public ICollection<TableColumn> Columns;
-        public int _nodeColumnOrdinal = -1;
-        public List<int> _outputOrdinals;
+
+        private TableColumn NodeColumn { get; set; }
+        private readonly ICollection<TableColumn> _columns;
+        private int _nodeColumnOrdinal = -1;
+        private List<int> _outputOrdinals;
 
         private Transform _transform;
-        private Transform _transformThread;
         
         public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
@@ -43,7 +42,7 @@ namespace dexih.transforms.Mapping
         public override void AddOutputColumns(Table table)
         {
             _outputOrdinals = new List<int>();
-            foreach (var column in Columns)
+            foreach (var column in _columns)
             {
                 _outputOrdinals.Add(AddOutputColumn(table, column));
             }
@@ -54,25 +53,25 @@ namespace dexih.transforms.Mapping
             var transform = (Transform) row[_nodeColumnOrdinal];
             if (transform == null) return false;
 
-            if (transform.CurrentRow ==null )
+            if (_transform == null || _transform.IsReaderFinished)
             {
-                _transform = transform.PrimaryTransform.PrimaryTransform;
-                _transformThread = transform.GetThread();
+                _transform = transform.PrimaryTransform.GetThread();
+                await _transform.Open(cancellationToken);
             }
 
-            return await _transformThread.ReadAsync(cancellationToken);
+            return await _transform.ReadAsync(cancellationToken);
         }
 
         public override void MapOutputRow(object[] row)
         {
-            var hasRow = _transformThread.CurrentRow != null;
+            var hasRow = _transform.CurrentRow != null;
             for (var i = 0; i < _outputOrdinals.Count; i++)
             {
-                row[_outputOrdinals[i]] = hasRow ? _transformThread[i] : null;
+                row[_outputOrdinals[i]] = hasRow ? _transform[i] : null;
             }
         }
 
-        public override object GetOutputTransform(object[] row = null)
+        public override object GetOutputValue(object[] row = null)
         {
             throw new NotSupportedException();
         }

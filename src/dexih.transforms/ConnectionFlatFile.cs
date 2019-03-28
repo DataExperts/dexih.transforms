@@ -53,14 +53,14 @@ namespace dexih.transforms
 
         public string LastWrittenFile { get; protected set; } = "";
         
-		public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken)
+		public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
 			var flatFile = (FlatFile)table;
             //create the subdirectories
             await CreateDirectory(flatFile, EFlatFilePath.Incoming);
         }
 
-        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken)
+        public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             DefaultDatabase = databaseName;
             //create the subdirectories
@@ -189,7 +189,7 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
         
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -227,12 +227,12 @@ namespace dexih.transforms
         }
 
 
-        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             return await GetFileShares();
         }
 
-        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken)
+        public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -304,12 +304,12 @@ namespace dexih.transforms
             }
         }
 
-        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken)
+        public override Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken)
+        public override async Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
             var flatFile = (FlatFile)table;
             var fileEnumerator = await GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern);
@@ -343,17 +343,17 @@ namespace dexih.transforms
             return flatFile;
         }
 
-        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override Task ExecuteDelete(Table table, List<DeleteQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken)
+        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -412,7 +412,7 @@ namespace dexih.transforms
         }
 
 
-        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken)
+        public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             var timer = Stopwatch.StartNew();
 
@@ -438,7 +438,7 @@ namespace dexih.transforms
             }
         }
 
-        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken)
+        public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

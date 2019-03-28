@@ -103,7 +103,8 @@ namespace dexih.transforms.tests
             };
 
             var transformProfile = new TransformProfile(table, mappings);
-
+            await transformProfile.Open();
+            
             //read all records in the transform profile
             var count = 0;
             while(await transformProfile.ReadAsync())
