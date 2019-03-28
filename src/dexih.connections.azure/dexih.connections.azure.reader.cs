@@ -158,6 +158,7 @@ namespace dexih.connections.azure
         public override async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             Reset();
+            Dispose();
             return await Open(auditKey, query, cancellationToken);
         }
     }

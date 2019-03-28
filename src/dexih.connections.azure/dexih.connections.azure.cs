@@ -55,7 +55,7 @@ namespace dexih.connections.azure
         /// <summary>
         /// Name of the table used to store surrogate keys.
         /// </summary>
-        public string SurrogateKeyTable => "DexihKeys";
+        public string IncrementalKeyTable { get; set; } = "DexihKeys";
         
         /// <summary>
         /// Name of the column in the surrogate key table to store latest incremental value.
@@ -370,6 +370,13 @@ namespace dexih.connections.azure
                     throw new ConnectionException("Failed to create table after 10 attempts.");
                 }
 
+                // reset the auto incremental table, when rebuilding the table.
+                var incremental = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                if (incremental != null)
+                {
+                    await UpdateIncrementalKey(table, incremental.TableColumnName(), 0, cancellationToken);
+                }
+
                 return;
             }
             catch (Exception ex)
@@ -519,7 +526,7 @@ namespace dexih.connections.azure
             try
             {
                 var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference("DexihKeys");
+                var cTable = connection.GetTableReference(IncrementalKeyTable);
 
                 long incrementalKey = 0;
                 var lockGuid = Guid.NewGuid();
@@ -572,7 +579,7 @@ namespace dexih.connections.azure
             try
             {
                 var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference("DexihKeys");
+                var cTable = connection.GetTableReference(IncrementalKeyTable);
 
                 if (!await cTable.ExistsAsync())
                 {
