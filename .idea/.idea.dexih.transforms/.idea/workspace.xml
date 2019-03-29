@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixing issue with operation code converting to string">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" afterDir="false" />
-    </list>
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixing performance issue with multi-node delta" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -339,8 +334,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="750">
-                  <caret line="69" lean-forward="true" selection-start-line="69" selection-end-line="69" />
+                <state relative-caret-position="795">
+                  <caret line="72" column="9" lean-forward="true" selection-start-line="72" selection-start-column="9" selection-end-line="72" selection-end-column="9" />
                   <folding>
                     <marker date="1553819247645" expanded="false" signature="6:335" ph="..." />
                     <marker date="1553819247645" expanded="true" signature="363:23303" ph="{...}" />
@@ -1613,20 +1608,12 @@
             <path>
               <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
               <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="src" type="24d0babc:SolutionExplorerModelNode" />
+              <item name="samples" type="24d0babc:SolutionExplorerModelNode" />
             </path>
             <path>
               <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
               <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
               <item name="src" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
-            </path>
-            <path>
-              <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
-              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="src" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="dexih.transforms" type="24d0babc:SolutionExplorerModelNode" />
-              <item name="Mapping" type="24d0babc:SolutionExplorerModelNode" />
             </path>
             <path>
               <item name="Project" type="784c90a0:SolutionExplorerRootNode" />
@@ -1892,7 +1879,7 @@
       <workItem from="1553050356407" duration="59371000" />
       <workItem from="1553397899159" duration="7976000" />
       <workItem from="1553407965503" duration="49570000" />
-      <workItem from="1553813471755" duration="5908000" />
+      <workItem from="1553813471755" duration="6176000" />
     </task>
     <task id="LOCAL-00001" summary="Added MySql support">
       <created>1501030746954</created>
@@ -2223,11 +2210,18 @@
       <option name="project" value="LOCAL" />
       <updated>1550198340045</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="fixing performance issue with multi-node delta">
+      <created>1553819492418</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1553819492418</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1277165000" />
+    <option name="totallyTimeSpent" value="1277433000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -2240,7 +2234,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1222" y="-2160" width="3840" height="2160" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.11374407" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25387728" />
@@ -2325,7 +2318,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed flatfile basic test" />
     <MESSAGE value="fixes, mostly to dexih.reader" />
     <MESSAGE value="added sftp/ftp connections" />
     <MESSAGE value="added JsonRowPivot function" />
@@ -2350,7 +2342,8 @@
     <MESSAGE value="fixed tests" />
     <MESSAGE value="fixing azure" />
     <MESSAGE value="fixing issue with operation code converting to string" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixing issue with operation code converting to string" />
+    <MESSAGE value="fixing performance issue with multi-node delta" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixing performance issue with multi-node delta" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -4891,8 +4884,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="750">
-          <caret line="69" lean-forward="true" selection-start-line="69" selection-end-line="69" />
+        <state relative-caret-position="795">
+          <caret line="72" column="9" lean-forward="true" selection-start-line="72" selection-start-column="9" selection-end-line="72" selection-end-column="9" />
           <folding>
             <marker date="1553819247645" expanded="false" signature="6:335" ph="..." />
             <marker date="1553819247645" expanded="true" signature="363:23303" ph="{...}" />
