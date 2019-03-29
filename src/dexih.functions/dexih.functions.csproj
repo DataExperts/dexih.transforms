@@ -16,7 +16,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <LangVersion>7.1</LangVersion>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
   <!--<ItemGroup>
     <Compile Include="**\*.cs" />
@@ -25,7 +25,7 @@
   </ItemGroup>-->
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="12.1.2" />
-    <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.71" />
+    <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.73" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.11" />
     <PackageReference Include="Dexih.Utils.DataType" Version="0.1.70" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">

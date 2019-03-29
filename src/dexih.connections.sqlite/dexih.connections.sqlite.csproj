@@ -5,7 +5,7 @@
     <AssemblyTitle>Data Experts Group - Sqlite Connection</AssemblyTitle>
     <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyName>dexih.connections.sqlite</AssemblyName>
     <PackageId>dexih.connections.sqlite</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.2.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.2.3" />
   </ItemGroup>
 
   <ItemGroup>

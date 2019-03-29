@@ -218,25 +218,21 @@ namespace dexih.transforms
             if (selectQuery == null)
                 selectQuery = new SelectQuery();
 
-            await InitializeOutputFields();
-
-            
-            //only apply a sort if there is not already a sort applied.
-            selectQuery.Sorts = RequiredSortFields();
-
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
-            if (!returnValue)
-            {
-                return false;
-            }
+
+            if (!returnValue) return false;
 
             if (_cacheLoaded) return true;
+
+            await InitializeOutputFields();
+
+            //only apply a sort if there is not already a sort applied.
+            selectQuery.Sorts = RequiredSortFields();
 
             var referenceQuery = new SelectQuery()
             {
                 Sorts = RequiredReferenceSortFields()
             };
-
 
             returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
             if (!returnValue)
