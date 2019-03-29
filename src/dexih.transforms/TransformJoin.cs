@@ -36,7 +36,7 @@ namespace dexih.transforms
             SetInTransform(primaryTransform, joinTransform);
         }
 
-        private bool _firstRead;
+        private bool _firstRead = true;
         private SortedDictionary<object[], List<object[]>> _joinHashData; //stores all the reference data grouped by the join keys (used for hashjoin).
 
         private List<object[]> _groupData;
@@ -53,12 +53,14 @@ namespace dexih.transforms
         private int _nodeColumnOrdinal = -1;
         private MapJoinNode _nodeMapping;
 
+        private bool _cacheLoaded = false;
+
 
         public enum EJoinAlgorithm
         {
             Sorted, Hash
         }
-        public EJoinAlgorithm JoinAlgorithm { get; protected set; }
+        public EJoinAlgorithm JoinAlgorithm { get; private set; }
 
         private int _primaryFieldCount;
         private int _referenceFieldCount;
@@ -194,7 +196,7 @@ namespace dexih.transforms
                 }
             }
 
-            _firstRead = true;
+            // _firstRead = true;
 
             _containsJoinColumns = Mappings.OfType<MapJoin>().Any();
             _primaryFieldCount = PrimaryTransform.FieldCount;
@@ -203,7 +205,7 @@ namespace dexih.transforms
 
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
-            return Task.FromResult<bool>(true);
+            return Task.FromResult(true);
         }
 
         public override bool RequiresSort => false;
@@ -228,6 +230,8 @@ namespace dexih.transforms
                 return false;
             }
 
+            if (_cacheLoaded) return true;
+
             var referenceQuery = new SelectQuery()
             {
                 Sorts = RequiredReferenceSortFields()
@@ -241,14 +245,26 @@ namespace dexih.transforms
             }
             
             //check if the primary and reference transform are sorted in the join
-            if (SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) &&
-                SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))
+            if (SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) && SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))
             {
                 JoinAlgorithm = EJoinAlgorithm.Sorted;
             }
             else
             {
                 JoinAlgorithm = EJoinAlgorithm.Hash;
+                
+                _joinHashData = new SortedDictionary<object[], List<object[]>>(new JoinKeyComparer());
+                _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
+                _groupsOpen = await ReadNextGroup();
+
+                //load all the join data into an a reference dictionary
+                while (_groupsOpen)
+                {
+                    _joinHashData.Add(Mappings.GetJoinReferenceKey(_groupData[0]), _groupData);
+                    _groupsOpen = await ReadNextGroup();
+                }
+
+                _cacheLoaded = true;
             }
 
             return true;
@@ -323,7 +339,6 @@ namespace dexih.transforms
                         switch (Mappings.GetJoinCompareResult())
                         {
                             case -1:
-                                joinMatchFound = false;
                                 done = true;
                                 break;
                             case 1:
@@ -350,22 +365,22 @@ namespace dexih.transforms
             }
             else //if input is not sorted, then run a hash join.
             {
-                //first load the join table into memory
-                if (_firstRead)
-                {
-                    _joinHashData = new SortedDictionary<object[], List<object[]>>(new JoinKeyComparer());
-                    _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
-                    _groupsOpen = await ReadNextGroup();
-
-                    //load all the join data into an a reference dictionary
-                    while (_groupsOpen)
-                    {
-                        _joinHashData.Add(Mappings.GetJoinReferenceKey(_groupData[0]), _groupData);
-                        _groupsOpen = await ReadNextGroup();
-                    }
-
-                    _firstRead = false;
-                }
+//                //first load the join table into memory
+//                if (_firstRead)
+//                {
+//                    _joinHashData = new SortedDictionary<object[], List<object[]>>(new JoinKeyComparer());
+//                    _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
+//                    _groupsOpen = await ReadNextGroup();
+//
+//                    //load all the join data into an a reference dictionary
+//                    while (_groupsOpen)
+//                    {
+//                        _joinHashData.Add(Mappings.GetJoinReferenceKey(_groupData[0]), _groupData);
+//                        _groupsOpen = await ReadNextGroup();
+//                    }
+//
+//                    _firstRead = false;
+//                }
 
                 await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
 
@@ -375,10 +390,6 @@ namespace dexih.transforms
                 {
                     _groupsOpen = true;
                     joinMatchFound = true;
-                }
-                else
-                {
-                    joinMatchFound = false;
                 }
             }
 

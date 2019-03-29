@@ -1030,11 +1030,13 @@ namespace dexih.transforms
             {
                 if (!CacheTable[referenceOrdinal].IsParent && newRow[referenceOrdinal] is TransformNode transformNode)
                 {
-                    var newNode = new TransformNode {PrimaryTransform = transformNode};
-                    newNode.SetTable(transformNode.CacheTable, CacheTable);
-                    newNode.SetParentRow(newRow);
-                    newNode.Open().Wait();
-                    newRow[referenceOrdinal] = newNode;
+//                    var newNode = new TransformNode {PrimaryTransform = transformNode};
+//                    newNode.SetTable(transformNode.CacheTable, CacheTable);
+//                    newNode.SetParentRow(newRow);
+//                    newNode.Open().Wait();
+//                    newRow[referenceOrdinal] = newNode;
+
+                    newRow[referenceOrdinal] = transformNode;
                 }
             }
 
