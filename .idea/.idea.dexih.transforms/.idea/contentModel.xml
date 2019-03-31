@@ -94,6 +94,9 @@
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2sqlh.mo" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2stt.mo" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2supp.mo" t="Include" />
+    <e p="$USER_HOME$/.nuget/packages/microsoft.net.test.sdk/16.0.1/build/netcoreapp1.0" t="Include">
+      <e p="Microsoft.NET.Test.Sdk.Program.cs" t="Include" />
+    </e>
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.reporters.netcoreapp10.dll" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll" t="Include" />
@@ -115,7 +118,7 @@
           <e p="CreatePocoReader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="ReaderExamples.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -138,7 +141,7 @@
           <e p="dexih.connections.flatfile.azure.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.azure.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -196,7 +199,7 @@
           <e p="dexih.connections.sql.db2.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.db2.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -209,7 +212,7 @@
           <e p="dexih.connections.dexih.reader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.dexih.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -222,7 +225,7 @@
           <e p="dexih.connections.excel.reader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.excel.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -234,7 +237,7 @@
           <e p="dexih.connections.flatfile.local.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.flatfile.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -251,7 +254,7 @@
           <e p="FtpStream.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.ftp.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -263,7 +266,7 @@
           <e p="dexih.connections.sql.mysql.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.mysql.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -275,7 +278,7 @@
           <e p="dexih.connectionsl.sql.oracle.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.oracle.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -287,7 +290,7 @@
           <e p="dexih.connections.sql.postgresql.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.postgressql.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -299,7 +302,7 @@
           <e p="dexih.connections.sftp.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.sftp.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -313,7 +316,7 @@
           <e p="dexih.connections.sqlite.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.sqlite.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -325,7 +328,7 @@
           <e p="dexih.connections.sqlserver.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.sqlserver.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -338,7 +341,7 @@
           <e p="dexih.connections.webservice.restful.reader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.webservice.restful.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -369,7 +372,7 @@
           </e>
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.functions.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -430,7 +433,7 @@
           <e p="MathFunctions.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.functions.builtIn.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -489,7 +492,7 @@
           </e>
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.transforms.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -559,7 +562,7 @@
           <e p="dexih.benchmark.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.benchmark.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
@@ -573,9 +576,8 @@
           <e p="dexih.connections.db2.tests.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connectinos.db2.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connectinos.db2.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -588,9 +590,8 @@
           <e p="dexih.connections.azure.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.azure.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.azure.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -606,9 +607,8 @@
           <e p="dexih.connections.excel.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.excel.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.excel.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -620,9 +620,8 @@
           <e p="dexih.connections.flatfile.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.flatfile.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.flatfile.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -638,9 +637,8 @@
           <e p="dexih.connections.ftp.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.ftp.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.ftp.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -652,9 +650,8 @@
           <e p="dexih.connections.mysql.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.mysql.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.mysql.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -666,9 +663,8 @@
           <e p="dexih.connections.oracle.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.oracle.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.oracle.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -680,9 +676,8 @@
           <e p="dexih.connections.postgressql.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.postgressql.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.postgressql.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -694,9 +689,8 @@
           <e p="dexih.connections.sftp.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.sftp.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.sftp.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -708,9 +702,8 @@
           <e p="dexih.connections.sqlite.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.sqlite.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.sqlite.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -722,9 +715,8 @@
           <e p="dexih.connections.sqlserver.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.sqlserver.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.sqlserver.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -741,9 +733,8 @@
           <e p="dexih.connections.test.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.test.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.test.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -764,9 +755,8 @@
           <e p="dexih.connections.webservice.tests.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.connections.webservice.restful.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.connections.webservice.restful.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -780,9 +770,8 @@
           <e p="dexih.functions.builtIn.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.functions.builtIn.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.functions.builtIn.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -795,9 +784,8 @@
           <e p="dexih.functions.tests.csproj" t="IncludeRecursive" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.functions.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.functions.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -822,9 +810,8 @@
           <e p="Mappings.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Release" t="Include">
-              <e p="netcoreapp2.1" t="Include">
+              <e p="netcoreapp2.2" t="Include">
                 <e p="dexih.transforms.tests.AssemblyInfo.cs" t="Include" />
-                <e p="dexih.transforms.tests.Program.cs" t="Include" />
               </e>
             </e>
           </e>
@@ -856,6 +843,21 @@
           <e p="TransformWriterBulk.cs" t="Include" />
         </e>
       </e>
+    </e>
+    <e p="$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties" t="IncludeRecursive">
+      <e p="bin" t="ExcludeRecursive" />
+      <e p="CopyProperties.cs" t="Include" />
+      <e p="CopyPropertyAttributes.cs" t="Include" />
+      <e p="CopyPropertyExceptions.cs" t="Include" />
+      <e p="Dexih.Utils.CopyProperties.csproj" t="IncludeRecursive" />
+      <e p="obj" t="ExcludeRecursive">
+        <e p="Release" t="Include">
+          <e p="netcoreapp2.2" t="Include">
+            <e p="Dexih.Utils.CopyProperties.AssemblyInfo.cs" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="PropertyStructure.cs" t="Include" />
     </e>
   </component>
   <component name="RiderRiderContentModelStore">

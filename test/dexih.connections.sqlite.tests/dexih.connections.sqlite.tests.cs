@@ -92,7 +92,7 @@ namespace dexih.connections.sql
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
 
-            await new TransformWriterTargetTests().ParentChild_Write_Large(connection, 5, database, useDbAutoIncrement, updateStrategy, useTransaction);
+            await new TransformWriterTargetTests().ParentChild_Write_Large(connection, 10000, database, useDbAutoIncrement, updateStrategy, useTransaction);
         }
     }
 }
