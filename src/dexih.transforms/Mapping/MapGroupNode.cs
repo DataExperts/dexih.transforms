@@ -68,7 +68,7 @@ namespace dexih.transforms.Mapping
 
             foreach (var row in _cachedRows)
             {
-                GroupTable.Data.Add(row);
+                GroupTable.AddRow(row);
             }
             
             _cachedRows.Clear();

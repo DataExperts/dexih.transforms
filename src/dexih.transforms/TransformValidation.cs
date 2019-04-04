@@ -26,7 +26,7 @@ namespace dexih.transforms
 
         public TransformValidation(Transform inReader, Mappings mappings, bool validateDataTypes)
         {
-            Mappings = mappings;
+            Mappings = mappings ?? new Mappings();
             SetInTransform(inReader);
             ValidateDataTypes = validateDataTypes;
         }

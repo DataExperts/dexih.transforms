@@ -24,7 +24,7 @@ namespace dexih.transforms
         }
         
         public override string TransformName { get; } = "Group";
-        public override string TransformDetails => "Filters:" + Mappings.OfType<MapFilter>().Count() + ", Filter Functions: " + Mappings.OfType<MapFunction>().Count();
+        public override string TransformDetails => $"Filters: {Mappings?.OfType<MapFilter>().Count()??0}, Filter Functions: {Mappings?.OfType<MapFunction>().Count()??0}";
 
         
         public override bool RequiresSort => false;
@@ -40,31 +40,34 @@ namespace dexih.transforms
             if (selectQuery.Filters == null)
                 selectQuery.Filters = new List<Filter>();
 
-            //add any of the conditions that can be translated to filters
-            foreach (var condition in Mappings.OfType<MapFunction>())
+            if (Mappings != null)
             {
-                var filter = condition.GetFilterFromFunction();
-                if (filter != null)
+                //add any of the conditions that can be translated to filters
+                foreach (var condition in Mappings.OfType<MapFunction>())
                 {
-                    filter.AndOr = Filter.EAndOr.And;
-                    selectQuery.Filters.Add(filter);
+                    var filter = condition.GetFilterFromFunction();
+                    if (filter != null)
+                    {
+                        filter.AndOr = Filter.EAndOr.And;
+                        selectQuery.Filters.Add(filter);
+                    }
+                }
+
+                foreach (var filterPair in Mappings.OfType<MapFilter>())
+                {
+                    if (filterPair.Column2 == null)
+                    {
+                        var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Value2);
+                        selectQuery.Filters.Add(filter);
+                    }
+                    else
+                    {
+                        var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Column2);
+                        selectQuery.Filters.Add(filter);
+                    }
                 }
             }
 
-            foreach (var filterPair in Mappings.OfType<MapFilter>())
-            {
-                if (filterPair.Column2 == null)
-                {
-                    var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Value2);
-                    selectQuery.Filters.Add(filter);
-                }
-                else
-                {
-                    var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Column2);
-                    selectQuery.Filters.Add(filter);
-                }
-            }
-            
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 
             return returnValue;

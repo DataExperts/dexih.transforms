@@ -146,8 +146,8 @@ namespace dexih.connections.test
 
             var parentTarget = new TransformWriterTarget(connection, parentTable);
             var childTarget = new TransformWriterTarget(connection, childTable);
-            var grandChildTarget = new TransformWriterTarget(connection, grandChildTable);
             parentTarget.Add(childTarget, new[] {"children"});
+            var grandChildTarget = new TransformWriterTarget(connection, grandChildTable);
             parentTarget.Add(grandChildTarget, new[] {"children", "grandChildren"});
 
             // creates a three level hierarchy parent/child/grandchild.

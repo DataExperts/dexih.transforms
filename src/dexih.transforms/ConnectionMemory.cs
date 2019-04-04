@@ -89,7 +89,7 @@ namespace dexih.transforms
 
                 var row = new object[sourceData.FieldCount];
                 sourceData.GetValues(row);
-                insertTable.Data.Add(row);
+                insertTable.AddRow(row);
             }
         }
 
@@ -134,7 +134,7 @@ namespace dexih.transforms
                     row[autoIncrementOrdinal] = ++maxIncrement;
                 }
 
-                insertTable.Data.Add(row);
+                insertTable.AddRow(row);
             }
 
             return Task.FromResult<long>(maxIncrement);

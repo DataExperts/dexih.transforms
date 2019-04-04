@@ -173,7 +173,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override async Task<long> RowCount(Table table, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override async Task<long> RowCount(Table table, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             try
             {

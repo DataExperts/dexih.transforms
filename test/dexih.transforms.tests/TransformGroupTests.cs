@@ -122,7 +122,7 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateUnSortedTestData();
 
             //add a row to use for grouping.
-            source.Add(new object[] { "value10", 10, 10.1, "2015/01/10", 10, "Even" });
+            source.DataTable.AddRow(new object[] { "value10", 10, 10.1, "2015/01/10", 10, "Even" });
 
             var mappings = AggregateMappings();
             mappings.Add(new MapGroup(new TableColumn("StringColumn")));
@@ -216,7 +216,7 @@ namespace dexih.transforms.tests
                 SelectColumn.EAggregate.Count));
 
             //add a row to use for grouping.
-            source.Add(new object[] {"value10", 10, 10.1, "2015/01/10", 10, "Even"});
+            source.DataTable.AddRow(new object[] {"value10", 10, 10.1, "2015/01/10", 10, "Even"});
 
             mappings.Add(new MapGroup(new TableColumn("StringColumn")));
             var transformGroup = new TransformGroup(source, mappings);

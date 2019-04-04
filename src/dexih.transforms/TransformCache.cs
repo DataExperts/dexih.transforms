@@ -45,7 +45,7 @@ namespace dexih.transforms
                 // load the cache.
                 while (await _transform.ReadAsync(cancellationToken))
                 {
-                    CacheTable.Data.Add(_transform.CurrentRow);
+                    CacheTable.AddRow(_transform.CurrentRow);
                 }
             }
 

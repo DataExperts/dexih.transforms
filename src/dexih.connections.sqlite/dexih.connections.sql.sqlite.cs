@@ -6,6 +6,7 @@ using System.Data;
 using dexih.functions;
 using System.IO;
 using System.Data.Common;
+using System.Linq;
 using System.Threading;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms;
@@ -155,7 +156,14 @@ namespace dexih.connections.sql
                     createSql.AppendLine();
                 }
 
-                createSql.AppendLine(")");
+                createSql.AppendLine(");");
+
+                var naturalKey = table.GetColumns(TableColumn.EDeltaType.NaturalKey);
+                if (naturalKey.Length > 0)
+                {
+                    createSql.AppendLine(
+                        $"create index {AddDelimiter($"index_{table.Name}_nk")} on {AddDelimiter(table.Name)} ({string.Join(", ", naturalKey.Select(c => AddDelimiter(c.Name)))});");
+                }
 
                 using (var connection = await NewConnection())
                 using (var command = connection.CreateCommand())
@@ -419,8 +427,7 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type='table';"))
                 {
-                    DbDataReader reader;
-                    reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                    var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
                     using (reader)
                     {

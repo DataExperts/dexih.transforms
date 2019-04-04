@@ -117,7 +117,7 @@ namespace dexih.transforms.tests
             //add a duplicate in the source
             var row = new object[target.CacheTable.Columns.Count];
             target.CacheTable.Data[9].CopyTo(row, 0);
-            target.CacheTable.Data.Add(row);
+            target.CacheTable.AddRow(row);
 
             transformDelta.Reset();
 
@@ -254,7 +254,7 @@ namespace dexih.transforms.tests
             //add a duplicate in the source
             var row = new object[table.Columns.Count];
             table.Data[9].CopyTo(row, 0);
-            table.Data.Add(row);
+            table.AddRow(row);
 
             transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
             transformDelta.SetCacheMethod(Transform.ECacheMethod.DemandCache);
@@ -369,7 +369,7 @@ namespace dexih.transforms.tests
         //    Target.CacheTable.Data[9][4] = 300;
 
         //    //add a duplicate in the source
-        //    Target.CacheTable.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1 });
+        //    Target.CacheTable.AddRow(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1 });
 
         //    transformDelta.Reset();
 

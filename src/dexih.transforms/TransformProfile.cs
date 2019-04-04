@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
 using dexih.functions.Parameter;
+using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
@@ -22,17 +23,20 @@ namespace dexih.transforms
 
         public TransformProfile(Transform inTransform, Mappings mappings)
         {
-            Mappings = mappings;
             SetInTransform(inTransform);
+            _profileMappings = mappings;
+            _profileMappings.Initialize(inTransform.CacheTable);
         }
 
         private bool _lastRecord = false;
 
 //        private List<TransformFunction> _profiles;
 
+        private Mappings _profileMappings;
+
         private Table _profileResults;
 
-        public override string TransformName { get; } = "Profile Data";
+        public override string TransformName { get; } = "Profile";
         public override string TransformDetails => $"";
 
 
@@ -56,6 +60,17 @@ namespace dexih.transforms
             return true;
         }
 
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        {
+            await _profileMappings.Open();
+            await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+
+            IsOpen = true;
+            AuditKey = auditKey;
+            return true;
+
+        }
+
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (_lastRecord)
@@ -66,7 +81,7 @@ namespace dexih.transforms
             if (!_lastRecord)
             {
                 var newRow = PrimaryTransform.CurrentRow;
-                await Mappings.ProcessInputData(newRow);
+                await _profileMappings.ProcessInputData(newRow);
                 return newRow;
             }
             else
@@ -74,7 +89,7 @@ namespace dexih.transforms
 
                 var profileResults = GetProfileTable("ProfileResults");
 
-                foreach (var profile in Mappings.OfType<MapFunction>())
+                foreach (var profile in _profileMappings.OfType<MapFunction>())
                 {
                     // create a a dummy row for hte profile function to write to
                     var profileRow = new object[2];
@@ -82,7 +97,7 @@ namespace dexih.transforms
                     // object profileResult = null;
                     try
                     {
-                        await profile.ProcessResultRow(new FunctionVariables(), profileRow, EFunctionType.Profile);
+                        await profile.ProcessResultRow(new FunctionVariables(), profileRow, EFunctionType.Profile, cancellationToken);
                         // profileResult = profile.ReturnValue;
                     }
                     catch (Exception ex)
@@ -95,29 +110,24 @@ namespace dexih.transforms
                     row[1] = profile.Function.FunctionName;
                     row[2] = profile.Parameters.Inputs.OfType<ParameterColumn>().First().Column.Name;
                     row[3] = true;
-                    row[4] = profileRow[1]; //profileResult;
+                    row[4] = profileRow[1];
 
-                    profileResults.Data.Add(row);
+                    profileResults.AddRow(row);
 
-                    if (profileRow[0] != null)
+                    // the dictionary contains the distribution analysis.
+                    if(profileRow[0] is Dictionary<string, int> details)
                     {
-                        // var details = (Dictionary <string,int>)profile.Parameters.ResultOutputs.OfType<ParameterColumn>().First().Value;
-                        var details = (Dictionary <string,int>)profileRow[0];
-
-                        if(details != null && details.Count > 0)
+                        foreach(var value  in details.Keys)
                         {
-                            foreach(var value  in details.Keys)
-                            {
-                                row = new object[6];
-                                row[0] = AuditKey;
-                                row[1] = profile.Function.FunctionName;
-                                row[2] = profile.Parameters.Inputs.OfType<ParameterColumn>().First().Column.Name;
-                                row[3] = false;
-                                row[4] = value;
-                                row[5] = details[value];
+                            row = new object[6];
+                            row[0] = AuditKey;
+                            row[1] = profile.Function.FunctionName;
+                            row[2] = profile.Parameters.Inputs.OfType<ParameterColumn>().First().Column.Name;
+                            row[3] = false;
+                            row[4] = value;
+                            row[5] = details[value];
 
-                                profileResults.Data.Add(row);
-                            }
+                            profileResults.AddRow(row);
                         }
                     }
 

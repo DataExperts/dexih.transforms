@@ -43,12 +43,14 @@ namespace dexih.transforms
         }
 
 
-        public TransformWriterTarget(Connection targetConnection, Table targetTable, TransformWriterResult writerResult = null,  TransformWriterOptions writerOptions = null,  Connection rejectConnection = null, Table rejectTable = null)
+        public TransformWriterTarget(Connection targetConnection, Table targetTable, TransformWriterResult writerResult = null,  TransformWriterOptions writerOptions = null,  Connection rejectConnection = null, Table rejectTable = null, Connection profileConnection = null, string profileTableName = null)
         {
             TargetConnection = targetConnection;
             TargetTable = targetTable;
             RejectTable = rejectTable;
             RejectConnection = rejectConnection;
+            ProfileTableName = profileTableName;
+            ProfileConnection = profileConnection;
             
             WriterResult = writerResult;
             if (WriterResult != null)
@@ -85,7 +87,13 @@ namespace dexih.transforms
         
         [CopyReference]
         public Table RejectTable { get; set; }
+
+        [CopyReference]
+        public Connection ProfileConnection { get; set; }
         
+        [CopyReference]
+        public string ProfileTableName { get; set; }
+
 //        public long CurrentAutoIncrementKey { get; set; }
         
         [CopyReference]
@@ -103,6 +111,8 @@ namespace dexih.transforms
         private bool _ordinalsInitialized = false;
         private TransformWriterTask _transformWriterTask;
         private long _autoIncrementKey = 0;
+
+        private Table _childRecords;
         
         #endregion
 
@@ -176,7 +186,7 @@ namespace dexih.transforms
         /// <returns></returns>
         public List<TransformWriterTarget> GetAll()
         {
-            var items = new List<TransformWriterTarget>() { this};
+            var items = new List<TransformWriterTarget> { this};
 
             foreach (var childNode in ChildWriterTargets)
             {
@@ -327,7 +337,7 @@ namespace dexih.transforms
 
                     await ProcessRecords(transform, targetReader, -1, updateStrategy, cancellationToken);
                     await UpdateWriterResult(transform, cancellationToken);
-                    await FinishTasks(cancellationToken);
+                    await FinishTasks(transform, cancellationToken);
                 }
             }
             catch (OperationCanceledException)
@@ -347,7 +357,7 @@ namespace dexih.transforms
             finally
             {
                 // don't pass cancel token, as we want writer result updated when a cancel occurs.
-                await WriterTargetFinalize(CancellationToken.None);
+                await WriterTargetFinalize(transform, CancellationToken.None);
             }
         }
 
@@ -598,7 +608,7 @@ namespace dexih.transforms
             }
         }
 
-        private async Task FinishTasks(CancellationToken cancellationToken = default)
+        private async Task FinishTasks(Transform inTransform, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -611,32 +621,33 @@ namespace dexih.transforms
                 throw;
             }
 
-//            if (ProfileTable != null)
-//            {
-//                var profileResults = inTransform.GetProfileResults();
-//                if (profileResults != null)
-//                {
-//                    var profileExists = await ProfileConnection.TableExists(ProfileTable, cancellationToken);
-//                    if (!profileExists)
-//                    {
-//                        await ProfileConnection.CreateTable(ProfileTable, false, cancellationToken);
-//                    }
-//
-//                    WriterResult.ProfileTableName = ProfileTable.Name;
-//
-//                    try
-//                    {
-//                        await ProfileConnection.ExecuteInsertBulk(ProfileTable, profileResults, cancellationToken);
-//                    }
-//                    catch(Exception ex)
-//                    {
-//                        var message = $"Failed to save profile results.  {ex.Message}";
-//                        var newException = new TransformWriterException(message, ex);
-//                        WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, CancellationToken.None);
-//                        return;
-//                    }
-//                }
-//            }
+            if (!string.IsNullOrEmpty(ProfileTableName))
+            {
+                var profileTable = inTransform.GetProfileTable(ProfileTableName);
+                var profileResults = inTransform.GetProfileResults();
+                if (profileResults != null)
+                {
+                    var profileExists = await ProfileConnection.TableExists(profileTable, cancellationToken);
+                    if (!profileExists)
+                    {
+                        await ProfileConnection.CreateTable(profileTable, false, cancellationToken);
+                    }
+
+                    WriterResult.ProfileTableName = profileTable.Name;
+
+                    try
+                    {
+                        await ProfileConnection.ExecuteInsertBulk(profileTable, profileResults, cancellationToken);
+                    }
+                    catch(Exception ex)
+                    {
+                        var message = $"Failed to save profile results.  {ex.Message}";
+                        var newException = new TransformWriterException(message, ex);
+                        WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, CancellationToken.None);
+                        return;
+                    }
+                }
+            }
 
             try
             {
@@ -697,9 +708,9 @@ namespace dexih.transforms
             // inTransform.Dispose();
         }
 
-        private async Task WriterTargetFinalize(CancellationToken cancellationToken = default)
+        private async Task WriterTargetFinalize(Transform transform, CancellationToken cancellationToken = default)
         {
-            await FinishTasks(cancellationToken);
+            await FinishTasks(transform, cancellationToken);
 
             var endTime = DateTime.Now;
 
@@ -716,7 +727,7 @@ namespace dexih.transforms
             
             foreach (var childWriterTarget in ChildWriterTargets)
             {
-                await childWriterTarget.WriterTargetFinalize(cancellationToken);
+                await childWriterTarget.WriterTargetFinalize(transform, cancellationToken);
             }
             
         }

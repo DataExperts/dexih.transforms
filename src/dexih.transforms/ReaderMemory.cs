@@ -7,12 +7,14 @@ using System.Threading.Tasks;
 namespace dexih.transforms
 {
     /// <summary>
-    /// A source transform that uses a prepopulated Table as an input.
+    /// A source transform that uses a pre-populated Table as an input.
     /// </summary>
     public sealed class ReaderMemory : Transform
     {
+        public Table DataTable { get; set; }
+
         private SelectQuery _selectQuery;
-        private readonly TableCache _data;
+        private IList<object[]> _data;
         private int _currentRow;
         
         // flag used to indicate if the cache has loaded, so no more records will be loaded 
@@ -25,12 +27,12 @@ namespace dexih.transforms
         {
             CacheTable = new Table(dataTable.Name, dataTable.Columns, new TableCache()) {OutputSortFields = sortFields};
 
+            DataTable = dataTable;
             _data = dataTable.Data;
             
             Reset();
 
             IsOpen = true;
-            
             SortFields = sortFields;
         }
         
@@ -39,15 +41,26 @@ namespace dexih.transforms
             IsOpen = true;
             _selectQuery = selectQuery;
 
+//            if (_selectQuery?.Filters?.Count > 0)
+//            {
+//                _data = _dataTable.LookupMultipleRows(_selectQuery.Filters);
+//            }
+//            else
+//            {
+//                _data = _dataTable.Data;
+//            }
+
+            _data = DataTable.Data;
+
             return Task.FromResult(true);
         }
 
         public override List<Sort> SortFields { get; }
 
-        public void Add(object[] values)
-        {
-            _data.Add(values);
-        }
+//        public void Add(object[] values)
+//        {
+//            CacheTable.AddRow(values);
+//        }
 
         #endregion
 

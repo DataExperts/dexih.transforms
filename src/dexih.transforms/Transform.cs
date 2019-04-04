@@ -8,6 +8,7 @@ using dexih.functions;
 using System.Linq;
 using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Text;
 using Newtonsoft.Json;
@@ -996,7 +997,7 @@ namespace dexih.transforms
 //                                }
 //                            }
 //
-//                            CacheTable.Data.AddRange(lookupResult);
+//                            CacheTable.AddRowRange(lookupResult);
 //                            _currentRowCached = true;
 //                        }
 //                    }
@@ -1314,7 +1315,7 @@ namespace dexih.transforms
                 //add the row to the cache
                 if (_nextRow != null && !_currentRowCached &&
                     (CacheMethod == ECacheMethod.DemandCache))
-                    CacheTable.Data.Add(_nextRow);
+                    CacheTable.AddRow(_nextRow);
 
                 TransformTimer.Stop();
                 _nextReadInProgress = false;
@@ -1360,6 +1361,23 @@ namespace dexih.transforms
             var transform = new TransformCache(this);
             await transform.Open(AuditKey, null, cancellationToken);
             return transform;
+        }
+
+        /// <summary>
+        /// Create a table with the data populated with the reader.  Transform should be open, and on first record.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<Table> CreateTableData(CancellationToken cancellationToken = default)
+        {
+            var table = CacheTable.Copy();
+
+            while (await ReadAsync(cancellationToken))
+            {
+                table.AddRow(CurrentRow);
+            }
+
+            return table;
         }
 
         public override int FieldCount => CacheTable?.Columns.Count ?? -1;
@@ -1424,7 +1442,6 @@ namespace dexih.transforms
         public int GetOrdinal(TableColumn column) => CacheTable.GetOrdinal(column);
         public int GetAutoIncrementOrdinal() => CacheTable.GetAutoIncrementOrdinal();
 
-
         public override string GetName(int i) => CacheTable.Columns[i].Name;
 
         // public object this[EDeltaType deltaType] => GetValue(deltaType);
@@ -1451,7 +1468,7 @@ namespace dexih.transforms
         {
             return GetValue<byte>(i);
         }
-        public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
+        public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferOffset, int length)
         {
             throw new NotSupportedException("GetBytes is not supported.");
         }
@@ -1459,7 +1476,7 @@ namespace dexih.transforms
         {
             return GetValue<char>(i);
         }
-        public override long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
+        public override long GetChars(int i, long fieldOffset, char[] buffer, int bufferOffset, int length)
         {
             throw new NotSupportedException("GetChars is not supported.");
         }

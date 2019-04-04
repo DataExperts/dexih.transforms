@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace dexih.functions
 {
@@ -18,22 +19,32 @@ namespace dexih.functions
             _startIndex = 0;
         }
 
+        /// <summary>
+        /// </summary>
+        /// <param name="maxRows">Sets the maximum rows loaded into the cache.  After this is reached every new row added, will have the
+        /// oldest row drop off. Zero = unlimited cache size</param>
         public TableCache(int maxRows = 0)
         {
             _maxRows = maxRows;
             _data = new List<object[]>();
             _startIndex = 0;
         }
+        
+        
 
+        /// <summary>
+        /// converts the rolling cache into the actual index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         private int InternalIndex(int index)
         {
-            return _maxRows == 0 ? index : (index + _startIndex) % _maxRows;
+            return _maxRows <= 0 ? index : (index + _startIndex) % _maxRows;
         }
-
+        
         public object[] this[int index]
         {
             get => _data[InternalIndex(index)];
-
             set => _data[InternalIndex(index)] = value;
         }
 
@@ -58,6 +69,8 @@ namespace dexih.functions
                     _startIndex = 0;
             }
         }
+
+
 
         public void AddRange(IEnumerable<object[]> items)
         {
@@ -109,7 +122,7 @@ namespace dexih.functions
 
         public void Insert(int index, object[] item)
         {
-            if (_maxRows == 0)
+            if (_maxRows <= 0)
                 _data.Insert(index, item);
             else
                 throw new NotImplementedException("Insert is not supported with this collection.");
@@ -117,14 +130,14 @@ namespace dexih.functions
 
         public bool Remove(object[] item)
         {
-            if (_maxRows == 0)
+            if (_maxRows <= 0)
                 return _data.Remove(item);
             throw new NotImplementedException("Remove is not supported with this collection.");
         }
 
         public void RemoveAt(int index)
         {
-            if (_maxRows == 0)
+            if (_maxRows <= 0)
                 _data.RemoveAt(index);
             else
                 throw new NotImplementedException("RemoveAt is not supported with this collection.");
@@ -178,19 +191,11 @@ namespace dexih.functions
         {
             get
             {
-                if (!_isFinished)
-                    return _data[_enumeratorPosition];
-                return null;
+                return !_isFinished ? _data[_enumeratorPosition] : null;
             }
         }
 
-        object IEnumerator.Current
-        {
-            get
-            {
-                return Current;
-            }
-        }
+        object IEnumerator.Current => Current;
 
         public void Dispose()
         {

@@ -180,6 +180,14 @@ namespace dexih.functions
         #endregion
 
         #region Lookup
+        
+        /// <summary>
+        /// stores indexes
+        /// first int[] contains array of column ordinals, and returns dictionary
+        /// second dictionary contains object[] with are values to lookup and returns rows numbers
+        /// containing index results.
+        /// </summary>
+        private List<(int[] columnOrdinals, Dictionary<object[], List<int>> index)> _indexes;
 
         /// <summary>
         /// Performs a row scan lookup on the data contained in the table.
@@ -191,8 +199,10 @@ namespace dexih.functions
         {
             try
             {
+                // use the index to reduce the scan rows
+                var data = IndexLookup(filters) ?? Data;
+                
                 //scan the data for a matching row.  
-                //TODO add indexing to lookup process.
                 for (var i = startRow; i < Data.Count(); i++)
                 {
                     if (RowMatch(filters, Data[i]))
@@ -213,8 +223,10 @@ namespace dexih.functions
             {
                 List<object[]> rows = null;
 
+                // use the index to reduce the scan rows
+                var data = IndexLookup(filters) ?? Data;
+
                 //scan the data for a matching row.  
-                //TODO add indexing to lookup process.
                 for (var i = startRow; i < Data.Count(); i++)
                 {
                     if (RowMatch(filters, Data[i]))
@@ -286,6 +298,93 @@ namespace dexih.functions
 
             return isMatch;
         }
+
+        public void AddIndex(string column)
+        {
+            AddIndex(new [] {column});
+        }
+        
+        public void AddIndex(IEnumerable<string> columns)
+        {
+            var sortedColumns = columns.OrderBy(c => c).ToArray();
+            var columnOrdinals = sortedColumns.Select(GetOrdinal).ToArray();
+            var index = new Dictionary<object[], List<int>>();
+
+            var rowNumber = 0;
+            foreach (var row in Data)
+            {
+                var values = columnOrdinals.Select(c => row[c]).ToArray();
+                if (index.TryGetValue(values, out var rowOrdinals))
+                {
+                    rowOrdinals.Add(rowNumber);
+                }
+                else
+                {
+                    index.Add(values, new List<int>() {rowNumber});
+                }
+                rowNumber++;
+            }
+
+            if (_indexes == null)
+            {
+                _indexes = new List<(int[] columnOrdinals, Dictionary<object[], List<int>> index)> { (columnOrdinals, index)};
+            }
+            else
+            {
+                _indexes.Add((columnOrdinals, index));    
+            }
+            
+            
+        }
+
+        private IEnumerable<object[]> IndexLookup(IEnumerable<Filter> filters)
+        {
+            var indexFilter = filters
+                .Where(c => c.Operator == Filter.ECompare.IsEqual && c.Column1 != null && c.Column2 is null)
+                .Select(c => ((int ordinal, object value)) (GetOrdinal(c.Column1.ColumnGroup), c.Value2))
+                .OrderBy(c => c.ordinal);
+
+            return IndexLookup(indexFilter);
+        }
+
+        /// <summary>
+        /// Returns a set of rows based on the index.
+        /// Note, this is a performance routine to reduce rows searched.  More rows may
+        /// be returned if the index only contains some columns from the index.
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
+        private IEnumerable<object[]> IndexLookup(IEnumerable<(int columnOrdinal, object value)> filters)
+        {
+            if (_indexes == null) return null;
+            
+            var sortedFilter = filters.OrderBy(c => c.columnOrdinal).ToArray();
+
+            foreach (var (columnOrdinals, index) in _indexes)
+            {
+                if (sortedFilter.Length <= columnOrdinals.Length)
+                {
+                    var filter = sortedFilter.Take(columnOrdinals.Length).ToArray();
+                    if (columnOrdinals.SequenceEqual(filter.Select(c => c.columnOrdinal)))
+                    {
+                        if(index.TryGetValue(filter.Select(c=>c.value).ToArray(), out var rowIndexes))
+                        {
+                            var rows = new object[rowIndexes.Count][];
+                            for (var i = 0; i < rowIndexes.Count; i++)
+                            {
+                                rows[i] = Data[rowIndexes[i]];
+                            }
+                            return rows;
+                        }
+                        
+                        return new List<object[]>();
+                    }
+                }
+            }
+
+            return null;
+        }
+        
         #endregion
 
 
@@ -454,6 +553,22 @@ namespace dexih.functions
             values.CopyTo(row, 0);
 
             Data.Add(values);
+
+            if (_indexes == null) return;
+            
+            //update indexes
+            foreach (var (ordinals, value) in _indexes)
+            {
+                var indexValues = ordinals.Select(c => values[c]).ToArray();
+                if (value.TryGetValue(indexValues, out var rows))
+                {
+                    rows.Add(Data.Count+1);
+                }
+                else
+                {
+                    value.Add(indexValues, new List<int>(Data.Count));
+                }
+            }
         }
 
         public int GetOrdinal(string schemaColumnName) => Columns.GetOrdinal(schemaColumnName);

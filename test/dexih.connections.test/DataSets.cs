@@ -24,16 +24,16 @@ namespace dexih.connections.test
                 new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2)
                 );
 
-            table.Data.Add(new object[] { "value1", 1, 1.1m, 1.1, true, Convert.ToDateTime("2015/01/01"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value2", "2", "2.1", "2.1", "false", "2015-01-02", Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value3", 3, 3.1m, 3.1, true, Convert.ToDateTime("2015/01/03"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value4", 4, 4.1m, 4.1, false, Convert.ToDateTime("2015/01/04"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value5", 5, 5.1m, 5.1, true, Convert.ToDateTime("2015/01/05"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value6", 6, 6.1m, 6.1, false, Convert.ToDateTime("2015/01/06"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value7", 7, 7.1m, 7.1, true, Convert.ToDateTime("2015/01/07"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value8", 8, 8.1m, 8.1, false, Convert.ToDateTime("2015/01/08"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value9", 9, 9.1m, 9.1, true, Convert.ToDateTime("2015/01/09"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.Data.Add(new object[] { "value10", 10, 10.1m, 10.1, false, Convert.ToDateTime("2015/01/10"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value1", 1, 1.1m, 1.1, true, Convert.ToDateTime("2015/01/01"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value2", "2", "2.1", "2.1", "false", "2015-01-02", Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value3", 3, 3.1m, 3.1, true, Convert.ToDateTime("2015/01/03"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value4", 4, 4.1m, 4.1, false, Convert.ToDateTime("2015/01/04"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value5", 5, 5.1m, 5.1, true, Convert.ToDateTime("2015/01/05"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value6", 6, 6.1m, 6.1, false, Convert.ToDateTime("2015/01/06"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value7", 7, 7.1m, 7.1, true, Convert.ToDateTime("2015/01/07"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value8", 8, 8.1m, 8.1, false, Convert.ToDateTime("2015/01/08"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value9", 9, 9.1m, 9.1, true, Convert.ToDateTime("2015/01/09"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value10", 10, 10.1m, 10.1, false, Convert.ToDateTime("2015/01/10"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
 
             ReaderMemory Adapter = new ReaderMemory(table);
             Adapter.Reset();
@@ -165,6 +165,7 @@ namespace dexih.connections.test
                 new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
             );
+            table.AddIndex("parent_id");
 
             return table;
         }
@@ -188,6 +189,7 @@ namespace dexih.connections.test
                 new TableColumn("grandChild_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
             );
+            table.AddIndex("child_id");
 
             return table;
         }
@@ -239,7 +241,7 @@ namespace dexih.connections.test
 
             var transform = childTransform.CreateNodeMapping(parentTransform, grandChild, childMappings,
                 new[] {childrenColumn});
-            
+
             return transform;
         }
     }

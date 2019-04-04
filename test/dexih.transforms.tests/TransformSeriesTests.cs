@@ -140,7 +140,7 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateSortedTestData();
 
             //add a row to test highest since.
-            source.Add(new object[] { "value11", 5, 10.1, Convert.ToDateTime("2015/01/11"), 1, new[] { 1, 1 } });
+            source.DataTable.AddRow(new object[] { "value11", 5, 10.1, Convert.ToDateTime("2015/01/11"), 1, new[] { 1, 1 } });
             source.Reset();
 
             var mappings = new Mappings(true);

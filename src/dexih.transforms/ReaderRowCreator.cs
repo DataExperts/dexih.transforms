@@ -38,6 +38,8 @@ namespace dexih.transforms
         
         public void InitializeRowCreator(int startAt, int endAt, int increment)
         {
+            IsOpen = true;
+            
             StartAt = startAt;
             EndAt = endAt;
             Increment = increment;

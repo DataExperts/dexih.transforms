@@ -34,7 +34,7 @@ namespace dexih.connections.sql
         [Fact]
         public async Task Sqlite_Basic()
         {
-            string database = "Test-" + Guid.NewGuid().ToString();
+            string database = "Test-" + Guid.NewGuid();
             ConnectionSqlite connection = GetConnection();
             await new UnitTests().Unit(connection, database);
         }
@@ -42,7 +42,7 @@ namespace dexih.connections.sql
         [Fact]
         public async Task Sqlite_Transform()
         {
-            string database = "Test-" + Guid.NewGuid().ToString();
+            string database = "Test-" + Guid.NewGuid();
 
             await new TransformTests().Transform(GetConnection(), database);
         }
@@ -50,13 +50,13 @@ namespace dexih.connections.sql
         [Fact]
         public async Task Sqlite_Performance()
         {
-            await new PerformanceTests(_output).Performance(GetConnection(), "Test-" + Guid.NewGuid().ToString(), 50000);
+            await new PerformanceTests(_output).Performance(GetConnection(), "Test-" + Guid.NewGuid(), 50000);
         }
         
         [Fact]
         public async Task Sqlite_SqlReader()
         {
-            var database = "Test-" + Guid.NewGuid().ToString();
+            var database = "Test-" + Guid.NewGuid();
             var connection = GetConnection();
 
             await new SqlReaderTests().Unit(connection, database);
@@ -68,7 +68,7 @@ namespace dexih.connections.sql
         [InlineData(true, TransformDelta.EUpdateStrategy.Reload, true)]
         public async Task Sqlite_ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
         {
-            var database = "Test-" + Guid.NewGuid().ToString();
+            var database = "Test-" + Guid.NewGuid();
             var connection = GetConnection();
 
             await new TransformWriterTargetTests().ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
@@ -77,7 +77,7 @@ namespace dexih.connections.sql
         [Fact]
         public async Task Sqlite_TransformWriter()
         {
-            string database = "Test-" + Guid.NewGuid().ToString();
+            var database = "Test-" + Guid.NewGuid();
 
             await new PerformanceTests(_output).PerformanceTransformWriter(GetConnection(), database, 100000);
         }
@@ -89,10 +89,10 @@ namespace dexih.connections.sql
         [InlineData(true, TransformDelta.EUpdateStrategy.Reload, true)]
         public async Task Sqlite_ParentChild_Write_Large(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
         {
-            var database = "Test-" + Guid.NewGuid().ToString();
+            var database = "Test-" + Guid.NewGuid();
             var connection = GetConnection();
 
-            await new TransformWriterTargetTests().ParentChild_Write_Large(connection, 10000, database, useDbAutoIncrement, updateStrategy, useTransaction);
+            await new TransformWriterTargetTests().ParentChild_Write_Large(connection, 1000, database, useDbAutoIncrement, updateStrategy, useTransaction);
         }
     }
 }

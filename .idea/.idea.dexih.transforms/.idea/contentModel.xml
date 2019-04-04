@@ -413,6 +413,7 @@
             <e p="TableColumn.cs" t="Include" />
             <e p="TableColumns.cs" t="Include" />
             <e p="TableExceptions.cs" t="Include" />
+            <e p="TableIndex.cs" t="Include" />
             <e p="WebService.cs" t="Include" />
           </e>
           <e p="TaskSequencer.cs" t="Include" />
@@ -738,6 +739,7 @@
               </e>
             </e>
           </e>
+          <e p="ParentChildNavigate.cs" t="Include" />
           <e p="PerformanceTests.cs" t="Include" />
           <e p="project.lock.json" t="Include" />
           <e p="Properties" t="Include">

@@ -13,6 +13,8 @@ namespace dexih.functions.BuiltIn
 
         private int _recordCount;
 
+        public bool DetailedResults { get; set; } = false;
+
         [TransformGlobalVariables]
         public GlobalVariables GlobalVariables { get; set; }
         
@@ -114,7 +116,7 @@ namespace dexih.functions.BuiltIn
             if (result == "")
                 result = "String";
 
-            if (GlobalVariables?.DetailedResults??false)
+            if (DetailedResults)
                 distribution = _dictionary;
             else
                 distribution = null;
@@ -130,7 +132,7 @@ namespace dexih.functions.BuiltIn
 
         public string NullsResult(out Dictionary<string, int> distribution)
         {
-            if (GlobalVariables?.DetailedResults??false)
+            if (DetailedResults)
             {
                 distribution = new Dictionary<string, int>
                 {
@@ -146,13 +148,13 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Profile, Category = "Profile", Name = "Blanks", Description = "Find the percentage of blank columns.", ResultMethod = nameof(BlanksResult), ResetMethod = nameof(Reset))]
         public void Blanks(string value)
         {
-            if (value==null || value == "") _intValue++;
+            if (string.IsNullOrEmpty(value)) _intValue++;
             _recordCount++;
         }
 
         public string BlanksResult(out Dictionary<string, int> distribution)
         {
-            if (GlobalVariables?.DetailedResults??false)
+            if (DetailedResults)
             {
                 distribution = new Dictionary<string, int>
                 {
@@ -177,7 +179,7 @@ namespace dexih.functions.BuiltIn
 
         public string ZerosResult(out Dictionary<string, int> distribution)
         {
-            if (GlobalVariables?.DetailedResults??false)
+            if (DetailedResults)
             {
                 distribution = new Dictionary<string, int>
                 {
@@ -197,12 +199,12 @@ namespace dexih.functions.BuiltIn
         public void MaxLength(string value)
         {
             _recordCount++;
-            var length = value == null ? 0 : value.Length;
+            var length = value?.Length ?? 0;
             if (length > _intValue)
             {
                 _intValue = length;
             }
-            if(GlobalVariables?.DetailedResults??false)
+            if(DetailedResults)
             {
                 if (_dictionary.ContainsKey(length.ToString()))
                     _dictionary[length.ToString()]++;
@@ -213,7 +215,7 @@ namespace dexih.functions.BuiltIn
 
         public string MaxLengthResult(out Dictionary<string, int> distribution)
         {
-            if (GlobalVariables?.DetailedResults??false)
+            if (DetailedResults)
             {
                 distribution = _dictionary;
             }
@@ -237,7 +239,7 @@ namespace dexih.functions.BuiltIn
                     _objectValue = value;
                 }
 
-                if (GlobalVariables?.DetailedResults??false)
+                if (DetailedResults)
                 {
                     if (_dictionary.ContainsKey(_objectValue.ToString()))
                         _dictionary[_objectValue.ToString()]++;
@@ -247,7 +249,7 @@ namespace dexih.functions.BuiltIn
             }
             else
             {
-                if(GlobalVariables?.DetailedResults??false)
+                if(DetailedResults)
                 {
                     if (_dictionary.ContainsKey("Non Numeric"))
                         _dictionary["Non Numeric"]++;
@@ -259,7 +261,7 @@ namespace dexih.functions.BuiltIn
 
         public string MaxValueResult(out Dictionary<string, int> distribution)
         {
-            if (GlobalVariables?.DetailedResults??false)
+            if (DetailedResults)
             {
                 distribution = _dictionary;
             }
@@ -287,7 +289,7 @@ namespace dexih.functions.BuiltIn
 
         public string DistinctValuesResult(out Dictionary<string, int> distribution)
         {
-            if (GlobalVariables?.DetailedResults??false)
+            if (DetailedResults)
             {
                 distribution = _dictionary;
             }
@@ -326,7 +328,7 @@ namespace dexih.functions.BuiltIn
 
         public string PatternsResult(out Dictionary<string, int> distribution)
         {
-            if (GlobalVariables?.DetailedResults??false)
+            if (DetailedResults)
             {
                 distribution = _dictionary;
             }

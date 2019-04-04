@@ -44,16 +44,17 @@ namespace dexih.transforms.tests
         public void Performance_ReaderMemory(int iterations)
         {
             var table = CreateSampleTable();
-            var reader = new ReaderMemory(table);
-            reader.Open().Wait();
             
             var time = TaskTimer.Start(() =>
             {
                 for (var i = 0; i < iterations; i++)
                 {
-                    reader.Add(NewRow());
+                    table.AddRow(NewRow());
                 }
             });
+
+            var reader = new ReaderMemory(table);
+            reader.Open().Wait();
 
             _output.WriteLine($"memory reader add rows: {iterations}, time taken: {time}, iterations/ms: {iterations/time.Milliseconds}");
 

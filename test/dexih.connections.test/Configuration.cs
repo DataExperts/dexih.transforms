@@ -59,16 +59,16 @@ namespace dexih.connections.test
                 new TableColumn("GuidColumn", ETypeCode.Guid)
                 );
 
-            table.Data.Add(new object[] { "value1", 1, 1.1, Convert.ToDateTime("2015/01/01"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value2", 2, 2.1, Convert.ToDateTime("2015/01/02"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value3", 3, 3.1, Convert.ToDateTime("2015/01/03"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value4", 4, 4.1, Convert.ToDateTime("2015/01/04"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value5", 5, 5.1, Convert.ToDateTime("2015/01/05"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value6", 6, 6.1, Convert.ToDateTime("2015/01/06"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value7", 7, 7.1, Convert.ToDateTime("2015/01/07"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value8", 8, 8.1, Convert.ToDateTime("2015/01/08"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value9", 9, 9.1, Convert.ToDateTime("2015/01/09"), Guid.NewGuid() });
-            table.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value1", 1, 1.1, Convert.ToDateTime("2015/01/01"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value2", 2, 2.1, Convert.ToDateTime("2015/01/02"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value3", 3, 3.1, Convert.ToDateTime("2015/01/03"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value4", 4, 4.1, Convert.ToDateTime("2015/01/04"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value5", 5, 5.1, Convert.ToDateTime("2015/01/05"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value6", 6, 6.1, Convert.ToDateTime("2015/01/06"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value7", 7, 7.1, Convert.ToDateTime("2015/01/07"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value8", 8, 8.1, Convert.ToDateTime("2015/01/08"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value9", 9, 9.1, Convert.ToDateTime("2015/01/09"), Guid.NewGuid() });
+            table.AddRow(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), Guid.NewGuid() });
 
             ReaderMemory Adapter = new ReaderMemory(table);
             Adapter.Reset();

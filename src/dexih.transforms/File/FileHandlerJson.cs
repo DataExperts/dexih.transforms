@@ -32,7 +32,7 @@ namespace dexih.transforms.File
             
             foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
             {
-                _responseSegmentOrdinals.Add(column.TableColumnName(), (_table.GetOrdinal(column.TableColumnName()), column));
+                _responseSegmentOrdinals.Add(column.TableColumnName(), (_table.GetOrdinal(column), column));
             }
             
             _nodeTransforms.Clear();
@@ -76,7 +76,7 @@ namespace dexih.transforms.File
                 {
                     foreach (var child in tokens)
                     {
-                        columns.AddRange(GetColumns(child, 0, restFunction.MaxImportLevels, new List<string>()));
+                        columns.AddRange(GetColumns(child, 1, restFunction.MaxImportLevels, new List<string>()));
                     }
                     
                 }

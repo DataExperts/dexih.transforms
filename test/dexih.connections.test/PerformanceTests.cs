@@ -92,7 +92,7 @@ namespace dexih.connections.test
                     }
                         
                 }
-                table.Data.Add(row);
+                table.AddRow(row);
             }
 
             var readerMemory = new ReaderMemory(table);
@@ -322,7 +322,7 @@ namespace dexih.connections.test
                     else
                         row[j] = connection.GetConnectionMinValue(table.Columns[j].DataType);
                 }
-                table.Data.Add(row);
+                table.AddRow(row);
                 buffer++;
 
                 if (buffer >= 5000 || rows == i + 1)

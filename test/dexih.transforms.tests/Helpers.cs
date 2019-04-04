@@ -307,7 +307,7 @@ namespace dexih.transforms.tests
 
                 row[10] = Guid.NewGuid().ToString();
 
-                table.Data.Add(row);
+                table.AddRow(row);
             }
 
             return new ReaderMemory(table);

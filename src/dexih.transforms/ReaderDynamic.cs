@@ -62,7 +62,7 @@ namespace dexih.transforms
                 }
             }
 
-            CacheTable.Data.Add(row);
+            CacheTable.AddRow(row);
 
             return Task.FromResult(true);
         }

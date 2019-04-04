@@ -51,16 +51,16 @@ namespace dexih.transforms.tests
                 new TableColumn("PatternsColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey)
                 );
 
-            table.Data.Add(new object[] { "value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), DBNull.Value, 0, "a", 1, "value1", "12345"  });
-            table.Data.Add(new object[] { "value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), null, 0, "ab", 3, "value2", "1234a" });
-            table.Data.Add(new object[] { "value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), "", 1, "abcd", 4, "value1", "54321" });
-            table.Data.Add(new object[] { "value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), "", 2, "abcde", 1, "value3", "AB123" });
-            table.Data.Add(new object[] { "value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), "not null", -1, "abc", 3, "value1", "ZA123" });
-            table.Data.Add(new object[] { "value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), "not null", "not zero", "abc", 3.5, "value1", "AB123" });
-            table.Data.Add(new object[] { "value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), "not null", 2, "ab", 4.1, "value1", "12345" });
-            table.Data.Add(new object[] { "value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), "not null", 2, "ab", 1, "value2", "32122" });
-            table.Data.Add(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), "not null", 2, "ab", 1, "value1", "1234a" });
-            table.Data.Add(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), "not null", 2.1, "ab", -1, "value1", "12335" });
+            table.AddRow(new object[] { "value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), DBNull.Value, 0, "a", 1, "value1", "12345"  });
+            table.AddRow(new object[] { "value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), null, 0, "ab", 3, "value2", "1234a" });
+            table.AddRow(new object[] { "value03", 3, 3.1, Convert.ToDateTime("2015/01/03"), "", 1, "abcd", 4, "value1", "54321" });
+            table.AddRow(new object[] { "value04", 4, 4.1, Convert.ToDateTime("2015/01/04"), "", 2, "abcde", 1, "value3", "AB123" });
+            table.AddRow(new object[] { "value05", 5, 5.1, Convert.ToDateTime("2015/01/05"), "not null", -1, "abc", 3, "value1", "ZA123" });
+            table.AddRow(new object[] { "value06", 6, 6.1, Convert.ToDateTime("2015/01/06"), "not null", "not zero", "abc", 3.5, "value1", "AB123" });
+            table.AddRow(new object[] { "value07", 7, 7.1, Convert.ToDateTime("2015/01/07"), "not null", 2, "ab", 4.1, "value1", "12345" });
+            table.AddRow(new object[] { "value08", 8, 8.1, Convert.ToDateTime("2015/01/08"), "not null", 2, "ab", 1, "value2", "32122" });
+            table.AddRow(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), "not null", 2, "ab", 1, "value1", "1234a" });
+            table.AddRow(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), "not null", 2.1, "ab", -1, "value1", "12335" });
 
             var Adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
             Adapter.Reset();

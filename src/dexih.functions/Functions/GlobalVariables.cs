@@ -9,9 +9,6 @@ namespace dexih.functions
 
         public FilePermissions FilePermissions { get; set; }
 
-        // used by profiling functions to provide detailed output.
-        public bool DetailedResults { get; set; }
-
         private readonly Dictionary<string, object> _variables;
 
         public GlobalVariables(string encryptionKey)
