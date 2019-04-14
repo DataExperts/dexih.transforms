@@ -80,7 +80,14 @@ namespace dexih.functions.builtIn.tests
         [InlineData(typeof(CategorizeFunctions), nameof(CategorizeFunctions.RangeCategorize), new object[] { 1D, new [] {1D, 5D, 10D}}, true)]
         [InlineData(typeof(CategorizeFunctions), nameof(CategorizeFunctions.RangeCategorize), new object[] { 11D, new [] {1D, 5D, 10D} }, false)]
         [InlineData(typeof(CategorizeFunctions), nameof(CategorizeFunctions.DiscreteRangeCategorize), new object[] { 1L, new [] {1L, 5L, 10L} }, true)]
-        [InlineData(typeof(CategorizeFunctions), nameof(CategorizeFunctions.DiscreteRangeCategorize), new object[] { 11L, new [] {1L, 5L, 10L} }, false)]
+        [InlineData(typeof(ConversionFunctions), nameof(ConversionFunctions.ConvertTemperature), new object[] { 100, ConversionFunctions.ETemperatureScale.Kelvin, ConversionFunctions.ETemperatureScale.Celsius }, -173.15)]
+        [InlineData(typeof(ConversionFunctions), nameof(ConversionFunctions.ConvertTemperature), new object[] { 40, ConversionFunctions.ETemperatureScale.Celsius, ConversionFunctions.ETemperatureScale.Fahrenheit }, 104d)]
+        [InlineData(typeof(ConversionFunctions), nameof(ConversionFunctions.ConvertMass), new object[] { 1, ConversionFunctions.EMassScale.Kilogram, ConversionFunctions.EMassScale.Pound }, 2.2046)]
+        [InlineData(typeof(ConversionFunctions), nameof(ConversionFunctions.ConvertMassString), new object[] { 1, "kg", ConversionFunctions.EMassScale.Pound }, 2.2046)]
+        [InlineData(typeof(ConversionFunctions), nameof(ConversionFunctions.ConvertLength), new object[] { 1, ConversionFunctions.ELengthScale.Kilometer, ConversionFunctions.ELengthScale.Mile }, 0.6214)]
+        [InlineData(typeof(ConversionFunctions), nameof(ConversionFunctions.ConvertLengthString), new object[] { 1, "km", ConversionFunctions.ELengthScale.Mile }, 0.6214)]
+        [InlineData(typeof(ConversionFunctions), nameof(ConversionFunctions.ConvertTime), new object[] { 1, ConversionFunctions.ETimeScale.Hour, ConversionFunctions.ETimeScale.Millisecond }, 3600000d)]
+        [InlineData(typeof(ConversionFunctions), nameof(ConversionFunctions.ConvertTimeString), new object[] { 1, "h", ConversionFunctions.ETimeScale.Millisecond }, 3600000d)]
         [MemberData(nameof(OtherFunctions))]
         public void StandardFunctionTest(Type type, string methodName, object[] parameters, object expectedResult)
         {

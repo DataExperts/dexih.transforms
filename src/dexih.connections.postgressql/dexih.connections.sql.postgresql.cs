@@ -55,8 +55,6 @@ namespace dexih.connections.sql
             }
         }
         
-
-        
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
@@ -314,64 +312,6 @@ namespace dexih.connections.sql
         }
 
 
-        /// <summary>
-        /// Gets the start quote to go around the values in sql insert statement based in the column type.
-        /// </summary>
-        /// <returns></returns>
-//        protected override string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
-//        {
-//            string returnValue;
-//
-//            if (value == null || value is DBNull)
-//                return "null";
-//
-//            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
-//            //    return "null";
-//
-//            switch (typeCode)
-//            {
-//                case ETypeCode.Byte:
-//                case ETypeCode.Char:
-//                case ETypeCode.Single:
-//                case ETypeCode.Int16:
-//                case ETypeCode.Int32:
-//                case ETypeCode.Int64:
-//                case ETypeCode.SByte:
-//                case ETypeCode.UInt16:
-//                case ETypeCode.UInt32:
-//                case ETypeCode.UInt64:
-//                case ETypeCode.Double:
-//                case ETypeCode.Decimal:
-//                    returnValue = AddEscape(value.ToString());
-//                    break;
-//                case ETypeCode.String:
-//				case ETypeCode.Text:
-//                case ETypeCode.Json:
-//                case ETypeCode.Xml:
-//                case ETypeCode.Guid:
-//                case ETypeCode.Boolean:
-//                case ETypeCode.Unknown:
-//                    returnValue = "'" + AddEscape(value.ToString()) + "'";
-//                    break;
-//                case ETypeCode.DateTime:
-//                    if (value is DateTime time)
-//                        returnValue = "to_timestamp('" + AddEscape(time.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
-//                    else
-//                        returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
-//                    break;
-//                case ETypeCode.Time:
-//                    if (value is TimeSpan span)
-//                        returnValue = "to_timestamp('" + AddEscape(span.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', 'YYYY-MM-DD HH24:MI:SS')";
-//                    else
-//                        returnValue = "to_timestamp('" + AddEscape((string)value) + "', 'YYYY-MM-DD HH24:MI:SS')";
-//                    break;
-//                default:
-//                    throw new Exception($"The datatype {typeCode} is not compatible with the sql insert statement.");
-//            }
-//
-//            return returnValue;
-//        }
-
         public override async Task<DbConnection> NewConnection()
         {
             NpgsqlConnection connection = null;
@@ -395,9 +335,9 @@ namespace dexih.connections.sql
                     }
 
                     if (UseWindowsAuth == false)
-                        connectionString = "Host=" + host + "; Port=" + port + "; User Id=" + Username + "; Password=" + Password + "; ";
+                        connectionString = "Host=" + host + "; Port=" + port + "; User Id=" + Username + "; Password=" + Password + "; ApplicationName=dexih; ";
                     else
-                        connectionString = "Host=" + host + "; Port=" + port + "; Integrated Security=true; ";
+                        connectionString = "Host=" + host + "; Port=" + port + "; Integrated Security=true; ApplicationName=dexih; ";
 
                     if (!string.IsNullOrEmpty(DefaultDatabase))
                     {
@@ -412,7 +352,7 @@ namespace dexih.connections.sql
                 if (connection.State != ConnectionState.Open)
                 {
                     connection.Dispose();
-                    throw new ConnectionException($"Postgre connection status is {connection.State}.");
+                    throw new ConnectionException($"Postgres connection status is {connection.State}.");
 
                 }
 
@@ -422,7 +362,7 @@ namespace dexih.connections.sql
             {
                 if (connection != null)
                     connection.Dispose();
-                throw new ConnectionException($"Postgre connection failed. {ex.Message}", ex);
+                throw new ConnectionException($"Postgres connection failed. {ex.Message}", ex);
             }
         }
 
@@ -436,7 +376,7 @@ namespace dexih.connections.sql
                 {
                     await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
-
+                
                 DefaultDatabase = databaseName;
             }
             catch (Exception ex)
@@ -477,7 +417,7 @@ namespace dexih.connections.sql
                 using (var connection = await NewConnection())
                 {
 
-                    using (var cmd = CreateCommand(connection, "select table_catalog, table_schema, table_name from information_schema.tables where table_schema not in ('pg_catalog', 'information_schema')"))
+                    using (var cmd = CreateCommand(connection, "select table_catalog, table_schema, table_name, table_type from information_schema.tables where table_schema not in ('pg_catalog', 'information_schema')"))
                     using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
@@ -485,7 +425,8 @@ namespace dexih.connections.sql
                             var table = new Table
                             {
                                 Name = reader["table_name"].ToString(),
-                                Schema = reader["table_schema"].ToString()
+                                Schema = reader["table_schema"].ToString(),
+                                TableType = reader["table_type"].ToString() == "VIEW" ? Table.ETableType.View : Table.ETableType.Table
                             };
                             tableList.Add(table);
                         }
@@ -518,8 +459,31 @@ namespace dexih.connections.sql
                     //The new datatable that will contain the table schema
                     table.Columns.Clear();
 
-                    List<string> pkColumns = new List<string>();
                     
+                    // get the table type
+                    using (var cmd = CreateCommand(connection, "select table_type from information_schema.tables where table_name = @NAME"))
+                    {
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
+
+                        var tableType = await cmd.ExecuteScalarAsync(cancellationToken);
+
+                        if (tableType == null)
+                        {
+                            throw new ConnectionException($"The table {table.Name} could not be found.");
+                        }
+
+                        if (tableType.ToString() == "VIEW")
+                        {
+                            table.TableType = Table.ETableType.View;
+                        }
+                        else
+                        {
+                            table.TableType = Table.ETableType.Table;
+                        }
+                    }
+
+                    List<string> pkColumns = new List<string>();
+
                     // get primary key columns
                     using(var cmd = CreateCommand(connection, $@"
 SELECT
@@ -576,7 +540,7 @@ ORDER BY c.ordinal_position"))
                                 }
                             }
 
-                            if (col.DataType == ETypeCode.String)
+                            if (col.DataType == ETypeCode.String || col.DataType == ETypeCode.CharArray)
                             {
                                 col.MaxLength = ConvertNullableToInt(reader["character_maximum_length"]);
                             }

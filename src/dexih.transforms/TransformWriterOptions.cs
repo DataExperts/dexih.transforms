@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using dexih.functions;
 using dexih.functions.Query;
 
@@ -53,6 +54,22 @@ namespace dexih.transforms
         public bool IsEmptyTarget()
         {
             return TargetAction == ETargetAction.Truncate || TargetAction == ETargetAction.DropCreate;
+        }
+
+        private HashSet<string> targets = new HashSet<string>();
+        
+        /// <summary>
+        /// Used to check target tables with have already been truncated.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public bool CheckTarget(string name)
+        {
+            if (targets.Contains(name)) return false;
+
+            targets.Add(name);
+
+            return true;
         }
     }
 }

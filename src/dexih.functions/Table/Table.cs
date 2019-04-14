@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
@@ -99,6 +101,15 @@ namespace dexih.functions
 
         #endregion
 
+        [JsonConverter(typeof(StringEnumConverter))]
+        public enum ETableType
+        {
+            Table,
+            View,
+            Query
+            
+        }
+
         #region Properties
 
         /// <summary>
@@ -132,7 +143,12 @@ namespace dexih.functions
         /// Is the original base table name.
         /// </summary>
         public string BaseTableName { get; set; }
-        
+
+        /// <summary>
+        /// Indicates the type of table (i.e. table, view etc.)
+        /// </summary>
+        public ETableType TableType { get; set; }
+
         /// <summary>
         /// Indicates if the table contains versions (history) of data change, such as sql temporal tables.
         /// </summary>

@@ -112,8 +112,6 @@ namespace dexih.transforms
         private TransformWriterTask _transformWriterTask;
         private long _autoIncrementKey = 0;
 
-        private Table _childRecords;
-        
         #endregion
 
 
@@ -204,7 +202,7 @@ namespace dexih.transforms
         /// <returns></returns>
         private async Task InitializeAsync(ETransformWriterMethod transformWriterMethod, CancellationToken cancellationToken = default)
         {
-            
+   
             if (TargetConnection != null && TargetTable != null)
             {
                 //if the table doesn't exist, create it.  
@@ -216,19 +214,22 @@ namespace dexih.transforms
 
                 await TargetConnection.DataWriterStart(TargetTable);
 
-                switch (WriterOptions.TargetAction)
+                if (WriterOptions.CheckTarget(TargetTable.Name))
                 {
-                    case TransformWriterOptions.ETargetAction.Truncate:
-                        await TargetConnection.TruncateTable(TargetTable, cancellationToken);
-                        break;
-                    case TransformWriterOptions.ETargetAction.DropCreate:
-                        await TargetConnection.CreateTable(TargetTable, true, cancellationToken);
-                        break;
-                    case TransformWriterOptions.ETargetAction.CreateNotExists:
-                        await TargetConnection.CreateTable(TargetTable, false, cancellationToken);
-                        break;
+                    switch (WriterOptions.TargetAction)
+                    {
+                        case TransformWriterOptions.ETargetAction.Truncate:
+                            await TargetConnection.TruncateTable(TargetTable, cancellationToken);
+                            break;
+                        case TransformWriterOptions.ETargetAction.DropCreate:
+                            await TargetConnection.CreateTable(TargetTable, true, cancellationToken);
+                            break;
+                        case TransformWriterOptions.ETargetAction.CreateNotExists:
+                            await TargetConnection.CreateTable(TargetTable, false, cancellationToken);
+                            break;
+                    }
                 }
-                
+
             }
 
             switch (transformWriterMethod)
@@ -243,10 +244,6 @@ namespace dexih.transforms
 
             _transformWriterTask.Initialize(TargetTable, TargetConnection, RejectTable, RejectConnection);
             
-            if (WriterResult != null)
-            {
-                await WriterResult.Initialize(cancellationToken);
-            }
 
             foreach(var childWriterTarget in ChildWriterTargets)
             {
@@ -302,6 +299,11 @@ namespace dexih.transforms
         {
             try
             {
+                if (WriterResult != null)
+                {
+                    await WriterResult.Initialize(cancellationToken);
+                }
+
                 var updateResult = SetRunStatus(TransformWriterResult.ERunStatus.Started, null, null, cancellationToken);
                 if (!updateResult)
                 {
@@ -336,7 +338,6 @@ namespace dexih.transforms
                     }
 
                     await ProcessRecords(transform, targetReader, -1, updateStrategy, cancellationToken);
-                    await UpdateWriterResult(transform, cancellationToken);
                     await FinishTasks(transform, cancellationToken);
                 }
             }
@@ -357,6 +358,7 @@ namespace dexih.transforms
             finally
             {
                 // don't pass cancel token, as we want writer result updated when a cancel occurs.
+                await UpdateWriterResult(transform, CancellationToken.None);
                 await WriterTargetFinalize(transform, CancellationToken.None);
             }
         }
@@ -433,7 +435,7 @@ namespace dexih.transforms
                         if (WriterResult != null)
                         {
                             var runStatusResult = WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Running,
-                                null, null, cancellationToken);
+                                null, null);
                             if (!runStatusResult)
                             {
                                 return;
@@ -612,16 +614,19 @@ namespace dexih.transforms
         {
             try
             {
-                await _transformWriterTask.FinalizeWrites(cancellationToken);
+                if (_transformWriterTask != null)
+                {
+                    await _transformWriterTask.FinalizeWrites(cancellationToken);
+                }
             }
             catch (Exception ex)
             {
                 WriterResult?.SetRunStatus(TransformWriterResult.ERunStatus.Failed,
-                    $"Failed to read record.  Message: {ex.Message}", ex, cancellationToken);
+                    $"Failed to read record.  Message: {ex.Message}", ex);
                 throw;
             }
 
-            if (!string.IsNullOrEmpty(ProfileTableName))
+            if (!string.IsNullOrEmpty(ProfileTableName) && inTransform != null)
             {
                 var profileTable = inTransform.GetProfileTable(ProfileTableName);
                 var profileResults = inTransform.GetProfileResults();
@@ -643,7 +648,7 @@ namespace dexih.transforms
                     {
                         var message = $"Failed to save profile results.  {ex.Message}";
                         var newException = new TransformWriterException(message, ex);
-                        WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException, CancellationToken.None);
+                        WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Abended, message, newException);
                         return;
                     }
                 }
@@ -677,12 +682,15 @@ namespace dexih.transforms
                 var rowsWritten = WriterResult.RowsTotal - WriterResult.RowsIgnored;
 
                 var performance = inTransform.PerformanceSummary();
-                performance.Add(new TransformPerformance(TargetTable.Name, "Write Rows", rowsWritten,
-                    _transformWriterTask.WriteDataTicks.TotalSeconds));
+                if (performance != null)
+                {
+                    performance.Add(new TransformPerformance(TargetTable.Name, "Write Rows", rowsWritten,
+                        _transformWriterTask?.WriteDataTicks.TotalSeconds ?? 0));
 
-                WriterResult.PerformanceSummary = performance;
+                    WriterResult.PerformanceSummary = performance;
+                }
 
-                WriterResult.WriteTicks = +_transformWriterTask.WriteDataTicks.Ticks;
+                WriterResult.WriteTicks = +_transformWriterTask?.WriteDataTicks.Ticks ?? 0;
                 WriterResult.ReadTicks = +inTransform.ReaderTimerTicks().Ticks;
                 WriterResult.ProcessingTicks = +inTransform.ProcessingTimerTicks().Ticks;
 
@@ -714,17 +722,15 @@ namespace dexih.transforms
 
             var endTime = DateTime.Now;
 
-            async Task SetFinished(TransformWriterResult writerResult)
+            if (WriterResult != null)
             {
-                if (writerResult != null && writerResult.IsRunning)
+                if (WriterResult.IsRunning)
                 {
-                    writerResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished, null, null, cancellationToken);
-                    await writerResult.CompleteDatabaseWrites();
+                    WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Finished, null, null);
                 }
+                await WriterResult.CompleteDatabaseWrites();
             }
 
-            await SetFinished(WriterResult);
-            
             foreach (var childWriterTarget in ChildWriterTargets)
             {
                 await childWriterTarget.WriterTargetFinalize(transform, cancellationToken);
@@ -749,7 +755,7 @@ namespace dexih.transforms
         
         public bool SetRunStatus(TransformWriterResult.ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken = default)
         {
-            var result = WriterResult == null || WriterResult.SetRunStatus(newStatus, message, exception, cancellationToken);
+            var result = WriterResult == null || WriterResult.SetRunStatus(newStatus, message, exception);
 
             foreach (var childItem in ChildWriterTargets)
             {

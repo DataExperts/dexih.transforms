@@ -282,50 +282,6 @@ namespace dexih.transforms
 
         #region Audit
 
-//        /// <summary>
-//        /// Propulates the writerResult with a initial values, and writes the status to the database table.
-//        /// </summary>
-//        /// <param name="hubKey"></param>
-//        /// <param name="auditConnectionKey"></param>
-//        /// <param name="auditType"></param>
-//        /// <param name="referenceKey"></param>
-//        /// <param name="parentAuditKey"></param>
-//        /// <param name="referenceName"></param>
-//        /// <param name="sourceTableKey"></param>
-//        /// <param name="sourceTableName"></param>
-//        /// <param name="targetTableKey"></param>
-//        /// <param name="targetTableName"></param>
-//        /// <param name="triggerMethod"></param>
-//        /// <param name="triggerInfo"></param>
-//        /// <param name="cancellationToken"></param>
-//        /// <returns></returns>
-//        public virtual async Task<TransformWriterResult> InitializeAudit(long hubKey, long auditConnectionKey, string auditType, long referenceKey, long parentAuditKey, string referenceName, long sourceTableKey, string sourceTableName, long targetTableKey, string targetTableName, TransformWriterOptions transformWriterOptions, CancellationToken cancellationToken = default)
-//        {
-//            var writerResult = new TransformWriterResult();
-//            
-//            var picoTable = new PocoTable<TransformWriterResult>();
-//
-//            TransformWriterResult previousResult = null;
-//
-//            //create the audit table if it does not exist.
-//            var tableExistsResult = await picoTable.TableExists(this, cancellationToken);
-//            if (tableExistsResult == false)
-//            {
-//                //create the table if it doesn't already exist.
-//                await picoTable.CreateTable(this, false, cancellationToken);
-//            }
-//            else
-//            {
-//                //get the last audit result for this reference to collect previous run information
-//                previousResult = await GetPreviousResult(hubKey, auditConnectionKey, referenceKey, CancellationToken.None);
-//            }
-//
-//            writerResult.SetProperties(hubKey, auditConnectionKey, 0, auditType, referenceKey, parentAuditKey, referenceName, sourceTableKey, sourceTableName, targetTableKey, targetTableName, this, previousResult, transformWriterOptions);
-//            await picoTable.ExecuteInsert(this, writerResult, cancellationToken);
-//
-//            return writerResult;
-//        }
-
         public async Task<TransformWriterResult> InitializeAudit(CancellationToken cancellationToken = default)
         {
             var writerResult = new TransformWriterResult(this);
@@ -338,7 +294,19 @@ namespace dexih.transforms
             var pocoTable = new PocoTable<TransformWriterResult>();
             if(!await pocoTable.TableExists(this, cancellationToken))
             {
-                await pocoTable.CreateTable(this, false, cancellationToken);
+                try
+                {
+                    await pocoTable.CreateTable(this, false, cancellationToken);
+                }
+                catch (Exception)
+                {
+                    // this helps when multiple datalinks are initialized at the same time.  If error occurs, then delay and see if another datalink created the audit table.
+                    await Task.Delay(2000, cancellationToken);
+                    if (!await pocoTable.TableExists(this, cancellationToken))
+                    {
+                        throw;
+                    }
+                }
                 
             }
             else
@@ -684,7 +652,7 @@ namespace dexih.transforms
                 case ETypeCode.Node:
                     if (value is DbDataReader reader)
                     {
-                        var streamJson = new StreamJson("json", reader);
+                        var streamJson = new StreamJsonCompact("json", reader);
 
                         // convert stream to string
                         var streamReader = new StreamReader(streamJson);

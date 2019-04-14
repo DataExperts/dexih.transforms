@@ -70,9 +70,8 @@ namespace dexih.transforms
 
         public async Task<bool> CreateFilePaths(FlatFile flatFile)
         {
-            bool returnValue;
             //create the subdirectories
-            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Incoming);
+            var returnValue = await CreateDirectory(flatFile, EFlatFilePath.Incoming);
             if (returnValue == false) return false;
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.Outgoing);
             if (returnValue == false) return false;
@@ -81,7 +80,57 @@ namespace dexih.transforms
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.Rejected);
             return returnValue;
         }
+        
+        /// <summary>
+        /// Saves the stream to the path.
+        /// If the file is a zip or gz, they will be decompressed and saved.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="path"></param>
+        /// <param name="fileName"></param>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        /// <exception cref="ConnectionException"></exception>
+        public async Task<bool> SaveFiles(FlatFile file, EFlatFilePath path, string fileName, Stream stream)
+        {
+            try
+            {
+                var createDirectoryResult = await CreateDirectory(file, path);
 
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                var fileNameExtension = Path.GetExtension(fileName);
+
+				if(fileNameExtension == ".zip") 
+				{
+					using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
+	                {
+                        foreach(var entry in archive.Entries)
+                        {
+                            if(string.IsNullOrEmpty(entry.Name) || entry.FullName.StartsWith("__MACOSX") || entry.Length == 0) continue;
+                            return await SaveFileStream(file, path, entry.Name, entry.Open());
+                        }
+
+	                }
+					return true;
+				} else if (fileNameExtension == ".gz")
+                {
+                    using (var decompressionStream = new GZipStream(stream, CompressionMode.Decompress))
+                    {
+                        var newFileName = fileName.Substring(0, fileName.Length - 3);
+                        return await SaveFileStream(file, path, newFileName, decompressionStream);
+                    }
+                }
+				else 
+				{
+                    return await SaveFileStream(file, path, fileName, stream);
+				}
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Error occurred saving file stream of file {fileName} at {path}.  {ex.Message}", ex);
+            }
+        }
+        
         /// <summary>
         /// Adds a guid to the file name and moves it to the Incoming directory.
         /// </summary>

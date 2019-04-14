@@ -341,7 +341,7 @@ namespace dexih.connections.azure
                 while (await cloudFile.ExistsAsync())
                 {
                     version++;
-                    newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                    newFileName = fileNameWithoutExtension + "_" + version + fileNameExtension;
                     cloudFile = cloudSubDirectory.GetBlockBlobReference(newFileName);
                 }
 

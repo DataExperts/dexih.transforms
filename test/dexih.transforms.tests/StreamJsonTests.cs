@@ -13,7 +13,7 @@ namespace dexih.transforms.tests
         public async Task StreamJson_GetSourceColumns_Test()
         {
             var stream = System.IO.File.OpenRead("Data/weather.json");
-            var table = new WebService();
+            var table = new WebService() {MaxImportLevels = 2};
 
             var handler = new FileHandlerJson(table, null);
             var columns = (await handler.GetSourceColumns(stream)).ToArray();
@@ -42,7 +42,7 @@ namespace dexih.transforms.tests
         public async Task StreamJson_ReadRow_Test()
         {
             var stream = System.IO.File.OpenRead("Data/weather.json");
-            var table = new WebService();
+            var table = new WebService {MaxImportLevels = 2};
 
             var handler = new FileHandlerJson(table, null);
             var columns = (await handler.GetSourceColumns(stream)).ToArray();

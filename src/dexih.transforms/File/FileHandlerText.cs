@@ -93,44 +93,52 @@ namespace dexih.transforms.File
             }
             
             string[] headers;
-            if (_fileConfiguration.HasHeaderRecord)
+            AvailableDataTypes[] dataTypes;
+            using (var csv = new CsvReader(streamReader, _fileConfiguration))
             {
-                try
+                if (_fileConfiguration.HasHeaderRecord)
                 {
-                    using (var csv = new CsvReader(streamReader, _fileConfiguration))
+                    try
                     {
                         await csv.ReadAsync();
                         csv.ReadHeader();
                         headers = csv.Context.HeaderRecord;
                     }
+                    catch (Exception ex)
+                    {
+                        throw new FileHandlerException($"Error occurred opening the file stream: {ex.Message}", ex);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    throw new FileHandlerException($"Error occurred opening the file stream: {ex.Message}", ex);
-                }
-            }
-            else
-            {
-                // if no header row specified, then just create a series column names "column001, column002 ..."
-                using (var csv = new CsvReader(streamReader, _fileConfiguration))
+                else
                 {
                     await csv.ReadAsync();
-                    headers = Enumerable.Range(0, csv.Context.HeaderRecord.Length).Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
+                    headers = Enumerable.Range(0, csv.Context.HeaderRecord.Length)
+                        .Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
+                }
+            
+                //read the records to infer datatypes
+                dataTypes = new AvailableDataTypes[headers.Length];
+                while (await csv.ReadAsync())
+                {
+                    for(var i = 0; i< headers.Length; i++)
+                    {
+                        dataTypes[i].CheckValue(csv[i]);
+                    }
                 }
             }
 
             var columns = new List<TableColumn>();
 
-            foreach (var field in headers)
+            for(var i = 0; i< headers.Length; i++)
             {
+                var header = headers[i];
                 var col = new TableColumn()
                 {
-
                     //add the basic properties
-                    Name = field,
-                    LogicalName = field,
+                    Name = header,
+                    LogicalName = header,
                     IsInput = false,
-                    DataType = DataType.ETypeCode.String,
+                    DataType = dataTypes[i].GetBestType(),
                     DeltaType = TableColumn.EDeltaType.TrackingField,
                     Description = "",
                     AllowDbNull = true,
@@ -155,7 +163,7 @@ namespace dexih.transforms.File
 
             return columns;
         }
-
+        
         public override async Task SetStream(Stream stream, SelectQuery selectQuery)
         {
             _stream = stream;

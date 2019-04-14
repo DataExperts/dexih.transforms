@@ -6,18 +6,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
  using dexih.functions;
- using Dexih.Utils.Crypto;
  using Newtonsoft.Json;
- using Newtonsoft.Json.Linq;
 
- namespace dexih.transforms
+namespace dexih.transforms
 {
     
 
     /// <summary>
     /// Writes out a simple json stream containing the headers and data for the reader.
+    /// This stream is compacted by placing the column names at the top, and each row containing an array.
     /// </summary>
-    public class StreamJson : Stream
+    public class StreamJsonCompact : Stream
     {
         private const int BufferSize = 50000;
         private readonly DbDataReader _reader;
@@ -28,8 +27,9 @@ using System.Threading.Tasks;
         private long _rowCount;
         private bool _hasRows;
         private bool _first;
+        private readonly object[] _valuesArray;
 
-        public StreamJson(string name, DbDataReader reader, long maxRows = -1)
+        public StreamJsonCompact(string name, DbDataReader reader, long maxRows = -1)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
@@ -41,7 +41,33 @@ using System.Threading.Tasks;
             _hasRows = true;
             _first = true;
 
-            _streamWriter.Write("[");
+            _streamWriter.Write("{\"name\": \"" + System.Web.HttpUtility.JavaScriptStringEncode(name) + "\"");
+
+            _streamWriter.Write(", \"columns\": ");
+
+            // if this is a transform, then use the dataTypes from the cache table
+            if (reader is Transform transform)
+            {
+                object ColumnObject(IEnumerable<TableColumn> columns)
+                {
+                    return columns?.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType, childColumns = ColumnObject(c.ChildColumns)});
+                }
+                
+                var columnSerializeObject = JsonConvert.SerializeObject(ColumnObject( transform.CacheTable.Columns));
+                _streamWriter.Write(columnSerializeObject);
+            }
+            else
+            {
+                for (var j = 0; j < reader.FieldCount; j++)
+                {
+                    var colName = reader.GetName(j);
+                    _streamWriter.Write(JsonConvert.SerializeObject(new {name = colName, logicalName = colName, dataType = reader.GetDataTypeName(j)}) + ",");
+                }
+            }
+            
+            _valuesArray = new object[reader.FieldCount];
+
+            _streamWriter.Write(", \"data\": [");
             _memoryStream.Position = 0;
         }
 
@@ -99,20 +125,16 @@ using System.Threading.Tasks;
                         return 0;
                     }
 
-                    var jObject = new JObject();
+                    _reader.GetValues(_valuesArray);
 
-                    for (var i = 0; i < _reader.FieldCount; i++)
+                    for(var i = 0; i < _valuesArray.Length; i++)
                     {
-                        if (_reader[i] is byte[])
-                        {
-                            jObject[_reader.GetName(i)] = "binary data not available.";
-                            continue;
-                        }
-
-                        jObject[_reader.GetName(i)] = JToken.FromObject(_reader[i]);
+                        if (_valuesArray[i] is byte[])
+                            _valuesArray[i] = "binary data not available.";
                     }
 
-                    var row = jObject.ToString();
+                    var row = JsonConvert.SerializeObject(_valuesArray);
+
                     await _streamWriter.WriteAsync(row);
 
                     _rowCount++;
@@ -124,7 +146,7 @@ using System.Threading.Tasks;
                     }
                     else
                     {
-                        await _streamWriter.WriteAsync("]");
+                        await _streamWriter.WriteAsync("]}");
                         _hasRows = false;
                         break;
                     }

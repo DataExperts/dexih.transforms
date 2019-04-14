@@ -36,7 +36,9 @@ namespace dexih.connections.sql
         protected override void CloseConnections()
         {
             _sqlReader?.Close();
+            _sqlReader?.Dispose();
             _sqlConnection?.Close();
+            _sqlConnection?.Dispose();
         }
 
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)

@@ -15,7 +15,8 @@ namespace dexih.transforms.tests
     {
         private Mapping.Mapping GetProfileReference(bool detailed, string methodName, string column)
         {
-            var function = Functions.GetFunction(typeof(ProfileFunctions).FullName, methodName, Helpers.BuiltInAssembly).GetTransformFunction(typeof(string), null,  new GlobalVariables {DetailedResults = true});
+            var profileObject = new ProfileFunctions {DetailedResults = detailed};
+
             var parameters = new Parameters
             {
                 Inputs = new Parameter[]
@@ -28,12 +29,10 @@ namespace dexih.transforms.tests
                     new ParameterOutputColumn("Distribution", ETypeCode.Unknown),
                 }
             };
-
-            var mappings = new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache);
+            
+            var profileFunction = new TransformFunction(profileObject, methodName, null, parameters);
+            var mappings = new MapFunction(profileFunction, parameters, MapFunction.EFunctionCaching.NoCache);
             return mappings;
-
-//            new[] { new TableColumn(column) }, new TableColumn("Result"), new[] { new TableColumn("Distribution") }, detailed, new GlobalVariables(null));
-//            return function;
         }
         
         public static ReaderMemory CreateProfileTestData()

@@ -427,6 +427,7 @@
           <e p="CacheFunctions.cs" t="Include" />
           <e p="CategorizeFunctions.cs" t="Include" />
           <e p="ConditionFunctions.cs" t="Include" />
+          <e p="ConversionFunctions.cs" t="Include" />
           <e p="dexih.functions.builtIn.csproj" t="IncludeRecursive" />
           <e p="HierarchyFunctions.cs" t="Include" />
           <e p="IOFunctions.cs" t="Include" />

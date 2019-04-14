@@ -231,33 +231,49 @@ namespace dexih.connections.flatfile
             {
                 var createDirectoryResult = await CreateDirectory(file, path);
 
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-                var fileNameExtension = Path.GetExtension(fileName);
-
-				if(fileNameExtension == ".zip") 
-				{
-					using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
-	                {
-                        foreach(var entry in archive.Entries)
-                        {
-                            var filePath = FixFileName(file, path, entry.Name);
-                            entry.ExtractToFile(filePath);
-                        }
-
-	                }
-					return true;
-				}
-				else 
-				{
+//                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+//                var fileNameExtension = Path.GetExtension(fileName);
+//
+//				if(fileNameExtension == ".zip") 
+//				{
+//					using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
+//	                {
+//                        foreach(var entry in archive.Entries)
+//                        {
+//                            if(string.IsNullOrEmpty(entry.Name) || entry.FullName.StartsWith("__MACOSX") || entry.Length == 0) continue;
+//                           
+//                            var filePath = FixFileName(file, path, entry.Name);
+//                            entry.ExtractToFile(filePath);
+//                        }
+//
+//	                }
+//					return true;
+//				} else if (fileNameExtension == ".gz")
+//                {
+//                    using (var decompressionStream = new GZipStream(stream, CompressionMode.Decompress))
+//                    {
+//                        var newFileName = fileName.Substring(0, fileName.Length - 3);
+//                        var filePath = FixFileName(file, path, newFileName);
+//                        var newFile = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+//                        //stream.Seek(0, SeekOrigin.Begin);
+//                        await decompressionStream.CopyToAsync(newFile);
+//                        await decompressionStream.FlushAsync();
+//                        newFile.Dispose();
+//                    }
+//                    
+//                    return true;
+//                }
+//				else 
+//				{
                     var filePath = FixFileName(file, path, fileName);
-	                var newFile = new FileStream(filePath, FileMode.Create, System.IO.FileAccess.Write);
+	                var newFile = new FileStream(filePath, FileMode.Create, FileAccess.Write);
 	                //stream.Seek(0, SeekOrigin.Begin);
 	                await stream.CopyToAsync(newFile);
 	                await stream.FlushAsync();
 	                newFile.Dispose();
 
 	                return true;
-				}
+//				}
             }
             catch (Exception ex)
             {

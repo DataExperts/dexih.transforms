@@ -261,7 +261,7 @@ namespace dexih.transforms
         /// <param name="exception"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public bool SetRunStatus(ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken = default)
+        public bool SetRunStatus(ERunStatus newStatus, string message, Exception exception)
         {
             try
             {
@@ -276,7 +276,8 @@ namespace dexih.transforms
                     StartTime = DateTime.Now;
                 }
 
-                if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
+                if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished ||
+                    RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
                 {
                     EndTime = DateTime.Now;
                     OnFinish?.Invoke(this);
@@ -288,16 +289,18 @@ namespace dexih.transforms
                     UpdateDatabaseTask();
                 }
 
-                OnStatusUpdate?.Invoke(this);
-
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 AddExceptionDetails(ex);
                 RunStatus = ERunStatus.Abended;
                 AddMessage($"An error occurred when updating run status.  {ex.Message}");
                 return false;
+            }
+            finally
+            {
+                OnStatusUpdate?.Invoke(this);
             }
         }
 
