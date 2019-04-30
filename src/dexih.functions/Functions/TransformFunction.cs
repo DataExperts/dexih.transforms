@@ -220,19 +220,39 @@ namespace dexih.functions
 
 		public async Task Initialize(CancellationToken cancellationToken = default)
 		{
-			if (InitializeMethod != null)
+			try
 			{
-				if (InitializeMethod.MethodInfo.ReturnType.IsAssignableFrom(typeof(Task<>)))
+				if (InitializeMethod != null)
 				{
-					var task = (Task) InitializeMethod.MethodInfo.Invoke(ObjectReference,
-						new object[] {cancellationToken});
-					await task;
-				}
-				else
-				{
-					InitializeMethod.MethodInfo.Invoke(ObjectReference, new object[] {cancellationToken});
+					if (InitializeMethod.MethodInfo.ReturnType.IsAssignableFrom(typeof(Task<>)))
+					{
+						var task = (Task) InitializeMethod.MethodInfo.Invoke(ObjectReference,
+							new object[] {cancellationToken});
+						await task;
+					}
+					else
+					{
+						InitializeMethod.MethodInfo.Invoke(ObjectReference, new object[] {cancellationToken});
+					}
 				}
 			}
+			catch (TargetInvocationException ex)
+			{
+				if (ex.InnerException != null)
+				{
+					throw new FunctionException(
+						$"The initialize method on the function {FunctionName} failed.  " + ex.InnerException.Message,
+						ex.InnerException);
+				}
+
+				throw;
+			}
+			catch (Exception ex)
+			{
+				throw new FunctionException($"The initialize method on the function {FunctionName} failed.  " + ex.Message,
+					ex);
+			}
+
 		}
 
 		public TransformFunction()
@@ -342,31 +362,69 @@ namespace dexih.functions
 
 		private async Task<object> InvokeAsync(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters)
 		{
-			var (parameters, outputPos) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
-			var task = (Task) methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
-			await task.ConfigureAwait(false);
-			var resultProperty = task.GetType().GetProperty("Result");
-			_returnValue = resultProperty.GetValue(task);
-			return _returnValue;
+			try
+			{
+				var (parameters, outputPos) =
+					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
+				var task = (Task) methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
+				await task.ConfigureAwait(false);
+				var resultProperty = task.GetType().GetProperty("Result");
+				_returnValue = resultProperty.GetValue(task);
+				return _returnValue;
+			}
+			catch (TargetInvocationException ex)
+			{
+				if (ex.InnerException != null)
+				{
+					throw new FunctionException(
+						$"The function {FunctionName} failed.  " + ex.InnerException.Message,
+						ex.InnerException);
+				}
+
+				throw;
+			}
+			catch(Exception ex)
+			{
+				throw new FunctionException($"The the function {FunctionName} failed.  " + ex.Message, ex);
+			}
 		}
 
 		private object Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
 		{
-			var (parameters, outputPos) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
-
-			var returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
-			_returnValue = returnValue;
-			
-			if (outputPos >= 0)
+			try
 			{
-				outputs = parameters.Skip(outputPos).ToArray();
-			}
-			else
-			{
-				outputs = new object[0];
-			}
+				var (parameters, outputPos) =
+					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
 
-			return _returnValue;
+				var returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
+				_returnValue = returnValue;
+
+				if (outputPos >= 0)
+				{
+					outputs = parameters.Skip(outputPos).ToArray();
+				}
+				else
+				{
+					outputs = new object[0];
+				}
+
+				return _returnValue;
+			}
+			catch (TargetInvocationException ex)
+			{
+				if (ex.InnerException != null)
+				{
+					throw new FunctionException(
+						$"The function {FunctionName} failed.  " + ex.InnerException.Message,
+						ex.InnerException);
+				}
+
+				throw;
+			}
+			catch(Exception ex)
+			{
+				throw new FunctionException($"The function {FunctionName} failed.  " + ex.Message, ex);
+			}
 		}
 		
         public void Reset()
@@ -375,9 +433,20 @@ namespace dexih.functions
             {
 	            ResetMethod?.MethodInfo.Invoke(ObjectReference, null);
             }
+            catch (TargetInvocationException ex)
+            {
+	            if (ex.InnerException != null)
+	            {
+		            throw new FunctionException(
+			            $"The reset method on the function {FunctionName} failed.  " + ex.InnerException.Message,
+			            ex.InnerException);
+	            }
+
+	            throw;
+            }
             catch(Exception ex)
             {
-                throw new FunctionException($"The ResetMethod on the function {FunctionName} failed.  " + ex.Message, ex);
+	            throw new FunctionException($"The reset method on the function {FunctionName} failed.  " + ex.Message, ex);
             }
         }
 
@@ -389,13 +458,24 @@ namespace dexih.functions
 			    {
 				    return (string[]) ImportMethod.MethodInfo.Invoke(ObjectReference, values);
 			    }
-			    
+
 			    throw new FunctionException($"There is no import function for {FunctionName}.");
-			    
+
+		    }
+		    catch (TargetInvocationException ex)
+		    {
+			    if (ex.InnerException != null)
+			    {
+				    throw new FunctionException(
+					    $"The Import method on the function {FunctionName} failed.  " + ex.InnerException.Message,
+					    ex.InnerException);
+			    }
+
+			    throw;
 		    }
 		    catch(Exception ex)
 		    {
-			    throw new FunctionException($"The ImportMethod on the function {FunctionName} failed.  " + ex.Message, ex);
+			    throw new FunctionException($"The Import method on the function {FunctionName} failed.  " + ex.Message, ex);
 		    }
 	    }
 

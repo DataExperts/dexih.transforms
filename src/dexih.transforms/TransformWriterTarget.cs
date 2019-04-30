@@ -302,6 +302,9 @@ namespace dexih.transforms
                 if (WriterResult != null)
                 {
                     await WriterResult.Initialize(cancellationToken);
+
+                    var sourceReader = transform.GetSourceReader();
+                    sourceReader.OnReaderProgress += Reader_ReadProgress;
                 }
 
                 var updateResult = SetRunStatus(TransformWriterResult.ERunStatus.Started, null, null, cancellationToken);
@@ -427,7 +430,6 @@ namespace dexih.transforms
 
             try
             {
-
                 while (await transform.ReadAsync(cancellationToken))
                 {
                     if (firstRead && transactionReference <= 0)
@@ -675,7 +677,7 @@ namespace dexih.transforms
                 WriterResult.RowsRejected += inTransform.TotalRowsRejected;
                 WriterResult.RowsPreserved += inTransform.TotalRowsPreserved;
                 WriterResult.RowsIgnored += inTransform.TotalRowsIgnored;
-                WriterResult.RowsReadPrimary += inTransform.TotalRowsReadPrimary;
+                WriterResult.RowsReadPrimary = inTransform.TotalRowsReadPrimary;
                 WriterResult.RowsReadReference += inTransform.TotalRowsReadReference;
 
                 //calculate the throughput figures
@@ -690,9 +692,9 @@ namespace dexih.transforms
                     WriterResult.PerformanceSummary = performance;
                 }
 
-                WriterResult.WriteTicks = +_transformWriterTask?.WriteDataTicks.Ticks ?? 0;
-                WriterResult.ReadTicks = +inTransform.ReaderTimerTicks().Ticks;
-                WriterResult.ProcessingTicks = +inTransform.ProcessingTimerTicks().Ticks;
+                WriterResult.WriteTicks += _transformWriterTask?.WriteDataTicks.Ticks ?? 0;
+                WriterResult.ReadTicks += inTransform.ReaderTimerTicks().Ticks;
+                WriterResult.ProcessingTicks += inTransform.ProcessingTimerTicks().Ticks;
 
                 if (WriterResult.RowsTotal == 0)
                     WriterResult.MaxIncrementalValue = WriterResult.LastMaxIncrementalValue;
@@ -751,6 +753,16 @@ namespace dexih.transforms
         private void Writer_OnFinish(TransformWriterResult writer)
         {
             OnFinish?.Invoke(writer);
+        }
+
+        private void Reader_ReadProgress(long rows)
+        {
+            if (rows == 1)
+            {
+                WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Running, "", null);
+                return;
+            }
+            WriterResult.IncrementRowsReadPrimary(1);
         }
         
         public bool SetRunStatus(TransformWriterResult.ERunStatus newStatus, string message, Exception exception, CancellationToken cancellationToken = default)

@@ -445,6 +445,14 @@ namespace dexih.transforms.Mapping
                 mapping.Reset(functionType);
             }
         }
+
+        public void SetInputColumns(IEnumerable<TableColumn> inputColumns)
+        {
+            foreach (var mapping in this.OfType<MapInputColumn>())
+            {
+                mapping.SetInput(inputColumns);
+            }
+        }
         
 
     }

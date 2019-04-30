@@ -101,11 +101,26 @@ namespace dexih.transforms
                     var isPrimaryFilter = true;
                     foreach (var parameter in mapFunction.Parameters.Inputs)
                     {
-                        if (parameter is ParameterJoinColumn)
+                        if (parameter is ParameterJoinColumn || (parameter is ParameterColumn parameterColumn && parameterColumn.Column?.ReferenceTable == _referenceTableName))
                         {
                             isPrimaryFilter = false;
                             break;
                         }
+
+                        if (parameter is ParameterArray parameterArray)
+                        {
+                            foreach (var arrayParameter in parameterArray.Parameters)
+                            {
+                                if (arrayParameter is ParameterJoinColumn || (arrayParameter is ParameterColumn arrayParameterColumn && arrayParameterColumn.Column?.ReferenceTable == _referenceTableName))
+                                {
+                                    isPrimaryFilter = false;
+                                    break;
+                                }
+                                
+                            }
+                        }
+
+                        if (!isPrimaryFilter) break;
                     }
                     if (isPrimaryFilter)
                     {
@@ -147,6 +162,21 @@ namespace dexih.transforms
                             isReferenceFilter = false;
                             break;
                         }
+
+                        if (parameter is ParameterArray parameterArray)
+                        {
+                            foreach (var arrayParameter in parameterArray.Parameters)
+                            {
+                                if (arrayParameter is ParameterColumn)
+                                {
+                                    isReferenceFilter = false;
+                                    break;
+                                }
+                                
+                            }
+                        }
+
+                        if (!isReferenceFilter) break;
                     }
                     if (isReferenceFilter)
                     {
@@ -156,10 +186,28 @@ namespace dexih.transforms
                             {
                                 return new ParameterColumn(parameterJoinColumn.Name, parameterJoinColumn.Column);
                             }
+                            else if(c is ParameterArray parameterArray)
+                            {
+                                var newArray = parameterArray.Parameters.Select(arrayParameter =>
+                                {
+                                    if (arrayParameter is ParameterJoinColumn parameterJoinColumn2)
+                                    {
+                                        return new ParameterColumn(parameterJoinColumn2.Name, parameterJoinColumn2.Column);
+                                    }
+                                    else
+                                    {
+                                        return arrayParameter;
+                                    }
+                                }).ToList();
+
+                                return new ParameterArray(parameterArray.Name, parameterArray.DataType,
+                                    parameterArray.Rank, newArray);
+                            }
                             else
                             {
                                 return c;
                             }
+                            
                         }).ToArray();
                         
                         var newParameters = new Parameters() {Inputs = newInputs};
@@ -357,6 +405,10 @@ namespace dexih.transforms
                             break;
                         }
                     }
+                }
+                else
+                {
+                    joinMatchFound = true;
                 }
             }
             else //if input is not sorted, then run a hash join.

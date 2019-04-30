@@ -426,7 +426,7 @@ namespace dexih.connections.sql
 
                 if (filter.Column1 != null)
                 {
-                    if (filter.Column1.IsInput)
+                    if (filter.Column1.IsInput && filter.Value2 == null)
                     {
                         // sql.Append(" " + GetSqlFieldValueQuote(filter.Column1.DataType, filter.Column1.Rank, filter.Column1.DefaultValue) + " ");
                         var param = cmd.CreateParameter();

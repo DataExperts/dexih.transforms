@@ -177,7 +177,7 @@ namespace dexih.functions
             }
 
             // if the parameter is a custom class, then extract the properties from the class as return parameters.
-            if (paramType != null && (paramType.IsClass || paramType.IsValueType) && !paramType.IsPrimitive && paramType != typeof(string) && paramType != typeof(decimal) && !paramType.IsEnum && !paramType.IsArray)
+            if (paramType != null && !paramType.IsGenericParameter && (paramType.IsClass || paramType.IsValueType) && !paramType.IsPrimitive && paramType != typeof(string) && paramType != typeof(decimal) && !paramType.IsEnum && !paramType.IsArray)
             {                
                 var properties = paramType.GetProperties();
 
@@ -199,6 +199,7 @@ namespace dexih.functions
                         AllowNull = Nullable.GetUnderlyingType(property.PropertyType) != null,
                         Rank = paramRank,
                         IsTwin = property.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
+                        IsLabel = property.GetCustomAttribute<ParameterLabelAttribute>() != null,
                         ListOfValues = propertyAttribute?.ListOfValues,
                         DefaultValue = null
                     });
@@ -246,6 +247,7 @@ namespace dexih.functions
                 AllowNull = Nullable.GetUnderlyingType(paramType) != null,
                 Rank = paramRank,
                 IsTwin = parameterInfo.GetCustomAttribute<TransformFunctionParameterTwinAttribute>() != null,
+                IsLabel = parameterInfo.GetCustomAttribute<ParameterLabelAttribute>() != null,
                 ListOfValues = parameterAttribute?.ListOfValues ?? EnumValues(parameterInfo),
                 DefaultValue = DefaultValue(parameterInfo)
             };

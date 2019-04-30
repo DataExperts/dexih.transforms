@@ -124,6 +124,14 @@ namespace dexih.functions.Parameter
             {
                 parameter.SetInputData(data, joinData);
             }
+
+            if (ResultInputs != null)
+            {
+                foreach (var parameter in ResultInputs)
+                {
+                    parameter.SetInputData(data, joinData);
+                }
+            }
         }
 
         /// <summary>
@@ -218,7 +226,7 @@ namespace dexih.functions.Parameter
                     pos++;
                 }
             }
-
+            
             return value;
         }
 

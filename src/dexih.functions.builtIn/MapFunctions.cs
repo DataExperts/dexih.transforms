@@ -213,6 +213,20 @@ namespace dexih.functions.BuiltIn
 
             return DateTime.TryParse(value, out result);
         }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date", Name = "To Date (Format)",
+            Description =
+                "Converts a sting to a date based on a specific string format.  See [format strings](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings?view=netframework-4.7.2) for more information.")]
+        public bool ToDateExact(string value, string[] format, out DateTime result)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                result = DateTime.MinValue;
+                return false;
+            }
+
+            return DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out result);
+        }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Create Date",
             Description =
@@ -789,7 +803,7 @@ namespace dexih.functions.BuiltIn
                     break;
                 }
 
-                if (Equals(value, when[i]))
+                if (Operations.Equal(value, when[i]))
                 {
                     return then[i];
                 }

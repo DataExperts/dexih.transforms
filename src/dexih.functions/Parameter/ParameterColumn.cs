@@ -40,11 +40,11 @@ namespace dexih.functions.Parameter
             Column = column;
         }
 
-        public ParameterColumn(string columName, DataType.ETypeCode dataType)
+        public ParameterColumn(string columnName, DataType.ETypeCode dataType)
         {
-            Name = columName;
+            Name = columnName;
             DataType = dataType;
-            Column = new TableColumn(columName, dataType);
+            Column = new TableColumn(columnName, dataType);
         }
 
         public TableColumn Column;
@@ -54,9 +54,21 @@ namespace dexih.functions.Parameter
         /// </summary>
         private int _rowOrdinal = -1;
 
+        private bool _useJoinTable = false;
+
         public override void InitializeOrdinal(Table table, Table joinTable = null)
         {
-            _rowOrdinal = table.GetOrdinal(Column);
+            if (joinTable != null && !string.IsNullOrEmpty(Column.ReferenceTable))
+            {
+                _useJoinTable = true;
+                _rowOrdinal = joinTable.GetOrdinal(Column);
+            }
+            else
+            {
+                _useJoinTable = false;
+                _rowOrdinal = table.GetOrdinal(Column);    
+            }
+            
 
             if (_rowOrdinal < 0)
             {
@@ -66,13 +78,28 @@ namespace dexih.functions.Parameter
 
         public override void SetInputData(object[] data, object[] joinRow = null)
         {
-            SetValue(data?[_rowOrdinal]);
+            if (_useJoinTable)
+            {
+                SetValue(joinRow?[_rowOrdinal]);
+            }
+            else
+            {
+                SetValue(data?[_rowOrdinal]);    
+            }
+            
         }
 
         public override void PopulateRowData(object value, object[] data, object[] joinRow = null)
         {
             SetValue(value);
-            data[_rowOrdinal] = Value;
+            if (_useJoinTable)
+            {
+                joinRow[_rowOrdinal] = Value;
+            }
+            else
+            {
+                data[_rowOrdinal] = Value;
+            }
         }
         
         public override Parameter Copy()

@@ -49,21 +49,18 @@ namespace dexih.transforms
             return IsOpen;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             while (true)
             {
-                object[] row;
                 try
                 {
-                    row = await _fileHandler.GetRow();
+                    return _fileHandler.GetRow();
                 }
                 catch (Exception ex)
                 {
                     throw new ConnectionException("The flat file reader failed with the following message: " + ex.Message, ex);
                 }
-
-                return row;
             }
 
         }

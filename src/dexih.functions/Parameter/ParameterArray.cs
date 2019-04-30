@@ -74,7 +74,7 @@ namespace dexih.functions.Parameter
 	    {
 		    foreach (var parameter in Parameters)
 		    {
-			    parameter.InitializeOrdinal(table);
+			    parameter.InitializeOrdinal(table, joinTable);
 		    }
 	    }
 

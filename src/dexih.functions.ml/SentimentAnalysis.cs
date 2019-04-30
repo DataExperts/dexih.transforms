@@ -1,6 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+using dexih.functions.Exceptions;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 
@@ -9,13 +15,15 @@ namespace dexih.functions.ml
     public class SentimentAnalysis
     {
 
-        private List<SentimentIssue> _data;
         private PredictionEngine<SentimentIssue, SentimentPredictionResult> _predictionFunction;
 
+        private MLContext _mlContext;
+        private List<SentimentIssue> _data;
         private byte[] _sentimentModel;
 
         public void Reset()
         {
+            _mlContext = new MLContext();
             _data = new List<SentimentIssue>();
         }
 
@@ -50,43 +58,51 @@ namespace dexih.functions.ml
             _data.Add(new SentimentIssue(classification, text));
         }
         
-        public byte[] SentimentTrainResult( out double entropy, out double logLoss, out double logLossReduction, out double accuracy, out double auc, out double auprc, out double f1score, out double negativePrecision, out double negativeRecall, out double positivePrecision, out double positiveRecall)
+        public byte[] SentimentTrainResult()
         {
             // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
             // as a catalog of available operations and as the source of randomness.
             var mlContext = new MLContext();
 
             // Turn the data into the ML.NET data view.
-            var trainData = mlContext.CreateDataView(_data);
-
-            var pipeline = mlContext.Transforms.Text.FeaturizeText("Text", "Features")   
-                .Append(mlContext.BinaryClassification.Trainers.FastTree());
-
+            var trainData = mlContext.Data.LoadFromEnumerable(_data);
+            var pipeline = mlContext.Transforms.Text.FeaturizeText( "Features", "Text").Append(mlContext.BinaryClassification.Trainers.FastTree());
             var trainedModel = pipeline.Fit(trainData);
-            
-            var predictions = trainedModel.Transform(trainData);
-            var metrics = mlContext.BinaryClassification.Evaluate(predictions);
-
-            entropy = metrics.Entropy;
-            logLoss = metrics.LogLoss;
-            logLossReduction = metrics.LogLossReduction;
-            accuracy = metrics.Accuracy;
-            auc = metrics.Auc;
-            auprc = metrics.Auprc;
-            f1score = metrics.F1Score;
-            negativePrecision = metrics.NegativePrecision;
-            negativeRecall = metrics.NegativeRecall;
-            positivePrecision = metrics.PositivePrecision;
-            positiveRecall = metrics.PositiveRecall;
 
             using (var stream = new MemoryStream())
             {
-                mlContext.Model.Save(trainedModel, stream);
+                mlContext.Model.Save(trainedModel, null, stream);
                 return stream.ToArray();
             }
         }
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Sentiment Analysis - Evaluate", Description = "Evaluates the prediction accuracy of sentiment analysis model based on the training data.", ResultMethod = nameof(SentimentEvaluateResult), ResetMethod = nameof(Reset))]
+        public void SentimentEvaluate(bool classification, string text)
+        {
+            _data.Add(new SentimentIssue(classification, text));
+        }
+        
+        public CalibratedBinaryClassificationMetrics SentimentEvaluateResult(byte[] sentimentModel)
+        {
+            // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
+            // as a catalog of available operations and as the source of randomness.
+            var mlContext = new MLContext();
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Machine Learning", Name = "Sentiment Analysis - Prediction", Description = "Predicts the sentiment based on the input model produced by the \"Sentiment Analysis - Train\" function") ]
+            // load the sentiment model
+            var stream = new MemoryStream( sentimentModel );
+            var trainedModel = mlContext.Model.Load(stream, out var inputSchema);
+
+            // Turn the data into the ML.NET data view.
+            var trainData = mlContext.Data.LoadFromEnumerable(_data);
+
+            // run the evaluation
+            var predictions = trainedModel.Transform(trainData);
+            var metrics = mlContext.BinaryClassification.Evaluate(predictions);
+
+            return metrics;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Machine Learning", Name = "Sentiment Analysis - Prediction", Description = "Predicts the sentiment based on the input model produced by the \"Sentiment Analysis - Train\" aggregate function") ]
         public bool SentimentPrediction(byte[] sentimentModel, string text, out double probability, out double score)
         {
             if (_sentimentModel == null || !_sentimentModel.SequenceEqual(sentimentModel))
@@ -94,8 +110,8 @@ namespace dexih.functions.ml
                 _sentimentModel = sentimentModel;
                 var mlContext = new MLContext();
                 var stream = new MemoryStream( sentimentModel );
-                var model = mlContext.Model.Load(stream);
-                _predictionFunction = model.CreatePredictionEngine<SentimentIssue, SentimentPredictionResult>(mlContext);
+                var model = mlContext.Model.Load(stream, out var inputSchema);
+                _predictionFunction = mlContext.Model.CreatePredictionEngine<SentimentIssue, SentimentPredictionResult>(model);
             }
 
             var sentimentIssue = new SentimentIssue(false, text);
@@ -105,5 +121,7 @@ namespace dexih.functions.ml
             score = result.Score;
             return result.Prediction;
         }
+        
+
     }
 }

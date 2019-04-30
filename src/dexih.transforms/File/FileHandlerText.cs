@@ -189,7 +189,7 @@ namespace dexih.transforms.File
             _csvOrdinalMappings = new Dictionary<int,CsvField>();
 
             // create mappings from column name positions, to the csv field name positions.
-            if(_fileConfiguration != null && ( _fileConfiguration.MatchHeaderRecord || !_fileConfiguration.HasHeaderRecord))
+            if(_fileConfiguration != null && ( _fileConfiguration.MatchHeaderRecord && _fileConfiguration.HasHeaderRecord))
             {
                 await _csvReader.ReadAsync();
                 _csvReader.ReadHeader();
@@ -243,15 +243,18 @@ namespace dexih.transforms.File
                     foreach (var colPos in _csvOrdinalMappings.Keys)
                     {
                         var mapping = _csvOrdinalMappings[colPos];
-                        var result = _csvReader.TryGetField(mapping.DataType, mapping.Position, out object value);
-                        if (result)
-                        {
-                            row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);
-                        }
-                        else
-                        {
-                            row[colPos] = null;
-                        }
+                        var value = _csvReader[mapping.Position];
+                        row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);
+                        
+//                        var result = _csvReader.TryGetField(mapping.DataType, mapping.Position, out object value);
+//                        if (result)
+//                        {
+//                            row[colPos] = value; // Operations.Parse(mapping.TypeCode, mapping.Rank, value);
+//                        }
+//                        else
+//                        {
+//                            row[colPos] = null;
+//                        }
 
                         if (_fileConfiguration.SetWhiteSpaceCellsToNull && row[colPos] is string &&
                             string.IsNullOrWhiteSpace((string) row[colPos]))

@@ -335,8 +335,6 @@ namespace dexih.transforms
             else
             {
             }
-            
-            
         }
 
         public async Task CompleteDatabaseWrites()
@@ -397,7 +395,6 @@ namespace dexih.transforms
             if (string.IsNullOrEmpty(message))
             {
                 return;
-                
             }
             
             if (string.IsNullOrEmpty(Message))
@@ -428,6 +425,13 @@ namespace dexih.transforms
         }
 
         private int _progressCounter;
+
+        public void IncrementRowsReadPrimary(int value = 1)
+        {
+            RowsReadPrimary += value;
+            _progressCounter += value;
+            IncrementAll(0);
+        }
 
         public void IncrementRowsCreated(int value = 1)
         {

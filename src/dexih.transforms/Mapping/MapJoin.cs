@@ -90,7 +90,16 @@ namespace dexih.transforms.Mapping
             var value1 = GetOutputValue();
             var value2 = GetJoinValue();
 
-            CompareResult = Operations.Compare(InputColumn.DataType, value1, value2);
+            var dataType = JoinColumn?.DataType ?? InputColumn?.DataType;
+            if (dataType == null)
+            {
+                CompareResult = Operations.Compare(value1, value2);
+            }
+            else
+            {
+                CompareResult = Operations.Compare(dataType.Value, value1, value2);    
+            }
+            
             bool returnResult;
 
             switch (Compare)

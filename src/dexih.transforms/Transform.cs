@@ -19,6 +19,7 @@ using Dexih.Utils.Crypto;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using Dexih.Utils.DataType;
+using Newtonsoft.Json.Linq;
 
 namespace dexih.transforms
 {
@@ -28,6 +29,14 @@ namespace dexih.transforms
     /// </summary>
     public abstract class Transform : DbDataReader
     {
+        #region Events
+        
+        // tracks rows read
+        public delegate void ReaderProgress(long rows);
+        public event ReaderProgress OnReaderProgress;
+        
+        #endregion
+        
         #region Enums
         public enum ECacheMethod
         {
@@ -99,6 +108,9 @@ namespace dexih.transforms
 
         protected long AuditKey { get; set; }
 
+        public long MaxInputRows { get; set; }
+        public long MaxOutputRows { get; set; }
+
         #endregion
 
         #region Statistics
@@ -111,6 +123,7 @@ namespace dexih.transforms
         public long TransformRowsFiltered { get; protected set; }
         public long TransformRowsReadPrimary { get; protected set; }
         public long TransformRowsReadReference { get; protected set; }
+        public long TransformRows { get; protected set; }
 
         //statistics for all child transforms.
         public long TotalRowsSorted => TransformRowsSorted + PrimaryTransform?.TotalRowsSorted ?? 0 + ReferenceTransform?.TotalRowsSorted ?? 0;
@@ -177,7 +190,7 @@ namespace dexih.transforms
 
         #endregion
 
-        #region Initialization 
+        #region Initialization
 
         /// <summary>
         /// Sets the data readers for the transform.  Ensure the transform properties have been set prior to running this.
@@ -197,6 +210,9 @@ namespace dexih.transforms
 //            {
 //                Mappings = new Mappings();
 //            }
+
+            // if the primary transform has a higher output rows setting than the input rows setting, then pass it down.
+            if (PrimaryTransform != null && (PrimaryTransform.MaxOutputRows == 0 || PrimaryTransform.MaxOutputRows > MaxInputRows)) PrimaryTransform.MaxOutputRows = MaxInputRows;
 
             CacheTable = InitializeCacheTable(mapAllReferenceColumns); // Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
 
@@ -464,7 +480,19 @@ namespace dexih.transforms
 
             return row > CacheTable.Data.Count ? null : CacheTable.Data[row];
         }
-        
+
+        public Transform GetSourceReader()
+        {
+            if (IsReader)
+            {
+                return this;
+            }
+            else
+            {
+                return PrimaryTransform;
+            }
+        }
+
         #endregion
 
         #region Encryption 
@@ -798,6 +826,7 @@ namespace dexih.transforms
                 if (resetCache)
                 {
                     CacheTable?.Data.Clear();
+                    _lookupCache?.Clear();
                 }
 
                 CurrentRowNumber = -1;
@@ -904,9 +933,12 @@ namespace dexih.transforms
 
                     break;
                 case EDuplicateStrategy.All:
-                    while (await ReadAsync(cancellationToken))
+                    var rows = 0;
+                    var maxRows = query?.Rows ?? -1;
+                    while ((maxRows <= 0 || rows < maxRows) && await ReadAsync(cancellationToken))
                     {
                         lookupResult.Add(CurrentRow);
+                        rows++;
                     }
 
                     break;
@@ -1068,6 +1100,30 @@ namespace dexih.transforms
 //            return null;
         }
 
+        public async Task<JObject> LookupJson(SelectQuery query, EDuplicateStrategy duplicateStrategy,
+            CancellationToken cancellationToken = default)
+        {
+            var rows = await Lookup(query, duplicateStrategy, cancellationToken);
+
+            var jObject = new JObject();
+            var jArray = new JArray();
+
+            foreach (var row in rows)
+            {
+                var jRow = new JObject();
+                foreach (var column in CacheTable.Columns)
+                {
+                    jRow.Add(column.Name, JToken.FromObject(row[GetOrdinal(column.Name)]));
+                }
+
+                jArray.Add(jRow);
+            }
+
+            jObject.Add("Success", true);
+            jObject.Add(new JProperty("Data", jArray));
+            return jObject;
+        }
+
         /// <summary>
         /// Recurses through the transforms to the primary transform, and sets the lookup filters.
         /// </summary>
@@ -1078,19 +1134,35 @@ namespace dexih.transforms
         public virtual async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
-            
-            // update the input value on any input columns.
-            foreach (var column in CacheTable.Columns.Where(c => c.IsInput))
+            if (!IsOpen)
             {
-                var filter = query.Filters.FirstOrDefault(c => c.Column1.Name == column.Name);
-                if (filter != null)
-                {
-                    column.DefaultValue = filter.Value2;
-                }
+                Reset();
+                await Open(auditKey, query, cancellationToken);
             }
-            
+
+            Mappings?.SetInputColumns(query.InputColumns);
+
             if (PrimaryTransform == null)
             {
+                // update the input value on any input columns.
+                foreach (var column in CacheTable.Columns.Where(c => c.IsInput))
+                {
+                    var inputColumn = query.InputColumns?.SingleOrDefault(c => c.Name == column.Name);
+                    if (inputColumn != null)
+                    {
+                        column.DefaultValue = inputColumn.DefaultValue;
+                    }
+                    else
+                    {
+                        var filter = query.Filters.FirstOrDefault(c =>
+                            c.Column1.Name == column.Name && c.Operator == Filter.ECompare.IsEqual);
+                        if (filter != null)
+                        {
+                            column.DefaultValue = filter.Value2;
+                        }
+                    }
+                }
+                
                 return false;
             }
             else
@@ -1187,6 +1259,11 @@ namespace dexih.transforms
         public async Task<bool> ReadPrepareAsync(CancellationToken cancellationToken = default)
         {
             _nextReadInProgress = true;
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
+            }
 
             try
             {
@@ -1300,9 +1377,13 @@ namespace dexih.transforms
             }
             finally
             {
-                if (_nextRow == null)
+                if (_nextRow == null || (MaxOutputRows > 0 && TransformRows >= MaxOutputRows))
                 {
                     Close();
+                }
+                else
+                {
+                    TransformRows++;
                 }
 
                 if (IsReader && !IsPrimaryTransform && !IsReaderFinished)
@@ -1310,7 +1391,10 @@ namespace dexih.transforms
 
                 //if this is a primary (i.e. starting reader), increment the rows read.
                 if (IsReader && !IsReaderFinished)
+                {
                     TransformRowsReadPrimary++;
+                    OnReaderProgress?.Invoke(TransformRowsReadPrimary);
+                }
 
                 //add the row to the cache
                 if (_nextRow != null && !_currentRowCached &&
@@ -1434,6 +1518,16 @@ namespace dexih.transforms
             return table;
         }
 
+        public JObject GetRow()
+        {
+            var jObject = new JObject();
+            foreach (var column in CacheTable.Columns)
+            {
+                jObject.Add(column.Name, JToken.FromObject(GetValue(column.Name)));
+            }
+
+            return jObject;
+        }
 
         public override int GetOrdinal(string name) => CacheTable.GetOrdinal(name);
 

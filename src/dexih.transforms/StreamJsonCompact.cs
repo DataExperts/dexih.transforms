@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
  using dexih.functions;
+ using Dexih.Utils.Crypto;
+ using Dexih.Utils.MessageHelpers;
  using Newtonsoft.Json;
 
 namespace dexih.transforms
@@ -108,11 +110,23 @@ namespace dexih.transforms
 
                 if (_first)
                 {
-                    _hasRows = await _reader.ReadAsync(cancellationToken);
-                    if (_hasRows == false)
+                    try
                     {
-                        await _streamWriter.WriteAsync("]}");
+                        _hasRows = await _reader.ReadAsync(cancellationToken);
+                        
+                        if (_hasRows == false)
+                        {
+                            await _streamWriter.WriteAsync("]}");
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        var status = new ReturnValue(false, ex.Message, ex);
+                        var result = Json.SerializeObject(status, "");
+                        await _streamWriter.WriteAsync("], \"status\":" + result + " }");
+                        _hasRows = false;
+                    }
+
                     _first = false;
                 }
 
@@ -138,18 +152,29 @@ namespace dexih.transforms
                     await _streamWriter.WriteAsync(row);
 
                     _rowCount++;
-                    _hasRows = await _reader.ReadAsync(cancellationToken);
+                    try
+                    {
+                        _hasRows = await _reader.ReadAsync(cancellationToken);
 
-                    if (_hasRows && _rowCount < _maxRows)
-                    {
-                        await _streamWriter.WriteAsync(",");
+                        if (_hasRows && _rowCount < _maxRows)
+                        {
+                            await _streamWriter.WriteAsync(",");
+                        }
+                        else
+                        {
+                            await _streamWriter.WriteAsync("]}");
+                            _hasRows = false;
+                            break;
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        await _streamWriter.WriteAsync("]}");
+                        var status = new ReturnValue(false, ex.Message, ex);
+                        var result = Json.SerializeObject(status, "");
+                        await _streamWriter.WriteAsync("], \"status\":" + result + " }");
                         _hasRows = false;
-                        break;
                     }
+
                 }
 
                 _memoryStream.Position = 0;

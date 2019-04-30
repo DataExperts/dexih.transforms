@@ -104,6 +104,7 @@ namespace dexih.transforms
         public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
+            Open(auditKey, query, cancellationToken);
             Reset();
             
             var filter = query.Filters.FirstOrDefault(c => c.Column1?.Name == "RowNumber");

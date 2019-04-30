@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Microsoft.VisualBasic.CompilerServices;
+using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.Query
 {
@@ -21,6 +24,8 @@ namespace dexih.functions.Query
         public List<Sort> Sorts { get; set; }
         public List<TableColumn> Groups { get; set; }
         public int Rows { get; set; }
+        
+        public List<TableColumn> InputColumns { get; set; }
         
         /// <summary>
         /// Used for flatfiles to specify only a specific filename
@@ -141,12 +146,127 @@ namespace dexih.functions.Query
                         hashCode = (hashCode * 397) ^ group.GetHashCode();    
                     }
                 }
+
+                if (InputColumns != null && InputColumns.Count > 0)
+                {
+                    foreach (var inputColumn in InputColumns)
+                    {
+                        hashCode = (hashCode * 397) ^ inputColumn.GetHashCode();    
+                    }
+                }
                 
                 hashCode = (hashCode * 397) ^ Rows;
                 hashCode = (hashCode * 397) ^ (FileName != null ? FileName.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (int) Path;
 
                 return hashCode;
+            }
+        }
+
+        public void LoadJsonFilters(Table table, JObject jObject)
+        {
+            if (jObject == null) return;
+            
+            foreach (var item in jObject)
+            {
+                var columnName = item.Key;
+                var column = table.Columns[columnName];
+                if (column == null)
+                {
+                    throw new Exception($"The column \"{columnName}\" could not be found.");
+                }
+
+                if (!item.Value.HasValues)
+                {
+                    var value = item.Value;
+                    Filters.Add(new Filter(column, Filter.ECompare.IsEqual, value) );
+                }
+                else
+                {
+                    var childValues = item.Value.Children();
+                    if (childValues.Any())
+                    {
+                        foreach (var childValue in childValues)
+                        {
+                            if (childValue is JProperty property)
+                            {
+                                Filter.ECompare op;
+                                object value = property.Value;
+
+                                switch (property.Name)
+                                {
+                                    case "eq":
+                                    case "=":
+                                        op = Filter.ECompare.IsEqual;
+                                        break;
+                                    case "lt":
+                                    case "<":
+                                        op = Filter.ECompare.LessThan;
+                                        break;
+                                    case "le":
+                                    case "<=":
+                                        op = Filter.ECompare.LessThanEqual;
+                                        break;
+                                    case "gt":
+                                    case ">":
+                                        op = Filter.ECompare.GreaterThan;
+                                        break;
+                                    case "ge":
+                                    case ">=":
+                                        op = Filter.ECompare.GreaterThanEqual;
+                                        break;
+                                    case "ne":
+                                    case "!=":
+                                    case "<>":
+                                        op = Filter.ECompare.NotEqual;
+                                        break;
+                                    case "nl":
+                                    case "null":
+                                        op = Filter.ECompare.IsNull;
+                                        break;
+                                    case "nn":
+                                    case "notnull":
+                                        op = Filter.ECompare.IsNotNull;
+                                        break;
+                                    case "in":
+                                        op = Filter.ECompare.IsIn;
+                                        if (value is JArray jArray)
+                                        {
+                                            value = jArray.ToArray();
+                                        }
+                                        break;
+                                    default:
+                                        throw new Exception(
+                                            $"The operator \"{childValues[0].ToString()} is not recognized.");
+                                }
+
+                                Filters.Add(new Filter(column, op, value));
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        public void LoadJsonInputs(JObject jObject)
+        {
+            if (jObject == null) return;
+            
+            foreach (var item in jObject)
+            {
+
+                if (!item.Value.HasValues)
+                {
+                    var columnName = item.Key;
+                    var column = new TableColumn(columnName) { IsInput = true, DefaultValue = item.Value };
+                    if(InputColumns == null) InputColumns = new List<TableColumn>();
+                    InputColumns.Add(column);
+                }
+                else
+                {
+                    throw new Exception("The input parameter must only contain single values (i.e. i={\"InputColumn\": \"value\"}");
+                }
             }
         }
     }

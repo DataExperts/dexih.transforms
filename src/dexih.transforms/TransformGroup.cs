@@ -87,7 +87,7 @@ namespace dexih.transforms
             // used to track if the group fields have changed
             var groupChanged = false;
             
-            if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
+            if (PrimaryTransform.IsReaderFinished || await PrimaryTransform.ReadAsync(cancellationToken) == false)
             {
                 if (_lastRecord) //return false is all record have been written.
                 {

@@ -72,6 +72,13 @@ namespace dexih.functions
     {
     }
 
+    /// <summary>
+    /// Identifies the parameter as a label (rather than a value) which should have text entry.
+    /// </summary>
+    public class ParameterLabelAttribute : Attribute
+    {
+    }
+
     public class TransformFunctionCompareAttribute : Attribute
     {
         /// <summary>

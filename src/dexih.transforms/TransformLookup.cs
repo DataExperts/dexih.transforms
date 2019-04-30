@@ -60,8 +60,12 @@ namespace dexih.transforms
             object[] newRow = null;
 
             // if there is a previous lookup cache, then just populated that as the next row.
-            if(_lookupCache != null && _lookupCache.MoveNext())
+            while(_lookupCache != null && _lookupCache.MoveNext())
             {
+                var lookup = _lookupCache.Current;
+                var validRow = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup);
+                if(!validRow) continue;
+
                 newRow = new object[FieldCount];
                 var pos1 = 0;
                 for (var i = 0; i < _primaryFieldCount; i++)
@@ -70,7 +74,6 @@ namespace dexih.transforms
                     pos1++;
                 }
 
-                var lookup = _lookupCache.Current;
                 for (var i = 0; i < _referenceFieldCount; i++)
                 {
                     newRow[pos1] = lookup[i];
@@ -96,34 +99,41 @@ namespace dexih.transforms
                 pos++;
             }
 
-            //set the values for the lookup
-            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
-            
             // create a select query with filters set to the values of the current row
-            var selectQuery = new SelectQuery();
-            selectQuery.Filters = Mappings.OfType<MapJoin>().Select(c => new Filter()
+            var selectQuery = new SelectQuery
             {
-                Column1 = c.JoinColumn,
-                CompareDataType = ETypeCode.String,
-                Operator = Filter.ECompare.IsEqual,
-                Value2 = c.GetOutputValue()
-            }).ToList();
-            
+                Filters = Mappings.OfType<MapJoin>().Select(c => new Filter()
+                {
+                    Column1 = c.JoinColumn,
+                    CompareDataType = ETypeCode.String,
+                    Operator = Filter.ECompare.IsEqual,
+                    Value2 = c.GetOutputValue()
+                }).ToList()
+            };
+
             var lookupResult = await ReferenceTransform.Lookup(selectQuery, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
             if (lookupResult != null)
             {
                 _lookupCache = lookupResult.GetEnumerator();
 
-                if (_lookupCache.MoveNext())
+                var lookupFound = false;
+                while (_lookupCache.MoveNext())
                 {
                     var lookup = _lookupCache.Current;
+
+                    //set the values for the lookup
+                    var validRow = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup);
+                    if(!validRow) continue;
+
+                    lookupFound = true;
+
                     for (var i = 0; i < _referenceFieldCount; i++)
                     {
                         newRow[pos] = lookup[i];
                         pos++;
                     }
                 }
-                else
+                if(!lookupFound)
                 {
                     _lookupCache = null;
                 }

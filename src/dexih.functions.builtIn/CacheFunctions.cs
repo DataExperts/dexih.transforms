@@ -12,5 +12,14 @@ namespace dexih.functions.BuiltIn
             cacheValue = value;
             return returnValue;
         }
+
+        private long _rowNumber = 1;
+        
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Caching", Name = "Row Number",
+            Description = "Returns the current row number")]
+        public long RowNumber()
+        {
+            return _rowNumber++;
+        }
     }
 }
