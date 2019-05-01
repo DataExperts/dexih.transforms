@@ -132,11 +132,11 @@ namespace dexih.transforms.File
                 }
                 else if (value.Value.Type == JTokenType.Array)
                 {
-                    col.DataType = DataType.ETypeCode.Node;
                     col.Description = "Json arrays values at " + value.Path + " path";
                     
                     if (currentLevel < maxLevels)
                     {
+                        col.DataType = DataType.ETypeCode.Node;
                         var children = value.Value.Children();
 
                         if (children.Any())
@@ -152,6 +152,10 @@ namespace dexih.transforms.File
                             
                             col.ChildColumns = new TableColumns(columns);
                         }
+                    }
+                    else
+                    {
+                        col.DataType = DataType.ETypeCode.Json;
                     }
 
                     return new [] {col};

@@ -140,7 +140,12 @@ namespace dexih.transforms.Mapping
                 return InputValue;
             }
 
-            return row == null ? _row[_column1Ordinal] : row[_column1Ordinal];
+            if (_row == null && row == null)
+            {
+                return null;
+            }
+
+            return row?[_column1Ordinal]??_row[_column1Ordinal];
         }
 
         public override string Description()

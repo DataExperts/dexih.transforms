@@ -18,7 +18,7 @@ namespace dexih.connections.test
         private async Task<Transform> GetReader()
         {
             var stream = System.IO.File.OpenRead("Data/transactions.json");
-            var table = new WebService() { Name = "transactions"};
+            var table = new WebService() { Name = "transactions", MaxImportLevels = 5};
 
             var handler = new FileHandlerJson(table, null);
             var columns = (await handler.GetSourceColumns(stream)).ToArray();
@@ -41,10 +41,9 @@ namespace dexih.connections.test
                 : TableColumn.EDeltaType.AutoIncrement;
 
             var transactionType = useTransaction
-                ? transforms.TransformWriterTarget.ETransformWriterMethod.Transaction
-                : transforms.TransformWriterTarget.ETransformWriterMethod.Bulk;
-                
-            
+                ? TransformWriterTarget.ETransformWriterMethod.Transaction
+                : TransformWriterTarget.ETransformWriterMethod.Bulk;
+
             await connection.CreateDatabase(databaseName, CancellationToken.None);
             
             var transactionTable = new Table("transaction");
@@ -62,8 +61,8 @@ namespace dexih.connections.test
 
             // add two target tables
             var transactionOptions = new TransformWriterOptions() {TargetAction = TransformWriterOptions.ETargetAction.DropCreate};
-            var targets = new transforms.TransformWriterTarget(connection, transactionTable, null, transactionOptions);
-            targets.Add(new transforms.TransformWriterTarget(connection, componentTable, new TransformWriterResult(), transactionOptions), new[] {"items"});
+            var targets = new TransformWriterTarget(connection, transactionTable, null, transactionOptions);
+            targets.Add(new TransformWriterTarget(connection, componentTable, new TransformWriterResult(), transactionOptions), new[] {"items"});
             
             await targets.WriteRecordsAsync(reader, updateStrategy, transactionType, CancellationToken.None);
 

@@ -98,6 +98,9 @@ namespace dexih.transforms
                 newRow[pos] = PrimaryTransform[i];
                 pos++;
             }
+            
+            //set the values for the lookup
+            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
 
             // create a select query with filters set to the values of the current row
             var selectQuery = new SelectQuery
