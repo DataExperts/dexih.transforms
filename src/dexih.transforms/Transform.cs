@@ -645,21 +645,23 @@ namespace dexih.transforms
                 if (!column.IsParent && column.DataType == ETypeCode.Node)
                 {
                     if (row[i] == null) continue;
-                    
-                    var transform = (Transform) row[i];
 
-                    if (transform is TransformNode transformNode)
+                    switch (row[i])
                     {
-                        transformNode.SetParentTable(CacheTable);
-                        transformNode.SetParentRow(row);
-                    }
-                    else
-                    {
-                        var newNode = new TransformNode {PrimaryTransform = transform};
-                        newNode.SetTable(transform.CacheTable, CacheTable);
-                        newNode.SetParentRow(row);
-                        newNode.Open().Wait();
-                        row[i] = newNode;
+                        case TransformNode transformNode:
+                            transformNode.SetParentTable(CacheTable);
+                            transformNode.SetParentRow(row);
+                            break;
+                        case Transform transform:
+                            var newNode = new TransformNode {PrimaryTransform = transform};
+                            newNode.SetTable(transform.CacheTable, CacheTable);
+                            newNode.SetParentRow(row);
+                            newNode.Open().Wait();
+                            row[i] = newNode;
+                            break;
+                        default:
+                            throw new TransformException(
+                                $"There was an issue resetting.  The column {CacheTable.Columns[i].Name} was expected to be a node, however was {row[i].GetType()}");
                     }
                 }
             }
@@ -1100,29 +1102,49 @@ namespace dexih.transforms
 //            return null;
         }
 
-        public async Task<JObject> LookupJson(SelectQuery query, EDuplicateStrategy duplicateStrategy,
-            CancellationToken cancellationToken = default)
+        public async Task<JObject> LookupJson(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken = default)
         {
             var rows = await Lookup(query, duplicateStrategy, cancellationToken);
 
             var jObject = new JObject();
+            var jArray = await LookupJsonArray(query, duplicateStrategy, cancellationToken);
+            jObject.Add("Success", true);
+            jObject.Add(new JProperty("Data", jArray));
+            return jObject;
+        }
+        
+        private async Task<JArray> LookupJsonArray(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken = default)
+        {
+            var rows = await Lookup(query, duplicateStrategy, cancellationToken);
+
             var jArray = new JArray();
 
             foreach (var row in rows)
             {
                 var jRow = new JObject();
-                foreach (var column in CacheTable.Columns)
+                foreach (var column in CacheTable.Columns.Where(c => !c.IsParent))
                 {
-                    jRow.Add(column.Name, JToken.FromObject(row[GetOrdinal(column.Name)]));
+                    var value = row[GetOrdinal(column.Name)];
+                    if (value is Transform transform)
+                    {
+                        jRow.Add(column.Name, await transform.LookupJsonArray(new SelectQuery(), TransformDelta.EDuplicateStrategy.All, cancellationToken));
+                    }
+                    else
+                    {
+                        if (value != null)
+                        {
+                            jRow.Add(column.Name, JToken.FromObject(value));
+                        }
+                    }
                 }
 
                 jArray.Add(jRow);
             }
 
-            jObject.Add("Success", true);
-            jObject.Add(new JProperty("Data", jArray));
-            return jObject;
+            return jArray;
         }
+
+
 
         /// <summary>
         /// Recurses through the transforms to the primary transform, and sets the lookup filters.
@@ -1136,7 +1158,7 @@ namespace dexih.transforms
             AuditKey = auditKey;
             if (!IsOpen)
             {
-                Reset();
+                Reset(false, false);
                 await Open(auditKey, query, cancellationToken);
             }
 

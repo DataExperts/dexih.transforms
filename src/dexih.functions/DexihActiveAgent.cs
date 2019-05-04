@@ -15,5 +15,10 @@
         public EDataPrivacyStatus DataPrivacyStatus { get; set; }
         public DownloadUrl[] DownloadUrls { get; set; }
         
+        public bool UpgradeAvailable { get; set; }
+        public string Version { get; set; }
+        public string LatestVersion { get; set; }
+        public string LatestDownloadUrl { get; set; }
+
     }
 }

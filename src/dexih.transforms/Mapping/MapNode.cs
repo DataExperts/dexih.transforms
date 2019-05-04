@@ -57,7 +57,7 @@ namespace dexih.transforms.Mapping
             await Transform.Open(0, null, cancellationToken);
             Transform.SetParentRow(row);
             
-            OutputTransform?.Reset(false);
+            OutputTransform?.Reset(false, false);
 
             if (OutputTransform == null)
             {

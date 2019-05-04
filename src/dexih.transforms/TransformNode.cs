@@ -103,6 +103,7 @@ namespace dexih.transforms
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             // BuildCacheTable();
+            
             if (PrimaryTransform.BaseFieldCount > FieldCount)
             {
                 throw new TransformException("Issue");
@@ -119,7 +120,7 @@ namespace dexih.transforms
 
             for (var i = 0; i < PrimaryTransform.BaseFieldCount; i++)
             {
-                row[pos++] = PrimaryTransform[i];
+                row[pos++] = PrimaryTransform[_primaryTable[i]];
             }
 
             if (_parentRow != null)

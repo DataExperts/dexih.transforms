@@ -1,107 +1,163 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/.ftok" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/adm/db2trc" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bin/db2cli" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bin/db2level" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bnd/db2ajgrt.bnd" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bnd/db2cli.bnd" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bnd/db2cli.lst" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bnd/db2clipk.bnd" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bnd/db2clist.bnd" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/bnd/db2spcdb.bnd" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/cfg/db2dsdriver.cfg.sample" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/cfg/db2dsdriver.xsd" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/cfg/DigiCertGlobalRootCA.arm" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/cfgcache/conlic.bin" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/04370923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/08500923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/08501252.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/08600923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/08630923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09230437.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09230850.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09230860.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09231043.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09231051.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09231114.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09231208.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09231252.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09231275.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09241252.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/09370950.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/10430923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/10510923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/11140923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/12080923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/12520850.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/12520923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/12750923.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/1388ucs2.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/IBM00850.ucs" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/IBM00923.ucs" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/alt/IBM01252.ucs" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/0930ucs2.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/0939ucs2.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/0943ucs2.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/0954ucs2.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/5039ucs2.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/conv/ms/ucs20943.cnv" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/db2dump/db2diag.log" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/ICCSIG.txt" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/libicclib082.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/libicclib084.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/S/ICCSIG.txt" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/S/libicclib082.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/icclib/S/libicclib084.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/osslib/libcryptoIBM082.1.0.1.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/c/icc/osslib/S/libcryptoIBM082.1.0.1.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/libgsk8cms.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/libgsk8dbfl.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/libgsk8iccs.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/libgsk8kicc.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/libgsk8km.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/libgsk8ssl.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/libgsk8sys.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/libgsk8valn.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/n/icc/icclib/ICCSIG.txt" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/n/icc/icclib/libicclib083.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/n/icc/icclib/libicclib085.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/n/icc/icclib/S/ICCSIG.txt" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/n/icc/icclib/S/libicclib083.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/n/icc/icclib/S/libicclib085.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/n/icc/osslib/libcryptoIBM083.1.0.1.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/icc/n/icc/osslib/S/libcryptoIBM083.1.0.1.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/libdb2.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/libdb2clixml4c.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/lib/libDB2xml4c.58.0.dylib" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/license/odbc_notices.txt" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/license/odbc_REDIST.txt" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/license/UNIX/odbc_LI_en" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2adm.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2admh.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2caem.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2cklog.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2cli.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2clia1.lst" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2clias.lst" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2clit.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2clp.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2clp2.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2fodc.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2sql.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2sqlh.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2stt.mo" t="Include" />
-    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2supp.mo" t="Include" />
+    <e p="$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver" t="Include">
+      <e p=".ftok" t="Include" />
+      <e p="adm" t="Include">
+        <e p="db2trc" t="Include" />
+      </e>
+      <e p="bin" t="Include">
+        <e p="db2cli" t="Include" />
+        <e p="db2level" t="Include" />
+      </e>
+      <e p="bnd" t="Include">
+        <e p="db2ajgrt.bnd" t="Include" />
+        <e p="db2cli.bnd" t="Include" />
+        <e p="db2cli.lst" t="Include" />
+        <e p="db2clipk.bnd" t="Include" />
+        <e p="db2clist.bnd" t="Include" />
+        <e p="db2spcdb.bnd" t="Include" />
+      </e>
+      <e p="cfg" t="Include">
+        <e p="db2dsdriver.cfg.sample" t="Include" />
+        <e p="db2dsdriver.xsd" t="Include" />
+        <e p="DigiCertGlobalRootCA.arm" t="Include" />
+      </e>
+      <e p="cfgcache" t="Include">
+        <e p="conlic.bin" t="Include" />
+      </e>
+      <e p="conv" t="Include">
+        <e p="alt" t="Include">
+          <e p="04370923.cnv" t="Include" />
+          <e p="08500923.cnv" t="Include" />
+          <e p="08501252.cnv" t="Include" />
+          <e p="08600923.cnv" t="Include" />
+          <e p="08630923.cnv" t="Include" />
+          <e p="09230437.cnv" t="Include" />
+          <e p="09230850.cnv" t="Include" />
+          <e p="09230860.cnv" t="Include" />
+          <e p="09231043.cnv" t="Include" />
+          <e p="09231051.cnv" t="Include" />
+          <e p="09231114.cnv" t="Include" />
+          <e p="09231208.cnv" t="Include" />
+          <e p="09231252.cnv" t="Include" />
+          <e p="09231275.cnv" t="Include" />
+          <e p="09241252.cnv" t="Include" />
+          <e p="09370950.cnv" t="Include" />
+          <e p="10430923.cnv" t="Include" />
+          <e p="10510923.cnv" t="Include" />
+          <e p="11140923.cnv" t="Include" />
+          <e p="12080923.cnv" t="Include" />
+          <e p="12520850.cnv" t="Include" />
+          <e p="12520923.cnv" t="Include" />
+          <e p="12750923.cnv" t="Include" />
+          <e p="1388ucs2.cnv" t="Include" />
+          <e p="IBM00850.ucs" t="Include" />
+          <e p="IBM00923.ucs" t="Include" />
+          <e p="IBM01252.ucs" t="Include" />
+        </e>
+        <e p="ms" t="Include">
+          <e p="0930ucs2.cnv" t="Include" />
+          <e p="0939ucs2.cnv" t="Include" />
+          <e p="0943ucs2.cnv" t="Include" />
+          <e p="0954ucs2.cnv" t="Include" />
+          <e p="5039ucs2.cnv" t="Include" />
+          <e p="ucs20943.cnv" t="Include" />
+        </e>
+      </e>
+      <e p="db2dump" t="Include">
+        <e p="db2diag.log" t="Include" />
+      </e>
+      <e p="lib" t="Include">
+        <e p="icc" t="Include">
+          <e p="c" t="Include">
+            <e p="icc" t="Include">
+              <e p="icclib" t="Include">
+                <e p="ICCSIG.txt" t="Include" />
+                <e p="libicclib082.dylib" t="Include" />
+                <e p="libicclib084.dylib" t="Include" />
+                <e p="S" t="Include">
+                  <e p="ICCSIG.txt" t="Include" />
+                  <e p="libicclib082.dylib" t="Include" />
+                  <e p="libicclib084.dylib" t="Include" />
+                </e>
+              </e>
+              <e p="osslib" t="Include">
+                <e p="libcryptoIBM082.1.0.1.dylib" t="Include" />
+                <e p="S" t="Include">
+                  <e p="libcryptoIBM082.1.0.1.dylib" t="Include" />
+                </e>
+              </e>
+            </e>
+          </e>
+          <e p="libgsk8cms.dylib" t="Include" />
+          <e p="libgsk8dbfl.dylib" t="Include" />
+          <e p="libgsk8iccs.dylib" t="Include" />
+          <e p="libgsk8kicc.dylib" t="Include" />
+          <e p="libgsk8km.dylib" t="Include" />
+          <e p="libgsk8ssl.dylib" t="Include" />
+          <e p="libgsk8sys.dylib" t="Include" />
+          <e p="libgsk8valn.dylib" t="Include" />
+          <e p="n" t="Include">
+            <e p="icc" t="Include">
+              <e p="icclib" t="Include">
+                <e p="ICCSIG.txt" t="Include" />
+                <e p="libicclib083.dylib" t="Include" />
+                <e p="libicclib085.dylib" t="Include" />
+                <e p="S" t="Include">
+                  <e p="ICCSIG.txt" t="Include" />
+                  <e p="libicclib083.dylib" t="Include" />
+                  <e p="libicclib085.dylib" t="Include" />
+                </e>
+              </e>
+              <e p="osslib" t="Include">
+                <e p="libcryptoIBM083.1.0.1.dylib" t="Include" />
+                <e p="S" t="Include">
+                  <e p="libcryptoIBM083.1.0.1.dylib" t="Include" />
+                </e>
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="libdb2.dylib" t="Include" />
+        <e p="libdb2clixml4c.dylib" t="Include" />
+        <e p="libDB2xml4c.58.0.dylib" t="Include" />
+      </e>
+      <e p="license" t="Include">
+        <e p="odbc_notices.txt" t="Include" />
+        <e p="odbc_REDIST.txt" t="Include" />
+        <e p="UNIX" t="Include">
+          <e p="odbc_LI_en" t="Include" />
+        </e>
+      </e>
+      <e p="msg" t="Include">
+        <e p="en_US.iso88591" t="Include">
+          <e p="db2adm.mo" t="Include" />
+          <e p="db2admh.mo" t="Include" />
+          <e p="db2caem.mo" t="Include" />
+          <e p="db2cklog.mo" t="Include" />
+          <e p="db2cli.mo" t="Include" />
+          <e p="db2clia1.lst" t="Include" />
+          <e p="db2clias.lst" t="Include" />
+          <e p="db2clit.mo" t="Include" />
+          <e p="db2clp.mo" t="Include" />
+          <e p="db2clp2.mo" t="Include" />
+          <e p="db2fodc.mo" t="Include" />
+          <e p="db2sql.mo" t="Include" />
+          <e p="db2sqlh.mo" t="Include" />
+          <e p="db2stt.mo" t="Include" />
+          <e p="db2supp.mo" t="Include" />
+        </e>
+      </e>
+    </e>
     <e p="$USER_HOME$/.nuget/packages/microsoft.net.test.sdk/16.0.1/build/netcoreapp1.0" t="Include">
       <e p="Microsoft.NET.Test.Sdk.Program.cs" t="Include" />
     </e>
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.reporters.netcoreapp10.dll" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll" t="Include" />
     <e p="$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll" t="Include" />
-    <e p="$USER_HOME$/Library/Caches/Rider2018.3/extResources" t="IncludeRecursive" />
-    <e p="$USER_HOME$/Library/Caches/Rider2018.3/resharper-host/local/Transient/ReSharperHost/v183/SolutionCaches/_dexih.transforms.-909103707.00" t="ExcludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/Rider2019.1/extResources" t="IncludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/Rider2019.1/resharper-host/local/Transient/ReSharperHost/v191/SolutionCaches/_dexih.transforms.-909103707.00" t="ExcludeRecursive" />
     <e p="$PROJECT_DIR$" t="IncludeFlat">
       <e p="dexih.transforms.sln" t="IncludeFlat" />
       <e p="ext" t="Include" />
@@ -151,48 +207,6 @@
         </e>
         <e p="dexih.connections.db2" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
-          <e p="clidriver" t="Include">
-            <e p="adm" t="Include" />
-            <e p="bin" t="Include" />
-            <e p="bnd" t="Include" />
-            <e p="cfg" t="Include" />
-            <e p="cfgcache" t="Include" />
-            <e p="conv" t="Include">
-              <e p="alt" t="Include" />
-              <e p="ms" t="Include" />
-            </e>
-            <e p="db2dump" t="Include" />
-            <e p="lib" t="Include">
-              <e p="icc" t="Include">
-                <e p="c" t="Include">
-                  <e p="icc" t="Include">
-                    <e p="icclib" t="Include">
-                      <e p="S" t="Include" />
-                    </e>
-                    <e p="osslib" t="Include">
-                      <e p="S" t="Include" />
-                    </e>
-                  </e>
-                </e>
-                <e p="n" t="Include">
-                  <e p="icc" t="Include">
-                    <e p="icclib" t="Include">
-                      <e p="S" t="Include" />
-                    </e>
-                    <e p="osslib" t="Include">
-                      <e p="S" t="Include" />
-                    </e>
-                  </e>
-                </e>
-              </e>
-            </e>
-            <e p="license" t="Include">
-              <e p="UNIX" t="Include" />
-            </e>
-            <e p="msg" t="Include">
-              <e p="en_US.iso88591" t="Include" />
-            </e>
-          </e>
           <e p="dexih.connections.db2.csproj" t="IncludeRecursive" />
           <e p="dexih.connections.sql.db2.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
@@ -480,6 +494,7 @@
             <e p="MapFunction.cs" t="Include" />
             <e p="MapGroup.cs" t="Include" />
             <e p="MapGroupNode.cs" t="Include" />
+            <e p="MapInputColumn.cs" t="Include" />
             <e p="MapJoin.cs" t="Include" />
             <e p="MapJoinNode.cs" t="Include" />
             <e p="MapNode.cs" t="Include" />
