@@ -323,6 +323,11 @@ namespace dexih.connections.sql
                     connectionString = ConnectionString;
                 else
                 {
+                    if (string.IsNullOrEmpty(Server))
+                    {
+                        throw new ConnectionException("There was no server name specified.");
+                    }
+                    
                     var hostport = Server.Split(':');
                     string port;
                     var host = hostport[0];
@@ -341,7 +346,11 @@ namespace dexih.connections.sql
 
                     if (!string.IsNullOrEmpty(DefaultDatabase))
                     {
-                        connectionString += "Database = " + DefaultDatabase;
+                        connectionString += "Database=" + DefaultDatabase;
+                    }
+                    else
+                    {
+                        connectionString += "Database=postgres";
                     }
                 }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using dexih.transforms.Exceptions;
 using Dexih.Utils.CopyProperties;
 
 
@@ -21,6 +22,11 @@ namespace dexih.transforms
         public static ConnectionReference GetConnection(string className, string assemblyName = null)
         {
             Type type = null;
+
+            if (string.IsNullOrEmpty(className))
+            {
+                throw new ConnectionException("There is no connection type specified.");
+            }
 
             if (string.IsNullOrEmpty(assemblyName))
             {
