@@ -38,7 +38,7 @@ namespace dexih.transforms.Mapping
             _outputOrdinal = table.Columns.Count - 1;
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             Count++;
             var value = _inputOrdinal == -1 ? InputColumn.DefaultValue : row[_inputOrdinal];
@@ -97,7 +97,7 @@ namespace dexih.transforms.Mapping
             return $"{Aggregate}({InputColumn?.Name} => {OutputColumn?.Name}";
         }
 
-        public override Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
+        public override Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
         {
             if (functionType == EFunctionType.Aggregate)
             {
@@ -128,7 +128,7 @@ namespace dexih.transforms.Mapping
             return Task.FromResult(false);
         }
 
-        public override Task<bool> ProcessFillerRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
+        public override Task<bool> ProcessFillerRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
         {
             if (functionType == EFunctionType.Aggregate)
             {

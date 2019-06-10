@@ -189,13 +189,16 @@ namespace dexih.functions.Parameter
                 }
                 else
                 {
-                    var returnType = returnValue.GetType();
-
-                    foreach (var parameter in ResultReturnParameters)
+                    if (returnValue != null)
                     {
-                        var property = returnType.GetProperty(parameter.Name);
-                        var value = property?.GetValue(returnValue);
-                        parameter.PopulateRowData(value, outputRow);
+                        var returnType = returnValue.GetType();
+
+                        foreach (var parameter in ResultReturnParameters)
+                        {
+                            var property = returnType.GetProperty(parameter.Name);
+                            var value = property?.GetValue(returnValue);
+                            parameter.PopulateRowData(value, outputRow);
+                        }
                     }
                 }
             }

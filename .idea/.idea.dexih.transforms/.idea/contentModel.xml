@@ -876,6 +876,21 @@
       </e>
       <e p="PropertyStructure.cs" t="Include" />
     </e>
+    <e p="$PROJECT_DIR$/../dexih.utils.datatype/src/dexih.utils.datatype" t="IncludeRecursive">
+      <e p="AvailableDataTypes.cs" t="Include" />
+      <e p="bin" t="ExcludeRecursive" />
+      <e p="DataType.cs" t="Include" />
+      <e p="DataTypeExceptions.cs" t="Include" />
+      <e p="Dexih.Utils.DataType.csproj" t="IncludeRecursive" />
+      <e p="obj" t="ExcludeRecursive">
+        <e p="Debug" t="Include">
+          <e p="netstandard2.0" t="Include">
+            <e p="Dexih.Utils.DataType.AssemblyInfo.cs" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="Operations.cs" t="Include" />
+    </e>
   </component>
   <component name="RiderRiderContentModelStore">
     <excludedPaths />

@@ -1,6 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Query;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -8,9 +10,8 @@ namespace dexih.transforms
     /// <summary>
     /// This reader can be used to convert any data into datatypes supported by a target connection.
     /// </summary>
-    public sealed class ReaderConvertDataTypes: Transform
+    public class ReaderConvertDataTypes: Transform
     {
-        private Transform _transform;
         private Connection _connection;
 
         private int _operationOrdinal;
@@ -22,48 +23,61 @@ namespace dexih.transforms
         /// <param name="transform">The inbound transform</param>
         public ReaderConvertDataTypes(Connection connection, Transform transform)
         {
-            _transform = transform;
+            PrimaryTransform = transform;
             _connection = connection;
-            CacheTable = _transform.CacheTable;
-
+            CacheTable = PrimaryTransform.CacheTable.Copy();
             _operationOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+
+            foreach (var column in CacheTable.Columns)
+            {
+                if (column.Rank > 0 && !connection.CanUseArray || column.DataType == DataType.ETypeCode.Node)
+                {
+                    column.Rank = 0;
+                    column.DataType = DataType.ETypeCode.String;
+                }
+            }
+
+            IsOpen = PrimaryTransform.IsOpen;
         }
 
-        public override bool IsClosed => _transform.IsClosed;
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        {
+            return PrimaryTransform?.Open(auditKey, selectQuery, cancellationToken) ?? Task.FromResult(false);
+        }
 
         public override string TransformName { get; } = "Data Type Converter";
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
         public override bool ResetTransform()
         {
-            return _transform.ResetTransform();
+            return PrimaryTransform.ResetTransform();
         }
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
-            if(await _transform.ReadAsync(cancellationToken) == false)
+            if(await PrimaryTransform.ReadAsync(cancellationToken) == false)
             {
                 return null;
             }
 
             if (_operationOrdinal >= 0)
             {
-                if (Equals(_transform[_operationOrdinal],'T'))
+                if (Equals(PrimaryTransform[_operationOrdinal],'T'))
                 {
-                    return _transform.CurrentRow;
+                    return PrimaryTransform.CurrentRow;
                 }
             }
 
-            var row = new object[_transform.FieldCount];
-            for(var i = 0; i < _transform.FieldCount; i++)
+            var row = new object[PrimaryTransform.FieldCount];
+            for(var i = 0; i < PrimaryTransform.FieldCount; i++)
             {
                 if (CacheTable.Columns[i].DeltaType == TableColumn.EDeltaType.DatabaseOperation)
                 {
-                    row[i] = _transform[i];
+                    row[i] = PrimaryTransform[i];
                     continue;
                 } 
 
-                row[i] = _connection.ConvertForWrite(CacheTable.Columns[i], _transform[i]);
+                row[i] = _connection.ConvertForWrite(CacheTable.Columns[i], PrimaryTransform[i]);
             }
 
             return row;

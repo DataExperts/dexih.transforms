@@ -184,14 +184,14 @@ namespace dexih.transforms
                         if (_seriesValue == null)
                         {
                             await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
-                                PrimaryTransform.CurrentRow);
+                                PrimaryTransform.CurrentRow, null, cancellationToken);
                             _seriesValue = nextSeriesValue;
                         }
                         else if (Equals(nextSeriesValue, _seriesValue))
                         {
                             //create a cached current row.  this will be output when the group has changed.
                             await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
-                                PrimaryTransform.CurrentRow);
+                                PrimaryTransform.CurrentRow, null, cancellationToken);
                             var cacheRow = new object[outputRow.Length];
                             Mappings.MapOutputRow(cacheRow);
                             _seriesValue = nextSeriesValue;
@@ -200,12 +200,12 @@ namespace dexih.transforms
                         {
                             var cacheRow = new object[outputRow.Length];
                             Mappings.MapOutputRow(cacheRow);
-                            await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate);
+                            await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
                             Mappings.Reset(EFunctionType.Aggregate);
                             _cachedRows.Enqueue(cacheRow);
 
                             await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
-                                PrimaryTransform.CurrentRow);
+                                PrimaryTransform.CurrentRow, null, cancellationToken);
                             _seriesValue = nextSeriesValue;
                         }
                     }
@@ -259,7 +259,7 @@ namespace dexih.transforms
                             if (compareResult == 0)
                             {
                                 await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
-                                    PrimaryTransform.CurrentRow);
+                                    PrimaryTransform.CurrentRow, null, cancellationToken);
                                 var cacheRow = new object[outputRow.Length];
                                 Mappings.MapOutputRow(cacheRow);
                                 break;
@@ -269,7 +269,7 @@ namespace dexih.transforms
                             {
                                 var cacheRow = new object[outputRow.Length];
                                 Mappings.MapOutputRow(cacheRow);
-                                await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate);
+                                await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
                                 Mappings.Reset(EFunctionType.Aggregate);
                                 _cachedRows.Enqueue(cacheRow);
                                 startFilling = true;
@@ -280,10 +280,10 @@ namespace dexih.transforms
                                 var fillerRow = new object[PrimaryTransform.FieldCount];
                                 Mappings.CreateFillerRow(PrimaryTransform.CurrentRow, fillerRow, _seriesValue);
                                 await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = _seriesValue},
-                                    fillerRow);
+                                    fillerRow, null, cancellationToken);
                                 var cacheRow = new object[outputRow.Length];
                                 Mappings.MapOutputRow(cacheRow);
-                                await Mappings.ProcessFillerRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate);
+                                await Mappings.ProcessFillerRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
                                 _cachedRows.Enqueue(cacheRow);
                             }
 
@@ -300,7 +300,7 @@ namespace dexih.transforms
                 // when group has changed
                 else
                 {
-                    outputRow = await ProcessGroupChange(outputRow);
+                    outputRow = await ProcessGroupChange(outputRow, cancellationToken);
 
                     //store the last groupvalues read to start the next grouping.
                     _groupValues = nextGroupValues;
@@ -324,7 +324,7 @@ namespace dexih.transforms
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
-                outputRow = await ProcessGroupChange(outputRow);
+                outputRow = await ProcessGroupChange(outputRow, cancellationToken);
 
                 _lastRecord = true;
             }
@@ -334,7 +334,7 @@ namespace dexih.transforms
 
         }
 
-        private async Task<object[]> ProcessGroupChange(object[] outputRow)
+        private async Task<object[]> ProcessGroupChange(object[] outputRow, CancellationToken cancellationToken)
         {
             // if the group has changed, update all cached rows with aggregate functions.
             if (_cachedRows != null)
@@ -342,7 +342,7 @@ namespace dexih.transforms
                 //create a cached current row.  this will be output when the group has changed.
                 var cacheRow = new object[outputRow.Length];
                 Mappings.MapOutputRow(cacheRow);
-                await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate);
+                await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
                 _cachedRows.Enqueue(cacheRow);
 
                 // fill any remaining rows.
@@ -358,7 +358,7 @@ namespace dexih.transforms
                         // if the series is not greater then create a dummy one, and continue the loop
                         var fillerRow = new object[PrimaryTransform.FieldCount];
                         Mappings.CreateFillerRow(PrimaryTransform.CurrentRow, fillerRow, _seriesValue);
-                        await Mappings.ProcessInputData(new FunctionVariables() { SeriesValue = _seriesValue, Forecast = true}, fillerRow);
+                        await Mappings.ProcessInputData(new FunctionVariables() { SeriesValue = _seriesValue, Forecast = true}, fillerRow, null, cancellationToken);
 
                         var cacheRow1 = new object[outputRow.Length];
                         Mappings.MapOutputRow(cacheRow1);
@@ -374,7 +374,7 @@ namespace dexih.transforms
                 var cacheIndex = 0;
                 foreach (var row in _cachedRows)
                 {
-                    await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = cacheIndex++}, row, EFunctionType.Series);
+                    await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = cacheIndex++}, row, EFunctionType.Series, cancellationToken);
                 }
                 
                 outputRow = _cachedRows.Dequeue();

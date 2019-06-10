@@ -63,7 +63,7 @@ namespace dexih.transforms
             while(_lookupCache != null && _lookupCache.MoveNext())
             {
                 var lookup = _lookupCache.Current;
-                var validRow = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup);
+                var validRow = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup, cancellationToken);
                 if(!validRow) continue;
 
                 newRow = new object[FieldCount];
@@ -100,7 +100,7 @@ namespace dexih.transforms
             }
             
             //set the values for the lookup
-            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
 
             // create a select query with filters set to the values of the current row
             var selectQuery = new SelectQuery
@@ -125,7 +125,7 @@ namespace dexih.transforms
                     var lookup = _lookupCache.Current;
 
                     //set the values for the lookup
-                    var validRow = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup);
+                    var validRow = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup, cancellationToken);
                     if(!validRow) continue;
 
                     lookupFound = true;

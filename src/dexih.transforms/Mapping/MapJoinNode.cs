@@ -41,7 +41,7 @@ namespace dexih.transforms.Mapping
         }
 
         public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row,
-            object[] joinRow = null, CancellationToken cancellationToken = default)
+            object[] joinRow, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }

@@ -7,7 +7,6 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.File;
-using dexih.transforms.tests;
 using Dexih.Utils.DataType;
 using Xunit;
 

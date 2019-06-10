@@ -21,12 +21,23 @@ namespace dexih.functions
         Execute
     }
 
+    public enum EParameterClass
+    {
+	    Variable,
+	    Enum,
+	    EnumArray,
+	    Cancellation,
+	    Value
+    }
+
 	public class TransformParameter
 	{
 		public string Name { get; set; }
 		public bool IsOut { get; set; }
 		public Type ParameterType { get; set; }
 		public TransformFunctionVariableAttribute Variable { get; set; }
+
+		public EParameterClass ParameterClass { get; set; }
 	}
 
 	/// <summary>
@@ -37,6 +48,7 @@ namespace dexih.functions
 		public MethodInfo MethodInfo { get; set; }
 		public TransformParameter[] ParameterInfo { get; set; }
 		public bool IsAsync { get; set; }
+		
 
 		public TransformMethod(MethodInfo methodInfo, Type genericType = null)
 		{
@@ -48,13 +60,40 @@ namespace dexih.functions
             {
                 MethodInfo = methodInfo;
             }
-
-			ParameterInfo = methodInfo.GetParameters().Select(p => new TransformParameter()
+            
+			ParameterInfo = methodInfo.GetParameters().Select(p =>
 			{
-				Name =  p.Name,
-				IsOut = p.IsOut,
-				ParameterType = p.ParameterType,
-				Variable = p.GetCustomAttribute<TransformFunctionVariableAttribute>()
+				var variable = p.GetCustomAttribute<TransformFunctionVariableAttribute>();
+				EParameterClass parameterClass;
+				if (variable != null)
+				{
+					parameterClass = EParameterClass.Variable;
+				} 
+				else if (p.ParameterType.IsEnum)
+				{
+					parameterClass = EParameterClass.Enum;
+				} 
+				else if(p.ParameterType.IsArray && p.ParameterType.GetElementType().IsEnum)
+				{
+					parameterClass = EParameterClass.EnumArray;
+				} 
+				else if (p.ParameterType.IsAssignableFrom(typeof(CancellationToken)))
+				{
+					parameterClass = EParameterClass.Cancellation;
+				}
+				else
+				{
+					parameterClass = EParameterClass.Value;
+				}
+
+				return new TransformParameter()
+				{
+					Name = p.Name,
+					IsOut = p.IsOut,
+					ParameterType = p.ParameterType,
+					Variable = variable,
+					ParameterClass = parameterClass
+				};
 			}).ToArray();
 
 			var asyncAttribute = (AsyncStateMachineAttribute)methodInfo.GetCustomAttribute(typeof(AsyncStateMachineAttribute));
@@ -259,10 +298,11 @@ namespace dexih.functions
 		{
 		}
 
-		private (object[] parameters, int outputPos) SetParameters(TransformParameter[] functionParameters, FunctionVariables functionVariables, object[] inputParameters)
+		private (object[] parameters, int outputPos) SetParameters(TransformParameter[] functionParameters, FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken = default)
 		{
 			var parameters = new object[functionParameters.Length];
 			var outputPos = -1;
+			
 
 			var inputPosition = 0;
 			var pos = 0;
@@ -279,13 +319,14 @@ namespace dexih.functions
 					pos++;
 					continue;
 				}
-				
-				var variable = functionParameters[pos].Variable;
-				
-				if (variable is null)
+
+				switch (parameter.ParameterClass)
 				{
-					if (functionParameters[pos].ParameterType.IsEnum)
-					{
+					case EParameterClass.Variable:
+						var variable = functionParameters[pos].Variable;
+						parameters[pos++] = functionVariables.GetVariable(variable.FunctionParameter);
+						break;
+					case EParameterClass.Enum:
 						if (inputParameters[inputPosition] is string stringValue)
 						{
 							parameters[pos] = Enum.Parse(functionParameters[pos].ParameterType, stringValue);
@@ -294,78 +335,97 @@ namespace dexih.functions
 						{
 							parameters[pos] = inputParameters[inputPosition];
 						}
-					}
-					else
-					{
-//						if (inputParameters[inputPosition] is DataValue dataValue)
-//						{
-//							parameters[pos] = dataValue.Value;
-//						}
-//						else
-//						{
-							parameters[pos] = inputParameters[inputPosition];
-//						}
-					}
+						pos++;
+						inputPosition++;
 
-					pos++;
-					inputPosition++;
-				}
-				else
-				{
-					parameters[pos++] = functionVariables.GetVariable(variable.FunctionParameter);
+						break;
+					case EParameterClass.EnumArray:
+						var enumType = functionParameters[pos].ParameterType.GetElementType();
+						var array = (Array)inputParameters[inputPosition];
+						var newArray = Array.CreateInstance(enumType, array.Length);
+
+						var i = 0;
+						foreach (var item in array)
+						{
+							if (item is string stringValue2)
+							{
+								newArray.SetValue(Enum.Parse(enumType, stringValue2), i);
+							}
+							else
+							{
+								newArray.SetValue(item, i);
+							}
+
+							i++;
+						}
+
+						parameters[pos] = newArray;
+						
+
+						break;
+					case EParameterClass.Cancellation:
+						parameters[pos] = cancellationToken;
+						pos++;
+						break;
+					case EParameterClass.Value:
+						parameters[pos] = inputParameters[inputPosition];
+						pos++;
+						inputPosition++;
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
 				}
 			}
 
 			return (parameters, outputPos);
 		}
 
-		public object RunFunction(object[] inputParameters)
+		public object RunFunction(object[] inputParameters, CancellationToken cancellationToken)
 		{
-			return RunFunction(new FunctionVariables(), inputParameters, out _);
+			return RunFunction(new FunctionVariables(), inputParameters, out _, cancellationToken);
 		}
 
-		public object RunFunction(object[] inputParameters, out object[] outputs)
+		public object RunFunction(object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
-			return RunFunction(new FunctionVariables(), inputParameters, out outputs);
+			return RunFunction(new FunctionVariables(), inputParameters, out outputs, cancellationToken);
 		}
 
 
-		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters)
+		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
-			return RunFunction(functionVariables, inputParameters, out _);
+			return RunFunction(functionVariables, inputParameters, out _, cancellationToken);
 		}
 		
-		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
-			return Invoke(FunctionMethod, functionVariables, inputParameters, out outputs);
+			return Invoke(FunctionMethod, functionVariables, inputParameters, out outputs, cancellationToken);
 		}
 
-		public object RunResult(object[] inputParameters, out object[] outputs)
+		public object RunResult(object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
-			return Invoke(ResultMethod, new FunctionVariables(), inputParameters, out outputs);
+			return Invoke(ResultMethod, new FunctionVariables(), inputParameters, out outputs, cancellationToken);
 		}
 		
-		public object RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		public object RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
-			return Invoke(ResultMethod, functionVariables, inputParameters, out outputs);
+			return Invoke(ResultMethod, functionVariables, inputParameters, out outputs, cancellationToken);
 		}
 		
-		public Task<object> RunFunctionAsync(FunctionVariables functionVariables, object[] inputParameters)
+		public Task<object> RunFunctionAsync(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
-			return InvokeAsync(FunctionMethod, functionVariables, inputParameters);
+			return InvokeAsync(FunctionMethod, functionVariables, inputParameters, cancellationToken);
 		}
 
-		public Task<object> RunResultAsync(FunctionVariables functionVariables, object[] inputParameters)
+		public Task<object> RunResultAsync(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
-			return InvokeAsync(ResultMethod, functionVariables, inputParameters);
+			return InvokeAsync(ResultMethod, functionVariables, inputParameters, cancellationToken);
 		}
 
-		private async Task<object> InvokeAsync(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters)
+		private async Task<object> InvokeAsync(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
 			try
 			{
-				var (parameters, outputPos) =
-					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
+				var (parameters, outputPos) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
 				var task = (Task) methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
 				await task.ConfigureAwait(false);
 				var resultProperty = task.GetType().GetProperty("Result");
@@ -389,12 +449,12 @@ namespace dexih.functions
 			}
 		}
 
-		private object Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs)
+		private object Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
 			try
 			{
 				var (parameters, outputPos) =
-					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters);
+					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
 
 				var returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
 				_returnValue = returnValue;

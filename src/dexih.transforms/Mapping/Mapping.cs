@@ -37,13 +37,14 @@ namespace dexih.transforms.Mapping
         /// <param name="row"></param>
         /// <param name="joinRow"></param>
         /// <returns>0 filters or joins match, -1 row less than joinRow, 1 row greater than joinRow--></returns>
-        public abstract Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default);
+        public abstract Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken);
 
-        public Task<bool> ProcessInputRow(object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
+        public bool ProcessInputRow(object[] row, object[] joinRow = null)
         {
-            return ProcessInputRow(new FunctionVariables(), row, joinRow, cancellationToken);
+            return ProcessInputRow(new FunctionVariables(), row, joinRow, CancellationToken.None).Result;
         }
 
+        
         /// <summary>
         /// Gets the mapping result, and updates the row.
         /// </summary>
@@ -61,9 +62,14 @@ namespace dexih.transforms.Mapping
         /// <param name="row">The output row to populate</param>
         /// <param name="functionType"></param>
         /// <param name="cancellationToken"></param>
-        public virtual Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
+        public virtual Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
         {
             return Task.FromResult(false);
+        }
+
+        public bool ProcessResultRow(object[] row, EFunctionType functionType)
+        {
+            return ProcessResultRow(new FunctionVariables(), row, functionType, CancellationToken.None).Result;
         }
 
         /// <summary>
@@ -73,14 +79,14 @@ namespace dexih.transforms.Mapping
         /// <param name="row">The output row to populate</param>
         /// <param name="functionType"></param>
         /// <param name="cancellationToken"></param>
-        public virtual Task<bool> ProcessFillerRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
+        public virtual Task<bool> ProcessFillerRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
         {
             return Task.FromResult(false);
         }
 
-        public void ProcessResultRow(object[] row, EFunctionType functionType)
+        public void ProcessResultRow(object[] row, EFunctionType functionType, CancellationToken cancellationToken)
         {
-            ProcessResultRow(new FunctionVariables(), row, functionType);
+            ProcessResultRow(new FunctionVariables(), row, functionType, cancellationToken);
         }
 
         public virtual void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue) {}

@@ -36,22 +36,7 @@ namespace dexih.functions.ml
             _prediction = null;
         }
 
-        public string[] ImportModelLabels(byte[] clusteringModel)
-        {
-            if (clusteringModel == null)
-            {
-                throw new FunctionException("The clusteringModel is set to null, ensure that this is specified before selecting import.");
-            }
-            
-            var mlContext = new MLContext();
-            using (var stream = new MemoryStream(clusteringModel))
-            {
-                var mlModel = mlContext.Model.Load(stream, out var inputSchema);
-                var columns = inputSchema.Select(c => c.Name).Where(c=> c != "Label").ToArray();
-                
-                return columns;
-            }
-        }
+        public string[] ImportModelLabels(byte[] model) => Helpers.ImportModelLabels(model);
 
         public void AddData(string[] labels, float[] values)
         {
@@ -64,7 +49,7 @@ namespace dexih.functions.ml
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Clustering (K-Means) Analysis - Train", Description = "Builds a model using k-means clustering based on the training data.", ResultMethod = nameof(ClusteringKMeansTrainResult), ResetMethod = nameof(Reset))]
-        public void ClusteringKMeansTrain([TransformFunctionParameterTwin, ParameterLabel] string[] itemLabel, [TransformFunctionParameterTwin] float[] itemValue)
+        public void ClusteringKMeansTrain([TransformFunctionLinkedParameter("parameter"), ParameterLabel] string[] itemLabel, [TransformFunctionLinkedParameter("parameter")] float[] itemValue)
         {
             AddData(itemLabel, itemValue);
         }
@@ -78,7 +63,7 @@ namespace dexih.functions.ml
 
             var featuresColumnName = "Features";
             var pipeline = mlContext.Transforms
-                .Concatenate(featuresColumnName, _dynamicList.Labels)
+                .Concatenate(featuresColumnName, _dynamicList.Fields.Select(c=>c.Name).ToArray())
                 .Append(mlContext.Clustering.Trainers.KMeans(featuresColumnName, numberOfClusters: numberOfClusters));
             
             var trainedModel = pipeline.Fit(trainData);
@@ -86,7 +71,7 @@ namespace dexih.functions.ml
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Clustering (K-Means) Analysis - Evaluate", Description = "Evaluates the accuracy of a model using k-means clustering based on the training data.", ResultMethod = nameof(ClusteringKMeansEvaluateResult), ResetMethod = nameof(Reset))]
-        public void ClusteringKMeansEvaluate([TransformFunctionParameterTwin, ParameterLabel] string[] itemLabel, [TransformFunctionParameterTwin] float[] itemValue)
+        public void ClusteringKMeansEvaluate([TransformFunctionLinkedParameter("parameter"), ParameterLabel] string[] itemLabel, [TransformFunctionLinkedParameter("parameter")] float[] itemValue)
         {
             AddData(itemLabel, itemValue);
         }
@@ -104,7 +89,7 @@ namespace dexih.functions.ml
 
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Machine Learning", Name = "Clustering (K-Means) Analysis - Predict", Description = "Predicts a value using k-means clustering based on the training data.", ResetMethod = nameof(Reset), ImportMethod = nameof(ImportModelLabels))]
-        public ClusterPrediction ClusteringKMeansPredict(byte[] clusteringModel, [TransformFunctionParameterTwin, ParameterLabel] string[] label, [TransformFunctionParameterTwin] float[] value)
+        public ClusterPrediction ClusteringKMeansPredict(byte[] clusteringModel, [TransformFunctionLinkedParameter("parameter"), ParameterLabel] string[] label, [TransformFunctionLinkedParameter("parameter")] float[] value)
         {
             if (_prediction == null)
             {
@@ -115,7 +100,7 @@ namespace dexih.functions.ml
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Clustering (Stochastic Dual Coordinate Ascent) Analysis - Train", Description = "Builds a model using Stochastic Dual Coordinate Ascent clustering based on the training data.", ResultMethod = nameof(ClusteringSdcaTrainResult), ResetMethod = nameof(Reset))]
-        public void ClusteringSdcaTrain(string label, [TransformFunctionParameterTwin, ParameterLabel] string[] itemLabel, [TransformFunctionParameterTwin] float[] itemValue)
+        public void ClusteringSdcaTrain(string label, [TransformFunctionLinkedParameter("parameter"), ParameterLabel] string[] itemLabel, [TransformFunctionLinkedParameter("parameter")] float[] itemValue)
         {
             AddData(itemLabel, itemValue);
         }
@@ -128,7 +113,7 @@ namespace dexih.functions.ml
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var pipeline = mlContext.Transforms
-                .Concatenate("Features", _dynamicList.Labels)
+                .Concatenate("Features", _dynamicList.Fields.Select(c=>c.Name).ToArray())
                 .Append(mlContext.Transforms.Conversion.MapValueToKey("Label"), TransformerScope.TrainTest)
                 .Append(mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy())
                 .Append(mlContext.Transforms.Conversion.MapKeyToValue("Data", "PredictedLabel"));
@@ -138,7 +123,7 @@ namespace dexih.functions.ml
         }    
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Clustering (Stochastic Dual Coordinate Ascent) Analysis - Evaluate", Description = "Evaluates a model using Stochastic Dual Coordinate Ascent clustering based on the training data.", ResultMethod = nameof(ClusteringSdcaEvaluateResult), ResetMethod = nameof(Reset), ImportMethod = nameof(ImportModelLabels))]
-        public void ClusteringSdcaEvaluate(string label, [TransformFunctionParameterTwin,  ParameterLabel] string[] itemLabel, [TransformFunctionParameterTwin] float[] itemValue)
+        public void ClusteringSdcaEvaluate(string label, [TransformFunctionLinkedParameter("parameter"),  ParameterLabel] string[] itemLabel, [TransformFunctionLinkedParameter("parameter")] float[] itemValue)
         {
             AddData(itemLabel, itemValue);
         }
@@ -155,7 +140,7 @@ namespace dexih.functions.ml
         } 
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Machine Learning", Name = "Clustering (Stochastic Dual Coordinate Ascent) Analysis - Predict", Description = "Predicts a value using Stochastic Dual Coordinate Ascent clustering based on the training data.", ResetMethod = nameof(Reset), ImportMethod = nameof(ImportModelLabels))]
-        public ClusterLabelPrediction ClusteringSdcaPredict(byte[] clusteringModel, [TransformFunctionParameterTwin, ParameterLabel] string[] label, [TransformFunctionParameterTwin] float[] value)
+        public ClusterLabelPrediction ClusteringSdcaPredict(byte[] clusteringModel, [TransformFunctionLinkedParameter("parameter"), ParameterLabel] string[] label, [TransformFunctionLinkedParameter("parameter")] float[] value)
         {
             if (_prediction == null)
             {

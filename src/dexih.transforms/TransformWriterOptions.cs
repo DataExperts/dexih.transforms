@@ -56,18 +56,18 @@ namespace dexih.transforms
             return TargetAction == ETargetAction.Truncate || TargetAction == ETargetAction.DropCreate;
         }
 
-        private HashSet<string> targets = new HashSet<string>();
+        private readonly HashSet<string> _targets = new HashSet<string>();
         
         /// <summary>
-        /// Used to check target tables with have already been truncated.
+        /// Used to check target tables which have already been truncated.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
         public bool CheckTarget(string name)
         {
-            if (targets.Contains(name)) return false;
+            if (_targets.Contains(name)) return false;
 
-            targets.Add(name);
+            _targets.Add(name);
 
             return true;
         }

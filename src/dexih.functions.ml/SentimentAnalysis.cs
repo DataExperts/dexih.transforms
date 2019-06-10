@@ -1,12 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using dexih.functions.Exceptions;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 
@@ -66,9 +60,13 @@ namespace dexih.functions.ml
 
             // Turn the data into the ML.NET data view.
             var trainData = mlContext.Data.LoadFromEnumerable(_data);
+            var trainer = mlContext.BinaryClassification.Trainers.FastTree();
+            
             var pipeline = mlContext.Transforms.Text.FeaturizeText( "Features", "Text").Append(mlContext.BinaryClassification.Trainers.FastTree());
-            var trainedModel = pipeline.Fit(trainData);
 
+
+            var trainedModel = pipeline.Fit(trainData);
+            
             using (var stream = new MemoryStream())
             {
                 mlContext.Model.Save(trainedModel, null, stream);

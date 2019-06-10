@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using Dexih.Utils.DataType;
 using Microsoft.ML;
 
 namespace dexih.functions.ml
@@ -10,26 +11,35 @@ namespace dexih.functions.ml
     public class DynamicList
     {
         public Type Type { get; set; }
-        public string[] Labels { get; set; }
-
         private Action<object[]> _addAction;
         private IEnumerable<object> _data;
+
+        public DynamicTypeProperty[] Fields;
+        
         
         public DynamicList(string[] labels, Type defaultType)
         {
-            Labels = labels;
-            var fields = labels.Select((c, index) => new DynamicTypeProperty(c, defaultType)).ToList();
+            var fields = labels.Select((c, index) => new DynamicTypeProperty(c, defaultType)).ToArray();
+            Fields = fields;
             Type = DynamicType.CreateDynamicType(fields);
             _data = DynamicType.CreateDynamicList(Type);
-            _addAction = DynamicType.GetAddAction(_data);
+            _addAction = DynamicType.GetAddAction(_data, fields);
         }
+
+        public DynamicList(DynamicTypeProperty[] fields)
+        {
+            Fields = fields;
+            Type = DynamicType.CreateDynamicType(fields);
+            _data = DynamicType.CreateDynamicList(Type);
+            _addAction = DynamicType.GetAddAction(_data, fields);
+        }
+
         
         public void Add(object[] item)
         {
             _addAction.Invoke(item);
         }
-
-
+        
         
         public IDataView GetDataView(MLContext mlContext)
         {

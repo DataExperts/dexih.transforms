@@ -288,11 +288,6 @@ namespace dexih.connections.azure
                 }
 
                 var partitionKeyValue = partitionKey >= 0 ? row[partitionKey] : AzurePartitionKeyDefaultValue;
-                var keyValue = row[surrogateKey];
-                if (keyValue is long longValue)
-                {
-
-                }
                 var rowKeyValue = rowKey >= 0 ? row[rowKey] : surrogateKey >= 0 ? ConvertKeyValue(row[surrogateKey]) : Guid.NewGuid().ToString();
                 var entity = new DynamicTableEntity(partitionKeyValue.ToString(), rowKeyValue.ToString(), "*", properties);
 
@@ -376,8 +371,6 @@ namespace dexih.connections.azure
                 {
                     await UpdateIncrementalKey(table, incremental.TableColumnName(), 0, cancellationToken);
                 }
-
-                return;
             }
             catch (Exception ex)
             {
@@ -655,8 +648,6 @@ namespace dexih.connections.azure
 
                 foreach (var filter in filters)
                 {
-                    var filterOperator = filter.Operator;
-
                     string filterString;
 
                     if (filter.Value2.GetType().IsArray)
@@ -749,7 +740,6 @@ namespace dexih.connections.azure
         {
             try
             {
-                var connection = GetCloudTableClient();
                 return CreateTable(table, true, cancellationToken);
             }
             catch (Exception ex)
@@ -933,7 +923,6 @@ namespace dexih.connections.azure
                 var connection = GetCloudTableClient();
                 var cTable = connection.GetTableReference(table.Name);
 
-                var rowsInserted = 0;
                 var rowCount = 0;
 
                 var batchTasks = new List<Task>();
@@ -1013,7 +1002,6 @@ namespace dexih.connections.azure
                     batchOperation.Insert(entity);
 
                     rowCount++;
-                    rowsInserted++;
 
                     if (rowCount > 99)
                     {
@@ -1051,7 +1039,6 @@ namespace dexih.connections.azure
                 var connection = GetCloudTableClient();
                 var cTable = connection.GetTableReference(table.Name);
 
-                var rowsUpdated = 0;
                 var rowcount = 0;
 
                 var batchTasks = new List<Task>();
@@ -1132,7 +1119,6 @@ namespace dexih.connections.azure
                             batchOperation.Replace(entity);
 
                             rowcount++;
-                            rowsUpdated++;
 
                             if (rowcount > 99)
                             {
@@ -1166,10 +1152,7 @@ namespace dexih.connections.azure
                 var connection = GetCloudTableClient();
                 var cTable = connection.GetTableReference(table.Name);
 
-                var rowsDeleted = 0;
                 var rowcount = 0;
-
-                var batchTasks = new List<Task>();
 
                 //start a batch operation to update the rows.
                 var batchOperation = new TableBatchOperation();
@@ -1200,7 +1183,6 @@ namespace dexih.connections.azure
                         {
                             batchOperation.Delete(entity);
                             rowcount++;
-                            rowsDeleted++;
 
                             if (rowcount > 99)
                             {

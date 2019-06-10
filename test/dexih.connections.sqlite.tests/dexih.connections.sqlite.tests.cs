@@ -1,9 +1,7 @@
 ﻿using dexih.connections.test;
 using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using dexih.transforms;
-using Dexih.Utils.CopyProperties;
 using Xunit;
 using Xunit.Abstractions;
 

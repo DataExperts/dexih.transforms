@@ -100,14 +100,14 @@ namespace dexih.functions.external
             }
         }
 
-        private async Task LoadLiveRates(string key)
+        private async Task LoadLiveRates(string key, CancellationToken cancellationToken)
         {
-            _liveCurrency = await GetRates($"http://apilayer.net/api/live?access_key={key}");
+            _liveCurrency = await GetRates($"http://apilayer.net/api/live?access_key={key}", cancellationToken);
         }
         
-        private async Task<CurrencyDetails> GetRates(string url)
+        private async Task<CurrencyDetails> GetRates(string url, CancellationToken cancellationToken)
         {
-            var response = await GetWebServiceResponse(url, CancellationToken.None);
+            var response = await GetWebServiceResponse(url, cancellationToken);
 
             if (!response.isSuccess)
             {
@@ -175,7 +175,7 @@ namespace dexih.functions.external
             return rates;
         }
 
-        private async Task<CurrencyDetails> GetHistoricalRates(string key, DateTime dateTime)
+        private async Task<CurrencyDetails> GetHistoricalRates(string key, DateTime dateTime, CancellationToken cancellationToken)
         {
             if (_isFirst)
             {
@@ -191,7 +191,7 @@ namespace dexih.functions.external
             }
 
             var url = $"http://apilayer.net/api/historical?access_key={key}&date={date}";
-            var rates = await GetRates(url);
+            var rates = await GetRates(url, cancellationToken);
             _currencyHistory.Add(date, rates);
 
             return rates;
@@ -199,7 +199,7 @@ namespace dexih.functions.external
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Currency", Name = "Live Exchange Rate",
             Description = "Get the current exchange rate for the from/to currency.  Register for key at: [currencylayer.com](https://currencylayer.com/product).")]
-        public async Task<double> CurrencyRateLive(string key, string from, string to)
+        public async Task<double> CurrencyRateLive(string key, string from, string to, CancellationToken cancellationToken)
         {
             if (from == to) return 1;
             
@@ -207,7 +207,7 @@ namespace dexih.functions.external
             if (_isFirst)
             {
                 _isFirst = false;
-                await LoadLiveRates(key);
+                await LoadLiveRates(key, cancellationToken);
             }
 
             if (_liveCurrency == null)
@@ -221,7 +221,7 @@ namespace dexih.functions.external
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Currency", Name = "Live Rate Convert",
             Description = "Converts the value based on the current exchange rate for the from/to currency.  Register for key at: [currencylayer.com](https://currencylayer.com/product).")]
-        public async Task<double> CurrencyConvertLive(string key, double value, string from, string to)
+        public async Task<double> CurrencyConvertLive(string key, double value, string from, string to, CancellationToken cancellationToken)
         {
             if (from == to) return value;
             
@@ -229,7 +229,7 @@ namespace dexih.functions.external
             if (_isFirst)
             {
                 _isFirst = false;
-                await LoadLiveRates(key);
+                await LoadLiveRates(key, cancellationToken);
             }
 
             if (_liveCurrency == null)
@@ -242,7 +242,7 @@ namespace dexih.functions.external
         
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Currency", Name = "Live Exchange Rates",
             Description = "Gets the live exchange rates for a specified currency (if from is null USD is used).  Register for key at: [currencylayer.com](https://currencylayer.com/product).")]
-        public async Task<CurrencyRate> CurrenciesLive(string key, string from)
+        public async Task<CurrencyRate> CurrenciesLive(string key, string from, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(from)) from = "USD";
             
@@ -250,7 +250,7 @@ namespace dexih.functions.external
             if (_isFirst)
             {
                 _isFirst = false;
-                await LoadLiveRates(key);
+                await LoadLiveRates(key, cancellationToken);
 
                 _baseRate = _liveCurrency.USDRate(from);
                 _ratesEnumerator = _liveCurrency.Rates.GetEnumerator();
@@ -283,35 +283,35 @@ namespace dexih.functions.external
         
       [TransformFunction(FunctionType = EFunctionType.Map, Category = "Currency", Name = "Historical Exchange Rate",
             Description = "Get the exchange rate at the specified date for the from/to currency.  Register for key at: [currencylayer.com](https://currencylayer.com/product).")]
-        public async Task<double> CurrencyRateHistorical(string key, DateTime date, string from, string to)
+        public async Task<double> CurrencyRateHistorical(string key, DateTime date, string from, string to, CancellationToken cancellationToken)
         {
             if (from == to) return 1;
 
-            var rates = await GetHistoricalRates(key, date);
+            var rates = await GetHistoricalRates(key, date, cancellationToken);
             return rates.Rate(from, to);
         }
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Currency", Name = "Historical Rate Convert",
             Description = "Converts the value based on the current exchange rate for the from/to currency.  Register for key at: [currencylayer.com](https://currencylayer.com/product).")]
-        public async Task<double> CurrencyConvertHistorical(string key, DateTime date, double value, string from, string to)
+        public async Task<double> CurrencyConvertHistorical(string key, DateTime date, double value, string from, string to, CancellationToken cancellationToken)
         {
             if (from == to) return value;
             
-            var rates = await GetHistoricalRates(key, date);
+            var rates = await GetHistoricalRates(key, date, cancellationToken);
 
             return rates.Rate(from, to) * value;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Currency", Name = "Historical Exchange Rates",
             Description = "Gets the live exchange rates for a specified currency (if from is null USD is used).  Register for key at: [currencylayer.com](https://currencylayer.com/product).")]
-        public async Task<CurrencyRate> CurrenciesHistorical(string key, DateTime date, string from)
+        public async Task<CurrencyRate> CurrenciesHistorical(string key, DateTime date, string from, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(from)) from = "USD";
             
             // load the rates on the first call
             if (_isFirst)
             {
-                var rates = await GetHistoricalRates(key, date);
+                var rates = await GetHistoricalRates(key, date, cancellationToken);
                 _baseRate = rates.USDRate(from);
                 _ratesEnumerator = rates.Rates.GetEnumerator();
             }
@@ -337,7 +337,7 @@ namespace dexih.functions.external
         private XPathNodeIterator _cachedCurrencyCodes;
         private HashSet<string> _usedCurrencyCodes;
 
-        private async Task<bool> LoadCurrencyCode()
+        private async Task<bool> LoadCurrencyCode(CancellationToken cancellationToken)
         {
             var uri = new Uri("https://www.currency-iso.org/dam/downloads/lists/list_one.xml");
             ;
@@ -346,7 +346,7 @@ namespace dexih.functions.external
                 client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
                 client.DefaultRequestHeaders.Accept.Clear();
 
-                var response = await client.GetAsync(uri.PathAndQuery, CancellationToken.None);
+                var response = await client.GetAsync(uri.PathAndQuery, cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -377,12 +377,12 @@ namespace dexih.functions.external
 
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Currency", Name = "Currency name and codes.",
             Description = "Distinct list of currency, fund and precious metal codes. Data is standard ISO 4217 [currency-iso.org](https://www.currency-iso.org/en/home/tables/table-a1.html).")]
-        public async Task<CurrencyEntity> CurrencyCodes()
+        public async Task<CurrencyEntity> CurrencyCodes(CancellationToken cancellationToken)
 
         {
             if (_cachedCurrencyCodes == null)
             {
-                if (!await LoadCurrencyCode())
+                if (!await LoadCurrencyCode(cancellationToken))
                 {
                     return null;
                 }
@@ -419,11 +419,11 @@ namespace dexih.functions.external
 
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Currency", Name = "Country to currency name and codes",
             Description = "List of currency, fund and precious metal codes by country (currency codes are not unique in this list).  Data is standard ISO 4217 from [currency-iso.org](https://www.currency-iso.org/en/home/tables/table-a1.html).")]
-        public async Task<CountryCurrencyEntity> CountryCurrencyCodes()
+        public async Task<CountryCurrencyEntity> CountryCurrencyCodes(CancellationToken cancellationToken)
         {
             if (_cachedCurrencyCodes == null)
             {
-                if (!await LoadCurrencyCode())
+                if (!await LoadCurrencyCode(cancellationToken))
                 {
                     return null;
                 }

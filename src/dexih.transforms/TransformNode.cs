@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
-using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
@@ -120,7 +119,7 @@ namespace dexih.transforms
 
             for (var i = 0; i < PrimaryTransform.BaseFieldCount; i++)
             {
-                row[pos++] = PrimaryTransform[_primaryTable[i]];
+                row[pos++] = PrimaryTransform[CacheTable[i]];
             }
 
             if (_parentRow != null)

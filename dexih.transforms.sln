@@ -83,6 +83,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.benchmark", "test\dex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dexih.Utils.CopyProperties", "..\Dexih.Utils.CopyProperties\src\Dexih.Utils.CopyProperties\Dexih.Utils.CopyProperties.csproj", "{BC6B05B0-D432-4F04-AC0E-808AE7A57DA3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dexih.Utils.DataType", "..\dexih.utils.datatype\src\Dexih.Utils.DataType\Dexih.Utils.DataType.csproj", "{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -513,6 +515,18 @@ Global
 		{BC6B05B0-D432-4F04-AC0E-808AE7A57DA3}.Release|x64.Build.0 = Release|Any CPU
 		{BC6B05B0-D432-4F04-AC0E-808AE7A57DA3}.Release|x86.ActiveCfg = Release|Any CPU
 		{BC6B05B0-D432-4F04-AC0E-808AE7A57DA3}.Release|x86.Build.0 = Release|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Debug|x64.Build.0 = Debug|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Debug|x86.Build.0 = Debug|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Release|x64.ActiveCfg = Release|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Release|x64.Build.0 = Release|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Release|x86.ActiveCfg = Release|Any CPU
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -553,6 +567,7 @@ Global
 		{B625B771-5B31-4E8B-A3D5-CF7CA41394D5} = {4712A230-9747-4447-B4C5-022006511342}
 		{7A4993C8-2151-492C-97FE-88AA593E33E7} = {4712A230-9747-4447-B4C5-022006511342}
 		{BC6B05B0-D432-4F04-AC0E-808AE7A57DA3} = {DA48DBC9-1181-4043-B5F7-89609F317814}
+		{44283205-F74A-41DD-8DCB-BFF8BE7EED3D} = {DA48DBC9-1181-4043-B5F7-89609F317814}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5BB1D6C4-C2EC-45ED-AB2E-F43CD8D84EA3}

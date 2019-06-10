@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Dexih.Utils.DataType;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.ML.Transforms;
@@ -30,7 +31,7 @@ namespace dexih.functions.ml
 	    /// </summary>
 	    /// <param name="listType"></param>
 	    /// <returns></returns>
-	    public static Action<object[]> GetAddAction(IEnumerable<object> list)
+	    public static Action<object[]> GetAddAction(IEnumerable<object> list, DynamicTypeProperty[] fields)
 	    {
 		    var listType = list.GetType();
 		    var addMethod = listType.GetMethod("Add");
@@ -43,7 +44,7 @@ namespace dexih.functions.ml
 
 			    for(var i = 0; i < values.Length; i++)
 			    {
-				    itemProperties[i].SetValue(item, values[i]);
+				    itemProperties[i].SetValue(item, fields[i].Convert(values[i]));
 			    }
 
 			    addMethod.Invoke(list, new []{item});
@@ -69,7 +70,15 @@ namespace dexih.functions.ml
 
             foreach (var property in properties)
             {
-	            classCode.AppendLine($"public {property.Type.Name} {property.Name} {{get; set; }}");
+	            if (property.Type.Name == "ReadOnlyMemory`1")
+	            {
+		            classCode.AppendLine($"public string {property.Name} {{get; set; }}");
+	            }
+	            else
+	            {
+		            classCode.AppendLine($"public {property.Type.Name} {property.Name} {{get; set; }}");    
+	            }
+	            
             }
             classCode.AppendLine("}");
             classCode.AppendLine("}");
@@ -124,7 +133,8 @@ namespace dexih.functions.ml
 		    var index = 0;
 		    foreach(var value in values)
 		    {
-			    itemProperties[index++].SetValue(item, value);
+			    itemProperties[index].SetValue(item, Operations.Parse(itemProperties[index].PropertyType, value));
+			    index++;
 		    }
 
 		    return item;

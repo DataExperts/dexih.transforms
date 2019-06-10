@@ -49,10 +49,10 @@ namespace dexih.transforms.Mapping
 
 
         public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row,
-            object[] joinRow = null, CancellationToken cancellationToken = default)
+            object[] joinRow, CancellationToken cancellationToken)
         {
             // process the current row
-            await GroupMappings.ProcessInputData(row);
+            await GroupMappings.ProcessInputData(row, cancellationToken);
 
             //create a cached current row.
             var cacheRow = new object[GroupTable.Columns.Count];
@@ -83,13 +83,13 @@ namespace dexih.transforms.Mapping
         }
 
         public override async Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row,
-            EFunctionType functionType, CancellationToken cancellationToken = default)
+            EFunctionType functionType, CancellationToken cancellationToken)
         {
-            await ProcessGroupChange();
+            await ProcessGroupChange(cancellationToken);
             return false;
         }
         
-        private async Task ProcessGroupChange()
+        private async Task ProcessGroupChange(CancellationToken cancellationToken)
         {
             // if the group has changed, update all cached rows with aggregate functions.
             if (_cachedRows != null && _cachedRows.Any())
@@ -98,14 +98,14 @@ namespace dexih.transforms.Mapping
                 List<(int index, object[] row)> additionalRows = null;
                 foreach (var row in _cachedRows)
                 {
-                    var moreRows = await GroupMappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
+                    var moreRows = await GroupMappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
                     
                     // if the aggregate function wants to provide more rows, store them in a separate collection.
                     while (moreRows)
                     {
                         var rowCopy = new object[GroupTable.Columns.Count];
                         row.CopyTo(rowCopy, 0);
-                        moreRows = await GroupMappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate);
+                        moreRows = await GroupMappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
 
                         if (additionalRows == null)
                         {

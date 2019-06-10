@@ -86,7 +86,7 @@ namespace dexih.transforms
             {
                 do //loop through the records util the filter is true
                 {
-                    showRecord = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                    showRecord = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
 
                     if (showRecord) break;
 

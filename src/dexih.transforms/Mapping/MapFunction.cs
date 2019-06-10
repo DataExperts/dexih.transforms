@@ -58,7 +58,7 @@ namespace dexih.transforms.Mapping
             Parameters.InitializeOutputOrdinals(table);
         }
 
-        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             if (_returnEnumerator != null)
             {
@@ -110,11 +110,11 @@ namespace dexih.transforms.Mapping
             {
                 if (Function.FunctionMethod.IsAsync)
                 {
-                    ReturnValue = await Function.RunFunctionAsync(functionVariables, parameters);
+                    ReturnValue = await Function.RunFunctionAsync(functionVariables, parameters, cancellationToken);
                 }
                 else
                 {
-                    ReturnValue = Function.RunFunction(functionVariables, parameters, out Outputs);
+                    ReturnValue = Function.RunFunction(functionVariables, parameters, out Outputs, cancellationToken);
                 }
 
                 if (FunctionCaching == EFunctionCaching.EnableCache)
@@ -191,18 +191,28 @@ namespace dexih.transforms.Mapping
 
                 if (Function.ResultMethod.IsAsync)
                 {
-                    ResultReturnValue = await Function.RunResultAsync(functionVariables, parameters);
+                    ResultReturnValue = await Function.RunResultAsync(functionVariables, parameters, cancellationToken);
                 }
                 else
                 {
-                    ResultReturnValue = Function.RunResult(functionVariables, parameters, out _resultOutputs);    
+                    ResultReturnValue = Function.RunResult(functionVariables, parameters, out _resultOutputs, cancellationToken);    
                 }
                 
                 Parameters.SetResultFunctionResult(ResultReturnValue, _resultOutputs, row);
                 
-                if (Function.GeneratesRows && ResultReturnValue != null && ResultReturnValue is bool boolReturn)
+                if (Function.GeneratesRows)
                 {
-                    return boolReturn;
+                    if (ResultReturnValue != null)
+                    {
+                        if (ResultReturnValue is bool boolReturn)
+                        {
+                            return boolReturn;
+                        }
+
+                        return true;
+                    }
+
+                    return false;
                 }
             }
 

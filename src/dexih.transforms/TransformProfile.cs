@@ -81,7 +81,7 @@ namespace dexih.transforms
             if (!_lastRecord)
             {
                 var newRow = PrimaryTransform.CurrentRow;
-                await _profileMappings.ProcessInputData(newRow);
+                await _profileMappings.ProcessInputData(newRow, cancellationToken);
                 return newRow;
             }
             else

@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 

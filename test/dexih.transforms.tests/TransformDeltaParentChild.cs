@@ -1,11 +1,6 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
-using dexih.functions;
 using dexih.functions.Query;
-using dexih.transforms.Exceptions;
 using Xunit;
 using DataType = Dexih.Utils.DataType.DataType;
 

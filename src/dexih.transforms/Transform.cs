@@ -8,7 +8,6 @@ using dexih.functions;
 using System.Linq;
 using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Text;
 using Newtonsoft.Json;
@@ -101,10 +100,10 @@ namespace dexih.transforms
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
 
         //indicates if the transform is on the primary stream.
-        public bool IsPrimaryTransform { get; set; } = true;
+        public bool IsPrimaryTransform => (PrimaryTransform != null && PrimaryTransform.IsPrimaryTransform);
 
         //indicates if the transform is a base reader.
-        public bool IsReader { get; set; } = true;
+        public bool IsReader => PrimaryTransform == null;
 
         protected long AuditKey { get; set; }
 
@@ -249,11 +248,10 @@ namespace dexih.transforms
 
             
             //IsReader indicates if this is a base transform.
-            IsReader = primaryTransform == null;
-            if (primaryTransform != null)
-                primaryTransform.IsPrimaryTransform = true;
-            if (referenceTransform != null)
-                referenceTransform.IsPrimaryTransform = false;
+//            if (primaryTransform != null)
+//                primaryTransform.IsPrimaryTransform = true;
+//            if (referenceTransform != null)
+//                referenceTransform.IsPrimaryTransform = false;
            
             return true;
         }
@@ -489,7 +487,7 @@ namespace dexih.transforms
             }
             else
             {
-                return PrimaryTransform;
+                return PrimaryTransform.GetSourceReader();
             }
         }
 
@@ -1570,7 +1568,7 @@ namespace dexih.transforms
 
         public override int Depth => throw new NotImplementedException();
 
-        public bool IsOpen { get; protected set; } = false;
+        public virtual bool IsOpen { get; protected set; } = false;
 
         public override bool IsClosed => PrimaryTransform?.IsClosed??!IsReaderFinished;
 

@@ -13,10 +13,12 @@ namespace dexih.functions
 
         public int Rank { get; set; }
         public bool IsIndex { get; set; }
-        public bool IsTwin { get; set; }
+        public string LinkedName { get; set; }
+        public string LinkedDescription { get; set; }
         public bool IsLabel { get; set; }
         
         public string[] ListOfValues { get; set; }
         public object DefaultValue { get; set; }
+        
     }
 }

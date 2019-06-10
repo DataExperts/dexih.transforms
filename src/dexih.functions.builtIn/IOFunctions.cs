@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions.Exceptions;
 
@@ -113,7 +114,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(
             FunctionType = EFunctionType.Map, Category = "File Operations", Name = "Save to Binary File",
             Description = "Saves the binary data to a local file.  Returns the filename.")]
-        public async Task<string> SaveBinaryFile(byte[] fileData, string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EDuplicateFile duplicateFileOption)
+        public async Task<string> SaveBinaryFile(byte[] fileData, string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EDuplicateFile duplicateFileOption, CancellationToken cancellationToken)
         {
             if (fileData == null || fileData.Length == 0)
             {
@@ -125,7 +126,7 @@ namespace dexih.functions.BuiltIn
             if (fileName != null)
             {
                 var filePath = Path.Combine(path, fileName);
-                await System.IO.File.WriteAllBytesAsync(filePath, fileData);
+                await System.IO.File.WriteAllBytesAsync(filePath, fileData, cancellationToken);
                 return fileName;
             }
             else
@@ -137,7 +138,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(
             FunctionType = EFunctionType.Map, Category = "File Operations", Name = "Save to Text File",
             Description = "Saves the text data to a local file.  Returns the filename.")]
-        public async Task<string> SaveTextFile(string fileData, string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EDuplicateFile duplicateFileOption)
+        public async Task<string> SaveTextFile(string fileData, string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EDuplicateFile duplicateFileOption, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(fileData))
             {
@@ -149,7 +150,7 @@ namespace dexih.functions.BuiltIn
             if (fileName != null)
             {
                 var filePath = Path.Combine(path, fileName);
-                await System.IO.File.WriteAllTextAsync(filePath, fileData);
+                await System.IO.File.WriteAllTextAsync(filePath, fileData, cancellationToken);
                 return fileName;
             }
             else
@@ -189,14 +190,14 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(
             FunctionType = EFunctionType.Map, Category = "File Operations", Name = "Read from Binary File",
             Description = "Reads a local binary file.  Returns binary data if file exists.")]
-        public async Task<byte[]> ReadBinaryFile(string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EMissingFile missingFileOption)
+        public async Task<byte[]> ReadBinaryFile(string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EMissingFile missingFileOption, CancellationToken cancellationToken)
         {
             var fileName = GetReadFileName(path, filePrefix, fileNameBody, filePostfix, extension, missingFileOption);
 
             if (fileName != null)
             {
                 var filePath = Path.Combine(path, fileName);
-                var data = await System.IO.File.ReadAllBytesAsync(filePath);
+                var data = await System.IO.File.ReadAllBytesAsync(filePath, cancellationToken);
                 return data;
             }
             else
@@ -208,14 +209,14 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(
             FunctionType = EFunctionType.Map, Category = "File Operations", Name = "Read from Text File",
             Description = "Reads a local text file.  Returns text data is file exists.")]
-        public async Task<string> ReadTextFile(string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EMissingFile missingFileOption)
+        public async Task<string> ReadTextFile(string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EMissingFile missingFileOption, CancellationToken cancellationToken)
         {
             var fileName = GetReadFileName(path, filePrefix, fileNameBody, filePostfix, extension, missingFileOption);
 
             if (fileName != null)
             {
                 var filePath = Path.Combine(path, fileName);
-                var data = await System.IO.File.ReadAllTextAsync(filePath);
+                var data = await System.IO.File.ReadAllTextAsync(filePath, cancellationToken);
                 return data;
             }
             else

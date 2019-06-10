@@ -323,7 +323,19 @@ namespace dexih.functions
                 case EDeltaType.AzureRowKey:
                 case EDeltaType.AzurePartitionKey:
                 case EDeltaType.DatabaseOperation:
+                case EDeltaType.ResponseSuccess:
+                case EDeltaType.ResponseData:
+                case EDeltaType.ResponseStatus:
+                case EDeltaType.ResponseSegment:
+                case EDeltaType.Error:
+                case EDeltaType.Url:
                     return ETypeCode.String;
+                case EDeltaType.DbAutoIncrement:
+                    break;
+                case EDeltaType.Version:
+                    return ETypeCode.Int32;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(deltaType), deltaType, null);
             }
 
             return ETypeCode.String;

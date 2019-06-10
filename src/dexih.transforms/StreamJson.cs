@@ -1,14 +1,10 @@
 ﻿﻿using System;
- using System.Collections.Generic;
  using System.Data.Common;
 using System.IO;
-using System.Linq;
-using System.Threading;
+ using System.Threading;
 using System.Threading.Tasks;
- using dexih.functions;
  using Dexih.Utils.Crypto;
  using Dexih.Utils.MessageHelpers;
- using Newtonsoft.Json;
  using Newtonsoft.Json.Linq;
 
  namespace dexih.transforms

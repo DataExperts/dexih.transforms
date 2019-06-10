@@ -508,7 +508,7 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Xml", Name = "XPath Values",
             Description = "Parses an xml string into a series of xpath results.")]
-        public bool XPathValues(XmlDocument xml, [TransformFunctionParameterTwin] string[] xPaths, [TransformFunctionParameterTwin] out string[] values)
+        public bool XPathValues(XmlDocument xml, [TransformFunctionLinkedParameter("XPath to Value")] string[] xPaths, [TransformFunctionLinkedParameter("XPath to Value")] out string[] values)
         {
             var returnValue = true;
 
@@ -557,7 +557,7 @@ namespace dexih.functions.BuiltIn
             Description = "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.",
             ImportMethod = nameof(JsonValuesImport))
         ]
-        public bool JsonValues(JToken json, [TransformFunctionParameterTwin] string[] jsonPaths, [TransformFunctionParameterTwin] out string[] values)
+        public bool JsonValues(JToken json, [TransformFunctionLinkedParameter("JsonPath to Value")] string[] jsonPaths, [TransformFunctionLinkedParameter("JsonPath to Value")] out string[] values)
         {
             try
             {
@@ -623,7 +623,7 @@ namespace dexih.functions.BuiltIn
             Description = "Pivots a json array into column values. ",
             ImportMethod = nameof(JsonArrayToColumnsImport))
         ]
-        public bool JsonArrayToColumns(JToken json, string jsonPath, string columnPath, string valuePath, [TransformFunctionParameterTwin] string[] columns, [TransformFunctionParameterTwin] out string[] values)
+        public bool JsonArrayToColumns(JToken json, string jsonPath, string columnPath, string valuePath, [TransformFunctionLinkedParameter("Column to Value")] string[] columns, [TransformFunctionLinkedParameter("Column to Value")] out string[] values)
         {
             try
             {
@@ -794,7 +794,7 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Switch Condition", GenericTypeDefault = DataType.ETypeCode.String,
             Description = "Maps the 'value' to the matching 'when' and returns the 'then'.  No matches returns default value (or original value if default is null."),
         ]
-        public T Switch<T>(object value, [TransformFunctionParameterTwin] object[] when, [TransformFunctionParameterTwin] T[] then, T defaultValue)
+        public T Switch<T>(object value, [TransformFunctionLinkedParameter("When")] object[] when, [TransformFunctionLinkedParameter("When")] T[] then, T defaultValue)
         {
             for(var i = 0; i < when.Length; i++)
             {

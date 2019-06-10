@@ -173,7 +173,7 @@ namespace dexih.transforms
                 //run the validation functions
                 try
                 {
-                    passed = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                    passed = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
                 }
                 catch (FunctionIgnoreRowException)
                 {

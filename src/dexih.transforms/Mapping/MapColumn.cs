@@ -60,12 +60,12 @@ namespace dexih.transforms.Mapping
             OutputOrdinal = AddOutputColumn(table, OutputColumn);
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
+        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             RowData = row;
             return Task.FromResult(true);
         }
-
+        
         public override void MapOutputRow(object[] data)
         {
             data[OutputOrdinal] = GetOutputValue();

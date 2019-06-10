@@ -1,4 +1,5 @@
 using System;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.ml
 {
@@ -7,12 +8,24 @@ namespace dexih.functions.ml
     /// </summary>
     public class DynamicTypeProperty
     {
-        public DynamicTypeProperty(string name, Type type)
+        public DynamicTypeProperty(string name, Type type, EEncoding? encoding = null)
         {
             Name = name;
             Type = type;
+            Encoding = encoding;
+
+            TypeCode = DataType.GetTypeCode(type, out _);
         }
-        public string Name { get; set; }
-        public Type Type { get; set; }
+        public string Name { get; }
+        public Type Type { get; }
+
+        public EEncoding? Encoding { get; }
+
+        public DataType.ETypeCode TypeCode { get; }
+
+        public object Convert(object value)
+        {
+            return Operations.Parse(TypeCode, value);
+        }
     }
 }

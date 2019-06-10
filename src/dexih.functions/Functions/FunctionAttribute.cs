@@ -55,6 +55,7 @@ namespace dexih.functions
         public string Name { get; set; }
         public string Description { get; set; }
         public string[] ListOfValues { get; set; }
+        
 
         /// <summary>
         /// Identifies an array parameter is a twin with an output array parameter.
@@ -65,11 +66,18 @@ namespace dexih.functions
 
     
     /// <summary>
-    /// Identifies an array parameter is a twin with an output array parameter.
+    /// Identifies an array parameters which are logically linked.
     /// This means the matching arrays should have the same length.
     /// </summary>
-    public class TransformFunctionParameterTwinAttribute : Attribute
+    public class TransformFunctionLinkedParameterAttribute : Attribute
     {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public TransformFunctionLinkedParameterAttribute(string name, string description = null)
+        {
+            Name = name;
+            Description = description;
+        }
     }
 
     /// <summary>
@@ -77,6 +85,16 @@ namespace dexih.functions
     /// </summary>
     public class ParameterLabelAttribute : Attribute
     {
+    }
+    
+    public class ParameterDefaultAttribute: Attribute
+    {
+        public ParameterDefaultAttribute(string value)
+        {
+            Value = value;
+        }
+        
+        public string Value { get; set; }
     }
 
     public class TransformFunctionCompareAttribute : Attribute

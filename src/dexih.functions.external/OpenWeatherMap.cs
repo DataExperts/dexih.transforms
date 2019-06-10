@@ -108,39 +108,39 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Name",
             Description = "Gets the weather based on a city name.  Sign up for key at [openweathermap.org](https://openweathermap.org/price).")]
         public Task<WeatherDetails> WeatherByCityName(string key, string cityName,
-            TemperatureScale temperatureScale)
+            TemperatureScale temperatureScale, CancellationToken cancellationToken)
         {
-            return GetWeatherResponse(key, $"&q={cityName}", temperatureScale);
+            return GetWeatherResponse(key, $"&q={cityName}", temperatureScale, cancellationToken);
         }
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By Coordinates",
             Description = "Gets the weather based on a city id.  Sign up for key at [openweathermap.org](https://openweathermap.org/price).")]
         public Task<WeatherDetails> WeatherByCityId(string key, int cityId,
-            TemperatureScale temperatureScale)
+            TemperatureScale temperatureScale, CancellationToken cancellationToken)
         {
-            return GetWeatherResponse(key, $"&id={cityId}", temperatureScale);
+            return GetWeatherResponse(key, $"&id={cityId}", temperatureScale, cancellationToken);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Id",
             Description = "Gets the weather based on a longitude and latitude.  Sign up for key at [openweathermap.org](https://openweathermap.org/price).")]
         public Task<WeatherDetails> WeatherByCityId(string key, double latitude, double longitude,
-            TemperatureScale temperatureScale)
+            TemperatureScale temperatureScale, CancellationToken cancellationToken)
         {
-            return GetWeatherResponse(key, $"&lat={latitude}&lon={longitude}", temperatureScale);
+            return GetWeatherResponse(key, $"&lat={latitude}&lon={longitude}", temperatureScale, cancellationToken);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Id",
             Description = "Gets the weather based on a zip code.  Note if country is not specified when USA will be default.  Sign up for key at [openweathermap.org](https://openweathermap.org/price).")]
         public Task<WeatherDetails> WeatherByCityId(string key, string zipCode, string country,
-            TemperatureScale temperatureScale)
+            TemperatureScale temperatureScale, CancellationToken cancellationToken)
         {
-            return GetWeatherResponse(key, $"&zip={zipCode},{country}", temperatureScale);
+            return GetWeatherResponse(key, $"&zip={zipCode},{country}", temperatureScale,cancellationToken);
         }
 
 
-        private async Task<WeatherDetails> GetWeatherResponse(string key, string uri, TemperatureScale temperatureScale)
+        private async Task<WeatherDetails> GetWeatherResponse(string key, string uri, TemperatureScale temperatureScale, CancellationToken cancellationToken)
         {
-            var (url, statusCode, isSuccess, response) = await GetWebServiceResponse(key, uri, CancellationToken.None);
+            var (url, statusCode, isSuccess, response) = await GetWebServiceResponse(key, uri, cancellationToken);
 
             if (!isSuccess)
             {
@@ -232,7 +232,7 @@ namespace dexih.functions.external
         
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Weather", Name = "Weather City List",
             Description = "Get a list of all the cities used for the weather functions.  Data from [openweathermap.org](https://openweathermap.org)")]
-        public async Task<CityDetails> WeatherCities()
+        public async Task<CityDetails> WeatherCities(CancellationToken cancellationToken)
         {
             if (_cachedCities == null)
             {
@@ -244,7 +244,7 @@ namespace dexih.functions.external
                     client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
                     client.DefaultRequestHeaders.Accept.Clear();
 
-                    var response = await client.GetAsync(uri.PathAndQuery, CancellationToken.None);
+                    var response = await client.GetAsync(uri.PathAndQuery, cancellationToken);
 
                     if (response.IsSuccessStatusCode)
                     {

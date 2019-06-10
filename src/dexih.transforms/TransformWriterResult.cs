@@ -276,8 +276,8 @@ namespace dexih.transforms
                     StartTime = DateTime.Now;
                 }
 
-                if (RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Finished ||
-                    RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Cancelled)
+                
+                if (IsFinished)
                 {
                     EndTime = DateTime.Now;
                     OnFinish?.Invoke(this);
@@ -411,7 +411,7 @@ namespace dexih.transforms
         public bool IsRunning => RunStatus == ERunStatus.Running || RunStatus == ERunStatus.RunningErrors || RunStatus == ERunStatus.Initialised || RunStatus == ERunStatus.Started;
 
         [PocoColumn(Skip = true)]
-        public bool IsFinished => RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Cancelled || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors;
+        public bool IsFinished => RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Cancelled || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Passed || RunStatus == ERunStatus.Failed;
 
         [PocoColumn(Skip = true)]
         public bool IsScheduled => RunStatus == ERunStatus.Scheduled;
@@ -424,34 +424,34 @@ namespace dexih.transforms
                 return DateTime.Now - ScheduledTime;
         }
 
-        private int _progressCounter;
+        private long _progressCounter;
 
-        public void IncrementRowsReadPrimary(int value = 1)
+        public void IncrementRowsReadPrimary(long value = 1)
         {
             RowsReadPrimary += value;
             _progressCounter += value;
             IncrementAll(0);
         }
 
-        public void IncrementRowsCreated(int value = 1)
+        public void IncrementRowsCreated(long value = 1)
         {
             RowsCreated += value;
             IncrementAll(value);
         }
 
-        public void IncrementRowsUpdated(int value = 1)
+        public void IncrementRowsUpdated(long value = 1)
         {
             RowsUpdated += value;
             IncrementAll(value);
         }
 
-        public void IncrementRowsDeleted(int value = 1)
+        public void IncrementRowsDeleted(long value = 1)
         {
             RowsDeleted += value;
             IncrementAll(value);
         }
 
-        private void IncrementAll(int value)
+        private void IncrementAll(long value)
         {
             RowsTotal += value;
             _progressCounter += value;

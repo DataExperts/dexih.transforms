@@ -364,7 +364,7 @@ namespace dexih.transforms
                 {
                     //get the first two rows from the join table.
                     _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
-                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow);
+                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow, cancellationToken);
                     _groupsOpen = await ReadNextGroup();
                     _firstRead = false;
                     
@@ -374,7 +374,7 @@ namespace dexih.transforms
                 if (_containsJoinColumns)
                 {
                     // update the primary row only.
-                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
                     
                     while (_groupsOpen)
                     {
@@ -389,7 +389,7 @@ namespace dexih.transforms
                                 if (_groupsOpen)
                                 {
                                     // now the join table has advanced, add the reference row.
-                                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow);
+                                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow, cancellationToken);
                                     _groupsOpen = await ReadNextGroup();
                                 }
 
@@ -430,7 +430,7 @@ namespace dexih.transforms
 //                    _firstRead = false;
 //                }
 
-                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
 
                 var primaryKey = Mappings.GetJoinPrimaryKey();
 

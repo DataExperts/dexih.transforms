@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Dexih.Utils.DataType;
 using Xunit;
 using Xunit.Abstractions;

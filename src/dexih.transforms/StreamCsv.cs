@@ -3,7 +3,6 @@ using System.Data.Common;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {
@@ -62,8 +61,7 @@ namespace dexih.transforms
                 if (_reader is Transform transform)
                 {
                     var convertedTransform = new ReaderConvertDataTypes(new ConnectionConvertString(), transform);
-                    await convertedTransform.Open();
-
+                    // await convertedTransform.Open(cancellationToken);
                     _reader = convertedTransform;
 
                     var s = new string[transform.CacheTable.Columns.Count];

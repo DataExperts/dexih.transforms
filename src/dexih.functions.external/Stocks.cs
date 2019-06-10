@@ -47,9 +47,9 @@ namespace dexih.functions.external
             }
         }
         
-      private async Task<List<StockEntity>> GetStockResponse(string uri, int maxCount = Int32.MaxValue)
+      private async Task<List<StockEntity>> GetStockResponse(string uri, int maxCount, CancellationToken cancellationToken)
         {
-            var response = await GetWebServiceResponse(uri, CancellationToken.None);
+            var response = await GetWebServiceResponse(uri, cancellationToken);
 
             var stockEntities = new List<StockEntity>();
 
@@ -138,10 +138,11 @@ namespace dexih.functions.external
         public async Task<StockEntity> LatestStockInfo(
             string key, 
             string symbol,
-            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval )
+            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval,
+            CancellationToken cancellationToken)
         {
             var url = GetAlphaVantageUrl("TIME_SERIES_INTRADAY", interval, symbol, key);
-            var entities = await GetStockResponse(url, 1);
+            var entities = await GetStockResponse(url, 1, cancellationToken);
 
             if (entities.Count > 0)
             {
@@ -158,10 +159,11 @@ namespace dexih.functions.external
             string key, 
             string symbol,
             int count,
-            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval )
+            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval,
+            CancellationToken cancellationToken)
         {
             var url = GetAlphaVantageUrl("TIME_SERIES_INTRADAY", interval, symbol, key);
-            return GetStockResponse(url);
+            return GetStockResponse(url, Int32.MaxValue, cancellationToken);
         }
     }
 }

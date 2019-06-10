@@ -29,6 +29,8 @@ namespace dexih.transforms
 
         private object[] _groupValues;
         
+        private Queue<object[]> _cachedRows;
+
         public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
         public override string TransformName { get; } = "Group";
@@ -79,11 +81,18 @@ namespace dexih.transforms
         {
             var outputRow = new object[FieldCount];
 
-            if (!_firstRecord && !_lastRecord)
+            if (_firstRecord)
             {
-                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                _cachedRows = new Queue<object[]>();
+            } else if (_cachedRows.Any())
+            {
+                outputRow = _cachedRows.Dequeue();
+                return outputRow;
+            } else if (!_firstRecord && !_lastRecord)
+            {
+                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
             }
-
+            
             // used to track if the group fields have changed
             var groupChanged = false;
             
@@ -127,12 +136,12 @@ namespace dexih.transforms
                     if (!groupChanged)
                     {
                         // if the group has not changed, process the input row
-                        await Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                        await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
                     }
                     // when group has changed
                     else
                     {
-                        await ProcessGroupChange(outputRow);
+                        await ProcessGroupChange(outputRow, cancellationToken);
                         
                         //store the last groupValues read to start the next grouping.
                         _groupValues = nextGroupValues;
@@ -156,7 +165,7 @@ namespace dexih.transforms
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
-                await ProcessGroupChange(outputRow);
+                await ProcessGroupChange(outputRow, cancellationToken);
 
                 _lastRecord = true;
             }
@@ -166,10 +175,23 @@ namespace dexih.transforms
 
         }
 
-        private async Task ProcessGroupChange(object[] outputRow)
+        private async Task ProcessGroupChange(object[] outputRow, CancellationToken cancellationToken)
         {
             Mappings.MapOutputRow(outputRow);
-            await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate);
+            await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
+            
+            var moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
+                    
+            // if the aggregate function wants to provide more rows, store them in a separate collection.
+            while (moreRows)
+            {
+                var rowCopy = new object[FieldCount];
+                outputRow.CopyTo(rowCopy, 0);
+                moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables(), rowCopy, EFunctionType.Aggregate, cancellationToken);
+
+                _cachedRows.Enqueue(rowCopy);
+            }
+            
             Mappings.Reset(EFunctionType.Aggregate);
         }
 
