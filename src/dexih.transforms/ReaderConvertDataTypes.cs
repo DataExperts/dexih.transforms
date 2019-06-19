@@ -26,6 +26,13 @@ namespace dexih.transforms
             PrimaryTransform = transform;
             _connection = connection;
             CacheTable = PrimaryTransform.CacheTable.Copy();
+
+            // set all columns to allow nulls to ensure no errors occur.
+            foreach (var col in CacheTable.Columns)
+            {
+                col.AllowDbNull = true;
+            }
+            
             _operationOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
 
             foreach (var column in CacheTable.Columns)

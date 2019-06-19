@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms.Mapping
 {
@@ -48,6 +49,11 @@ namespace dexih.transforms.Mapping
             if (InputColumn == null) return;
             
             InputOrdinal = table.GetOrdinal(InputColumn);
+
+            if (InputOrdinal >= 0 && InputColumn.DataType == DataType.ETypeCode.Node)
+            {
+                OutputColumn.ChildColumns = table[InputOrdinal].ChildColumns;
+            }
             
             if (InputOrdinal < 0 && InputValue == null)
             {

@@ -247,8 +247,8 @@ namespace dexih.transforms
             // _firstRead = true;
 
             _containsJoinColumns = Mappings.OfType<MapJoin>().Any();
-            _primaryFieldCount = PrimaryTransform.FieldCount;
-            _referenceFieldCount = ReferenceTransform.FieldCount;
+            _primaryFieldCount = PrimaryTransform.BaseFieldCount;
+            _referenceFieldCount = ReferenceTransform.BaseFieldCount;
             _joinKeyComparer = new JoinKeyComparer();
 
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;

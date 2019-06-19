@@ -81,7 +81,7 @@ namespace dexih.transforms
 
             if (PrimaryTransform?.BaseFieldCount > FieldCount)
             {
-                throw new TransformException("Issue");
+                throw new TransformException("There was an issue with the transform node.  The base field count, exceeds the node field count.");
             }
         }
         
@@ -101,11 +101,9 @@ namespace dexih.transforms
         // not used as the ReadAsync is overridden.
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
-            // BuildCacheTable();
-            
             if (PrimaryTransform.BaseFieldCount > FieldCount)
             {
-                throw new TransformException("Issue");
+                throw new TransformException("There was an issue with the transform node.  The base field count, exceeds the node field count.");
             }
             
             var result = await PrimaryTransform.ReadAsync(cancellationToken);
@@ -124,7 +122,7 @@ namespace dexih.transforms
 
             if (_parentRow != null)
             {
-                for(var i = 0; i< _parentRow.Length; i++)
+                for(var i = 0; i < _parentRow.Length; i++)
                 {
                     if (_parentTableSkipOrdinals.Contains(i))
                     {

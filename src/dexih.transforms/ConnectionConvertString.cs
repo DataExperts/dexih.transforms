@@ -39,8 +39,7 @@ namespace dexih.transforms
         public override bool CanUseSql => throw new NotImplementedException();
 
         public override bool CanUseDbAutoIncrement => false;
-
-
+        
         public override bool DynamicTableCreation => throw new NotImplementedException();
 
         public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)

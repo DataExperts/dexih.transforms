@@ -1488,6 +1488,8 @@ namespace dexih.transforms
 
         /// <summary>
         /// Gets the Field count excluding any columns from parent nodes.
+        /// The parent nodes are used by mapping transforms when required for calculations
+        /// but should not be included on the reader output.
         /// </summary>
         public int BaseFieldCount => CacheTable?.Columns.Count(c => !c.IsParent) ?? -1;
 

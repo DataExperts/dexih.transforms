@@ -142,8 +142,8 @@ namespace dexih.transforms
             }
             else
             {
-                CacheTable = PrimaryTransform.CacheTable.Copy();
-                _fieldOrdinals = Enumerable.Range(0, CacheTable.Columns.Count).ToList();
+                CacheTable = PrimaryTransform.CacheTable.Copy(false, true);
+                _fieldOrdinals = CacheTable.Columns.Select(c => PrimaryTransform.CacheTable.GetOrdinal(c)).ToList();
             }
 
             CacheTable.Name = "Query";

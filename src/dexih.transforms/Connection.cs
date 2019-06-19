@@ -815,12 +815,13 @@ namespace dexih.transforms
                 }
 
                 var values = new HashSet<object>();
+                var ordinal = table.Columns.GetOrdinal(column);
                 while (
                     cancellationToken.IsCancellationRequested == false &&
                     await reader.ReadAsync(cancellationToken)
                 )
                 {
-                    var value = reader[0];
+                    var value = reader[ordinal];
                     if(!values.Contains(value)) values.Add(value);
                 }
 

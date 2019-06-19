@@ -119,7 +119,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="transformWriterTarget"></param>
         /// <param name="nodePath">Array of node names that shows the path to the child node.</param>
-        public void Add(TransformWriterTarget transformWriterTarget, Span<string> nodePath)
+        public void Add(TransformWriterTarget transformWriterTarget, string[] nodePath)
         {
             if (nodePath == null || nodePath.Length == 0)
             {
@@ -150,7 +150,7 @@ namespace dexih.transforms
                     ChildWriterTargets.Add(childWriterTarget);
                 }
                 
-                childWriterTarget.Add(transformWriterTarget, nodePath.Slice(1));
+                childWriterTarget.Add(transformWriterTarget, nodePath.Skip(1).ToArray());
                 return;
             }
 

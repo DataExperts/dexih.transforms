@@ -102,7 +102,6 @@ namespace dexih.transforms.Mapping
                 mapping.AddOutputColumns(table);
             }
 
-            
             if (PassThroughColumns && _groupNode == null)
             {
                 _passThroughOrdinals = new Dictionary<int, int>();
@@ -112,6 +111,8 @@ namespace dexih.transforms.Mapping
                 for(var i = 0; i < inputTable.Columns.Count; i++)
                 {
                     var column = inputTable.Columns[i];
+                    
+                    if(column.IsParent) { continue; }
 
                     var parentOrdinal = table.Columns.GetOrdinal(column.Name, column.ColumnGroup);
                     if (parentOrdinal < 0)
@@ -121,7 +122,6 @@ namespace dexih.transforms.Mapping
                         _passThroughColumns.Add(column);
                         _passThroughOrdinals.Add(i, targetOrdinal);
                     }
-
                 }
 
                 if (joinTable != null)
@@ -164,6 +164,7 @@ namespace dexih.transforms.Mapping
                         }
                     }
                 }
+                
             }
             
             if (inputTable.OutputSortFields != null)
