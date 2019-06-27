@@ -4,6 +4,7 @@ using Newtonsoft.Json.Converters;
 
 namespace dexih.functions.Query
 {
+    [Serializable]
     public class SelectColumn: IEquatable<SelectColumn>
     {
         public SelectColumn() { }

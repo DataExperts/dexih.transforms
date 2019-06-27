@@ -11,6 +11,7 @@ using Dexih.Utils.DataType;
 
 namespace dexih.functions
 {
+    [Serializable]
     public class Functions
     {
         public static (string path, string pattern)[] SearchPaths()

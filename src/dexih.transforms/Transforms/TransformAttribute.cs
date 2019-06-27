@@ -4,6 +4,7 @@ using Newtonsoft.Json.Converters;
 
 namespace dexih.transforms.Transforms
 {
+    [Serializable]
     public class TransformAttribute: Attribute
     {
         [JsonConverter(typeof(StringEnumConverter))]

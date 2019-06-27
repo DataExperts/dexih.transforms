@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace dexih.transforms
 {
+    [Serializable]
     public class ConnectionReference : ConnectionAttribute
     {
         public string ConnectionAssemblyName { get; set; }

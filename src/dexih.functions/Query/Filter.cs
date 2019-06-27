@@ -7,7 +7,8 @@ using Dexih.Utils.DataType;
 
 namespace dexih.functions.Query
 {
- public class Filter : IEquatable<Filter>
+    [Serializable]
+    public class Filter : IEquatable<Filter>
     {
         public Filter() { }
 

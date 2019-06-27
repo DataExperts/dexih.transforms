@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
+    [Serializable]
     public class Sorts: List<Sort>
     {
         public Sorts(params string[] columnNames)

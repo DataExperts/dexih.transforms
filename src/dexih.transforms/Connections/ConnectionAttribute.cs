@@ -3,7 +3,7 @@
 namespace dexih.transforms
 {
 
-    
+    [Serializable]
     public class ConnectionAttribute : Attribute
     {
         /// <summary>

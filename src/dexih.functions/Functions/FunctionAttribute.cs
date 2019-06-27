@@ -13,6 +13,7 @@ namespace dexih.functions
         None, Numeric, All, String
     }
 
+    [Serializable]
     public class TransformFunctionAttribute : Attribute
     {
         public string Category { get; set; }

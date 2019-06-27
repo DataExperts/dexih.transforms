@@ -1,7 +1,9 @@
-﻿using Dexih.Utils.DataType;
+﻿using System;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions
 {
+    [Serializable]
     public class FunctionParameter
     {
         public string ParameterName { get; set; }

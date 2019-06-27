@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.Query
 {
+    [Serializable]
     public class SelectQuery: IEquatable<SelectQuery>
     {
         public SelectQuery()

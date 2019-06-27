@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
+    [Serializable]
     public class DeleteQuery
     {
         public DeleteQuery(string table, List<Filter> filters)

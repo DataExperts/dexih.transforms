@@ -16,6 +16,7 @@ namespace dexih.functions
     /// <summary>
     /// Function reference contains details of a standard function
     /// </summary>
+    [Serializable]
     public class FunctionReference
     {
         public EFunctionType FunctionType { get; set; }

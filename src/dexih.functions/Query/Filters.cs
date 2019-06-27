@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
+    [Serializable]
     public class Filters: List<Filter>
     {
         public Filters(string columnName, object value)

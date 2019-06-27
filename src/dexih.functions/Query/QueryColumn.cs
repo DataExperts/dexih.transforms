@@ -2,6 +2,7 @@
 
 namespace dexih.functions.Query
 {
+    [Serializable]
     public class QueryColumn: IEquatable<QueryColumn>
     {
         public QueryColumn() { }

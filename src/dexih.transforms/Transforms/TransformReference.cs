@@ -3,6 +3,7 @@ using System.Reflection;
 
 namespace dexih.transforms.Transforms
 {
+    [Serializable]
     public class TransformReference: TransformAttribute
     {
         public string TransformClassName { get; set; }
