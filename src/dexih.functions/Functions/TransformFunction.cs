@@ -105,7 +105,7 @@ namespace dexih.functions
 	/// <summary>
 	/// The function class is used by transforms to run functions for conditions, mappings, and aggregations.
 	/// </summary>
-	public class TransformFunction
+	public class TransformFunction : IDisposable
 	{
 		public TransformMethod InitializeMethod { get; set; }
 		public TransformMethod FunctionMethod { get; set; }
@@ -546,7 +546,14 @@ namespace dexih.functions
 //                detail += Inputs[i].Name + "=" + (Inputs[i].Value == null ? "null" : Inputs[i].Value.ToString()) + (i < Inputs.Length - 1 ? "," : ")");
 //            return detail;
 //        }
-    }
+		public void Dispose()
+		{
+			if (ObjectReference is IDisposable objectReference)
+			{
+				objectReference.Dispose();
+			}
+		}
+	}
 
 
 }

@@ -13,7 +13,7 @@ namespace dexih.transforms.File
 {
     public class FileHandlerText : FileHandlerBase, IDisposable
     {
-        private Table _table;
+        private readonly Table _table;
         private SelectQuery _selectQuery;
         private readonly FileConfiguration _fileConfiguration;
 

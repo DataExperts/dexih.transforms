@@ -17,7 +17,7 @@ namespace dexih.transforms.Mapping
         }
 
 
-        private TableColumn _inputColumn;
+        private readonly TableColumn _inputColumn;
         private object _inputValue;
 
         protected int InputOrdinal = -1;

@@ -66,11 +66,11 @@ namespace dexih.connections.excel
 			    case ETypeCode.UInt64:
 				    return (ulong)999999999999999; 
 			    case ETypeCode.Int64:
-				    return (long)999999999999999; 
+				    return 999999999999999; 
 			    case ETypeCode.Decimal:
 				    return (decimal)999999999999999; 
 			    default:
-				    return Dexih.Utils.DataType.DataType.GetDataTypeMaxValue(typeCode, length);
+				    return GetDataTypeMaxValue(typeCode, length);
 		    }
 	    }
 	    
@@ -125,7 +125,6 @@ namespace dexih.connections.excel
                 }
 
                 package.Save();
-                return;
             }
             catch(Exception ex)
             {
@@ -691,7 +690,7 @@ namespace dexih.connections.excel
                 {
                     DefaultDatabase = databaseName;
                 }
-                var package = NewConnection();
+                NewConnection();
                 return Task.CompletedTask;
 
             }

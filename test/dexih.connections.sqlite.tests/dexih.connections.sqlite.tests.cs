@@ -1,6 +1,7 @@
 ﻿using dexih.connections.test;
 using System;
 using System.Threading.Tasks;
+using dexih.connections.sqlite;
 using dexih.transforms;
 using Xunit;
 using Xunit.Abstractions;

@@ -8,7 +8,6 @@ using System.Text;
 using Dexih.Utils.DataType;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.ML.Transforms;
 
 namespace dexih.functions.ml
 {

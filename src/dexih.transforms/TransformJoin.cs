@@ -9,6 +9,7 @@ using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
+using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms
@@ -264,8 +265,14 @@ namespace dexih.transforms
             IsOpen = true;
             
             if (selectQuery == null)
+            {
                 selectQuery = new SelectQuery();
-
+            }
+            else
+            {
+                selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
+            }
+            
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 
             if (!returnValue) return false;

@@ -10,7 +10,7 @@ namespace dexih.functions.BuiltIn
     {
         private readonly OrderedDictionary _dictionary;
         private readonly HashSet<object> _createdNodes;
-        private bool _parentCreated = false;
+        private bool _parentCreated;
 
         public HierarchyFunctions()
         {

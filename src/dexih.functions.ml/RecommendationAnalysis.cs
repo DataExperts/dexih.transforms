@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using dexih.functions.Exceptions;
 using Dexih.Utils.CopyProperties;
 using Microsoft.ML;
 using Microsoft.ML.Data;
@@ -99,7 +97,7 @@ namespace dexih.functions.ml
             _recommendationEntries.Add(new RecommendationEntry() {Item1 = item1, Item2 = item2});
         }
         
-        public dexih.functions.ml.RegressionMetrics RecommendationEvaluateResult(byte[] sentimentModel)
+        public RegressionMetrics RecommendationEvaluateResult(byte[] sentimentModel)
         {
             // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
             // as a catalog of available operations and as the source of randomness.

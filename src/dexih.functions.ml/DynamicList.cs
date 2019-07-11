@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
-using Dexih.Utils.DataType;
 using Microsoft.ML;
 
 namespace dexih.functions.ml
@@ -11,8 +8,8 @@ namespace dexih.functions.ml
     public class DynamicList
     {
         public Type Type { get; set; }
-        private Action<object[]> _addAction;
-        private IEnumerable<object> _data;
+        private readonly Action<object[]> _addAction;
+        private readonly IEnumerable<object> _data;
 
         public DynamicTypeProperty[] Fields;
         

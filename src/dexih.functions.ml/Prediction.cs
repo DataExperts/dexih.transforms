@@ -8,10 +8,10 @@ namespace dexih.functions.ml
     public class Prediction
     {
         // instance of the prection engine.
-        private object _predictionEngine;
+        private readonly object _predictionEngine;
         
         // method to run the "predict"
-        private MethodInfo _predictMethod;
+        private readonly MethodInfo _predictMethod;
         private Type _dataType;
         
 

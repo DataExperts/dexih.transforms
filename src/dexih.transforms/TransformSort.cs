@@ -6,6 +6,7 @@ using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
+using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {
@@ -73,7 +74,13 @@ namespace dexih.transforms
             IsOpen = true;
 
             if (selectQuery == null)
+            {
                 selectQuery = new SelectQuery();
+            }
+            else
+            {
+                selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
+            }
 
             selectQuery.Sorts = RequiredSortFields();
 

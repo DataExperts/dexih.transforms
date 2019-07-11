@@ -31,14 +31,14 @@ namespace dexih.connections.azure
     )]
     public class ConnectionFlatFileAzureFile : ConnectionFlatFile
     {
-        public CloudBlobClient CloudBlobClient;
-        public CloudBlobContainer CloudBlobContainer;
+        private CloudBlobClient _cloudBlobClient;
+        private CloudBlobContainer _cloudBlobContainer;
 
-        private CloudBlobClient _CloudBlobClient
+        private CloudBlobClient CloudBlobClient
         {
             get
             {
-                if (CloudBlobClient == null)
+                if (_cloudBlobClient == null)
                 {
                     CloudStorageAccount storageAccount;
                     // Retrieve the storage account from the connection string.
@@ -50,22 +50,22 @@ namespace dexih.connections.azure
                         storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + Username + ";AccountKey=" + Password + ";BlobEndpoint=" + Server + ";TableEndpoint=" + Server + ";QueueEndpoint=" + Server + ";FileEndpoint=" + Server);
 
                     // Create the table client.
-                    CloudBlobClient = storageAccount.CreateCloudBlobClient();
+                    _cloudBlobClient = storageAccount.CreateCloudBlobClient();
                 }
 
-                return CloudBlobClient;
+                return _cloudBlobClient;
             }
         }
 
         private async Task<CloudBlobContainer> GetCloudBlobContainer()
         {
-            if (CloudBlobContainer == null)
+            if (_cloudBlobContainer == null)
             {
-                CloudBlobContainer = _CloudBlobClient.GetContainerReference(DefaultDatabase);
-                await CloudBlobContainer.CreateIfNotExistsAsync();
+                _cloudBlobContainer = CloudBlobClient.GetContainerReference(DefaultDatabase);
+                await _cloudBlobContainer.CreateIfNotExistsAsync();
             }
 
-            return CloudBlobContainer;
+            return _cloudBlobContainer;
         }
 
         public override async Task<List<string>> GetFileShares()
@@ -79,7 +79,7 @@ namespace dexih.connections.azure
                 BlobContinuationToken continuationToken = null;
                 do
                 {
-                    var shares = await _CloudBlobClient.ListContainersSegmentedAsync(continuationToken);
+                    var shares = await CloudBlobClient.ListContainersSegmentedAsync(continuationToken);
                     continuationToken = shares.ContinuationToken;
                     list.AddRange(shares.Results);
 
@@ -102,13 +102,13 @@ namespace dexih.connections.azure
         {
             try
             {
-                if (CloudBlobContainer == null)
+                if (_cloudBlobContainer == null)
                 {
-                    CloudBlobContainer = _CloudBlobClient.GetContainerReference(DefaultDatabase.ToLower());
-                    await CloudBlobContainer.CreateIfNotExistsAsync();
+                    _cloudBlobContainer = CloudBlobClient.GetContainerReference(DefaultDatabase.ToLower());
+                    await _cloudBlobContainer.CreateIfNotExistsAsync();
                 }
 
-                return CloudBlobContainer.GetDirectoryReference("");
+                return _cloudBlobContainer.GetDirectoryReference("");
             }
             catch (Exception ex)
             {
@@ -359,8 +359,8 @@ namespace dexih.connections.azure
         {
             try
             {
-                var connection = _CloudBlobClient;
-                var serviceProperties = await connection.GetServicePropertiesAsync();
+                var connection = CloudBlobClient;
+                await connection.GetServicePropertiesAsync();
                 State = EConnectionState.Open;
                 return true;
             }

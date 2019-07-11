@@ -89,7 +89,6 @@ namespace dexih.transforms.Mapping
 
         public override void MapOutputRow(object[] row)
         {
-            return;
         }
 
         public override string Description()

@@ -36,7 +36,7 @@ namespace dexih.functions.BuiltIn
         {
             for (var i = 1; i < values.Length; i++)
             {
-                if (!Operations.Equals(values[0], values[i])) return false;
+                if (!Equals(values[0], values[i])) return false;
             }
 
             return true;

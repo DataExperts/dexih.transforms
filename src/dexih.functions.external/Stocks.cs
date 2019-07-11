@@ -13,6 +13,8 @@ namespace dexih.functions.external
 {
     public class Stocks
     {
+        private const string KeyDescription =
+            "Sign up for key at [alphavantage.co](https://www.alphavantage.co/support/#api-key).";
         public struct StockEntity
         {
             public string Symbol { get; set; }
@@ -133,13 +135,12 @@ namespace dexih.functions.external
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Stocks", Name = "Latest Stock Information",
-            Description =
-                "Gets the latest time interval data for the specified stock.  Sign up for key at [alphavantage.co](https://www.alphavantage.co/support/#api-key).")]
+            Description ="Gets the latest time interval data for the specified stock.")]
         public async Task<StockEntity> LatestStockInfo(
-            string key, 
+            [TransformFunctionParameter(Description = KeyDescription)] string key, 
             string symbol,
-            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval,
-            CancellationToken cancellationToken)
+            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval = "1min",
+            CancellationToken cancellationToken = default)
         {
             var url = GetAlphaVantageUrl("TIME_SERIES_INTRADAY", interval, symbol, key);
             var entities = await GetStockResponse(url, 1, cancellationToken);
@@ -154,16 +155,16 @@ namespace dexih.functions.external
         
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Stocks", Name = "Latest Stock History",
             Description =
-                "Gets the latest stock history time interval data for the specified stock.  Sign up for key at [alphavantage.co](https://www.alphavantage.co/support/#api-key).")]
+                "Gets the latest stock history time interval data for the specified stock.")]
         public Task<List<StockEntity>> LatestStockHistory(
-            string key, 
+            [TransformFunctionParameter(Description = KeyDescription)] string key, 
             string symbol,
-            int count,
-            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval,
-            CancellationToken cancellationToken)
+            int maxCount = 1,
+            [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval = "15min",
+            CancellationToken cancellationToken = default)
         {
             var url = GetAlphaVantageUrl("TIME_SERIES_INTRADAY", interval, symbol, key);
-            return GetStockResponse(url, Int32.MaxValue, cancellationToken);
+            return GetStockResponse(url, maxCount, cancellationToken);
         }
     }
 }

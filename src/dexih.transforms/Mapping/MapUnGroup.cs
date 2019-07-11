@@ -55,7 +55,8 @@ namespace dexih.transforms.Mapping
 
             if (_transform == null || _transform.IsReaderFinished)
             {
-                _transform = transform.PrimaryTransform.GetThread();
+                // _transform = transform.PrimaryTransform.GetThread();
+                _transform = transform.GetThread();
                 await _transform.Open(cancellationToken);
             }
 

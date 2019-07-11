@@ -49,21 +49,21 @@ namespace dexih.functions
             set => _tableColumns[_columnOrdinals[columnName]] = value;
         }
         
-        public TableColumn this[string columnName, string columnGroup]
-        {
-            get
-            {
-                var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;
-                if (_columnOrdinals.TryGetValue(name, out var ordinal))
-                    return _tableColumns[ordinal];
-                return null;
-            }
-            set
-            {
-                var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;
-                _tableColumns[_columnOrdinals[name]] = value;
-            }
-        }
+//        public TableColumn this[string columnName, string columnGroup]
+//        {
+//            get
+//            {
+//                var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;
+//                if (_columnOrdinals.TryGetValue(name, out var ordinal))
+//                    return _tableColumns[ordinal];
+//                return null;
+//            }
+//            set
+//            {
+//                var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;
+//                _tableColumns[_columnOrdinals[name]] = value;
+//            }
+//        }
 
         public TableColumn this[TableColumn column]
         {
@@ -95,7 +95,7 @@ namespace dexih.functions
 
         public bool TryGetColumn(TableColumn.EDeltaType deltaType, out TableColumn column)
         {
-            column = this.GetColumn(deltaType);
+            column = GetColumn(deltaType);
             return column != null;
         }
 
@@ -117,13 +117,13 @@ namespace dexih.functions
             return -1;
         }
 
-        public int GetOrdinal(string columnName, string columnGroup)
-        {
-            var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;
-            if (_columnOrdinals.TryGetValue(name, out var ordinal))
-                return ordinal;
-            return -1;
-        }
+//        public int GetOrdinal(string columnName, string columnGroup)
+//        {
+//            var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;
+//            if (_columnOrdinals.TryGetValue(name, out var ordinal))
+//                return ordinal;
+//            return -1;
+//        }
 
         public int GetOrdinal(TableColumn.EDeltaType deltaType)
         {
@@ -198,15 +198,10 @@ namespace dexih.functions
             
             if (tableColumnName == item.Name)
             {
-                if (_columnOrdinals.ContainsKey(item.Name))
-                {
-                    //    _columnOrdinals[item.Name] = ordinal;
-                }
-                else
+                if (!_columnOrdinals.ContainsKey(item.Name))
                 {
                     _columnOrdinals.Add(item.Name, ordinal);
                 }
-                    
             }
             else
             {

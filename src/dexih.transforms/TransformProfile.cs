@@ -32,7 +32,7 @@ namespace dexih.transforms
 
 //        private List<TransformFunction> _profiles;
 
-        private Mappings _profileMappings;
+        private readonly Mappings _profileMappings;
 
         private Table _profileResults;
 

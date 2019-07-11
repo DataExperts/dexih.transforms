@@ -76,7 +76,7 @@ namespace dexih.connections.sql
         }
 
         private int _currentTransactionKey = 0;
-        private ConcurrentDictionary<int, (DbConnection connection, DbTransaction transaction)> _transactions = new ConcurrentDictionary<int, (DbConnection, DbTransaction)>();
+        private readonly ConcurrentDictionary<int, (DbConnection connection, DbTransaction transaction)> _transactions = new ConcurrentDictionary<int, (DbConnection, DbTransaction)>();
 
          protected string AddEscape(string value) => value.Replace("'", "''");
 

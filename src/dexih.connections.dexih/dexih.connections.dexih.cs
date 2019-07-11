@@ -47,7 +47,7 @@ namespace dexih.connections.dexih
         public override bool DynamicTableCreation => false;
         
         private readonly HttpClient _httpClient = new HttpClient();
-        private bool _isAuthenticated = false;
+        private bool _isAuthenticated;
         private DexihActiveAgent _activeAgent;
         private DownloadUrl _downloadUrl;
 

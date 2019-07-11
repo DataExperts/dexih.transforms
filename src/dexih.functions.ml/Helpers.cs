@@ -1,13 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using dexih.functions.Exceptions;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Transforms;
-using Microsoft.ML.Transforms.Text;
 
 namespace dexih.functions.ml
 {

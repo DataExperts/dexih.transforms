@@ -212,6 +212,36 @@ namespace dexih.transforms.tests
             Assert.False(moreRecords);
         }
 
+        [Fact]
+        public async Task PocoTest_Processor()
+        {
+
+            var item = new SamplePocoClass("column1", 1, new DateTime(2000, 01, 02));
+            
+            var connection = new ConnectionMemory();
+            var pocoTable = new PocoTable<SamplePocoClass>();
+            await pocoTable.CreateTable(connection, true, CancellationToken.None);
+            
+            var pocoProcessor = new PocoProcessor<SamplePocoClass>();
+
+            for (var i = 0; i < 1000; i++)
+            {
+                pocoProcessor.EnqueueMessage(EPocoOperation.Insert, connection, item);
+            }
+            
+            pocoProcessor.Dispose();
+
+            var reader = connection.GetTransformReader(pocoTable.Table);
+
+            var count = 0;
+            while (await reader.ReadAsync())
+            {
+                count++;
+            }
+
+            Assert.Equal(1000, count);
+        }
+
     }
 
     public class SamplePocoClass

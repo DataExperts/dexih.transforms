@@ -7,8 +7,8 @@ namespace dexih.functions.financial
     public class FinancialAggregate
     {
         //The cache parameters are used by the functions to maintain a state during a transform process.
-        private List<double> _cacheData = new List<double>();
-        private List<DateTime> _cacheDates = new List<DateTime>();
+        private readonly List<double> _cacheData = new List<double>();
+        private readonly List<DateTime> _cacheDates = new List<DateTime>();
 
         public bool Reset()
         {

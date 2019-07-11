@@ -445,7 +445,8 @@ namespace dexih.transforms
             var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
 
             //add a sort transform to ensure sort order.
-            reader = new TransformSort(reader, sorts);
+            // reader = new TransformSort(reader, sorts);
+            reader = new TransformQuery(reader, query);
 
             var returnValue = await reader.Open(0, query, cancellationToken);
             if (!returnValue)
@@ -652,7 +653,7 @@ namespace dexih.transforms
                 case ETypeCode.Node:
                     if (value is DbDataReader reader)
                     {
-                        var streamJson = new StreamJsonCompact("json", reader);
+                        var streamJson = new StreamJson(name, reader);
 
                         // convert stream to string
                         var streamReader = new StreamReader(streamJson);

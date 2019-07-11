@@ -114,7 +114,7 @@ namespace dexih.transforms.Mapping
                     
                     if(column.IsParent) { continue; }
 
-                    var parentOrdinal = table.Columns.GetOrdinal(column.Name, column.ColumnGroup);
+                    var parentOrdinal = table.Columns.GetOrdinal(column);
                     if (parentOrdinal < 0)
                     {
                         targetOrdinal++;

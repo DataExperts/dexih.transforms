@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +17,12 @@ namespace dexih.functions.external
 {
     public class OpenWeatherMap
     {
+        private const string apiKey = "API Key.  Sign up at [openweathermap.org](https://openweathermap.org/price).";
+        private const string maxCalls = "Limit maximum api calls per minute (unlimited = 0)";
+
+        private Stopwatch stopwatch;
+        private int apiCallCount;
+        
         public enum TemperatureScale
         {
             Fahrenheit, Celsius, Kelvin
@@ -66,17 +75,12 @@ namespace dexih.functions.external
             public double Latitude { get; set; }
         }
 
-        private string GetOpenWeatherUrl(string key)
-        {
-            return $"http://api.openweathermap.org/data/2.5/weather?APPID={key}";
-        }
+        private string GetOpenWeatherUrl(string key) => $"http://api.openweathermap.org/data/2.5/weather?APPID={key}";
         
         private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(string key, string parameters, CancellationToken cancellationToken)
         {
             var uri = new Uri(GetOpenWeatherUrl(key) + parameters);
             
-            // var uri = new Uri("https://samples.openweathermap.org/data/2.5/weather?q=London,uk&appid=b6907d289e10d714a6e88b30761fae22");
-
             using (var client = new HttpClient())
             {
 				client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
@@ -91,55 +95,103 @@ namespace dexih.functions.external
         private double? ConvertTemperature(double? kelvin, TemperatureScale temperatureScale)
         {
             if (kelvin == null) return null;
-            
+
+            double temperature;
             switch (temperatureScale)
             {
                 case TemperatureScale.Fahrenheit:
-                    return ((9.0 / 5.0) * (kelvin - 273.15)) + 32;
+                    temperature = ((9.0 / 5.0) * (kelvin.Value - 273.15)) + 32;
+                    break;
                 case TemperatureScale.Celsius:
-                    return kelvin - 273.15;
+                    temperature =  kelvin.Value - 273.15;
+                    break;
                 case TemperatureScale.Kelvin:
-                    return kelvin;
+                    temperature =  kelvin.Value;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(temperatureScale), temperatureScale, null);
             }
+
+            return Math.Round(temperature, 2);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Name",
-            Description = "Gets the weather based on a city name.  Sign up for key at [openweathermap.org](https://openweathermap.org/price).")]
-        public Task<WeatherDetails> WeatherByCityName(string key, string cityName,
-            TemperatureScale temperatureScale, CancellationToken cancellationToken)
+            Description = "Gets the weather based on a city name.")]
+        public Task<WeatherDetails> WeatherByCityName(
+            [TransformFunctionParameter(Description = apiKey)] string key, 
+            string cityName,
+            TemperatureScale temperatureScale, 
+            [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
+            CancellationToken cancellationToken = default)
         {
-            return GetWeatherResponse(key, $"&q={cityName}", temperatureScale, cancellationToken);
+            return GetWeatherResponse(key, $"&q={cityName}", temperatureScale, maxCallsMinute, cancellationToken);
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By Coordinates",
-            Description = "Gets the weather based on a city id.  Sign up for key at [openweathermap.org](https://openweathermap.org/price).")]
-        public Task<WeatherDetails> WeatherByCityId(string key, int cityId,
-            TemperatureScale temperatureScale, CancellationToken cancellationToken)
-        {
-            return GetWeatherResponse(key, $"&id={cityId}", temperatureScale, cancellationToken);
-        }
-
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Id",
-            Description = "Gets the weather based on a longitude and latitude.  Sign up for key at [openweathermap.org](https://openweathermap.org/price).")]
-        public Task<WeatherDetails> WeatherByCityId(string key, double latitude, double longitude,
-            TemperatureScale temperatureScale, CancellationToken cancellationToken)
+            Description = "Gets the weather based on a city id.  Use the row function \"Weather Cities List\" for a list of cities.")]
+        public Task<WeatherDetails> WeatherByCityId(
+            [TransformFunctionParameter(Description = apiKey)] string key, 
+            int cityId,
+            TemperatureScale temperatureScale, 
+            [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
+            CancellationToken cancellationToken = default)
         {
-            return GetWeatherResponse(key, $"&lat={latitude}&lon={longitude}", temperatureScale, cancellationToken);
+            return GetWeatherResponse(key, $"&id={cityId}", temperatureScale, maxCallsMinute, cancellationToken);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Id",
-            Description = "Gets the weather based on a zip code.  Note if country is not specified when USA will be default.  Sign up for key at [openweathermap.org](https://openweathermap.org/price).")]
-        public Task<WeatherDetails> WeatherByCityId(string key, string zipCode, string country,
-            TemperatureScale temperatureScale, CancellationToken cancellationToken)
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By Geo Coordinates",
+            Description = "Gets the weather based on a longitude and latitude.")]
+        public Task<WeatherDetails> WeatherByCoordinates(
+            [TransformFunctionParameter(Description = apiKey)] string key, 
+            double latitude, 
+            double longitude,
+            TemperatureScale temperatureScale, 
+            [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
+            CancellationToken cancellationToken = default)
         {
-            return GetWeatherResponse(key, $"&zip={zipCode},{country}", temperatureScale,cancellationToken);
+            return GetWeatherResponse(key, $"&lat={latitude}&lon={longitude}", temperatureScale, maxCallsMinute, cancellationToken);
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By Zip Code",
+            Description = "Gets the weather based on a zip code.  Note if country is not specified when USA will be default.")]
+        public Task<WeatherDetails> WeatherByZipCode(
+            [TransformFunctionParameter(Description = apiKey)] string key, 
+            string zipCode, 
+            string country,
+            TemperatureScale temperatureScale,
+            [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
+            CancellationToken cancellationToken = default)
+        {
+            return GetWeatherResponse(key, $"&zip={zipCode},{country}", temperatureScale, maxCallsMinute, cancellationToken);
         }
 
 
-        private async Task<WeatherDetails> GetWeatherResponse(string key, string uri, TemperatureScale temperatureScale, CancellationToken cancellationToken)
+        private async Task<WeatherDetails> GetWeatherResponse(
+            string key, 
+            string uri, 
+            TemperatureScale temperatureScale, 
+            int maxCallsPerMinute,
+            CancellationToken cancellationToken)
         {
+            if (stopwatch == null && maxCallsPerMinute > 0)
+            {
+                stopwatch = Stopwatch.StartNew();
+                apiCallCount = 0;
+            }
+
+            if (stopwatch != null && apiCallCount >= maxCallsPerMinute)
+            {
+                if (stopwatch.Elapsed.Seconds < 60)
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(1) - stopwatch.Elapsed, cancellationToken);
+                }
+                
+                stopwatch.Reset();
+                apiCallCount = 0;
+            }
+
+            apiCallCount++;
+            
             var (url, statusCode, isSuccess, response) = await GetWebServiceResponse(key, uri, cancellationToken);
 
             if (!isSuccess)
@@ -228,7 +280,9 @@ namespace dexih.functions.external
             return weatherDetails;
         }
 
-        private IEnumerator<JToken> _cachedCities;
+        private JArray _cachedCities;
+        private int _index;
+        private int _childCount;
         
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Weather", Name = "Weather City List",
             Description = "Get a list of all the cities used for the weather functions.  Data from [openweathermap.org](https://openweathermap.org)")]
@@ -248,14 +302,12 @@ namespace dexih.functions.external
 
                     if (response.IsSuccessStatusCode)
                     {
-                        var stream = await response.Content.ReadAsStreamAsync();
-                        using (MemoryStream output = new MemoryStream())
-                        using (GZipStream sr = new GZipStream(stream, CompressionMode.Decompress))
+                        using( var stream = await response.Content.ReadAsStreamAsync())
+                        using( var output = new MemoryStream())
+                        using( var sr = new GZipStream(stream, CompressionMode.Decompress))
                         {
                             sr.CopyTo(output);
-
                             jsonString = Encoding.UTF8.GetString(output.GetBuffer(), 0, (int) output.Length);
-
                         }
                     }
                     else
@@ -271,34 +323,42 @@ namespace dexih.functions.external
                     {
                         throw new FileHandlerException("The json data parsing returned nothing.");
                     }
-
+                    
                     if (cities is JArray jArray)
                     {
-                        _cachedCities = jArray.Children().GetEnumerator();
+                        _cachedCities = jArray;
+                        _index = 0;
+                        _childCount = _cachedCities.Children().Count();
+                    }
+                    else
+                    {
+                        throw new FileHandlerException($"The json data read, as a json array was expected.");
                     }
                 }
                 catch (Exception ex)
                 {
                     throw new FileHandlerException($"The json data could not be parsed.  {ex.Message}", ex);
                 }
-
             }
 
-            if (_cachedCities == null) return null;
-            if(!_cachedCities.MoveNext()) return null;
-            var token = _cachedCities.Current;
+            if (_index < _childCount)
+            {    
+                var token = _cachedCities[_index];
+                var city = new CityDetails()
+                {
+                    CityId = token["id"].Value<int>(),
+                    CityName = token["name"].Value<string>(),
+                    Country = token["country"].Value<string>(),
+                    Longitude = token["coord"]?["lon"].Value<double>() ?? 0,
+                    Latitude = token["coord"]?["lat"].Value<double>() ?? 0,
+                };
+                _index++;
+                return city;
+            }
 
-            var city = new CityDetails()
-            {
-                CityId = token["id"].Value<int>(),
-                CityName = token["name"].Value<string>(),
-                Country = token["country"].Value<string>(),
-                Longitude = token["coord"]?["lon"].Value<double>() ?? 0,
-                Latitude = token["coord"]?["lat"].Value<double>() ?? 0,
-            };
+            _cachedCities = null;
 
-
-            return city;
+            return null;
         }
     }
 }

@@ -65,7 +65,6 @@ namespace dexih.transforms
             DefaultDatabase = databaseName;
             //create the subdirectories
             var returnValue = await CreateDirectory(null, EFlatFilePath.None);
-            return;
         }
 
         public async Task<bool> CreateFilePaths(FlatFile flatFile)
@@ -100,18 +99,19 @@ namespace dexih.transforms
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
                 var fileNameExtension = Path.GetExtension(fileName);
 
-				if(fileNameExtension == ".zip") 
-				{
+				if(fileNameExtension == ".zip")
+                {
+                    var result = true;
 					using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
 	                {
                         foreach(var entry in archive.Entries)
                         {
                             if(string.IsNullOrEmpty(entry.Name) || entry.FullName.StartsWith("__MACOSX") || entry.Length == 0) continue;
-                            return await SaveFileStream(file, path, entry.Name, entry.Open());
+                            result = result & await SaveFileStream(file, path, entry.Name, entry.Open());
                         }
 
 	                }
-					return true;
+					return result;
 				} else if (fileNameExtension == ".gz")
                 {
                     using (var decompressionStream = new GZipStream(stream, CompressionMode.Decompress))
@@ -156,6 +156,7 @@ namespace dexih.transforms
 
         public async Task<Stream> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles = false)
         {
+            
             if (zipFiles)
             {
                 var memoryStream = new MemoryStream();

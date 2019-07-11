@@ -377,7 +377,7 @@ namespace dexih.connections.ftp
         {
             try
             {
-                using (var client = await GetFtpClient())
+                using (await GetFtpClient())
                 {
                     State = EConnectionState.Open;
                     return true;

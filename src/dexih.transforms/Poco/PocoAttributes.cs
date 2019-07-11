@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using dexih.functions;
 using static dexih.functions.TableColumn;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
@@ -32,7 +31,7 @@ namespace dexih.transforms.Poco
         /// Gets or sets the deltaType value
         /// </summary>
         /// <value>The type of the delta.</value>
-        public TableColumn.EDeltaType DeltaType { get; set; } = EDeltaType.TrackingField;
+        public EDeltaType DeltaType { get; set; } = EDeltaType.TrackingField;
 
         /// <summary>
         /// Gets or sets an override for the datatype.

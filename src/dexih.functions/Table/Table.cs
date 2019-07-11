@@ -28,7 +28,7 @@ namespace dexih.functions
             LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = columns??new TableColumns();
-            Data = data;
+            Data = data?? new TableCache();
         }
 
         public Table(string tableName, int maxRows, params TableColumn[] columns) 
@@ -182,9 +182,7 @@ namespace dexih.functions
 		// public Dictionary<string, string> ExtendedProperties { get; set; }
 
         public TableColumn this[string columnName] => Columns[columnName];
-
-        public TableColumn this[string columnName, string columnGroup] => Columns[columnName, columnGroup];
-
+        
         public TableColumn this[int ordinal] => Columns[ordinal];
 
         /// <summary>
@@ -589,7 +587,7 @@ namespace dexih.functions
 
         public int GetOrdinal(string schemaColumnName) => Columns.GetOrdinal(schemaColumnName);
         public int GetOrdinal(TableColumn column) => Columns.GetOrdinal(column);
-        public int GetOrdinal(string tableName, string columnGroup) => Columns.GetOrdinal(tableName, columnGroup);
+//         public int GetOrdinal(string tableName, string columnGroup) => Columns.GetOrdinal(tableName, columnGroup);
 
         public bool TryGetColumn(string columnName, out TableColumn column) => Columns.TryGetColumn(columnName, out column);
 

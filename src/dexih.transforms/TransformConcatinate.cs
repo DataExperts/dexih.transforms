@@ -5,6 +5,7 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Transforms;
+using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms
@@ -52,6 +53,15 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
+            if (selectQuery == null)
+            {
+                selectQuery = new SelectQuery();
+            }
+            else
+            {
+                selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
+            }
+            
             var primarySorts = new List<Sort>();
             var referenceSorts = new List<Sort>();
             

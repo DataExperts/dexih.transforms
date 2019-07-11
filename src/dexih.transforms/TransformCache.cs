@@ -9,7 +9,7 @@ namespace dexih.transforms
     /// </summary>
     public class TransformCache: Transform
     {
-        private Transform _transform;
+        private readonly Transform _transform;
 
         /// <summary>
         /// 

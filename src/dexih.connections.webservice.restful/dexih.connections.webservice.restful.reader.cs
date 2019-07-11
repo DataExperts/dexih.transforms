@@ -1,14 +1,14 @@
-﻿using dexih.transforms;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
-using System.Threading;
-using System.Linq;
 using dexih.functions.Query;
+using dexih.transforms;
 using dexih.transforms.Exceptions;
 
-namespace dexih.connections.webservice
+namespace dexih.connections.webservice.restful
 {
     public class ReaderRestful : Transform
     {
@@ -16,21 +16,17 @@ namespace dexih.connections.webservice
 
         private List<Filter> _filter;
 
-        private WebService _restFunction;
-
         public ReaderRestful(Connection connection, Table table)
         {
             ReferenceConnection = connection;
             CacheTable = table;
-
-            _restFunction = (WebService)table;
         }
 
         public override string TransformName { get; } = "Restful Web Service Reader";
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
 

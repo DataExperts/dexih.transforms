@@ -269,7 +269,7 @@ namespace dexih.transforms
         {
             var column = columnPath[pathNumber];
             var table = primaryTransform.CacheTable;
-            var nodeColumn = table[column.Name, column.ColumnGroup];
+            var nodeColumn = table.Columns[column];
             // create a new node mapping
             var mapNode = new MapNode(nodeColumn, table);
             var nodeTransform = mapNode.Transform;
@@ -657,9 +657,15 @@ namespace dexih.transforms
                             newNode.Open().Wait();
                             row[i] = newNode;
                             break;
-                        default:
-                            throw new TransformException(
-                                $"There was an issue resetting.  The column {CacheTable.Columns[i].Name} was expected to be a node, however was {row[i].GetType()}");
+                        case JArray jArray:
+                            var childTable = new Table(column.Name, column.ChildColumns);
+                            var jsonNode = new ReaderJson(jArray, childTable);
+                            jsonNode.Open().Wait();
+                            row[i] = jsonNode;
+                            break;
+//                        default:
+//                            throw new TransformException(
+//                                $"There was an issue resetting.  The column {CacheTable.Columns[i].Name} was expected to be a node, however was {row[i].GetType()}");
                     }
                 }
             }
@@ -1125,7 +1131,7 @@ namespace dexih.transforms
                     var value = row[GetOrdinal(column.Name)];
                     if (value is Transform transform)
                     {
-                        jRow.Add(column.Name, await transform.LookupJsonArray(new SelectQuery(), TransformDelta.EDuplicateStrategy.All, cancellationToken));
+                        jRow.Add(column.Name, await transform.LookupJsonArray(new SelectQuery(), EDuplicateStrategy.All, cancellationToken));
                     }
                     else
                     {
@@ -1954,7 +1960,7 @@ namespace dexih.transforms
                     col.Name,
                     ordinal,
                     col.MaxLength > 0 ? col.MaxLength : int.MaxValue,
-                    Dexih.Utils.DataType.DataType.GetType(col.DataType),
+                    DataType.GetType(col.DataType),
                     col.DataType.ToString(),
                     false,
                     false,

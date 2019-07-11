@@ -22,7 +22,7 @@ namespace dexih.connections.dexih
         
         private FileHandlerBase _fileHandler;
 
-        private ConnectionDexih _dexihConnection;
+        private readonly ConnectionDexih _dexihConnection;
 
         public ReaderDexih(Connection connection, Table table)
         {
@@ -35,7 +35,7 @@ namespace dexih.connections.dexih
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
 

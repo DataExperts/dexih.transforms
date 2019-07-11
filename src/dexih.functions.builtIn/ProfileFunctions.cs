@@ -28,6 +28,7 @@ namespace dexih.functions.BuiltIn
 
         public ProfileFunctions(bool detailedResults = false)
         {
+            DetailedResults = detailedResults;
         }
 
         public ProfileFunctions()

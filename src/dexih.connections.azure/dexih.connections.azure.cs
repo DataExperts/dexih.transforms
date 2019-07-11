@@ -521,7 +521,7 @@ namespace dexih.connections.azure
                 var connection = GetCloudTableClient();
                 var cTable = connection.GetTableReference(IncrementalKeyTable);
 
-                long incrementalKey = 0;
+                long incrementalKey;
                 var lockGuid = Guid.NewGuid();
 
                 if (!await cTable.ExistsAsync())
@@ -529,7 +529,7 @@ namespace dexih.connections.azure
                     await cTable.CreateAsync();
                 }
 
-                DynamicTableEntity entity = null;
+                DynamicTableEntity entity;
 
                 do
                 {

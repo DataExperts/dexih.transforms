@@ -31,17 +31,14 @@ namespace dexih.functions.Parameter
 
         public override void InitializeOrdinal(Table table, Table joinTable = null)
         {
-            return;
         }
 
         public override void SetInputData(object[] data, object[] joinRow = null)
         {
-            return;
         }
 
         public override void PopulateRowData(object value, object[] data, object[] joinRow = null)
         {
-            return;
         }
         
         public override Parameter Copy()

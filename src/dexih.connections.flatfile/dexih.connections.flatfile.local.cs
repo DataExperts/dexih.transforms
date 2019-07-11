@@ -180,14 +180,31 @@ namespace dexih.connections.flatfile
                 var files = new List<DexihFileProperties>();
 
                 var fullDirectory = GetFullPath(file, path);
-                foreach (var fileName in Directory.GetFiles(fullDirectory))
+
+                if (Directory.Exists(fullDirectory))
                 {
-                    var fileInfo = new FileInfo(fileName);
-                    var contentType = ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
-                    files.Add(new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length, ContentType = contentType });
+                    foreach (var fileName in Directory.GetFiles(fullDirectory))
+                    {
+                        var fileInfo = new FileInfo(fileName);
+                        var
+                            contentType =
+                                ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
+                        files.Add(new DexihFileProperties()
+                        {
+                            FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length,
+                            ContentType = contentType
+                        });
+                    }
+
+                    return Task.FromResult(files);
                 }
 
-                return Task.FromResult(files);
+                throw new ConnectionException(
+                    $"The directory {path} has not been created.  Add a file to automatically create this directory.");
+            }
+            catch (ConnectionException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -213,7 +230,7 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                var createDirectoryResult = await CreateDirectory(file, path);
+                await CreateDirectory(file, path);
                 var fullDirectory = GetFullPath(file, path);
                 Stream reader = File.OpenWrite(Path.Combine(fullDirectory, fileName));
                 return reader;
@@ -228,7 +245,7 @@ namespace dexih.connections.flatfile
         {
             try
             {
-                var createDirectoryResult = await CreateDirectory(file, path);
+                await CreateDirectory(file, path);
 
 //                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
 //                var fileNameExtension = Path.GetExtension(fileName);

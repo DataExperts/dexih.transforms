@@ -66,7 +66,6 @@ namespace dexih.transforms.Mapping
 
         public override void AddOutputColumns(Table table)
         {
-            return;
         }
 
         public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
@@ -104,7 +103,6 @@ namespace dexih.transforms.Mapping
 
         public override void MapOutputRow(object[] row)
         {
-            return;
         }
 
         public override object GetOutputValue(object[] row = null)

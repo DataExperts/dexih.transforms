@@ -109,14 +109,7 @@ namespace dexih.transforms.Poco
             return connection.TableExists(Table, cancellationToken);
         }
 
-        /// <summary>
-        /// Inserts the item into the connection.
-        /// </summary>
-        /// <returns>The insert.</returns>
-        /// <param name="connection">Connection.</param>
-        /// <param name="item">Item.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        public async Task ExecuteInsert(Connection connection, T item, CancellationToken cancellationToken = default)
+        public InsertQuery PrepareInsert(T item)
         {
             var columns = new List<QueryColumn>();
 
@@ -134,6 +127,25 @@ namespace dexih.transforms.Poco
 
             var insertQuery = new InsertQuery(columns);
 
+            return insertQuery;
+        }
+
+        /// <summary>
+        /// Inserts the item into the connection.
+        /// </summary>
+        /// <returns>The insert.</returns>
+        /// <param name="connection">Connection.</param>
+        /// <param name="item">Item.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        public Task ExecuteInsert(Connection connection, T item, CancellationToken cancellationToken = default)
+        {
+
+            var insertQuery = PrepareInsert(item);
+            return ExecuteInsert(connection, insertQuery, item, cancellationToken);
+        }
+
+        public async Task ExecuteInsert(Connection connection, InsertQuery insertQuery, T item, CancellationToken cancellationToken = default)
+        {
             var insertResult = await connection.ExecuteInsert(Table, new List<InsertQuery>() { insertQuery }, cancellationToken);
 
             if(AutoIncrementProperty != null)
@@ -142,14 +154,8 @@ namespace dexih.transforms.Poco
             }
         }
 
-        /// <summary>
-        /// Deletes the item, based on the item values that contain a deltaType = NaturalKey
-        /// </summary>
-        /// <returns>The delete.</returns>
-        /// <param name="connection">Connection.</param>
-        /// <param name="item">Item to delete</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        public Task ExecuteDelete(Connection connection, T item, CancellationToken cancellationToken = default)
+
+        public DeleteQuery PrepareDelete(T item)
         {
             var filters = new List<Filter>();
 
@@ -165,7 +171,7 @@ namespace dexih.transforms.Poco
 
             var deleteQuery = new DeleteQuery(Table.Name, filters);
 
-            return connection.ExecuteDelete(Table, new List<DeleteQuery>() { deleteQuery }, cancellationToken);
+            return deleteQuery;
         }
 
         /// <summary>
@@ -175,7 +181,19 @@ namespace dexih.transforms.Poco
         /// <param name="connection">Connection.</param>
         /// <param name="item">Item to delete</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public Task ExecuteUpdate(Connection connection, T item, CancellationToken cancellationToken = default)
+        public Task ExecuteDelete(Connection connection, T item, CancellationToken cancellationToken = default)
+        {
+            var deleteQuery = PrepareDelete(item);
+            return ExecuteDelete(connection, deleteQuery, cancellationToken);
+        }
+
+        public Task ExecuteDelete(Connection connection, DeleteQuery deleteQuery, CancellationToken cancellationToken = default)
+        {
+            return connection.ExecuteDelete(Table, new List<DeleteQuery>() { deleteQuery }, cancellationToken);
+
+        }
+
+        public UpdateQuery PrepareUpdate(T item)
         {
             var filters = new List<Filter>();
             var updateColumns = new List<QueryColumn>();
@@ -199,6 +217,24 @@ namespace dexih.transforms.Poco
 
             var updateQuery = new UpdateQuery(updateColumns, filters);
 
+            return updateQuery;
+        }
+
+        /// <summary>
+        /// Deletes the item, based on the item values that contain a deltaType = NaturalKey
+        /// </summary>
+        /// <returns>The delete.</returns>
+        /// <param name="connection">Connection.</param>
+        /// <param name="item">Item to delete</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        public Task ExecuteUpdate(Connection connection, T item, CancellationToken cancellationToken = default)
+        {
+            var updateQuery = PrepareUpdate(item);
+            return ExecuteUpdate(connection, updateQuery, cancellationToken);
+        }
+
+        public Task ExecuteUpdate(Connection connection, UpdateQuery updateQuery, CancellationToken cancellationToken = default)
+        {
             return connection.ExecuteUpdate(Table, new List<UpdateQuery>() { updateQuery }, cancellationToken);
         }
 

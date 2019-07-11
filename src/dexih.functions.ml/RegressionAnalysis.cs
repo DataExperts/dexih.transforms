@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using dexih.functions.Exceptions;
 using Dexih.Utils.CopyProperties;
@@ -11,7 +8,6 @@ using Microsoft.ML.AutoML;
 using Microsoft.ML.Data;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Trainers.FastTree;
-using Microsoft.ML.Transforms;
 
 namespace dexih.functions.ml
 {

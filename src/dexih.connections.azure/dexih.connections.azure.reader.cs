@@ -34,7 +34,7 @@ namespace dexih.connections.azure
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             if (IsOpen)

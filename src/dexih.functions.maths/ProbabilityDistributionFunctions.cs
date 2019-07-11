@@ -6,7 +6,7 @@ namespace dexih.functions.maths
 {
     public class ProbabilityDistributionFunctions
     {
-        private List<double> _data = new List<double>();
+        private readonly List<double> _data = new List<double>();
        
         public enum  EContinuousDistributionType
         {

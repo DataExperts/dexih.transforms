@@ -12,9 +12,9 @@ namespace dexih.transforms
     /// </summary>
     public class ReaderConvertDataTypes: Transform
     {
-        private Connection _connection;
+        private readonly Connection _connection;
 
-        private int _operationOrdinal;
+        private readonly int _operationOrdinal;
 
         /// <summary>
         /// 

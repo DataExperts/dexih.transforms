@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using dexih.functions.Exceptions;
@@ -10,11 +9,11 @@ namespace dexih.functions.ml
     public class RegressionPredictor
     {
         // instance of the prection engine.
-        private object _predictionEngine;
+        private readonly object _predictionEngine;
         
         // method to run the "predict"
-        private MethodInfo _predictMethod;
-        private Type _dataType;
+        private readonly MethodInfo _predictMethod;
+        private readonly Type _dataType;
 
         /// <summary>
         /// Extracts the "Predict" method from the "CreatePredictionEngine".

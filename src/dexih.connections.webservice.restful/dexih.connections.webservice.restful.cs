@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using dexih.transforms;
-using dexih.functions;
 using System.Data.Common;
-using System.Text.RegularExpressions;
-using System.Net.Http;
-using System.Threading;
-using System.Net;
-using Dexih.Utils.CopyProperties;
-using dexih.transforms.Exceptions;
-using dexih.functions.Query;
-using static Dexih.Utils.DataType.DataType;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using dexih.functions;
+using dexih.functions.Query;
+using dexih.transforms;
+using dexih.transforms.Exceptions;
 using dexih.transforms.File;
+using Dexih.Utils.CopyProperties;
+using Dexih.Utils.DataType;
 
-namespace dexih.connections.webservice
+namespace dexih.connections.webservice.restful
 {
 	[Connection(
 		ConnectionCategory = EConnectionCategory.WebService,
@@ -112,7 +112,7 @@ namespace dexih.connections.webservice
 						Name = name,
 						IsInput = true,
 						LogicalName = name,
-						DataType = ETypeCode.String,
+						DataType = DataType.ETypeCode.String,
 						DeltaType = TableColumn.EDeltaType.NaturalKey,
 						MaxLength = 1024,
 
@@ -155,7 +155,7 @@ namespace dexih.connections.webservice
                     Name = "ResponseStatusCode",
                     IsInput = false,
                     LogicalName = "ResponseStatusCode",
-                    DataType = ETypeCode.String,
+                    DataType = DataType.ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.ResponseStatus,
                     MaxLength = null,
                     Description = "The status code returned by the service",
@@ -169,7 +169,7 @@ namespace dexih.connections.webservice
                     Name = "ResponseSuccess",
                     IsInput = false,
                     LogicalName = "ResponseSuccess",
-                    DataType = ETypeCode.Boolean,
+                    DataType = DataType.ETypeCode.Boolean,
                     DeltaType = TableColumn.EDeltaType.ResponseSuccess,
                     MaxLength = null,
                     Description = "Is the web service call successful.",
@@ -183,7 +183,7 @@ namespace dexih.connections.webservice
 					Name = "ResponseError",
 					IsInput = false,
 					LogicalName = "ResponseError",
-					DataType = ETypeCode.String,
+					DataType = DataType.ETypeCode.String,
 					DeltaType = TableColumn.EDeltaType.Error,
 					MaxLength = null,
 					Description = "Error message calling the web service.",
@@ -197,7 +197,7 @@ namespace dexih.connections.webservice
 					Name = "Url",
 					IsInput = false,
 					LogicalName = "Url",
-					DataType = ETypeCode.String,
+					DataType = DataType.ETypeCode.String,
 					DeltaType = TableColumn.EDeltaType.Url,
 					MaxLength = null,
 					Description = "Url used to call the web service.",
@@ -228,15 +228,15 @@ namespace dexih.connections.webservice
 
 					switch (newRestFunction.FormatType)
 					{
-						case ETypeCode.Json:
+						case DataType.ETypeCode.Json:
 							var jsonHandler = new FileHandlerJson(restFunction, rowPath);
 							fileColumns = await jsonHandler.GetSourceColumns(dataStream);
 							break;
-						case ETypeCode.Xml:
+						case DataType.ETypeCode.Xml:
 							var xmlHandler = new FileHandlerXml(restFunction, rowPath);
 							fileColumns = await xmlHandler.GetSourceColumns(dataStream);
 							break;
-						case ETypeCode.Text:
+						case DataType.ETypeCode.Text:
 							var textHandler = new FileHandlerText(restFunction, restFunction.FileConfiguration);
 							fileColumns = await textHandler.GetSourceColumns(dataStream);
 							break;
@@ -389,33 +389,30 @@ namespace dexih.connections.webservice
 
 				if (response.isSuccess)
 				{
-					FileHandlerBase fileHanlder = null;
+					FileHandlerBase fileHandler = null;
 
 					switch (restFunction.FormatType)
 					{
-						case ETypeCode.Text:
-							fileHanlder = new FileHandlerText(restFunction, restFunction.FileConfiguration);
+						case DataType.ETypeCode.Text:
+							fileHandler = new FileHandlerText(restFunction, restFunction.FileConfiguration);
 							break;
-						case ETypeCode.Json:
-							fileHanlder = new FileHandlerJson(restFunction, restFunction.RowPath);
+						case DataType.ETypeCode.Json:
+							fileHandler = new FileHandlerJson(restFunction, restFunction.RowPath);
 							break;
-						case ETypeCode.Xml:
-							fileHanlder = new FileHandlerXml(restFunction, restFunction.RowPath);
+						case DataType.ETypeCode.Xml:
+							fileHandler = new FileHandlerXml(restFunction, restFunction.RowPath);
 							break;
 						default:
 							throw new ArgumentOutOfRangeException();
 					}
 
-					if (fileHanlder != null)
-					{
-						await fileHanlder.SetStream(response.response, null);
-						var rows = await fileHanlder.GetAllRows();
-                        foreach(var row in rows)
-                        {
-                            PopulateRow(row);
-                        }
-                        return rows;
-					}
+					await fileHandler.SetStream(response.response, null);
+					var rows = await fileHandler.GetAllRows();
+                    foreach(var row in rows)
+                    {
+                        PopulateRow(row);
+                    }
+                    return rows;
 				} 
 				else
 				{
@@ -431,8 +428,6 @@ namespace dexih.connections.webservice
 
 					return new[] { row };
 				}
-
-                throw new ConnectionException($"The lookup failed as the web service format type {restFunction.FormatType} is not currently supported.");
             }
             catch (Exception ex)
             {

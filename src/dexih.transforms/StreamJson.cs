@@ -1,8 +1,11 @@
 ﻿﻿using System;
+ using System.Collections.Generic;
  using System.Data.Common;
 using System.IO;
+ using System.Linq;
  using System.Threading;
 using System.Threading.Tasks;
+ using Dexih.Utils.CopyProperties;
  using Dexih.Utils.Crypto;
  using Dexih.Utils.MessageHelpers;
  using Newtonsoft.Json.Linq;
@@ -26,7 +29,10 @@ using System.Threading.Tasks;
         private bool _hasRows;
         private bool _first;
 
-        public StreamJson(string name, DbDataReader reader, long maxRows = -1)
+        private List<int> _ordinals;
+        private string EndWrite;
+
+        public StreamJson(string name, DbDataReader reader, long maxRows = -1, string topNode = null)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
@@ -38,7 +44,36 @@ using System.Threading.Tasks;
             _hasRows = true;
             _first = true;
 
-            _streamWriter.Write("[");
+            _ordinals = new List<int>();
+            
+            // if this is a transform, ignore any parent columns (this is when for writing nodes to json).
+            if (reader is Transform transform)
+            {
+                var columns = transform.CacheTable.Columns;
+                for (var i = 0; i < columns.Count; i++)
+                {
+                    if (!columns[i].IsParent)
+                    {
+                        _ordinals.Add(i);
+                    }
+                }
+            }
+            else
+            {
+                _ordinals = Enumerable.Range(0, reader.FieldCount).ToList();
+            }
+
+            if(string.IsNullOrEmpty(topNode))
+            {
+                _streamWriter.Write("[");
+                EndWrite = "]";
+            } else
+            {
+                _streamWriter.Write("{ \"" + topNode + "\": [");
+                EndWrite = "]}";
+            }
+            
+            
             _memoryStream.Position = 0;
         }
 
@@ -54,7 +89,6 @@ using System.Threading.Tasks;
 
         public override void Flush()
         {
-            return;
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -85,7 +119,7 @@ using System.Threading.Tasks;
 
                         if (_hasRows == false)
                         {
-                            await _streamWriter.WriteAsync("]}");
+                            await _streamWriter.WriteAsync("]");
                         }
                     }
                     catch (Exception ex)
@@ -110,7 +144,7 @@ using System.Threading.Tasks;
 
                     var jObject = new JObject();
 
-                    for (var i = 0; i < _reader.FieldCount; i++)
+                    foreach(var i in _ordinals)
                     {
                         if (_reader[i] is byte[])
                         {

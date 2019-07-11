@@ -85,7 +85,6 @@ namespace dexih.transforms
 
         public override void Flush()
         {
-            return;
         }
 
         public override int Read(byte[] buffer, int offset, int count)

@@ -29,6 +29,12 @@ namespace dexih.transforms
 
         #endregion
         
+        private Task _task;
+        private bool _updateAudit;
+        private Timer _progressTimer;
+        private long _previousRows;
+        private long _progressCounter;
+
 
         public TransformWriterResult()
         {
@@ -168,6 +174,36 @@ namespace dexih.transforms
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
         public string RejectTableName { get; set; }
 
+        public void ResetStatistics()
+        {
+            RowsTotal = 0;
+            RowsCreated = 0;
+            RowsUpdated = 0;
+            RowsDeleted = 0;
+            RowsPreserved = 0;
+            RowsIgnored = 0;
+            RowsRejected = 0;
+            RowsFiltered = 0;
+            RowsSorted = 0;
+            RowsReadPrimary = 0;
+            RowsReadReference = 0;
+            Passed = 0;
+            Failed = 0;
+            ReadTicks = 0;
+            WriteTicks = 0;
+            ProcessingTicks = 0;
+            MaxIncrementalValue = null;
+            MaxSurrogateKey = 0;
+            Message = null;
+            ExceptionDetails = null;
+            InitializeTime = default;
+            ScheduledTime = default;
+            StartTime = default;
+            EndTime = default;
+            LastUpdateTime = DateTime.Now;
+            PerformanceSummary = null;
+        }
+
 
 //        [PocoColumn(Skip = true)]
 //        public bool TruncateTarget { get; set; } //once off truncate of the target table.  
@@ -226,24 +262,50 @@ namespace dexih.transforms
 
         public decimal ReadThroughput()
         {
-            if (ReadTicks == 0)
-                return 0;
-            else
-            {
-                var ts = TimeSpan.FromTicks(ReadTicks);
-                return (decimal)(RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
-            }
+            if (ReadTicks == 0) { return 0; }
+
+            var ts = TimeSpan.FromTicks(ReadTicks);
+            return (RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
         }
 
+        /// <summary>
+        /// Creates a new database row (if an audit connection exists) and starts sending out periodic progress updates.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<bool> Initialize(CancellationToken cancellationToken = default)
         {
-            if (AuditConnection != null)
+            if (AuditConnection != null && AuditKey <= 0)
             {
                 LastUpdateTime = DateTime.Now;
                 await AuditConnection.InitializeAudit(this, cancellationToken);
             }
+            else
+            {
+                
+            }
+            
+            _progressTimer = new Timer(CheckProgress, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 
             return true;
+        }
+        
+        public async Task Schedule(CancellationToken cancellationToken = default)
+        {
+            ResetStatistics();
+            AuditKey = 0;
+            RunStatus = ERunStatus.Scheduled;
+            await AuditConnection.InitializeAudit(this, cancellationToken);
+            OnStatusUpdate?.Invoke(this);
+        }
+
+        private void CheckProgress(object value)
+        {
+            if (_previousRows != _progressCounter)
+            {
+                OnProgressUpdate?.Invoke(this);
+                _previousRows = _progressCounter;
+            }
         }
 
         private void DbOperationFailed(Task task, Exception exception)
@@ -304,8 +366,6 @@ namespace dexih.transforms
             }
         }
 
-        private Task _task;
-        private bool _updateAudit;
         private void UpdateDatabaseTask()
         {
             _updateAudit = true;
@@ -323,17 +383,27 @@ namespace dexih.transforms
 
             if (_task == null)
             {
-                _task = Task.Run(async () =>
+                Task CreateTask()
                 {
-                    while (_updateAudit)
-                    {
-                        _updateAudit = false;
-                        await AuditConnection.UpdateAudit(this, CancellationToken.None);
-                    }
-                });
-            }
-            else
-            {
+                    _updateAudit = false;
+                    return AuditConnection.UpdateAudit(this, CancellationToken.None)
+                        .ContinueWith(task =>
+                        {
+                            if (task.IsFaulted)
+                            {
+                                SetRunStatus(ERunStatus.Abended,
+                                    $"Error occurred saving audit data.  {task.Exception?.Message}", task.Exception);
+                            }
+
+                            if (_updateAudit)
+                            {
+                                _task = CreateTask();
+                            }
+                        });
+                }
+
+                
+                _task = CreateTask();
             }
         }
 
@@ -354,6 +424,7 @@ namespace dexih.transforms
 
         public void Dispose()
         {
+            _progressTimer?.Dispose();
             if (_task == null || _task.IsCompleted)
             {
                 return;
@@ -424,8 +495,6 @@ namespace dexih.transforms
                 return DateTime.Now - ScheduledTime;
         }
 
-        private long _progressCounter;
-
         public void IncrementRowsReadPrimary(long value = 1)
         {
             RowsReadPrimary += value;
@@ -459,6 +528,8 @@ namespace dexih.transforms
             if (_progressCounter >= RowsPerProgressEvent)
             {
                 _progressCounter = 0;
+                _previousRows = 0;
+                _progressTimer.Change(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
                 LastUpdateTime = DateTime.Now;
                 OnProgressUpdate?.Invoke(this);
             }
@@ -477,6 +548,7 @@ namespace dexih.transforms
             }
         }
 
+        
 
     }
 }

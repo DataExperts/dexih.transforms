@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.CopyProperties;
@@ -387,7 +386,7 @@ namespace dexih.functions
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((TableColumn) obj);
         }
 

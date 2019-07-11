@@ -1,6 +1,7 @@
 ﻿using dexih.connections.test;
 using System;
 using System.Threading.Tasks;
+using dexih.connections.oracle;
 using dexih.transforms;
 using Xunit;
 using Xunit.Abstractions;

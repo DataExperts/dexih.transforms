@@ -6,9 +6,14 @@ using dexih.connections.dexih;
 using dexih.connections.excel;
 using dexih.connections.flatfile;
 using dexih.connections.ftp;
+using dexih.connections.mysql;
+using dexih.connections.oracle;
+using dexih.connections.postgressql;
 using dexih.connections.sftp;
 using dexih.connections.sql;
+using dexih.connections.sqlserver;
 using dexih.connections.webservice;
+using dexih.connections.webservice.restful;
 using dexih.transforms;
 
 namespace dexih.connections.test

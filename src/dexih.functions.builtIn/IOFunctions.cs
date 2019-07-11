@@ -276,7 +276,7 @@ namespace dexih.functions.BuiltIn
 
             if (_fileEnumerator != null && _fileEnumerator.MoveNext())
             {
-                var info = new System.IO.FileInfo(_fileEnumerator.Current);
+                var info = new FileInfo(_fileEnumerator.Current);
 
                 filePath = _fileEnumerator.Current;
                 fileName = info.Name;
@@ -314,7 +314,7 @@ namespace dexih.functions.BuiltIn
 
             if (System.IO.File.Exists(filePath))
             {
-                var info = new System.IO.FileInfo(path);
+                var info = new FileInfo(path);
 
                 creationTime = info.CreationTime;
                 lastAccessTime = info.LastAccessTime;

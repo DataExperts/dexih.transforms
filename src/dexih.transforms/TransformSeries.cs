@@ -8,6 +8,7 @@ using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
+using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {
@@ -52,6 +53,10 @@ namespace dexih.transforms
             if (selectQuery == null)
             {
                 selectQuery = new SelectQuery();
+            }
+            else
+            {
+                selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
             }
 
             var requiredSorts = RequiredSortFields();

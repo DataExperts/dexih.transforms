@@ -36,7 +36,7 @@ namespace dexih.connections.excel
         public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             try
