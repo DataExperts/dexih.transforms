@@ -3,7 +3,6 @@ using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,7 +122,6 @@ namespace dexih.transforms
         private bool DoPreserve { get; set; }
 
         private object[] PreserveRow { get; set; }
-        private object[] NextPrimaryRow { get; set; }
 
         private List<int> _sourceOrdinals;
 
@@ -183,9 +181,11 @@ namespace dexih.transforms
             }
 
             if (ReferenceTransform == null)
+            {
                 throw new Exception("There must be a target table specified.");
+            }
 
-            
+
 
             //get the available audit columns
             SetAuditColumns();
@@ -197,11 +197,17 @@ namespace dexih.transforms
             _referenceOpen = true;
 
             //do some integrity checks
-            if (DoPreserve && _colAutoIncrement == null)
-                throw new Exception("The delta transform requires the table to have a single surrogate key field for row preservation to be possible.");
+            if (DoPreserve && (_colAutoIncrement == null || _colIsCurrentField == null))
+            {
+                throw new Exception(
+                    "The delta transform requires target table table to have a one \"Auto Increemnt\" column, and one \"Is Current\" column for row preservation.");
+            }
 
             if (DoUpdate && CacheTable.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.NaturalKey))
-                throw new Exception("The delta transform requires the table to have at least one natrual key field for updates to be possible.");
+            {
+                throw new Exception(
+                    "The delta transform requires the table to have at least one natural key column for updates to be possible.");
+            }
 
 //            //set surrogate key to the key field.  This will indicate that the surrogate key should be used when update/deleting records.
 //            if(_colSurrogateKey != null)
@@ -471,8 +477,8 @@ namespace dexih.transforms
                 var filters = new List<Filter>();
 
                 //first add a where IsCurrentField = true
-                //if (colIsCurrentField != null)
-                //    filters.Add(new Filter(colIsCurrentField, Filter.ECompare.IsEqual, true));
+                if (_colIsCurrentField != null)
+                    filters.Add(new Filter(_colIsCurrentField, Filter.ECompare.IsEqual, true));
 
                 //second add a where natural key is greater than the first record key.  (excluding where delete detection is on).
                 if (_primaryOpen && !DoDelete)
@@ -569,7 +575,7 @@ namespace dexih.transforms
                 {
                     if (!DoDelete || !_referenceOpen)
                         return null; //not checking deletes, then finish.
-                                     //if there are still more records in the target table, then everything else is a delete.
+                    //if there are still more records in the target table, then everything else is a delete.
                     newRow = CreateDeleteRow();
                     _referenceOpen = await ReferenceRead(cancellationToken);
                     return newRow;
@@ -1048,7 +1054,6 @@ namespace dexih.transforms
 
             newRow[0] = 'C';
 
-            var timer = new Stopwatch();
             for (var referenceOrdinal = 1; referenceOrdinal < _columnCount; referenceOrdinal++)
             {
                 var referenceColumn = CacheTable.Columns[referenceOrdinal];
@@ -1106,24 +1111,24 @@ namespace dexih.transforms
             return newRow;
         }
 
-        private class JoinKeyComparer : IComparer<object[]>
-        {
-            public int Compare(object[] x, object[] y)
-            {
-                for (var i = 0; i < x.Length; i++)
-                {
-                    var compareResult = ((IComparable)x[i]).CompareTo((IComparable)y[i]);
-
-                    if (compareResult == 0)
-                    {
-                        continue;
-                    }
-
-                    return compareResult;
-                }
-                return 0;
-            }
-        }
+//        private class JoinKeyComparer : IComparer<object[]>
+//        {
+//            public int Compare(object[] x, object[] y)
+//            {
+//                for (var i = 0; i < x.Length; i++)
+//                {
+//                    var compareResult = ((IComparable)x[i]).CompareTo((IComparable)y[i]);
+//
+//                    if (compareResult == 0)
+//                    {
+//                        continue;
+//                    }
+//
+//                    return compareResult;
+//                }
+//                return 0;
+//            }
+//        }
 
         public override bool ResetTransform()
         {

@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Threading;
@@ -15,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.external
 {
-    public class OpenWeatherMap
+    public class OpenWeatherMap: IDisposable
     {
         private const string apiKey = "API Key.  Sign up at [openweathermap.org](https://openweathermap.org/price).";
         private const string maxCalls = "Limit maximum api calls per minute (unlimited = 0)";
@@ -75,23 +76,36 @@ namespace dexih.functions.external
             public double Latitude { get; set; }
         }
 
+        // cache the httpClient.
+        private HttpClient _httpClient;
+
         private string GetOpenWeatherUrl(string key) => $"http://api.openweathermap.org/data/2.5/weather?APPID={key}";
-        
-        private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(string key, string parameters, CancellationToken cancellationToken)
+
+        private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(
+            string key, string parameters, CancellationToken cancellationToken)
         {
             var uri = new Uri(GetOpenWeatherUrl(key) + parameters);
-            
-            using (var client = new HttpClient())
+
+            if (_httpClient == null)
             {
-				client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
-                client.DefaultRequestHeaders.Accept.Clear();
+                _httpClient = new HttpClient()
+                {
+                    BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority)),
+                };
 
-				var response = await client.GetAsync(uri.PathAndQuery, cancellationToken);
-
-				return (uri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
+                _httpClient.DefaultRequestHeaders.Accept.Clear();
+                _httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue()
+                {
+                    NoCache = true
+                };
             }
+
+            var response = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken);
+
+            return (uri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode,
+                await response.Content.ReadAsStreamAsync());
         }
-        
+
         private double? ConvertTemperature(double? kelvin, TemperatureScale temperatureScale)
         {
             if (kelvin == null) return null;
@@ -359,6 +373,11 @@ namespace dexih.functions.external
             _cachedCities = null;
 
             return null;
+        }
+
+        public void Dispose()
+        {
+            _httpClient?.Dispose();
         }
     }
 }
