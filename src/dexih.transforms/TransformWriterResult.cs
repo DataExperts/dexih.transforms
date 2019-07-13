@@ -290,9 +290,10 @@ namespace dexih.transforms
             return true;
         }
         
-        public async Task Schedule(CancellationToken cancellationToken = default)
+        public async Task Schedule(DateTime startTime, CancellationToken cancellationToken = default)
         {
             ResetStatistics();
+            ScheduledTime = startTime;
             AuditKey = 0;
             RunStatus = ERunStatus.Scheduled;
             await AuditConnection.InitializeAudit(this, cancellationToken);
@@ -383,27 +384,14 @@ namespace dexih.transforms
 
             if (_task == null)
             {
-                Task CreateTask()
+                _task = Task.Run(async () =>
                 {
-                    _updateAudit = false;
-                    return AuditConnection.UpdateAudit(this, CancellationToken.None)
-                        .ContinueWith(task =>
-                        {
-                            if (task.IsFaulted)
-                            {
-                                SetRunStatus(ERunStatus.Abended,
-                                    $"Error occurred saving audit data.  {task.Exception?.Message}", task.Exception);
-                            }
-
-                            if (_updateAudit)
-                            {
-                                _task = CreateTask();
-                            }
-                        });
-                }
-
-                
-                _task = CreateTask();
+                    while (_updateAudit)
+                    {
+                        _updateAudit = false;
+                        await AuditConnection.UpdateAudit(this, CancellationToken.None);
+                    }
+                });
             }
         }
 
@@ -411,6 +399,17 @@ namespace dexih.transforms
         {
             if (_task == null) return;
 
+            if (_task.IsFaulted)
+            {
+                throw new TransformWriterException(
+                    $"Error occurred saving audit data.  {_task.Exception?.Message}", _task.Exception);
+            }
+
+            if (_task.IsCompleted || _task.IsCanceled)
+            {
+                return;
+            }
+            
             try
             {
                 await _task;

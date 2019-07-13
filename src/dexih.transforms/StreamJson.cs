@@ -29,8 +29,8 @@ using System.Threading.Tasks;
         private bool _hasRows;
         private bool _first;
 
-        private List<int> _ordinals;
-        private string EndWrite;
+        private readonly List<int> _ordinals;
+        private string endWrite;
 
         public StreamJson(string name, DbDataReader reader, long maxRows = -1, string topNode = null)
         {
@@ -66,11 +66,11 @@ using System.Threading.Tasks;
             if(string.IsNullOrEmpty(topNode))
             {
                 _streamWriter.Write("[");
-                EndWrite = "]";
+                endWrite = "]";
             } else
             {
                 _streamWriter.Write("{ \"" + topNode + "\": [");
-                EndWrite = "]}";
+                endWrite = "]}";
             }
             
             
@@ -119,14 +119,14 @@ using System.Threading.Tasks;
 
                         if (_hasRows == false)
                         {
-                            await _streamWriter.WriteAsync("]");
+                            await _streamWriter.WriteAsync(endWrite);
                         }
                     }
                     catch (Exception ex)
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync("], \"status\"=" + result + " }");
+                        await _streamWriter.WriteAsync(endWrite + ", \"status\"=" + result + " }");
                         _hasRows = false;
                     }
 
@@ -169,7 +169,7 @@ using System.Threading.Tasks;
                         }
                         else
                         {
-                            await _streamWriter.WriteAsync("]");
+                            await _streamWriter.WriteAsync(endWrite);
                             _hasRows = false;
                             break;
                         }
@@ -178,7 +178,7 @@ using System.Threading.Tasks;
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync("], \"status\"=" + result + " }");
+                        await _streamWriter.WriteAsync(endWrite + ", \"status\"=" + result + " }");
                         _hasRows = false;
                     }
                 }

@@ -33,11 +33,11 @@ namespace dexih.transforms
 
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
-            return true;
+            return Task.FromResult(true);
         }
 
         public override bool ResetTransform()
@@ -45,7 +45,7 @@ namespace dexih.transforms
             return IsOpen;
         }
 
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
+        protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             if (_rowNumber >= _jArray.Count)
             {
@@ -60,7 +60,7 @@ namespace dexih.transforms
                 row[i] = jToken[CacheTable.Columns[i].Name];
             }
 
-            return row;
+            return Task.FromResult(row);
         }
         
     }
