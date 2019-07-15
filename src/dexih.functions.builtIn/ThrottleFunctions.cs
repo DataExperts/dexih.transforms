@@ -24,7 +24,7 @@ namespace dexih.functions.BuiltIn
             Millisecond, Second, Minute, Hour, Day
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Throttle", Name = "Limit the number of rows per time period.",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Throttle", Name = "Throttle the number of rows per time period.",
             Description = "Returns the row count for the current period.")]
         public async Task<long> Throttle(
             [TransformFunctionParameter(Description = "Rows allowed for each period unit.")] int rowsPerPeriod,
