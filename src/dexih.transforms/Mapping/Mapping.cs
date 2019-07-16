@@ -6,7 +6,8 @@ namespace dexih.transforms.Mapping
 {
     public abstract class Mapping
     {
-
+        public bool IgnoreRow = false;
+        
         public virtual TransformNode Transform { get; } = null;
         
         /// <summary>

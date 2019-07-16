@@ -190,7 +190,7 @@ namespace dexih.transforms
             {
                 var updateQuery = new UpdateQuery(
                 TargetTable.Columns.Where(c => !c.IsAutoIncrement()).Select(c => new QueryColumn(c, row[TargetTable.GetOrdinal(c.Name)])).ToList(),
-                TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
+                TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
                 );
 
                 updateQueries.Add(updateQuery);
@@ -222,14 +222,14 @@ namespace dexih.transforms
                 WriteDataTicks += result;
             }
 
-            //new DeleteQuery(_targetTable.Name, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, Filter.ECompare.IsEqual, "@surrogateKey")).ToList());
+            //new DeleteQuery(_targetTable.Name, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, ECompare.IsEqual, "@surrogateKey")).ToList());
 
             var deleteQueries = new List<DeleteQuery>();
             foreach (var row in _deleteRows)
             {
                 var deleteQuery = new DeleteQuery(
                 TargetTable.Name,
-                TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, Filter.ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
+                TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
                 );
 
                 deleteQueries.Add(deleteQuery);

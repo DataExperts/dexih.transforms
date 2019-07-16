@@ -329,12 +329,12 @@ namespace dexih.transforms.Mapping
             return 0;
         }
 
-        public Task<bool> ProcessInputData(object[] row, CancellationToken cancellationToken)
+        public Task<(bool result, bool ignoreRow)> ProcessInputData(object[] row, CancellationToken cancellationToken)
         {
             return ProcessInputData(_functionVariables, row, null, cancellationToken);
         }
 
-        public Task<bool> ProcessInputData(object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public Task<(bool result, bool ignoreRow)> ProcessInputData(object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             return ProcessInputData(_functionVariables, row, joinRow, cancellationToken);
         }
@@ -346,9 +346,10 @@ namespace dexih.transforms.Mapping
         /// <param name="row"></param>
         /// <param name="joinRow"></param>
         /// <returns></returns>
-        public async Task<bool> ProcessInputData(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public async Task<(bool result, bool ignoreRow)> ProcessInputData(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             var result = true;
+            var ignoreRow = false;
 
             for (var i = 0; i < _primaryMappings.Count; i++)
             {
@@ -380,11 +381,12 @@ namespace dexih.transforms.Mapping
             for (var i = 0; i < _primaryMappings.Count; i++)
             {
                 result = result & _tasks[i].Result;
+                ignoreRow = ignoreRow || _primaryMappings[i].IgnoreRow;
             }
             
             _rowData = row;
 
-            return result;
+            return (result, ignoreRow);
         }
         
         /// <summary>
@@ -407,25 +409,19 @@ namespace dexih.transforms.Mapping
             }
             
         }
-
-        public void ProcessOutputRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
-        {
-            foreach (var mapping in _primaryMappings)
-            {
-                mapping.ProcessResultRow(functionVariables, row, functionType, cancellationToken);
-            }
-        }
         
-        public async Task<bool> ProcessAggregateRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
+        public async Task<(bool filter, bool ignore)> ProcessAggregateRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
         {
             var result = false;
             
+            var ignoreRow = false;
             foreach (var mapping in _primaryMappings)
             {
                 result = result | await mapping.ProcessResultRow(functionVariables, row, functionType, cancellationToken);
+                ignoreRow = ignoreRow || mapping.IgnoreRow;
             }
 
-            return result;
+            return (result, ignoreRow);
         }
         
         public async Task<bool> ProcessFillerRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)

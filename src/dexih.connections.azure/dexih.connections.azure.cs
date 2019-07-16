@@ -617,21 +617,21 @@ namespace dexih.connections.azure
         }
 
 
-        public string ConvertOperator(Filter.ECompare Operator)
+        public string ConvertOperator(ECompare Operator)
         {
             switch (Operator)
             {
-                case Filter.ECompare.IsEqual:
+                case ECompare.IsEqual:
                     return "eq";
-                case Filter.ECompare.GreaterThan:
+                case ECompare.GreaterThan:
                     return "gt";
-                case Filter.ECompare.GreaterThanEqual:
+                case ECompare.GreaterThanEqual:
                     return "ge";
-                case Filter.ECompare.LessThan:
+                case ECompare.LessThan:
                     return "lt";
-                case Filter.ECompare.LessThanEqual:
+                case ECompare.LessThanEqual:
                     return "le";
-                case Filter.ECompare.NotEqual:
+                case ECompare.NotEqual:
                     return "ne";
                 default:
                     throw new Exception("ConvertOperator failed");
@@ -665,7 +665,7 @@ namespace dexih.connections.azure
                                 throw new ConnectionException($"The filter value could not be converted to a {filter.CompareDataType}.  {ex.Message}", ex, value);
                             }
                         }
-                        filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1.Name, Filter.ECompare.IsEqual, filter.CompareDataType, c))) + ")";
+                        filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1.Name, ECompare.IsEqual, filter.CompareDataType, c))) + ")";
                     }
                     else
                     {
@@ -691,7 +691,7 @@ namespace dexih.connections.azure
             }
         }
 
-        private string GenerateFilterCondition(string column, Filter.ECompare filterOperator, ETypeCode compareDataType, object value)
+        private string GenerateFilterCondition(string column, ECompare filterOperator, ETypeCode compareDataType, object value)
         {
             string filterString;
 

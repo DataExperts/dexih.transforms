@@ -164,7 +164,7 @@ namespace dexih.transforms.Poco
                 var column = Table.Columns[mapping.Position];
                 if (mapping.IsKey)
                 {
-                    var filter = new Filter(column, Filter.ECompare.IsEqual, mapping.PropertyInfo.GetValue(item));
+                    var filter = new Filter(column, ECompare.IsEqual, mapping.PropertyInfo.GetValue(item));
                     filters.Add(filter);
                 }
             }
@@ -205,7 +205,7 @@ namespace dexih.transforms.Poco
 
                 if (mapping.IsKey)
                 {
-                    var filter = new Filter(column, Filter.ECompare.IsEqual, value);
+                    var filter = new Filter(column, ECompare.IsEqual, value);
                     filters.Add(filter);
                 }
                 else

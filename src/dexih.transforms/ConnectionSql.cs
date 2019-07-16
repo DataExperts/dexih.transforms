@@ -284,19 +284,20 @@ namespace dexih.connections.sql
         }
 
 
-        public string GetSqlCompare(Filter.ECompare compare)
+        public string GetSqlCompare(ECompare compare)
         {
             switch (compare)
             {
-                case Filter.ECompare.IsEqual: return "=";
-                case Filter.ECompare.GreaterThan: return ">";
-                case Filter.ECompare.GreaterThanEqual: return ">=";
-                case Filter.ECompare.LessThan: return "<";
-                case Filter.ECompare.LessThanEqual: return "<=";
-                case Filter.ECompare.NotEqual: return "!=";
-                case Filter.ECompare.IsIn: return "IN";
-                case Filter.ECompare.IsNull: return "is null";
-                case Filter.ECompare.IsNotNull: return "is not null";
+                case ECompare.IsEqual: return "=";
+                case ECompare.GreaterThan: return ">";
+                case ECompare.GreaterThanEqual: return ">=";
+                case ECompare.LessThan: return "<";
+                case ECompare.LessThanEqual: return "<=";
+                case ECompare.NotEqual: return "!=";
+                case ECompare.IsIn: return "IN";
+                case ECompare.IsNull: return "is null";
+                case ECompare.IsNotNull: return "is not null";
+                case ECompare.Like: return "like";
                 default:
                     return "";
             }
@@ -382,7 +383,7 @@ namespace dexih.connections.sql
                 {
                     foreach (var inputColumn in inputColumns)
                     {
-                        var filter = new Filter(inputColumn, Filter.ECompare.IsEqual, inputColumn.DefaultValue);
+                        var filter = new Filter(inputColumn, ECompare.IsEqual, inputColumn.DefaultValue);
                         filters.Add(filter);
                     }
                     sql.Append(BuildFiltersString(filters, cmd));
@@ -456,12 +457,12 @@ namespace dexih.connections.sql
 
                 sql.Append(GetSqlCompare(filter.Operator));
 
-                if (filter.Operator != Filter.ECompare.IsNull && filter.Operator != Filter.ECompare.IsNotNull)
+                if (filter.Operator != ECompare.IsNull && filter.Operator != ECompare.IsNotNull)
                 {
-                    if (filter.Value2 == null && filter.Column2 == null)
-                    {
-                        throw new ConnectionException("The filter has no values or columns specified for the compare value.  Use the IsNull operation to compare to null rows.");
-                    }
+//                    if (filter.Value2 == null && filter.Column2 == null)
+//                    {
+//                        throw new ConnectionException("The filter has no values or columns specified for the compare value.  Use the IsNull operation to compare to null rows.");
+//                    }
 
                     if (filter.Column2 != null)
                         if (filter.Column2.IsInput)

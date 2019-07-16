@@ -6,6 +6,7 @@ using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Transforms;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -63,8 +64,19 @@ namespace dexih.transforms
             while(_lookupCache != null && _lookupCache.MoveNext())
             {
                 var lookup = _lookupCache.Current;
-                var validRow = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup, cancellationToken);
-                if(!validRow) continue;
+                var (validRow, ignoreRow) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup, cancellationToken);
+                
+                if(!validRow)
+                {
+                    TransformRowsFiltered += 1;
+                    continue;
+                }
+
+                if (ignoreRow)
+                {
+                    TransformRowsIgnored += 1;
+                    continue;
+                }
 
                 newRow = new object[FieldCount];
                 var pos1 = 0;
@@ -100,8 +112,13 @@ namespace dexih.transforms
             }
             
             //set the values for the lookup
-            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+            var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+            if (ignore)
+            {
+                TransformRowsIgnored += 1;
+            }
 
+            
             // create a select query with filters set to the values of the current row
             var selectQuery = new SelectQuery
             {
@@ -109,7 +126,7 @@ namespace dexih.transforms
                 {
                     Column1 = c.JoinColumn,
                     CompareDataType = ETypeCode.String,
-                    Operator = Filter.ECompare.IsEqual,
+                    Operator = ECompare.IsEqual,
                     Value2 = c.GetOutputValue()
                 }).ToList()
             };
@@ -125,8 +142,19 @@ namespace dexih.transforms
                     var lookup = _lookupCache.Current;
 
                     //set the values for the lookup
-                    var validRow = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup, cancellationToken);
-                    if(!validRow) continue;
+                    var (validRow, ignoreRow) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup, cancellationToken);
+                    
+                    if(!validRow)
+                    {
+                        TransformRowsFiltered += 1;
+                        continue;
+                    }
+
+                    if (ignoreRow)
+                    {
+                        TransformRowsIgnored += 1;
+                        continue;
+                    }
 
                     lookupFound = true;
 

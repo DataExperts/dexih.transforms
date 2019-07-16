@@ -11,14 +11,14 @@ namespace dexih.transforms.Mapping
     {
         public MapFilter() {}
         
-        public MapFilter(TableColumn column1, TableColumn column2, Filter.ECompare compare = Filter.ECompare.IsEqual)
+        public MapFilter(TableColumn column1, TableColumn column2, ECompare compare = ECompare.IsEqual)
         {
             Column1 = column1;
             Column2 = column2;
             Compare = compare;
         }
 
-        public MapFilter(TableColumn column1, object value2, Filter.ECompare compare = Filter.ECompare.IsEqual)
+        public MapFilter(TableColumn column1, object value2, ECompare compare = ECompare.IsEqual)
         {
             Column1 = column1;
             Value2 = value2;
@@ -30,7 +30,7 @@ namespace dexih.transforms.Mapping
         public object Value1 { get; set; }
         public object Value2 { get; set; }
         
-        public Filter.ECompare Compare { get; set; }
+        public ECompare Compare { get; set; }
 
         private int _column1Ordinal = -1;
         private int _column2Ordinal = -1;
@@ -73,31 +73,7 @@ namespace dexih.transforms.Mapping
             var value1 = _column1Ordinal == -1 ? Value1 : row[_column1Ordinal];
             var value2 = _column2Ordinal == -1 ? Value2 : row[_column2Ordinal];
 
-            bool returnValue;
-            switch (Compare)
-            {
-                case Filter.ECompare.GreaterThan:
-                    returnValue = Operations.GreaterThan(Column1.DataType, value1, value2);
-                    break;
-                case Filter.ECompare.IsEqual:
-                    returnValue = Operations.Equal(Column1.DataType, value1, value2);
-                    break;
-                case Filter.ECompare.GreaterThanEqual:
-                    returnValue = Operations.GreaterThanOrEqual(Column1.DataType, value1, value2);
-                    break;
-                case Filter.ECompare.LessThan:
-                    returnValue = Operations.LessThan(Column1.DataType, value1, value2);
-                    break;
-                case Filter.ECompare.LessThanEqual:
-                    returnValue = Operations.LessThanOrEqual(Column1.DataType, value1, value2);
-                    break;
-                case Filter.ECompare.NotEqual:
-                    returnValue = !Operations.Equal(Column1.DataType, value1, value2);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
+            var returnValue = Operations.Evaluate(Compare, Column1.DataType, value1, value2);
             return Task.FromResult(returnValue);
         }
 

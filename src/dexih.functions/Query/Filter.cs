@@ -97,19 +97,7 @@ namespace dexih.functions.Query
             CompareDataType = dataType;
         }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum ECompare
-        {
-            IsEqual,
-            GreaterThan,
-            GreaterThanEqual,
-            LessThan,
-            LessThanEqual,
-            NotEqual,
-            IsIn,
-            IsNull,
-            IsNotNull
-        }
+
 
         [JsonConverter(typeof(StringEnumConverter))]
         public enum EAndOr
@@ -152,52 +140,8 @@ namespace dexih.functions.Query
             var value1 = Column1 == null ? Value1 : column1Value;
             var value2 = Column2 == null ? Value2 : column2Value;
 
-            var parsedValue1 = Operations.Parse(CompareDataType, value1);
-
-            if(Operator == ECompare.IsIn && Value2.GetType().IsArray)
-            {
-                foreach(var value in (IEnumerable)Value2)
-                {
-                    var parsedValue = Operations.Parse(CompareDataType, value);
-                    var compare = Operations.Equal(CompareDataType, parsedValue1, parsedValue);
-                    if(compare)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
+            return Operations.Evaluate(Operator, CompareDataType, value1, value2);
             
-            var parsedValue2 = Operations.Parse(CompareDataType, value2);
-
-
-            if (Operator == ECompare.IsNull)
-            {
-                return parsedValue1 == null || parsedValue1 is DBNull;
-            }
-
-            if (Operator == ECompare.IsNotNull)
-            {
-                return parsedValue1 != null && !(parsedValue1 is DBNull);
-            }
-
-            switch (Operator)
-            {
-                case ECompare.IsEqual:
-                    return Operations.Equal(CompareDataType, parsedValue1, parsedValue2);
-                case ECompare.GreaterThan:
-                    return Operations.GreaterThan(CompareDataType, parsedValue1, parsedValue2);
-                case ECompare.GreaterThanEqual:
-                    return Operations.GreaterThanOrEqual(CompareDataType, parsedValue1, parsedValue2);
-                case ECompare.LessThan:
-                    return Operations.LessThan(CompareDataType, parsedValue1, parsedValue2);
-                case ECompare.LessThanEqual:
-                    return Operations.LessThanOrEqual(CompareDataType, parsedValue1, parsedValue2);
-                case ECompare.NotEqual:
-                    return !Operations.Equal(CompareDataType, parsedValue1, parsedValue2);
-                default:
-                    throw new QueryException($"The {Operator} is not currently supported in the query evaluation.");
-            }
         }
 
         public bool Equals(Filter other)

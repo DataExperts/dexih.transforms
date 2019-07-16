@@ -401,7 +401,7 @@ namespace dexih.transforms
                 //lookup the default value by the surrogate key (always = 0) or natural key if a target surrogate key does not exist.
                 if (_colAutoIncrement != null)
                 {
-                    filters.Add(new Filter(_colAutoIncrement, Filter.ECompare.IsEqual, "0"));
+                    filters.Add(new Filter(_colAutoIncrement, ECompare.IsEqual, "0"));
                 }
                 else
                 {
@@ -417,7 +417,7 @@ namespace dexih.transforms
                         {
                             throw new TransformException("The delta transform cannot run null default value on the column " + col.Name + ".   Edit the table columns and specify a default value, or switch off of the generate default row setting");
                         }
-                        filters.Add(new Filter(col, Filter.ECompare.IsEqual, col.DefaultValue));
+                        filters.Add(new Filter(col, ECompare.IsEqual, col.DefaultValue));
                     }
                 }
 
@@ -478,14 +478,14 @@ namespace dexih.transforms
 
                 //first add a where IsCurrentField = true
                 if (_colIsCurrentField != null)
-                    filters.Add(new Filter(_colIsCurrentField, Filter.ECompare.IsEqual, true));
+                    filters.Add(new Filter(_colIsCurrentField, ECompare.IsEqual, true));
 
                 //second add a where natural key is greater than the first record key.  (excluding where delete detection is on).
                 if (_primaryOpen && !DoDelete)
                 {
                     foreach (var ordinal in _naturalKeyOrdinals)
                     {
-                        filters.Add(new Filter(CacheTable.Columns[ordinal.ordinal], Filter.ECompare.GreaterThanEqual, PrimaryTransform[ordinal.primaryOrdinal]));
+                        filters.Add(new Filter(CacheTable.Columns[ordinal.ordinal], ECompare.GreaterThanEqual, PrimaryTransform[ordinal.primaryOrdinal]));
                     }
                 }
 

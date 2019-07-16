@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 
 namespace dexih.functions.Query
@@ -178,7 +179,7 @@ namespace dexih.functions.Query
                 if (!item.Value.HasValues)
                 {
                     var value = item.Value;
-                    Filters.Add(new Filter(column, Filter.ECompare.IsEqual, value) );
+                    Filters.Add(new Filter(column, ECompare.IsEqual, value) );
                 }
                 else
                 {
@@ -189,46 +190,46 @@ namespace dexih.functions.Query
                         {
                             if (childValue is JProperty property)
                             {
-                                Filter.ECompare op;
+                                ECompare op;
                                 object value = property.Value;
 
                                 switch (property.Name)
                                 {
                                     case "eq":
                                     case "=":
-                                        op = Filter.ECompare.IsEqual;
+                                        op = ECompare.IsEqual;
                                         break;
                                     case "lt":
                                     case "<":
-                                        op = Filter.ECompare.LessThan;
+                                        op = ECompare.LessThan;
                                         break;
                                     case "le":
                                     case "<=":
-                                        op = Filter.ECompare.LessThanEqual;
+                                        op = ECompare.LessThanEqual;
                                         break;
                                     case "gt":
                                     case ">":
-                                        op = Filter.ECompare.GreaterThan;
+                                        op = ECompare.GreaterThan;
                                         break;
                                     case "ge":
                                     case ">=":
-                                        op = Filter.ECompare.GreaterThanEqual;
+                                        op = ECompare.GreaterThanEqual;
                                         break;
                                     case "ne":
                                     case "!=":
                                     case "<>":
-                                        op = Filter.ECompare.NotEqual;
+                                        op = ECompare.NotEqual;
                                         break;
                                     case "nl":
                                     case "null":
-                                        op = Filter.ECompare.IsNull;
+                                        op = ECompare.IsNull;
                                         break;
                                     case "nn":
                                     case "notnull":
-                                        op = Filter.ECompare.IsNotNull;
+                                        op = ECompare.IsNotNull;
                                         break;
                                     case "in":
-                                        op = Filter.ECompare.IsIn;
+                                        op = ECompare.IsIn;
                                         if (value is JArray jArray)
                                         {
                                             value = jArray.ToArray();

@@ -103,7 +103,7 @@ namespace dexih.functions
         /// <summary>
         /// Indicates if the function is equivalent to a filter compare type.
         /// </summary>
-        public Filter.ECompare Compare { get; set; }
+        public ECompare Compare { get; set; }
     }
 
     public class TransformFunctionVariableAttribute : Attribute

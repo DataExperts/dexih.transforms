@@ -205,12 +205,28 @@ namespace dexih.transforms
                         {
                             var cacheRow = new object[outputRow.Length];
                             Mappings.MapOutputRow(cacheRow);
-                            await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
+                            var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
+                            
                             Mappings.Reset(EFunctionType.Aggregate);
-                            _cachedRows.Enqueue(cacheRow);
 
-                            await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
+                            if (ignore)
+                            {
+                                TransformRowsIgnored += 1;
+                            }
+                            else
+                            {
+                                _cachedRows.Enqueue(cacheRow);    
+                            }
+                            
+
+                            (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
                                 PrimaryTransform.CurrentRow, null, cancellationToken);
+
+                            if (ignore)
+                            {
+                                TransformRowsIgnored += 1;
+                                continue;
+                            }
                             _seriesValue = nextSeriesValue;
                         }
                     }
@@ -263,10 +279,19 @@ namespace dexih.transforms
                             // if compare is equal
                             if (compareResult == 0)
                             {
-                                await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
+                                var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
                                     PrimaryTransform.CurrentRow, null, cancellationToken);
-                                var cacheRow = new object[outputRow.Length];
-                                Mappings.MapOutputRow(cacheRow);
+
+                                if (ignore)
+                                {
+                                    TransformRowsIgnored += 1;
+                                    continue;
+                                }
+                                else
+                                {
+                                    var cacheRow = new object[outputRow.Length];
+                                    Mappings.MapOutputRow(cacheRow);
+                                }
                                 break;
                             }
 
@@ -274,9 +299,18 @@ namespace dexih.transforms
                             {
                                 var cacheRow = new object[outputRow.Length];
                                 Mappings.MapOutputRow(cacheRow);
-                                await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
+                                var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
                                 Mappings.Reset(EFunctionType.Aggregate);
-                                _cachedRows.Enqueue(cacheRow);
+
+                                if (ignore)
+                                {
+                                    TransformRowsIgnored += 1;
+                                }
+                                else
+                                {
+                                    _cachedRows.Enqueue(cacheRow);    
+                                }
+                                
                                 startFilling = true;
                             }
                             else
@@ -284,12 +318,20 @@ namespace dexih.transforms
                                 // if the series is not greater then create a dummy one, and continue the loop
                                 var fillerRow = new object[PrimaryTransform.FieldCount];
                                 Mappings.CreateFillerRow(PrimaryTransform.CurrentRow, fillerRow, _seriesValue);
-                                await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = _seriesValue},
+                                var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = _seriesValue},
                                     fillerRow, null, cancellationToken);
-                                var cacheRow = new object[outputRow.Length];
-                                Mappings.MapOutputRow(cacheRow);
-                                await Mappings.ProcessFillerRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
-                                _cachedRows.Enqueue(cacheRow);
+
+                                if (ignore)
+                                {
+                                    TransformRowsIgnored += 1;
+                                }
+                                else
+                                {
+                                    var cacheRow = new object[outputRow.Length];
+                                    Mappings.MapOutputRow(cacheRow);
+                                    await Mappings.ProcessFillerRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
+                                    _cachedRows.Enqueue(cacheRow);
+                                }
                             }
 
                             _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
@@ -347,8 +389,15 @@ namespace dexih.transforms
                 //create a cached current row.  this will be output when the group has changed.
                 var cacheRow = new object[outputRow.Length];
                 Mappings.MapOutputRow(cacheRow);
-                await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
-                _cachedRows.Enqueue(cacheRow);
+                var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
+                if (ignore)
+                {
+                    TransformRowsIgnored += 1;
+                }
+                else
+                {
+                    _cachedRows.Enqueue(cacheRow);    
+                }
 
                 // fill any remaining rows.
                 if (_seriesMapping.SeriesFill && _seriesMapping.SeriesFinish != null)
@@ -363,11 +412,18 @@ namespace dexih.transforms
                         // if the series is not greater then create a dummy one, and continue the loop
                         var fillerRow = new object[PrimaryTransform.FieldCount];
                         Mappings.CreateFillerRow(PrimaryTransform.CurrentRow, fillerRow, _seriesValue);
-                        await Mappings.ProcessInputData(new FunctionVariables() { SeriesValue = _seriesValue, Forecast = true}, fillerRow, null, cancellationToken);
+                        (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() { SeriesValue = _seriesValue, Forecast = true}, fillerRow, null, cancellationToken);
 
-                        var cacheRow1 = new object[outputRow.Length];
-                        Mappings.MapOutputRow(cacheRow1);
-                        _cachedRows.Enqueue(cacheRow1);
+                        if (ignore)
+                        {
+                            TransformRowsIgnored += 1;
+                        }
+                        else
+                        {
+                            var cacheRow1 = new object[outputRow.Length];
+                            Mappings.MapOutputRow(cacheRow1);
+                            _cachedRows.Enqueue(cacheRow1);
+                        }
 
                         _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
                         compareResult = ((IComparable) seriesFinish)?.CompareTo((IComparable) _seriesValue) ?? 0;
@@ -379,7 +435,11 @@ namespace dexih.transforms
                 var cacheIndex = 0;
                 foreach (var row in _cachedRows)
                 {
-                    await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = cacheIndex++}, row, EFunctionType.Series, cancellationToken);
+                    (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = cacheIndex++}, row, EFunctionType.Series, cancellationToken);
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
                 }
                 
                 outputRow = _cachedRows.Dequeue();

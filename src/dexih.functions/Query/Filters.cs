@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.Query
 {
@@ -11,7 +12,7 @@ namespace dexih.functions.Query
             Add(new Filter(columnName, value));
         }
         
-        public Filters(string columnName, Filter.ECompare compare, object value)
+        public Filters(string columnName, ECompare compare, object value)
         {
             Add(new Filter(columnName, compare, value));
         }
@@ -24,7 +25,7 @@ namespace dexih.functions.Query
             }
         }
         
-        public Filters(params (string columnName, Filter.ECompare compare, object value)[] filters)
+        public Filters(params (string columnName, ECompare compare, object value)[] filters)
         {
             foreach (var filter in filters)
             {

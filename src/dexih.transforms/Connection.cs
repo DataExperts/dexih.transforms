@@ -338,9 +338,9 @@ namespace dexih.transforms
                 };
 
                 var updateLatestFilters = new List<Filter>() {
-                    new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.HubKey),
-                    new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.ReferenceKey),
-                    new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
+                    new Filter(new TableColumn("HubKey", ETypeCode.Int64), ECompare.IsEqual, writerResult.HubKey),
+                    new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), ECompare.IsEqual, writerResult.ReferenceKey),
+                    new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), ECompare.IsEqual, true),
                 };
 
                 var updateIsLatest = new UpdateQuery(updateLatestColumn, updateLatestFilters);
@@ -358,9 +358,9 @@ namespace dexih.transforms
                 };
 
                 var updateLatestFilters = new List<Filter>() {
-                    new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.HubKey),
-                    new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsEqual, writerResult.ReferenceKey),
-                    new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true),
+                    new Filter(new TableColumn("HubKey", ETypeCode.Int64), ECompare.IsEqual, writerResult.HubKey),
+                    new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), ECompare.IsEqual, writerResult.ReferenceKey),
+                    new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), ECompare.IsEqual, true),
                 };
 
                 var updateIsLatest = new UpdateQuery(updateLatestColumn, updateLatestFilters);
@@ -430,16 +430,16 @@ namespace dexih.transforms
             reader = GetTransformReader(picoTable.Table);
 
             var filters = new List<Filter>();
-            if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), Filter.ECompare.IsEqual, hubKey));
-            if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), Filter.ECompare.IsIn, referenceKeys));
-            if (auditType != null) filters.Add(new Filter(new TableColumn("AuditType", ETypeCode.String), Filter.ECompare.IsEqual, auditType));
-            if (auditKey != null) filters.Add(new Filter(new TableColumn("AuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, auditKey));
-            if (runStatus != null) filters.Add(new Filter(new TableColumn("RunStatus", ETypeCode.String), Filter.ECompare.IsEqual, runStatus.ToString()));
-            if (startTime != null) filters.Add(new Filter(new TableColumn("StartTime", ETypeCode.DateTime), Filter.ECompare.GreaterThanEqual, startTime));
-            if (currentResult) filters.Add(new Filter(new TableColumn("IsCurrent", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
-            if (previousResult) filters.Add(new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
-            if (previousSuccessResult) filters.Add(new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), Filter.ECompare.IsEqual, true));
-            if (parentAuditKey != null) filters.Add(new Filter(new TableColumn("ParentAuditKey", ETypeCode.Int64), Filter.ECompare.IsEqual, parentAuditKey));
+            if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), ECompare.IsEqual, hubKey));
+            if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), ECompare.IsIn, referenceKeys));
+            if (auditType != null) filters.Add(new Filter(new TableColumn("AuditType", ETypeCode.String), ECompare.IsEqual, auditType));
+            if (auditKey != null) filters.Add(new Filter(new TableColumn("AuditKey", ETypeCode.Int64), ECompare.IsEqual, auditKey));
+            if (runStatus != null) filters.Add(new Filter(new TableColumn("RunStatus", ETypeCode.String), ECompare.IsEqual, runStatus.ToString()));
+            if (startTime != null) filters.Add(new Filter(new TableColumn("StartTime", ETypeCode.DateTime), ECompare.GreaterThanEqual, startTime));
+            if (currentResult) filters.Add(new Filter(new TableColumn("IsCurrent", ETypeCode.Boolean), ECompare.IsEqual, true));
+            if (previousResult) filters.Add(new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), ECompare.IsEqual, true));
+            if (previousSuccessResult) filters.Add(new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), ECompare.IsEqual, true));
+            if (parentAuditKey != null) filters.Add(new Filter(new TableColumn("ParentAuditKey", ETypeCode.Int64), ECompare.IsEqual, parentAuditKey));
 
             var sorts = new List<Sort>() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), Sort.EDirection.Descending) };
             var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };

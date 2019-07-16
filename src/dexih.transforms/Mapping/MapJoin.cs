@@ -28,7 +28,7 @@ namespace dexih.transforms.Mapping
         public object InputValue { get; set; }
         public object JoinValue { get; set; }
         
-        public Filter.ECompare Compare { get; set; }
+        public ECompare Compare { get; set; }
         
         /// <summary>
         /// Stores the actual compare result.
@@ -103,22 +103,22 @@ namespace dexih.transforms.Mapping
 
             switch (Compare)
             {
-                case Filter.ECompare.GreaterThan:
+                case ECompare.GreaterThan:
                     returnResult = CompareResult == 1;
                     break;
-                case Filter.ECompare.IsEqual:
+                case ECompare.IsEqual:
                     returnResult = CompareResult == 0;
                     break;
-                case Filter.ECompare.GreaterThanEqual:
+                case ECompare.GreaterThanEqual:
                     returnResult = CompareResult != -1;
                     break;
-                case Filter.ECompare.LessThan:
+                case ECompare.LessThan:
                     returnResult = CompareResult == -1;
                     break;
-                case Filter.ECompare.LessThanEqual:
+                case ECompare.LessThanEqual:
                     returnResult = CompareResult != 1;
                     break;
-                case Filter.ECompare.NotEqual:
+                case ECompare.NotEqual:
                     returnResult = CompareResult != 0;
                     break;
                 default:

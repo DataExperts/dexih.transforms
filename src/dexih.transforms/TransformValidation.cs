@@ -169,15 +169,17 @@ namespace dexih.transforms
                 object[] rejectRow = null;
 
                 bool passed;
+                bool ignore;
 
                 //run the validation functions
                 try
                 {
-                    passed = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    (passed, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
                 }
                 catch (FunctionIgnoreRowException)
                 {
                     passed = false;
+                    ignore = true;
                 }
                 catch (Exception ex)
                 {
@@ -186,7 +188,11 @@ namespace dexih.transforms
                         ex);
                 }
 
-                if (!passed)
+                if (ignore)
+                {
+                    TransformRowsIgnored += 1;
+                }
+                else if (!passed)
                 {
                     foreach (var mapping in Mappings.OfType<MapValidation>())
                     {

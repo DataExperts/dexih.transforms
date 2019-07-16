@@ -95,7 +95,12 @@ namespace dexih.transforms
                 return outputRow;
             } else if (!_firstRecord && !_lastRecord)
             {
-                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                var (_, ignore)  = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                if (ignore)
+                {
+                    TransformRowsIgnored += 1;
+                }
+                
             }
             
             // used to track if the group fields have changed
@@ -141,7 +146,14 @@ namespace dexih.transforms
                     if (!groupChanged)
                     {
                         // if the group has not changed, process the input row
-                        await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                        var (_, ignore)  = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+
+                        if (ignore)
+                        {
+                            TransformRowsIgnored += 1;
+                            continue;
+                        }
+                            
                     }
                     // when group has changed
                     else
@@ -183,18 +195,29 @@ namespace dexih.transforms
         private async Task ProcessGroupChange(object[] outputRow, CancellationToken cancellationToken)
         {
             Mappings.MapOutputRow(outputRow);
-            await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
-            
-            var moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
-                    
+            var (moreRows, ignore)  = await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
+
+            if (ignore && !moreRows)
+            {
+                TransformRowsIgnored += 1;
+                return;
+            }
+
             // if the aggregate function wants to provide more rows, store them in a separate collection.
             while (moreRows)
             {
                 var rowCopy = new object[FieldCount];
                 outputRow.CopyTo(rowCopy, 0);
-                moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables(), rowCopy, EFunctionType.Aggregate, cancellationToken);
-
-                _cachedRows.Enqueue(rowCopy);
+                (moreRows, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), rowCopy, EFunctionType.Aggregate, cancellationToken);
+                
+                if (ignore)
+                {
+                    TransformRowsIgnored += 1;
+                }
+                else
+                {
+                    _cachedRows.Enqueue(rowCopy);    
+                }
             }
             
             Mappings.Reset(EFunctionType.Aggregate);

@@ -42,17 +42,22 @@ namespace dexih.transforms
                 {
                     TableColumn column1 = null;
                     TableColumn column2 = null;
+                    var value1 = filter.Value1;
+                    var value2 = filter.Value2;
+                    
                     if (filter.Column1 != null)
                     {
-                        column1 = TranslateTargetColumn(filter.Column1);
-                        if (column1 == null)
+	                    bool found;
+                        (found, column1, value1) = TranslateTargetColumn(filter.Column1, filter.Value1);
+                        if (!found)
                             continue;
                     }
 
                     if (filter.Column2 != null)
                     {
-                        column2 = TranslateTargetColumn(filter.Column2);
-                        if (column2 == null)
+	                    bool found;
+                        (found, column2, value2) = TranslateTargetColumn(filter.Column2, filter.Value2);
+                        if (!found)
                             continue;
                     }
 
@@ -61,8 +66,8 @@ namespace dexih.transforms
 						Column1 = column1,
 						Column2 = column2,
 						Operator = filter.Operator,
-						Value1 = filter.Value1,
-						Value2 = filter.Value2,
+						Value1 = value1,
+						Value2 = value2,
 						CompareDataType = filter.CompareDataType
 					};
 
@@ -81,8 +86,9 @@ namespace dexih.transforms
 					TableColumn column = null;
 					if (sort.Column != null)
 					{
-						column = TranslateTargetColumn(sort.Column);
-						if (column == null)
+						bool found;
+						(found, column, _) = TranslateTargetColumn(sort.Column, null);
+						if (!found)
 							continue;
 					}
 
@@ -107,11 +113,11 @@ namespace dexih.transforms
 	    /// </summary>
 	    /// <param name="targetColumn">Converts a target column into the mapped source column.</param>
 	    /// <returns></returns>
-        public TableColumn TranslateTargetColumn(TableColumn targetColumn)
+        public (bool found, TableColumn column, object value) TranslateTargetColumn(TableColumn targetColumn, object value)
         {
 	        if (targetColumn == null)
 	        {
-		        return null;
+		        return (false, null, value);
 	        }
 
 	        if (Mappings != null)
@@ -122,7 +128,15 @@ namespace dexih.transforms
 			        {
 				        if (mapColumn.InputColumn != null && mapColumn.OutputColumn.Compare(targetColumn))
 				        {
-					        return mapColumn.InputColumn.Copy();
+					        return (true, mapColumn.InputColumn.Copy(), null);
+				        }
+			        }
+
+			        if (mapping is MapInputColumn mapInputColumn)
+			        {
+				        if (mapInputColumn.InputColumn != null && mapInputColumn.InputColumn.Compare(targetColumn))
+				        {
+					        return (true, null, mapInputColumn.InputValue);
 				        }
 			        }
 		        }
@@ -132,12 +146,12 @@ namespace dexih.transforms
 			        var column = PrimaryTransform.CacheTable.Columns.SingleOrDefault(c => c.Name == targetColumn.Name);
 			        if (column != null)
 			        {
-				        return targetColumn;
+				        return (true, targetColumn, null);
 			        }
 		        }
 			}
 
-	        return null;
+	        return (false, null, null);
         }
 
         #region Transform Implementations
@@ -165,7 +179,12 @@ namespace dexih.transforms
 
 				try
 				{
-					await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+					var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+					if (ignore)
+					{
+						TransformRowsIgnored++;
+						continue;
+					}
 					Mappings.MapOutputRow(newRow);
 				}
 				catch (FunctionIgnoreRowException)

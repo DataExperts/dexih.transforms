@@ -12,13 +12,13 @@ namespace dexih.transforms.Mapping
 
         public MapInputColumn(TableColumn inputColumn)
         {
-            _inputColumn = inputColumn;
-            _inputValue = inputColumn.DefaultValue;
+            InputColumn = inputColumn;
+            InputValue = inputColumn.DefaultValue;
         }
 
 
-        private readonly TableColumn _inputColumn;
-        private object _inputValue;
+        public readonly TableColumn InputColumn;
+        public object InputValue;
 
         protected int InputOrdinal = -1;
         protected int OutputOrdinal = -1;
@@ -27,14 +27,14 @@ namespace dexih.transforms.Mapping
 
         public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
-            if (_inputColumn == null) return;
+            if (InputColumn == null) return;
             
-            InputOrdinal = table.GetOrdinal(_inputColumn);
+            InputOrdinal = table.GetOrdinal(InputColumn);
         }
 
         public override void AddOutputColumns(Table table)
         {
-            OutputOrdinal = AddOutputColumn(table, _inputColumn);
+            OutputOrdinal = AddOutputColumn(table, InputColumn);
         }
 
         public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
@@ -45,17 +45,17 @@ namespace dexih.transforms.Mapping
 
         public override void MapOutputRow(object[] data)
         {
-            data[OutputOrdinal] = _inputValue;
+            data[OutputOrdinal] = InputValue;
         }
 
         public override object GetOutputValue(object[] row = null)
         {
-            return _inputValue;
+            return InputValue;
         }
 
         public override string Description()
         {
-            return $"Input ({_inputColumn?.Name}";
+            return $"Input ({InputColumn?.Name}";
         }
 
         public override void Reset(EFunctionType functionType)
@@ -64,10 +64,10 @@ namespace dexih.transforms.Mapping
 
         public void SetInput(IEnumerable<TableColumn> inputColumns)
         {
-            var column = inputColumns.SingleOrDefault(c => c.Name == _inputColumn.Name);
+            var column = inputColumns.SingleOrDefault(c => c.Name == InputColumn.Name);
             if (column != null)
             {
-                _inputValue = column.DefaultValue;
+                InputValue = column.DefaultValue;
             }
         }
 

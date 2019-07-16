@@ -130,14 +130,26 @@ namespace dexih.transforms
                 if (_groupNodeOrdinal < 0)
                 {
                     //populate the parameters with the current row.
-                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
-                    var cacheRow = new object[FieldCount];
-                    Mappings.MapOutputRow(cacheRow);
-                    _cachedRows.Enqueue(cacheRow);
+                    var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
+                    else
+                    {
+                        var cacheRow = new object[FieldCount];
+                        Mappings.MapOutputRow(cacheRow);
+                        _cachedRows.Enqueue(cacheRow);
+                    }
                 }
                 else
                 {
-                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    
+                    var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
                 }
             }
 
@@ -188,12 +200,23 @@ namespace dexih.transforms
                         if (!groupChanged)
                         {
                             // if the group has not changed, process the input row
-                            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                            var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                            if (ignore)
+                            {
+                                TransformRowsIgnored += 1;
+                                continue;
+                            }
                         }
                         // when group has changed
                         else
                         {
-                            await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
+                            var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
+                            if (ignore)
+                            {
+                                TransformRowsIgnored += 1;
+                                continue;
+                            }
+
                             Mappings.MapOutputRow(outputRow);
 
                             //store the last groupValues read to start the next grouping.
@@ -206,8 +229,13 @@ namespace dexih.transforms
                         if (!groupChanged)
                         {
                             // if the group has not changed, process the input row
-                            await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
-
+                            var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                            if (ignore)
+                            {
+                                TransformRowsIgnored += 1;
+                                continue;
+                            }
+                            
                             //create a cached current row.  this will be output when the group has changed.
                             var cacheRow = new object[outputRow.Length];
                             Mappings.MapOutputRow(cacheRow);
@@ -242,8 +270,12 @@ namespace dexih.transforms
             {
                 if (_groupNodeOrdinal >= 0)
                 {
-                    await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
-                    Mappings.MapOutputRow(outputRow);
+                    var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), outputRow, EFunctionType.Aggregate, cancellationToken);
+                    if (!ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                        Mappings.MapOutputRow(outputRow);
+                    }
                 }
                 else
                 {
@@ -273,21 +305,33 @@ namespace dexih.transforms
                 List<(int index, object[] row)> additionalRows = null;
                 foreach (var row in _cachedRows)
                 {
-                    var moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
+                    var (moreRows, ignore)  = await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
+
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
                     
                     // if the aggregate function wants to provide more rows, store them in a separate collection.
-                    while (moreRows)
+                    while (moreRows && !ignore)
                     {
                         var rowCopy = new object[FieldCount];
                         row.CopyTo(rowCopy, 0);
-                        moreRows = await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
+                        (moreRows, ignore)  = await Mappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
 
                         if (additionalRows == null)
                         {
                             additionalRows = new List<(int index, object[] row)>();
                         }
-                        
-                        additionalRows.Add((index, rowCopy));
+
+                        if (ignore)
+                        {
+                            TransformRowsIgnored += 1;
+                        }
+                        else
+                        {
+                            additionalRows.Add((index, rowCopy));    
+                        }
                     }
                     
                     index++;

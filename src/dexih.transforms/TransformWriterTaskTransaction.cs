@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 
 namespace dexih.transforms
 {
@@ -87,7 +88,7 @@ namespace dexih.transforms
                         TargetTable.Columns.Where(c => !c.IsAutoIncrement())
                             .Select((c, index) => new QueryColumn(c, row[index])).ToList(),
                         TargetTable.Columns.Where(c => c.IsAutoIncrement())
-                            .Select((c, index) => new Filter(c, Filter.ECompare.IsEqual, row[index])).ToList()
+                            .Select((c, index) => new Filter(c, ECompare.IsEqual, row[index])).ToList()
                     );
                     await TargetConnection.ExecuteUpdate(TargetTable, new List<UpdateQuery>() {updateQuery}, _transactionReference, 
                         cancellationToken = default);
@@ -97,7 +98,7 @@ namespace dexih.transforms
                     var deleteQuery = new DeleteQuery(
                         TargetTable.Name,
                         TargetTable.Columns.Where(c => c.IsAutoIncrement())
-                            .Select((c, index) => new Filter(c, Filter.ECompare.IsEqual, row[index])).ToList()
+                            .Select((c, index) => new Filter(c, ECompare.IsEqual, row[index])).ToList()
                     );
                     await TargetConnection.ExecuteDelete(TargetTable, new List<DeleteQuery>() {deleteQuery}, _transactionReference,
                         cancellationToken = default);

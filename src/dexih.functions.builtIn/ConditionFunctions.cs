@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -10,28 +12,28 @@ namespace dexih.functions.BuiltIn
     {
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Less Than",
             Description = "Less than", GenericType = EGenericType.All)]
-        [TransformFunctionCompare(Compare = Filter.ECompare.LessThan)]
+        [TransformFunctionCompare(Compare = ECompare.LessThan)]
         public bool LessThan(T value, T compare) => Operations.LessThan(value, compare);
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Less Than/Equal",
             Description = "Less than or Equal", GenericType = EGenericType.All)]
-        [TransformFunctionCompare(Compare = Filter.ECompare.LessThanEqual)]
+        [TransformFunctionCompare(Compare = ECompare.LessThanEqual)]
         public bool LessThanOrEqual(T value, T compare) => Operations.LessThanOrEqual(value, compare);
 
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Greater Than",
             Description = "Greater than", GenericType = EGenericType.All)]
-        [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThan)]
+        [TransformFunctionCompare(Compare = ECompare.GreaterThan)]
         public bool GreaterThan(T value, T compare) => Operations.GreaterThan(value, compare);
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition",
             Name = "Greater Than/Equal", Description = "Greater or Equal", GenericType = EGenericType.All)]
-        [TransformFunctionCompare(Compare = Filter.ECompare.GreaterThanEqual)]
+        [TransformFunctionCompare(Compare = ECompare.GreaterThanEqual)]
         public bool GreaterThanOrEqual(T value, T compare) => Operations.GreaterThanOrEqual(value, compare);
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Equal",
             Description = "The list of values are equal.", GenericType = EGenericType.All)]
-        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
+        [TransformFunctionCompare(Compare = ECompare.IsEqual)]
         public bool IsEqual(T[] values)
         {
             for (var i = 1; i < values.Length; i++)
@@ -44,7 +46,7 @@ namespace dexih.functions.BuiltIn
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Array Contains",
             Description = "The value is equal to at least one of the values in the values array", GenericType = EGenericType.All)]
-        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
+        [TransformFunctionCompare(Compare = ECompare.IsEqual)]
         public bool ArrayContains(T value, T[] values)
         {
             return values.Contains(value);
@@ -114,13 +116,23 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Contains",
-            Description = "Returns a value indicating whether a specified substring occurs within this string.")]
+            Description = "Returns a true when a specified \"contains\" string occurs within the value.")]
         public bool Contains(string value, string contains, bool ignoreCase = false)
         {
             return value.IndexOf(contains,
                        ignoreCase
                            ? StringComparison.InvariantCultureIgnoreCase
                            : StringComparison.CurrentCulture) >= 0;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Like",
+            Description = "Sql \"like\" equivalent match which returns true when the pattern matches the matchExpression.")]
+        public bool Like(
+            [TransformFunctionParameter(Description = "Expression to search")] string matchExpression, 
+            [TransformFunctionParameter(Description = "Pattern to search for (use % for multiple characters, _ for any single character)")]string pattern, 
+            [TransformFunctionParameter(Description = "Escape character to proceed a % or _ search.")] string escapeCharacter = null)
+        {
+            return Operations.Like(matchExpression, pattern, escapeCharacter);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition", Name = "Ends With",
@@ -231,7 +243,7 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Numeric Equals",
             Description = "Are the specified decimal values equal with the specified precision.")]
-        [TransformFunctionCompare(Compare = Filter.ECompare.IsEqual)]
+        [TransformFunctionCompare(Compare = ECompare.IsEqual)]
         public bool IsDecimalEqual(decimal[] values, int precision = 6)
         {
             if (values.Length == 0) return true;

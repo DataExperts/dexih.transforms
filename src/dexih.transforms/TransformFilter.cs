@@ -88,16 +88,27 @@ namespace dexih.transforms
             }
 
             var showRecord = true;
+            var ignoreRow = false;
             
             if (Mappings != null && ( Mappings.OfType<MapFunction>().Any() || Mappings.OfType<MapFilter>().Any()))
             {
                 do //loop through the records util the filter is true
                 {
-                    showRecord = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    (showRecord, ignoreRow) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
 
-                    if (showRecord) break;
+                    if (!showRecord)
+                    {
+                        TransformRowsFiltered += 1;
+                    }
+                    else if (ignoreRow)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
+                    else
+                    {
+                        break;
+                    }
 
-                    TransformRowsFiltered += 1;
                 } while (await PrimaryTransform.ReadAsync(cancellationToken));
             }
 

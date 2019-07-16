@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -153,7 +154,7 @@ namespace dexih.functions
 
 		public EInvalidAction InvalidAction { get; set; } = EInvalidAction.Reject;
 
-		public Filter.ECompare? CompareEnum { get; set; }
+		public ECompare? CompareEnum { get; set; }
 		
 		public GlobalVariables GlobalVariables { get; set; }
 
@@ -380,68 +381,92 @@ namespace dexih.functions
 			return (parameters, outputPos);
 		}
 
-		public object RunFunction(object[] inputParameters, CancellationToken cancellationToken)
+		public (object returnValue, bool ignore) RunFunction(object[] inputParameters, CancellationToken cancellationToken)
 		{
 			return RunFunction(new FunctionVariables(), inputParameters, out _, cancellationToken);
 		}
 
-		public object RunFunction(object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
+		public (object returnValue, bool ignore) RunFunction(object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
 			return RunFunction(new FunctionVariables(), inputParameters, out outputs, cancellationToken);
 		}
 
 
-		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
+		public (object returnValue, bool ignore) RunFunction(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
 			return RunFunction(functionVariables, inputParameters, out _, cancellationToken);
 		}
 		
-		public object RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
+		public (object returnValue, bool ignore) RunFunction(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
 			return Invoke(FunctionMethod, functionVariables, inputParameters, out outputs, cancellationToken);
 		}
 
-		public object RunResult(object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
+		public (object returnValue, bool ignore) RunResult(object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
 			return Invoke(ResultMethod, new FunctionVariables(), inputParameters, out outputs, cancellationToken);
 		}
 		
-		public object RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
+		public (object returnValue, bool ignore) RunResult(FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
 			return Invoke(ResultMethod, functionVariables, inputParameters, out outputs, cancellationToken);
 		}
 		
-		public Task<object> RunFunctionAsync(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
+		public Task<(object returnValue, bool ignore)> RunFunctionAsync(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
 			return InvokeAsync(FunctionMethod, functionVariables, inputParameters, cancellationToken);
 		}
 
-		public Task<object> RunResultAsync(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
+		public Task<(object returnValue, bool ignore)> RunResultAsync(FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
 			return InvokeAsync(ResultMethod, functionVariables, inputParameters, cancellationToken);
 		}
 
-		private async Task<object> InvokeAsync(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
+		private async Task<(object returnValue, bool ignore)> InvokeAsync(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
 			try
 			{
 				var (parameters, outputPos) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
+
+				if (parameters.Contains(null))
+				{
+					switch (OnNull)
+					{
+						case EErrorAction.Abend:
+							throw new FunctionException(
+								$"The function {FunctionName} contains null parameters.  Change the \"Action when null\" setting to ignore this.");
+						case EErrorAction.Null:
+							return (Activator.CreateInstance(methodInfo.MethodInfo.ReturnType), false);
+						case EErrorAction.Ignore:
+							return (null, true);
+					}
+				}
+
 				var task = (Task) methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
 				await task.ConfigureAwait(false);
 				var resultProperty = task.GetType().GetProperty("Result");
 				_returnValue = resultProperty.GetValue(task);
-				return _returnValue;
+				return (_returnValue, false);
+
 			}
 			catch (TargetInvocationException ex)
 			{
+				switch (OnError)
+				{
+					case EErrorAction.Null:
+						return (Activator.CreateInstance(methodInfo.MethodInfo.ReturnType), false);
+					case EErrorAction.Ignore:
+						return (null, true);
+				}
+				
 				if (ex.InnerException != null)
 				{
 					throw new FunctionException(
 						$"The function {FunctionName} failed.  " + ex.InnerException.Message,
 						ex.InnerException);
-				}
-
+				} 
 				throw;
+
 			}
 			catch(Exception ex)
 			{
@@ -449,13 +474,29 @@ namespace dexih.functions
 			}
 		}
 
-		private object Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
+		private (object returnValue, bool ignore) Invoke(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, out object[] outputs, CancellationToken cancellationToken)
 		{
 			try
 			{
 				var (parameters, outputPos) =
 					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
 
+				if (parameters.Contains(null))
+				{
+					switch (OnNull)
+					{
+						case EErrorAction.Abend:
+							throw new FunctionException(
+								$"The function {FunctionName} contains null parameters.  Change the \"Action when null\" setting to ignore this.");
+						case EErrorAction.Null:
+							outputs = null;
+							return (Activator.CreateInstance(methodInfo.MethodInfo.ReturnType), false);
+						case EErrorAction.Ignore:
+							outputs = null;
+							return (null, true);
+					}
+				}
+				
 				var returnValue = methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
 				_returnValue = returnValue;
 
@@ -468,10 +509,20 @@ namespace dexih.functions
 					outputs = new object[0];
 				}
 
-				return _returnValue;
+				return (_returnValue, false);
 			}
 			catch (TargetInvocationException ex)
 			{
+				switch (OnError)
+				{
+					case EErrorAction.Null:
+						outputs = null;
+						return (Activator.CreateInstance(methodInfo.MethodInfo.ReturnType), false);
+					case EErrorAction.Ignore:
+						outputs = null;
+						return (null, true);
+				}
+				
 				if (ex.InnerException != null)
 				{
 					throw new FunctionException(

@@ -52,7 +52,7 @@ namespace dexih.transforms.Mapping
             object[] joinRow, CancellationToken cancellationToken)
         {
             // process the current row
-            await GroupMappings.ProcessInputData(row, cancellationToken);
+            var (_, ignore) = await GroupMappings.ProcessInputData(row, cancellationToken);
 
             //create a cached current row.
             var cacheRow = new object[GroupTable.Columns.Count];
@@ -98,14 +98,14 @@ namespace dexih.transforms.Mapping
                 List<(int index, object[] row)> additionalRows = null;
                 foreach (var row in _cachedRows)
                 {
-                    var moreRows = await GroupMappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
-                    
+                    var (moreRows, ignore) = await GroupMappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
+
                     // if the aggregate function wants to provide more rows, store them in a separate collection.
-                    while (moreRows)
+                    while (moreRows && !ignore)
                     {
                         var rowCopy = new object[GroupTable.Columns.Count];
                         row.CopyTo(rowCopy, 0);
-                        moreRows = await GroupMappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
+                        (moreRows, ignore)  = await GroupMappings.ProcessAggregateRow(new FunctionVariables() {Index = index}, row, EFunctionType.Aggregate, cancellationToken);
 
                         if (additionalRows == null)
                         {

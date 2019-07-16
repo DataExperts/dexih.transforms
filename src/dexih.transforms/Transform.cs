@@ -1181,7 +1181,7 @@ namespace dexih.transforms
                     else
                     {
                         var filter = query.Filters.FirstOrDefault(c =>
-                            c.Column1.Name == column.Name && c.Operator == Filter.ECompare.IsEqual);
+                            c.Column1.Name == column.Name && c.Operator == ECompare.IsEqual);
                         if (filter != null)
                         {
                             column.DefaultValue = filter.Value2;

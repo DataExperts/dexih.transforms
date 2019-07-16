@@ -284,28 +284,8 @@ namespace dexih.functions
                     value2 = row[GetOrdinal(filter.Column2.Name)];
                 }
 
-                switch (filter.Operator)
-                {
-                    case Filter.ECompare.IsEqual:
-                        isMatch = Operations.Equal(filter.CompareDataType, value1, value2);
-                        break;
-                    case Filter.ECompare.NotEqual:
-                        isMatch = !Operations.Equal(filter.CompareDataType, value1, value2);
-                        break;
-                    case Filter.ECompare.LessThan:
-                        isMatch = Operations.LessThan(filter.CompareDataType, value1, value2);
-                        break;
-                    case Filter.ECompare.LessThanEqual:
-                        isMatch = Operations.LessThanOrEqual(filter.CompareDataType, value1, value2);
-                        break;
-                    case Filter.ECompare.GreaterThan:
-                        isMatch = Operations.GreaterThan(filter.CompareDataType, value1, value2);
-                        break;
-                    case Filter.ECompare.GreaterThanEqual:
-                        isMatch = Operations.GreaterThanOrEqual(filter.CompareDataType, value1, value2);
-                        break;
-                }
-
+                isMatch = Operations.Evaluate(filter.Operator, filter.CompareDataType, value1, value2);
+                
                 if (!isMatch)
                     break;
             }
@@ -354,7 +334,7 @@ namespace dexih.functions
         private IEnumerable<object[]> IndexLookup(IEnumerable<Filter> filters)
         {
             var indexFilter = filters
-                .Where(c => c.Operator == Filter.ECompare.IsEqual && c.Column1 != null && c.Column2 is null)
+                .Where(c => c.Operator == ECompare.IsEqual && c.Column1 != null && c.Column2 is null)
                 .Select(c => ((int ordinal, object value)) (GetOrdinal(c.Column1.ColumnGroup), c.Value2))
                 .OrderBy(c => c.ordinal);
 

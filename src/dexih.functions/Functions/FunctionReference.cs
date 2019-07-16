@@ -40,7 +40,7 @@ namespace dexih.functions
         /// <summary>
         /// Used to map a filter equivalent operator
         /// </summary>
-        public Filter.ECompare? Compare { get; set; }
+        public ECompare? Compare { get; set; }
         
         public bool IsStandardFunction { get; set; }
 

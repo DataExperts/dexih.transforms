@@ -106,7 +106,14 @@ namespace dexih.transforms
             do
             {
                 // if the row generation function returns true, then add the row
-                if (await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken) || firstRead)
+                var (showRow, ignoreRow) =
+                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+
+                if (ignoreRow)
+                {
+                    TransformRowsIgnored += 1;
+                }
+                else if (showRow || firstRead)
                 {
                     var newRow = new object[FieldCount];
                     Mappings.MapOutputRow(newRow);

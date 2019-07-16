@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -43,7 +44,7 @@ namespace dexih.transforms.Mapping
 
         public object ResultReturnValue;
         private object[] _resultOutputs;
-        
+
         private Dictionary<object[], (object, object[])> _cache;
         private bool _isFirst = true;
 
@@ -60,6 +61,8 @@ namespace dexih.transforms.Mapping
 
         public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
+            IgnoreRow = false;
+            
             if (_returnEnumerator != null)
             {
                 if (_returnEnumerator.MoveNext())
@@ -108,13 +111,14 @@ namespace dexih.transforms.Mapping
 
             if (runFunction)
             {
+                
                 if (Function.FunctionMethod.IsAsync)
                 {
-                    ReturnValue = await Function.RunFunctionAsync(functionVariables, parameters, cancellationToken);
+                    (ReturnValue, IgnoreRow) = await Function.RunFunctionAsync(functionVariables, parameters, cancellationToken);
                 }
                 else
                 {
-                    ReturnValue = Function.RunFunction(functionVariables, parameters, out Outputs, cancellationToken);
+                    (ReturnValue, IgnoreRow) = Function.RunFunction(functionVariables, parameters, out Outputs, cancellationToken);
                 }
 
                 if (FunctionCaching == EFunctionCaching.EnableCache)
@@ -185,17 +189,19 @@ namespace dexih.transforms.Mapping
         
         public override async Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
         {
+            IgnoreRow = false;
+            
             if (Function.FunctionType == functionType && Function.ResultMethod != null)
             {
                 var parameters = Parameters.GetResultFunctionParameters();
 
                 if (Function.ResultMethod.IsAsync)
                 {
-                    ResultReturnValue = await Function.RunResultAsync(functionVariables, parameters, cancellationToken);
+                    (ResultReturnValue, IgnoreRow) = await Function.RunResultAsync(functionVariables, parameters, cancellationToken);
                 }
                 else
                 {
-                    ResultReturnValue = Function.RunResult(functionVariables, parameters, out _resultOutputs, cancellationToken);    
+                    (ResultReturnValue, IgnoreRow) = Function.RunResult(functionVariables, parameters, out _resultOutputs, cancellationToken);    
                 }
                 
                 Parameters.SetResultFunctionResult(ResultReturnValue, _resultOutputs, row);
@@ -254,7 +260,7 @@ namespace dexih.transforms.Mapping
                 return null;
             }
             
-            var compare = (Filter.ECompare) Function.CompareEnum;
+            var compare = (ECompare) Function.CompareEnum;
 
             var filter = new Filter
             {

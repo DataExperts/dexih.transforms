@@ -371,17 +371,27 @@ namespace dexih.transforms
                 {
                     //get the first two rows from the join table.
                     _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
-                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow, cancellationToken);
-                    _groupsOpen = await ReadNextGroup();
+                    var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow, cancellationToken);
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
+                    else
+                    {
+                        _groupsOpen = await ReadNextGroup();    
+                    }
                     _firstRead = false;
-                    
                 }
 
                 //loop through join table until we find a matching row.
                 if (_containsJoinColumns)
                 {
                     // update the primary row only.
-                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
                     
                     while (_groupsOpen)
                     {
@@ -396,7 +406,11 @@ namespace dexih.transforms
                                 if (_groupsOpen)
                                 {
                                     // now the join table has advanced, add the reference row.
-                                    await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow, cancellationToken);
+                                    (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow, cancellationToken);
+                                    if (ignore)
+                                    {
+                                        TransformRowsIgnored += 1;
+                                    }
                                     _groupsOpen = await ReadNextGroup();
                                 }
 
@@ -437,14 +451,20 @@ namespace dexih.transforms
 //                    _firstRead = false;
 //                }
 
-                await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
-
-                var primaryKey = Mappings.GetJoinPrimaryKey();
-
-                if (_joinHashData.TryGetValue(primaryKey, out _groupData))
+                var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                if (ignore)
                 {
-                    _groupsOpen = true;
-                    joinMatchFound = true;
+                    TransformRowsIgnored += 1;
+                }
+                else
+                {
+                    var primaryKey = Mappings.GetJoinPrimaryKey();
+
+                    if (_joinHashData.TryGetValue(primaryKey, out _groupData))
+                    {
+                        _groupsOpen = true;
+                        joinMatchFound = true;
+                    }
                 }
             }
 
