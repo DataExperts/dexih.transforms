@@ -104,19 +104,19 @@ namespace dexih.transforms.Mapping
             switch (Compare)
             {
                 case ECompare.GreaterThan:
-                    returnResult = CompareResult == 1;
+                    returnResult = CompareResult > 0;
                     break;
                 case ECompare.IsEqual:
                     returnResult = CompareResult == 0;
                     break;
                 case ECompare.GreaterThanEqual:
-                    returnResult = CompareResult != -1;
+                    returnResult = CompareResult <= 0;
                     break;
                 case ECompare.LessThan:
-                    returnResult = CompareResult == -1;
+                    returnResult = CompareResult < 0;
                     break;
                 case ECompare.LessThanEqual:
-                    returnResult = CompareResult != 1;
+                    returnResult = CompareResult < 1;
                     break;
                 case ECompare.NotEqual:
                     returnResult = CompareResult != 0;

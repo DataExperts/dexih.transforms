@@ -43,8 +43,11 @@ namespace dexih.transforms
         public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
         public override string TransformName { get; } = "Series";
-        public override string TransformDetails => ( Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Columns:" + Mappings.OfType<MapGroup>().Count() + ", Functions: " + Mappings.OfType<MapAggregate>().Count();
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
         public override  async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
@@ -73,6 +76,8 @@ namespace dexih.transforms
             }
 
             selectQuery.Sorts = requiredSorts;
+            
+            SelectQuery = selectQuery;
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             return returnValue;

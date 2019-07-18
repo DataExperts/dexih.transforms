@@ -26,8 +26,11 @@ namespace dexih.transforms
         }
         
         public override string TransformName { get; } = "Map";
-        public override string TransformDetails => "Mappings:" + Mappings.OfType<MapColumn>().Count() + ", Functions: " + Mappings.OfType<MapFunction>().Count();
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+	        return null;
+        }
 
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
@@ -102,6 +105,8 @@ namespace dexih.transforms
 
 				selectQuery.Sorts = newSorts;
 			}
+
+			SelectQuery = selectQuery;
 
 			var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 			

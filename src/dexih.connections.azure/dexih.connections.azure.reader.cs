@@ -1,5 +1,6 @@
 ﻿using dexih.transforms;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -31,8 +32,10 @@ namespace dexih.connections.azure
         }
         
         public override string TransformName { get; } = "Azure Reader";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
-
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
@@ -43,6 +46,7 @@ namespace dexih.connections.azure
             }
 
             IsOpen = true;
+            SelectQuery = selectQuery;
 
             var tableClient = _connection.GetCloudTableClient();
             _tableReference = tableClient.GetTableReference(CacheTable.Name);

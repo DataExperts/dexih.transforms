@@ -1,5 +1,6 @@
 ﻿using dexih.transforms;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -32,8 +33,10 @@ namespace dexih.connections.dexih
         }
 
         public override string TransformName { get; } = "Information Hub Reader";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
-
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
@@ -47,6 +50,7 @@ namespace dexih.connections.dexih
                 }
 
                 IsOpen = true;
+                SelectQuery = selectQuery;
 
                 var downloadUrl = await _dexihConnection.GetDownloadUrl();
                 var instanceId = await _dexihConnection.GetRemoteAgentInstanceId();

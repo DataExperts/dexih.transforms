@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.functions.Query;
@@ -53,7 +54,23 @@ namespace dexih.transforms
         }
 
         public override string TransformName { get; } = "Data Type Converter";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
+        public override Dictionary<string, object> TransformProperties()
+        {
+            var connectionReference = _connection?.GetConnectionReference();
+
+            if (connectionReference != null)
+            {
+                return new Dictionary<string, object>()
+                {
+                    {"ConnectionName", _connection.Name},
+                    {"DatabaseName", connectionReference.Name},
+                };
+            }
+
+            return null;
+        }
+
 
         public override bool ResetTransform()
         {

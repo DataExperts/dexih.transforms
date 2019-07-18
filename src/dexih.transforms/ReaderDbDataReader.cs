@@ -108,8 +108,19 @@ namespace dexih.transforms
         }
 
         public override string TransformName { get; } = "Generic Database Reader";
-        public override string TransformDetails => "";
+        
+        public override Dictionary<string, object> TransformProperties()
+        {
+            if (InReader != null)
+            {
+                return new Dictionary<string, object>()
+                {
+                    {"ReaderType", InReader.GetType().Name},
+                };
+            }
 
+            return null;
+        }
 
         public override List<Sort> SortFields => _sortFields;
 

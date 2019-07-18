@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
@@ -11,8 +12,6 @@ namespace dexih.transforms
     public sealed class ReaderFileHandler : Transform
     {
         private readonly FileHandlerBase _fileHandler;
-
-        private SelectQuery _selectQuery;
 
 		public FlatFile CacheFlatFile => (FlatFile)CacheTable;
 
@@ -36,13 +35,19 @@ namespace dexih.transforms
             
             AuditKey = auditKey;
             IsOpen = true;
-            _selectQuery = selectQuery;
+            SelectQuery = selectQuery;
             return Task.FromResult(true);
         }
 
         public override string TransformName => $"File Reader: {_fileHandler?.FileType}";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                {"FileType", _fileHandler?.FileType??"Unknown"},
+            };
+        }
 
         public override bool ResetTransform()
         {

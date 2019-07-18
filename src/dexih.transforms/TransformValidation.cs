@@ -46,8 +46,12 @@ namespace dexih.transforms
         private int _columnCount;
 
         public override string TransformName { get; } = "Validation";
-        public override string TransformDetails => "Validations:" + Mappings.OfType<MapValidation>().Count() + ", Functions: " + Mappings.OfType<MapFunction>().Count();
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
+        
         protected override Table InitializeCacheTable(bool mapAllReferenceColumns)
         {
             var table = new Table("Validate");
@@ -95,6 +99,7 @@ namespace dexih.transforms
         {
             AuditKey = auditKey;
             IsOpen = true;
+            SelectQuery = selectQuery;
             
             var result = true;
 

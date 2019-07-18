@@ -58,8 +58,11 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
         
         public override string TransformName { get; } = "Sort";
-        public override string TransformDetails =>  string.Join(",", _sortFields?.Select(c=> c.Column.Name + " " + c.Direction.ToString()).ToArray());
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
@@ -83,6 +86,8 @@ namespace dexih.transforms
             }
 
             selectQuery.Sorts = RequiredSortFields();
+
+            SelectQuery = selectQuery;
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 

@@ -24,9 +24,12 @@ namespace dexih.transforms
             SetInTransform(inReader);
         }
         
-        public override string TransformName { get; } = "Group";
-        public override string TransformDetails => $"Filters: {Mappings?.OfType<MapFilter>().Count()??0}, Filter Functions: {Mappings?.OfType<MapFunction>().Count()??0}";
+        public override string TransformName { get; } = "Filter";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
         
         public override bool RequiresSort => false;
        
@@ -74,6 +77,8 @@ namespace dexih.transforms
                     }
                 }
             }
+
+            SelectQuery = selectQuery;
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 

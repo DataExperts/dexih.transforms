@@ -9,9 +9,11 @@ using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms
 {
+
     /// <summary>
     /// Generates a sequence of rows starting at "StartAt", ending at "EndAt", with increment of "Increment"
     /// </summary>
+    /// 
     public class ReaderRowCreator : Transform
     {
         private int? _currentRow;
@@ -25,8 +27,21 @@ namespace dexih.transforms
         private int? _lookupRow = null;
 
         public override string TransformName { get; } = "Row Generator";
-        public override string TransformDetails => $"Starts At: {StartAt}, Ends At: {EndAt}, Increments: {Increment}";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            if (CacheTable != null)
+            {
+                return new Dictionary<string, object>()
+                {
+                    {"StartAt", StartAt},
+                    {"EndAt", EndAt},
+                    {"Increment", Increment},
+                };
+            }
+
+            return null;
+        }
         
         public Table GetTable()
         {

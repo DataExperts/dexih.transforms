@@ -128,7 +128,16 @@ namespace dexih.transforms
         private DateTime _currentDateTime;
 
         public override string TransformName { get; } = "Delta";
-        public override string TransformDetails => $"{DeltaType} on {ReferenceTransform.Name}";
+
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                {"DeltaType", DeltaType.ToString()},
+                {"AutoIncrementValue", AutoIncrementValue},
+                {"AddDefaultRow", AddDefaultRow},
+            };
+        }
 
         protected override Table InitializeCacheTable(bool mapAllReferenceColumns)
         {
@@ -179,6 +188,8 @@ namespace dexih.transforms
 
                 returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             }
+
+            SelectQuery = selectQuery;
 
             if (ReferenceTransform == null)
             {
@@ -645,7 +656,7 @@ namespace dexih.transforms
                     if (_sourceValidFromOrdinal >= 0 && _referenceValidFromOrdinal >= 0)
                     {
                         var compare = Operations.Compare(_colValidFrom.DataType, PrimaryTransform[_sourceValidFromOrdinal], ReferenceTransform[_referenceValidFromOrdinal]);
-                        if (compare == -1)
+                        if (compare < 0)
                         {
                             _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
                             TransformRowsIgnored++;

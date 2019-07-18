@@ -14,7 +14,6 @@ namespace dexih.transforms.File
     public class FileHandlerText : FileHandlerBase, IDisposable
     {
         private readonly Table _table;
-        private SelectQuery _selectQuery;
         private readonly FileConfiguration _fileConfiguration;
 
         private CsvReader _csvReader;
@@ -25,6 +24,7 @@ namespace dexih.transforms.File
         private readonly int _fieldCount;
 
         public override string FileType { get; } = "Csv";
+        public SelectQuery SelectQuery { get; set; }
 
         private struct CsvField
         {
@@ -168,7 +168,7 @@ namespace dexih.transforms.File
         {
             _stream = stream;
             _currentFileRowNumber = 0;
-            _selectQuery = selectQuery;
+            SelectQuery = selectQuery;
             var streamReader = new StreamReader(stream);
 
             if (_fileConfiguration != null)
@@ -268,7 +268,7 @@ namespace dexih.transforms.File
                         row[_fileRowNumberOrdinal] = _currentFileRowNumber;
                     }
 
-                    if (_selectQuery == null || _selectQuery.EvaluateRowFilter(row, _table))
+                    if (SelectQuery == null || SelectQuery.EvaluateRowFilter(row, _table))
                     {
                         return row;
                     }

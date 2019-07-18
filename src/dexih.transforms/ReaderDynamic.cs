@@ -70,8 +70,14 @@ namespace dexih.transforms
         #endregion
 
         public override string TransformName { get; } = "Dynamic Row Creator";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                {"CacheTable", CacheTable?.Name??"Unknown"},
+            };
+        }
 
         public override bool ResetTransform()
         {

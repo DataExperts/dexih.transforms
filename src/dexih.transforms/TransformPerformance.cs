@@ -8,10 +8,9 @@ namespace dexih.transforms
         {
         }
 
-        public TransformPerformance(string transformName, string action, long rows, double seconds)
+        public TransformPerformance(string transformName, long rows, double seconds)
         {
             TransformName = transformName;
-            Action = action;
             Rows = rows;
             Seconds = seconds;
         }

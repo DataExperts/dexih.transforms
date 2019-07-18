@@ -115,14 +115,14 @@ namespace dexih.transforms
                         
                         if (_hasRows == false)
                         {
-                            await _streamWriter.WriteAsync("]}");
+                            await _streamWriter.WriteAsync("]");
                         }
                     }
                     catch (Exception ex)
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync("], \"status\":" + result + " }");
+                        await _streamWriter.WriteAsync("], \"status\":" + result);
                         _hasRows = false;
                     }
 
@@ -161,7 +161,7 @@ namespace dexih.transforms
                         }
                         else
                         {
-                            await _streamWriter.WriteAsync("]}");
+                            await _streamWriter.WriteAsync("]");
                             _hasRows = false;
                             break;
                         }
@@ -170,11 +170,19 @@ namespace dexih.transforms
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync("], \"status\":" + result + " }");
+                        await _streamWriter.WriteAsync("], \"status\":" + result);
                         _hasRows = false;
                     }
-
                 }
+
+                if (_reader is Transform transform)
+                {
+                    var properties = transform.GetTransformProperties(true);
+                    var propertiesSerialized = Json.SerializeObject(properties, "");
+                    await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
+                }
+
+                await _streamWriter.WriteAsync("}");
 
                 _memoryStream.Position = 0;
 

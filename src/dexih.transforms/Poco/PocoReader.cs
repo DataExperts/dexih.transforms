@@ -44,7 +44,14 @@ namespace dexih.transforms.Poco
         #endregion
 
         public override string TransformName { get; } = "Poco Reader";
-        public override string TransformDetails => _pocoTable?.Table.Name ?? "Unknown";
+
+        public override Dictionary<string, object> TransformProperties() =>
+            new Dictionary<string, object>()
+            {
+                {"TableName", _pocoTable?.Table.Name ?? "Unknown"}
+            };
+
+        
 
 
         public override bool ResetTransform()

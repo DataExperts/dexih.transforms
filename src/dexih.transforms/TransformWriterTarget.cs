@@ -685,7 +685,7 @@ namespace dexih.transforms
                 var performance = inTransform.PerformanceSummary();
                 if (performance != null)
                 {
-                    performance.Add(new TransformPerformance(TargetTable.Name, "Write Rows", rowsWritten,
+                    performance.Add(new TransformPerformance(TargetTable.Name, rowsWritten,
                         _transformWriterTask?.WriteDataTicks.TotalSeconds ?? 0));
 
                     WriterResult.PerformanceSummary = performance;

@@ -229,6 +229,8 @@ namespace dexih.transforms
         /// <returns></returns>
         public abstract Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default);
 
+        public virtual string GetDatabaseQuery(Table table, SelectQuery query) => "";
+
         //Functions required for data point.
         public abstract Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default);
         public abstract Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default);
@@ -446,7 +448,7 @@ namespace dexih.transforms
 
             //add a sort transform to ensure sort order.
             // reader = new TransformSort(reader, sorts);
-            reader = new TransformQuery(reader, query);
+            reader = new TransformQuery(reader, query) {Name = "Internal Query"};
 
             var returnValue = await reader.Open(0, query, cancellationToken);
             if (!returnValue)
@@ -491,6 +493,27 @@ namespace dexih.transforms
         public virtual bool IsValidColumnName(string name)
         {
             return true;
+        }
+
+        public ConnectionReference GetConnectionReference()
+        {
+            return Connections.GetConnection(this.GetType());
+        }
+
+        public Dictionary<string, string> ConnectionProperties()
+        {
+            var reference = GetConnectionReference();
+
+            if (reference != null)
+            {
+                return new Dictionary<string, string>()
+                    {
+                        {"Name", Name},
+                        {"Connection Type", reference.Name},
+                    };
+            }
+            
+            return null;
         }
 
         public async Task<Transform> GetTransformReader(string tableName, CancellationToken cancellationToken = default)

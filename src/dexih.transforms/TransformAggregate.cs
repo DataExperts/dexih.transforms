@@ -38,8 +38,11 @@ namespace dexih.transforms
         public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
         public override string TransformName { get; } = "Aggregate";
-        public override string TransformDetails => ( Mappings.PassThroughColumns ? "All columns passed through, " : "") + "Mapped Columns:" + (Mappings.Count);
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
         
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
@@ -75,6 +78,8 @@ namespace dexih.transforms
             {
                 return false;
             }
+
+            SelectQuery = selectQuery;
             
             var nodeMappings = Mappings.OfType<MapGroupNode>().ToArray();
             if (nodeMappings.Length == 1)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions.Query;
@@ -21,13 +22,17 @@ namespace dexih.transforms
         private int _currentRow;
         
         public override string TransformName { get; } = "Transform Thread";
-        public override string TransformDetails => "";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
+            SelectQuery = selectQuery;
 
             if (PrimaryTransform == null)
             {

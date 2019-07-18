@@ -13,7 +13,6 @@ namespace dexih.transforms
     {
         public Table DataTable { get; set; }
 
-        private SelectQuery _selectQuery;
         private IList<object[]> _data;
         private int _currentRow;
         
@@ -39,17 +38,7 @@ namespace dexih.transforms
         public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
-            _selectQuery = selectQuery;
-
-//            if (_selectQuery?.Filters?.Count > 0)
-//            {
-//                _data = _dataTable.LookupMultipleRows(_selectQuery.Filters);
-//            }
-//            else
-//            {
-//                _data = _dataTable.Data;
-//            }
-
+            SelectQuery = selectQuery;
             _data = DataTable.Data;
 
             return Task.FromResult(true);
@@ -57,16 +46,23 @@ namespace dexih.transforms
 
         public override List<Sort> SortFields { get; }
 
-//        public void Add(object[] values)
-//        {
-//            CacheTable.AddRow(values);
-//        }
-
         #endregion
 
         public override string TransformName { get; } = "Memory Reader";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            if (CacheTable != null)
+            {
+                return new Dictionary<string, object>()
+                {
+                    {"CacheTable", CacheTable.Name}
+                };
+            }
+
+            return null;
+        }
+        
         public override bool ResetTransform()
         {
             _currentRow = -1;
@@ -84,7 +80,7 @@ namespace dexih.transforms
             while(!_cacheLoaded && _currentRow < _data.Count)
             {
                 var row = _data[_currentRow];
-                var filtered = _selectQuery?.EvaluateRowFilter(row, CacheTable)?? true;
+                var filtered = SelectQuery?.EvaluateRowFilter(row, CacheTable)?? true;
                 if(!filtered)
                 {
                     _currentRow++;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
@@ -18,8 +19,6 @@ namespace dexih.transforms
         private readonly ConnectionFlatFile _fileConnection;
 
         private readonly int _fileNameOrdinal;
-
-        private SelectQuery _selectQuery;
 
         private readonly bool _previewMode;
 
@@ -53,8 +52,14 @@ namespace dexih.transforms
         }
         
         public override string TransformName { get; } = "Flat File Reader";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                {"FileType", _fileHandler?.FileType??"Unknown"},
+            };
+        }
         
         protected override void CloseConnections()
         {
@@ -64,7 +69,7 @@ namespace dexih.transforms
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
-            _selectQuery = selectQuery;
+            SelectQuery = selectQuery;
 
             if (IsOpen)
             {
@@ -150,7 +155,7 @@ namespace dexih.transforms
                     try
                     {
                         var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
-                        await _fileHandler.SetStream(fileStream, _selectQuery);
+                        await _fileHandler.SetStream(fileStream, SelectQuery);
                     }
                     catch (Exception ex)
                     {

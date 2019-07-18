@@ -24,9 +24,11 @@ namespace dexih.transforms
         private readonly List<int> _parentTableSkipOrdinals = new List<int>();
 
         public override string TransformName { get; } = "Node Transform";
-        public override string TransformDetails => "";
-        
-        // public override Table CacheTable { get; protected set; }
+
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
         
         public void SetTable(Table table, Table parentTable)
         {

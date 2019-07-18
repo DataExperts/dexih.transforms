@@ -16,7 +16,6 @@ namespace dexih.connections.excel
         private ExcelWorksheet _excelWorkSheet;
         private int _excelWorkSheetRows;
         private int _currentRow;
-        private SelectQuery _query;
 
         private Dictionary<int, (int Ordinal, TableColumn Column)> _columnMappings;
         private Dictionary<string, int> _headerOrdinals;
@@ -33,8 +32,11 @@ namespace dexih.connections.excel
         }
         
         public override string TransformName { get; } = "Excel Reader";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
@@ -53,7 +55,7 @@ namespace dexih.connections.excel
                 _currentRow = connection.ExcelDataRow;
                 _excelWorkSheet = connection.GetWorkSheet(_excelPackage, CacheTable.Name);
 
-                _query = selectQuery;
+                SelectQuery = selectQuery;
 
                 // get the position of each of the column names.
                 _columnMappings = new Dictionary<int, (int ordinal, TableColumn column)>();
@@ -108,12 +110,12 @@ namespace dexih.connections.excel
                     return Task.FromResult<object[]>(null);
                 }
 
-                if (_query?.Filters != null)
+                if (SelectQuery?.Filters != null)
                 {
                     while (true)
                     {
                         var filterResult = ((ConnectionExcel) ReferenceConnection).EvaluateRowFilter(_excelWorkSheet,
-                            _currentRow, _headerOrdinals, _query.Filters);
+                            _currentRow, _headerOrdinals, SelectQuery.Filters);
 
                         if (!filterResult)
                         {

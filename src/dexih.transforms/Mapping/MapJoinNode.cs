@@ -9,7 +9,7 @@ namespace dexih.transforms.Mapping
         /// <summary>
         /// Broker transform that site between the source transform, and target transforms.
         /// </summary>
-        public override TransformNode Transform { get; } = new TransformNode();
+        public override TransformNode Transform { get; } = new TransformNode() {Name = "Join Node"} ;
 
         public MapJoinNode(TableColumn nodeColumn, Table joinTable)
         {

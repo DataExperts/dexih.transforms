@@ -429,14 +429,18 @@ namespace dexih.connections.sql
                 {
                     if (filter.Column1.IsInput && filter.Value2 == null)
                     {
-                        // sql.Append(" " + GetSqlFieldValueQuote(filter.Column1.DataType, filter.Column1.Rank, filter.Column1.DefaultValue) + " ");
-                        var param = cmd.CreateParameter();
-                        param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Column1Default";
-                        // param.DbType = GetDbType(filter.Column1.DataType);
-                        param.Direction = ParameterDirection.Input;
-                        param.Value = filter.Column1.DefaultValue;
-                        cmd.Parameters.Add(param);
-                        sql.Append($" {param.ParameterName} ");
+                        var parameterName = $"{SqlParameterIdentifier}Filter{index}Column1Default";
+                        if (cmd != null)
+                        {
+                            var param = cmd.CreateParameter();
+                            param.ParameterName = parameterName;
+                            // param.DbType = GetDbType(filter.Column1.DataType);
+                            param.Direction = ParameterDirection.Input;
+                            param.Value = filter.Column1.DefaultValue;
+                            cmd.Parameters.Add(param);
+                        }
+
+                        sql.Append($" {parameterName} ");
                     }
                     else
                     {
@@ -445,36 +449,40 @@ namespace dexih.connections.sql
                 }
                 else
                 {
-                    // sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, 0, filter.Value1) + " ");
-                    var param = cmd.CreateParameter();
-                    param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Value1";
-                    // param.DbType = GetDbType(filter.BestDataType());
-                    param.Direction = ParameterDirection.Input;
-                    param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true, filter.Value1);
-                    cmd.Parameters.Add(param);
-                    sql.Append($" {param.ParameterName} ");
+                    var parameterName = $"{SqlParameterIdentifier}Filter{index}Value1";
+                    if (cmd != null)
+                    {
+                        var param = cmd.CreateParameter();
+                        param.ParameterName = parameterName;
+                        // param.DbType = GetDbType(filter.BestDataType());
+                        param.Direction = ParameterDirection.Input;
+                        param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true,
+                            filter.Value1);
+                        cmd.Parameters.Add(param);
+                    }
+
+                    sql.Append($" {parameterName} ");
                 }
 
                 sql.Append(GetSqlCompare(filter.Operator));
 
                 if (filter.Operator != ECompare.IsNull && filter.Operator != ECompare.IsNotNull)
                 {
-//                    if (filter.Value2 == null && filter.Column2 == null)
-//                    {
-//                        throw new ConnectionException("The filter has no values or columns specified for the compare value.  Use the IsNull operation to compare to null rows.");
-//                    }
-
                     if (filter.Column2 != null)
                         if (filter.Column2.IsInput)
                         {
-                            // sql.Append(" " + GetSqlFieldValueQuote(filter.Column2.DataType, filter.Column2.Rank, filter.Column2.DefaultValue) + " ");
-                            var param = cmd.CreateParameter();
-                            param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Column2Default";
-                            // param.DbType = GetDbType(filter.Column2.DataType);
-                            param.Direction = ParameterDirection.Input;
-                            param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true, filter.Column2.DefaultValue);
-                            cmd.Parameters.Add(param);
-                            sql.Append($" {param.ParameterName} ");
+                            var parameterName = $"{SqlParameterIdentifier}Filter{index}Column2Default";
+                            if (cmd != null)
+                            {
+                                var param = cmd.CreateParameter();
+                                param.ParameterName = parameterName;
+                                // param.DbType = GetDbType(filter.Column2.DataType);
+                                param.Direction = ParameterDirection.Input;
+                                param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true,
+                                    filter.Column2.DefaultValue);
+                                cmd.Parameters.Add(param);
+                                sql.Append($" {parameterName} ");
+                            }
                         }
                         else
                         {
@@ -491,28 +499,36 @@ namespace dexih.connections.sql
                                 sql.Append(" (" + string.Join(",",
                                            array.Select((c, arrayIndex) =>
                                            {
-                                               // return GetSqlFieldValueQuote(filter.CompareDataType, 0, c);
-                                               var param = cmd.CreateParameter();
-                                               param.Direction = ParameterDirection.Input;
-                                               // param.DbType = GetDbType(filter.BestDataType());
-                                               param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true, c);
-                                               param.ParameterName = $"{SqlParameterIdentifier}Filter{index1}ArrayValue{arrayIndex}";
-                                               cmd.Parameters.Add(param);
+                                               var parameterName = $"{SqlParameterIdentifier}Filter{index1}ArrayValue{arrayIndex}";
+                                               if (cmd != null)
+                                               {
+                                                   var param = cmd.CreateParameter();
+                                                   param.Direction = ParameterDirection.Input;
+                                                   // param.DbType = GetDbType(filter.BestDataType());
+                                                   param.Value = ConvertForWrite(param.ParameterName,
+                                                       filter.BestDataType(), 0, true, c);
+                                                   param.ParameterName = parameterName;
+                                                   cmd.Parameters.Add(param);
+                                               }
 
-                                               return $"{param.ParameterName}";
+                                               return $"{parameterName}";
                                            })) +
                                        ") ");
                         }
                         else
                         {
-                            // sql.Append(" " + GetSqlFieldValueQuote(filter.CompareDataType, 0, filter.Value2) + " ");
-                            var param = cmd.CreateParameter();
-                            param.ParameterName = $"{SqlParameterIdentifier}Filter{index}Value2";
-                            // param.DbType  = GetDbType(filter.BestDataType());
-                            param.Direction = ParameterDirection.Input;
-                            param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true, filter.Value2);
-                            cmd.Parameters.Add(param);
-                            sql.Append($" {param.ParameterName} ");
+                            var parameterName = $"{SqlParameterIdentifier}Filter{index}Value2";
+                            if (cmd != null)
+                            {
+                                var param = cmd.CreateParameter();
+                                param.ParameterName = parameterName;
+                                param.Direction = ParameterDirection.Input;
+                                param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true,
+                                    filter.Value2);
+                                cmd.Parameters.Add(param);
+                            }
+
+                            sql.Append($" {parameterName} ");
                         }
                     }
                 }
@@ -983,6 +999,11 @@ namespace dexih.connections.sql
                 throw new ConnectionException($"Get database reader {table.Name} failed.  {ex.Message}", ex);
             }
 
+        }
+
+        public override string GetDatabaseQuery(Table table, SelectQuery query)
+        {
+            return table.UseQuery ? table.QueryString : BuildSelectQuery(table, query, null);
         }
 
         public override Transform GetTransformReader(Table table, bool previewMode = false)

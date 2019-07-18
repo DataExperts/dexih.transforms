@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using dexih.functions.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
@@ -263,7 +264,7 @@ namespace dexih.functions.BuiltIn
         public bool IsTrue(bool value) => value;
 
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Is Now Between Dates",
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Is the time now between dates",
             Description = "The date now is between start/end date ")]
         public bool IsDateBetweenNow(DateTime lowRange, DateTime highRange)
         {
@@ -287,6 +288,65 @@ namespace dexih.functions.BuiltIn
         public bool IsOdd(long number)
         {
             return (number & 1) == 1;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "And", Description = "The logical \"And\" of the conditions.  Evaluates true when all conditions are true.")]
+        public bool And(bool[] condition)
+        {
+            if (condition.Length > 2)
+            {
+                throw new FunctionException("The \"And\" function requires at least two parameters.");
+            }
+
+            var result = true;
+            foreach (var c in condition)
+            {
+                result = result && c;
+                if (!c) return false;
+            }
+
+            return true;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "Or", Description = "The \"Or\" of the conditions.  Evaluates true when any condition is true.")]
+        public bool Or(bool[] condition)
+        {
+            if (condition.Length > 2)
+            {
+                throw new FunctionException("The \"Or\" function requires at least two parameters.");
+            }
+            
+            var result = false;
+            foreach (var c in condition)
+            {
+                result = result || c;
+                if (c) return true;
+            }
+
+            return false;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "XOr", Description = "The logical \"Or\" of the conditions.  Evaluates true when one and only one condition is true.")]
+        public bool Xor(bool[] condition)
+        {
+            if (condition.Length > 2)
+            {
+                throw new FunctionException("The \"XOr\" function requires at least two parameters.");
+            }
+
+            var result = false;
+            foreach (var c in condition)
+            {
+                result = result ^ c;
+            }
+
+            return result;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "Not", Description = "The not of the boolean value (true = false, false = true)")]
+        public bool Not(bool value)
+        {
+            return !value;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Power Of Two", Description = "The specific number is a power of two")]

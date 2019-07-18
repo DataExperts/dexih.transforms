@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions.Query;
@@ -25,7 +26,11 @@ namespace dexih.transforms
         public override ECacheMethod CacheMethod { get; protected set; } = ECacheMethod.DemandCache;
 
         public override string TransformName { get; } = "Reader Cache";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override bool ResetTransform()
         {
@@ -36,6 +41,8 @@ namespace dexih.transforms
         
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
+            SelectQuery = selectQuery;
+            
             if (!IsOpen)
             {
                 IsOpen = true;

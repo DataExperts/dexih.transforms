@@ -28,8 +28,11 @@ namespace dexih.transforms
         private bool _firstRecord;
         
         public override string TransformName { get; } = "Rows";
-        public override string TransformDetails => "Columns:" + Mappings.OfType<MapGroup>().Count() + ", Functions: " + Mappings.OfType<MapAggregate>().Count();
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
@@ -75,7 +78,9 @@ namespace dexih.transforms
                 {
                     selectQuery.Filters = null;
                 }
-            }            
+            }
+
+            SelectQuery = selectQuery;
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             _firstRecord = true;

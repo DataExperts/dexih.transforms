@@ -13,7 +13,7 @@ namespace dexih.transforms.Mapping
         /// <summary>
         /// Broker transform that site between the source transform, and target transforms.
         /// </summary>
-        public sealed override TransformNode Transform { get; } = new TransformNode();
+        public sealed override TransformNode Transform { get; } = new TransformNode() {Name = "Internal MapNode"};
 
         public MapNode(TableColumn inputColumn, Table parentTable)
         {
@@ -61,11 +61,11 @@ namespace dexih.transforms.Mapping
 
             if (OutputTransform == null)
             {
-                _cachedTransform = new TransformCache(Transform);
+                _cachedTransform = new TransformCache(Transform) {Name = "Internal Caching"};
             }
             else
             {
-                _cachedTransform = new TransformCache(OutputTransform);
+                _cachedTransform = new TransformCache(OutputTransform) {Name = "Internal Caching"};
             }
 
             // await _cachedTransform.Open(cancellationToken);

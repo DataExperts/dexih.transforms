@@ -37,8 +37,11 @@ namespace dexih.transforms
         private Table _profileResults;
 
         public override string TransformName { get; } = "Profile";
-        public override string TransformDetails => $"";
-
+        
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override Transform GetProfileResults()
         {
@@ -67,6 +70,7 @@ namespace dexih.transforms
 
             IsOpen = true;
             AuditKey = auditKey;
+            SelectQuery = selectQuery;
             return true;
 
         }

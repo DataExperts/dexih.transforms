@@ -67,8 +67,14 @@ namespace dexih.transforms
         private int _referenceFieldCount;
         
         public override string TransformName { get; } = "Join";
-        public override string TransformDetails => $"Join Method: {JoinAlgorithm}, Primary: {PrimaryTransform.Name}, Join: {ReferenceTransform.Name}";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                {"JoinAlgorithm", JoinAlgorithm.ToString()},
+            };
+        }
 
         private Task<bool> InitializeOutputFields()
         {
@@ -284,6 +290,8 @@ namespace dexih.transforms
             //only apply a sort if there is not already a sort applied.
             selectQuery.Sorts = RequiredSortFields();
 
+            SelectQuery = selectQuery;
+            
             var referenceQuery = new SelectQuery()
             {
                 Sorts = RequiredReferenceSortFields()
@@ -399,10 +407,10 @@ namespace dexih.transforms
                         
                         switch (Mappings.GetJoinCompareResult())
                         {
-                            case -1:
+                            case var result when result < 0:
                                 done = true;
                                 break;
-                            case 1:
+                            case var result when result > 0:
                                 if (_groupsOpen)
                                 {
                                     // now the join table has advanced, add the reference row.

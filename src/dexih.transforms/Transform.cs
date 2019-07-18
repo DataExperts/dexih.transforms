@@ -8,6 +8,7 @@ using dexih.functions;
 using System.Linq;
 using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Threading;
 using System.Text;
 using Newtonsoft.Json;
@@ -17,6 +18,7 @@ using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.Crypto;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
+using dexih.transforms.Transforms;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 
@@ -85,6 +87,11 @@ namespace dexih.transforms
         /// The reference transform (such as join, or compare table).
         /// </summary>
         public Transform ReferenceTransform { get; set; }
+
+        /// <summary>
+        /// The query controls for this transform.
+        /// </summary>
+        public SelectQuery SelectQuery { get; set; }
 
         // Generic transform contains properties for a list of Functions, Fields and simple Mappings
         public Mappings Mappings { get; set; }
@@ -182,7 +189,45 @@ namespace dexih.transforms
         #region Abstract Properties
 
         public abstract string TransformName { get; }
-        public abstract string TransformDetails { get; }
+
+
+        public abstract Dictionary<string, object> TransformProperties();
+
+        /// <summary>
+        /// Gets the key properties for the current transform.
+        /// </summary>
+        /// <param name="recurse">Recurse through the primary and reference transform properties.</param>
+        /// <returns></returns>
+        public virtual TransformProperties GetTransformProperties(bool recurse)
+        {
+            var transformReference = Transforms.Transforms.GetTransform(GetType());
+            
+            var properties = new TransformProperties
+            {
+                Name = Name,
+                TransformType = transformReference?.TransformType?? TransformAttribute.ETransformType.Internal,
+                TransformName = TransformName, 
+                SelectQuery = SelectQuery, 
+                Properties = TransformProperties(),
+                Rows = TransformRows,
+                Seconds = TransformTimerTicks().TotalSeconds
+            };
+            
+            if (recurse)
+            {
+                if (PrimaryTransform != null)
+                {
+                    properties.PrimaryProperties = PrimaryTransform.GetTransformProperties(true);
+                }
+
+                if (ReferenceTransform != null)
+                {
+                    properties.ReferenceProperties = ReferenceTransform.GetTransformProperties(true);
+                }
+            }
+
+            return properties;
+        }
 
         protected abstract Task<object[]> ReadRecord(CancellationToken cancellationToken = default);
         public abstract bool ResetTransform();
@@ -222,7 +267,10 @@ namespace dexih.transforms
 
                 if (!sortMatch)
                 {
-                    var sortTransform = new TransformSort(primaryTransform, RequiredSortFields());
+                    var sortTransform = new TransformSort(primaryTransform, RequiredSortFields())
+                    {
+                        Name = "Internal Sort"
+                    };
                     PrimaryTransform = sortTransform;
                 }
                 else
@@ -236,7 +284,10 @@ namespace dexih.transforms
 
                     if (!sortMatch)
                     {
-                        var sortTransform = new TransformSort(referenceTransform, RequiredReferenceSortFields());
+                        var sortTransform = new TransformSort(referenceTransform, RequiredReferenceSortFields())
+                        {
+                            Name = "Internal Sort"
+                        };
                         ReferenceTransform = sortTransform;
                     }
                     else
@@ -305,7 +356,10 @@ namespace dexih.transforms
             }
 
             // create a mapping transform which maps node.
-            var transform = new TransformMapping();
+            var transform = new TransformMapping()
+            {
+                Name = "Node Mapping"
+            };
             var nodeMappings = new Mappings {mapNode};
             transform.Mappings = nodeMappings;
             transform.SetInTransform(primaryTransform);
@@ -451,7 +505,10 @@ namespace dexih.transforms
                 CacheMethod = ECacheMethod.DemandCache;
             }
 
-            return new TransformThread(this);
+            return new TransformThread(this)
+            {
+                Name = "Internal Multi-threaded Transform"
+            };
         }
 
         private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
@@ -651,7 +708,7 @@ namespace dexih.transforms
                             transformNode.SetParentRow(row);
                             break;
                         case Transform transform:
-                            var newNode = new TransformNode {PrimaryTransform = transform};
+                            var newNode = new TransformNode {PrimaryTransform = transform, Name = "Internal Node"};
                             newNode.SetTable(transform.CacheTable, CacheTable);
                             newNode.SetParentRow(row);
                             newNode.Open().Wait();
@@ -760,7 +817,7 @@ namespace dexih.transforms
 
             var timeSpan = TransformTimerTicks();
 
-            var item = new TransformPerformance(TransformName + "(" + Name + ")", TransformDetails,
+            var item = new TransformPerformance(TransformName + "(" + Name + ")",
                 TotalRowsReadPrimary, timeSpan.TotalSeconds);
 
             if (ReferenceTransform != null)
@@ -1409,7 +1466,10 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    TransformRows++;
+                    if (!IsReaderFinished)
+                    {
+                        TransformRows++;
+                    }
                 }
 
                 if (IsReader && !IsPrimaryTransform && !IsReaderFinished)
@@ -1468,7 +1528,7 @@ namespace dexih.transforms
         /// <returns></returns>
         public async Task<Transform> CreateCachedTransform(CancellationToken cancellationToken = default)
         {
-            var transform = new TransformCache(this);
+            var transform = new TransformCache(this) {Name = "Internal Caching"};
             await transform.Open(AuditKey, null, cancellationToken);
             return transform;
         }

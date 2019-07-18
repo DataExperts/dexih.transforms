@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -25,8 +26,11 @@ namespace dexih.transforms
         }
         
         public override string TransformName { get; } = "Json Reader";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
         
         protected override void CloseConnections()
         {

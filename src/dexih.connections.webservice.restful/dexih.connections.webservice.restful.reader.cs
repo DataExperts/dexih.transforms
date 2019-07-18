@@ -23,12 +23,16 @@ namespace dexih.connections.webservice.restful
         }
 
         public override string TransformName { get; } = "Restful Web Service Reader";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
+            SelectQuery = selectQuery;
 
             try
             {

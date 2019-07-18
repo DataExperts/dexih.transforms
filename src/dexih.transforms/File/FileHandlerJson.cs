@@ -91,7 +91,10 @@ namespace dexih.transforms.File
             {
                 var parentTable = new Table("parent", new TableColumns(columns));
                 var childTable = new Table(column.Name, column.ChildColumns);
-                var node = new TransformNode();
+                var node = new TransformNode()
+                {
+                    Name = "Internal Node"
+                };
                 node.SetTable(childTable, parentTable);
                 
                 _nodeTransforms.Add(column.LogicalName, node);

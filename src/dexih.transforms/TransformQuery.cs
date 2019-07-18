@@ -18,8 +18,9 @@ namespace dexih.transforms
     /// </summary>
     public class TransformQuery : Transform
     {
-        private readonly SelectQuery _selectQuery;
         private long _rowCount;
+
+        private SelectQuery _selectQuery;
 
         public TransformQuery() { }
 
@@ -34,8 +35,11 @@ namespace dexih.transforms
         public override bool RequiresSort => false;
 
         public override string TransformName { get; } = "Transform Query";
-        public override string TransformDetails => "Query: Rows= " + _selectQuery?.Rows + ", conditions=" + _selectQuery?.Filters?.Count;
-
+        
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
         
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
@@ -43,86 +47,93 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
-            var pushQuery = new SelectQuery();
+            SelectQuery = new SelectQuery();
 
             if (selectQuery == null && _selectQuery != null)
             {
-                pushQuery.Rows = _selectQuery.Rows;
-                pushQuery.Filters = _selectQuery.Filters;
-                pushQuery.Sorts = _selectQuery.Sorts;
-                pushQuery.Groups = _selectQuery.Groups;
-                pushQuery.Columns = _selectQuery.Columns;
+                SelectQuery.Rows = _selectQuery.Rows;
+                SelectQuery.Filters = _selectQuery.Filters;
+                SelectQuery.Sorts = _selectQuery.Sorts;
+                SelectQuery.Groups = _selectQuery.Groups;
+                SelectQuery.Columns = _selectQuery.Columns;
             }
             else if(selectQuery != null)
             {
-                pushQuery.Rows = _selectQuery.Rows < selectQuery.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : selectQuery.Rows;
+                SelectQuery.Rows = _selectQuery.Rows < selectQuery.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : selectQuery.Rows;
 
-                pushQuery.Filters = selectQuery.Filters;
+                SelectQuery.Filters = selectQuery.Filters;
                 if (_selectQuery?.Filters != null)
                 {
-                    pushQuery.Filters.AddRange(_selectQuery.Filters);
+                    SelectQuery.Filters.AddRange(_selectQuery.Filters);
                 }
 
                 if (_selectQuery?.Sorts != null && _selectQuery.Sorts.Count > 0)
                 {
-                    pushQuery.Sorts = _selectQuery.Sorts;
+                    SelectQuery.Sorts = _selectQuery.Sorts;
                 }
                 else
                 {
-                    pushQuery.Sorts = selectQuery.Sorts;
+                    SelectQuery.Sorts = selectQuery.Sorts;
                 }
 
                 if (_selectQuery?.Groups != null && _selectQuery.Groups.Count > 0)
                 {
-                    pushQuery.Groups = _selectQuery.Groups;
+                    SelectQuery.Groups = _selectQuery.Groups;
                 }
                 else
                 {
-                    pushQuery.Groups = selectQuery.Groups;
+                    SelectQuery.Groups = selectQuery.Groups;
                 }
                 
                 if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
                 {
-                    pushQuery.Columns = _selectQuery.Columns;
+                    SelectQuery.Columns = _selectQuery.Columns;
                 }
                 else
                 {
-                    pushQuery.Columns = selectQuery.Columns;
+                    SelectQuery.Columns = selectQuery.Columns;
                 }
             }
             
             _rowCount = 0;
 
             // if there are sorts, insert a sort transform.
-            if (pushQuery.Sorts.Count > 0)
+            if (SelectQuery.Sorts.Count > 0)
             {
-                var sortTransform = new TransformSort(PrimaryTransform, pushQuery.Sorts);
+                var sortTransform = new TransformSort(PrimaryTransform, SelectQuery.Sorts)
+                {
+                    Name = "Internal Sort"
+                };
                 PrimaryTransform = sortTransform;
             }
             
             // if there are aggregates ,insert a group transform.
-            if (pushQuery.Columns.Any(c => c.Aggregate != null) || pushQuery.Groups?.Count > 0)
+            if (SelectQuery.Columns.Any(c => c.Aggregate != null) || SelectQuery.Groups?.Count > 0)
             {
-                if (pushQuery.Columns.Any(c => c.Aggregate == null))
+                if (SelectQuery.Columns.Any(c => c.Aggregate == null))
                 {
                     throw new TransformException("The query transform failed as there was a mix of aggregate and non aggregate columns in the one query.");
                 }
 
                 var mappings = new Mappings(false);
-                foreach(var group in pushQuery.Groups)
+                foreach(var group in SelectQuery.Groups)
                 {
                     mappings.Add(new MapGroup(group));
                 }
 
-                foreach (var column in pushQuery.Columns.Where(c => c.Aggregate != null))
+                foreach (var column in SelectQuery.Columns.Where(c => c.Aggregate != null))
                 {
                     mappings.Add(new MapAggregate(column.Column, column.Column, column.Aggregate.Value));
                 }
-                var groupTransform = new TransformGroup(PrimaryTransform, mappings);
+
+                var groupTransform = new TransformGroup(PrimaryTransform, mappings)
+                {
+                    Name = "Internal Group"
+                };
                 PrimaryTransform = groupTransform;
             }
 
-            var returnValue = await PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
             
             if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
             {
@@ -160,14 +171,14 @@ namespace dexih.transforms
             _rowCount++;
             var showRecord = false;
 
-            if (_selectQuery != null && (_selectQuery.Rows <= 0 || _rowCount <= _selectQuery.Rows)  && _selectQuery.Filters != null)
+            if (SelectQuery != null && (SelectQuery.Rows <= 0 || _rowCount <= SelectQuery.Rows)  && SelectQuery.Filters != null)
             {
                 do //loop through the records util the filter is true
                 {
                     showRecord = true;
                     var isFirst = true;
 
-                    foreach (var filter in _selectQuery.Filters)
+                    foreach (var filter in SelectQuery.Filters)
                     {
                         var column1Value = filter.Column1 == null
                             ? filter.Value1
@@ -226,7 +237,7 @@ namespace dexih.transforms
 
         public override List<Sort> RequiredSortFields()
         {
-            return _selectQuery?.Sorts;
+            return SelectQuery?.Sorts;
         }
 
         public override List<Sort> RequiredReferenceSortFields()

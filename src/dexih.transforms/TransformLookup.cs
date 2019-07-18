@@ -38,12 +38,16 @@ namespace dexih.transforms
         }
         
         public override string TransformName { get; } = "Lookup";
-        public override string TransformDetails => $"Primary: {PrimaryTransform.Name}, Join: {ReferenceTransform.Name}";
 
+        public override Dictionary<string, object> TransformProperties()
+        {
+            return null;
+        }
 
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
+            SelectQuery = selectQuery;
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 

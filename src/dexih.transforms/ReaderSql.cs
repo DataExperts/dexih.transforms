@@ -8,6 +8,7 @@ using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
+using dexih.transforms.Transforms;
 
 namespace dexih.connections.sql
 {
@@ -18,10 +19,7 @@ namespace dexih.connections.sql
 
         private List<int> _fieldOrdinals;
         private int _fieldCount;
-
-        private List<Sort> _sortFields;
-
-
+        
         public ReaderSql(ConnectionSql connection, Table table)
         {
             ReferenceConnection = connection;
@@ -30,8 +28,19 @@ namespace dexih.connections.sql
         }
         
         public override string TransformName => $"Database Reader - {ReferenceConnection?.Name}";
-        public override string TransformDetails => CacheTable?.Name ?? "Unknown";
+        
+        public override Dictionary<string, object> TransformProperties()
+        {
+            if (ReferenceConnection != null && CacheTable != null)
+            {
+                return new Dictionary<string, object>()
+                {
+                    {"SqlCommand", ReferenceConnection.GetDatabaseQuery(CacheTable, SelectQuery)}
+                };
+            }
 
+            return null;
+        }
 
         protected override void CloseConnections()
         {
@@ -52,6 +61,7 @@ namespace dexih.connections.sql
             {
                 AuditKey = auditKey;
                 IsOpen = true;
+                SelectQuery = selectQuery;
 
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
                 _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, selectQuery, cancellationToken);
@@ -69,7 +79,6 @@ namespace dexih.connections.sql
                     _fieldOrdinals.Add(ordinal);
                 }
 
-                _sortFields = selectQuery?.Sorts;
                 return true;
             }
             catch(Exception ex)
@@ -78,7 +87,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override List<Sort> SortFields => _sortFields;
+        public override List<Sort> SortFields => SelectQuery?.Sorts;
         public override bool ResetTransform() => IsOpen;
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
