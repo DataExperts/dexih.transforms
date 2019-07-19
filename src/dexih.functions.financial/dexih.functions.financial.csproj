@@ -18,11 +18,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\dexih.transforms\src\dexih.functions\dexih.functions.csproj" />
+      <PackageReference Include="ExcelFinancialFunctions" Version="2.4.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="ExcelFinancialFunctions" Version="2.4.0" />
+      <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
     </ItemGroup>
 
 </Project>
