@@ -25,7 +25,9 @@
   </ItemGroup>-->
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="12.1.2" />
+    <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.78" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.11" />
+    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.80" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="System.Data.Common" Version="4.3.0">
@@ -43,10 +45,6 @@
     </PackageReference>
     <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.8" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Dexih.Utils.CopyProperties\src\Dexih.Utils.CopyProperties\Dexih.Utils.CopyProperties.csproj" />
-    <ProjectReference Include="..\..\..\dexih.utils.datatype\src\Dexih.Utils.DataType\Dexih.Utils.DataType.csproj" />
   </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>

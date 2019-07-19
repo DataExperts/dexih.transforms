@@ -1,7 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <Description>Data transformation and Anaytics library - External Functions</Description>
+        <AssemblyTitle>Data Experts Group - External Functions</AssemblyTitle>
+        <VersionPrefix>1.0.1</VersionPrefix>
+        <Authors>Gary Holland</Authors>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <AssemblyName>dexih.functions.external</AssemblyName>
+        <PackageId>dexih.functions.external</PackageId>
+        <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
+        <PackageReleaseNotes>Refer to the project url (https://github.com/dataexperts/dexih.transforms) for documentation and raising issues</PackageReleaseNotes>
+        <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
         <LangVersion>7.1</LangVersion>
     </PropertyGroup>
 

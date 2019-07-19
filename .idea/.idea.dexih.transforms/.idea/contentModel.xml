@@ -444,6 +444,56 @@
           <e p="ThrottleFunctions.cs" t="Include" />
           <e p="ValidationFunctions.cs" t="Include" />
         </e>
+        <e p="dexih.functions.external" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="Currency.cs" t="Include" />
+          <e p="dexih.functions.external.csproj" t="IncludeRecursive" />
+          <e p="dexih.functions.external.csproj.DotSettings" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.1" t="Include">
+                <e p="dexih.functions.external.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+          <e p="OpenWeatherMap.cs" t="Include" />
+          <e p="Stocks.cs" t="Include" />
+        </e>
+        <e p="dexih.functions.financial" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.functions.financial.csproj" t="IncludeRecursive" />
+          <e p="FinancialAggregate.cs" t="Include" />
+          <e p="FinancialFunctions.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.1" t="Include">
+                <e p="dexih.functions.financial.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.functions.ml" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="Clustering.cs" t="Include" />
+          <e p="dexih.functions.ml.csproj" t="IncludeRecursive" />
+          <e p="DynamicList.cs" t="Include" />
+          <e p="DynamicType.cs" t="Include" />
+          <e p="DynamicTypeProperty.cs" t="Include" />
+          <e p="Helpers.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.1" t="Include">
+                <e p="dexih.functions.ml.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+          <e p="Prediction.cs" t="Include" />
+          <e p="RecommendationAnalysis.cs" t="Include" />
+          <e p="RegressionAnalysis.cs" t="Include" />
+          <e p="RegressionMetrics.cs" t="Include" />
+          <e p="RegressionPredictor.cs" t="Include" />
+          <e p="SentimentAnalysis.cs" t="Include" />
+        </e>
         <e p="dexih.transforms" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="Connection.cs" t="Include" />
@@ -541,6 +591,7 @@
           <e p="TransformNode.cs" t="Include" />
           <e p="TransformPerformance.cs" t="Include" />
           <e p="TransformProfile.cs" t="Include" />
+          <e p="TransformProperties.cs" t="Include" />
           <e p="TransformQuery.cs" t="Include" />
           <e p="TransformRows.cs" t="Include" />
           <e p="Transforms" t="Include">
@@ -849,36 +900,6 @@
           <e p="TransformWriterBulk.cs" t="Include" />
         </e>
       </e>
-    </e>
-    <e p="$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties" t="IncludeRecursive">
-      <e p="bin" t="ExcludeRecursive" />
-      <e p="CopyProperties.cs" t="Include" />
-      <e p="CopyPropertyAttributes.cs" t="Include" />
-      <e p="CopyPropertyExceptions.cs" t="Include" />
-      <e p="Dexih.Utils.CopyProperties.csproj" t="IncludeRecursive" />
-      <e p="obj" t="ExcludeRecursive">
-        <e p="Debug" t="Include">
-          <e p="netstandard2.0" t="Include">
-            <e p="Dexih.Utils.CopyProperties.AssemblyInfo.cs" t="Include" />
-          </e>
-        </e>
-      </e>
-      <e p="PropertyStructure.cs" t="Include" />
-    </e>
-    <e p="$PROJECT_DIR$/../dexih.utils.datatype/src/dexih.utils.datatype" t="IncludeRecursive">
-      <e p="AvailableDataTypes.cs" t="Include" />
-      <e p="bin" t="ExcludeRecursive" />
-      <e p="DataType.cs" t="Include" />
-      <e p="DataTypeExceptions.cs" t="Include" />
-      <e p="Dexih.Utils.DataType.csproj" t="IncludeRecursive" />
-      <e p="obj" t="ExcludeRecursive">
-        <e p="Debug" t="Include">
-          <e p="netstandard2.0" t="Include">
-            <e p="Dexih.Utils.DataType.AssemblyInfo.cs" t="Include" />
-          </e>
-        </e>
-      </e>
-      <e p="Operations.cs" t="Include" />
     </e>
   </component>
   <component name="RiderRiderContentModelStore">
