@@ -150,8 +150,6 @@ namespace dexih.transforms
                 WriteDataTicks += returnValue;
             }        
         }
-
-
         
         private async Task DoCreates( CancellationToken cancellationToken = default)
         {

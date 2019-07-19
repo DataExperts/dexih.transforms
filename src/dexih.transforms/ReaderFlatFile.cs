@@ -110,10 +110,7 @@ namespace dexih.transforms
 
         }
 
-        public override bool ResetTransform()
-        {
-            return IsOpen;
-        }
+        public override bool ResetTransform() => IsOpen;
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
@@ -191,6 +188,7 @@ namespace dexih.transforms
         public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             Reset();
+            Dispose();
             return Open(auditKey, query, cancellationToken);
         }
 

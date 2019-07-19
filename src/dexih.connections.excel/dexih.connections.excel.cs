@@ -56,6 +56,9 @@ namespace dexih.connections.excel
 	    public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
+        // Excel worksheets can only be updated one thread at a time, so use the lock to synchronise.
+        private readonly object _spreadsheetLock = 0; 
+
 	    public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
 	    {
 		    // Note: Excel only support max 15 digits.
@@ -95,36 +98,41 @@ namespace dexih.connections.excel
         {
             try
             {
-                var package = NewConnection();
+	            lock (_spreadsheetLock)
+	            {
+		            using (var package = NewConnection())
+		            {
+			            var tableExistsResult = TableExists(table);
+			            if (tableExistsResult)
+			            {
+				            if (dropTable)
+				            {
+					            package.Workbook.Worksheets.Delete(table.Name);
+				            }
+				            else
+				            {
+					            throw new ConnectionException($"The sheet {table.Name} already exists.");
+				            }
+			            }
 
-                var tableExistsResult = await TableExists(table, cancellationToken);
-                if (tableExistsResult)
-                {
-                    if (dropTable)
-                    {
-                        package.Workbook.Worksheets.Delete(table.Name);
-                    }
-                    else
-                    {
-                        throw new ConnectionException($"The sheet {table.Name} already exists.");
-                    }
-                }
-                var sheet = package.Workbook.Worksheets.Add(table.Name);
+			            var sheet = package.Workbook.Worksheets.Add(table.Name);
 
-                // Add column headings
-                for (var i = 0; i < table.Columns.Count; i++)
-                {
-                    var column = table.Columns[i];
-                    sheet.SetValue(ExcelHeaderRow, i + 1, column.Name);
-                    switch (column.DataType)
-                    {
-                        case ETypeCode.DateTime:
-                            sheet.Column(i + 1).Style.Numberformat.Format = "yyyy-mm-dd";
-                            break;
-                    }
-                }
+			            // Add column headings
+			            for (var i = 0; i < table.Columns.Count; i++)
+			            {
+				            var column = table.Columns[i];
+				            sheet.SetValue(ExcelHeaderRow, i + 1, column.Name);
+				            switch (column.DataType)
+				            {
+					            case ETypeCode.DateTime:
+						            sheet.Column(i + 1).Style.Numberformat.Format = "yyyy-mm-dd";
+						            break;
+				            }
+			            }
 
-                package.Save();
+			            package.Save();
+		            }
+	            }
             }
             catch(Exception ex)
             {
@@ -324,50 +332,57 @@ namespace dexih.connections.excel
             try
             {
                 long rowsUpdated = 0;
-                using (var package = NewConnection())
+                lock (_spreadsheetLock)
                 {
-                    var worksheet = GetWorkSheet(package, table.Name);
+	                using (var package = NewConnection())
+	                {
+		                var worksheet = GetWorkSheet(package, table.Name);
 
-                    var columnMappings = GetHeaderOrdinals(worksheet);
+		                var columnMappings = GetHeaderOrdinals(worksheet);
 
-                    // Scan through the excel sheet, checking the update queries for each row.
-                    for (var row = ExcelDataRow; row < worksheet.Dimension.Rows || row < ExcelDataRowMax; row++)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
+		                // Scan through the excel sheet, checking the update queries for each row.
+		                for (var row = ExcelDataRow; row < worksheet.Dimension.Rows || row < ExcelDataRowMax; row++)
+		                {
+			                cancellationToken.ThrowIfCancellationRequested();
 
-                        // check if any of the queries apply to this row.
-                        foreach (var query in queries)
-                        {
-                            var updateResult = EvaluateRowFilter(worksheet, row, columnMappings, query.Filters);
-                            if (updateResult)
-                            {
-                                if (query.UpdateColumns != null)
-                                {
-                                    // update the row with each of specified column values.
-                                    foreach (var updateColumn in query.UpdateColumns)
-                                    {
-                                        if (updateColumn.Column != null)
-                                        {
-                                            if (!columnMappings.ContainsKey(updateColumn.Column.Name))
-                                            {
-                                                throw new ConnectionException($"The column {updateColumn.Column.Name} could not be found on the worksheet {table.Name} was not found.");
-                                            }
-                                            worksheet.SetValue(row, columnMappings[updateColumn.Column.Name], ConvertForWrite(updateColumn.Column, updateColumn.Value));
-                                        }
-                                    }
-                                }
-                                rowsUpdated++;
-                                break;
-                            }
-                        }
-                    }
+			                // check if any of the queries apply to this row.
+			                foreach (var query in queries)
+			                {
+				                var updateResult = EvaluateRowFilter(worksheet, row, columnMappings, query.Filters);
+				                if (updateResult)
+				                {
+					                if (query.UpdateColumns != null)
+					                {
+						                // update the row with each of specified column values.
+						                foreach (var updateColumn in query.UpdateColumns)
+						                {
+							                if (updateColumn.Column != null)
+							                {
+								                if (!columnMappings.ContainsKey(updateColumn.Column.Name))
+								                {
+									                throw new ConnectionException(
+										                $"The column {updateColumn.Column.Name} could not be found on the worksheet {table.Name} was not found.");
+								                }
 
-                    if (rowsUpdated > 0)
-                    {
-                        package.Save();
-                    }
+								                worksheet.SetValue(row, columnMappings[updateColumn.Column.Name],
+									                ConvertForWrite(updateColumn.Column, updateColumn.Value));
+							                }
+						                }
+					                }
 
-					return Task.CompletedTask;
+					                rowsUpdated++;
+					                break;
+				                }
+			                }
+		                }
+
+		                if (rowsUpdated > 0)
+		                {
+			                package.Save();
+		                }
+
+		                return Task.CompletedTask;
+	                }
                 }
             }
             catch(Exception ex)
@@ -381,39 +396,43 @@ namespace dexih.connections.excel
         {
             try
             {
-		        var rowsDeleted = 0;
-                using (var package = NewConnection())
-		        {
-                    var worksheet = GetWorkSheet(package, table.Name);
+	            lock (_spreadsheetLock)
+	            {
+		            var rowsDeleted = 0;
+		            using (var package = NewConnection())
+		            {
+			            var worksheet = GetWorkSheet(package, table.Name);
 
-                    var columnMappings = GetHeaderOrdinals(worksheet);
+			            var columnMappings = GetHeaderOrdinals(worksheet);
 
-			        // Scan through the excel sheet, checking the update queries for each row.
-			        for (var row = ExcelDataRow; row < worksheet.Dimension.Rows || row < ExcelDataRowMax; row++)
-			        {
-                        cancellationToken.ThrowIfCancellationRequested();
+			            // Scan through the excel sheet, checking the update queries for each row.
+			            for (var row = ExcelDataRow; row < worksheet.Dimension.Rows || row < ExcelDataRowMax; row++)
+			            {
+				            cancellationToken.ThrowIfCancellationRequested();
 
-                        // check if any of the queries apply to this row.
-                        foreach (var query in queries)
-				        {
-					        var deleteResult = EvaluateRowFilter(worksheet, row, columnMappings, query.Filters);
-					        if (deleteResult)
-					        {
-						        worksheet.DeleteRow(row);
-						        rowsDeleted++;
-						        row--; //move the row count back one as the current row has been deleted.
-						        break;
-					        }   
-				        }
-			        }
+				            // check if any of the queries apply to this row.
+				            foreach (var query in queries)
+				            {
+					            var deleteResult = EvaluateRowFilter(worksheet, row, columnMappings, query.Filters);
+					            if (deleteResult)
+					            {
+						            worksheet.DeleteRow(row);
+						            rowsDeleted++;
+						            row--; //move the row count back one as the current row has been deleted.
+						            break;
+					            }
+				            }
+			            }
 
-			        if (rowsDeleted > 0)
-			        {
-				        package.Save();
-			        }
+			            if (rowsDeleted > 0)
+			            {
+				            package.Save();
+			            }
 
-                }
-				return Task.CompletedTask;
+		            }
+	            }
+
+	            return Task.CompletedTask;
 			}
             catch (Exception ex)
             {
@@ -555,62 +574,71 @@ namespace dexih.connections.excel
                 long autoIncrementValue = -1;
                 long identityValue = 0;
 
-                using (var package = NewConnection())
+                lock (_spreadsheetLock)
                 {
-                    var worksheet = GetWorkSheet(package, table.Name);
+	                using (var package = NewConnection())
+	                {
+		                var worksheet = GetWorkSheet(package, table.Name);
 
-                    var columnMappings = GetHeaderOrdinals(worksheet);
+		                var columnMappings = GetHeaderOrdinals(worksheet);
 
-                    var autoIncrementColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
-                    var autoIncrementOrdinal = -1;
-                    if (autoIncrementColumn != null && columnMappings.ContainsKey(autoIncrementColumn.Name))
-                    {
-                        autoIncrementOrdinal = columnMappings[autoIncrementColumn.Name];
-                    }
+		                var autoIncrementColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+		                var autoIncrementOrdinal = -1;
+		                if (autoIncrementColumn != null && columnMappings.ContainsKey(autoIncrementColumn.Name))
+		                {
+			                autoIncrementOrdinal = columnMappings[autoIncrementColumn.Name];
+		                }
 
-                    var row = worksheet.Dimension.Rows;
-                    if (row < ExcelDataRow)
-                    {
-                        row = ExcelDataRow;
-                    }
+		                var row = worksheet.Dimension.Rows;
+		                if (row < ExcelDataRow)
+		                {
+			                row = ExcelDataRow;
+		                }
 
-                    foreach (var query in queries)
-                    {
-                        if (row > ExcelDataRowMax)
-                        {
-                            throw new ConnectionException($"The maximum Excel rows of {ExcelDataRowMax} was exceeded.");
-                        }
+		                foreach (var query in queries)
+		                {
+			                if (row > ExcelDataRowMax)
+			                {
+				                throw new ConnectionException(
+					                $"The maximum Excel rows of {ExcelDataRowMax} was exceeded.");
+			                }
 
-                        cancellationToken.ThrowIfCancellationRequested();
+			                cancellationToken.ThrowIfCancellationRequested();
 
 
-                        if (autoIncrementOrdinal >= 0)
-                        {
-                            autoIncrementValue = row;
-                            worksheet.SetValue(row, autoIncrementOrdinal, autoIncrementValue);
-                        }
+			                if (autoIncrementOrdinal >= 0)
+			                {
+				                autoIncrementValue = row;
+				                worksheet.SetValue(row, autoIncrementOrdinal, autoIncrementValue);
+			                }
 
-                        foreach (var column in query.InsertColumns)
-                        {
-	                        if (column.Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
-		                        identityValue = Convert.ToInt64(column.Value);
-	                        
-                            if (!columnMappings.ContainsKey(column.Column.Name))
-                            {
-                                throw new ConnectionException($"The column with the name ${column.Column.Name} could not be found.");
-                            }
-                            worksheet.SetValue(row, columnMappings[column.Column.Name], ConvertForWrite(column.Column, column.Value));
-                        }
-                        rowsInserted++;
-                        row++;
-                    }
-                    if (rowsInserted > 0)
-                    {
-                        package.Save();
-                    }
+			                foreach (var column in query.InsertColumns)
+			                {
+				                if (column.Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+					                identityValue = Convert.ToInt64(column.Value);
+
+				                if (!columnMappings.ContainsKey(column.Column.Name))
+				                {
+					                throw new ConnectionException(
+						                $"The column with the name ${column.Column.Name} could not be found.");
+				                }
+
+				                worksheet.SetValue(row, columnMappings[column.Column.Name],
+					                ConvertForWrite(column.Column, column.Value));
+			                }
+
+			                rowsInserted++;
+			                row++;
+		                }
+
+		                if (rowsInserted > 0)
+		                {
+			                package.Save();
+		                }
+	                }
                 }
 
-                if (identityValue > 0) return Task.FromResult(identityValue);
+	            if (identityValue > 0) return Task.FromResult(identityValue);
 
                 return Task.FromResult(autoIncrementValue);
             }
@@ -690,7 +718,12 @@ namespace dexih.connections.excel
                 {
                     DefaultDatabase = databaseName;
                 }
-                NewConnection();
+
+                lock (_spreadsheetLock)
+                {
+	                using (NewConnection()) ;
+                }
+
                 return Task.CompletedTask;
 
             }
@@ -709,51 +742,54 @@ namespace dexih.connections.excel
         {
             try
             {
-                using (var package = NewConnection())
-                {
-                    long rowsInserted = 0;
-                    long autoIncrementValue = 0;
+	            lock (_spreadsheetLock)
+	            {
+		            using (var package = NewConnection())
+		            {
+			            long rowsInserted = 0;
+			            long autoIncrementValue = 0;
 
-                    var worksheet = GetWorkSheet(package, table.Name);
+			            var worksheet = GetWorkSheet(package, table.Name);
 
-                    // get the position of each of the column names.
-                    var columnMappings = GetHeaderOrdinals(worksheet);
+			            // get the position of each of the column names.
+			            var columnMappings = GetHeaderOrdinals(worksheet);
 
-	                var autoIncrementColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
-	                var autoIncrementOrdinal = -1;
-	                if (autoIncrementColumn != null)
-	                {
-		                autoIncrementOrdinal = columnMappings[autoIncrementColumn.Name];
-	                }
+			            var autoIncrementColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+			            var autoIncrementOrdinal = -1;
+			            if (autoIncrementColumn != null)
+			            {
+				            autoIncrementOrdinal = columnMappings[autoIncrementColumn.Name];
+			            }
 
-                    var row = worksheet.Dimension.Rows + 1;
+			            var row = worksheet.Dimension.Rows + 1;
 
-                    while (await reader.ReadAsync(cancellationToken))
-                    {
-	                    if (cancellationToken.IsCancellationRequested)
-	                    {
-		                    throw new ConnectionException("Insert bulk operation cancelled.");
-	                    }
+			            while (reader.Read())
+			            {
+				            if (cancellationToken.IsCancellationRequested)
+				            {
+					            throw new ConnectionException("Insert bulk operation cancelled.");
+				            }
 
-                        foreach (var mapping in columnMappings)
-                        {
-	                        var ordinal = reader.GetOrdinal(mapping.Key);
-	                        if (ordinal >= 0)
-	                        {
-		                        worksheet.SetValue(row, mapping.Value,
-			                        mapping.Value == autoIncrementOrdinal ? autoIncrementValue++ : reader[ordinal]);
-	                        }
-                        }
+				            foreach (var mapping in columnMappings)
+				            {
+					            var ordinal = reader.GetOrdinal(mapping.Key);
+					            if (ordinal >= 0)
+					            {
+						            worksheet.SetValue(row, mapping.Value,
+							            mapping.Value == autoIncrementOrdinal ? autoIncrementValue++ : reader[ordinal]);
+					            }
+				            }
 
-                        row++;
-                        rowsInserted++;
-                    }
+				            row++;
+				            rowsInserted++;
+			            }
 
-                    if (rowsInserted > 0)
-                    {
-                        package.Save();
-                    }
-                }
+			            if (rowsInserted > 0)
+			            {
+				            package.Save();
+			            }
+		            }
+	            }
             }
             catch (Exception ex)
             {
@@ -767,25 +803,31 @@ namespace dexih.connections.excel
             return reader;
         }
 
+        private bool TableExists(Table table)
+        {
+	        try
+	        {
+		        using (var package = NewConnection())
+		        {
+			        var worksheet = package.Workbook.Worksheets.SingleOrDefault(c => c.Name == table.Name);
+			        if (worksheet == null)
+			        {
+				        return false;
+			        }
+
+			        return true;
+		        }
+	        }
+	        catch(Exception ex)
+	        {
+		        throw new ConnectionException($"Failed check the excel file exists for {table.Name}.  {ex.Message}", ex);
+	        }
+	        
+        }
+
         public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                using (var package = NewConnection())
-                {
-                    var worksheet = package.Workbook.Worksheets.SingleOrDefault(c => c.Name == table.Name);
-                    if (worksheet == null)
-                    {
-                        return Task.FromResult(false);
-                    }
-
-                    return Task.FromResult(true);
-                }
-            }
-            catch(Exception ex)
-            {
-                throw new ConnectionException($"Failed check the excel file exists for {table.Name}.  {ex.Message}", ex);
-            }
+	        return Task.FromResult(TableExists(table));
         }
 
 

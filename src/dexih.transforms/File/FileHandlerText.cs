@@ -244,7 +244,16 @@ namespace dexih.transforms.File
                     {
                         var mapping = _csvOrdinalMappings[colPos];
                         var value = _csvReader[mapping.Position];
-                        row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);
+                        if (string.IsNullOrEmpty(value))
+                        {
+                            row[colPos] = null;
+                            
+                        }
+                        else
+                        {
+                            row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);    
+                        }
+                        
                         
 //                        var result = _csvReader.TryGetField(mapping.DataType, mapping.Position, out object value);
 //                        if (result)
