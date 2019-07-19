@@ -94,7 +94,7 @@ namespace dexih.connections.excel
 		    
 	    }
 	    
-        public override async Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
+        public override Task CreateTable(Table table, bool dropTable, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -133,6 +133,8 @@ namespace dexih.connections.excel
 			            package.Save();
 		            }
 	            }
+	            
+	            return Task.CompletedTask;
             }
             catch(Exception ex)
             {
@@ -738,7 +740,7 @@ namespace dexih.connections.excel
             throw new NotImplementedException();
         }
 
-        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
+        public override Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -790,6 +792,8 @@ namespace dexih.connections.excel
 			            }
 		            }
 	            }
+	            
+	            return Task.CompletedTask;
             }
             catch (Exception ex)
             {
