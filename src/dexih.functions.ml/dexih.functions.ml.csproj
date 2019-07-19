@@ -6,11 +6,11 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.1.0" />
-      <PackageReference Include="Microsoft.ML" Version="1.0.0" />
-      <PackageReference Include="Microsoft.ML.FastTree" Version="1.0.0" />
-        <PackageReference Include="Microsoft.ML.AutoML" Version="0.3.0" />
-        <PackageReference Include="Microsoft.ML.LightGbm" Version="1.0.0" />
-        <PackageReference Include="Microsoft.ML.Recommender" Version="0.12.0" />
+      <PackageReference Include="Microsoft.ML" Version="1.2.0" />
+      <PackageReference Include="Microsoft.ML.FastTree" Version="1.2.0" />
+        <PackageReference Include="Microsoft.ML.AutoML" Version="0.14.0" />
+        <PackageReference Include="Microsoft.ML.LightGbm" Version="1.2.0" />
+        <PackageReference Include="Microsoft.ML.Recommender" Version="0.14.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />

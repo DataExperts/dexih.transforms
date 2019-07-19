@@ -78,7 +78,7 @@ namespace dexih.functions
 				{
 					parameterClass = EParameterClass.EnumArray;
 				} 
-				else if (p.ParameterType.IsAssignableFrom(typeof(CancellationToken)))
+				else if (p.ParameterType ==typeof(CancellationToken))
 				{
 					parameterClass = EParameterClass.Cancellation;
 				}

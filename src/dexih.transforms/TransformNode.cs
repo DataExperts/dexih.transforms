@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -32,8 +33,8 @@ namespace dexih.transforms
         
         public void SetTable(Table table, Table parentTable)
         {
-            _primaryTable = table?.Copy();
-            _parentTable = parentTable?.Copy();
+            _primaryTable = table; //?.Copy();
+            _parentTable = parentTable; //?.Copy();
             BuildCacheTable();
         }
 
@@ -80,6 +81,9 @@ namespace dexih.transforms
             }
 
             CacheTable = newTable;
+            
+            // map any cached data from the primary table across.  this ensures transforms like the TransformThread work with nodes.
+            CacheTable.Data = _primaryTable.Data;
 
             if (PrimaryTransform?.BaseFieldCount > FieldCount)
             {

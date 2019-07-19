@@ -1,4 +1,5 @@
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 using Xunit;
 
 namespace dexih.functions.tests
@@ -35,16 +36,16 @@ namespace dexih.functions.tests
             Assert.Equal(select1, select2);
             Assert.Equal(select1.GetHashCode(), select2.GetHashCode());
             
-            select1.Filters.Add(new Filter(new TableColumn("filter1"), Filter.ECompare.IsEqual, new TableColumn("filter2") ));
+            select1.Filters.Add(new Filter(new TableColumn("filter1"), ECompare.IsEqual, new TableColumn("filter2") ));
             Assert.NotEqual(select1, select2);
             Assert.NotEqual(select1.GetHashCode(), select2.GetHashCode());
 
-            select2.Filters.Add(new Filter(new TableColumn("filter1"), Filter.ECompare.IsEqual, new TableColumn("filter3") ));
+            select2.Filters.Add(new Filter(new TableColumn("filter1"), ECompare.IsEqual, new TableColumn("filter3") ));
             Assert.NotEqual(select1, select2);
             Assert.NotEqual(select1.GetHashCode(), select2.GetHashCode());
 
             select2.Filters.Clear();
-            select2.Filters.Add(new Filter(new TableColumn("filter1"), Filter.ECompare.IsEqual, new TableColumn("filter2") ));
+            select2.Filters.Add(new Filter(new TableColumn("filter1"), ECompare.IsEqual, new TableColumn("filter2") ));
             Assert.Equal(select1, select2);
             Assert.Equal(select1.GetHashCode(), select2.GetHashCode());
             

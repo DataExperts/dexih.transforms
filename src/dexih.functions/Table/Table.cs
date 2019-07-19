@@ -188,7 +188,7 @@ namespace dexih.functions
         /// <summary>
         /// Maximum levels to recurse through structured data when importing columns.
         /// </summary>
-        public int MaxImportLevels { get; set; } = 1;
+        public int MaxImportLevels { get; set; } = 10;
 
 
         #endregion

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test
@@ -98,7 +99,7 @@ namespace dexih.connections.test
                 var updateQuery = new UpdateQuery()
                 {
                     UpdateColumns = new List<QueryColumn>() { new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc)) },
-                    Filters = new List<Filter>() { new Filter() { Column1 = new TableColumn("IntColumn", ETypeCode.Int32), Operator = Filter.ECompare.IsEqual, Value2 = 2, CompareDataType = ETypeCode.Int32 } }
+                    Filters = new List<Filter>() { new Filter() { Column1 = new TableColumn("IntColumn", ETypeCode.Int32), Operator = ECompare.IsEqual, Value2 = 2, CompareDataType = ETypeCode.Int32 } }
                 };
 
                 await connection.ExecuteUpdate(table, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
@@ -107,7 +108,7 @@ namespace dexih.connections.test
                 selectQuery = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("DateColumn", ETypeCode.DateTime)) },
-                    Filters = new List<Filter>() { new Filter(new TableColumn("IntColumn", ETypeCode.Int32), Filter.ECompare.IsEqual, 2) },
+                    Filters = new List<Filter>() { new Filter(new TableColumn("IntColumn", ETypeCode.Int32), ECompare.IsEqual, 2) },
                     Rows = 1,
                     Table = "test_table"
                 };
@@ -139,7 +140,7 @@ namespace dexih.connections.test
                 //run a delete query.
                 var deleteQuery = new DeleteQuery()
                 {
-                    Filters = new List<Filter>() { new Filter("IntColumn", Filter.ECompare.IsEqual, 1) },
+                    Filters = new List<Filter>() { new Filter("IntColumn", ECompare.IsEqual, 1) },
                     Table = "test_table"
                 };
 
@@ -150,7 +151,7 @@ namespace dexih.connections.test
                 selectQuery = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn("DateColumn") },
-                    Filters = new List<Filter>() { new Filter("IntColumn", Filter.ECompare.IsEqual, 1) },
+                    Filters = new List<Filter>() { new Filter("IntColumn", ECompare.IsEqual, 1) },
                     Rows = 1,
                     Table = "test_table"
                 };
@@ -228,7 +229,7 @@ namespace dexih.connections.test
             if (connection.CanFilter)
             {
                 //run a lookup query.
-                var filters = new List<Filter> { new Filter("IntColumn", Filter.ECompare.IsEqual, 5) };
+                var filters = new List<Filter> { new Filter("IntColumn", ECompare.IsEqual, 5) };
                 var query = new SelectQuery
                 {
                     Filters = filters

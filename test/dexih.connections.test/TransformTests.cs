@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Dexih.Utils.DataType;
 using Xunit;
 
 namespace dexih.connections.test
@@ -58,7 +59,7 @@ namespace dexih.connections.test
 
                 var query = new SelectQuery()
                 {
-                    Filters = new List<Filter>() { new Filter("IntColumn", Filter.ECompare.LessThanEqual, 5) }
+                    Filters = new List<Filter>() { new Filter("IntColumn", ECompare.LessThanEqual, 5) }
                 };
                 await reader.Open(0, query, CancellationToken.None);
 

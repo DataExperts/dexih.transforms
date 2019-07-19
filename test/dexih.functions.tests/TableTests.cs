@@ -121,7 +121,7 @@ namespace dexih.functions.tests
                 }
             });
 
-            _output.WriteLine($"non-optimized column lookup - iterations: {iterations}, time taken: {time}, iterations/ms: {iterations/time.Milliseconds}");
+            _output.WriteLine($"non-optimized column lookup - iterations: {iterations}, time taken: {time}, iterations/ms: {(time.Milliseconds == 0 ? 0 : (iterations/time.Milliseconds))}");
             
             time = TaskTimer.Start(() =>
             {
@@ -132,7 +132,7 @@ namespace dexih.functions.tests
                 }
             });
             
-            _output.WriteLine($"column lookup - iterations: {iterations}, time taken: {time}, iterations/ms: {iterations/time.Milliseconds}");
+            _output.WriteLine($"column lookup - iterations: {iterations}, time taken: {time}, iterations/ms: {(time.Milliseconds == 0 ? 0 : iterations/time.Milliseconds)}");
         }
     }
 }

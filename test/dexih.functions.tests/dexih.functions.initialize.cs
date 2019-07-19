@@ -11,7 +11,7 @@ namespace dexih.functions.tests
         {
             //create a custom function
             TransformFunction function1 = new TransformFunction(new Func<int, int, int>((i, j) => i + j));
-            Assert.True((int) function1.RunFunction(new FunctionVariables(), new object[] { 6, 2 }, CancellationToken.None) == 8);
+            Assert.True((int) function1.RunFunction(new FunctionVariables(), new object[] { 6, 2 }, CancellationToken.None).returnValue == 8);
         }
 
         [Fact]
@@ -22,7 +22,7 @@ namespace dexih.functions.tests
             TransformFunction function1 = new TransformFunction(
                 this, 
                 nameof(TestMethod));
-            Assert.True((int) function1.RunFunction(new FunctionVariables(),new object[] { 6, 2 }, CancellationToken.None) == 8);
+            Assert.True((int) function1.RunFunction(new FunctionVariables(),new object[] { 6, 2 }, CancellationToken.None).returnValue == 8);
         }
 
         [Fact]
@@ -30,7 +30,7 @@ namespace dexih.functions.tests
         {
             //create a custom function
             TransformFunction function1 = new TransformFunction(this, this.GetType().GetMethod(nameof(TestMethod)), typeof(string), null, new GlobalVariables(null));
-            Assert.True((int) function1.RunFunction(new FunctionVariables(),new object[] { 6, 2 }, CancellationToken.None) == 8);
+            Assert.True((int) function1.RunFunction(new FunctionVariables(),new object[] { 6, 2 }, CancellationToken.None).returnValue == 8);
         }
 
         public int TestMethod(int a, int b) => a + b;

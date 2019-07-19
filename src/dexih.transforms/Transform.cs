@@ -106,8 +106,8 @@ namespace dexih.transforms
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
 
-        //indicates if the transform is on the primary stream.
-        public bool IsPrimaryTransform => (PrimaryTransform != null && PrimaryTransform.IsPrimaryTransform);
+//        //indicates if the transform is on the primary stream.
+//        public bool IsPrimaryTransform => (PrimaryTransform != null && PrimaryTransform.IsPrimaryTransform);
 
         //indicates if the transform is a base reader.
         public bool IsReader => PrimaryTransform == null;
@@ -127,8 +127,6 @@ namespace dexih.transforms
         public long TransformRowsIgnored { get; protected set; }
         public long TransformRowsRejected { get; protected set; }
         public long TransformRowsFiltered { get; protected set; }
-        public long TransformRowsReadPrimary { get; protected set; }
-        public long TransformRowsReadReference { get; protected set; }
         public long TransformRows { get; protected set; }
 
         //statistics for all child transforms.
@@ -137,8 +135,8 @@ namespace dexih.transforms
         public long TotalRowsIgnored => TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0;
         public long TotalRowsRejected => TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0;
         public long TotalRowsFiltered => TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0;
-        public long TotalRowsReadPrimary => TransformRowsReadPrimary + (PrimaryTransform?.TotalRowsReadPrimary ?? 0);
-        public long TotalRowsReadReference => TransformRowsReadReference + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TransformRowsReadPrimary ?? 0;
+        public long TotalRowsReadPrimary => TransformRows + (PrimaryTransform?.TotalRowsReadPrimary ?? 0);
+        public long TotalRowsReadReference => TransformRows + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TotalRowsReadPrimary ?? 0;
 
         private object _maxIncrementalValue = null;
         private int _incrementalColumnIndex = -1;
@@ -296,14 +294,7 @@ namespace dexih.transforms
                     }
                 }
             }
-
             
-            //IsReader indicates if this is a base transform.
-//            if (primaryTransform != null)
-//                primaryTransform.IsPrimaryTransform = true;
-//            if (referenceTransform != null)
-//                referenceTransform.IsPrimaryTransform = false;
-           
             return true;
         }
 
@@ -523,7 +514,6 @@ namespace dexih.transforms
 
                 while (row >= CacheTable.Data.Count)
                 {
-
                     var result = await ReadAsync(cancellationToken);
                     if (!result) return null;
                 }
@@ -899,9 +889,8 @@ namespace dexih.transforms
                 TransformRowsFiltered = 0;
                 TransformRowsIgnored = 0;
                 TransformRowsPreserved = 0;
-                TransformRowsReadPrimary = 0;
-                TransformRowsReadReference = 0;
                 TransformRowsRejected = 0;
+                TransformRows = 0;
 
                 var returnValue = ResetTransform();
 
@@ -1332,6 +1321,7 @@ namespace dexih.transforms
         private bool _nextReadInProgress = false;
         private object[] _nextRow;
 
+        
         /// <summary>
         /// Starts a read process from the underlying transforms, but does not update the current row.
         /// </summary>
@@ -1363,7 +1353,7 @@ namespace dexih.transforms
                         await Mappings.Open();
                     }
 
-                    if (IsReader && IsPrimaryTransform)
+                    if (IsReader)
                     {
                         //get the incremental column (if it exists)
                         var incrementalCol = CacheTable.Columns.Where(c => c.IsIncrementalUpdate).ToArray();
@@ -1439,7 +1429,7 @@ namespace dexih.transforms
                 }
 
 
-                if (IsReader && IsPrimaryTransform && _incrementalColumnIndex != -1 && _nextRow != null)
+                if (IsReader && _incrementalColumnIndex != -1 && _nextRow != null)
                 {
                     try
                     {
@@ -1469,17 +1459,8 @@ namespace dexih.transforms
                     if (!IsReaderFinished)
                     {
                         TransformRows++;
+                        OnReaderProgress?.Invoke(TransformRows);
                     }
-                }
-
-                if (IsReader && !IsPrimaryTransform && !IsReaderFinished)
-                    TransformRowsReadReference++;
-
-                //if this is a primary (i.e. starting reader), increment the rows read.
-                if (IsReader && !IsReaderFinished)
-                {
-                    TransformRowsReadPrimary++;
-                    OnReaderProgress?.Invoke(TransformRowsReadPrimary);
                 }
 
                 //add the row to the cache

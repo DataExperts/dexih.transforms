@@ -7,6 +7,7 @@ using dexih.functions.BuiltIn;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
+using Dexih.Utils.DataType;
 using Xunit;
 using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
@@ -23,20 +24,20 @@ namespace dexih.transforms.tests
         }
 
         [Theory]
-        [InlineData("StringColumn", ETypeCode.String, "value01", Filter.ECompare.IsEqual, 1)]
-        [InlineData("StringColumn", ETypeCode.String, "value01", Filter.ECompare.NotEqual, 9)]
-        [InlineData("StringColumn", ETypeCode.String, "value02", Filter.ECompare.GreaterThan, 8)]
-        [InlineData("StringColumn", ETypeCode.String, "value02", Filter.ECompare.GreaterThanEqual, 9)]
-        [InlineData("StringColumn", ETypeCode.String, "value02", Filter.ECompare.LessThan, 1)]
-        [InlineData("StringColumn", ETypeCode.String, "value02", Filter.ECompare.LessThanEqual, 2)]
-        [InlineData("IntColumn", ETypeCode.Int32, 1, Filter.ECompare.IsEqual, 1)]
-        [InlineData("IntColumn", ETypeCode.Int32, 1, Filter.ECompare.NotEqual, 9)]
-        [InlineData("IntColumn", ETypeCode.Int32, 2, Filter.ECompare.GreaterThan, 8)]
-        [InlineData("IntColumn", ETypeCode.Int32, 2, Filter.ECompare.GreaterThanEqual, 9)]
-        [InlineData("IntColumn", ETypeCode.Int32, 2, Filter.ECompare.LessThan, 1)]
-        [InlineData("IntColumn", ETypeCode.Int32, 2, Filter.ECompare.LessThanEqual, 2)]
+        [InlineData("StringColumn", ETypeCode.String, "value01", ECompare.IsEqual, 1)]
+        [InlineData("StringColumn", ETypeCode.String, "value01", ECompare.NotEqual, 9)]
+        [InlineData("StringColumn", ETypeCode.String, "value02", ECompare.GreaterThan, 8)]
+        [InlineData("StringColumn", ETypeCode.String, "value02", ECompare.GreaterThanEqual, 9)]
+        [InlineData("StringColumn", ETypeCode.String, "value02", ECompare.LessThan, 1)]
+        [InlineData("StringColumn", ETypeCode.String, "value02", ECompare.LessThanEqual, 2)]
+        [InlineData("IntColumn", ETypeCode.Int32, 1, ECompare.IsEqual, 1)]
+        [InlineData("IntColumn", ETypeCode.Int32, 1, ECompare.NotEqual, 9)]
+        [InlineData("IntColumn", ETypeCode.Int32, 2, ECompare.GreaterThan, 8)]
+        [InlineData("IntColumn", ETypeCode.Int32, 2, ECompare.GreaterThanEqual, 9)]
+        [InlineData("IntColumn", ETypeCode.Int32, 2, ECompare.LessThan, 1)]
+        [InlineData("IntColumn", ETypeCode.Int32, 2, ECompare.LessThanEqual, 2)]
         [MemberData(nameof(FilterPairDateTests))]
-        public async Task FilterPairs(string columnName, ETypeCode dataType, object filterValue, Filter.ECompare filterCompare, int expctedRows)
+        public async Task FilterPairs(string columnName, ETypeCode dataType, object filterValue, ECompare filterCompare, int expctedRows)
         {
             var table = Helpers.CreateSortedTestData();
 
@@ -61,12 +62,12 @@ namespace dexih.transforms.tests
 
         public static IEnumerable<object[]> FilterPairDateTests => new[]
         {
-            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/01"), Filter.ECompare.IsEqual, 1},
-            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/01"), Filter.ECompare.NotEqual, 9},
-            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.GreaterThan, 8},
-            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.GreaterThanEqual, 9},
-            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.LessThan, 1},
-            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), Filter.ECompare.LessThanEqual, 2}
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/01"), ECompare.IsEqual, 1},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/01"), ECompare.NotEqual, 9},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), ECompare.GreaterThan, 8},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), ECompare.GreaterThanEqual, 9},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), ECompare.LessThan, 1},
+            new object[] { "DateColumn", ETypeCode.DateTime, Convert.ToDateTime("2015/01/02"), ECompare.LessThanEqual, 2}
         };
 
         [Fact]

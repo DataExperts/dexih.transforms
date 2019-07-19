@@ -19,8 +19,8 @@ namespace dexih.functions.BuiltIn
         }
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Hierarchy", Name = "Flatten Parent/Child", Description = "Flattens parent/child table into level columns.", ResultMethod = nameof(FlattenParentChildResult), ResetMethod = nameof(Reset), GeneratesRows = true)]
         public void FlattenParentChild(
-            [TransformFunctionParameter(Description = "Parent Item")] object child, 
-            [TransformFunctionParameter(Description = "Child Item")]object parent)
+            [TransformFunctionParameter(Description = "Child Item")] object child, 
+            [TransformFunctionParameter(Description = "Parent Item")]object parent)
         {
             if (_dictionary.Contains(child))
             {

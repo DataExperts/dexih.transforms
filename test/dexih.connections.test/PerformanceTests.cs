@@ -194,7 +194,7 @@ namespace dexih.connections.test
                 }
                 updateQueries.Add(new UpdateQuery()
                 {
-                    Filters = new List<Filter>() {new Filter("SurrogateKey", Filter.ECompare.IsEqual, i+1)},
+                    Filters = new List<Filter>() {new Filter("SurrogateKey", ECompare.IsEqual, i+1)},
                     UpdateColumns = updateColumns
                 });
             }
@@ -211,7 +211,7 @@ namespace dexih.connections.test
                 Columns = new List<SelectColumn>() {new SelectColumn("UpdateTest")},
                 Filters = new List<Filter>()
                 {
-                    new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), Filter.ECompare.IsEqual, 1)
+                    new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), ECompare.IsEqual, 1)
                 },
                 Rows = -1,
                 Table = table.Name
@@ -231,7 +231,7 @@ namespace dexih.connections.test
                 {
                     Filters = new List<Filter>()
                     {
-                        new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), Filter.ECompare.IsEqual, 1)
+                        new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), ECompare.IsEqual, 1)
                     },
                     Table = table.Name,
                 }

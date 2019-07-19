@@ -28,6 +28,7 @@ namespace dexih.connections.webservice.restful.tests
             {
                 Server = "https://httpbin.org",
                 DefaultDatabase = "",
+                
             };
 
             var reader = await connection.GetTransformReader("get");
@@ -58,7 +59,7 @@ namespace dexih.connections.webservice.restful.tests
             {
                 Name = "users",
                 RestfulUri = "users",
-                MaxImportLevels = 2
+                MaxImportLevels = 3
             };
 
             var table = await connection.GetSourceTableInfo(restFunction, CancellationToken.None);
