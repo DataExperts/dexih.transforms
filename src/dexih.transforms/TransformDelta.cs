@@ -211,7 +211,7 @@ namespace dexih.transforms
             if (DoPreserve && (_colAutoIncrement == null || _colIsCurrentField == null))
             {
                 throw new Exception(
-                    "The delta transform requires target table table to have a one \"Auto Increemnt\" column, and one \"Is Current\" column for row preservation.");
+                    "The delta transform requires target table table to have a one \"Auto Increment\" column, and one \"Is Current\" column for row preservation.");
             }
 
             if (DoUpdate && CacheTable.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.NaturalKey))
