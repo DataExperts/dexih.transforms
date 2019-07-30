@@ -35,17 +35,17 @@ namespace dexih.functions.maths
 
             if (_cacheSeries.Contains(series))
             {
-                var current = (SeriesValue) _cacheSeries[series];
+                var current = (SeriesValue<double>) _cacheSeries[series];
                 current.AddValue(value);
             }
             else
             {
-                _cacheSeries.Add(series, new SeriesValue(series, value, duplicateAggregate));
+                _cacheSeries.Add(series, new SeriesValue<double>(series, value, duplicateAggregate));
             }
         }
         
         private double[] XValues() => Enumerable.Range(0, _cacheSeries.Count).Select(Convert.ToDouble).ToArray();
-        private double[] YValues() => _cacheSeries.Values.OfType<SeriesValue>().Select(c => c.Value).ToArray();
+        private double[] YValues() => _cacheSeries.Values.OfType<SeriesValue<double>>().Select(c => c.Value).ToArray();
         
         [TransformFunction(FunctionType = EFunctionType.Series, Category = "Curve Fit", Name = "Linear Regression", Description = "Least-Squares fitting the points (x,y) to a line y : x -> a+b*x", ResultMethod = nameof(LinearRegressionResult), ResetMethod = nameof(Reset))]
         public void LinearRegression([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, [TransformFunctionVariable(EFunctionVariable.Forecast)] bool isForecast, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
