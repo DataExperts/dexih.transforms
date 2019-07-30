@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="bug fix">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.maths/dexih.functions.maths.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.maths/dexih.functions.maths.csproj" afterDir="false" />
-    </list>
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1587,14 +1583,7 @@
       <workItem from="1564360776654" duration="29352000" />
       <workItem from="1564463082772" duration="26000" />
       <workItem from="1564463435976" duration="2208000" />
-      <workItem from="1564466619813" duration="1013000" />
-    </task>
-    <task id="LOCAL-00009" summary="Added Poco Loader,Reader">
-      <created>1501201789060</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1501201789060</updated>
+      <workItem from="1564466619813" duration="1179000" />
     </task>
     <task id="LOCAL-00010" summary="Fix some tests with SqlServer on Linux">
       <created>1501211946775</created>
@@ -1932,11 +1921,18 @@
       <option name="project" value="LOCAL" />
       <updated>1564467304406</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="fixed reference in functions.math">
+      <created>1564467659118</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1564467659118</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1399076000" />
+    <option name="totallyTimeSpent" value="1399242000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -2052,7 +2048,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added oracle provider" />
     <MESSAGE value="added binary support to mysql" />
     <MESSAGE value="fixed test" />
     <MESSAGE value="fix excel issue with boolean" />
@@ -2077,7 +2072,8 @@
     <MESSAGE value="added more ML.Net functions and tests" />
     <MESSAGE value="fixed sql push down issues and added some tests." />
     <MESSAGE value="bug fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fix" />
+    <MESSAGE value="fixed reference in functions.math" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed reference in functions.math" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
