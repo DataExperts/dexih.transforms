@@ -84,8 +84,16 @@ namespace dexih.functions
     /// <summary>
     /// Identifies the parameter as a label (rather than a value) which should have text entry.
     /// </summary>
-    public class ParameterLabelAttribute : Attribute
+    public class TransformParameterLabelAttribute : Attribute
     {
+    }
+
+    /// <summary>
+    /// Ignore the parameter.
+    /// </summary>
+    public class TransformParameterIgnoreAttribute : Attribute
+    {
+        
     }
     
     public class ParameterDefaultAttribute: Attribute

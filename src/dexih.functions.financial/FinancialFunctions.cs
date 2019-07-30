@@ -25,12 +25,12 @@ namespace dexih.functions.financial
 
       if (_cacheSeries.Contains(series))
       {
-        var current = (SeriesValue) _cacheSeries[series];
+        var current = (SeriesValue<double>) _cacheSeries[series];
         current.AddValue(value);
       }
       else
       {
-        _cacheSeries.Add(series, new SeriesValue(series, value, duplicateAggregate));
+        _cacheSeries.Add(series, new SeriesValue<double>(series, value, duplicateAggregate));
       }
     }
 

@@ -11,10 +11,12 @@
         <PackageReference Include="xunit" Version="2.4.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
         <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\dexih.functions.builtIn\dexih.functions.builtIn.csproj" />
+      <ProjectReference Include="..\..\src\dexih.functions.ml\dexih.functions.ml.csproj" />
     </ItemGroup>
+    
 
 </Project>

@@ -14,10 +14,8 @@ namespace dexih.functions.ml
    
     public class RegressionAnalysis
     {
-        private const string PredictedLabel = "PredictedLabel";
-        
         private DynamicList _dynamicList;
-        private RegressionPredictor _predictor;
+        private RegressionPredictor<RegressionPrediction> _predictor;
 
         private ITransformer _model;
 
@@ -26,6 +24,8 @@ namespace dexih.functions.ml
         {
             [ColumnName("Score")]
             public float Score { get; set; }
+            
+            [ColumnName("PredictedLabel")]
             
             public float Label { get; set; }
         }
@@ -52,42 +52,21 @@ namespace dexih.functions.ml
 
         public string[] ImportModelLabels(byte[] model) => Helpers.ImportModelLabels(model);
 
-        public void AddData(string[] labels, object[] values, EEncoding[] encoding, float predictor)
-        {
-            if (_dynamicList == null)
-            {
-                var fields = labels.Select((label, index) =>
-                {
-                    switch (encoding[index])
-                    {
-                        case EEncoding.None:
-                            return new DynamicTypeProperty(label, typeof(float), encoding[index]);
-                        case EEncoding.HotEncode:
-                            return new DynamicTypeProperty(label, typeof(string), encoding[index]);
-                    }
-
-                    return null;
-                }).Append(new DynamicTypeProperty(PredictedLabel, typeof(float))).ToArray();
-                _dynamicList = new DynamicList(fields);
-            }
-            
-            _dynamicList.Add(values.Select(c=> c).Append(predictor).ToArray());
-        }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Experiment - Best", Description = "Gets the best regression model based on a series of experiments (use a series transform for all results).", ResultMethod = nameof(RegressionExperimentBestResult), ResetMethod = nameof(Reset))]
         public void RegressionExperimentBest(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
         
         public RegressionExperiment RegressionExperimentBestResult(
             [TransformFunctionParameter(Description = "The maximum time in seconds the experiment is allowed to run.")] uint maxExperimentTimeInSeconds = 600,
             [TransformFunctionParameter(Description = "The optimizing metric")] RegressionMetric optimizingMetric = RegressionMetric.MeanSquaredError,
-            [TransformFunctionParameter(Description = "Include Ols")] bool includeOls = true,
+            // [TransformFunctionParameter(Description = "Include Ols")] bool includeOls = true,
             [TransformFunctionParameter(Description = "Include Fast-Forest")] bool includeFastForest = true,
             [TransformFunctionParameter(Description = "Include Fast-Tree")] bool includeFastTree = true,
             [TransformFunctionParameter(Description = "Include Fast-Tree-Tweedie")] bool includeFastTreeTweedie = true,
@@ -100,6 +79,12 @@ namespace dexih.functions.ml
             )
         {
             var mlContext = new MLContext();
+
+            if (_dynamicList == null)
+            {
+                return null;
+            }
+
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var featuresColumnName = "Features";
@@ -113,7 +98,7 @@ namespace dexih.functions.ml
             };
             
             options.Trainers.Clear();
-            if(includeOls) { options.Trainers.Add(RegressionTrainer.Ols);}
+            // if(includeOls) { options.Trainers.Add(RegressionTrainer.Ols);}
             if(includeFastForest) { options.Trainers.Add(RegressionTrainer.FastForest);}
             if(includeFastTree) { options.Trainers.Add(RegressionTrainer.FastTree);}
             if(includeFastTreeTweedie) { options.Trainers.Add(RegressionTrainer.FastTreeTweedie);}
@@ -123,7 +108,7 @@ namespace dexih.functions.ml
             if(includeLightGbm) { options.Trainers.Add(RegressionTrainer.LightGbm);}
 
             var experiment = mlContext.Auto().CreateRegressionExperiment(options);
-            var experimentResult = experiment.Execute(trainData, labelColumnName:PredictedLabel, preFeaturizer: pipeline);
+            var experimentResult = experiment.Execute(trainData, labelColumnName: Helpers.PredictedLabel, preFeaturizer: pipeline);
 
             var trainedModel = experimentResult.BestRun.Model;
             var modelBytes = Helpers.SaveModel(mlContext, trainData.Schema, trainedModel);
@@ -149,11 +134,11 @@ namespace dexih.functions.ml
         [TransformFunction(FunctionType = EFunctionType.Aggregate, GeneratesRows = true, Category = "Machine Learning", Name = "Regression Experiment - Get All", Description = "Gets the a series of regression models based on experiments.", ResultMethod = nameof(RegressionExperimentSeriesResult), ResetMethod = nameof(Reset))]
         public void RegressionExperimentSeries(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
 
         private ExperimentResult<Microsoft.ML.Data.RegressionMetrics> _experimentResult;
@@ -163,7 +148,7 @@ namespace dexih.functions.ml
         public RegressionExperiment2 RegressionExperimentSeriesResult(
             [TransformFunctionParameter(Description = "The maximum time in seconds the experiment is allowed to run.")] uint maxExperimentTimeInSeconds = 600,
             [TransformFunctionParameter(Description = "The optimizing metric")] RegressionMetric optimizingMetric = RegressionMetric.MeanSquaredError,
-            [TransformFunctionParameter(Description = "Include Ols")] bool includeOls = true,
+            // [TransformFunctionParameter(Description = "Include Ols")] bool includeOls = true,
             [TransformFunctionParameter(Description = "Include Fast-Forest")] bool includeFastForest = true,
             [TransformFunctionParameter(Description = "Include Fast-Tree")] bool includeFastTree = true,
             [TransformFunctionParameter(Description = "Include Fast-Tree-Tweedie")] bool includeFastTreeTweedie = true,
@@ -179,6 +164,12 @@ namespace dexih.functions.ml
 
             if (_experimentEnumerator == null)
             {
+                if (_dynamicList == null)
+                {
+                    return null;
+                }
+
+                
                 var trainData = _dynamicList.GetDataView(mlContext);
                 _experimentSchema = trainData.Schema;
 
@@ -193,10 +184,10 @@ namespace dexih.functions.ml
                 };
 
                 options.Trainers.Clear();
-                if (includeOls)
-                {
-                    options.Trainers.Add(RegressionTrainer.Ols);
-                }
+//                if (includeOls)
+//                {
+//                    options.Trainers.Add(RegressionTrainer.Ols);
+//                }
 
                 if (includeFastForest)
                 {
@@ -234,7 +225,7 @@ namespace dexih.functions.ml
                 }
 
                 var experiment = mlContext.Auto().CreateRegressionExperiment(options);
-                _experimentResult = experiment.Execute(trainData, labelColumnName:PredictedLabel, preFeaturizer: pipeline);
+                _experimentResult = experiment.Execute(trainData, labelColumnName:Helpers.PredictedLabel, preFeaturizer: pipeline);
                 _experimentEnumerator = _experimentResult.RunDetails.GetEnumerator();
             }
 
@@ -275,11 +266,11 @@ namespace dexih.functions.ml
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Fast-Tree Analysis - Train", Description = "Builds a model using fast-tree regression trainer.", ResultMethod = nameof(RegressionFastTreeTrainResult), ResetMethod = nameof(Reset))]
         public void RegressionFastTreeTrain(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
         
         public byte[] RegressionFastTreeTrainResult(
@@ -289,6 +280,11 @@ namespace dexih.functions.ml
             )
         {
             var mlContext = new MLContext();
+            
+            if (_dynamicList == null)
+            {
+                return null;
+            }
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var featuresColumnName = "Features";
@@ -310,11 +306,11 @@ namespace dexih.functions.ml
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Gam Analysis - Train", Description = "Builds a model using the Gam regression trainer.", ResultMethod = nameof(RegressionGamTrainResult), ResetMethod = nameof(Reset))]
         public void RegressionGamTrain(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
         
         public byte[] RegressionGamTrainResult(
@@ -324,6 +320,10 @@ namespace dexih.functions.ml
         )
         {
             var mlContext = new MLContext();
+            if (_dynamicList == null)
+            {
+                return null;
+            }
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var featuresColumnName = "Features";
@@ -345,20 +345,24 @@ namespace dexih.functions.ml
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Stochastic-Dual-Coordinate-Ascent Analysis - Train", Description = "Builds a model using the Stochastic-Dual-Coordinate-Ascent regression trainer.", ResultMethod = nameof(RegressionSdcaTrainResult), ResetMethod = nameof(Reset))]
         public void RegressionSdcaTrain(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
         
         public byte[] RegressionSdcaTrainResult(
-            [TransformFunctionParameter(Description = "The L2 weight for [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics))")] int? l1Regularization,
-            [TransformFunctionParameter(Description = "The L1 weight for [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics))")] int? l2Regularization,
-            [TransformFunctionParameter(Description = "The maximum number of passes to perform over the data.")] int? maximumNumberOfIterations
+            [TransformFunctionParameter(Description = "The L2 weight for [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics))")] int? l1Regularization = null,
+            [TransformFunctionParameter(Description = "The L1 weight for [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics))")] int? l2Regularization = null,
+            [TransformFunctionParameter(Description = "The maximum number of passes to perform over the data.")] int? maximumNumberOfIterations = null
         )
         {
             var mlContext = new MLContext();
+            if (_dynamicList == null)
+            {
+                return null;
+            }
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var featuresColumnName = "Features";
@@ -380,11 +384,11 @@ namespace dexih.functions.ml
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Fast-Forest Analysis - Train", Description = "Builds a model using the Fast-Forest regression trainer.", ResultMethod = nameof(RegressionFastForestTrainResult), ResetMethod = nameof(Reset))]
         public void RegressionFastForestTrain(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList =  _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
         
         public byte[] RegressionFastForestTrainResult(
@@ -394,6 +398,10 @@ namespace dexih.functions.ml
         )
         {
             var mlContext = new MLContext();
+            if (_dynamicList == null)
+            {
+                return null;
+            }
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var featuresColumnName = "Features";
@@ -416,11 +424,11 @@ namespace dexih.functions.ml
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Fast-Tree (Tweedie) Analysis - Train", Description = "Builds a model using the Fast-Tree [Tweedie](https://en.wikipedia.org/wiki/Tweedie_distribution) regression trainer.", ResultMethod = nameof(RegressionFastTreeTweedieTrainResult), ResetMethod = nameof(Reset))]
         public void RegressionFastTreeTweedieTrain(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
         
         public byte[] RegressionFastTreeTweedieTrainResult(
@@ -431,6 +439,10 @@ namespace dexih.functions.ml
         )
         {
             var mlContext = new MLContext();
+            if (_dynamicList == null)
+            {
+                return null;
+            }
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var featuresColumnName = "Features";
@@ -453,11 +465,11 @@ namespace dexih.functions.ml
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression LbfgsPoisson Analysis - Train", Description = "Builds a model using the LbfgsPoisson regression trainer.", ResultMethod = nameof(RegressionLbfgsPoissonTrainResult), ResetMethod = nameof(Reset))]
         public void RegressionLbfgsPoissonTrain(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
         
         public byte[] RegressionLbfgsPoissonTrainResult(
@@ -468,6 +480,10 @@ namespace dexih.functions.ml
         )
         {
             var mlContext = new MLContext();
+            if (_dynamicList == null)
+            {
+                return null;
+            }
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var featuresColumnName = "Features";
@@ -490,11 +506,11 @@ namespace dexih.functions.ml
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Online Gradient Descent Analysis - Train", Description = "Builds a model using the Online Gradient Descent regression trainer.", ResultMethod = nameof(RegressionOnlineGradientDescentTrainResult), ResetMethod = nameof(Reset))]
         public void RegressionOnlineGradientDescentTrain(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
         {
-            AddData(label, value, encoding, predictor);
+            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
         }
         
         public byte[] RegressionOnlineGradientDescentTrainResult(
@@ -505,6 +521,10 @@ namespace dexih.functions.ml
         )
         {
             var mlContext = new MLContext();
+            if (_dynamicList == null)
+            {
+                return null;
+            }
             var trainData = _dynamicList.GetDataView(mlContext);
 
             var featuresColumnName = "Features";
@@ -524,41 +544,46 @@ namespace dexih.functions.ml
             return Helpers.SaveModel(mlContext, trainData.Schema, trainedModel);
         }
         
-           [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Ols Analysis - Train", Description = "Builds a model using the Ols regression trainer.", ResultMethod = nameof(RegressionOlsTrainResult), ResetMethod = nameof(Reset))]
-        public void RegressionOlsTrain(
-            [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
-            [TransformFunctionLinkedParameter("Data Fields")] object[] value,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
-        {
-            AddData(label, value, encoding, predictor);
-        }
-        
-        public byte[] RegressionOlsTrainResult(
-            [TransformFunctionParameter(Description = "The L2 weight for [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics))")] float l2Regularization = 0f
-        )
-        {
-            var mlContext = new MLContext();
-            var trainData = _dynamicList.GetDataView(mlContext);
-
-            var featuresColumnName = "Features";
-            var pipeline = Helpers.CreatePipeline(mlContext, _dynamicList.Fields, featuresColumnName);
-            
-            var options = new  OlsTrainer.Options()
-            {
-                FeatureColumnName = featuresColumnName,
-                L2Regularization = l2Regularization,
-            };
-
-            var pipeline2 = pipeline.Append(mlContext.Regression.Trainers.Ols(options));
-            var trainedModel = pipeline2.Fit(trainData);
-            return Helpers.SaveModel(mlContext, trainData.Schema, trainedModel);
-        }
+        //TODO Issue with Ols trainer, library does not exist.
+//        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Ols Analysis - Train", Description = "Builds a model using the Ols regression trainer.", ResultMethod = nameof(RegressionOlsTrainResult), ResetMethod = nameof(Reset))]
+//        public void RegressionOlsTrain(
+//            [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
+//            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+//            [TransformFunctionLinkedParameter("Data Fields")] object[] value,
+//            [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
+//        {
+//            _dynamicList = _dynamicList.AddData(label, value, encoding, predictor, EEncoding.None);
+//        }
+//        
+//        public byte[] RegressionOlsTrainResult(
+//            [TransformFunctionParameter(Description = "The L2 weight for [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics))")] float l2Regularization = 0f
+//        )
+//        {
+//            var mlContext = new MLContext();
+//            if (_dynamicList == null)
+//            {
+//                return null;
+//            }
+//            var trainData = _dynamicList.GetDataView(mlContext);
+//
+//            var featuresColumnName = "Features";
+//            var pipeline = Helpers.CreatePipeline(mlContext, _dynamicList.Fields, featuresColumnName);
+//            
+//            var options = new  OlsTrainer.Options()
+//            {
+//                FeatureColumnName = featuresColumnName,
+//                L2Regularization = l2Regularization,
+//            };
+//
+//            var pipeline2 = pipeline.Append(mlContext.Regression.Trainers.Ols(options));
+//            var trainedModel = pipeline2.Fit(trainData);
+//            return Helpers.SaveModel(mlContext, trainData.Schema, trainedModel);
+//        }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Regression Analysis - Evaluate", Description = "Evaluates the accuracy of a model using on of the regression trainers.", ResultMethod = nameof(RegressionEvaluateResult), ResetMethod = nameof(Reset), ImportMethod = nameof(ImportModelLabels))]
         public void RegressionEvaluate(
             [TransformFunctionParameter(Description = "The predictor column.")] float predictor,
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label,
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label,
             [TransformFunctionLinkedParameter("Data Fields")] object[] value,
             byte[] model)
         {
@@ -578,7 +603,7 @@ namespace dexih.functions.ml
                     }
                 
                     return new DynamicTypeProperty(column.Value.Name, column.Value.Type.RawType);
-                }).Append(new DynamicTypeProperty(PredictedLabel, typeof(float))).Append(new DynamicTypeProperty("Score", typeof(float))).ToArray();
+                }).Append(new DynamicTypeProperty(Helpers.PredictedLabel, typeof(float))).Append(new DynamicTypeProperty("Score", typeof(float))).ToArray();
             
                 _dynamicList = new DynamicList(fields);
                 
@@ -589,10 +614,14 @@ namespace dexih.functions.ml
         public RegressionMetrics RegressionEvaluateResult()
         {
             var mlContext = new MLContext();
+            if (_dynamicList == null)
+            {
+                return null;
+            }
 
             // run the evaluation
             var predictions = _model.Transform(_dynamicList.GetDataView(mlContext));
-            var metrics = mlContext.Regression.Evaluate(predictions, PredictedLabel);
+            var metrics = mlContext.Regression.Evaluate(predictions, Helpers.PredictedLabel);
 
             var cloned = metrics.CloneProperties<RegressionMetrics>();
             return cloned;
@@ -600,20 +629,19 @@ namespace dexih.functions.ml
 
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Machine Learning", Name = "Regression Analysis - Predict", Description = "Predicts a value using regression model.", ResetMethod = nameof(Reset), ImportMethod = nameof(ImportModelLabels))]
-        public RegressionPrediction RegressionPredict(
+        public float RegressionPredict(
             byte[] model, 
-            [TransformFunctionLinkedParameter("Data Fields"), ParameterLabel] string[] label, 
+            [TransformFunctionLinkedParameter("Data Fields"), TransformParameterLabel] string[] label, 
             [TransformFunctionLinkedParameter("Data Fields")] object[] value)
         {
-            var mlContext = new MLContext();
-            var trainedModel = Helpers.LoadModel(mlContext, model, out var schema);
-
             if (_predictor == null)
             {
-                _predictor = new RegressionPredictor(typeof(RegressionPrediction), model, label);
+                _predictor = new RegressionPredictor<RegressionPrediction>(model, label);
             }
 
-            return (RegressionPrediction) _predictor.Run(value);
+            var result = _predictor.Run(value);
+
+            return result?.Score ?? float.NaN;
         }
         
      

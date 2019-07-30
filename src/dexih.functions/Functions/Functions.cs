@@ -102,6 +102,8 @@ namespace dexih.functions
 //            return p.IsArray ? p.GetArrayRank() : 0;
 //        }
 
+
+
         public static FunctionReference GetFunction(Type type, MethodInfo method)
         {
             var attribute = method.GetCustomAttribute<TransformFunctionAttribute>();
@@ -122,6 +124,13 @@ namespace dexih.functions
                     return !p.IsOut && variable is null && !p.ParameterType.IsAssignableFrom(typeof(CancellationToken));
                 }
 
+                bool isIgnoreParameter(ParameterInfo p)
+                {
+                    var ignore = p.GetCustomAttribute<TransformParameterIgnoreAttribute>();
+                    return ignore != null;
+                }
+
+
                 var function = new FunctionReference()
                 {
                     Name = attribute.Name,
@@ -138,11 +147,11 @@ namespace dexih.functions
                     GenericType = attribute.GenericType,
                     GenericTypeDefault = attribute.GenericTypeDefault,
                     ReturnParameters = GetResultParameters(method, "Return"),
-                    InputParameters = method.GetParameters().Where(isInputParameter ).Select(p => GetFunctionParameter(p)).ToArray(),
-                    OutputParameters = method.GetParameters().Where(c => c.IsOut).Select(p => GetFunctionParameter(p)).ToArray(),
+                    InputParameters = method.GetParameters().Where(c => !isIgnoreParameter(c) && isInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
+                    OutputParameters = method.GetParameters().Where(c => !isIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray(),
                     ResultReturnParameters = GetResultParameters(resultMethod, "Group Return"),
-                    ResultInputParameters = resultMethod?.GetParameters().Where(isInputParameter ).Select(p => GetFunctionParameter(p)).ToArray(),
-                    ResultOutputParameters = resultMethod?.GetParameters().Where(c => c.IsOut).Select(p => GetFunctionParameter(p)).ToArray()
+                    ResultInputParameters = resultMethod?.GetParameters().Where(c => !isIgnoreParameter(c) && isInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
+                    ResultOutputParameters = resultMethod?.GetParameters().Where(c => !isIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray()
                 };
 
                 return function;
@@ -186,7 +195,7 @@ namespace dexih.functions
             {                
                 var properties = paramType.GetProperties();
 
-                foreach (var property in properties)
+                foreach (var property in properties.Where(c => c.GetCustomAttribute<TransformParameterIgnoreAttribute>() == null))
                 {
                     var propertyAttribute = property.GetCustomAttribute<TransformFunctionParameterAttribute>();
                     
@@ -207,7 +216,7 @@ namespace dexih.functions
                         Rank = paramRank,
                         LinkedName = linkedAttribute?.Name,
                         LinkedDescription = linkedAttribute?.Description,
-                        IsLabel = property.GetCustomAttribute<ParameterLabelAttribute>() != null,
+                        IsLabel = property.GetCustomAttribute<TransformParameterLabelAttribute>() != null,
                         ListOfValues = propertyAttribute?.ListOfValues ?? EnumValues(property.PropertyType),
                         DefaultValue = null,
                     });
@@ -261,7 +270,7 @@ namespace dexih.functions
                 Rank = paramRank,
                 LinkedName = linkedAttribute?.Name,
                 LinkedDescription = linkedAttribute?.Description,
-                IsLabel = parameterInfo.GetCustomAttribute<ParameterLabelAttribute>() != null,
+                IsLabel = parameterInfo.GetCustomAttribute<TransformParameterLabelAttribute>() != null,
                 ListOfValues = parameterAttribute?.ListOfValues ?? EnumValues(paramType),
                 DefaultValue = DefaultValue(parameterInfo),
             };

@@ -6,7 +6,7 @@ using Microsoft.ML;
 
 namespace dexih.functions.ml
 {
-    public class RegressionPredictor
+    public class RegressionPredictor<T>
     {
         // instance of the prection engine.
         private readonly object _predictionEngine;
@@ -22,7 +22,7 @@ namespace dexih.functions.ml
         /// <param name="type"></param>
         /// <param name="modelBytes"></param>
         /// <param name="labels"></param>
-        public RegressionPredictor(Type type, byte[] modelBytes, string[] labels)
+        public RegressionPredictor(byte[] modelBytes, string[] labels)
         {
             var mlContext = new MLContext();
             var model = Helpers.LoadModel(mlContext, modelBytes, out var schema);
@@ -38,21 +38,21 @@ namespace dexih.functions.ml
                 }
                 
                 return new DynamicTypeProperty(column.Value.Name, column.Value.Type.RawType);
-            }).Append(new DynamicTypeProperty("PredictedLabel", typeof(float))).ToList();
+            }).Append(new DynamicTypeProperty(Helpers.PredictedLabel, typeof(float))).ToList();
             
             _dataType = DynamicType.CreateDynamicType(fields);
             
             var createPredictionEngineBase = mlContext.Model.GetType().GetMethods().First(c => c.Name == "CreatePredictionEngine" && c.IsGenericMethod && c.GetParameters().Length == 4);
-            var createPredictionEngine = createPredictionEngineBase.MakeGenericMethod(_dataType, type);
+            var createPredictionEngine = createPredictionEngineBase.MakeGenericMethod(_dataType, typeof(T));
             _predictionEngine = createPredictionEngine.Invoke(mlContext.Model, new object[] {model, true, null, null});
             _predictMethod = _predictionEngine.GetType().GetMethods().First(c => c.Name == "Predict" && c.GetParameters().Length == 1);
         }
 
-        public object Run(object[] values)
+        public T Run(object[] values)
         {
             var data = DynamicType.CreateDynamicItem(_dataType, values);
             var prediction = _predictMethod.Invoke(_predictionEngine, new[] {data});
-            return prediction;
+            return (T)prediction;
         }
     }
 }

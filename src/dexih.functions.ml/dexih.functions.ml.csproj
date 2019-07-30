@@ -14,7 +14,7 @@
         <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
         <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
         <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-        <LangVersion>7.1</LangVersion>    
+        <LangVersion>latest</LangVersion>    
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,6 +24,7 @@
         <PackageReference Include="Microsoft.ML.AutoML" Version="0.14.0" />
         <PackageReference Include="Microsoft.ML.LightGbm" Version="1.2.0" />
         <PackageReference Include="Microsoft.ML.Recommender" Version="0.14.0" />
+        <PackageReference Include="Microsoft.ML.TimeSeries" Version="1.2.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />

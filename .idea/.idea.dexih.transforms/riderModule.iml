@@ -94,7 +94,7 @@
     <content url="file://$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2sqlh.mo" />
     <content url="file://$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2stt.mo" />
     <content url="file://$USER_HOME$/.nuget/packages/ibm.data.db2.core-osx/1.3.0.100/build/clidriver/msg/en_US.iso88591/db2supp.mo" />
-    <content url="file://$USER_HOME$/.nuget/packages/microsoft.net.test.sdk/16.0.1/build/netcoreapp1.0" />
+    <content url="file://$USER_HOME$/.nuget/packages/microsoft.net.test.sdk/16.2.0/build/netcoreapp1.0" />
     <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.reporters.netcoreapp10.dll" />
     <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll" />
     <content url="file://$USER_HOME$/.nuget/packages/xunit.runner.visualstudio/2.4.1/build/netcoreapp1.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll" />

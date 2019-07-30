@@ -46,6 +46,5 @@ namespace dexih.functions.ml
             var trainData = (IDataView) loadMethod.Invoke(mlContext.Data, new[] {_data, null});
             return trainData;
         }
-
     }
 }
