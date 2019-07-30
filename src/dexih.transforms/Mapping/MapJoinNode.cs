@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -69,6 +70,21 @@ namespace dexih.transforms.Mapping
 
         public override void Reset(EFunctionType functionType)
         {
+        }
+        
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            return new TableColumn[0];
+        }
+
+        public override IEnumerable<TableColumn> GetRequiredReferenceColumns()
+        {
+            if (NodeColumn == null)
+            {
+                return new TableColumn[0];
+            }
+
+            return new[] {NodeColumn};
         }
     }
 }

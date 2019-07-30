@@ -149,5 +149,10 @@ namespace dexih.transforms.Mapping
         public override void Reset(EFunctionType functionType)
         {
         }
+
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            return new[] {NodeColumn};
+        }
     }
 }

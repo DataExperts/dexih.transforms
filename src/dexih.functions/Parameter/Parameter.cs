@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json;
@@ -77,6 +78,24 @@ namespace dexih.functions.Parameter
                 var result = Operations.Parse(DataType, Rank, input);
                 Value = result;
             }
+        }
+
+        /// <summary>
+        ///  gets input columns required by this parameter.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            return new TableColumn[0];
+        }
+
+        /// <summary>
+        /// Gets reference columns required by this parameter.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEnumerable<TableColumn> GetRequiredReferenceColumns()
+        {
+            return new TableColumn[0];
         }
 
     }

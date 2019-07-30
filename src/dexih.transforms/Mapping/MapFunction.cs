@@ -275,6 +275,13 @@ namespace dexih.transforms.Mapping
 
             return filter;
         }
+        
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            var columns = Parameters.Inputs.SelectMany(c => c.GetRequiredColumns());
+            var columns2 = columns.Concat(Parameters.ResultInputs.SelectMany(c => c.GetRequiredColumns()));
+            return columns2;
+        }
     }
     
     public class FunctionCacheComparer : IEqualityComparer<object[]>

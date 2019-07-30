@@ -451,6 +451,52 @@ namespace dexih.transforms.Mapping
                 mapping.SetInput(inputColumns);
             }
         }
+
+        /// <summary>
+        /// Gets the required source columns required for the mappings.
+        /// </summary>
+        /// <returns></returns>
+        public TableColumn[] GetRequiredColumns()
+        {
+            if (PassThroughColumns)
+            {
+                return null;
+            }
+            
+            var columns = new HashSet<TableColumn>();
+            
+            foreach (var mapping in this)
+            {
+                var cols = mapping.GetRequiredColumns();
+                foreach (var col in cols)
+                {
+                    columns.Add(col);
+                }
+            }
+
+            return columns.ToArray();
+        }
+        
+        public TableColumn[] GetRequiredReferenceColumns()
+        {
+            if (PassThroughColumns)
+            {
+                return null;
+            }
+            
+            var columns = new HashSet<TableColumn>();
+            
+            foreach (var mapping in this)
+            {
+                var cols = mapping.GetRequiredReferenceColumns();
+                foreach (var col in cols)
+                {
+                    columns.Add(col);
+                }
+            }
+
+            return columns.ToArray();
+        }
         
 
     }

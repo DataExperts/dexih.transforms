@@ -62,6 +62,16 @@ namespace dexih.transforms.Mapping
         {
         }
 
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            if (InputColumn == null)
+            {
+                return new TableColumn[0];
+            }
+
+            return new[] {InputColumn};
+        }
+
         public void SetInput(IEnumerable<TableColumn> inputColumns)
         {
             var column = inputColumns.SingleOrDefault(c => c.Name == InputColumn.Name);

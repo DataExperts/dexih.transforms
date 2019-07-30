@@ -7,6 +7,7 @@ using dexih.functions.Exceptions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
+using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {
@@ -37,6 +38,11 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
+            selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            
+            // get only the required columns
+            selectQuery.Columns = Mappings.GetRequiredColumns().Select(c => new SelectColumn(c)).ToList();
+            
 	        //we need to translate filters and sorts to source column names before passing them through.
             if(selectQuery?.Filters != null)
             {

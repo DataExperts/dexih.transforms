@@ -76,14 +76,7 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
-            if (selectQuery == null)
-            {
-                selectQuery = new SelectQuery();
-            }
-            else
-            {
-                selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
-            }
+            selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
 
             selectQuery.Sorts = RequiredSortFields();
 

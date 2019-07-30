@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.Parameter
@@ -72,5 +73,14 @@ namespace dexih.functions.Parameter
             return new ParameterJoinColumn(Name, Column);
         }
 
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            return new TableColumn[0];
+        }
+
+        public override IEnumerable<TableColumn> GetRequiredReferenceColumns()
+        {
+            return new[] {Column};
+        }
     }
 }

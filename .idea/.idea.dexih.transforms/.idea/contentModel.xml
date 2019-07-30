@@ -712,13 +712,6 @@
           <e p="ReaderMemory.cs" t="Include" />
           <e p="ReaderRowCreator.cs" t="Include" />
           <e p="ReaderSql.cs" t="Include" />
-          <e p="releases" t="Include">
-            <e p="dexih.functions.dll" t="Include" />
-            <e p="dexih.functions.pdb" t="Include" />
-            <e p="dexih.transforms.deps.json" t="Include" />
-            <e p="dexih.transforms.dll" t="Include" />
-            <e p="dexih.transforms.pdb" t="Include" />
-          </e>
           <e p="StreamCsv.cs" t="Include" />
           <e p="StreamJson.cs" t="Include" />
           <e p="StreamJsonCompact.cs" t="Include" />
@@ -1013,6 +1006,8 @@
           <e p="Helpers.cs" t="Include" />
           <e p="lookup.cs" t="Include" />
           <e p="Mappings.cs" t="Include" />
+          <e p="MockConnection.cs" t="Include" />
+          <e p="MockReader.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netcoreapp2.2" t="Include">
@@ -1043,6 +1038,7 @@
           <e p="TransformRowTests.cs" t="Include" />
           <e p="TransformSeriesTests.cs" t="Include" />
           <e p="TransformSortTests.cs" t="Include" />
+          <e p="TransformSqlPushdown.cs" t="Include" />
           <e p="TransformThreadTests.cs" t="Include" />
           <e p="TransformValidationTests.cs" t="Include" />
           <e p="TransformWriterBulk.cs" t="Include" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -152,6 +153,26 @@ namespace dexih.transforms.Mapping
             var item1 = _column1Ordinal == -1 ? InputValue : InputColumn.Name;
             var item2 = _column2Ordinal == -1 ? JoinValue : JoinColumn.Name;
             return $"Join({item1} {Compare} {item2}";
+        }
+
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            if (InputColumn == null)
+            {
+                return new TableColumn[0];
+            }
+
+            return new[] {InputColumn};
+        }
+
+        public override IEnumerable<TableColumn> GetRequiredReferenceColumns()
+        {
+            if (JoinColumn == null)
+            {
+                return new TableColumn[0];
+            }
+
+            return new[] {JoinColumn};
         }
 
         public object GetJoinValue(object[] row = null)

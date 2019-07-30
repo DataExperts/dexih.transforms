@@ -70,6 +70,11 @@ namespace dexih.functions.Parameter
 		    set { }
 	    }
 
+	    public override IEnumerable<TableColumn> GetRequiredColumns()
+	    {
+		    return Parameters.SelectMany(c => c.GetRequiredColumns());
+	    }
+
 	    public override void InitializeOrdinal(Table table, Table joinTable = null)
 	    {
 		    foreach (var parameter in Parameters)

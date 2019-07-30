@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -166,7 +167,12 @@ namespace dexih.transforms.Mapping
                 _firstRow = true;
             }
         }
-        
+
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            return new []{InputColumn};
+        }
+
         public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
         {
             switch (Aggregate)

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 
@@ -110,6 +111,12 @@ namespace dexih.transforms.Mapping
 
             return ordinal;
         }
-        
+
+        public abstract IEnumerable<TableColumn> GetRequiredColumns();
+
+        public virtual IEnumerable<TableColumn> GetRequiredReferenceColumns()
+        {
+            return new TableColumn[0];
+        }
     }
 }

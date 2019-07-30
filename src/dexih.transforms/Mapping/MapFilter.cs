@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -107,5 +108,14 @@ namespace dexih.transforms.Mapping
 
             return filter;
         }
+        
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            var columns = new List<TableColumn>();
+            if(Column1 != null) { columns.Add(Column1);}
+            if(Column2 != null) { columns.Add(Column2);}
+            return columns;
+        }
+
     }
 }

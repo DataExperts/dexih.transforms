@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.Parameter
@@ -107,5 +108,14 @@ namespace dexih.functions.Parameter
             return new ParameterColumn(Name, Column);
         }
 
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            if (Column != null)
+            {
+                return new[] {Column};
+            }
+
+            return new TableColumn[0];
+        }
     }
 }

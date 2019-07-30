@@ -81,5 +81,15 @@ namespace dexih.transforms.Mapping
         {
             return $"UnGroup {NodeColumn.Name}";
         }
+        
+        public override IEnumerable<TableColumn> GetRequiredColumns()
+        {
+            if (NodeColumn == null)
+            {
+                return new TableColumn[0];
+            }
+
+            return new[] {NodeColumn};
+        }
     }
 }
