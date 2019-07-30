@@ -506,11 +506,6 @@
             <e p="Sorts.cs" t="Include" />
             <e p="UpdateQuery.cs" t="Include" />
           </e>
-          <e p="releases" t="Include">
-            <e p="dexih.functions.deps.json" t="Include" />
-            <e p="dexih.functions.dll" t="Include" />
-            <e p="dexih.functions.pdb" t="Include" />
-          </e>
           <e p="Retry.cs" t="Include" />
           <e p="SeriesValue.cs" t="Include" />
           <e p="ShortGuid.cs" t="Include" />
@@ -607,6 +602,22 @@
             <e p="dexih.functions.financial.pdb" t="Include" />
             <e p="dexih.functions.pdb" t="Include" />
           </e>
+        </e>
+        <e p="dexih.functions.maths" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="CurveFittingFunctions.cs" t="Include" />
+          <e p="dexih.functions.maths.csproj" t="IncludeRecursive" />
+          <e p="EuclidFunctions.cs" t="Include" />
+          <e p="Matrix.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp2.1" t="Include">
+                <e p="dexih.functions.maths.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+          <e p="ProbabilityDistributionFunctions.cs" t="Include" />
+          <e p="SpecialFunctions.cs" t="Include" />
         </e>
         <e p="dexih.functions.ml" t="IncludeRecursive">
           <e p="AnomalyDetection.cs" t="Include" />

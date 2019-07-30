@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\dexih.transforms\src\dexih.functions\dexih.functions.csproj" />
+        <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
     </ItemGroup>
 
 </Project>

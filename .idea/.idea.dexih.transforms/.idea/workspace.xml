@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed sql push down issues and added some tests.">
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="bug fix">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dexih.transforms.sln" beforeDir="false" afterPath="$PROJECT_DIR$/dexih.transforms.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.maths/CurveFittingFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.maths/CurveFittingFunctions.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/dexih.functions.maths/dexih.functions.maths.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.maths/dexih.functions.maths.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -124,7 +118,7 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="670">
@@ -168,6 +162,80 @@
                     <marker date="1564467231862" expanded="true" signature="6061:6106" ph="{...}" />
                     <marker date="1564467231862" expanded="true" signature="6171:6216" ph="{...}" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/dexih.functions.maths/SpecialFunctions.cs">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-2997">
+                  <caret line="5" column="17" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
+                  <folding>
+                    <marker date="1563519581998" expanded="false" signature="6:37" ph="..." />
+                    <marker date="1563519581998" expanded="true" signature="70:43854" ph="{...}" />
+                    <marker date="1563519581998" expanded="true" signature="110:43852" ph="{...}" />
+                    <marker date="1563519581998" expanded="true" signature="150:3772" ph="{...}" />
+                    <marker date="1563519581998" expanded="true" signature="4005:14763" ph="{...}" />
+                    <marker date="1563519581998" expanded="true" signature="4049:14687" ph="{...}" />
+                    <marker date="1563519581998" expanded="true" signature="14788:15253" ph="///Computes the logarithm of the Euler Beta function. ... " />
+                    <marker date="1563519581998" expanded="true" signature="15531:15962" ph="///Computes the Euler Beta function. ... " />
+                    <marker date="1563519581998" expanded="true" signature="16209:16730" ph="/// Returns the lower incomplete (unregularized) beta function ... " />
+                    <marker date="1563519581998" expanded="true" signature="17038:17565" ph="/// Returns the regularized lower incomplete beta function ... " />
+                    <marker date="1563519581998" expanded="true" signature="17873:18318" ph="///Calculates the error function. ... " />
+                    <marker date="1563519581998" expanded="true" signature="18539:19011" ph="///Calculates the complementary error function. ... " />
+                    <marker date="1563519581998" expanded="true" signature="19264:19889" ph="///Calculates the inverse error function evaluated at z. ... " />
+                    <marker date="1563519581998" expanded="true" signature="20148:21007" ph="///Calculates the complementary inverse error function evaluated at z. ... " />
+                    <marker date="1563519581998" expanded="true" signature="21299:22552" ph="/// Computes the generalized Exponential Integral function (En). ... " />
+                    <marker date="1563519581998" expanded="true" signature="22864:23803" ph="/// Computes the factorial function x -&amp;gt; x! of an integer number &amp;gt; 0. The function can represent all number ... " />
+                    <marker date="1563519581998" expanded="true" signature="24048:24247" ph="/// Computes the logarithmic factorial function x -&amp;gt; ln(x!) of an integer number &amp;gt; 0. ... " />
+                    <marker date="1563519581998" expanded="true" signature="24518:24774" ph="///Computes the binomial coefficient: n choose k. ... " />
+                    <marker date="1563519581998" expanded="true" signature="25051:25378" ph="/// Computes the natural logarithm of the binomial coefficient: ln(n choose k). ... " />
+                    <marker date="1563519581998" expanded="true" signature="25697:26451" ph="/// Computes the multinomial coefficient: n choose n1, n2, n3, ... ... " />
+                    <marker date="1563519581998" expanded="true" signature="26757:27615" ph="///Computes the logarithm of the Gamma function. ... " />
+                    <marker date="1563519581998" expanded="true" signature="27877:28750" ph="///Computes the Gamma function. ... " />
+                    <marker date="1563519581998" expanded="true" signature="28981:29390" ph="/// Returns the upper incomplete regularized gamma function ... " />
+                    <marker date="1563519581998" expanded="true" signature="29711:30087" ph="/// Returns the upper incomplete gamma function ... " />
+                    <marker date="1563519581998" expanded="true" signature="30393:30769" ph="/// Returns the lower incomplete gamma function ... " />
+                    <marker date="1563519581998" expanded="true" signature="31075:31472" ph="/// Returns the lower incomplete regularized gamma function ... " />
+                    <marker date="1563519581998" expanded="true" signature="31793:32054" ph="/// Returns the inverse P^(-1) of the regularized lower incomplete gamma function ... " />
+                    <marker date="1563519581998" expanded="true" signature="32412:33063" ph="/// Computes the Digamma function which is mathematically defined as the derivative of the logarithm of the gamma ... " />
+                    <marker date="1563519581998" expanded="true" signature="33391:33895" ph="/// &lt;para&gt;Computes the inverse Digamma function: this is the inverse of the logarithm of the gamma function. This ... " />
+                    <marker date="1563519581998" expanded="true" signature="34216:34460" ph="/// Computes the &lt;paramref name=&quot;t&quot; /&gt;'th Harmonic number. ... " />
+                    <marker date="1563519581998" expanded="true" signature="34710:35019" ph="/// Compute the generalized harmonic number of order n of m. (1 + 1/2^m + 1/3^m + ... + 1/n^m) ... " />
+                    <marker date="1563519581998" expanded="true" signature="35360:35656" ph="/// Computes the logistic function. see: http://en.wikipedia.org/wiki/Logistic ... " />
+                    <marker date="1563519581998" expanded="true" signature="35942:36357" ph="/// Computes the logit function, the inverse of the sigmoid logistic function. see: http://en.wikipedia.org/wiki/ ... " />
+                    <marker date="1563519581998" expanded="true" signature="36674:37142" ph="///Returns the modified Bessel function of first kind, order 0 of the argument. ... " />
+                    <marker date="1563519581998" expanded="true" signature="37431:37914" ph="///Returns the modified Bessel function of first kind, ... " />
+                    <marker date="1563519581998" expanded="true" signature="38203:38607" ph="///Returns the modified Bessel function of the second kind ... " />
+                    <marker date="1563519581998" expanded="true" signature="38903:39136" ph="///Returns the exponentially scaled modified Bessel function ... " />
+                    <marker date="1563519581998" expanded="true" signature="39456:39860" ph="///Returns the modified Bessel function of the second kind ... " />
+                    <marker date="1563519581998" expanded="true" signature="40156:40454" ph="///Returns the exponentially scaled modified Bessel function ... " />
+                    <marker date="1563519581998" expanded="true" signature="40773:40918" ph="///Returns the modified Struve function of order 0. ... " />
+                    <marker date="1563519581998" expanded="true" signature="41178:41323" ph="///Returns the modified Struve function of order 1. ... " />
+                    <marker date="1563519581998" expanded="true" signature="41583:41775" ph="/// Returns the difference between the Bessel I0 and Struve L0 functions. ... " />
+                    <marker date="1563519581998" expanded="true" signature="42088:42280" ph="/// Returns the difference between the Bessel I1 and Struve L1 functions. ... " />
+                    <marker date="1563519581998" expanded="true" signature="42594:42854" ph="/// Numerically stable exponential minus one, i.e. &lt;code&gt;x -&amp;gt; exp(x)-1&lt;/code&gt; ... " />
+                    <marker date="1563519581998" expanded="true" signature="43151:43566" ph="/// Numerically stable hypotenuse of a right angle triangle, i.e. &lt;code&gt;(a,b) -&amp;gt; sqrt(a^2 + b^2)&lt;/code&gt; ... " />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/dexih.functions.maths/dexih.functions.maths.csproj">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="180">
+                  <caret line="12" column="80" selection-start-line="12" selection-start-column="80" selection-end-line="12" selection-end-column="80" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/dexih.functions.ml/dexih.functions.ml.csproj">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="435">
+                  <caret line="29" column="80" lean-forward="true" selection-start-line="29" selection-start-column="8" selection-end-line="29" selection-end-column="80" />
                 </state>
               </provider>
             </entry>
@@ -235,206 +303,6 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="180">
-                  <caret line="25" column="17" selection-start-line="25" selection-start-column="17" selection-end-line="25" selection-end-column="17" />
-                  <folding>
-                    <marker date="1563519582063" expanded="false" signature="6:369" ph="..." />
-                    <marker date="1563519582063" expanded="true" signature="397:27018" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="405:520" ph="/// The join table is loaded into memory and then joined to the primary table. ... " />
-                    <marker date="1563519582063" expanded="true" signature="525:773" ph="[...]" />
-                    <marker date="1563519582063" expanded="true" signature="816:27014" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="1058:1332" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="2158:2203" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="2499:2661" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="2574:2650" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="2714:10944" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="2768:2871" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="3316:5358" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="3382:3881" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="3726:3804" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="3938:5344" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="4081:5177" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="4280:4420" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="4493:5101" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="4605:5075" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="4840:5012" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="5218:5326" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="5409:5588" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="5806:9376" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="5872:6375" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="6218:6296" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="6432:9362" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="6577:7426" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="6657:6799" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="6872:7348" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="6984:7322" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="7085:7259" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="7469:9344" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="7598:9003" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="7677:7851" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="7923:8813" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="8084:8599" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="8185:8385" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="8426:8565" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="8846:8948" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="9417:9602" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="9718:10004" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="9878:9990" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="10178:10507" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="10291:10493" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="11138:13286" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="11258:11335" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="11352:11458" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="11950:12019" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="12153:12211" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="12471:12554" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="12571:13250" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="13009:13198" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="13393:23557" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="13478:13607" ph="/* this writes out duplicates of the primary reader when a duplicate match occurs on the join table ... */" />
-                    <marker date="1563519582063" expanded="true" signature="13636:14490" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="13828:13946" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="14074:14183" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="14622:14679" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="14834:17619" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="14940:15586" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="15299:15394" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="15419:15528" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="15701:17505" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="15922:16017" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="16078:17487" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="16232:17343" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="16513:17102" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="16852:16995" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="17378:17465" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="17526:17605" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="17684:19054" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="17699:18474" ph="/* first load the join table into memory ... */" />
-                    <marker date="1563519582063" expanded="true" signature="18618:18701" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="18722:19040" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="18887:19022" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="19221:19441" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="19474:22988" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="19658:20572" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="19867:20533" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="20020:20370" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="20245:20344" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="20411:20511" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="20656:21857" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="20725:21839" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="21878:21988" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="22034:22554" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="22575:22974" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="22634:22956" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="22727:22934" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="23005:23519" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="23063:23505" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="23567:23726" ph="/// Reads the next group of rows (based on join key) from the reference transform. ... " />
-                    <marker date="1563519582063" expanded="true" signature="23775:25572" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="23819:23877" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="24086:25536" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="24220:24474" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="24495:25522" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="24631:24706" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="24942:25197" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="25036:25175" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="25238:25353" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="25378:25453" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="25633:26086" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="25698:26076" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="25763:26036" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="25897:25975" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="26133:26178" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="26235:26527" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="26353:26490" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="26593:27006" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="26711:26847" ph="{...}" />
-                    <marker date="1563519582063" expanded="true" signature="26887:26968" ph="{...}" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="570">
-                  <caret line="55" column="91" selection-start-line="55" selection-start-column="91" selection-end-line="55" selection-end-column="91" />
-                  <folding>
-                    <marker date="1564467217307" expanded="false" signature="6:308" ph="..." />
-                    <marker date="1564467217307" expanded="true" signature="336:19563" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="343:560" ph="[...]" />
-                    <marker date="1564467217307" expanded="true" signature="605:19561" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="720:811" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="1353:1398" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="1539:2594" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="1997:2350" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="2069:2336" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="2642:2857" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="2964:15612" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="3084:3583" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="3224:3386" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="3710:3791" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="3835:3948" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="4141:4714" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="4448:4700" ph="/* populate the parameters with the current row. ... */" />
-                    <marker date="1564467217307" expanded="true" signature="4891:5084" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="5001:5070" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="5183:5240" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="5585:5715" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="5736:6367" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="5929:6349" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="6191:6327" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="6403:14622" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="6530:8979" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="6707:7023" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="7095:7653" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="7682:8957" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="8142:8261" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="8294:8421" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="8710:8871" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="9004:14603" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="9202:9676" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="9331:9452" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="9485:9650" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="10357:10447" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="10765:11137" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="11241:12047" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="11546:11723" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="11760:11978" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="12095:12973" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="12550:12681" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="12718:12857" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="13006:14233" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="13602:13733" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="13770:14203" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="14381:14541" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="14685:14945" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="15019:15082" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="15190:15247" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="15375:15524" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="15726:18886" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="15863:18719" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="16260:16343" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="16364:16455" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="16586:18165" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="17009:18147" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="17535:17642" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="17671:17919" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="18309:18636" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="18523:18618" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="18736:18798" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="18943:19443" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="19240:19388" ph="{...}" />
-                    <marker date="1564467217307" expanded="true" signature="19509:19554" ph="{...}" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="1437">
@@ -453,40 +321,6 @@
                     <marker date="1564465922811" expanded="true" signature="2633:3952" ph="{...}" />
                     <marker date="1564465922811" expanded="true" signature="2869:2932" ph="{...}" />
                     <marker date="1564465922811" expanded="true" signature="3065:3153" ph="{...}" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1005">
-                  <caret line="84" column="12" selection-start-line="84" selection-start-column="12" selection-end-line="84" selection-end-column="12" />
-                  <folding>
-                    <marker date="1564464024442" expanded="false" signature="6:259" ph="..." />
-                    <marker date="1564464024442" expanded="true" signature="287:5614" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="294:460" ph="[...]" />
-                    <marker date="1564464024442" expanded="true" signature="503:5609" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="805:825" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="897:1017" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="1093:1391" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="1191:1301" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="1518:1703" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="1903:1948" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="2082:2997" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="2161:2306" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="3105:5157" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="3146:3538" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="3233:3434" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="3455:3524" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="3611:4854" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="3851:4568" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="4138:4263" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="5006:5147" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="5204:5319" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="5377:5429" ph="{...}" />
-                    <marker date="1564464024442" expanded="true" signature="5495:5540" ph="{...}" />
                   </folding>
                 </state>
               </provider>
@@ -1036,7 +870,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>GetPropertyStructure</find>
       <find>.Data.Add</find>
       <find>_indexes</find>
       <find>ReferenceTransform</find>
@@ -1066,6 +899,7 @@
       <find>&lt;T&gt;.Add</find>
       <find>ols</find>
       <find>Required</find>
+      <find>Mappings.GetRequiredColumns</find>
     </findStrings>
     <replaceStrings>
       <replace>CombinePath</replace>
@@ -1291,6 +1125,7 @@
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/lookup.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/recommendation.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/SpecialFunctions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/CurveFittingFunctions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/project.lock.json" root0="FORCE_HIGHLIGHTING" />
@@ -1368,7 +1203,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerText.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskBulk.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" />
@@ -1419,6 +1253,7 @@
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions.maths/dexih.functions.maths.csproj" />
       </list>
     </option>
   </component>
@@ -1752,14 +1587,7 @@
       <workItem from="1564360776654" duration="29352000" />
       <workItem from="1564463082772" duration="26000" />
       <workItem from="1564463435976" duration="2208000" />
-      <workItem from="1564466619813" duration="664000" />
-    </task>
-    <task id="LOCAL-00008" summary="Reduced size of table to make test faster.">
-      <created>1501109126017</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1501109126017</updated>
+      <workItem from="1564466619813" duration="1013000" />
     </task>
     <task id="LOCAL-00009" summary="Added Poco Loader,Reader">
       <created>1501201789060</created>
@@ -2097,11 +1925,18 @@
       <option name="project" value="LOCAL" />
       <updated>1564466473575</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="bug fix">
+      <created>1564467304405</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1564467304406</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1398727000" />
+    <option name="totallyTimeSpent" value="1399076000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -2115,7 +1950,7 @@
   <component name="ToolWindowManager">
     <frame x="1680" y="-650" width="3840" height="2160" extended-state="0" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.08873091" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.08873091" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25387728" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info id="Image Layers" order="3" />
@@ -2129,11 +1964,11 @@
       <window_info anchor="bottom" id="Inspection" order="6" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48867825" weight="0.21100478" />
       <window_info anchor="bottom" id="NuGet" order="8" sideWeight="0.6271722" weight="0.23875599" />
-      <window_info active="true" anchor="bottom" id="Unit Tests" order="9" sideWeight="0.8009768" visible="true" weight="0.15311004" />
+      <window_info anchor="bottom" id="Unit Tests" order="9" sideWeight="0.8009768" weight="0.15311004" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.1990232" side_tool="true" weight="0.26938775" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.15454546" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.49157453" weight="0.21913876" />
-      <window_info anchor="bottom" id="Build" order="13" sideWeight="0.366772" weight="0.23157895" />
+      <window_info anchor="bottom" id="Build" order="13" sideWeight="0.366772" visible="true" weight="0.23157895" />
       <window_info anchor="bottom" id="Docker" order="14" show_stripe_button="false" />
       <window_info anchor="bottom" id="Stacktrace" order="15" sideWeight="0.4997367" weight="0.32966506" />
       <window_info anchor="bottom" id="Performance Profiler" order="16" />
@@ -2217,7 +2052,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added bulk load to postgres database.&#10;fixed transoform rows where functions return multiple params." />
     <MESSAGE value="added oracle provider" />
     <MESSAGE value="added binary support to mysql" />
     <MESSAGE value="fixed test" />
@@ -2242,7 +2076,8 @@
     <MESSAGE value="removed benchmark project" />
     <MESSAGE value="added more ML.Net functions and tests" />
     <MESSAGE value="fixed sql push down issues and added some tests." />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed sql push down issues and added some tests." />
+    <MESSAGE value="bug fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="bug fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2436,65 +2271,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/SeriesFunctions.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1074">
-          <caret line="131" column="102" selection-start-line="131" selection-start-column="41" selection-end-line="131" selection-end-column="102" />
-          <folding>
-            <marker date="1550199697216" expanded="false" signature="6:80" ph="..." />
-            <marker date="1550199697216" expanded="true" signature="115:6996" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="146:1899" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="243:377" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="617:1686" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="692:1676" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="962:1045" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="1161:1244" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="1718:1893" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="1790:1856" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="1937:6994" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="2133:2213" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="2318:2782" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="2366:2450" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="2498:2633" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="2650:2772" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="3277:3355" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="3490:4132" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="3869:3961" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="4029:4083" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="4599:4677" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="4815:5553" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="4958:5310" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="5093:5275" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="6017:6095" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="6232:6970" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="6375:6727" ph="{...}" />
-            <marker date="1550199697216" expanded="true" signature="6510:6692" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/sentiment.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" selection-start-line="7" selection-end-line="34" selection-end-column="9" />
-          <folding>
-            <marker date="1564365548981" expanded="true" signature="6:26" ph="..." />
-            <marker date="1564365548981" expanded="true" signature="62:2732" ph="{...}" />
-            <marker date="1564365548981" expanded="true" signature="91:2730" ph="{...}" />
-            <marker date="1564365548981" expanded="true" signature="148:1378" ph="{...}" />
-            <marker date="1564365548981" expanded="true" signature="1442:2723" ph="{...}" />
-            <marker date="1564365548981" expanded="true" signature="2538:2712" ph="/* needs more values before it will work ... */" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/31575819-B2FF-42E0-944E-7701C0D109C7/bb/c036c307/Operations`1.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="16" column="47" selection-start-line="16" selection-start-column="47" selection-end-line="16" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/dexih.functions/SeriesValue.cs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="750">
@@ -4749,6 +4525,74 @@
             <marker date="1564467231862" expanded="true" signature="6061:6106" ph="{...}" />
             <marker date="1564467231862" expanded="true" signature="6171:6216" ph="{...}" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dexih.functions.maths/SpecialFunctions.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2997">
+          <caret line="5" column="17" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
+          <folding>
+            <marker date="1563519581998" expanded="false" signature="6:37" ph="..." />
+            <marker date="1563519581998" expanded="true" signature="70:43854" ph="{...}" />
+            <marker date="1563519581998" expanded="true" signature="110:43852" ph="{...}" />
+            <marker date="1563519581998" expanded="true" signature="150:3772" ph="{...}" />
+            <marker date="1563519581998" expanded="true" signature="4005:14763" ph="{...}" />
+            <marker date="1563519581998" expanded="true" signature="4049:14687" ph="{...}" />
+            <marker date="1563519581998" expanded="true" signature="14788:15253" ph="///Computes the logarithm of the Euler Beta function. ... " />
+            <marker date="1563519581998" expanded="true" signature="15531:15962" ph="///Computes the Euler Beta function. ... " />
+            <marker date="1563519581998" expanded="true" signature="16209:16730" ph="/// Returns the lower incomplete (unregularized) beta function ... " />
+            <marker date="1563519581998" expanded="true" signature="17038:17565" ph="/// Returns the regularized lower incomplete beta function ... " />
+            <marker date="1563519581998" expanded="true" signature="17873:18318" ph="///Calculates the error function. ... " />
+            <marker date="1563519581998" expanded="true" signature="18539:19011" ph="///Calculates the complementary error function. ... " />
+            <marker date="1563519581998" expanded="true" signature="19264:19889" ph="///Calculates the inverse error function evaluated at z. ... " />
+            <marker date="1563519581998" expanded="true" signature="20148:21007" ph="///Calculates the complementary inverse error function evaluated at z. ... " />
+            <marker date="1563519581998" expanded="true" signature="21299:22552" ph="/// Computes the generalized Exponential Integral function (En). ... " />
+            <marker date="1563519581998" expanded="true" signature="22864:23803" ph="/// Computes the factorial function x -&amp;gt; x! of an integer number &amp;gt; 0. The function can represent all number ... " />
+            <marker date="1563519581998" expanded="true" signature="24048:24247" ph="/// Computes the logarithmic factorial function x -&amp;gt; ln(x!) of an integer number &amp;gt; 0. ... " />
+            <marker date="1563519581998" expanded="true" signature="24518:24774" ph="///Computes the binomial coefficient: n choose k. ... " />
+            <marker date="1563519581998" expanded="true" signature="25051:25378" ph="/// Computes the natural logarithm of the binomial coefficient: ln(n choose k). ... " />
+            <marker date="1563519581998" expanded="true" signature="25697:26451" ph="/// Computes the multinomial coefficient: n choose n1, n2, n3, ... ... " />
+            <marker date="1563519581998" expanded="true" signature="26757:27615" ph="///Computes the logarithm of the Gamma function. ... " />
+            <marker date="1563519581998" expanded="true" signature="27877:28750" ph="///Computes the Gamma function. ... " />
+            <marker date="1563519581998" expanded="true" signature="28981:29390" ph="/// Returns the upper incomplete regularized gamma function ... " />
+            <marker date="1563519581998" expanded="true" signature="29711:30087" ph="/// Returns the upper incomplete gamma function ... " />
+            <marker date="1563519581998" expanded="true" signature="30393:30769" ph="/// Returns the lower incomplete gamma function ... " />
+            <marker date="1563519581998" expanded="true" signature="31075:31472" ph="/// Returns the lower incomplete regularized gamma function ... " />
+            <marker date="1563519581998" expanded="true" signature="31793:32054" ph="/// Returns the inverse P^(-1) of the regularized lower incomplete gamma function ... " />
+            <marker date="1563519581998" expanded="true" signature="32412:33063" ph="/// Computes the Digamma function which is mathematically defined as the derivative of the logarithm of the gamma ... " />
+            <marker date="1563519581998" expanded="true" signature="33391:33895" ph="/// &lt;para&gt;Computes the inverse Digamma function: this is the inverse of the logarithm of the gamma function. This ... " />
+            <marker date="1563519581998" expanded="true" signature="34216:34460" ph="/// Computes the &lt;paramref name=&quot;t&quot; /&gt;'th Harmonic number. ... " />
+            <marker date="1563519581998" expanded="true" signature="34710:35019" ph="/// Compute the generalized harmonic number of order n of m. (1 + 1/2^m + 1/3^m + ... + 1/n^m) ... " />
+            <marker date="1563519581998" expanded="true" signature="35360:35656" ph="/// Computes the logistic function. see: http://en.wikipedia.org/wiki/Logistic ... " />
+            <marker date="1563519581998" expanded="true" signature="35942:36357" ph="/// Computes the logit function, the inverse of the sigmoid logistic function. see: http://en.wikipedia.org/wiki/ ... " />
+            <marker date="1563519581998" expanded="true" signature="36674:37142" ph="///Returns the modified Bessel function of first kind, order 0 of the argument. ... " />
+            <marker date="1563519581998" expanded="true" signature="37431:37914" ph="///Returns the modified Bessel function of first kind, ... " />
+            <marker date="1563519581998" expanded="true" signature="38203:38607" ph="///Returns the modified Bessel function of the second kind ... " />
+            <marker date="1563519581998" expanded="true" signature="38903:39136" ph="///Returns the exponentially scaled modified Bessel function ... " />
+            <marker date="1563519581998" expanded="true" signature="39456:39860" ph="///Returns the modified Bessel function of the second kind ... " />
+            <marker date="1563519581998" expanded="true" signature="40156:40454" ph="///Returns the exponentially scaled modified Bessel function ... " />
+            <marker date="1563519581998" expanded="true" signature="40773:40918" ph="///Returns the modified Struve function of order 0. ... " />
+            <marker date="1563519581998" expanded="true" signature="41178:41323" ph="///Returns the modified Struve function of order 1. ... " />
+            <marker date="1563519581998" expanded="true" signature="41583:41775" ph="/// Returns the difference between the Bessel I0 and Struve L0 functions. ... " />
+            <marker date="1563519581998" expanded="true" signature="42088:42280" ph="/// Returns the difference between the Bessel I1 and Struve L1 functions. ... " />
+            <marker date="1563519581998" expanded="true" signature="42594:42854" ph="/// Numerically stable exponential minus one, i.e. &lt;code&gt;x -&amp;gt; exp(x)-1&lt;/code&gt; ... " />
+            <marker date="1563519581998" expanded="true" signature="43151:43566" ph="/// Numerically stable hypotenuse of a right angle triangle, i.e. &lt;code&gt;(a,b) -&amp;gt; sqrt(a^2 + b^2)&lt;/code&gt; ... " />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dexih.functions.ml/dexih.functions.ml.csproj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="29" column="80" lean-forward="true" selection-start-line="29" selection-start-column="8" selection-end-line="29" selection-end-column="80" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dexih.functions.maths/dexih.functions.maths.csproj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" column="80" selection-start-line="12" selection-start-column="80" selection-end-line="12" selection-end-column="80" />
         </state>
       </provider>
     </entry>
