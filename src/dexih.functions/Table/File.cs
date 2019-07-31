@@ -75,5 +75,34 @@ namespace dexih.functions
 
             return "";
         }
+        
+        public FlatFile CopyFlatFile()
+        {
+	        var table = new FlatFile()
+	        {
+		        Description = Description,
+		        Name = Name,
+		        LogicalName = LogicalName,
+		        AutoManageFiles = AutoManageFiles,
+		        UseCustomFilePaths = UseCustomFilePaths,
+		        FileIncomingPath = FileIncomingPath,
+		        FileOutgoingPath = FileOutgoingPath,
+		        FileProcessedPath = FileProcessedPath,
+		        FileRejectedPath =  FileRejectedPath,
+		        FileMatchPattern = FileMatchPattern,
+		        FormatType = FormatType,
+		        FileConfiguration = FileConfiguration,
+		        RowPath = RowPath
+	        };
+
+
+	        foreach (var column in Columns)
+	        {
+		        var newCol = column.Copy();
+		        table.Columns.Add(newCol);
+	        }
+
+	        return table;
+        }
 	}
 }

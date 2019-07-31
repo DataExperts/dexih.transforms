@@ -319,12 +319,11 @@ namespace dexih.transforms
                 var columns = await fileHandler.GetSourceColumns(stream);
 
                 //The new datatable that will contain the table schema
-                var newFlatFile = new FlatFile();
-                flatFile.Name = originalTable.Name;
-                newFlatFile.Columns.Clear();
-                newFlatFile.LogicalName = newFlatFile.Name;
-                newFlatFile.Description = "";
-                newFlatFile.FileConfiguration = flatFile.FileConfiguration;
+                var newFlatFile = flatFile.CopyFlatFile();
+//                flatFile.Name = originalTable.Name;
+//                newFlatFile.Columns.Clear();
+//                newFlatFile.LogicalName = newFlatFile.Name;
+//                newFlatFile.Description = "";
 
                 foreach (var column in columns)
                 {
