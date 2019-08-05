@@ -456,9 +456,9 @@ namespace dexih.transforms.Mapping
         /// Gets the required source columns required for the mappings.
         /// </summary>
         /// <returns></returns>
-        public TableColumn[] GetRequiredColumns()
+        public TableColumn[] GetRequiredColumns(bool ignorePassthrough = false)
         {
-            if (PassThroughColumns)
+            if (PassThroughColumns && !ignorePassthrough)
             {
                 return null;
             }
