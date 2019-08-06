@@ -7,7 +7,7 @@ namespace dexih.transforms
     /// This is used to transport an encrypted value and the plaintext value through the transforms
     /// which allows the plaintext to be used for the delta comparison.
     /// </summary>
-    public class EncryptedObject: IEquatable<string>
+    public class EncryptedObject: IEquatable<string>, IEquatable<EncryptedObject>
     {
         [JsonIgnore]
         public object OriginalValue {get;set;}
@@ -28,6 +28,29 @@ namespace dexih.transforms
         public override string ToString()
         {
             return EncryptedValue;
+        }
+
+        public bool Equals(EncryptedObject other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return string.Equals(EncryptedValue, other.EncryptedValue);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((EncryptedObject) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((OriginalValue != null ? OriginalValue.GetHashCode() : 0) * 397) ^ (EncryptedValue != null ? EncryptedValue.GetHashCode() : 0);
+            }
         }
     }
     

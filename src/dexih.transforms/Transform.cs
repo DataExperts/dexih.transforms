@@ -135,7 +135,7 @@ namespace dexih.transforms
         public long TotalRowsIgnored => TransformRowsIgnored + PrimaryTransform?.TotalRowsIgnored ?? 0 + ReferenceTransform?.TotalRowsIgnored ?? 0;
         public long TotalRowsRejected => TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0;
         public long TotalRowsFiltered => TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0;
-        public long TotalRowsReadPrimary => TransformRows + (PrimaryTransform?.TotalRowsReadPrimary ?? 0);
+        public long TotalRowsReadPrimary => (IsReader ? TransformRows : 0) + (PrimaryTransform?.TotalRowsReadPrimary ?? 0);
         public long TotalRowsReadReference => TransformRows + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TotalRowsReadPrimary ?? 0;
 
         private object _maxIncrementalValue = null;

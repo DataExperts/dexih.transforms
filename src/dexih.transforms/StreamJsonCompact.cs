@@ -143,7 +143,7 @@ namespace dexih.transforms
                     for(var i = 0; i < _valuesArray.Length; i++)
                     {
                         if (_valuesArray[i] is byte[])
-                            _valuesArray[i] = "binary data not available.";
+                            _valuesArray[i] = "binary data not viewable.";
                     }
 
                     var row = JsonConvert.SerializeObject(_valuesArray);

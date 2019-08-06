@@ -512,8 +512,8 @@
           <e p="SortedRowsDictionary.cs" t="Include" />
           <e p="SymbolExtensions.cs" t="Include" />
           <e p="Table" t="Include">
-            <e p="File.cs" t="Include" />
             <e p="FileConfiguration.cs" t="Include" />
+            <e p="FlatFile.cs" t="Include" />
             <e p="Table.cs" t="Include" />
             <e p="TableCache.cs" t="Include" />
             <e p="TableColumn.cs" t="Include" />

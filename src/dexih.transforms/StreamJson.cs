@@ -148,7 +148,7 @@ using System.Threading.Tasks;
                     {
                         if (_reader[i] is byte[])
                         {
-                            jObject[_reader.GetName(i)] = "binary data not available.";
+                            jObject[_reader.GetName(i)] = "binary data not viewable.";
                             continue;
                         }
 

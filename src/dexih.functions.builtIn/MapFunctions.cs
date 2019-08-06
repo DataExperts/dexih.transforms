@@ -227,14 +227,22 @@ namespace dexih.functions.BuiltIn
 
             return DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out result);
         }
+        
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Create Date",
             Description =
-                "Returns a new DateTime from seperate year,month,day,hour,minute,second values.")]
-        public DateTime CreateDate(object year, object month, object day, object hour, object minute, object second)
+                "Returns a new DateTime from separate year,month,day,hour,minute,second values.")]
+        public DateTime CreateDate(
+            [TransformFunctionParameter(Name = "Year")] int? year, 
+            [TransformFunctionParameter(Name = "Numbered Month (1-12)")] int? month,
+            [TransformFunctionParameter(Name = "Named Month (Jan-Dec)")] string monthName,
+            [TransformFunctionParameter(Name = "Day of Month (1-31)")]int? day, 
+            [TransformFunctionParameter(Name = "Hour (0-23)")]int? hour, 
+            [TransformFunctionParameter(Name = "Minute (0-59)")]int? minute, 
+            [TransformFunctionParameter(Name = "Second (0-59)")]int? second)
         {
             return DateTime.Parse(
-                $"{year ?? DateTime.Now.Year}-{month ?? 1}-{day ?? 1} {hour ?? 0}:{minute ?? 0}:{second ?? 0}");
+                $"{year ?? DateTime.Now.Year}-{month?.ToString() ?? (monthName?? "1")}-{day ?? 1} {hour ?? 0}:{minute ?? 0}:{second ?? 0}");
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Add Days",

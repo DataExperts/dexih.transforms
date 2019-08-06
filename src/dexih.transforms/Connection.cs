@@ -610,7 +610,7 @@ namespace dexih.transforms
         /// <param name="allowDbNull"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public virtual object ConvertForWrite(string name, ETypeCode typeCode, int rank, bool allowDbNull, object value)
+        public object ConvertForWrite(string name, ETypeCode typeCode, int rank, bool allowDbNull, object value)
         {
             if (value == null || value == DBNull.Value)
             {
@@ -622,6 +622,11 @@ namespace dexih.transforms
                 {
                     throw new ConnectionException($"The {name} item has a value null which could not be inserted as the column does not allow nulls.");
                 }
+            }
+
+            if (value is EncryptedObject encryptedObject)
+            {
+                return encryptedObject.EncryptedValue;
             }
 
             if (rank > 0 && !CanUseArray)

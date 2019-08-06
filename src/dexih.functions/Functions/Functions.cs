@@ -191,7 +191,7 @@ namespace dexih.functions
             }
 
             // if the parameter is a custom class, then extract the properties from the class as return parameters.
-            if (paramType != null && !paramType.IsGenericParameter && (paramType.IsClass || paramType.IsValueType) && !paramType.IsPrimitive && paramType != typeof(string) && paramType != typeof(decimal) && !paramType.IsEnum && !paramType.IsArray)
+            if (paramType != null && !paramType.IsGenericParameter && (paramType.IsClass || paramType.IsValueType) && !paramType.IsPrimitive && paramType != typeof(string) && paramType != typeof(decimal) && paramType != typeof(DateTime) && !paramType.IsEnum && !paramType.IsArray)
             {                
                 var properties = paramType.GetProperties();
 
