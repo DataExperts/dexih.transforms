@@ -449,7 +449,7 @@ namespace dexih.functions
 				return (_returnValue, false);
 
 			}
-			catch (TargetInvocationException ex)
+			catch (Exception ex)
 			{
 				switch (OnError)
 				{
@@ -467,10 +467,6 @@ namespace dexih.functions
 				} 
 				throw;
 
-			}
-			catch(Exception ex)
-			{
-				throw new FunctionException($"The the function {FunctionName} failed.  " + ex.Message, ex);
 			}
 		}
 
@@ -511,7 +507,7 @@ namespace dexih.functions
 
 				return (_returnValue, false);
 			}
-			catch (TargetInvocationException ex)
+			catch (Exception ex)
 			{
 				switch (OnError)
 				{
@@ -531,10 +527,6 @@ namespace dexih.functions
 				}
 
 				throw;
-			}
-			catch(Exception ex)
-			{
-				throw new FunctionException($"The function {FunctionName} failed.  " + ex.Message, ex);
 			}
 		}
 		

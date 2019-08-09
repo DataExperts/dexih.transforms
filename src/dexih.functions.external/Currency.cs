@@ -32,6 +32,10 @@ namespace dexih.functions.external
                 }
                 else
                 {
+                    if (string.IsNullOrEmpty(to))
+                    {
+                        throw new FunctionException($"The \"TO\" currency code was empty or null.");
+                    }
                     if (!Rates.TryGetValue(to, out var rate))
                     {
                         throw new FunctionException($"The exchange rate for {to} is not available.");
