@@ -279,23 +279,21 @@ namespace dexih.transforms
                 selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
             }
             
-            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
-
-            if (!returnValue) return false;
-
             if (_cacheLoaded) return true;
 
             await InitializeOutputFields();
 
             //only apply a sort if there is not already a sort applied.
             selectQuery.Sorts = RequiredSortFields();
-
             SelectQuery = selectQuery;
             
             var referenceQuery = new SelectQuery()
             {
                 Sorts = RequiredReferenceSortFields()
             };
+
+            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            if (!returnValue) return false;
 
             returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
             if (!returnValue)

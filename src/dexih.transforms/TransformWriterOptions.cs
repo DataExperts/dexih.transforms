@@ -65,11 +65,13 @@ namespace dexih.transforms
         /// <returns></returns>
         public bool CheckTarget(string name)
         {
-            if (_targets.Contains(name)) return false;
+            lock (_targets)
+            {
+                if (_targets.Contains(name)) return false;
+                _targets.Add(name);
 
-            _targets.Add(name);
-
-            return true;
+                return true;
+            }
         }
     }
 }

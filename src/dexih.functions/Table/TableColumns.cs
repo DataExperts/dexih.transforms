@@ -99,10 +99,10 @@ namespace dexih.functions
             return column != null;
         }
 
-        public int GetOrdinal(TableColumn column)
+        public int GetOrdinal(TableColumn column, bool groupMustMatch = false)
         {
             var ordinal = GetOrdinal(column.TableColumnName());
-            if(ordinal < 0) 
+            if(ordinal < 0 && !groupMustMatch) 
             {
                 ordinal = GetOrdinal(column.Name);
             }

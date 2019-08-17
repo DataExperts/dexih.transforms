@@ -422,6 +422,30 @@ namespace dexih.functions
 			return InvokeAsync(ResultMethod, functionVariables, inputParameters, cancellationToken);
 		}
 
+		private object CreateNullValue(Type type)
+		{
+			Type paramType;
+			if (type == null)
+			{
+				return null;
+			}
+			
+			if (type.BaseType == typeof(Task))
+			{
+				paramType = type.GetGenericArguments()[0];
+			}
+			else if (type.IsByRef)
+			{
+				paramType = type.GetElementType();
+			}
+			else
+			{
+				paramType = type;
+			}
+
+			return Activator.CreateInstance(paramType);
+		}
+
 		private async Task<(object returnValue, bool ignore)> InvokeAsync(TransformMethod methodInfo, FunctionVariables functionVariables, object[] inputParameters, CancellationToken cancellationToken)
 		{
 			try
@@ -436,7 +460,7 @@ namespace dexih.functions
 							throw new FunctionException(
 								$"The function {FunctionName} contains null parameters.  Change the \"Action when null\" setting to ignore this.");
 						case EErrorAction.Null:
-							return (Activator.CreateInstance(methodInfo.MethodInfo.ReturnType), false);
+							return (CreateNullValue(methodInfo.MethodInfo.ReturnType), false);
 						case EErrorAction.Ignore:
 							return (null, true);
 					}
@@ -454,7 +478,7 @@ namespace dexih.functions
 				switch (OnError)
 				{
 					case EErrorAction.Null:
-						return (Activator.CreateInstance(methodInfo.MethodInfo.ReturnType), false);
+						return (CreateNullValue(methodInfo.MethodInfo.ReturnType), false);
 					case EErrorAction.Ignore:
 						return (null, true);
 				}

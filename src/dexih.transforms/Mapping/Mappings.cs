@@ -114,7 +114,7 @@ namespace dexih.transforms.Mapping
                     
                     if(column.IsParent) { continue; }
 
-                    var parentOrdinal = table.Columns.GetOrdinal(column);
+                    var parentOrdinal = table.Columns.GetOrdinal(column, true);
                     if (parentOrdinal < 0)
                     {
                         targetOrdinal++;
@@ -153,7 +153,7 @@ namespace dexih.transforms.Mapping
                             newColumn.ReferenceTable = joinTableAlias;
                             newColumn.IsIncrementalUpdate = false;
 
-                            var ordinal = table.GetOrdinal(newColumn);
+                            var ordinal = table.GetOrdinal(newColumn, true);
                             if (mapAllJoinColumns || ordinal < 0)
                             {
                                 targetOrdinal++;

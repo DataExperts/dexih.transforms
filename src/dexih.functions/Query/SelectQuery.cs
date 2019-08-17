@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using dexih.repository;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 
@@ -267,6 +268,20 @@ namespace dexih.functions.Query
                 {
                     throw new Exception("The input parameter must only contain single values (i.e. i={\"InputColumn\": \"value\"}");
                 }
+            }
+        }
+
+        public void AddParameters(InputParameters inputParameters)
+        {
+            if (inputParameters == null)
+            {
+                return;
+            }
+            
+            foreach (var filter in Filters)
+            {
+                filter.Value1 = inputParameters.SetParameters(filter.Value1);
+                filter.Value2 = inputParameters.SetParameters(filter.Value2);
             }
         }
     }

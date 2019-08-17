@@ -566,7 +566,7 @@ namespace dexih.functions
         }
 
         public int GetOrdinal(string schemaColumnName) => Columns.GetOrdinal(schemaColumnName);
-        public int GetOrdinal(TableColumn column) => Columns.GetOrdinal(column);
+        public int GetOrdinal(TableColumn column, bool groupMustMatch = false) => Columns.GetOrdinal(column, groupMustMatch);
 //         public int GetOrdinal(string tableName, string columnGroup) => Columns.GetOrdinal(tableName, columnGroup);
 
         public bool TryGetColumn(string columnName, out TableColumn column) => Columns.TryGetColumn(columnName, out column);
