@@ -369,7 +369,7 @@ namespace dexih.functions.builtIn.tests
         [Fact]
         public void FastEncryptTest()
         {
-            var globalVariables = new GlobalVariables("abc");
+            var globalVariables = new GlobalSettings("abc");
             const string value = "encrypt this";
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.FastEncrypt), BuiltInAssembly).GetTransformFunction(typeof(string), null, globalVariables);
             var encrypted = function.RunFunction(new object[] {value}, CancellationToken.None).returnValue;
@@ -383,7 +383,7 @@ namespace dexih.functions.builtIn.tests
         [Fact]
         public void StrongEncryptTest()
         {
-            var globalVariables = new GlobalVariables("abc");
+            var globalVariables = new GlobalSettings("abc");
             const string value = "encrypt this";
             var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.StrongEncrypt), BuiltInAssembly).GetTransformFunction(typeof(string), null, globalVariables);
             var encrypted = function.RunFunction(new object[] {value}, CancellationToken.None).returnValue;
