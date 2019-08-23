@@ -34,7 +34,7 @@ namespace dexih.transforms
         /// </summary>
         public bool AddDefaultRow { get; set; } = false;
 
-        public GlobalVariables GlobalVariables { get; set; } = null;
+        public GlobalSettings GlobalSettings { get; set; } = null;
 
         public SelectQuery SelectQuery { get; set; } = null;
         

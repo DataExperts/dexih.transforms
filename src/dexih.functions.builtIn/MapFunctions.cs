@@ -16,7 +16,7 @@ namespace dexih.functions.BuiltIn
 
     public class MapFunctions
     {
-        public GlobalVariables GlobalVariables { get; set; }
+        public GlobalSettings GlobalSettings { get; set; }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Concatenate Strings",
             Description = "Concatenates multiple string fields.")]
@@ -473,28 +473,28 @@ namespace dexih.functions.BuiltIn
             Description = "Strong Encrypts the string.")]
         public string StrongEncrypt(string value)
         {
-            return EncryptString.Encrypt(value, GlobalVariables?.EncryptionKey, 1000);
+            return EncryptString.Encrypt(value, GlobalSettings?.EncryptionKey, 1000);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Strong Decrypt",
             Description = "Strong Decrypts the string.")]
         public string StrongDecrypt(string value)
         {
-            return EncryptString.Decrypt(value, GlobalVariables?.EncryptionKey, 1000);
+            return EncryptString.Decrypt(value, GlobalSettings?.EncryptionKey, 1000);
         }
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Fast Encrypt",
             Description = "Fast Encrypts the string.")]
         public string FastEncrypt(string value)
         {
-            return EncryptString.Encrypt(value, GlobalVariables?.EncryptionKey, 5);
+            return EncryptString.Encrypt(value, GlobalSettings?.EncryptionKey, 5);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Fast Decrypt",
             Description = "Fast Decrypts the string.")]
         public string FastDecrypt(string value)
         {
-            return EncryptString.Decrypt(value, GlobalVariables?.EncryptionKey, 5);
+            return EncryptString.Decrypt(value, GlobalSettings?.EncryptionKey, 5);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Secure Hash",

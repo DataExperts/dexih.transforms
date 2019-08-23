@@ -2,7 +2,10 @@
 
 namespace dexih.functions
 {
-    public class GlobalVariables
+    /// <summary>
+    /// Settings and variables which apply to anything running on the remote agent.
+    /// </summary>
+    public class GlobalSettings
     {
         // used by encrypt functions.
         public string EncryptionKey { get; set; }
@@ -11,13 +14,13 @@ namespace dexih.functions
 
         private readonly Dictionary<string, object> _variables;
 
-        public GlobalVariables(string encryptionKey)
+        public GlobalSettings(string encryptionKey)
         {
             EncryptionKey = encryptionKey;
             _variables = new Dictionary<string, object>();
         }
 
-        public GlobalVariables()
+        public GlobalSettings()
         {
             _variables = new Dictionary<string, object>();
         }

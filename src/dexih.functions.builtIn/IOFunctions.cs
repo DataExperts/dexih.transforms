@@ -24,7 +24,7 @@ namespace dexih.functions.BuiltIn
             Abend
         }
         
-        public GlobalVariables GlobalVariables { get; set; }
+        public GlobalSettings GlobalSettings { get; set; }
 
         private string GetFileNameUnique(string filePrefix, string fileNameBody, string filePostfix, string extension,
             int uniqueCount = 0)
@@ -69,12 +69,12 @@ namespace dexih.functions.BuiltIn
         /// <exception cref="FunctionException"></exception>
         private string GetWriteFileName(string path, string filePrefix, string fileNameBody, string filePostfix, string extension, EDuplicateFile duplicateFileOptions)
         {
-            GlobalVariables.FilePermissions?.ValidatePath(path);
+            GlobalSettings.FilePermissions?.ValidatePath(path);
             
             var fileName = GetFileNameUnique(filePrefix, fileNameBody, filePostfix, extension);
             var filePath = Path.Combine(path, fileName);
             
-            GlobalVariables.FilePermissions?.ValidatePath(filePath);
+            GlobalSettings.FilePermissions?.ValidatePath(filePath);
 
             if (duplicateFileOptions == EDuplicateFile.Overwrite)
             {
@@ -162,12 +162,12 @@ namespace dexih.functions.BuiltIn
         private string GetReadFileName(string path, string filePrefix, string fileNameBody, string filePostfix,
             string extension, EMissingFile missingFileOption)
         {
-            GlobalVariables.FilePermissions?.ValidatePath(path);
+            GlobalSettings.FilePermissions?.ValidatePath(path);
 
             var fileName = GetFileNameUnique(filePrefix, fileNameBody, filePostfix, extension);
             var filePath = Path.Combine(path, fileName);
 
-            GlobalVariables.FilePermissions?.ValidatePath(filePath);
+            GlobalSettings.FilePermissions?.ValidatePath(filePath);
 
             if (System.IO.File.Exists(filePath))
             {
@@ -230,7 +230,7 @@ namespace dexih.functions.BuiltIn
             Description = "Gets a list of files in the specified path.")]
         public string[] GetFileList(string path, string searchPattern, SearchOption searchOption, bool includePath)
         {
-            GlobalVariables.FilePermissions?.ValidatePath(path);
+            GlobalSettings.FilePermissions?.ValidatePath(path);
 
             if (Directory.Exists(path))
             {
@@ -265,7 +265,7 @@ namespace dexih.functions.BuiltIn
         {
             if (_fileEnumerator == null)
             {
-                GlobalVariables.FilePermissions?.ValidatePath(path);
+                GlobalSettings.FilePermissions?.ValidatePath(path);
 
                 if (Directory.Exists(path))
                 {
@@ -310,7 +310,7 @@ namespace dexih.functions.BuiltIn
         public bool GetFileInformation(string path, string fileName, out DateTime creationTime, out DateTime lastAccessTime, out DateTime lastWriteTime, out long fileSize, out string fullName, out string extension, out bool isReadonly)
         {
             var filePath = Path.Combine(path, fileName);
-            GlobalVariables.FilePermissions?.ValidatePath(filePath);
+            GlobalSettings.FilePermissions?.ValidatePath(filePath);
 
             if (System.IO.File.Exists(filePath))
             {

@@ -52,10 +52,10 @@ namespace dexih.functions
         public FunctionParameter[] ResultInputParameters { get; set; }
         public FunctionParameter[] ResultOutputParameters { get; set; }
 
-        public TransformFunction GetTransformFunction(Type genericType, Parameters parameters = null, GlobalVariables globalVariables = null)
+        public TransformFunction GetTransformFunction(Type genericType, Parameters parameters = null, GlobalSettings globalSettings = null)
         {
             var type = Functions.GetFunctionType(FunctionClassName, FunctionAssemblyName); 
-            return new TransformFunction(type, FunctionMethodName, genericType, parameters, globalVariables);
+            return new TransformFunction(type, FunctionMethodName, genericType, parameters, globalSettings);
         }
 
 //        public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables)

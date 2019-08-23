@@ -180,7 +180,7 @@ namespace dexih.functions.Query
                 if (!item.Value.HasValues)
                 {
                     var value = item.Value;
-                    Filters.Add(new Filter(column, ECompare.IsEqual, value) );
+                    Filters.Add(new Filter(column, ECompare.IsEqual, value.ToString()) );
                 }
                 else
                 {
@@ -250,7 +250,7 @@ namespace dexih.functions.Query
             }
         }
 
-        public void LoadJsonInputs(JObject jObject)
+        public void LoadJsonInputColumns(JObject jObject)
         {
             if (jObject == null) return;
             
@@ -270,7 +270,30 @@ namespace dexih.functions.Query
                 }
             }
         }
-
+        
+        public void LoadJsonParameters(JObject jObject)
+        {
+            if (jObject == null) return;
+            
+            var inputParameters = new InputParameters();
+            
+            foreach (var item in jObject)
+            {
+                if (!item.Value.HasValues)
+                {
+                    var name = item.Key;
+                    var value = item.Value.ToString();
+                    inputParameters.Add(name, value);
+                }
+                else
+                {
+                    throw new Exception("The parameter must only contain single values (i.e. p={\"name\": \"value\"}");
+                }
+            }
+            
+            AddParameters(inputParameters);
+        }
+        
         public void AddParameters(InputParameters inputParameters)
         {
             if (inputParameters == null)

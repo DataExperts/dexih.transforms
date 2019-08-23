@@ -331,7 +331,7 @@ namespace dexih.transforms
                             autoIncrementKey,
                             WriterOptions.AddDefaultRow, new DeltaValues('C'));
                         transform.SetEncryptionMethod(Transform.EEncryptionMethod.EncryptDecryptSecureFields,
-                            WriterOptions?.GlobalVariables?.EncryptionKey);
+                            WriterOptions?.GlobalSettings?.EncryptionKey);
 
                         if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken))
                         {
@@ -410,7 +410,7 @@ namespace dexih.transforms
                     transform = new TransformDelta(transform, target, childUpdateStrategy.Value, autoIncrementKey,
                         WriterOptions.AddDefaultRow, deltaValues);
                     transform.SetEncryptionMethod(Transform.EEncryptionMethod.EncryptDecryptSecureFields,
-                        WriterOptions?.GlobalVariables?.EncryptionKey);
+                        WriterOptions?.GlobalSettings?.EncryptionKey);
 
                     if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken = default))
                     {

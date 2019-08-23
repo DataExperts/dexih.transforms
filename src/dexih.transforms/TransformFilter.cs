@@ -40,18 +40,22 @@ namespace dexih.transforms
 
             selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
 
-            var requiredColumns = Mappings.GetRequiredColumns(true)?.Select(c => new SelectColumn(c)).ToList();
+            if (selectQuery.Columns != null && selectQuery.Columns.Count > 0)
+            {
+                var requiredColumns = Mappings.GetRequiredColumns(true)?.Select(c => new SelectColumn(c)).ToList();
 
-            if (requiredColumns == null)
-            {
-                selectQuery.Columns = null;
-            } else 
-            {
-                foreach (var column in requiredColumns)
+                if (requiredColumns == null)
                 {
-                    if (!selectQuery.Columns.Exists(c => c.Column.Name == column.Column.Name))
+                    selectQuery.Columns = null;
+                }
+                else
+                {
+                    foreach (var column in requiredColumns)
                     {
-                        selectQuery.Columns.Add(column);
+                        if (!selectQuery.Columns.Exists(c => c.Column.Name == column.Column.Name))
+                        {
+                            selectQuery.Columns.Add(column);
+                        }
                     }
                 }
             }

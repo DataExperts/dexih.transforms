@@ -156,7 +156,7 @@ namespace dexih.functions
 
 		public ECompare? CompareEnum { get; set; }
 		
-		public GlobalVariables GlobalVariables { get; set; }
+		public GlobalSettings GlobalSettings { get; set; }
 
 		public TransformFunction(Delegate functionMethod):
 			this(functionMethod.Target, functionMethod.GetMethodInfo(), null, null, null)
@@ -169,8 +169,8 @@ namespace dexih.functions
 		/// </summary>
 		/// <param name="functionMethod">Reference to the function that will be executed.</param>
 		/// <param name="parameters"></param>
-		public TransformFunction(Delegate functionMethod, Type genericType, Parameters parameters, GlobalVariables globalVariables) :
-			this(functionMethod.Target, functionMethod.GetMethodInfo(), genericType, parameters, globalVariables)
+		public TransformFunction(Delegate functionMethod, Type genericType, Parameters parameters, GlobalSettings globalSettings) :
+			this(functionMethod.Target, functionMethod.GetMethodInfo(), genericType, parameters, globalSettings)
 		{
 		}
 
@@ -180,14 +180,14 @@ namespace dexih.functions
 		/// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
 		/// <param name="methodName">The name of the method to call.</param>
 		/// <param name="parameters"></param>
-		public TransformFunction(Type targetType, string methodName, Type genericType, Parameters parameters, GlobalVariables globalVariables)
+		public TransformFunction(Type targetType, string methodName, Type genericType, Parameters parameters, GlobalSettings globalSettings)
 		{
 			FunctionName = methodName;
             if(targetType.IsGenericTypeDefinition)
             {
                 targetType = targetType.MakeGenericType(genericType);
             }
-            Constructor(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), genericType, parameters, globalVariables);
+            Constructor(Activator.CreateInstance(targetType), targetType.GetMethod(methodName), genericType, parameters, globalSettings);
         }
 
 		/// <summary>
@@ -196,24 +196,24 @@ namespace dexih.functions
 		/// <param name="target">An instantiated instance of the class containing the method.  Ensure a new instance of Target is created for each function to avoid issues with cached data.</param>
 		/// <param name="methodName">The name of the method to call.</param>
 		/// <param name="parameters"></param>
-		/// <param name="globalVariables"></param>
-		public TransformFunction(object target, string methodName, Type genericType = null,  Parameters parameters = null, GlobalVariables globalVariables = null)
+		/// <param name="globalSettings"></param>
+		public TransformFunction(object target, string methodName, Type genericType = null,  Parameters parameters = null, GlobalSettings globalSettings = null)
 		{
 			FunctionName = methodName;
-			Constructor(target, target.GetType().GetMethod(methodName), genericType, parameters, globalVariables);
+			Constructor(target, target.GetType().GetMethod(methodName), genericType, parameters, globalSettings);
 		}
 
-		public TransformFunction(object target, MethodInfo functionMethod, Type genericType, Parameters parameters, GlobalVariables globalVariables)
+		public TransformFunction(object target, MethodInfo functionMethod, Type genericType, Parameters parameters, GlobalSettings globalSettings)
 		{
-			Constructor(target, functionMethod, genericType, parameters, globalVariables);
+			Constructor(target, functionMethod, genericType, parameters, globalSettings);
 		}
 
-		private void Constructor(object target, MethodInfo functionMethod, Type genericType, Parameters parameters, GlobalVariables globalVariables)
+		private void Constructor(object target, MethodInfo functionMethod, Type genericType, Parameters parameters, GlobalSettings globalSettings)
 		{
 			FunctionMethod = new TransformMethod(functionMethod, genericType);
 			
 			
-			GlobalVariables = globalVariables;
+			GlobalSettings = globalSettings;
 
 			var attribute = functionMethod.GetCustomAttribute<TransformFunctionAttribute>();
 			var targetType = target.GetType();
@@ -243,9 +243,9 @@ namespace dexih.functions
 
 			// sets the global variables to the object if the property exists.
 			var globalProperty = targetType.GetProperty("GlobalVariables");
-			if (GlobalVariables != null && globalProperty != null)
+			if (GlobalSettings != null && globalProperty != null)
 			{
-				globalProperty.SetValue(target, GlobalVariables);
+				globalProperty.SetValue(target, GlobalSettings);
 			}
 			
 			// sets the array parameters of the object if the property exists.
