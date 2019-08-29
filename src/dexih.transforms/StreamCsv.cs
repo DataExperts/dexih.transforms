@@ -104,7 +104,7 @@ namespace dexih.transforms
                 return 0;
             }
 
-            var readCount = await _memoryStream.ReadAsync(buffer, offset, count, cancellationToken);
+            var readCount = _memoryStream.Read(buffer, offset, count);
 
             // if the buffer already has enough content.
             if (readCount < count && count > _memoryStream.Length - _memoryStream.Position)
@@ -129,14 +129,14 @@ namespace dexih.transforms
                         if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                             s[j] = "\"" + s[j] + "\"";
                     }
-                    await _streamWriter.WriteLineAsync(string.Join(",", s));
+                    _streamWriter.WriteLine(string.Join(",", s));
 
                     if (_memoryStream.Length > count && _memoryStream.Length > BufferSize) break;
                 }
 
                 _memoryStream.Position = 0;
 
-                readCount += await _memoryStream.ReadAsync(buffer, readCount, count - readCount, cancellationToken);
+                readCount += _memoryStream.Read(buffer, readCount, count - readCount);
             }
 
             _position += readCount;

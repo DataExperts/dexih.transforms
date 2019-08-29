@@ -739,6 +739,8 @@
           <e p="ReaderMemory.cs" t="Include" />
           <e p="ReaderRowCreator.cs" t="Include" />
           <e p="ReaderSql.cs" t="Include" />
+          <e p="StreamAction.cs" t="Include" />
+          <e p="StreamAsyncAction.cs" t="Include" />
           <e p="StreamCsv.cs" t="Include" />
           <e p="StreamJson.cs" t="Include" />
           <e p="StreamJsonCompact.cs" t="Include" />
@@ -1048,6 +1050,7 @@
             <e p="AssemblyInfo.cs" t="Include" />
           </e>
           <e p="ReaderMemoryTests.cs" t="Include" />
+          <e p="StreamActionTests.cs" t="Include" />
           <e p="StreamCsvTests.cs" t="Include" />
           <e p="StreamJsonTests.cs" t="Include" />
           <e p="TestSoureDbReader.cs" t="Include" />

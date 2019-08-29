@@ -7,19 +7,20 @@ using Newtonsoft.Json.Linq;
 
 namespace dexih.transforms
 {
+    
     /// <summary>
-    /// Creates an async stream using the json result from the func
+    /// Creates a stream using the json result from the func
     /// </summary>
-
-    public class StreamAsyncAction<T>: Stream
+    /// <typeparam name="T"></typeparam>
+    public class StreamAction<T>: Stream
     {
         private readonly MemoryStream _memoryStream;
         private readonly StreamWriter _streamWriter;
         
-        private readonly Func<Task<T>> _func;
+        private readonly Func<T> _func;
         private bool isFirst = true;
 
-        public StreamAsyncAction(Func<Task<T>> func)
+        public StreamAction(Func<T> func)
         {
             _func = func;
             _memoryStream = new MemoryStream();
@@ -34,7 +35,7 @@ namespace dexih.transforms
 
         public override long Length => -1;
 
-        public override long Position { get => _memoryStream?.Position ?? 1; set => throw new NotSupportedException("The position cannot be set."); }
+        public override long Position { get => _memoryStream?.Position ?? -1; set => throw new NotSupportedException("The position cannot be set."); }
 
         public override void Flush()
         {
@@ -42,19 +43,9 @@ namespace dexih.transforms
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
-        }
-
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                throw new OperationCanceledException();
-            }
-            
             if (isFirst)
             {
-                var result = await _func.Invoke();
+                var result = _func.Invoke();
                 var json = Json.SerializeObject(result, "");
                 _streamWriter.Write(json);
                 _memoryStream.Position = 0;
@@ -62,7 +53,17 @@ namespace dexih.transforms
             }
 
             var readCount = _memoryStream.Read(buffer, offset, count);
-            return readCount;  
+            return readCount;        
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new OperationCanceledException();
+            }
+            var position = Read(buffer, offset, count);
+            return Task.FromResult(position);
         }
 
         public override long Seek(long offset, SeekOrigin origin)

@@ -2,11 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
+      <change afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/riderModule.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/riderModule.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.initialize.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.initialize.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions.ml/AnomalyDetection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.ml/AnomalyDetection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,63 +19,13 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>.Data.Add</find>
-      <find>_indexes</find>
-      <find>ReferenceTransform</find>
-      <find>_joinHashData</find>
-      <find>referenceTransform</find>
-      <find>GetProfileReference</find>
-      <find>input</find>
-      <find>InsertQuery</find>
-      <find>Filter.ECompare</find>
-      <find>MaxIncrementalValue</find>
-      <find>_incrementalColumnIndex</find>
-      <find>IsPrimaryTransform</find>
-      <find>TransformRowsReadReference</find>
-      <find>IsOpen</find>
-      <find>worksheet.</find>
-      <find>MapValueToKey</find>
-      <find>MapKeyToValue</find>
-      <find>ClusterLabelPrediction</find>
-      <find>&quot;Label&quot;</find>
-      <find>maximumNumberOfIterations</find>
-      <find>AddData</find>
-      <find>GetDataView</find>
-      <find>Result</find>
-      <find>predict</find>
-      <find>encodings</find>
-      <find>LoadFromEnumerable</find>
-      <find>&lt;T&gt;.Add</find>
-      <find>ols</find>
-      <find>Required</find>
-      <find>Mappings.GetRequiredColumns</find>
-    </findStrings>
-    <replaceStrings>
-      <replace>CombinePath</replace>
-      <replace>dexih.functions.builtIn</replace>
-      <replace>dexih.functions.BuiltIn</replace>
-      <replace>EFunctionType.Condition</replace>
-      <replace>Value</replace>
-      <replace>_aggregateFunctions</replace>
-      <replace>), new obj</replace>
-      <replace>typeof(BuiltIn.AggregateFunctions), nameof(AggregateFunctions.</replace>
-      <replace>(GlobalVariables?.DetailedResults??false)</replace>
-      <replace>cancellationToken = default)</replace>
-      <replace>(cancellationToken);</replace>
-      <replace>, cancellationToken);</replace>
-      <replace>))</replace>
-      <replace>.AddRow</replace>
-      <replace>ECompare</replace>
-    </replaceStrings>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTableMapping.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoMapper.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.flatfile.azure.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" root0="FORCE_HIGHLIGHTING" />
@@ -93,7 +48,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroup.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapInputColumn.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties/PropertyStructure.cs" root0="FORCE_HIGHLIGHTING" />
@@ -208,6 +163,7 @@
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/ConnectionStubs.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/F163DB5B-26F1-4970-920F-4519EA0B7531/e3/085bc907/TreeExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/QueryColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamAction.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/InsertQuery.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sorts.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" root0="FORCE_HIGHLIGHTING" />
@@ -225,12 +181,13 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Clustering.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/AnomalyDetection.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Helpers.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicType.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/SentimentAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RegressionPredictor.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicList.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicList.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicTypeProperty.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RegressionAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RecommendationAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RecommendationAnalysis.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Prediction.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs" root0="FORCE_HIGHLIGHTING" />
@@ -260,6 +217,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/Functions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/FileConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/ReaderMemoryTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/WebService.cs" root0="FORCE_HIGHLIGHTING" />
@@ -318,6 +276,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderFileHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionParameter.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DeltaValues.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionAttribute.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.cs" root0="FORCE_HIGHLIGHTING" />
@@ -347,12 +306,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.functions.ml.tests/dexih.functions.ml.tests.csproj" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.ml/Helpers.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.ml/Prediction.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.functions.ml.tests/clustering.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.functions.ml.tests/recommendation.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions.ml/SentimentAnalysis.cs" />
         <option value="$PROJECT_DIR$/test/dexih.functions.ml.tests/sentiment.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions.ml/Clustering.cs" />
@@ -398,14 +351,14 @@
         <option value="$PROJECT_DIR$/src/dexih.functions.maths/dexih.functions.maths.csproj" />
         <option value="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.initialize.cs" />
         <option value="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamAction.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" />
       </list>
     </option>
-  </component>
-  <component name="ProjectFrameBounds" fullScreen="true">
-    <option name="x" value="1680" />
-    <option name="y" value="-650" />
-    <option name="width" value="3840" />
-    <option name="height" value="2160" />
   </component>
   <component name="ProjectId" id="1PobDBLVEQhptQNjRAQeOBkFMdn" />
   <component name="PropertiesComponent">
@@ -692,7 +645,9 @@
       <workItem from="1564466619813" duration="1179000" />
       <workItem from="1565011279025" duration="69000" />
       <workItem from="1565011376999" duration="582000" />
-      <workItem from="1566543276464" duration="240000" />
+      <workItem from="1566543276464" duration="335000" />
+      <workItem from="1566610396875" duration="22000" />
+      <workItem from="1566866230897" duration="3253000" />
     </task>
     <task id="LOCAL-00010" summary="Fix some tests with SqlServer on Linux">
       <created>1501211946775</created>
@@ -1040,15 +995,6 @@
     <option name="localTasksCounter" value="59" />
     <servers />
   </component>
-  <component name="TodoView">
-    <todo-panel id="selected-file">
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-    <todo-panel id="all">
-      <are-packages-shown value="true" />
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-  </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
@@ -1134,6 +1080,52 @@
     <MESSAGE value="bug fix" />
     <MESSAGE value="fixed reference in functions.math" />
     <option name="LAST_COMMIT_MESSAGE" value="fixed reference in functions.math" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="1153" height="436" key="DebuggerActiveHint" />
+    <state width="1153" height="436" key="DebuggerActiveHint/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.0.bottom" />
+    <state width="3798" height="466" key="GridCell.Tab.0.bottom/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.0.center" />
+    <state width="3798" height="466" key="GridCell.Tab.0.center/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.0.left" />
+    <state width="3798" height="466" key="GridCell.Tab.0.left/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.0.right" />
+    <state width="3798" height="466" key="GridCell.Tab.0.right/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.1.bottom" />
+    <state width="3798" height="466" key="GridCell.Tab.1.bottom/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.1.center" />
+    <state width="3798" height="466" key="GridCell.Tab.1.center/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.1.left" />
+    <state width="3798" height="466" key="GridCell.Tab.1.left/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.1.right" />
+    <state width="3798" height="466" key="GridCell.Tab.1.right/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.2.bottom" />
+    <state width="3798" height="466" key="GridCell.Tab.2.bottom/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.2.center" />
+    <state width="3798" height="466" key="GridCell.Tab.2.center/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.2.left" />
+    <state width="3798" height="466" key="GridCell.Tab.2.left/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.2.right" />
+    <state width="3798" height="466" key="GridCell.Tab.2.right/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.3.bottom" />
+    <state width="3798" height="466" key="GridCell.Tab.3.bottom/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.3.center" />
+    <state width="3798" height="466" key="GridCell.Tab.3.center/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.3.left" />
+    <state width="3798" height="466" key="GridCell.Tab.3.left/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.3.right" />
+    <state width="3798" height="466" key="GridCell.Tab.3.right/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.4.bottom" />
+    <state width="3798" height="466" key="GridCell.Tab.4.bottom/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.4.center" />
+    <state width="3798" height="466" key="GridCell.Tab.4.center/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.4.left" />
+    <state width="3798" height="466" key="GridCell.Tab.4.left/3840.2160/3360.2100" />
+    <state width="3798" height="466" key="GridCell.Tab.4.right" />
+    <state width="3798" height="466" key="GridCell.Tab.4.right/3840.2160/3360.2100" />
+    <state x="3424" y="-286" width="1951" height="1679" key="find.popup" />
+    <state x="3424" y="-286" width="1951" height="1679" key="find.popup/3840.2160/3360.2100" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

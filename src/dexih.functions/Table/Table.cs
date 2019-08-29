@@ -610,7 +610,7 @@ namespace dexih.functions
             {
                 s[j] = columns[j];
                 if (s[j].Contains("\"")) //replace " with ""
-                    s[j].Replace("\"", "\"\"");
+                    s[j] = s[j].Replace("\"", "\"\"");
                 if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
                     s[j] = "\"" + s[j] + "\"";
             }
@@ -623,7 +623,7 @@ namespace dexih.functions
                 {
                     s[j] = row[j] == null ? "" : row[j].ToString();
                     if (s[j].Contains("\"")) //replace " with ""
-                        s[j].Replace("\"", "\"\"");
+                        s[j] = s[j].Replace("\"", "\"\"");
                     if (s[j].Contains("\"") || s[j].Contains(" ")) //add "'s around any string with space or "
                         s[j] = "\"" + s[j] + "\"";
                 }

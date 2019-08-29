@@ -104,7 +104,7 @@ using System.Threading.Tasks;
                 return 0;
             }
 
-            var readCount = await _memoryStream.ReadAsync(buffer, offset, count, cancellationToken);
+            var readCount = _memoryStream.Read(buffer, offset, count);
 
             // if the buffer already has enough content.
             if (readCount < count && count > _memoryStream.Length - _memoryStream.Position)
@@ -119,14 +119,14 @@ using System.Threading.Tasks;
 
                         if (_hasRows == false)
                         {
-                            await _streamWriter.WriteAsync(endWrite);
+                            _streamWriter.Write(endWrite);
                         }
                     }
                     catch (Exception ex)
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync(endWrite + ", \"status\"=" + result + " }");
+                        _streamWriter.Write(endWrite + ", \"status\"=" + result + " }");
                         _hasRows = false;
                     }
 
@@ -156,7 +156,7 @@ using System.Threading.Tasks;
                     }
 
                     var row = jObject.ToString();
-                    await _streamWriter.WriteAsync(row);
+                    _streamWriter.Write(row);
 
                     _rowCount++;
                     try
@@ -165,11 +165,11 @@ using System.Threading.Tasks;
                         
                         if (_hasRows && _rowCount < _maxRows)
                         {
-                            await _streamWriter.WriteAsync(",");
+                            _streamWriter.Write(",");
                         }
                         else
                         {
-                            await _streamWriter.WriteAsync(endWrite);
+                            _streamWriter.Write(endWrite);
                             _hasRows = false;
                             break;
                         }
@@ -178,14 +178,14 @@ using System.Threading.Tasks;
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync(endWrite + ", \"status\"=" + result + " }");
+                        _streamWriter.Write(endWrite + ", \"status\"=" + result + " }");
                         _hasRows = false;
                     }
                 }
 
                 _memoryStream.Position = 0;
 
-                readCount += await _memoryStream.ReadAsync(buffer, readCount, count - readCount, cancellationToken);
+                readCount += _memoryStream.Read(buffer, readCount, count - readCount);
             }
 
             _position += readCount;

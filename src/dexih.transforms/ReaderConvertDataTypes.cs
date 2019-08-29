@@ -45,12 +45,14 @@ namespace dexih.transforms
                 }
             }
 
-            IsOpen = PrimaryTransform.IsOpen;
+            
         }
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
-            return PrimaryTransform?.Open(auditKey, selectQuery, cancellationToken) ?? Task.FromResult(false);
+            await PrimaryTransform?.Open(auditKey, selectQuery, cancellationToken);
+            IsOpen = PrimaryTransform.IsOpen;
+            return IsOpen;
         }
 
         public override string TransformName { get; } = "Data Type Converter";

@@ -16,9 +16,7 @@ namespace dexih.functions.ml
         private OrderedDictionary _cacheSeries;
 
         private AnomalyPrediction[] _predictions;
-        
-        private PredictionEngine<AnomalyEntry, AnomalyPrediction> _predictionEngine;
-        
+
         public bool Reset()
         {
             _cacheSeries?.Clear();
