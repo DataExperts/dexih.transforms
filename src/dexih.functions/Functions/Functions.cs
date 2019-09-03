@@ -130,6 +130,7 @@ namespace dexih.functions
                     return ignore != null;
                 }
 
+                var parameters = method.GetParameters();
 
                 var function = new FunctionReference()
                 {
@@ -147,8 +148,8 @@ namespace dexih.functions
                     GenericType = attribute.GenericType,
                     GenericTypeDefault = attribute.GenericTypeDefault,
                     ReturnParameters = GetResultParameters(method, "Return"),
-                    InputParameters = method.GetParameters().Where(c => !isIgnoreParameter(c) && isInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
-                    OutputParameters = method.GetParameters().Where(c => !isIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray(),
+                    InputParameters = parameters.Where(c => !isIgnoreParameter(c) && isInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
+                    OutputParameters = parameters.Where(c => !isIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray(),
                     ResultReturnParameters = GetResultParameters(resultMethod, "Group Return"),
                     ResultInputParameters = resultMethod?.GetParameters().Where(c => !isIgnoreParameter(c) && isInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
                     ResultOutputParameters = resultMethod?.GetParameters().Where(c => !isIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray()

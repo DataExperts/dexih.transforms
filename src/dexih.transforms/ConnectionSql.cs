@@ -876,7 +876,14 @@ namespace dexih.connections.sql
                         }
                         catch (Exception)
                         {
+                            if(transaction.transaction.Connection == null)
+                            {
+                                transaction = await GetTransaction(transactionReference);
+                            }
+                            cmd = transaction.connection.CreateCommand();
+                            cmd.Transaction = transaction.transaction;
                             cmd.CommandText = "delete from " + SqlTableName(table);
+
                             try
                             {
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);

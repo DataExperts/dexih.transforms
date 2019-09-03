@@ -45,15 +45,15 @@ namespace dexih.functions.Parameter
                 {
                     input.InitializeOrdinal(table, joinTable);
                 }
-            }    
+            }
         }
 
-        public void InitializeOutputs(IList<Parameter> returnParameters, IList<Parameter> outputs, Table table)
-        {
-            Outputs = outputs;
-            ReturnParameters = returnParameters;
-            InitializeOutputOrdinals(table);            
-        }
+        //public void InitializeOutputs(IList<Parameter> returnParameters, IList<Parameter> outputs, Table table)
+        //{
+        //    Outputs = outputs;
+        //    ReturnParameters = returnParameters;
+        //    InitializeOutputOrdinals(table);            
+        //}
 
         public void InitializeOutputOrdinals(Table table)
         {
@@ -132,6 +132,7 @@ namespace dexih.functions.Parameter
                     parameter.SetInputData(data, joinData);
                 }
             }
+
         }
 
         /// <summary>

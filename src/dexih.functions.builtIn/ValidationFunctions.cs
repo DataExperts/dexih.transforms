@@ -4,78 +4,107 @@ namespace dexih.functions.BuiltIn
 {
     public class ValidationFunctions
     {
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Default Blank String", Description = "Checks if the string is blank or null, and sets to the defualtValue when true.")]
-        public bool DefaultBlankString(string value, string defaultValue, out string adjustedValue)
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Clean Blank String", Description = "Checks if the string is blank or null, and sets to the defualtValue when true.")]
+        public bool CleanBlankString(
+            [TransformFunctionParameter(Description = "Value to test for blanks")] string value,
+            [TransformFunctionParameter(Description = "Value to set when blank")] string defaultValue,
+            [TransformFunctionParameter(Name ="Cleaned Output", Description = "Cleaned output value")]  out string cleanedValue)
         {
             if (string.IsNullOrEmpty(value))
             {
-                adjustedValue = defaultValue;
+                cleanedValue = defaultValue;
                 return false;
             }
-            adjustedValue = value;
+            cleanedValue = value;
+            return true;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Clean Null", Description = "Checks if the string is null, and sets to the defualtValue when true.")]
+        public bool CleanNull(
+            [TransformFunctionParameter(Description = "Value to test for nulls")] string value,
+            [TransformFunctionParameter(Description = "Value to set when null")] string defaultValue,
+            [TransformFunctionParameter(Name = "Cleaned Output", Description = "Cleaned output value")]  out string cleanedValue)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                cleanedValue = defaultValue;
+                return false;
+            }
+            cleanedValue = value;
             return true;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Set Value to Null or 0", Description = "Replaces the specified value with null or 0 value.")]
-        public bool SetValueToNull<T>(T value, T checkValue, out T adjustedValue)
-        {
-            if (Equals(value, checkValue))
-            {
-                adjustedValue = default(T);
-                return false;
-            }
-
-            adjustedValue = value;
-            return true;
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Set Value to Default", Description = "Replaces the specified value with another value.")]
-        public bool SetValueToDefault<T>(T value, T checkValue, T defaultValue, out T adjustedValue)
-        {
-            if (Equals(value, checkValue))
-            {
-                adjustedValue = defaultValue;
-                return false;
-            }
-
-            adjustedValue = value;
-            return true;
-        }
-
-        
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Maximum Length", Description = "Checks if the string exceeds the length, and trims the string when true.")]
-        public bool MaxLength(string value, int maxLength, out string trimmedValue)
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Validate Maximum Length", Description = "Checks if the string exceeds the length, and trims the string when true.")]
+        public bool MaxLength(
+             [TransformFunctionParameter(Description = "Value to test for length")] string value,
+            [TransformFunctionParameter(Description = "Maximum allowed length")] int maxLength,
+            [TransformFunctionParameter(Name = "Cleaned Output", Description = "Cleaned output value")]  out string cleanedValue)
         {
             if (value.Length > maxLength)
             {
-                trimmedValue = value.Substring(0, maxLength);
+                cleanedValue = value.Substring(0, maxLength);
                 return false;
             }
-            trimmedValue = null;
+            cleanedValue = value;
             return true;
         }
-        
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Maximum Value", Description = "Checks if the number is greater than the value, and sets to the adjusted value when true.")]
-        public bool MaxValue<T>(T value, T maxValue, out T adjustedValue)
+
+        public enum EBeforeAfter
+        {
+            Before, After
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Validate Minimum Length", Description = "Checks if the string is greater or equal to the minimum length.")]
+        public bool MinLength(
+         [TransformFunctionParameter(Description = "Value to test for length")] string value,
+        [TransformFunctionParameter(Description = "Minimum allowed length")] int maxLength,
+        [TransformFunctionParameter(Description = "Pad small strings with character.")] string padChar,
+        [TransformFunctionParameter(Description = "Pad before or after string.")] EBeforeAfter padBeforeAfter,
+        [TransformFunctionParameter(Name = "Cleaned Output", Description = "Cleaned output value")]  out string cleanedValue)
+        {
+            if (value.Length <= maxLength)
+            {
+                var padString = new string(padChar[0], maxLength - value.Length);
+                if(padBeforeAfter == EBeforeAfter.Before)
+                {
+                    cleanedValue = padString + value;
+                } else
+                {
+                    cleanedValue = value + padString;
+                }
+                return false;
+            }
+            cleanedValue = value;
+            return true;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Validate Maximum Value", Description = "Checks if the number is greater than the value, and sets to the adjusted value when true.")]
+        public bool MaxValue<T>(
+             [TransformFunctionParameter(Description = "Value to test")] T value,
+            [TransformFunctionParameter(Description = "Maximum Value")] T maxValue,
+        [TransformFunctionParameter(Name = "Cleaned Output", Description = "Cleaned output value")]  out T cleanedValue)
         {
             if (Operations.GreaterThan(value, maxValue))
             {
-                adjustedValue = maxValue;
+                cleanedValue = maxValue;
                 return false;
             }
-            adjustedValue = value;
+            cleanedValue = value;
             return true;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Minimum Value", Description = "Checks if the number is less than the value, and sets to the adjusted value when true.")]
-        public bool MinValue<T>(T value, T minValue, out T adjustedValue)
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Validate Minimum Value", Description = "Checks if the number is less than the value, and sets to the adjusted value when true.")]
+        public bool MinValue<T>(
+             [TransformFunctionParameter(Description = "Value to test")] T value,
+             [TransformFunctionParameter(Description = "Minimum Value")] T minValue,
+        [TransformFunctionParameter(Name = "Cleaned Output", Description = "Cleaned output value")]  out T cleanedValue)
         {
             if (Operations.LessThan(value, minValue))
             {
-                adjustedValue = minValue;
+                cleanedValue = minValue;
                 return false;
             }
-            adjustedValue = value;
+            cleanedValue = value;
             return true;
         }
     }
