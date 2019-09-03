@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -30,10 +31,10 @@ namespace dexih.transforms.tests
         [Fact]
         void StreamAsyncAction_Test()
         {
-            var stream = new StreamAsyncAction<int[]>(async () =>
+            var stream = new StreamAsyncAction<int[]>(() =>
             {
                 var values = new[] {1, 2, 3, 4, 5};
-                return values;
+                return Task.FromResult(values);
             });
 
             var serializer = new JsonSerializer();

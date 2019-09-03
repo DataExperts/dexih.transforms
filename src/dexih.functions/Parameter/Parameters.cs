@@ -48,12 +48,12 @@ namespace dexih.functions.Parameter
             }
         }
 
-        //public void InitializeOutputs(IList<Parameter> returnParameters, IList<Parameter> outputs, Table table)
-        //{
-        //    Outputs = outputs;
-        //    ReturnParameters = returnParameters;
-        //    InitializeOutputOrdinals(table);            
-        //}
+        public void InitializeOutputs(IList<Parameter> returnParameters, IList<Parameter> outputs, Table table)
+        {
+            Outputs = outputs;
+            ReturnParameters = returnParameters;
+            InitializeOutputOrdinals(table);            
+        }
 
         public void InitializeOutputOrdinals(Table table)
         {

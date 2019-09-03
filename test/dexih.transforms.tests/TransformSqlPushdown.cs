@@ -20,7 +20,7 @@ namespace dexih.transforms.tests
         };
 
         [Fact]
-        public async Task TestSortPushdown()
+        public void TestSortPushdown()
         {
             var table = SampleTable;
             
@@ -32,13 +32,13 @@ namespace dexih.transforms.tests
 
             sort.Open();
             
-            Assert.Equal(1, reader.SelectQuery.Sorts.Count);
+            Assert.Single(reader.SelectQuery.Sorts);
             Assert.Equal("key", reader.SelectQuery.Sorts[0].Column.Name);
 
         }
         
         [Fact]
-        public async Task TestFilterPushdown()
+        public void TestFilterPushdown()
         {
             var table = SampleTable;
             
@@ -55,7 +55,7 @@ namespace dexih.transforms.tests
 
             filter.Open();
             
-            Assert.Equal(1, reader.SelectQuery.Filters.Count);
+            Assert.Single(reader.SelectQuery.Filters);
             Assert.Equal(table.Columns[1].Name, reader.SelectQuery.Filters[0].Column1.Name);
             Assert.Equal(5, reader.SelectQuery.Filters[0].Value2);
             Assert.Equal(ECompare.GreaterThan, reader.SelectQuery.Filters[0].Operator);
@@ -63,7 +63,7 @@ namespace dexih.transforms.tests
         }
         
         [Fact]
-        public async Task TestMapPushdown()
+        public void TestMapPushdown()
         {
             var table = SampleTable;
             
@@ -80,12 +80,12 @@ namespace dexih.transforms.tests
 
             mapping.Open();
             
-            Assert.Equal(1, reader.SelectQuery.Columns.Count);
+            Assert.Single(reader.SelectQuery.Columns);
             Assert.Equal(table.Columns[1].Name, reader.SelectQuery.Columns[0].Column.Name);
         }
         
         [Fact]
-        public async Task TestMapFilterSortPushdown()
+        public void TestMapFilterSortPushdown()
         {
             var table = SampleTable;
             
@@ -110,15 +110,15 @@ namespace dexih.transforms.tests
 
             sort.Open();
             
-            Assert.Equal(1, reader.SelectQuery.Columns.Count);
+            Assert.Single(reader.SelectQuery.Columns);
             Assert.Equal(table.Columns[0].Name, reader.SelectQuery.Columns[0].Column.Name);
             
-            Assert.Equal(1, reader.SelectQuery.Filters.Count);
+            Assert.Single(reader.SelectQuery.Filters);
             Assert.Equal(table.Columns[0].Name, reader.SelectQuery.Filters[0].Column1.Name);
             Assert.Equal(5, reader.SelectQuery.Filters[0].Value2);
             Assert.Equal(ECompare.GreaterThan, reader.SelectQuery.Filters[0].Operator);
             
-            Assert.Equal(1, reader.SelectQuery.Sorts.Count);
+            Assert.Single(reader.SelectQuery.Sorts);
             Assert.Equal("key", reader.SelectQuery.Sorts[0].Column.Name);
         }
     }
