@@ -8,7 +8,8 @@ using System.Threading.Tasks;
  using Dexih.Utils.CopyProperties;
  using Dexih.Utils.Crypto;
  using Dexih.Utils.MessageHelpers;
- using Newtonsoft.Json.Linq;
+using NetTopologySuite.Geometries;
+using Newtonsoft.Json.Linq;
 
  namespace dexih.transforms
 {
@@ -96,7 +97,7 @@ using System.Threading.Tasks;
             return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if(!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
             {
@@ -151,7 +152,16 @@ using System.Threading.Tasks;
                             jObject[_reader.GetName(i)] = "binary data not viewable.";
                             continue;
                         }
-
+                        if (_reader[i] is Geometry geometry)
+                        {
+                            jObject[_reader.GetName(i)] = geometry.AsText();
+                            continue;
+                        }
+                        if (_reader[i] is null || _reader[i] is DBNull)
+                        {
+                            jObject[_reader.GetName(i)] = null;
+                            continue;
+                        }
                         jObject[_reader.GetName(i)] = JToken.FromObject(_reader[i]);
                     }
 

@@ -151,13 +151,24 @@ namespace dexih.functions.Parameter
                 }
                 else
                 {
-                    var returnType = returnValue.GetType();
-
-                    foreach (var parameter in ReturnParameters)
+                    if(returnValue == null)
                     {
-                        var property = returnType.GetProperty(parameter.Name);
-                        var value = property?.GetValue(returnValue);
-                        parameter.PopulateRowData(value, outputRow);
+                        foreach (var parameter in ReturnParameters)
+                        {
+                            parameter.PopulateRowData(null, outputRow);
+                        }
+
+                    }
+                    else
+                    {
+                        var returnType = returnValue.GetType();
+
+                        foreach (var parameter in ReturnParameters)
+                        {
+                            var property = returnType.GetProperty(parameter.Name);
+                            var value = property?.GetValue(returnValue);
+                            parameter.PopulateRowData(value, outputRow);
+                        }
                     }
                 }
             }

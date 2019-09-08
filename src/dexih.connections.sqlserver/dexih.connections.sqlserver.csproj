@@ -16,6 +16,7 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="NetTopologySuite.IO.SqlServerBytes" Version="2.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
   </ItemGroup>
   <ItemGroup>

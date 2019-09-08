@@ -29,7 +29,7 @@ namespace dexih.functions.Query
         public List<TableColumn> InputColumns { get; set; }
         
         /// <summary>
-        /// Used for flatfiles to specify only a specific filename
+        /// Used for flat files to specify only a specific filename
         /// </summary>
         public string FileName { get; set; }
         public EFlatFilePath Path { get; set; }

@@ -72,8 +72,8 @@ namespace dexih.transforms
             }
 
             selectQuery.Sorts = requiredSorts;
-            
-            SelectQuery = selectQuery;
+
+            SetSelectQuery(selectQuery, true);
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             return returnValue;

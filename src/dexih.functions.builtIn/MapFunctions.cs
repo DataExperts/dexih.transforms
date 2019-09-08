@@ -718,23 +718,7 @@ namespace dexih.functions.BuiltIn
             return columns.ToArray();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Get Distance To",
-            Description = "The distance in meters between two Geographical Coordinates. ")]
-        public double GetDistanceTo(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
-        {
-            var rlat1 = Math.PI * fromLatitude / 180;
-            var rlat2 = Math.PI * toLatitude / 180;
-            var theta = fromLongitude - toLongitude;
-            var rtheta = Math.PI * theta / 180;
-            var dist =
-                Math.Sin(rlat1) * Math.Sin(rlat2) + Math.Cos(rlat1) *
-                Math.Cos(rlat2) * Math.Cos(rtheta);
-            dist = Math.Acos(dist);
-            dist = dist * 180 / Math.PI;
-            dist = dist * 60 * 1853.159616F;
-
-            return dist;
-        }
+ 
 
       
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Split Fixed Width",

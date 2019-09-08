@@ -8,7 +8,8 @@ using System.Threading.Tasks;
  using dexih.functions;
  using Dexih.Utils.Crypto;
  using Dexih.Utils.MessageHelpers;
- using Newtonsoft.Json;
+using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
 
 namespace dexih.transforms
 {
@@ -30,8 +31,9 @@ namespace dexih.transforms
         private bool _hasRows;
         private bool _first;
         private readonly object[] _valuesArray;
+        private readonly int _maxFieldSize;
 
-        public StreamJsonCompact(string name, DbDataReader reader, long maxRows = -1)
+        public StreamJsonCompact(string name, DbDataReader reader, int maxFieldSize = -1, long maxRows = -1)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
@@ -39,6 +41,7 @@ namespace dexih.transforms
             _position = 0;
 
             _maxRows = maxRows <= 0 ? long.MaxValue : maxRows;
+            _maxFieldSize = maxFieldSize;
             _rowCount = 0;
             _hasRows = true;
             _first = true;
@@ -92,7 +95,7 @@ namespace dexih.transforms
             return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if(!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
             {
@@ -143,7 +146,18 @@ namespace dexih.transforms
                     for(var i = 0; i < _valuesArray.Length; i++)
                     {
                         if (_valuesArray[i] is byte[])
+                        {
                             _valuesArray[i] = "binary data not viewable.";
+                        }
+                        if(_valuesArray[i] is Geometry geometry)
+                        {
+                            _valuesArray[i] = geometry.AsText();
+                        }
+
+                        if (_valuesArray[i] is string valueString && valueString.Length > _maxFieldSize)
+                        {
+                            _valuesArray[i] = valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
+                        }
                     }
 
                     var row = JsonConvert.SerializeObject(_valuesArray);
@@ -162,6 +176,16 @@ namespace dexih.transforms
                         else
                         {
                             _streamWriter.Write("]");
+
+                            if (_reader is Transform transform)
+                            {
+                                var properties = transform.GetTransformProperties(true);
+                                var propertiesSerialized = Json.SerializeObject(properties, "");
+                                _streamWriter.Write(", \"transformProperties\":" + propertiesSerialized);
+                            }
+
+                            _streamWriter.Write("}");
+
                             _hasRows = false;
                             break;
                         }
@@ -174,15 +198,6 @@ namespace dexih.transforms
                         _hasRows = false;
                     }
                 }
-
-                if (_reader is Transform transform)
-                {
-                    var properties = transform.GetTransformProperties(true);
-                    var propertiesSerialized = Json.SerializeObject(properties, "");
-                    _streamWriter.Write(", \"transformProperties\":" + propertiesSerialized);
-                }
-
-                _streamWriter.Write("}");
 
                 _memoryStream.Position = 0;
 

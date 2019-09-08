@@ -46,6 +46,10 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
+            if (selectQuery.Rows > 0 && selectQuery.Rows < MaxOutputRows)
+            {
+                MaxOutputRows = selectQuery.Rows;
+            }
             selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
@@ -66,6 +70,8 @@ namespace dexih.transforms
             }
 
             selectQuery.Sorts = requiredSorts;
+
+            SetSelectQuery(selectQuery, true);
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             return returnValue;

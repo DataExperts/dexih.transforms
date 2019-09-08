@@ -77,7 +77,7 @@ namespace dexih.connections.sqlite
                     using (var cmd = CreateCommand(connection,
                         "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
                     {
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
                         var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                         return tableExists != null;
                     }

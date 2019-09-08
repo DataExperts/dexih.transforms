@@ -269,14 +269,20 @@ namespace dexih.transforms
         {
             AuditKey = auditKey;
             IsOpen = true;
-            
+
             if (selectQuery == null)
             {
                 selectQuery = new SelectQuery();
             }
             else
             {
+                if (selectQuery.Rows > 0 && selectQuery.Rows < MaxOutputRows)
+                {
+                    MaxOutputRows = selectQuery.Rows;
+                }
+
                 selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
+                selectQuery.Rows = -1;
             }
             
             if (_cacheLoaded) return true;
@@ -285,8 +291,9 @@ namespace dexih.transforms
 
             //only apply a sort if there is not already a sort applied.
             selectQuery.Sorts = RequiredSortFields();
-            SelectQuery = selectQuery;
-            
+
+            SetSelectQuery(selectQuery, true);
+
             var referenceQuery = new SelectQuery()
             {
                 Sorts = RequiredReferenceSortFields()
@@ -674,7 +681,7 @@ namespace dexih.transforms
         public override List<Sort> RequiredSortFields()
         {
             var fields = new List<Sort>();
-            foreach (var joinPair in Mappings.OfType<MapJoin>())
+            foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.InputColumn != null))
             {
                 fields.Add(new Sort {Column = joinPair.InputColumn, Direction = Sort.EDirection.Ascending});
             }
@@ -684,7 +691,7 @@ namespace dexih.transforms
         public override List<Sort> RequiredReferenceSortFields()
         {
             var fields = new List<Sort>();
-            foreach (var joinPair in Mappings.OfType<MapJoin>())
+            foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.JoinColumn != null))
             {
                 fields.Add(new Sort {Column = joinPair.JoinColumn, Direction = Sort.EDirection.Ascending});
             }

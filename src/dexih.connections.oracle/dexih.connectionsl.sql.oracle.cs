@@ -1031,8 +1031,8 @@ ORDER BY cols.table_name, cols.position"))
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "select object_name from all_objects where object_type = 'TABLE' and OBJECT_NAME = :NAME and OWNER = :SCHEMA"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "NAME", table.Name));
-                    cmd.Parameters.Add(CreateParameter(cmd, "SCHEMA", DefaultDatabase));
+                    cmd.Parameters.Add(CreateParameter(cmd, "NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "SCHEMA", DataType.ETypeCode.Text, ParameterDirection.Input, DefaultDatabase));
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
                 }

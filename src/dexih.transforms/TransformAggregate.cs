@@ -60,7 +60,7 @@ namespace dexih.transforms
             {
                 for(var i =0; i<requiredSorts.Count; i++)
                 {
-                    if (selectQuery.Sorts[i].Column == requiredSorts[i].Column)
+                    if (selectQuery.Sorts[i].Column.Equals(requiredSorts[i].Column))
                         requiredSorts[i].Direction = selectQuery.Sorts[i].Direction;
                     else
                         break;
@@ -75,8 +75,8 @@ namespace dexih.transforms
                 return false;
             }
 
-            SelectQuery = selectQuery;
-            
+            SetSelectQuery(selectQuery, true);
+
             var nodeMappings = Mappings.OfType<MapGroupNode>().ToArray();
             if (nodeMappings.Length == 1)
             {

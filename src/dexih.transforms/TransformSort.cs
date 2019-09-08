@@ -80,7 +80,7 @@ namespace dexih.transforms
 
             selectQuery.Sorts = RequiredSortFields();
 
-            SelectQuery = selectQuery;
+            SetSelectQuery(selectQuery, true);
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 

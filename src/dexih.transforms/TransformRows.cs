@@ -77,7 +77,7 @@ namespace dexih.transforms
                 }
             }
 
-            SelectQuery = selectQuery;
+            SetSelectQuery(selectQuery, true);
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             _firstRecord = true;

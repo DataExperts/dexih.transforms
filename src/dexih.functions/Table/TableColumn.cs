@@ -175,7 +175,17 @@ namespace dexih.functions
         public string TableColumnName()
         {
             var columnName = (string.IsNullOrEmpty(ReferenceTable) ? "" : ReferenceTable + ".") + (string.IsNullOrEmpty(ColumnGroup) ? "" : ColumnGroup + ".") + Name;
-            return columnName;
+
+            if (!string.IsNullOrEmpty(ReferenceTable))
+            {
+                return ReferenceTable + "." + Name;
+            }
+
+            if (!string.IsNullOrEmpty(ColumnGroup))
+            {
+                return ColumnGroup + "." + Name;
+            }
+            return Name;
         }
 
         /// <summary>

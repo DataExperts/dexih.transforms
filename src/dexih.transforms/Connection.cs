@@ -15,6 +15,8 @@ using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
 using Dexih.Utils.DataType;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
 
 namespace dexih.transforms
 {
@@ -595,6 +597,12 @@ namespace dexih.transforms
             return Task.CompletedTask;
         }
 
+        public virtual byte[] ConvertFromGeometry(Geometry value)
+        {
+            return value.AsBinary();
+        }
+
+
         public object ConvertForWrite(TableColumn column, object value)
         {
             return ConvertForWrite(column.Name, column.DataType, column.Rank, column.AllowDbNull, value);
@@ -639,6 +647,11 @@ namespace dexih.transforms
                 case ETypeCode.Binary:
                     if(!CanUseBinary) return Operations.Parse<string>(value);
                     goto default;
+                case ETypeCode.Geometry:
+                        var geometry = Operations.Parse<Geometry>(value);
+                        var binary = ConvertFromGeometry(geometry);
+                        if (CanUseBinary) return Operations.Parse<byte[]>(binary);
+                        return Operations.Parse<string>(binary);
                 case ETypeCode.Boolean:
                     if (!CanUseBoolean)
                     {
@@ -701,8 +714,10 @@ namespace dexih.transforms
         /// <param name="column"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public virtual object ConvertForRead(TableColumn column, object value)
+        public virtual object ConvertForRead(DbDataReader reader, int ordinal, TableColumn column)
         {
+            var value = reader[ordinal];
+
             if ((column.Rank > 0 && !CanUseArray) ||
                 (column.DataType == ETypeCode.CharArray && !CanUseCharArray) ||
                 (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
@@ -712,9 +727,15 @@ namespace dexih.transforms
             {
                 return Operations.Parse(column.DataType, value);
             }
+
+            if(column.DataType == ETypeCode.Geometry)
+            {
+               var bytes = Operations.Parse<byte[]>(value);
+                var binReader = new WKBReader();
+                return binReader.Read(bytes);
+            }
             
             return value;
-
         }
 
         /// <summary>

@@ -13,6 +13,9 @@ using dexih.functions.Query;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.DataType;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.sqlserver
 {
@@ -38,7 +41,12 @@ namespace dexih.connections.sqlserver
         public override bool CanUseGuid { get; } = true;
         public override bool AllowsTruncate { get; } = true;
 
-        
+        public override byte[] ConvertFromGeometry(Geometry value)
+        {
+            var geometryWriter = new SqlServerBytesWriter();
+            return geometryWriter.Write(value);
+        }
+
         protected override string SqlFromAttribute(Table table)
         {
             var sql = "";
@@ -73,7 +81,54 @@ namespace dexih.connections.sqlserver
             }
 		    
         }
-        
+
+        public override object ConvertForRead(DbDataReader reader, int ordinal, TableColumn column)
+        {
+            if ((column.Rank > 0 && !CanUseArray) ||
+                (column.DataType == ETypeCode.CharArray && !CanUseCharArray) ||
+                (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
+                (column.DataType == ETypeCode.Json && !CanUseJson) ||
+                (column.DataType == ETypeCode.Xml && !CanUseXml) ||
+                column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
+            {
+                return Operations.Parse(column.DataType, reader[ordinal]);
+            }
+
+            if (column.DataType == ETypeCode.Geometry && reader is SqlDataReader sqlReader)
+            {
+                var geometryReader = new SqlServerBytesReader();
+                if (sqlReader.IsDBNull(ordinal)) return null;
+                return geometryReader.Read(sqlReader.GetSqlBytes(ordinal).Value);
+            }
+
+            return reader[ordinal];
+        }
+
+        public override DbParameter CreateParameter(DbCommand command, string name, ETypeCode typeCode, ParameterDirection direction, object value)
+        {
+            var param = command.CreateParameter();
+            param.ParameterName = name;
+            param.Direction = direction;
+            param.Value = ConvertForWrite(param.ParameterName, typeCode, 0, true, value);
+
+            switch (typeCode)
+            {
+                case ETypeCode.UInt16:
+                    param.DbType = DbType.Int32;
+                    break;
+                case ETypeCode.UInt32:
+                    param.DbType = DbType.Int64;
+                    break;
+                case ETypeCode.UInt64:
+                    param.DbType = DbType.Int64;
+                    break;
+                default:
+                    param.DbType = GetDbType(typeCode);
+                    break;
+            }
+            
+            return param;
+        }
 
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
@@ -113,7 +168,7 @@ namespace dexih.connections.sqlserver
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "select name from sys.tables where object_id = OBJECT_ID(@NAME)"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", SqlTableName(table)));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.String, ParameterDirection.Input, SqlTableName(table)));
                     var tableExistsResult = await cmd.ExecuteScalarAsync(cancellationToken);
                     if(tableExistsResult == null)
                     {
@@ -199,7 +254,7 @@ namespace dexih.connections.sqlserver
                     using (var cmd = connection.CreateCommand())
                     {
                         cmd.CommandText = "SELECT s.name SchemaName FROM sys.tables AS t INNER JOIN sys.schemas AS s ON t.[schema_id] = s.[schema_id] where object_id = OBJECT_ID(@NAME)";
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", SqlTableName(table)));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, ParameterDirection.Input, SqlTableName(table)));
 
                         try
                         {
@@ -224,9 +279,9 @@ namespace dexih.connections.sqlserver
                             using (var cmd = connection.CreateCommand())
                             {
                                 cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename";
-                                cmd.Parameters.Add(CreateParameter(cmd, "@description", table.Description));
-                                cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
-                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.Name));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@description", ETypeCode.Text, ParameterDirection.Input, table.Description));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", ETypeCode.Text, ParameterDirection.Input, schemaName));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", ETypeCode.Text, ParameterDirection.Input, table.Name));
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
                             }
                         }
@@ -239,10 +294,10 @@ namespace dexih.connections.sqlserver
                                 using (var cmd = connection.CreateCommand())
                                 {
                                     cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename, @level2type=N'COLUMN',@level2name=@columnname";
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@description", col.Description));
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", schemaName));
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", table.Name));
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@columnname", col.Name));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@description", ETypeCode.Text, ParameterDirection.Input, col.Description));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", ETypeCode.Text, ParameterDirection.Input, schemaName));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", ETypeCode.Text, ParameterDirection.Input, table.Name));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@columnname", ETypeCode.Text, ParameterDirection.Input, col.Name));
                                     await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 }
                             }
@@ -339,6 +394,9 @@ namespace dexih.connections.sqlserver
                     break;
                 case DataType.ETypeCode.Decimal:
                     sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
+                    break;
+                case DataType.ETypeCode.Geometry:
+                    sqlType = "Geometry";
                     break;
                 default:
                     throw new Exception($"The column {column.Name} has datatype datatype {column.DataType} which is not compatible with the create table.");
@@ -657,10 +715,11 @@ namespace dexih.connections.sqlserver
                 case "timestamp": return DataType.ETypeCode.Int64;
                 case "tinyint": return DataType.ETypeCode.Byte;
                 case "uniqueidentifier": return DataType.ETypeCode.Guid;
-                case "geography": return DataType.ETypeCode.Unknown;
                 case "varbinary": return DataType.ETypeCode.Binary;
                 case "varchar": return DataType.ETypeCode.String;
                 case "xml": return DataType.ETypeCode.String;
+                case "geometry": return DataType.ETypeCode.Geometry;
+                case "geography": return DataType.ETypeCode.Geometry;
             }
             return DataType.ETypeCode.Unknown;
         }
@@ -825,6 +884,8 @@ namespace dexih.connections.sqlserver
                 case DataType.ETypeCode.Guid:
                     return SqlDbType.UniqueIdentifier;
                 case DataType.ETypeCode.Binary:
+                    return SqlDbType.Binary;
+                case DataType.ETypeCode.Geometry:
                     return SqlDbType.Binary;
                 default:
                     return SqlDbType.VarChar;

@@ -167,7 +167,7 @@ namespace dexih.connections.mysql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "SHOW TABLES LIKE @NAME"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
                 }

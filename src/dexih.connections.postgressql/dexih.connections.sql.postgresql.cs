@@ -136,7 +136,7 @@ namespace dexih.connections.postgressql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "select table_name from information_schema.tables where table_name = @NAME"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
 
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
@@ -473,7 +473,7 @@ namespace dexih.connections.postgressql
                     // get the table type
                     using (var cmd = CreateCommand(connection, "select table_type from information_schema.tables where table_name = @NAME"))
                     {
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", table.Name));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
 
                         var tableType = await cmd.ExecuteScalarAsync(cancellationToken);
 

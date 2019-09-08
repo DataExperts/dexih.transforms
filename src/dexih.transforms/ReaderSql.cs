@@ -107,24 +107,7 @@ namespace dexih.connections.sql
                         try
                         {
                             var column = CacheTable.Columns[_fieldOrdinals[i]];
-//                            if (column.IsArray())
-//                            {
-//                                var value = _sqlReader[i];
-//                                if (value is string valueString)
-//                                {
-//                                    row[_fieldOrdinals[i]] = new DataValue(column.DataType, column.Rank, valueString);
-//                                }
-//                                else
-//                                {
-//                                    row[_fieldOrdinals[i]] = new DataValue(column.DataType, column.Rank, _sqlReader[i]);
-//                                    
-//                                }
-//                                
-//                            }
-//                            else
-//                            {
-                                row[_fieldOrdinals[i]] = Operations.Parse(column.DataType, column.Rank, _sqlReader[i]);    
-//                            }
+                            row[_fieldOrdinals[i]] = ReferenceConnection.ConvertForRead(_sqlReader, i, column);
                         }
                         catch (Exception ex)
                         {

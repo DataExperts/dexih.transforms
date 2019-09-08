@@ -19,6 +19,7 @@ using Dexih.Utils.Crypto;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
+using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 
@@ -296,6 +297,27 @@ namespace dexih.transforms
             }
             
             return true;
+        }
+
+        protected void SetSelectQuery(SelectQuery selectQuery, bool resetRows)
+        {
+            if (selectQuery == null)
+            {
+                SelectQuery = new SelectQuery();
+            }
+            else
+            {
+                if (selectQuery.Rows > 0 && (MaxOutputRows <= 0 || selectQuery.Rows < MaxOutputRows))
+                {
+                    MaxOutputRows = selectQuery.Rows;
+                }
+
+                SelectQuery = selectQuery.CloneProperties<SelectQuery>(true);
+                if (resetRows)
+                {
+                    selectQuery.Rows = -1;
+                }
+            }
         }
 
         /// <summary>
