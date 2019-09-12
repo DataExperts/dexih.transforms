@@ -8,7 +8,7 @@ namespace dexih.transforms
     {
         public enum ETargetAction
         {
-            None,
+            None = 1,
             Truncate,
             DropCreate,
             CreateNotExists

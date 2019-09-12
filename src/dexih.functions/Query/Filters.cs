@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Dexih.Utils.DataType;
+using ProtoBuf;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
     public class Filters: List<Filter>
     {
         public Filters(string columnName, object value)

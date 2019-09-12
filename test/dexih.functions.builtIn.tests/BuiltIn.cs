@@ -73,7 +73,7 @@ namespace dexih.functions.builtIn.tests
         [InlineData(typeof(MathFunctions), nameof(MathFunctions.Sqrt), new object[] { 9 }, (double)3)]
         [InlineData(typeof(MathFunctions), nameof(MathFunctions.Truncate), new object[] { 6.4 }, (double)6)]
         [InlineData(typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.ArrayContains), new object[] { "test2", new string[] {"test1", "test2", "test3"} }, true)]
-        [InlineData(typeof(MapFunctions), nameof(MapFunctions.GetDistanceTo), new object[] { -38, -145, -34 ,- 151 }, 699082.1288)] //melbourne to sydney distance
+        [InlineData(typeof(MapFunctions), nameof(GeometryFunctions.GeographicDistance), new object[] { -38, -145, -34 ,- 151 }, 699082.1288)] //melbourne to sydney distance
         [InlineData(typeof(ValidationFunctions), nameof(ValidationFunctions.MaxLength), new object[] { "abcdef", 5 }, false)]
         [InlineData(typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { 1, 2, 3, 4 }, false)] //(1,2)(3,4) not intersect
         [InlineData(typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { 1, 3, 3, 4 }, false)] //(1,3)(3,4) do intersect

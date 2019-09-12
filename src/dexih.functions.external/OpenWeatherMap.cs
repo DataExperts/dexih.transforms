@@ -26,7 +26,7 @@ namespace dexih.functions.external
         
         public enum TemperatureScale
         {
-            Fahrenheit, Celsius, Kelvin
+            Fahrenheit = 1, Celsius, Kelvin
         }
 
         public class WeatherDetails

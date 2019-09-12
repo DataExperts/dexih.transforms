@@ -13,10 +13,10 @@ using Newtonsoft.Json.Converters;
 
 namespace dexih.functions
 {
-    [JsonConverter(typeof(StringEnumConverter))]
+    // [JsonConverter(typeof(StringEnumConverter))]
     public enum EErrorAction
     {
-        Abend,
+        Abend = 1,
         Null,
 		Ignore,
         Execute
@@ -24,7 +24,7 @@ namespace dexih.functions
 
     public enum EParameterClass
     {
-	    Variable,
+        Variable = 1,
 	    Enum,
 	    EnumArray,
 	    Cancellation,
@@ -121,7 +121,7 @@ namespace dexih.functions
 
 		private object _returnValue;
 
-		[JsonConverter(typeof(StringEnumConverter))]
+		// [JsonConverter(typeof(StringEnumConverter))]
 		public enum EInvalidAction
 		{
 			Pass = 1, //record passes with no action.

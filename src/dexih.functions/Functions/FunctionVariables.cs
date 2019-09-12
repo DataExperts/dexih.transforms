@@ -4,7 +4,7 @@ namespace dexih.functions
 {
     public enum EFunctionVariable
     {
-        Index,
+        Index = 1,
         SeriesValue,
         Forecast 
     }

@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Text;
 using dexih.repository;
+using ProtoBuf;
 
 namespace dexih.functions.Query
 {
+    [ProtoContract]
     public class InputParameters: List<InputParameter>
     {
         public void Add(string name, string value)

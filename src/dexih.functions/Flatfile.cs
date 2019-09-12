@@ -2,6 +2,6 @@
 {
     public enum EFlatFilePath
     {
-        Incoming, Outgoing, Processed, Rejected, None
+        Incoming = 1, Outgoing, Processed, Rejected, None
     }
 }

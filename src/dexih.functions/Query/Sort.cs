@@ -1,38 +1,41 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using ProtoBuf;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
-    public class Sort: IEquatable<Sort>
-
+    [ProtoContract]
+    public class Sort : IEquatable<Sort>
     {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum EDirection
-    {
-        Ascending,
-        Descending
-    }
+        // [JsonConverter(typeof(StringEnumConverter))]
+        public enum EDirection
+        {
+            Ascending = 1,
+            Descending
+        }
 
-    public Sort()
-    {
-    }
+        public Sort()
+        {
+        }
 
-    public Sort(TableColumn column, EDirection direction = EDirection.Ascending)
-    {
-        Column = column;
-        Direction = direction;
-    }
+        public Sort(TableColumn column, EDirection direction = EDirection.Ascending)
+        {
+            Column = column;
+            Direction = direction;
+        }
 
-    public Sort(string columnName, EDirection direction = EDirection.Ascending)
-    {
-        Column = new TableColumn(columnName);
-        Direction = direction;
-    }
+        public Sort(string columnName, EDirection direction = EDirection.Ascending)
+        {
+            Column = new TableColumn(columnName);
+            Direction = direction;
+        }
 
-    public TableColumn Column { get; set; }
-    public EDirection Direction { get; set; }
+        [ProtoMember(1)]
+        public TableColumn Column { get; set; }
+
+        [ProtoMember(2)]
+        public EDirection Direction { get; set; }
 
         public bool Equals(Sort other)
         {
@@ -46,14 +49,14 @@ namespace dexih.functions.Query
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((Sort) obj);
+            return Equals((Sort)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return ((Column != null ? Column.GetHashCode() : 0) * 397) ^ (int) Direction;
+                return ((Column != null ? Column.GetHashCode() : 0) * 397) ^ (int)Direction;
             }
         }
     }

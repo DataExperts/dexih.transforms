@@ -3,17 +3,18 @@ using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.CopyProperties;
 using Newtonsoft.Json.Converters;
+using ProtoBuf;
 
 namespace dexih.functions
 {
-    [Serializable]
+    [ProtoContract]
     public class TableColumn : IEquatable<TableColumn>
 
     {
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public enum EDeltaType
         {
-            AutoIncrement, // column is auto incremented by the dexih
+            AutoIncrement = 1, // column is auto incremented by the dexih
             DbAutoIncrement, // column is auto incremented by the database
             SourceSurrogateKey,
             ValidFromDate,
@@ -44,10 +45,10 @@ namespace dexih.functions
             Url // the full url called for the web service.
         }
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public enum ESecurityFlag
         {
-            None,
+            None = 1,
             FastEncrypt,
             FastDecrypt,
             FastEncrypted,
@@ -55,7 +56,7 @@ namespace dexih.functions
             StrongDecrypt,
             StrongEncrypted,
             OneWayHash,
-            OnWayHashed,
+            OneWayHashed,
             Hide
         }
 
@@ -84,14 +85,19 @@ namespace dexih.functions
             ReferenceTable = parentTable;
         }
 
+        [ProtoMember(1)]
         public string ReferenceTable { get; set; }
 
+        [ProtoMember(2)]
         public string Name { get; set; }
 
+        [ProtoMember(3)]
         public string LogicalName { get; set; }
 
+        [ProtoMember(4)]
         public string Description { get; set; }
 
+        [ProtoMember(5)]
         public ETypeCode DataType
         {
             get
@@ -104,6 +110,7 @@ namespace dexih.functions
             set => BaseDataType = value;
         }
 
+        [ProtoMember(6)]
         public int? MaxLength
         {
             get
@@ -115,47 +122,64 @@ namespace dexih.functions
             }
             set => BaseMaxLength = value;
         }
-        
+
         /// <summary>
         /// A string that can be used to group columns.  This is also used to structure json/xml data.  Uses syntax group1.subgroup2.subsubgroup3 etc.
         /// </summary>
+        [ProtoMember(7)]
         public string ColumnGroup { get; set; }
 
+        [ProtoMember(8)]
         public int Rank { get; set; } = 0;
 
         public bool IsArray() => Rank > 0;
 
         //this is the underlying datatype of a non encrypted data type.  
+        [ProtoMember(9)]
         public ETypeCode BaseDataType { get; set; }
 
         //this is the max length of the non-encrypted data type.
+        [ProtoMember(10)]
         public int? BaseMaxLength { get; set; }
 
+        [ProtoMember(11)]
         public int? Precision { get; set; }
 
+        [ProtoMember(12)]
         public int? Scale { get; set; }
 
+        [ProtoMember(13)]
         public bool AllowDbNull { get; set; }
 
+        [ProtoMember(14)]
         public EDeltaType DeltaType { get; set; }
 
+        [ProtoMember(15)]
         public bool? IsUnicode { get; set; }
 
+        [ProtoMember(16)]
         public object DefaultValue { get; set; }
 
+        [ProtoMember(17)]
         public bool IsUnique { get; set; }
 
+        [ProtoMember(18)]
         public bool IsMandatory { get; set; }
 
+        [ProtoMember(19)]
         public ESecurityFlag SecurityFlag { get; set; } = ESecurityFlag.None;
 
+        [ProtoMember(20)]
         public bool IsInput { get; set; }
 
+        [ProtoMember(21)]
         public bool IsIncrementalUpdate { get; set; }
-        
+
         // used by the passthrough to indicate if the column is a part of the parent node, or part of current node.
+        [ProtoMember(22)]
         public bool IsParent { get; set; } = false;
 
+        [ProtoMember(23)]
         public TableColumns ChildColumns { get; set; }
 
         public bool IsAutoIncrement() => DeltaType == EDeltaType.DbAutoIncrement || DeltaType == EDeltaType.AutoIncrement;
@@ -290,7 +314,7 @@ namespace dexih.functions
                     newColumn.SecurityFlag = ESecurityFlag.StrongEncrypted;
                     break;
                 case ESecurityFlag.OneWayHash:
-                    newColumn.SecurityFlag = ESecurityFlag.OnWayHashed;
+                    newColumn.SecurityFlag = ESecurityFlag.OneWayHashed;
                     break;
                 default:
                     newColumn.SecurityFlag = SecurityFlag;

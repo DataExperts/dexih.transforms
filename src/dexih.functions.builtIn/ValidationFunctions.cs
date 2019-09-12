@@ -51,7 +51,7 @@ namespace dexih.functions.BuiltIn
 
         public enum EBeforeAfter
         {
-            Before, After
+            Before = 1, After
         }
 
         [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Validate Minimum Length", Description = "Checks if the string is greater or equal to the minimum length.")]

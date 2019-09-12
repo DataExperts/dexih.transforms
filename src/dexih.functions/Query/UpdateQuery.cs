@@ -1,9 +1,10 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
+    [ProtoContract]
     public class UpdateQuery
     {
         public UpdateQuery(List<QueryColumn> updateColumns, List<Filter> filters)
@@ -28,7 +29,10 @@ namespace dexih.functions.Query
             }
         }
 
+        [ProtoMember(1)]
         public List<QueryColumn> UpdateColumns { get; set; }
+
+        [ProtoMember(2)]
         public List<Filter> Filters { get; set; }
     }
 }

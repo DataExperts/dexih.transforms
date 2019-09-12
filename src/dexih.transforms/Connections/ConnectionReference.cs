@@ -1,13 +1,17 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.IO;
 using System.Reflection;
 
 namespace dexih.transforms
 {
-    [Serializable]
+    [ProtoContract]
     public class ConnectionReference : ConnectionAttribute
     {
+        [ProtoMember(1)]
         public string ConnectionAssemblyName { get; set; }
+
+        [ProtoMember(2)]
         public string ConnectionClassName { get; set; }
         
         public Type GetConnectionType()

@@ -4,10 +4,11 @@ using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
 using System.Collections;
 using Dexih.Utils.DataType;
+using ProtoBuf;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
+    [ProtoContract]
     public class Filter : IEquatable<Filter>
     {
         public Filter() { }
@@ -99,21 +100,31 @@ namespace dexih.functions.Query
 
 
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public enum EAndOr
         {
-            And, Or
+            And = 1, Or
         }
 
+        [ProtoMember(1)]
         public TableColumn Column1 { get; set; }
+
+        [ProtoMember(2)]
         public object Value1 { get; set; }
+
+        [ProtoMember(3)]
         public ETypeCode CompareDataType { get; set; }
 
+        [ProtoMember(4)]
         public TableColumn Column2 { get; set; }
+
+        [ProtoMember(5)]
         public object Value2 { get; set; }
 
-
+        [ProtoMember(6)]
         public ECompare Operator { get; set; }
+
+        [ProtoMember(7)]
         public EAndOr AndOr { get; set; }
 
         public ETypeCode BestDataType()

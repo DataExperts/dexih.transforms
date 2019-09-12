@@ -291,7 +291,7 @@ namespace dexih.functions.BuiltIn
         
         public enum EPercentFormat
         {
-            AsDecimal,
+            AsDecimal = 1,
             AsPercent
         }
         

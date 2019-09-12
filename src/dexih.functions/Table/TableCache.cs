@@ -1,10 +1,11 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace dexih.functions
 {
-    [Serializable]
+    [ProtoContract]
     public class TableCache : IList<object[]>
     {
         private readonly int _maxRows;
@@ -167,7 +168,6 @@ namespace dexih.functions
  
     }
 
-    [Serializable]
     public class TableCacheEnumerator : IEnumerator<object[]>
     {
         private IList<object[]> _data;

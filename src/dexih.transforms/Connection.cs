@@ -27,18 +27,18 @@ namespace dexih.transforms
 
         public enum EConnectionState
         {
-            Broken = 0,
-            Open = 1,
-            Closed = 2,
-            Fetching = 3,
-            Connecting = 4,
-            Executing = 5
+            Broken = 1,
+            Open = 2,
+            Closed = 3,
+            Fetching = 4,
+            Connecting = 5,
+            Executing = 6
         }
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public enum EConnectionCategory
         {
-            SqlDatabase, // sql server, mysql, postgre etc.
+            SqlDatabase = 1, // sql server, mysql, postgre etc.
             NoSqlDatabase, // Azure and others
             DatabaseFile, // coverts Excel, Sqlite where database is a simple file.
             File, // flat files
@@ -771,8 +771,8 @@ namespace dexih.transforms
                         throw new ConnectionException($"The reader failed to open for table {table.Name} on {Name}");
                     }
 
-                    reader.SetCacheMethod(Transform.ECacheMethod.DemandCache);
-                    reader.SetEncryptionMethod(Transform.EEncryptionMethod.MaskSecureFields, "");
+                    reader.SetCacheMethod(ECacheMethod.DemandCache);
+                    reader.SetEncryptionMethod(EEncryptionMethod.MaskSecureFields, "");
 
                     var count = 0;
                     while (

@@ -26,10 +26,10 @@ namespace dexih.transforms
 
         #endregion
         
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public enum ETransformWriterMethod
         {
-            Bulk, 
+            Bulk = 1, 
             Transaction
         }
 
@@ -330,7 +330,7 @@ namespace dexih.transforms
                         transform = new TransformDelta(transform, targetReader, updateStrategy.Value,
                             autoIncrementKey,
                             WriterOptions.AddDefaultRow, new DeltaValues('C'));
-                        transform.SetEncryptionMethod(Transform.EEncryptionMethod.EncryptDecryptSecureFields,
+                        transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
                             WriterOptions?.GlobalSettings?.EncryptionKey);
 
                         if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken))
@@ -409,7 +409,7 @@ namespace dexih.transforms
                     var autoIncrementKey = await GetIncrementalKey(cancellationToken);
                     transform = new TransformDelta(transform, target, childUpdateStrategy.Value, autoIncrementKey,
                         WriterOptions.AddDefaultRow, deltaValues);
-                    transform.SetEncryptionMethod(Transform.EEncryptionMethod.EncryptDecryptSecureFields,
+                    transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
                         WriterOptions?.GlobalSettings?.EncryptionKey);
 
                     if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken = default))

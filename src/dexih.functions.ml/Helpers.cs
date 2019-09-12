@@ -8,7 +8,7 @@ using Microsoft.ML.Data;
 namespace dexih.functions.ml
 {
     public enum EEncoding {
-        None,
+        None = 1,
         Label,
         HotEncode,
         FeaturizeText

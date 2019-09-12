@@ -6,10 +6,10 @@ using Newtonsoft.Json.Converters;
 
 namespace dexih.transforms.Mapping
 {
-    [JsonConverter(typeof(StringEnumConverter))]
+    // [JsonConverter(typeof(StringEnumConverter))]
     public enum ESeriesGrain
     {
-        Second,
+        Second = 1,
         Minute,
         Hour,
         Day,

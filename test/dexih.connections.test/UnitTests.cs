@@ -240,14 +240,14 @@ namespace dexih.connections.test
                 await reader.Open();
 
                 var stringColumn = table.GetOrdinal("StringColumn");
-                var returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+                var returnLookup = await reader.Lookup(query, EDuplicateStrategy.Abend, CancellationToken.None);
                 Assert.True(Convert.ToString(returnLookup.First()[stringColumn]) == "value5", "LookupValue :" + returnLookup.First()[stringColumn]);
 
                 //run lookup again with caching set.
                 reader = connection.GetTransformReader(table);
                 await reader.Open();
-                reader.SetCacheMethod(Transform.ECacheMethod.LookupCache);
-                returnLookup = await reader.Lookup(query, Transform.EDuplicateStrategy.Abend, CancellationToken.None);
+                reader.SetCacheMethod(ECacheMethod.LookupCache);
+                returnLookup = await reader.Lookup(query, EDuplicateStrategy.Abend, CancellationToken.None);
                 Assert.True(Convert.ToString(returnLookup.First()[stringColumn]) == "value5", "Select count - value :" + returnLookup.First()[stringColumn]);
 
                 reader.Close();

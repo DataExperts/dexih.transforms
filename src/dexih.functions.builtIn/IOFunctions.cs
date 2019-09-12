@@ -12,7 +12,7 @@ namespace dexih.functions.BuiltIn
     {
         public enum EDuplicateFile
         {
-            MakeUnique,
+            MakeUnique = 1,
             Overwrite,
             Ignore,
             Abend
@@ -20,7 +20,7 @@ namespace dexih.functions.BuiltIn
         
         public enum EMissingFile
         {
-            Ignore,
+            Ignore = 1,
             Abend
         }
         

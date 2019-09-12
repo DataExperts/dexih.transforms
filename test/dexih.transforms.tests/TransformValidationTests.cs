@@ -24,7 +24,7 @@ namespace dexih.transforms.tests
         public async Task Validations_Simple()
         {
             var table = Helpers.CreateValidationTestData();
-            table.SetCacheMethod(Transform.ECacheMethod.DemandCache);
+            table.SetCacheMethod(ECacheMethod.DemandCache);
 
             //set a filter that filters all
             var function = Functions
@@ -76,7 +76,7 @@ namespace dexih.transforms.tests
         public async Task Validations_Clean()
         {
             var table = Helpers.CreateValidationTestData();
-            table.SetCacheMethod(Transform.ECacheMethod.DemandCache);
+            table.SetCacheMethod(ECacheMethod.DemandCache);
 
 
             //set a validation that rejects and cleans
@@ -139,7 +139,7 @@ namespace dexih.transforms.tests
         public async Task Validations_RejectClean()
         {
             var table = Helpers.CreateValidationTestData();
-            table.SetCacheMethod(Transform.ECacheMethod.DemandCache);
+            table.SetCacheMethod(ECacheMethod.DemandCache);
 
             //set a validation that rejects and cleans
             //set a filter that filters all

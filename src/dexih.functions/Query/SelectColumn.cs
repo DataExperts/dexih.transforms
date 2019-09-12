@@ -1,10 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using ProtoBuf;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
+    [ProtoContract]
     public class SelectColumn: IEquatable<SelectColumn>
     {
         public SelectColumn() { }
@@ -33,10 +34,10 @@ namespace dexih.functions.Query
             Aggregate = aggregate;
         }
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public enum EAggregate
         {
-            Sum,
+            Sum = 1,
             Average,
             Min,
             Max,
@@ -44,7 +45,11 @@ namespace dexih.functions.Query
             First,
             Last,
         }
+
+        [ProtoMember(1)]
         public TableColumn Column { get; set; }
+
+        [ProtoMember(2)]
         public EAggregate? Aggregate { get; set; }
 
         public bool Equals(SelectColumn other)

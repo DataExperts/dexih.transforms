@@ -283,7 +283,7 @@ namespace dexih.functions
                 LinkedDescription = linkedAttribute?.Description,
                 IsLabel = parameterInfo.GetCustomAttribute<TransformParameterLabelAttribute>() != null,
                 ListOfValues = parameterAttribute?.ListOfValues ?? EnumValues(paramType),
-                DefaultValue = DefaultValue(parameterInfo),
+                DefaultValue = DefaultValue(parameterInfo)?.ToString(),
             };
         }
 

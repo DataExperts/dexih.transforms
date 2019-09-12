@@ -17,7 +17,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Concatenate",
         Description = "Concatenate (union) the two data streams together.",
-        TransformType = TransformAttribute.ETransformType.Concatenate
+        TransformType = ETransformType.Concatenate
         )]
     public class TransformConcatenate : Transform
     {

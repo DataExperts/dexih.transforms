@@ -15,10 +15,10 @@ namespace dexih.transforms.Mapping
 {
     public class MapFunction: Mapping
     {
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public enum EFunctionCaching
         {
-            NoCache,
+            NoCache = 1,
             EnableCache,
             CallOnce
         }

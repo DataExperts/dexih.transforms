@@ -7,7 +7,7 @@ namespace dexih.functions.maths
     {
         public enum EMathConstant
         {
-            E, 
+            E = 1, 
             Atto, 
             Avogadro, 
             BohrMagneton, 

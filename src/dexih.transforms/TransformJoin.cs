@@ -21,7 +21,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Join",
         Description = "Join two tables by first loading the secondary table into memory.  This is fast when the secondary table is not large.",
-        TransformType = TransformAttribute.ETransformType.Join
+        TransformType = ETransformType.Join
     )]
     public class TransformJoin : Transform
     {
@@ -59,7 +59,7 @@ namespace dexih.transforms
 
         public enum EJoinAlgorithm
         {
-            Sorted, Hash
+            Sorted = 1, Hash
         }
         public EJoinAlgorithm JoinAlgorithm { get; private set; }
 

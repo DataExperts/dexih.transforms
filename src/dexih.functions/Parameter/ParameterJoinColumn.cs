@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dexih.Utils.DataType;
+using ProtoBuf;
 
 namespace dexih.functions.Parameter
 {
+    [ProtoContract]
     public class ParameterJoinColumn : Parameter
     {
         public ParameterJoinColumn()
@@ -35,6 +37,7 @@ namespace dexih.functions.Parameter
             Column = new TableColumn(columName, dataType);
         }
 
+        [ProtoMember(1)]
         public TableColumn Column;
 
         /// <summary>

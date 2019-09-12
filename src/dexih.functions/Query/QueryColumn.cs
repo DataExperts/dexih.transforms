@@ -1,8 +1,9 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
+    [ProtoContract]
     public class QueryColumn: IEquatable<QueryColumn>
     {
         public QueryColumn() { }
@@ -19,7 +20,10 @@ namespace dexih.functions.Query
             Value = value;
         }
 
+        [ProtoMember(1)]
         public TableColumn Column { get; }
+
+        [ProtoMember(2)]
         public object Value { get; }
 
         public bool Equals(QueryColumn other)

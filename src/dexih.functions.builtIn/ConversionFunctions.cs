@@ -8,12 +8,12 @@ namespace dexih.functions.BuiltIn
     {
         public enum ETemperatureScale
         {
-            Fahrenheit, Celsius, Kelvin
+            Fahrenheit = 1, Celsius, Kelvin
         }
         
         public enum ELengthScale
         {
-            Kilometer, Meter, Centimeter, Millimeter, Micrometer, Nanometer, Mile, Yard, Foot, Inch, NauticalMile
+            Kilometer = 1, Meter, Centimeter, Millimeter, Micrometer, Nanometer, Mile, Yard, Foot, Inch, NauticalMile
         }
 
         private static readonly Dictionary<ELengthScale, double> DistanceConvert = new Dictionary<ELengthScale, double>()
@@ -64,7 +64,7 @@ namespace dexih.functions.BuiltIn
 
         public enum EMassScale
         {
-            Tonne,
+            Tonne = 1,
             Kilogram,
             Gram,
             Milligram,

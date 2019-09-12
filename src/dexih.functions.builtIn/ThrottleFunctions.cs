@@ -21,7 +21,7 @@ namespace dexih.functions.BuiltIn
 
         public enum EPeriods
         {
-            Millisecond, Second, Minute, Hour, Day
+            Millisecond = 1, Second, Minute, Hour, Day
         }
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Throttle", Name = "Throttle the number of rows per time period.",

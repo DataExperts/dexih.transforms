@@ -15,7 +15,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Profile",
         Description = "Profile incoming data",
-        TransformType = TransformAttribute.ETransformType.Profile
+        TransformType = ETransformType.Profile
     )]
     public class TransformProfile : Transform
     {

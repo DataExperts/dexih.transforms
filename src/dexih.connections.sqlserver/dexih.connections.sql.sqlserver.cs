@@ -120,7 +120,7 @@ namespace dexih.connections.sqlserver
                     param.DbType = DbType.Int64;
                     break;
                 case ETypeCode.UInt64:
-                    param.DbType = DbType.Int64;
+                    param.DbType = DbType.Decimal;
                     break;
                 default:
                     param.DbType = GetDbType(typeCode);

@@ -10,12 +10,12 @@ namespace dexih.functions.maths
        
         public enum  EContinuousDistributionType
         {
-            PDF, CDF, InvCDF, PDFLn
+            PDF = 1, CDF, InvCDF, PDFLn
         }
         
         public enum  EDiscreteDistributionType
         {
-            PMF, CDF, InvCDF, PMFLn
+            PMF = 1, CDF, InvCDF, PMFLn
         }
         
         public bool Reset()

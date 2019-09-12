@@ -7,10 +7,10 @@ using Newtonsoft.Json.Converters;
 namespace dexih.functions
 {
 
-    [JsonConverter(typeof(StringEnumConverter))]
+    // [JsonConverter(typeof(StringEnumConverter))]
     public enum EGenericType
     {
-        None, Numeric, All, String
+        None = 1, Numeric, All, String
     }
 
     [Serializable]

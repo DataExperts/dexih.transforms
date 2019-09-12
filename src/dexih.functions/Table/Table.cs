@@ -7,11 +7,14 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
+using ProtoBuf;
 
 namespace dexih.functions
 {
     
-    [Serializable]
+    [ProtoContract]
+    [ProtoInclude(100, typeof(FlatFile))]
+    [ProtoInclude(200, typeof(WebService))]
     public class Table
     {
 
@@ -101,10 +104,10 @@ namespace dexih.functions
 
         #endregion
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public enum ETableType
         {
-            Table,
+            Table = 1,
             View,
             Query
             
@@ -115,79 +118,93 @@ namespace dexih.functions
         /// <summary>
         /// Reference to the phsycal table name.
         /// </summary>
+        [ProtoMember(1)]
         public string Name { get; set; }
 
-		/// <summary>
-		/// The table schema or owner.
-		/// </summary>
-		/// <value>The table schema.</value>
-		public string Schema { get; set; }
+        /// <summary>
+        /// The table schema or owner.
+        /// </summary>
+        /// <value>The table schema.</value>
+        [ProtoMember(2)]
+        public string Schema { get; set; }
 
         /// <summary>
         /// The name of the source connection when pointing to an another hub
         /// </summary>
         /// <value>The table connection.</value>
+        [ProtoMember(3)]
         public string SourceConnectionName { get; set; }
 
         /// <summary>
         /// A logical name for the table.
         /// </summary>
+        [ProtoMember(4)]
         public string LogicalName { get; set; }
 
         /// <summary>
         /// Table description.
         /// </summary>
+        [ProtoMember(5)]
         public string Description { get; set; }
 
         /// <summary>
         /// Is the original base table name.
         /// </summary>
+        [ProtoMember(6)]
         public string BaseTableName { get; set; }
 
         /// <summary>
         /// Indicates the type of table (i.e. table, view etc.)
         /// </summary>
+        [ProtoMember(7)]
         public ETableType TableType { get; set; }
 
         /// <summary>
         /// Indicates if the table contains versions (history) of data change, such as sql temporal tables.
         /// </summary>
+        [ProtoMember(8)]
         public bool IsVersioned { get; set; }
 
         /// <summary>
         /// Indicates if this is a sql (or other) type query.
         /// </summary>
+        [ProtoMember(9)]
         public bool UseQuery { get; set; }
 
         /// <summary>
         /// Sql Query string (or query string for other db types)
         /// </summary>
+        [ProtoMember(10)]
         public string QueryString { get; set; }
-     
+
         /// <summary>
         /// Indicates the output sort fields for the table.
         /// </summary>
         /// <returns></returns>
+        [ProtoMember(11)]
         public virtual List<Sort> OutputSortFields { get; set; }
 
-//        /// <summary>
-//        /// Indicates the key that should be used when running update/delete operations against the target.
-//        /// </summary>
-//        public List<string> KeyFields { get; set; }
+        //        /// <summary>
+        //        /// Indicates the key that should be used when running update/delete operations against the target.
+        //        /// </summary>
+        //        public List<string> KeyFields { get; set; }
 
+        [ProtoMember(12)]
         public TableCache Data { get; set; }
 
+        [ProtoMember(13)]
         public TableColumns Columns { get; set; }
 
-		// public Dictionary<string, string> ExtendedProperties { get; set; }
+        // public Dictionary<string, string> ExtendedProperties { get; set; }
 
         public TableColumn this[string columnName] => Columns[columnName];
-        
+
         public TableColumn this[int ordinal] => Columns[ordinal];
 
         /// <summary>
         /// Maximum levels to recurse through structured data when importing columns.
         /// </summary>
+        [ProtoMember(16)]
         public int MaxImportLevels { get; set; } = 10;
 
 

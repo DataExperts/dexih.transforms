@@ -39,24 +39,6 @@ namespace dexih.transforms
         
         #endregion
         
-        #region Enums
-        public enum ECacheMethod
-        {
-            NoCache = 0,
-            DemandCache = 1,
-            // PreLoadCache = 2,
-            LookupCache = 3
-        }
-
-        public enum EEncryptionMethod
-        {
-            NoEncryption = 0,
-            EncryptDecryptSecureFields = 1,
-            MaskSecureFields = 2
-        }
-
-        #endregion
-
         protected Transform()
         {
             TransformTimer = new Stopwatch();
@@ -64,14 +46,7 @@ namespace dexih.transforms
 
         
         #region Generic Properties
-		[JsonConverter(typeof(StringEnumConverter))]
-        public enum EDuplicateStrategy
-        {
-            Abend,
-            First,
-            Last,
-            All
-        }
+
 
 		/// <summary>
 		/// Optional: Any name describing the transform.
@@ -204,7 +179,7 @@ namespace dexih.transforms
             var properties = new TransformProperties
             {
                 Name = Name,
-                TransformType = transformReference?.TransformType?? TransformAttribute.ETransformType.Internal,
+                TransformType = transformReference?.TransformType?? ETransformType.Internal,
                 TransformName = TransformName, 
                 SelectQuery = SelectQuery, 
                 Properties = TransformProperties(),
@@ -692,7 +667,7 @@ namespace dexih.transforms
 								row[i] = "(Encrypted)";
 								break;
 							case ESecurityFlag.OneWayHash:
-                            case ESecurityFlag.OnWayHashed:
+                            case ESecurityFlag.OneWayHashed:
 								row[i] = "(Hashed)";
 								break;
 							case ESecurityFlag.Hide:

@@ -1,13 +1,20 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.Parameter
 {
+    [ProtoContract]
     public class ParameterArray : Parameter
     {
-	    public ParameterArray(string name, ETypeCode dataType, int rank)
+        public ParameterArray()
+        {
+            Parameters = new List<Parameter>();
+        }
+
+        public ParameterArray(string name, ETypeCode dataType, int rank)
 	    {
 		    Name = name;
 		    DataType = dataType;
@@ -23,6 +30,7 @@ namespace dexih.functions.Parameter
 		    Parameters = parameters;
 	    }
         
+        [ProtoMember(1)]
 	    public List<Parameter> Parameters;
 
 	    public override object Value

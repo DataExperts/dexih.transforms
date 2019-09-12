@@ -18,7 +18,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Validation",
         Description = "Validates and cleans/rejects data.",
-        TransformType = TransformAttribute.ETransformType.Validation
+        TransformType = ETransformType.Validation
     )]
     public class TransformValidation : Transform
     {

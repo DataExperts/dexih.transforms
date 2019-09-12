@@ -13,7 +13,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Group",
         Description = "Group columns and apply specific aggregation rules to other columns.",
-        TransformType = TransformAttribute.ETransformType.Group
+        TransformType = ETransformType.Group
     )]
     public class TransformGroup : Transform
     {

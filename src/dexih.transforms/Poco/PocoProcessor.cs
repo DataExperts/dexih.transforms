@@ -8,7 +8,7 @@ namespace dexih.transforms.Poco
 
     public enum EPocoOperation
     {
-        Insert, Update, Delete
+        Insert = 1, Update, Delete
     }
 
     public class PocoProcessorEntry<T>

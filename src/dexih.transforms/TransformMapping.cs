@@ -14,7 +14,7 @@ namespace dexih.transforms
 	[Transform(
 		Name = "Mapping",
 		Description = "Apply mapping rules from source to target.",
-		TransformType = TransformAttribute.ETransformType.Mapping
+		TransformType = ETransformType.Mapping
 	)]
     public class TransformMapping : Transform 
     {

@@ -4,10 +4,17 @@ using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using ProtoBuf;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.Parameter
 {
+    [ProtoContract]
+    [ProtoInclude(100, typeof(ParameterArray))]
+    [ProtoInclude(200, typeof(ParameterColumn))]
+    [ProtoInclude(300, typeof(ParameterJoinColumn))]
+    [ProtoInclude(400, typeof(ParameterOutputColumn))]
+    [ProtoInclude(500, typeof(ParameterValue))]
     public abstract class Parameter
     {
         public abstract void InitializeOrdinal(Table table, Table joinTable = null);
@@ -47,20 +54,24 @@ namespace dexih.functions.Parameter
 
             return false;
         }
-        
+
         /// <summary>
         /// Name for the parameter.  This name must be used when referencing parameters in custom functions.
         /// </summary>
+        [ProtoMember(1)]
         public string Name { get; set; }
 
         /// <summary>
         /// Parameter datatype
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
+        [ProtoMember(2)]
+        // [JsonConverter(typeof(StringEnumConverter))]
         public ETypeCode DataType { get; set; }
-        
+
+        [ProtoMember(3)]
         public int Rank { get; set; }
-        
+
+        [ProtoMember(4)]
         public virtual object Value { get; set; }
 
         /// <summary>

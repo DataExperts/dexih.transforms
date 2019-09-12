@@ -4,10 +4,11 @@ using System.Linq;
 using dexih.repository;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
+using ProtoBuf;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
+    [ProtoContract]
     public class SelectQuery: IEquatable<SelectQuery>
     {
         public SelectQuery()
@@ -19,19 +20,34 @@ namespace dexih.functions.Query
             Rows = -1; //-1 means show all rows.
         }
 
+        [ProtoMember(1)]
         public List<SelectColumn> Columns { get; set; }
+
+        [ProtoMember(2)]
         public string Table { get; set; }
+
+        [ProtoMember(3)]
         public List<Filter> Filters { get; set; }
+
+        [ProtoMember(4)]
         public List<Sort> Sorts { get; set; }
+
+        [ProtoMember(5)]
         public List<TableColumn> Groups { get; set; }
+
+        [ProtoMember(6)]
         public int Rows { get; set; }
-        
+
+        [ProtoMember(7)]
         public List<TableColumn> InputColumns { get; set; }
-        
+
         /// <summary>
         /// Used for flat files to specify only a specific filename
         /// </summary>
+        [ProtoMember(8)]
         public string FileName { get; set; }
+
+        [ProtoMember(9)]
         public EFlatFilePath Path { get; set; }
 
         /// <summary>

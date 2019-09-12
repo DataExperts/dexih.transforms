@@ -1,12 +1,16 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Reflection;
 
 namespace dexih.transforms.Transforms
 {
-    [Serializable]
+    [ProtoContract]
     public class TransformReference: TransformAttribute
     {
+        [ProtoMember(1)]
         public string TransformClassName { get; set; }
+
+        [ProtoMember(2)]
         public string TransformAssemblyName { get; set; }
         
         public Type GetTransformType()

@@ -1,10 +1,10 @@
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
-    public class Sorts: List<Sort>
+    public class Sorts : List<Sort>
     {
         public Sorts(params string[] columnNames)
         {
@@ -13,7 +13,7 @@ namespace dexih.functions.Query
                 Add(new Sort(columnName));
             }
         }
-        
+
         public Sorts(params (string columnName, Sort.EDirection direction)[] sorts)
         {
             foreach (var sort in sorts)
@@ -21,6 +21,6 @@ namespace dexih.functions.Query
                 Add(new Sort(sort.columnName, sort.direction));
             }
         }
-        
+
     }
 }

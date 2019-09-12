@@ -1,7 +1,9 @@
 ﻿using Dexih.Utils.DataType;
+using ProtoBuf;
 
 namespace dexih.functions.Parameter
 {
+    [ProtoContract]
     public class ParameterOutputColumn : Parameter
     {
         public ParameterOutputColumn()
@@ -45,6 +47,7 @@ namespace dexih.functions.Parameter
             Column = new TableColumn(columName, dataType);
         }
 
+        [ProtoMember(1)]
         public TableColumn Column;
 
         /// <summary>

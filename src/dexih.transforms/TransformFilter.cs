@@ -12,7 +12,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Filter",
         Description = "Filter incoming rows based on a set of conditions.",
-        TransformType = TransformAttribute.ETransformType.Filter
+        TransformType = ETransformType.Filter
     )]
     public class TransformFilter : Transform
     {

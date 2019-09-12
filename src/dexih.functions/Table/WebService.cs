@@ -1,18 +1,21 @@
 ﻿using dexih.functions.File;
+using ProtoBuf;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
+    [ProtoContract]
 	public class WebService : Table
 	{
         private string _resetfulUri;
 
-		/// <summary>
-		/// The uri component of the web service call.  
-		/// Parameters can be added using {param}
-		/// For example: stream/{rows}
-		/// </summary>
-		public string RestfulUri { 
+        /// <summary>
+        /// The uri component of the web service call.  
+        /// Parameters can be added using {param}
+        /// For example: stream/{rows}
+        /// </summary>
+        [ProtoMember(1)]
+        public string RestfulUri { 
             get => _resetfulUri;
 			set
             {
@@ -26,12 +29,16 @@ namespace dexih.functions
                 }
             }
         }
-		public string RowPath { get; set; }
 
+        [ProtoMember(2)]
+        public string RowPath { get; set; }
+
+        [ProtoMember(3)]
         public ETypeCode FormatType { get; set; } = ETypeCode.Json;
-		
-		// for text files
-		public FileConfiguration FileConfiguration { get; set; } = new FileConfiguration();
+
+        // for text files
+        [ProtoMember(4)]
+        public FileConfiguration FileConfiguration { get; set; } = new FileConfiguration();
 	
 		public void AddInputParameter(string name, string defaultValue = null)
 		{

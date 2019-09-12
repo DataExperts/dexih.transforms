@@ -1,11 +1,12 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace dexih.functions
 {
-    [Serializable]
+    [ProtoContract]
     public class TableColumns : IList<TableColumn>
     {
         private readonly List<TableColumn> _tableColumns;

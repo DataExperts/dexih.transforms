@@ -13,7 +13,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Sort",
         Description = "Sort a table by one or more columns.",
-        TransformType = TransformAttribute.ETransformType.Sort
+        TransformType = ETransformType.Sort
     )]
     public class TransformSort : Transform
     {

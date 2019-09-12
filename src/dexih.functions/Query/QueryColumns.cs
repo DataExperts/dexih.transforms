@@ -1,9 +1,10 @@
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
-    [Serializable]
+
     public class QueryColumns : List<QueryColumn>
     {
         public QueryColumns(string column, object value)

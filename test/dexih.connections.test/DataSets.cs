@@ -222,10 +222,10 @@ namespace dexih.connections.test
                 new MapJoin(child.CacheTable["parent_id"], child.CacheTable["parent_id"])
             };
 
-            var parentTransform = new TransformJoin(parent, child, mappings, Transform.EDuplicateStrategy.All, null, "Join")
+            var parentTransform = new TransformJoin(parent, child, mappings, EDuplicateStrategy.All, null, "Join")
             {
                 Name = "Join Child",
-                JoinDuplicateStrategy = Transform.EDuplicateStrategy.All
+                JoinDuplicateStrategy = EDuplicateStrategy.All
             };
 
             var childMappings = new Mappings
@@ -236,7 +236,7 @@ namespace dexih.connections.test
 
             var childTransform = new TransformJoin()
             {
-                JoinDuplicateStrategy = Transform.EDuplicateStrategy.All
+                JoinDuplicateStrategy = EDuplicateStrategy.All
             };
 
             var transform = childTransform.CreateNodeMapping(parentTransform, grandChild, childMappings,

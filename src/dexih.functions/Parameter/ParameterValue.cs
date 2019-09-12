@@ -1,7 +1,9 @@
-﻿using static Dexih.Utils.DataType.DataType;
+﻿using ProtoBuf;
+using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.Parameter
 {
+    [ProtoContract]
     public class ParameterValue : Parameter
     {
          public ParameterValue()

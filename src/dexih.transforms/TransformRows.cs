@@ -13,7 +13,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Rows",
         Description = "Groups columns, generates rows, and can un-group column nodes.",
-        TransformType = TransformAttribute.ETransformType.Rows
+        TransformType = ETransformType.Rows
     )]
     public class TransformRows : Transform
     {

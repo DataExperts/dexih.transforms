@@ -17,7 +17,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Lookup",
         Description = "Looks up a value in a database or external service.",
-        TransformType = TransformAttribute.ETransformType.Lookup
+        TransformType = ETransformType.Lookup
     )]
     public class TransformLookup : Transform
     {

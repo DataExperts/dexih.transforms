@@ -19,7 +19,7 @@ namespace dexih.transforms
     [Transform(
         Name = "Delta",
         Description = "Compare incoming data against the target table to produce a delta.",
-        TransformType = TransformAttribute.ETransformType.Delta
+        TransformType = ETransformType.Delta
     )]
     public sealed class TransformDelta : Transform
     {
@@ -60,7 +60,7 @@ namespace dexih.transforms
         [JsonConverter(typeof (StringEnumConverter))]
         public enum EUpdateStrategy
         {
-            Reload, //truncates the table and reloads
+            Reload = 1, //truncates the table and reloads
             Append, //inserts records.  use if the data feed is always new data.
             AppendUpdate, //inserts new records, and updates records.  use if the data feed is new and existing data.
             AppendUpdateDelete, //inserts new records, updates existing records, and (logically) deletes removed records.  use to maintain an exact copy of the data feed.
@@ -360,7 +360,7 @@ namespace dexih.transforms
                         reference = StrongDecrypt(referenceValue);
                         source = sourceObject.OriginalValue; 
                         break;
-                    case TableColumn.ESecurityFlag.OnWayHashed:
+                    case TableColumn.ESecurityFlag.OneWayHashed:
                         return OneWayHashCompare(referenceValue, sourceObject.OriginalValue);
                 }
             }
