@@ -56,7 +56,7 @@ namespace dexih.transforms
             {
                 var result = await _func.Invoke();
                 var json = Json.SerializeObject(result, "");
-                _streamWriter.Write(json);
+                await _streamWriter.WriteAsync(json);
                 _memoryStream.Position = 0;
                 isFirst = false;
             }

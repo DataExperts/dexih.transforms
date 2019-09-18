@@ -41,7 +41,7 @@ namespace dexih.transforms.Mapping
             NodeOrdinal = AddOutputColumn(table, NodeColumn);
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row,
+        public override Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row,
             object[] joinRow, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions
 {
@@ -20,16 +20,16 @@ namespace dexih.functions
         Direct
     }
 
-    [ProtoContract]
+    [MessagePackObject]
     public class DownloadUrl
     {
-        [ProtoMember(1)]
+        [Key(0)]
         public string Url { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public EDownloadUrlType DownloadUrlType { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public bool IsEncrypted { get; set; }
     }
 }

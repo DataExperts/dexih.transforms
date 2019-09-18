@@ -22,7 +22,7 @@ namespace dexih.transforms
         private SortedRowsDictionary<object> _sortedDictionary;
         private SortedDictionary<object[], object[]>.KeyCollection.Enumerator _iterator;
 
-        private List<Sort> _sortFields;
+        private Sorts _sortFields;
 
         public TransformSort()
         {
@@ -36,7 +36,7 @@ namespace dexih.transforms
             
         }
 
-        public TransformSort(Transform inTransform, List<Sort> sortFields)
+        public TransformSort(Transform inTransform, Sorts sortFields)
         {
             Mappings = new Mappings();
             foreach(var sortField in sortFields)
@@ -70,7 +70,7 @@ namespace dexih.transforms
 
             if (_sortFields == null)
             {
-                _sortFields = Mappings.OfType<MapSort>().Select(c => new Sort(c.InputColumn, c.Direction)).ToList();
+                _sortFields = new Sorts(Mappings.OfType<MapSort>().Select(c => new Sort(c.InputColumn, c.Direction)));
             }
 
             AuditKey = auditKey;
@@ -160,17 +160,17 @@ namespace dexih.transforms
         }
 
 
-        public override List<Sort> RequiredSortFields()
+        public override Sorts RequiredSortFields()
         {
             return _sortFields;
         }
 
-        public override List<Sort> RequiredReferenceSortFields()
+        public override Sorts RequiredReferenceSortFields()
         {
             return null;
         }
 
-        public override List<Sort> SortFields => _sortFields;
+        public override Sorts SortFields => _sortFields;
     }
 
 

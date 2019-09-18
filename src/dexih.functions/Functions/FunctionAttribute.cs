@@ -111,7 +111,7 @@ namespace dexih.functions
         /// <summary>
         /// Indicates if the function is equivalent to a filter compare type.
         /// </summary>
-        public ECompare Compare { get; set; }
+        public ECompare Compare { get; set; } = ECompare.IsEqual;
     }
 
     public class TransformFunctionVariableAttribute : Attribute

@@ -1,49 +1,49 @@
 ﻿using System;
 using Dexih.Utils.DataType;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class FunctionParameter
     {
-        [ProtoMember(1)]
+        [Key(0)]
         public string ParameterName { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string Name { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public string Description { get; set; }
 
-        [ProtoMember(4)]
+        [Key(3)]
         public bool IsGeneric { get; set; }
 
-        [ProtoMember(5)]
+        [Key(4)]
         public DataType.ETypeCode DataType { get; set; }
 
-        [ProtoMember(6)]
+        [Key(5)]
         public bool AllowNull { get; set; }
 
-        [ProtoMember(7)]
+        [Key(6)]
         public int Rank { get; set; }
 
-        [ProtoMember(8)]
+        [Key(7)]
         public bool IsIndex { get; set; }
 
-        [ProtoMember(9)]
+        [Key(8)]
         public string LinkedName { get; set; }
 
-        [ProtoMember(10)]
+        [Key(9)]
         public string LinkedDescription { get; set; }
 
-        [ProtoMember(11)]
+        [Key(10)]
         public bool IsLabel { get; set; }
 
-        [ProtoMember(12)]
+        [Key(11)]
         public string[] ListOfValues { get; set; }
 
-        [ProtoMember(13)]
+        [Key(12)]
         public string DefaultValue { get; set; }
         
     }

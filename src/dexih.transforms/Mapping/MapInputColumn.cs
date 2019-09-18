@@ -37,7 +37,7 @@ namespace dexih.transforms.Mapping
             OutputOrdinal = AddOutputColumn(table, InputColumn);
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public override Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             RowData = row;
             return Task.FromResult(true);

@@ -1152,9 +1152,9 @@ namespace dexih.transforms
         }
 
 
-        public override List<Sort> RequiredSortFields()
+        public override Sorts RequiredSortFields()
         {
-            var fields = new List<Sort>();
+            var fields = new Sorts();
 
             if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
             {
@@ -1189,9 +1189,9 @@ namespace dexih.transforms
             return fields;
         }
 
-        public override List<Sort> RequiredReferenceSortFields()
+        public override Sorts RequiredReferenceSortFields()
         {
-            var fields = new List<Sort>();
+            var fields = new Sorts();
 
             if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
             {

@@ -35,7 +35,7 @@ namespace dexih.transforms.tests
             table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2 );
             table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1);
 
-            var source = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") } );
+            var source = new ReaderMemory(table, new Sorts() { new Sort("StringColumn") } );
             source.Reset();
 
             var mappings = new Mappings(false);
@@ -93,7 +93,7 @@ namespace dexih.transforms.tests
             table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
             table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/02"), 9 );
 
-            var source = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") } );
+            var source = new ReaderMemory(table, new Sorts() { new Sort("StringColumn") } );
             source.Reset();
 
             var mappings = new Mappings(false);

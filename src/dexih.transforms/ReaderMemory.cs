@@ -22,7 +22,7 @@ namespace dexih.transforms
 
         #region Constructors
 
-        public ReaderMemory(Table dataTable, List<Sort> sortFields = null)
+        public ReaderMemory(Table dataTable, Sorts sortFields = null)
         {
             CacheTable = new Table(dataTable.Name, dataTable.Columns, new TableCache()) {OutputSortFields = sortFields};
 
@@ -44,7 +44,7 @@ namespace dexih.transforms
             return Task.FromResult(true);
         }
 
-        public override List<Sort> SortFields { get; }
+        public override Sorts SortFields { get; }
 
         #endregion
 

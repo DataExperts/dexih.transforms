@@ -3,11 +3,11 @@ using Newtonsoft.Json;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.CopyProperties;
 using Newtonsoft.Json.Converters;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class TableColumn : IEquatable<TableColumn>
 
     {
@@ -85,19 +85,19 @@ namespace dexih.functions
             ReferenceTable = parentTable;
         }
 
-        [ProtoMember(1)]
+        [Key(0)]
         public string ReferenceTable { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string Name { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public string LogicalName { get; set; }
 
-        [ProtoMember(4)]
+        [Key(3)]
         public string Description { get; set; }
 
-        [ProtoMember(5)]
+        [Key(4)]
         public ETypeCode DataType
         {
             get
@@ -110,7 +110,7 @@ namespace dexih.functions
             set => BaseDataType = value;
         }
 
-        [ProtoMember(6)]
+        [Key(5)]
         public int? MaxLength
         {
             get
@@ -126,66 +126,66 @@ namespace dexih.functions
         /// <summary>
         /// A string that can be used to group columns.  This is also used to structure json/xml data.  Uses syntax group1.subgroup2.subsubgroup3 etc.
         /// </summary>
-        [ProtoMember(7)]
+        [Key(6)]
         public string ColumnGroup { get; set; }
 
-        [ProtoMember(8)]
+        [Key(7)]
         public int Rank { get; set; } = 0;
 
         public bool IsArray() => Rank > 0;
 
         //this is the underlying datatype of a non encrypted data type.  
-        [ProtoMember(9)]
+        [Key(8)]
         public ETypeCode BaseDataType { get; set; }
 
         //this is the max length of the non-encrypted data type.
-        [ProtoMember(10)]
+        [Key(9)]
         public int? BaseMaxLength { get; set; }
 
-        [ProtoMember(11)]
+        [Key(10)]
         public int? Precision { get; set; }
 
-        [ProtoMember(12)]
+        [Key(11)]
         public int? Scale { get; set; }
 
-        [ProtoMember(13)]
+        [Key(12)]
         public bool AllowDbNull { get; set; }
 
-        [ProtoMember(14)]
+        [Key(13)]
         public EDeltaType DeltaType { get; set; }
 
-        [ProtoMember(15)]
+        [Key(14)]
         public bool? IsUnicode { get; set; }
 
-        [ProtoMember(16)]
+        [Key(15)]
         public object DefaultValue { get; set; }
 
-        [ProtoMember(17)]
+        [Key(16)]
         public bool IsUnique { get; set; }
 
-        [ProtoMember(18)]
+        [Key(17)]
         public bool IsMandatory { get; set; }
 
-        [ProtoMember(19)]
+        [Key(18)]
         public ESecurityFlag SecurityFlag { get; set; } = ESecurityFlag.None;
 
-        [ProtoMember(20)]
+        [Key(19)]
         public bool IsInput { get; set; }
 
-        [ProtoMember(21)]
+        [Key(20)]
         public bool IsIncrementalUpdate { get; set; }
 
         // used by the passthrough to indicate if the column is a part of the parent node, or part of current node.
-        [ProtoMember(22)]
+        [Key(21)]
         public bool IsParent { get; set; } = false;
 
-        [ProtoMember(23)]
+        [Key(22)]
         public TableColumns ChildColumns { get; set; }
 
         public bool IsAutoIncrement() => DeltaType == EDeltaType.DbAutoIncrement || DeltaType == EDeltaType.AutoIncrement;
 
         
-        [JsonIgnore, CopyIgnore]
+        [JsonIgnore, CopyIgnore, IgnoreMember]
         public Type ColumnGetType
         {
             get => Dexih.Utils.DataType.DataType.GetType(DataType);

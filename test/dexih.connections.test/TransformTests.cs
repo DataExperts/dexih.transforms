@@ -37,7 +37,7 @@ namespace dexih.connections.test
 
                 var query = new SelectQuery()
                 {
-                    Sorts = new List<Sort>() { new Sort("IntColumn", Sort.EDirection.Descending) }
+                    Sorts = new Sorts() { new Sort("IntColumn", Sort.EDirection.Descending) }
                 };
                 await reader.Open(0, query, CancellationToken.None);
 
@@ -59,7 +59,7 @@ namespace dexih.connections.test
 
                 var query = new SelectQuery()
                 {
-                    Filters = new List<Filter>() { new Filter("IntColumn", ECompare.LessThanEqual, 5) }
+                    Filters = new Filters("IntColumn", ECompare.LessThanEqual, 5)
                 };
                 await reader.Open(0, query, CancellationToken.None);
 

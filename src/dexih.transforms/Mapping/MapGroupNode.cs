@@ -48,7 +48,7 @@ namespace dexih.transforms.Mapping
         }
 
 
-        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row,
+        public override async Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row,
             object[] joinRow, CancellationToken cancellationToken)
         {
             // process the current row

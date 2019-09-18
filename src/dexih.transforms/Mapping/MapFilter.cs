@@ -31,7 +31,7 @@ namespace dexih.transforms.Mapping
         public object Value1 { get; set; }
         public object Value2 { get; set; }
         
-        public ECompare Compare { get; set; }
+        public ECompare Compare { get; set; } = ECompare.IsEqual;
 
         private int _column1Ordinal = -1;
         private int _column2Ordinal = -1;
@@ -69,7 +69,7 @@ namespace dexih.transforms.Mapping
         {
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public override Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             var value1 = _column1Ordinal == -1 ? Value1 : row[_column1Ordinal];
             var value2 = _column2Ordinal == -1 ? Value2 : row[_column2Ordinal];

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
 using static Dexih.Utils.DataType.DataType;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.transforms
 {
@@ -17,7 +17,7 @@ namespace dexih.transforms
     /// Stores auditing information captured when using the TransformWriter.
     /// </summary>
     [PocoTable(Name = "DexihResults")]
-    [ProtoContract]
+    [MessagePackObject]
     public class TransformWriterResult: IDisposable
     {
         #region Events
@@ -83,160 +83,160 @@ namespace dexih.transforms
         }
         
         [PocoColumn(Skip = true)]
-        [ProtoMember(1)]
+        [Key(0)]
         public TransformWriterOptions TransformWriterOptions { get; set; }
 
 
         [PocoColumn(DeltaType = TableColumn.EDeltaType.DbAutoIncrement, IsKey = true)]
-        [ProtoMember(2)]
+        [Key(1)]
         public long AuditKey { get; set; }
 
         [PocoColumn(MaxLength = 30)]
-        [ProtoMember(3)]
+        [Key(2)]
         public string AuditType { get; set; }
 
-        [ProtoMember(4)]
+        [Key(3)]
         public long ReferenceKey { get; set; }
 
-        [ProtoMember(5)]
+        [Key(4)]
         public long ParentAuditKey { get; set; }
 
         [PocoColumn(MaxLength = 1024)]
-        [ProtoMember(6)]
+        [Key(5)]
         public string ReferenceName { get; set; }
 
-        [ProtoMember(7)]
+        [Key(6)]
         public long SourceTableKey { get; set; }
 
         [PocoColumn(MaxLength = 1024)]
-        [ProtoMember(8)]
+        [Key(7)]
         public string SourceTableName { get; set; }
 
-        [ProtoMember(9)]
+        [Key(8)]
         public long TargetTableKey { get; set; }
 
         [PocoColumn(MaxLength = 1024)]
-        [ProtoMember(10)]
+        [Key(9)]
         public string TargetTableName { get; set; }
 
-        [ProtoMember(11)]
+        [Key(10)]
         public long HubKey { get; set; }
         
         /// <summary>
         /// The reference to the connection use for auditing (such as profile data).
         /// </summary>
         [PocoColumn(Skip = true)]
-        [ProtoMember(12)]
+        [Key(11)]
         public long AuditConnectionKey { get; set; }
 
         [PocoColumn(Skip = true)]
-        [ProtoMember(13)]
+        [Key(12)]
         public long LastRowTotal { get; set; }
 
         [PocoColumn(Skip = true)]
-        [ProtoMember(14)]
+        [Key(13)]
         public object LastMaxIncrementalValue { get; set; }
 
         [PocoColumn(Skip = true)]
-        [ProtoMember(15)]
+        [Key(14)]
         public int RowsPerProgressEvent { get; set; } = 1000;
 
-        [ProtoMember(16)]
+        [Key(15)]
         public long RowsTotal { get; set; }
 
-        [ProtoMember(17)]
+        [Key(16)]
         public long RowsCreated { get; set; }
 
-        [ProtoMember(18)]
+        [Key(17)]
         public long RowsUpdated { get; set; }
 
-        [ProtoMember(19)]
+        [Key(18)]
         public long RowsDeleted { get; set; }
 
-        [ProtoMember(20)]
+        [Key(19)]
         public long RowsPreserved { get; set; }
 
-        [ProtoMember(21)]
+        [Key(20)]
         public long RowsIgnored { get; set; }
 
-        [ProtoMember(22)]
+        [Key(21)]
         public long RowsRejected { get; set; }
 
-        [ProtoMember(23)]
+        [Key(22)]
         public long RowsFiltered { get; set; }
 
-        [ProtoMember(24)]
+        [Key(23)]
         public long RowsSorted { get; set; }
 
-        [ProtoMember(25)]
+        [Key(24)]
         public long RowsReadPrimary { get; set; }
 
-        [ProtoMember(26)]
+        [Key(25)]
         public long RowsReadReference { get; set; }
 
-        [ProtoMember(27)]
+        [Key(26)]
         public long Passed { get; set; }
 
-        [ProtoMember(28)]
+        [Key(27)]
         public long Failed { get; set; }
 
-        [ProtoMember(29)]
+        [Key(28)]
         public long ReadTicks { get; set; }
 
-        [ProtoMember(30)]
+        [Key(29)]
         public long WriteTicks { get; set; }
 
-        [ProtoMember(31)]
+        [Key(30)]
         public long ProcessingTicks { get; set; }
 
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 255, AllowDbNull = true)]
-        [ProtoMember(32)]
+        [Key(32)]
         public object MaxIncrementalValue { get; set; }
 
-        [ProtoMember(33)]
+        [Key(33)]
         public long MaxSurrogateKey { get; set; }
 
         [PocoColumn(MaxLength = 4000, AllowDbNull = true)]
-        [ProtoMember(34)]
+        [Key(34)]
         public string Message { get; set; }
 
         [PocoColumn(MaxLength = 255, DataType = ETypeCode.Text, AllowDbNull = true)]
-        [ProtoMember(35)]
+        [Key(35)]
         public string ExceptionDetails { get; set; }
 
-        [ProtoMember(36)]
+        [Key(36)]
         public DateTime InitializeTime { get; set; }
 
-        [ProtoMember(37)]
+        [Key(37)]
         public DateTime? ScheduledTime { get; set; }
 
-        [ProtoMember(38)]
+        [Key(38)]
         public DateTime? StartTime { get; set; }
 
-        [ProtoMember(39)]
+        [Key(39)]
         public DateTime? EndTime { get; set; }
 
-        [ProtoMember(40)]
+        [Key(40)]
         public DateTime? LastUpdateTime { get; set; }
 
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
-        [ProtoMember(41)]
+        [Key(41)]
         public ETriggerMethod TriggerMethod { get; set; }
 
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
-        [ProtoMember(42)]
+        [Key(42)]
         public string TriggerInfo { get; set; }
 
         [PocoColumn(DataType = ETypeCode.Text, AllowDbNull = true)]
-        [ProtoMember(43)]
+        [Key(43)]
         public List<TransformPerformance> PerformanceSummary { get; set; }
 
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
-        [ProtoMember(44)]
+        [Key(44)]
         public string ProfileTableName { get; set; }
 
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
-        [ProtoMember(45)]
+        [Key(45)]
         public string RejectTableName { get; set; }
 
         //        [PocoColumn(Skip = true)]
@@ -249,26 +249,26 @@ namespace dexih.transforms
         //        public object ResetIncrementalValue { get; set; }
 
         /// these are used when reading the from table, if record is the current version, previous version, or the previous version that was successful.
-        [ProtoMember(46)]
+        [Key(46)]
         public bool IsCurrent { get; set; }
 
-        [ProtoMember(47)]
+        [Key(47)]
         public bool IsPrevious { get; set; }
 
-        [ProtoMember(48)]
+        [Key(48)]
         public bool IsPreviousSuccess { get; set; }
 
         [PocoColumn(Skip = true)]
-        [ProtoIgnore]
+        [IgnoreMember]
         public Connection AuditConnection { get; set; }
 
         [PocoColumn(Skip = true)]
-        [ProtoMember(50)]
+        [Key(50)]
         public List<TransformWriterResult> ChildResults { get; set; } = new List<TransformWriterResult>();
 
         // [JsonConverter(typeof(StringEnumConverter))]
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
-        [ProtoMember(51)]
+        [Key(51)]
         public ERunStatus RunStatus { get; set; }
 
         public void ResetStatistics()
@@ -360,13 +360,13 @@ namespace dexih.transforms
             return true;
         }
         
-        public async Task Schedule(DateTime startTime, CancellationToken cancellationToken = default)
+        public void Schedule(DateTime startTime, CancellationToken cancellationToken = default)
         {
             ResetStatistics();
             ScheduledTime = startTime;
             AuditKey = 0;
             RunStatus = ERunStatus.Scheduled;
-            await AuditConnection.InitializeAudit(this, cancellationToken);
+            // await AuditConnection.InitializeAudit(this, cancellationToken);
             OnStatusUpdate?.Invoke(this);
         }
 

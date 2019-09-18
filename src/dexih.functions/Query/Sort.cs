@@ -1,11 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions.Query
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class Sort : IEquatable<Sort>
     {
         // [JsonConverter(typeof(StringEnumConverter))]
@@ -31,10 +31,10 @@ namespace dexih.functions.Query
             Direction = direction;
         }
 
-        [ProtoMember(1)]
+        [Key(0)]
         public TableColumn Column { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public EDirection Direction { get; set; }
 
         public bool Equals(Sort other)

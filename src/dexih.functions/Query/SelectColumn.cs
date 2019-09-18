@@ -1,11 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions.Query
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class SelectColumn: IEquatable<SelectColumn>
     {
         public SelectColumn() { }
@@ -46,10 +46,10 @@ namespace dexih.functions.Query
             Last,
         }
 
-        [ProtoMember(1)]
+        [Key(0)]
         public TableColumn Column { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public EAggregate? Aggregate { get; set; }
 
         public bool Equals(SelectColumn other)

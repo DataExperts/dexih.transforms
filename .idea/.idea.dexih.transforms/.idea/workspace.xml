@@ -2,9 +2,110 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
+      <change afterPath="$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPack.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPackColumn.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/riderModule.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/riderModule.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.ftp.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.ftp.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions.external/OpenWeatherMap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.external/OpenWeatherMap.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/DexihActiveAgent.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/DexihActiveAgent.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/DownloadUrl.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/DownloadUrl.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionParameter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionParameter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Parameter/Parameter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Parameter/Parameter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterArray.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterArray.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterColumn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterJoinColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterJoinColumn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterOutputColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterOutputColumn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterValue.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterValue.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/dexih.functions/Parameter/Parameters.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Parameter/Parameters.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/DeleteQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/DeleteQuery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/Filters.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Filters.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/InputParameter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/InputParameter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/InputParameters.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/InputParameters.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/InsertQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/InsertQuery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/QueryColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/QueryColumn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/QueryColumns.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/QueryColumns.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/SelectQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/SelectQuery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/Sorts.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Sorts.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/UpdateQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/UpdateQuery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/FileConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/FileConfiguration.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/FlatFile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/FlatFile.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/TableCache.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/TableCache.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumns.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumns.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/WebService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/WebService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionReference.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionReference.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/EncryptedObject.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/EncryptedObject.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapAggregate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapAggregate.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapColumn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFunction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFunction.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapInputColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapInputColumn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapNode.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoReader.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderRowCreator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderRowCreator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformConcatinate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformConcatinate.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformPerformance.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformPerformance.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformProperties.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformProperties.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Transforms/TransformAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Transforms/TransformAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Transforms/TransformReference.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Transforms/TransformReference.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/dexih.transforms.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/dexih.transforms.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -24,7 +125,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/0348F5FF-22CB-4C23-9A19-7236327BB562/1d/68b32ed4/ClusteringMetrics.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderJson.cs" root0="FORCE_HIGHLIGHTING" />
@@ -32,7 +133,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTask.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.reader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" root0="FORCE_HIGHLIGHTING" />
@@ -48,6 +149,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterOptions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/90/519adcd2/Operations.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/AvailableDataTypes.cs" root0="FORCE_HIGHLIGHTING" />
@@ -56,6 +158,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DeltaValues.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamAction.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/f1/ece6e3bf/ECompare.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/project.lock.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/5c/4fa6c184/SdcaTrainerBase`3.cs" root0="SKIP_HIGHLIGHTING" />
@@ -67,6 +170,8 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/SpecialFunctions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/4e/ef465e4f/SdcaMulticlassTrainerBase`1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPack.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPackColumn.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/17/280abaf3/Extensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" root0="FORCE_HIGHLIGHTING" />
@@ -96,6 +201,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoCachedEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoExceptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/18B2FEF3-2436-49F4-90B7-17A88499F6A6/92/7d8b3afd/DbDataReader.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoLoader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/F163DB5B-26F1-4970-920F-4519EA0B7531/e3/085bc907/TreeExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoProcessor.cs" root0="FORCE_HIGHLIGHTING" />
@@ -111,12 +217,12 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/OpenWeatherMap.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSeries.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapNode.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroup.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/Currency.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamJsonTests.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamJsonTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" root0="FORCE_HIGHLIGHTING" />
@@ -142,6 +248,7 @@
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionAttribute.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionReference.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/Connections.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.sftp/SftpStream.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/project.lock.json" root0="FORCE_HIGHLIGHTING" />
@@ -181,6 +288,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterColumn.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/Parameter.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterJoinColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/DownloadUrl.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Exceptions/FunctionException.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/HierarchyFunctions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/RowFunctions.cs" root0="FORCE_HIGHLIGHTING" />
@@ -229,7 +337,6 @@
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/lookup.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/MockReader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformRowTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/project.lock.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaParentChild.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" root0="FORCE_HIGHLIGHTING" />
@@ -266,9 +373,11 @@
     <setting file="file://$PROJECT_DIR$/test/dexih.standard.function.tests/MapFunctions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.mysql.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.flatfile.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/project.lock.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/27/4e771cd6/DataType.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/31575819-B2FF-42E0-944E-7701C0D109C7/bb/c036c307/Operations`1.cs" root0="SKIP_HIGHLIGHTING" />
@@ -276,7 +385,7 @@
     <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/obj/Debug/netcoreapp2.0/ReaderExamples.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.flatfile.azure.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformProfile.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformThread.cs" root0="FORCE_HIGHLIGHTING" />
@@ -287,6 +396,7 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformValidation.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskBulk.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamMessagePack.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/FileEnum.cs" root0="FORCE_HIGHLIGHTING" />
@@ -299,35 +409,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/test/dexih.functions.ml.tests/sentiment.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.ml/Clustering.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.ml/RegressionPredictor.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.ml/RegressionAnalysis.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.functions.ml.tests/regression.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions/SeriesValue.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.financial/FinancialFunctions.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionAttribute.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions/Functions/Functions.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.ml/RecommendationAnalysis.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.ml/AnomalyDetection.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.functions.ml.tests/anomalyprediction.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/MockConnection.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/MockReader.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapAggregate.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapColumn.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterArray.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterColumn.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterJoinColumn.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions/Parameter/Parameter.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFunction.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapInputColumn.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapNode.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" />
@@ -346,10 +427,39 @@
         <option value="$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Parameter/Parameters.cs" />
         <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" />
         <option value="$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamProtoBuf.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamProtoBuf/ProtoBufValue.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionAttribute.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionReference.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamProtoBuf/StreamProtoBuf.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPackColumn.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/StreamProtoBufTests.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionAttribute.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPack.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/StreamMessagePack.cs" />
       </list>
     </option>
   </component>
@@ -642,6 +752,14 @@
       <workItem from="1566610396875" duration="22000" />
       <workItem from="1566866230897" duration="3253000" />
       <workItem from="1567504388884" duration="249000" />
+      <workItem from="1568515817495" duration="4019000" />
+      <workItem from="1568529517041" duration="10353000" />
+      <workItem from="1568595312031" duration="67000" />
+      <workItem from="1568595650757" duration="83000" />
+      <workItem from="1568684393492" duration="635000" />
+      <workItem from="1568701966015" duration="25000" />
+      <workItem from="1568702019899" duration="4821000" />
+      <workItem from="1568756128753" duration="408000" />
     </task>
     <task id="LOCAL-00010" summary="Fix some tests with SqlServer on Linux">
       <created>1501211946775</created>
@@ -1124,36 +1242,10 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <breakpoint suspend="NONE" type="DotNet Exception Breakpoints">
+        <breakpoint enabled="true" suspend="NONE" type="DotNet Exception Breakpoints">
           <properties exception="System.Threading.ThreadAbortException" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="566" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs</url>
-          <line>80</line>
-          <properties documentPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" initialLine="80">
-            <startOffsets>
-              <option value="2344" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2359" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="1263" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs</url>
-          <line>117</line>
-          <properties documentPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" initialLine="116">
-            <startOffsets>
-              <option value="3628" />
-            </startOffsets>
-            <endOffsets>
-              <option value="3682" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="1264" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs</url>
           <line>43</line>
@@ -1167,149 +1259,75 @@
           </properties>
           <option name="timeStamp" value="1271" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs</url>
+          <line>130</line>
+          <properties documentPath="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" initialLine="130">
+            <startOffsets>
+              <option value="5289" />
+            </startOffsets>
+            <endOffsets>
+              <option value="5357" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1283" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs</url>
+          <line>102</line>
+          <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" initialLine="102">
+            <startOffsets>
+              <option value="3529" />
+            </startOffsets>
+            <endOffsets>
+              <option value="3586" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1288" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs</url>
+          <line>68</line>
+          <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" initialLine="68">
+            <startOffsets>
+              <option value="2226" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2283" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1289" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs</url>
+          <line>82</line>
+          <properties documentPath="$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs" initialLine="79">
+            <startOffsets>
+              <option value="2712" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2748" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1296" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs</url>
+          <line>42</line>
+          <properties documentPath="$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs" initialLine="42">
+            <startOffsets>
+              <option value="1275" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1308" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1297" />
+        </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint enabled="true" type="DotNet Exception Breakpoints" />
+      </default-breakpoints>
     </breakpoint-manager>
-  </component>
-  <component name="debuggerHistoryManager">
-    <expressions id="breakpointCondition">
-      <expression>
-        <expression-string>CacheTable.Data.Count &gt; 0</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>_data.Count == 0</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>CacheTable?.Data.Count &gt; 0</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>IsReaderFinished == true</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>CurrentRow == null</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>CacheTable.Columns.Count == 3</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>PrimaryTransform.BaseFieldCount &gt; FieldCount</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>Name is null</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>operation == 'U'</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-    </expressions>
-    <expressions id="watch">
-      <expression>
-        <expression-string>_groupData.Items[0]</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>CurrentRow</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>CacheTable</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-    </expressions>
-    <expressions id="setValue">
-      <expression>
-        <expression-string>update &quot;testtable1&quot; set &quot;DateColumn&quot; = :col0</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-    </expressions>
-    <expressions id="evaluateExpression">
-      <expression>
-        <expression-string>_predictMethod.GetParameters().Length</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>columns</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>Transform</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>source.ReadAsync().Result</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>await source.ReadAsync()</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>transformDelta[&quot;CreateDate&quot;]</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>worksheet.GetValue(ExcelHeaderRow, col)</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>CurrentRow</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>System.Nullable.GetUnderlyingType(typeof(int?))</expression-string>
-        <language-id>C#</language-id>
-        <custom-info>RiderImportsList:</custom-info>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-    </expressions>
   </component>
 </project>

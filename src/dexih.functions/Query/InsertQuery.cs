@@ -1,10 +1,10 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
 using System;
 using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class InsertQuery
     {
         public InsertQuery()
@@ -17,7 +17,7 @@ namespace dexih.functions.Query
             InsertColumns = insertColumns;
         }
 
-        [ProtoMember(1)]
+        [Key(0)]
         public List<QueryColumn> InsertColumns { get; set; }
     }
 }

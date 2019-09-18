@@ -154,7 +154,7 @@ namespace dexih.functions
 
 		public EInvalidAction InvalidAction { get; set; } = EInvalidAction.Reject;
 
-		public ECompare? CompareEnum { get; set; }
+		public ECompare? CompareEnum { get; set; } = ECompare.IsEqual;
 		
 		public GlobalSettings GlobalSettings { get; set; }
 

@@ -138,7 +138,7 @@ namespace dexih.connections.mysql
                                 cmd.CommandType = CommandType.Text;
                                 try
                                 {
-                                     cmd.ExecuteNonQuery();
+                                    await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 }
                                 catch (Exception ex)
                                 {
@@ -442,7 +442,7 @@ namespace dexih.connections.mysql
 				// update the maximum packet size supported by this mysql database.
 				using (var cmd = CreateCommand(connection, @" SELECT @@max_allowed_packet"))
 				{
-					var result = cmd.ExecuteScalar();
+					var result = await cmd.ExecuteScalarAsync();
 					if(result != DBNull.Value && result != null)
 					{
 						MaxSqlSize = Convert.ToInt64(result);	

@@ -89,6 +89,6 @@ namespace dexih.transforms.Poco
         }
         
         public string Name { get; set; }
-        public List<Sort> SortFields { get; set; }
+        public Sorts SortFields { get; set; }
     }
 }

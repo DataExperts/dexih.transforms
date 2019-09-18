@@ -66,8 +66,8 @@ namespace dexih.transforms
                 selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
             }
             
-            var primarySorts = new List<Sort>();
-            var referenceSorts = new List<Sort>();
+            var primarySorts = new Sorts();
+            var referenceSorts = new Sorts();
             
             //we need to translate filters and sorts to source column names before passing them through.
             if (selectQuery?.Sorts != null)
@@ -132,7 +132,7 @@ namespace dexih.transforms
             //if the primary & reference transforms are sorted, we will merge sort the items.
             if (PrimaryTransform.SortFields != null && ReferenceTransform.SortFields != null)
             {
-                var newSortFields = new List<Sort>();
+                var newSortFields = new Sorts();
                 _primarySortOrdinals = new List<int>();
                 _referenceSortOrdinals = new List<int>();
                 
@@ -183,7 +183,7 @@ namespace dexih.transforms
                     // read one row for each reader.
                     var primaryReadTask = PrimaryTransform.ReadAsync(cancellationToken);
                     var referenceReadTask = ReferenceTransform.ReadAsync(cancellationToken);
-                    await Task.WhenAll(primaryReadTask, referenceReadTask);
+                    var results = await Task.WhenAll(primaryReadTask, referenceReadTask);
                     
                     if (primaryReadTask.IsFaulted)
                     {
@@ -195,8 +195,8 @@ namespace dexih.transforms
                         throw referenceReadTask.Exception;
                     }
 
-                    _primaryMoreRecords = primaryReadTask.Result;
-                    _referenceMoreRecords = referenceReadTask.Result;
+                    _primaryMoreRecords = results[0];
+                    _referenceMoreRecords = results[1];
                     
                     _firstRead = false;
                 }

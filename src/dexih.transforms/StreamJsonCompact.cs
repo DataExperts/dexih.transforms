@@ -118,14 +118,14 @@ namespace dexih.transforms
                         
                         if (_hasRows == false)
                         {
-                            _streamWriter.Write("]");
+                            await _streamWriter.WriteAsync("]");
                         }
                     }
                     catch (Exception ex)
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        _streamWriter.Write("], \"status\":" + result);
+                        await _streamWriter.WriteAsync("], \"status\":" + result);
                         _hasRows = false;
                     }
 
@@ -154,7 +154,7 @@ namespace dexih.transforms
                             _valuesArray[i] = geometry.AsText();
                         }
 
-                        if (_valuesArray[i] is string valueString && valueString.Length > _maxFieldSize)
+                        if (_valuesArray[i] is string valueString && _maxFieldSize >=0 && valueString.Length > _maxFieldSize)
                         {
                             _valuesArray[i] = valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
                         }
@@ -162,7 +162,7 @@ namespace dexih.transforms
 
                     var row = JsonConvert.SerializeObject(_valuesArray);
 
-                    _streamWriter.Write(row);
+                    await _streamWriter.WriteAsync(row);
 
                     _rowCount++;
                     try
@@ -171,20 +171,20 @@ namespace dexih.transforms
 
                         if (_hasRows && _rowCount < _maxRows)
                         {
-                            _streamWriter.Write(",");
+                            await _streamWriter.WriteAsync(",");
                         }
                         else
                         {
-                            _streamWriter.Write("]");
+                            await _streamWriter.WriteAsync("]");
 
                             if (_reader is Transform transform)
                             {
                                 var properties = transform.GetTransformProperties(true);
                                 var propertiesSerialized = Json.SerializeObject(properties, "");
-                                _streamWriter.Write(", \"transformProperties\":" + propertiesSerialized);
+                                await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
                             }
 
-                            _streamWriter.Write("}");
+                            await _streamWriter.WriteAsync("}");
 
                             _hasRows = false;
                             break;
@@ -194,7 +194,7 @@ namespace dexih.transforms
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        _streamWriter.Write("], \"status\":" + result);
+                        await _streamWriter.WriteAsync("], \"status\":" + result);
                         _hasRows = false;
                     }
                 }

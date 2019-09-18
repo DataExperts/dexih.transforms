@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using dexih.functions.Exceptions;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions.Parameter
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class Parameters
     {
         public IList<Parameter> ReturnParameters { get; set; }

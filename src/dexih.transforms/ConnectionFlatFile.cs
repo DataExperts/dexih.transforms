@@ -170,7 +170,7 @@ namespace dexih.transforms
 
                         using (var fileEntryStream = fileEntry.Open())
                         {
-                            fileStreamResult.CopyTo(fileEntryStream);
+                            await fileStreamResult.CopyToAsync(fileEntryStream);
                         }
                     }
                 }
@@ -219,7 +219,7 @@ namespace dexih.transforms
                     {
                         _csvWriter.WriteField(table.Columns[j].Name);
                     }
-                    _csvWriter.NextRecord();
+                    await _csvWriter.NextRecordAsync();
                 }
 
                 LastWrittenFile = fileName;
@@ -267,7 +267,7 @@ namespace dexih.transforms
                             _csvWriter.WriteField(reader[ordinal]);
                         }
                     }
-                    _csvWriter.NextRecord();
+                    await _csvWriter.NextRecordAsync();
                 }
             }
             catch (Exception ex)
@@ -295,8 +295,8 @@ namespace dexih.transforms
 
                 var stream = new MemoryStream();
                 var writer = new StreamWriter(stream);
-                writer.Write(flatFile.FileSample);
-                writer.Flush();
+                await writer.WriteAsync(flatFile.FileSample);
+                await writer.FlushAsync();
                 stream.Position = 0;
 
                 FileHandlerBase fileHandler = null;
@@ -428,7 +428,7 @@ namespace dexih.transforms
                         {
                             csv.WriteField(column.Name);
                         }
-                        csv.NextRecord();
+                        await csv.NextRecordAsync();
                     }
 
                     foreach (var query in queries)
@@ -446,7 +446,7 @@ namespace dexih.transforms
                             }
                         }
                         
-                        csv.NextRecord();
+                        await csv.NextRecordAsync();
                         rows++;
                     }
                 }

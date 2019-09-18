@@ -38,7 +38,7 @@ namespace dexih.transforms.Poco
             Reset();
         }
 
-        public override List<Sort> SortFields { get => _pocoTable?.Table?.OutputSortFields; }
+        public override Sorts SortFields { get => _pocoTable?.Table?.OutputSortFields; }
 
 
         #endregion

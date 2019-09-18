@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dexih.Utils.DataType;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions.Query
 {

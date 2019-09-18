@@ -230,9 +230,9 @@ namespace dexih.transforms
             Mappings.Reset(EFunctionType.Aggregate);
         }
 
-        public override List<Sort> RequiredSortFields()
+        public override Sorts RequiredSortFields()
         {
-            var sortFields = Mappings.OfType<MapGroup>().Select(c=> new Sort { Column = c.InputColumn, Direction = Sort.EDirection.Ascending }).ToList();
+            var sortFields = new Sorts(Mappings.OfType<MapGroup>().Select(c=> new Sort { Column = c.InputColumn, Direction = Sort.EDirection.Ascending }));
 
             var seriesMapping = (MapSeries) Mappings.SingleOrDefault(c => c is MapSeries _);
             if (seriesMapping != null)
@@ -243,7 +243,7 @@ namespace dexih.transforms
             return sortFields;
         }
 
-        public override List<Sort> RequiredReferenceSortFields()
+        public override Sorts RequiredReferenceSortFields()
         {
             return null;
         }

@@ -1,9 +1,9 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
 using System;
 
 namespace dexih.functions.Query
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class QueryColumn: IEquatable<QueryColumn>
     {
         public QueryColumn() { }
@@ -20,10 +20,10 @@ namespace dexih.functions.Query
             Value = value;
         }
 
-        [ProtoMember(1)]
+        [Key(0)]
         public TableColumn Column { get; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public object Value { get; }
 
         public bool Equals(QueryColumn other)

@@ -1,17 +1,18 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
 using System;
 using System.IO;
 using System.Reflection;
+using CsvHelper.Configuration.Attributes;
 
 namespace dexih.transforms
 {
-    [ProtoContract]
+    [MessagePackObject()]
     public class ConnectionReference : ConnectionAttribute
     {
-        [ProtoMember(1)]
+        [Key(15)]
         public string ConnectionAssemblyName { get; set; }
 
-        [ProtoMember(2)]
+        [Key(16)]
         public string ConnectionClassName { get; set; }
         
         public Type GetConnectionType()

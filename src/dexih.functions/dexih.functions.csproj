@@ -27,8 +27,9 @@
     <PackageReference Include="CsvHelper" Version="12.1.2" />
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.80" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.14" />
-    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.90" />
-    <PackageReference Include="protobuf-net" Version="2.4.0" />
+    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.92" />
+    <PackageReference Include="MessagePack" Version="1.7.3.7" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="16.3.52" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
     </PackageReference>
     <PackageReference Include="System.Data.Common" Version="4.3.0">

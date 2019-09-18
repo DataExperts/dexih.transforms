@@ -92,7 +92,7 @@ namespace dexih.transforms.tests
         public async Task JoinSortedDuplicate()
         {
             var source = Helpers.CreateSortedTestData();
-            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort> { new Sort("StringColumn") });
+            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
 
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
             var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.Abend, null, "Join");
@@ -146,7 +146,7 @@ namespace dexih.transforms.tests
         public async Task JoinSortedOuterJoin()
         {
             var source = Helpers.CreateSortedTestData();
-            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort> { new Sort("StringColumn") });
+            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
 
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
             var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.All, null, "Join");
@@ -182,7 +182,7 @@ namespace dexih.transforms.tests
         public async Task JoinSortedPreFilter()
         {
             var source = Helpers.CreateSortedTestData();
-            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort> { new Sort("StringColumn") });
+            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
 
             var mappings = new Mappings
             {
@@ -232,7 +232,7 @@ namespace dexih.transforms.tests
         public async Task JoinPreSortFirstFilter()
         {
             var source = Helpers.CreateSortedTestData();
-            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort> { new Sort("StringColumn") });
+            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
             
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
             var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.First, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
@@ -262,7 +262,7 @@ namespace dexih.transforms.tests
         public async Task JoinPreSortLastFilter()
         {
             var source = Helpers.CreateSortedTestData();
-            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort> { new Sort("StringColumn") });
+            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
             
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
             var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.Last, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
@@ -294,7 +294,7 @@ namespace dexih.transforms.tests
         public async Task JoinSortedStaticValue()
         {
             var source = Helpers.CreateSortedTestData();
-            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new List<Sort> { new Sort("StringColumn") });
+            var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
 
             var mappings = new Mappings
             {

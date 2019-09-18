@@ -5,7 +5,6 @@ using System.IO;
  using System.Linq;
  using System.Threading;
 using System.Threading.Tasks;
- using Dexih.Utils.CopyProperties;
  using Dexih.Utils.Crypto;
  using Dexih.Utils.MessageHelpers;
 using NetTopologySuite.Geometries;
@@ -120,14 +119,14 @@ using Newtonsoft.Json.Linq;
 
                         if (_hasRows == false)
                         {
-                            _streamWriter.Write(endWrite);
+                            await _streamWriter.WriteAsync(endWrite);
                         }
                     }
                     catch (Exception ex)
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        _streamWriter.Write(endWrite + ", \"status\"=" + result + " }");
+                        await _streamWriter.WriteAsync(endWrite + ", \"status\"=" + result + " }");
                         _hasRows = false;
                     }
 
@@ -166,7 +165,7 @@ using Newtonsoft.Json.Linq;
                     }
 
                     var row = jObject.ToString();
-                    _streamWriter.Write(row);
+                    await _streamWriter.WriteAsync(row);
 
                     _rowCount++;
                     try
@@ -175,11 +174,11 @@ using Newtonsoft.Json.Linq;
                         
                         if (_hasRows && _rowCount < _maxRows)
                         {
-                            _streamWriter.Write(",");
+                            await _streamWriter.WriteAsync(",");
                         }
                         else
                         {
-                            _streamWriter.Write(endWrite);
+                            await _streamWriter.WriteAsync(endWrite);
                             _hasRows = false;
                             break;
                         }
@@ -188,7 +187,7 @@ using Newtonsoft.Json.Linq;
                     {
                         var status = new ReturnValue(false, ex.Message, ex);
                         var result = Json.SerializeObject(status, "");
-                        _streamWriter.Write(endWrite + ", \"status\"=" + result + " }");
+                        await _streamWriter.WriteAsync(endWrite + ", \"status\"=" + result + " }");
                         _hasRows = false;
                     }
                 }

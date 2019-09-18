@@ -496,7 +496,7 @@ namespace dexih.connections.sqlserver
                     //get the sql server version.
                     using (var cmd = CreateCommand(connection, "SELECT SERVERPROPERTY('ProductVersion') AS ProductVersion"))
                     {
-                        var fullversion = cmd.ExecuteScalar().ToString();
+                        var fullversion = (await cmd.ExecuteScalarAsync(cancellationToken)).ToString();
 
                         sqlversion = Convert.ToInt32(fullversion.Split('.')[0]);
                     }
@@ -524,7 +524,7 @@ namespace dexih.connections.sqlserver
                             //select the temporal type 
                             using (var cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + SqlTableName(table) + "')"))
                             {
-                                var temporalType = Convert.ToInt32(cmd.ExecuteScalar());
+                                var temporalType = Convert.ToInt32(await cmd.ExecuteScalarAsync(cancellationToken));
                                 //Exclude history table from the list (temporalType = 1)
                                 if (temporalType != 1)
                                     newTableList.Add(table);
@@ -562,7 +562,7 @@ namespace dexih.connections.sqlserver
                     //get the sql server version.
                     using (var cmd = CreateCommand(connection, "SELECT SERVERPROPERTY('ProductVersion') AS ProductVersion"))
                     {
-                        var fullVersion = cmd.ExecuteScalar().ToString();
+                        var fullVersion = (await cmd.ExecuteScalarAsync(cancellationToken)).ToString();
 
                         sqlversion = Convert.ToInt32(fullVersion.Split('.')[0]);
                     }
@@ -589,7 +589,7 @@ namespace dexih.connections.sqlserver
                         //select the temporal type 
                         using (var cmd = CreateCommand(connection, "select temporal_type from sys.tables where object_id = OBJECT_ID('" + tableName + "')"))
                         {
-                            var temporalType = Convert.ToInt32(cmd.ExecuteScalar());
+                            var temporalType = Convert.ToInt32(await cmd.ExecuteScalarAsync(cancellationToken));
                         //If the table is a temporal table, mark it.
                         if (temporalType == 2)
                             table.IsVersioned = true;

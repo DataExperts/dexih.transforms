@@ -79,7 +79,7 @@ namespace dexih.connections.test
                 selectQuery = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("StringColumn")) },
-                    Sorts = new List<Sort>() { new Sort { Column = new TableColumn("IntColumn"), Direction = Sort.EDirection.Descending } },
+                    Sorts = new Sorts() { new Sort { Column = new TableColumn("IntColumn"), Direction = Sort.EDirection.Descending } },
                     Rows = 1,
                     Table = "test_table"
                 };
@@ -124,7 +124,7 @@ namespace dexih.connections.test
                 selectQuery = new SelectQuery()
                 {
                     Columns = new List<SelectColumn>() { new SelectColumn("DecimalColumn", SelectColumn.EAggregate.Max) },
-                    Sorts = new List<Sort>() { new Sort("DateColumn") },
+                    Sorts = new Sorts(){ new Sort("DateColumn") },
                     Groups = new List<TableColumn>() { new TableColumn("DateColumn") },
                     Rows = 1,
                     Table = "test_table"

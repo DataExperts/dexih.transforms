@@ -15,14 +15,14 @@ namespace dexih.transforms
     {
         public ReaderDbDataReader() { }
 
-        private readonly List<Sort> _sortFields;
+        private readonly Sorts _sortFields;
 
         /// <summary>
         /// Initialises a transform source.  
         /// </summary>
         /// <param name="inReader">An initialized DbDataReader.</param>
         /// <param name="sortFields">A list of already sorted fields in the inReader.  If the fields are not sorted in the source data and sortfields are set, transforms such as group, row, join will fail or return incorrect results.</param>
-        public ReaderDbDataReader(DbDataReader inReader, List<Sort> sortFields = null)
+        public ReaderDbDataReader(DbDataReader inReader, Sorts sortFields = null)
         {
             InReader = inReader;
             var fieldCount = inReader.FieldCount;
@@ -92,7 +92,7 @@ namespace dexih.transforms
         /// <param name="inReader"></param>
         /// <param name="table"></param>
         /// <param name="sortFields"></param>
-        public ReaderDbDataReader(DbDataReader inReader, Table table, List<Sort> sortFields = null)
+        public ReaderDbDataReader(DbDataReader inReader, Table table, Sorts sortFields = null)
         {
             InReader = inReader;
 
@@ -122,7 +122,7 @@ namespace dexih.transforms
             return null;
         }
 
-        public override List<Sort> SortFields => _sortFields;
+        public override Sorts SortFields => _sortFields;
 
         public override bool ResetTransform()
         {

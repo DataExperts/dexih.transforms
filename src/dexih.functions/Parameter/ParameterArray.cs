@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.Parameter
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class ParameterArray : Parameter
     {
         public ParameterArray()
@@ -30,7 +30,7 @@ namespace dexih.functions.Parameter
 		    Parameters = parameters;
 	    }
         
-        [ProtoMember(1)]
+        [Key(0)]
 	    public List<Parameter> Parameters;
 
 	    public override object Value

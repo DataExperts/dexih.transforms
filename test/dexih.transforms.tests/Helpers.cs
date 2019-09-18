@@ -17,7 +17,7 @@ namespace dexih.transforms.tests
             var table = new Table("test", 0,
                 new TableColumn("StringColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("IntColumn", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Double, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("DateColumn", ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
                 new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
                 new TableColumn("ArrayColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField, 1)
@@ -34,7 +34,7 @@ namespace dexih.transforms.tests
             table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, new [] {1,1} );
             table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1, new [] {1,1});
 
-            var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") } );
+            var adapter = new ReaderMemory(table, new Sorts() { new Sort("StringColumn") } );
             adapter.Reset();
             return adapter;
         }
@@ -83,7 +83,7 @@ namespace dexih.transforms.tests
             table.AddRow("value08", 8, "lookup8" );
             table.AddRow("value09", 9, "lookup9" );
 
-            var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
+            var adapter = new ReaderMemory(table, new Sorts() { new Sort("StringColumn") });
             adapter.Reset();
             return adapter;
         }
@@ -103,7 +103,7 @@ namespace dexih.transforms.tests
             table.AddRow("value08", 8, "lookup8" );
             table.AddRow("value09", 9, "lookup9" );
 
-            var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
+            var adapter = new ReaderMemory(table, new Sorts(){ new Sort("StringColumn") });
             adapter.Reset();
             return adapter;
         }
@@ -176,7 +176,7 @@ namespace dexih.transforms.tests
             table.AddRow("value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), 2, "");
             table.AddRow("value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), 1, "");
 
-            var adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
+            var adapter = new ReaderMemory(table, new Sorts() { new Sort("StringColumn") });
             adapter.Reset();
             return adapter;
         }

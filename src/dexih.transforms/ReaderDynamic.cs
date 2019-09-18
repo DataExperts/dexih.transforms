@@ -23,7 +23,7 @@ namespace dexih.transforms
 
         #region Constructors
 
-        public ReaderDynamic(Table dataTable, List<Sort> sortFields = null)
+        public ReaderDynamic(Table dataTable, Sorts sortFields = null)
         {
             CacheTable = dataTable;
             CacheTable.OutputSortFields = sortFields;
@@ -32,7 +32,7 @@ namespace dexih.transforms
             SortFields = sortFields;
         }
 
-        public override List<Sort> SortFields { get; }
+        public override Sorts SortFields { get; }
 
         public override Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
         {

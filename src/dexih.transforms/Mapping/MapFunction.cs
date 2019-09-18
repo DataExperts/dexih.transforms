@@ -59,7 +59,7 @@ namespace dexih.transforms.Mapping
             Parameters.InitializeOutputOrdinals(table);
         }
 
-        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public override async Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             IgnoreRow = false;
             

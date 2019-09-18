@@ -1,10 +1,10 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
 using System;
 using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class DeleteQuery
     {
         public DeleteQuery(string table, List<Filter> filters)
@@ -17,10 +17,10 @@ namespace dexih.functions.Query
             Filters = new List<Filter>();
         }
 
-        [ProtoMember(1)]
+        [Key(0)]
         public string Table { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public List<Filter> Filters { get; set; }
     }
 }

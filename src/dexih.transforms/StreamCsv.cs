@@ -60,7 +60,6 @@ namespace dexih.transforms
                 if (_reader is Transform transform)
                 {
                     var convertedTransform = new ReaderConvertDataTypes(new ConnectionConvertString(), transform);
-                    // await convertedTransform.Open(cancellationToken);
                     _reader = convertedTransform;
 
                     var s = new string[transform.CacheTable.Columns.Count];
@@ -77,7 +76,7 @@ namespace dexih.transforms
                         if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                             s[j] = "\"" + s[j] + "\"";
                     }
-                    _streamWriter.WriteLine(string.Join(",", s));
+                    await _streamWriter.WriteLineAsync(string.Join(",", s));
                 }
                 else
                 {
@@ -90,7 +89,7 @@ namespace dexih.transforms
                         if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                             s[j] = "\"" + s[j] + "\"";
                     }
-                    _streamWriter.WriteLine(string.Join(",", s));
+                    await _streamWriter.WriteLineAsync(string.Join(",", s));
                 }
 
                 _memoryStream.Position = 0;
@@ -129,7 +128,7 @@ namespace dexih.transforms
                         if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                             s[j] = "\"" + s[j] + "\"";
                     }
-                    _streamWriter.WriteLine(string.Join(",", s));
+                    await _streamWriter.WriteLineAsync(string.Join(",", s));
 
                     if (_memoryStream.Length > count && _memoryStream.Length > BufferSize) break;
                 }

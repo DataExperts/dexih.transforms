@@ -1,38 +1,38 @@
 using System.Collections.Generic;
 using dexih.functions.Query;
 using dexih.transforms.Transforms;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.transforms
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class TransformProperties
     {
-        [ProtoMember(1)]
+        [Key(0)]
         public string Name { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public ETransformType TransformType { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public string TransformName { get; set; }
 
-        [ProtoMember(4)]
+        [Key(3)]
         public SelectQuery SelectQuery { get; set; }
 
-        [ProtoMember(5)]
+        [Key(4)]
         public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
 
-        [ProtoMember(6)]
+        [Key(5)]
         public long Rows { get; set; }
 
-        [ProtoMember(7)]
+        [Key(6)]
         public double Seconds { get; set; }
 
-        [ProtoMember(8)]
+        [Key(7)]
         public TransformProperties PrimaryProperties { get; set; }
 
-        [ProtoMember(9)]
+        [Key(8)]
         public TransformProperties ReferenceProperties { get; set; }
     }
 }

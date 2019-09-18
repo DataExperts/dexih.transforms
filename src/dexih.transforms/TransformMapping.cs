@@ -93,7 +93,7 @@ namespace dexih.transforms
 			//we need to translate filters and sorts to source column names before passing them through.
 			if (selectQuery?.Sorts != null)
 			{
-				var newSorts = new List<Sort>();
+				var newSorts = new Sorts();
 				foreach (var sort in selectQuery.Sorts)
 				{
 					TableColumn column = null;
@@ -173,7 +173,7 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-	    public override List<Sort> SortFields => CacheTable.OutputSortFields;
+	    public override Sorts SortFields => CacheTable.OutputSortFields;
 
 	    public override bool ResetTransform()
         {
@@ -212,11 +212,11 @@ namespace dexih.transforms
 			}
         }
 
-        public override List<Sort> RequiredSortFields()
+        public override Sorts RequiredSortFields()
         {
             return null;
         }
-        public override List<Sort> RequiredReferenceSortFields()
+        public override Sorts RequiredReferenceSortFields()
         {
             return null;
         }

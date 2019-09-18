@@ -1,57 +1,57 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
 
 namespace dexih.functions
 {
     /// <summary>
     /// Contains information on an active remote agent.
     /// </summary>
-    [ProtoContract]
+    [MessagePackObject]
     public class DexihActiveAgent
     {
         /// <summary>
         /// RemoteAgentKey reference in the repository
         /// </summary>
-        [ProtoMember(1)]
+        [Key(0)]
         public long RemoteAgentKey { get; set; }
 
 
         /// <summary>
         /// The public reference for the remote agent instance.
         /// </summary>
-        [ProtoMember(2)]
+        [Key(1)]
         public string InstanceId { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public string User { get; set; }
 
-        [ProtoMember(4)]
+        [Key(3)]
         public string Name { get; set; }
 
-        [ProtoMember(5)]
+        [Key(4)]
         public bool IsRunning { get; set; }
 
-        [ProtoMember(6)]
+        [Key(5)]
         public string IpAddress { get; set; }
 
-        [ProtoMember(7)]
+        [Key(6)]
         public bool IsEncrypted { get; set; }
 
-        [ProtoMember(8)]
+        [Key(7)]
         public EDataPrivacyStatus DataPrivacyStatus { get; set; }
 
-        [ProtoMember(9)]
+        [Key(8)]
         public DownloadUrl[] DownloadUrls { get; set; }
 
-        [ProtoMember(10)]
+        [Key(9)]
         public bool UpgradeAvailable { get; set; }
 
-        [ProtoMember(11)]
+        [Key(10)]
         public string Version { get; set; }
 
-        [ProtoMember(12)]
+        [Key(11)]
         public string LatestVersion { get; set; }
 
-        [ProtoMember(13)]
+        [Key(12)]
         public string LatestDownloadUrl { get; set; }
 
     }

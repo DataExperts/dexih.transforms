@@ -1,16 +1,16 @@
-using ProtoBuf;
+using MessagePack;
 using System;
 using System.Text;
 
 namespace dexih.repository
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class InputParameter
     {
-        [ProtoMember(1)]
+        [Key(0)]
         public string Name { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string Value { get; set; }
    
     }

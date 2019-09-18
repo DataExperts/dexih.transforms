@@ -1,10 +1,10 @@
 ﻿using dexih.functions.File;
-using ProtoBuf;
+using MessagePack;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions
 {
-    [ProtoContract]
+    [MessagePackObject]
 	public class WebService : Table
 	{
         private string _resetfulUri;
@@ -14,7 +14,7 @@ namespace dexih.functions
         /// Parameters can be added using {param}
         /// For example: stream/{rows}
         /// </summary>
-        [ProtoMember(1)]
+        [Key(0)]
         public string RestfulUri { 
             get => _resetfulUri;
 			set
@@ -30,14 +30,14 @@ namespace dexih.functions
             }
         }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string RowPath { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public ETypeCode FormatType { get; set; } = ETypeCode.Json;
 
         // for text files
-        [ProtoMember(4)]
+        [Key(3)]
         public FileConfiguration FileConfiguration { get; set; } = new FileConfiguration();
 	
 		public void AddInputParameter(string name, string defaultValue = null)

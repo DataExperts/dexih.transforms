@@ -87,7 +87,7 @@ namespace dexih.connections.sql
             }
         }
 
-        public override List<Sort> SortFields => SelectQuery?.Sorts;
+        public override Sorts SortFields => SelectQuery?.Sorts;
         public override bool ResetTransform() => IsOpen;
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)

@@ -235,12 +235,12 @@ namespace dexih.transforms
         }
 
 
-        public override List<Sort> RequiredSortFields()
+        public override Sorts RequiredSortFields()
         {
             return SelectQuery?.Sorts;
         }
 
-        public override List<Sort> RequiredReferenceSortFields()
+        public override Sorts RequiredReferenceSortFields()
         {
             return null;
         }

@@ -4,7 +4,7 @@ using dexih.functions.Query;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions
 {
@@ -17,73 +17,73 @@ namespace dexih.functions
     /// <summary>
     /// Function reference contains details of a standard function
     /// </summary>
-    [ProtoContract]
+    [MessagePackObject]
     public class FunctionReference
     {
-        [ProtoMember(1)]
+        [Key(0)]
         public EFunctionType FunctionType { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string Category { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public string Name { get; set; }
 
-        [ProtoMember(4)]
+        [Key(3)]
         public string Description { get; set;}
 
-        [ProtoMember(5)]
+        [Key(4)]
         public string FunctionAssemblyName { get; set; }
 
-        [ProtoMember(6)]
+        [Key(5)]
         public string FunctionClassName { get; set; }
 
-        [ProtoMember(7)]
+        [Key(6)]
         public string FunctionMethodName { get; set; }
 
-        [ProtoMember(8)]
+        [Key(7)]
         public string ResultMethodName { get; set; }
 
-        [ProtoMember(9)]
+        [Key(8)]
         public string ResetMethodName { get; set; }
 
-        [ProtoMember(10)]
+        [Key(9)]
         public string ImportMethodName { get; set; }
 
         /// <summary>
         /// Indicates the function contains a generic tyep definition
         /// </summary>
-        [ProtoMember(11)]
+        [Key(10)]
         public EGenericType GenericType { get; set; }
 
-        [ProtoMember(12)]
+        [Key(11)]
         public DataType.ETypeCode GenericTypeDefault { get; set; }
 
         /// <summary>
         /// Used to map a filter equivalent operator
         /// </summary>
-        [ProtoMember(13)]
-        public ECompare? Compare { get; set; }
+        [Key(12)]
+        public ECompare? Compare { get; set; } = ECompare.IsEqual;
 
-        [ProtoMember(14)]
+        [Key(13)]
         public bool IsStandardFunction { get; set; }
 
-        [ProtoMember(15)]
+        [Key(14)]
         public FunctionParameter[] ReturnParameters { get; set; }
 
-        [ProtoMember(16)]
+        [Key(15)]
         public FunctionParameter[] InputParameters { get; set; }
 
-        [ProtoMember(17)]
+        [Key(16)]
         public FunctionParameter[] OutputParameters { get; set; }
 
-        [ProtoMember(18)]
+        [Key(17)]
         public FunctionParameter[] ResultReturnParameters { get; set; }
 
-        [ProtoMember(19)]
+        [Key(18)]
         public FunctionParameter[] ResultInputParameters { get; set; }
 
-        [ProtoMember(20)]
+        [Key(19)]
         public FunctionParameter[] ResultOutputParameters { get; set; }
 
         public TransformFunction GetTransformFunction(Type genericType, Parameters parameters = null, GlobalSettings globalSettings = null)

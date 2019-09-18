@@ -1,9 +1,9 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.Parameter
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class ParameterValue : Parameter
     {
          public ParameterValue()

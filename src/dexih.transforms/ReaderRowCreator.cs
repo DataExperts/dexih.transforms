@@ -101,32 +101,32 @@ namespace dexih.transforms
             return true;
         }
 
-        public override List<Sort> RequiredSortFields()
+        public override Sorts RequiredSortFields()
         {
             return null;
         }
 
-        public override List<Sort> RequiredReferenceSortFields()
+        public override Sorts RequiredReferenceSortFields()
         {
             return null;
         }
 
-        public override List<Sort> SortFields => new List<Sort>
+        public override Sorts SortFields => new Sorts
         {
             new Sort(new TableColumn("RowNumber", ETypeCode.Int32), Increment > 0 ? Sort.EDirection.Ascending : Sort.EDirection.Descending)
         };
 
-        public override Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
+        public override async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
-            Open(auditKey, query, cancellationToken).Wait(cancellationToken);
+            await Open(auditKey, query, cancellationToken);
             Reset();
             
             var filter = query.Filters.FirstOrDefault(c => c.Column1?.Name == "RowNumber");
             _lookupRow = filter != null ? Convert.ToInt32(filter.Value2 ?? 0) : StartAt;
 
             _doLookup = true;
-            return Task.FromResult(true);
+            return true;
         }
 
     }

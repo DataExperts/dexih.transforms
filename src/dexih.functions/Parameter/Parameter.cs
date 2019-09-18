@@ -4,17 +4,18 @@ using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using ProtoBuf;
+using MessagePack;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.Parameter
 {
-    [ProtoContract]
-    [ProtoInclude(100, typeof(ParameterArray))]
-    [ProtoInclude(200, typeof(ParameterColumn))]
-    [ProtoInclude(300, typeof(ParameterJoinColumn))]
-    [ProtoInclude(400, typeof(ParameterOutputColumn))]
-    [ProtoInclude(500, typeof(ParameterValue))]
+    [MessagePackObject]
+    [ProtoInherit(1000)]
+    [MessagePack.Union(0, typeof(ParameterArray))]
+    [MessagePack.Union(1, typeof(ParameterColumn))]
+    [MessagePack.Union(2, typeof(ParameterJoinColumn))]
+    [MessagePack.Union(3, typeof(ParameterOutputColumn))]
+    [MessagePack.Union(4, typeof(ParameterValue))]
     public abstract class Parameter
     {
         public abstract void InitializeOrdinal(Table table, Table joinTable = null);
@@ -58,20 +59,20 @@ namespace dexih.functions.Parameter
         /// <summary>
         /// Name for the parameter.  This name must be used when referencing parameters in custom functions.
         /// </summary>
-        [ProtoMember(1)]
+        [Key(0)]
         public string Name { get; set; }
 
         /// <summary>
         /// Parameter datatype
         /// </summary>
-        [ProtoMember(2)]
+        [Key(1)]
         // [JsonConverter(typeof(StringEnumConverter))]
         public ETypeCode DataType { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public int Rank { get; set; }
 
-        [ProtoMember(4)]
+        [Key(3)]
         public virtual object Value { get; set; }
 
         /// <summary>

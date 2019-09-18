@@ -509,7 +509,7 @@ namespace dexih.transforms
                         var matchFound = true;
                         foreach (var mapFunction in Mappings.OfType<MapFunction>())
                         {
-                            matchFound = await mapFunction.ProcessInputRow(new FunctionVariables(), PrimaryTransform.CurrentRow, row, cancellationToken);
+                            matchFound = await mapFunction.ProcessInputRowAsync(new FunctionVariables(), PrimaryTransform.CurrentRow, row, cancellationToken);
                             if (!matchFound)
                             {
                                 break;
@@ -678,9 +678,9 @@ namespace dexih.transforms
             return true;
         }
 
-        public override List<Sort> RequiredSortFields()
+        public override Sorts RequiredSortFields()
         {
-            var fields = new List<Sort>();
+            var fields = new Sorts();
             foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.InputColumn != null))
             {
                 fields.Add(new Sort {Column = joinPair.InputColumn, Direction = Sort.EDirection.Ascending});
@@ -688,9 +688,9 @@ namespace dexih.transforms
             return fields;
         }
 
-        public override List<Sort> RequiredReferenceSortFields()
+        public override Sorts RequiredReferenceSortFields()
         {
-            var fields = new List<Sort>();
+            var fields = new Sorts();
             foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.JoinColumn != null))
             {
                 fields.Add(new Sort {Column = joinPair.JoinColumn, Direction = Sort.EDirection.Ascending});

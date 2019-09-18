@@ -11,7 +11,7 @@ namespace dexih.functions.tests
     public class MappingsTests
     {
         [Fact]
-        public void Mapping_Column()
+        public async void Mapping_Column()
         {
             var inputColumn = new TableColumn("input");
             var outputColumn = new TableColumn("input");
@@ -26,7 +26,7 @@ namespace dexih.functions.tests
             mapColumn.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
-            mapColumn.ProcessInputRow(inputRow);
+            await mapColumn.ProcessInputRowAsync(inputRow);
             mapColumn.MapOutputRow(outputRow);
 
             Assert.Equal("123", outputRow[0]);
@@ -34,14 +34,14 @@ namespace dexih.functions.tests
             mapColumn = new MapColumn(inputColumn, outputColumn);
             mapColumn.InitializeColumns(inputTable);
             mapColumn.AddOutputColumns(outputTable);
-            mapColumn.ProcessInputRow(inputRow);
+            await mapColumn.ProcessInputRowAsync(inputRow);
             mapColumn.MapOutputRow(outputRow);
             
             Assert.Equal("field1", outputRow[0]);
         }
         
         [Fact]
-        public void Mapping_Group()
+        public async void Mapping_Group()
         {
             var inputColumn = new TableColumn("input", DataType.ETypeCode.String);
             var outputColumn = new TableColumn("input", DataType.ETypeCode.String);
@@ -56,7 +56,7 @@ namespace dexih.functions.tests
             mapColumn.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
-            mapColumn.ProcessInputRow(inputRow);
+            await mapColumn.ProcessInputRowAsync(inputRow);
             mapColumn.MapOutputRow(outputRow);
 
             Assert.Equal("123", outputRow[0]);
@@ -64,14 +64,14 @@ namespace dexih.functions.tests
             mapColumn = new MapGroup(inputColumn, outputColumn);
             mapColumn.InitializeColumns(inputTable);
             mapColumn.AddOutputColumns(outputTable);
-            mapColumn.ProcessInputRow(inputRow);
+            await mapColumn.ProcessInputRowAsync(inputRow);
             mapColumn.MapOutputRow(outputRow);
             
             Assert.Equal("field1", outputRow[0]);
         }
         
         [Fact]
-        public void Mapping_Filter()
+        public async void Mapping_Filter()
         {
             var inputColumn1 = new TableColumn("input1", DataType.ETypeCode.String);
             var inputColumn2 = new TableColumn("input2", DataType.ETypeCode.String);
@@ -86,24 +86,24 @@ namespace dexih.functions.tests
             // test filter
             var mapFilter = new MapFilter(inputColumn1, "val1");
             mapFilter.InitializeColumns(inputTable);
-            Assert.True(mapFilter.ProcessInputRow(inputRow));
+            Assert.True(await mapFilter.ProcessInputRowAsync(inputRow));
             
             mapFilter = new MapFilter(inputColumn1, "not val1");
             mapFilter.InitializeColumns(inputTable);
-            Assert.False(mapFilter.ProcessInputRow(inputRow));
+            Assert.False(await mapFilter.ProcessInputRowAsync(inputRow));
 
             mapFilter = new MapFilter(inputColumn1, inputColumn2);
             mapFilter.InitializeColumns(inputTable);
-            Assert.True(mapFilter.ProcessInputRow(inputRow));
+            Assert.True(await mapFilter.ProcessInputRowAsync(inputRow));
 
             mapFilter = new MapFilter(inputColumn1, inputColumn3);
             mapFilter.InitializeColumns(inputTable);
-            Assert.False(mapFilter.ProcessInputRow(inputRow));
+            Assert.False(await mapFilter.ProcessInputRowAsync(inputRow));
 
         }
         
         [Fact]
-        public void Mapping_Join()
+        public async void Mapping_Join()
         {
             var inputColumn1 = new TableColumn("input1", DataType.ETypeCode.String);
             var inputColumn2 = new TableColumn("input2", DataType.ETypeCode.String);
@@ -128,16 +128,16 @@ namespace dexih.functions.tests
 
             var mapJoin = new MapJoin(inputColumn1, inputColumn2);
             mapJoin.InitializeColumns(inputTable, joinTable);
-            Assert.True( mapJoin.ProcessInputRow(inputRow, joinRow));
+            Assert.True( await mapJoin.ProcessInputRowAsync(inputRow, joinRow));
 
             mapJoin = new MapJoin(inputColumn1, inputColumn3);
             mapJoin.InitializeColumns(inputTable, joinTable);
-            Assert.False( mapJoin.ProcessInputRow(inputRow, joinRow));
+            Assert.False( await mapJoin.ProcessInputRowAsync(inputRow, joinRow));
 
         }
         
         [Fact]
-        public void Mapping_Aggregate()
+        public async void Mapping_Aggregate()
         {
             var inputColumn = new TableColumn("input", DataType.ETypeCode.Int32);
             var outputColumn = new TableColumn("output", DataType.ETypeCode.Int32);
@@ -153,9 +153,9 @@ namespace dexih.functions.tests
             //run twice to ensure reset works.
             for (var i = 0; i < 2; i++)
             {
-                mapAggregate.ProcessInputRow(new object[] {1});
-                mapAggregate.ProcessInputRow(new object[] {2});
-                mapAggregate.ProcessInputRow(new object[] {3});
+                await mapAggregate.ProcessInputRowAsync(new object[] {1});
+                await mapAggregate.ProcessInputRowAsync(new object[] {2});
+                await mapAggregate.ProcessInputRowAsync(new object[] {3});
                 var outputRow = new object[1];
                 mapAggregate.ProcessResultRow(outputRow, EFunctionType.Aggregate);
                 Assert.Equal(6, outputRow[0]);
@@ -164,7 +164,7 @@ namespace dexih.functions.tests
         }
 
         [Fact]
-        public void Mapping_Function()
+        public async void Mapping_Function()
         {
             var inputColumn1 = new TableColumn("input1", DataType.ETypeCode.String);
             var inputColumn2 = new TableColumn("input2", DataType.ETypeCode.String);
@@ -202,14 +202,14 @@ namespace dexih.functions.tests
             mapFunction.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
-            mapFunction.ProcessInputRow(inputRow);
+            await mapFunction.ProcessInputRowAsync(inputRow);
             mapFunction.MapOutputRow(outputRow);
 
             Assert.Equal("aaabbb", outputRow[0]);
         }
         
         [Fact]
-        public void Mapping_Series()
+        public async void Mapping_Series()
         {
             var inputColumn = new TableColumn("day", DataType.ETypeCode.DateTime);
             
@@ -227,7 +227,7 @@ namespace dexih.functions.tests
             mapSeries.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
-            mapSeries.ProcessInputRow(inputRow);
+            await mapSeries.ProcessInputRowAsync(inputRow);
             mapSeries.MapOutputRow(outputRow);
 
             // series value should have the non day elements removed.

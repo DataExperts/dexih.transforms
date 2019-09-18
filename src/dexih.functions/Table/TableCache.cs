@@ -1,11 +1,11 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace dexih.functions
 {
-    [ProtoContract]
+    // [MessagePackObject]
     public class TableCache : IList<object[]>
     {
         private readonly int _maxRows;

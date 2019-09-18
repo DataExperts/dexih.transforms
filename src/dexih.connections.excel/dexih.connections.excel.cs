@@ -740,7 +740,7 @@ namespace dexih.connections.excel
             throw new NotImplementedException();
         }
 
-        public override Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -793,7 +793,7 @@ namespace dexih.connections.excel
 		            }
 	            }
 	            
-	            return Task.CompletedTask;
+	            return;
             }
             catch (Exception ex)
             {

@@ -61,7 +61,7 @@ namespace dexih.transforms.tests
             table.AddRow(new object[] { "value09", 9, 9.1, Convert.ToDateTime("2015/01/09"), "not null", 2, "ab", 1, "value1", "1234a" });
             table.AddRow(new object[] { "value10", 10, 10.1, Convert.ToDateTime("2015/01/10"), "not null", 2.1, "ab", -1, "value1", "12335" });
 
-            var Adapter = new ReaderMemory(table, new List<Sort> { new Sort("StringColumn") });
+            var Adapter = new ReaderMemory(table, new Sorts() { new Sort("StringColumn") });
             Adapter.Reset();
             return Adapter;
         }

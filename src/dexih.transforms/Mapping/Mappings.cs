@@ -170,7 +170,7 @@ namespace dexih.transforms.Mapping
             if (inputTable.OutputSortFields != null)
             {
                 //pass through the previous sort order, however limit to fields which have been mapped.
-                var fields = new List<Sort>();
+                var fields = new Sorts();
                 foreach (var t in inputTable.OutputSortFields)
                 {
                     var found = false;
@@ -353,12 +353,14 @@ namespace dexih.transforms.Mapping
 
             for (var i = 0; i < _primaryMappings.Count; i++)
             {
-                _tasks[i] = _primaryMappings[i].ProcessInputRow(functionVariables, row, joinRow, cancellationToken);
+                _tasks[i] = _primaryMappings[i].ProcessInputRowAsync(functionVariables, row, joinRow, cancellationToken);
             }
+
+            bool[] results;
 
             try
             {
-                await Task.WhenAll(_tasks);
+                results = await Task.WhenAll(_tasks);
             }
             catch (TargetInvocationException)
             {
@@ -380,7 +382,7 @@ namespace dexih.transforms.Mapping
 
             for (var i = 0; i < _primaryMappings.Count; i++)
             {
-                result = result & _tasks[i].Result;
+                result &= results[i];
                 ignoreRow = ignoreRow || _primaryMappings[i].IgnoreRow;
             }
             

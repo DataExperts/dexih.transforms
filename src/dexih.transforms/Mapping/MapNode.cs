@@ -52,7 +52,7 @@ namespace dexih.transforms.Mapping
             _outputOrdinal = AddOutputColumn(table, OutputColumn);
         }
 
-        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public override async Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             Transform.PrimaryTransform = (Transform) row[_inputOrdinal];
             await Transform.Open(0, null, cancellationToken);

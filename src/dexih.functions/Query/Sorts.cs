@@ -1,11 +1,22 @@
-using ProtoBuf;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 
 namespace dexih.functions.Query
 {
+    [MessagePackObject]
     public class Sorts : List<Sort>
     {
+        public Sorts() {}
+
+        public Sorts(IEnumerable<Sort> sorts)
+        {
+            foreach (var sort in sorts)
+            {
+                Add(sort);
+            }
+        }
+        
         public Sorts(params string[] columnNames)
         {
             foreach (var columnName in columnNames)

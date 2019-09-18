@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dexih.Utils.DataType;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions.Parameter
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class ParameterColumn : Parameter
     {
         public ParameterColumn()
@@ -50,7 +50,7 @@ namespace dexih.functions.Parameter
             Column = new TableColumn(columnName, dataType);
         }
 
-        [ProtoMember(1)]
+        [Key(0)]
         public TableColumn Column;
 
         /// <summary>

@@ -7,14 +7,15 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using static Dexih.Utils.DataType.DataType;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions
 {
     
-    [ProtoContract]
-    [ProtoInclude(100, typeof(FlatFile))]
-    [ProtoInclude(200, typeof(WebService))]
+    [MessagePackObject]
+    [ProtoInherit(1000)]
+    [MessagePack.Union(0, typeof(FlatFile))]
+    [MessagePack.Union(1, typeof(WebService))]
     public class Table
     {
 
@@ -116,83 +117,83 @@ namespace dexih.functions
         #region Properties
 
         /// <summary>
-        /// Reference to the phsycal table name.
+        /// Reference to the physical table name.
         /// </summary>
-        [ProtoMember(1)]
+        [Key(0)]
         public string Name { get; set; }
 
         /// <summary>
         /// The table schema or owner.
         /// </summary>
         /// <value>The table schema.</value>
-        [ProtoMember(2)]
+        [Key(1)]
         public string Schema { get; set; }
 
         /// <summary>
         /// The name of the source connection when pointing to an another hub
         /// </summary>
         /// <value>The table connection.</value>
-        [ProtoMember(3)]
+        [Key(2)]
         public string SourceConnectionName { get; set; }
 
         /// <summary>
         /// A logical name for the table.
         /// </summary>
-        [ProtoMember(4)]
+        [Key(3)]
         public string LogicalName { get; set; }
 
         /// <summary>
         /// Table description.
         /// </summary>
-        [ProtoMember(5)]
+        [Key(4)]
         public string Description { get; set; }
 
         /// <summary>
         /// Is the original base table name.
         /// </summary>
-        [ProtoMember(6)]
+        [Key(5)]
         public string BaseTableName { get; set; }
 
         /// <summary>
         /// Indicates the type of table (i.e. table, view etc.)
         /// </summary>
-        [ProtoMember(7)]
+        [Key(6)]
         public ETableType TableType { get; set; }
 
         /// <summary>
         /// Indicates if the table contains versions (history) of data change, such as sql temporal tables.
         /// </summary>
-        [ProtoMember(8)]
+        [Key(7)]
         public bool IsVersioned { get; set; }
 
         /// <summary>
         /// Indicates if this is a sql (or other) type query.
         /// </summary>
-        [ProtoMember(9)]
+        [Key(8)]
         public bool UseQuery { get; set; }
 
         /// <summary>
         /// Sql Query string (or query string for other db types)
         /// </summary>
-        [ProtoMember(10)]
+        [Key(9)]
         public string QueryString { get; set; }
 
         /// <summary>
         /// Indicates the output sort fields for the table.
         /// </summary>
         /// <returns></returns>
-        [ProtoMember(11)]
-        public virtual List<Sort> OutputSortFields { get; set; }
+        [Key(10)]
+        public Sorts OutputSortFields { get; set; }
 
         //        /// <summary>
         //        /// Indicates the key that should be used when running update/delete operations against the target.
         //        /// </summary>
         //        public List<string> KeyFields { get; set; }
 
-        [ProtoMember(12)]
+        [IgnoreMember]
         public TableCache Data { get; set; }
 
-        [ProtoMember(13)]
+        [Key(12)]
         public TableColumns Columns { get; set; }
 
         // public Dictionary<string, string> ExtendedProperties { get; set; }
@@ -204,7 +205,7 @@ namespace dexih.functions
         /// <summary>
         /// Maximum levels to recurse through structured data when importing columns.
         /// </summary>
-        [ProtoMember(16)]
+        [Key(15)]
         public int MaxImportLevels { get; set; } = 10;
 
 

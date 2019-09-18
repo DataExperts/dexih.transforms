@@ -48,7 +48,7 @@ namespace dexih.transforms.Mapping
             }
         }
 
-        public override async Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             var transform = (Transform) row[_nodeColumnOrdinal];
             if (transform == null) return false;

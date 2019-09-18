@@ -39,7 +39,7 @@ namespace dexih.transforms.Mapping
             _outputOrdinal = table.Columns.Count - 1;
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public override Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             Count++;
             var value = _inputOrdinal == -1 ? InputColumn.DefaultValue : row[_inputOrdinal];

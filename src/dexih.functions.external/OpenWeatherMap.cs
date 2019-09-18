@@ -320,7 +320,7 @@ namespace dexih.functions.external
                         using( var output = new MemoryStream())
                         using( var sr = new GZipStream(stream, CompressionMode.Decompress))
                         {
-                            sr.CopyTo(output);
+                            await sr.CopyToAsync(output);
                             jsonString = Encoding.UTF8.GetString(output.GetBuffer(), 0, (int) output.Length);
                         }
                     }

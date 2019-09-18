@@ -4,50 +4,50 @@ using System.Linq;
 using dexih.repository;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions.Query
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class SelectQuery: IEquatable<SelectQuery>
     {
         public SelectQuery()
         {
             Columns = new List<SelectColumn>();
             Filters = new List<Filter>();
-            Sorts = new List<Sort>();
+            Sorts = new Sorts();
             Groups = new List<TableColumn>();
             Rows = -1; //-1 means show all rows.
         }
 
-        [ProtoMember(1)]
+        [Key(0)]
         public List<SelectColumn> Columns { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string Table { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public List<Filter> Filters { get; set; }
 
-        [ProtoMember(4)]
-        public List<Sort> Sorts { get; set; }
+        [Key(3)]
+        public Sorts Sorts { get; set; }
 
-        [ProtoMember(5)]
+        [Key(4)]
         public List<TableColumn> Groups { get; set; }
 
-        [ProtoMember(6)]
+        [Key(5)] 
         public int Rows { get; set; }
 
-        [ProtoMember(7)]
+        [Key(6)]
         public List<TableColumn> InputColumns { get; set; }
 
         /// <summary>
         /// Used for flat files to specify only a specific filename
         /// </summary>
-        [ProtoMember(8)]
+        [Key(7)]
         public string FileName { get; set; }
 
-        [ProtoMember(9)]
+        [Key(8)]
         public EFlatFilePath Path { get; set; }
 
         /// <summary>

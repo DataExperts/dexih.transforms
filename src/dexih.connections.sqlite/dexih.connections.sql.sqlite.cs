@@ -355,7 +355,7 @@ namespace dexih.connections.sqlite
                 {
                     command.Connection = connection;
                     command.CommandText = "PRAGMA journal_mode=WAL";
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync();
                 }
 
                 return connection;

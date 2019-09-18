@@ -1,21 +1,26 @@
 ﻿using System;
+using dexih.functions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.transforms.Transforms
 {
-    [ProtoContract]
-    [ProtoInclude(100, typeof(TransformReference))]
+    [MessagePackObject]
+    [ProtoInherit(1000)]
+    [MessagePack.Union(0, typeof(TransformReference))]
     public class TransformAttribute: Attribute
     {
-        [ProtoMember(1)]
+        [IgnoreMember]
+        public override object TypeId { get; }
+
+        [Key(0)]
         public ETransformType TransformType { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string Name { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public string Description { get; set; }
         
     }

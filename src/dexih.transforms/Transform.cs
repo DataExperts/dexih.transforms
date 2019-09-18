@@ -76,7 +76,7 @@ namespace dexih.transforms
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
 
 //        public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
-        public virtual List<Sort> SortFields => PrimaryTransform?.SortFields; //indicates fields for the sort transform.
+        public virtual Sorts SortFields => PrimaryTransform?.SortFields; //indicates fields for the sort transform.
 
         public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 
@@ -152,8 +152,8 @@ namespace dexih.transforms
         #endregion
 
         #region Virtual Properties
-        public virtual List<Sort> RequiredSortFields() { return null; }
-        public virtual List<Sort> RequiredReferenceSortFields() { return null; }
+        public virtual Sorts RequiredSortFields() { return null; }
+        public virtual Sorts RequiredReferenceSortFields() { return null; }
         public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input 
 
         public virtual long AutoIncrementValue => PrimaryTransform?.AutoIncrementValue ?? 0;
@@ -362,7 +362,7 @@ namespace dexih.transforms
         /// <param name="requiredSort"></param>
         /// <param name="actualSort"></param>
         /// <returns></returns>
-        public bool SortFieldsMatch(List<Sort> requiredSort, List<Sort> actualSort)
+        public bool SortFieldsMatch(Sorts requiredSort, Sorts actualSort)
         {
             if (requiredSort == null && actualSort == null)
                 return true;
@@ -679,7 +679,7 @@ namespace dexih.transforms
             }
         }
 
-        private void SetNodes(object[] row)
+        private async Task SetNodes(object[] row)
         {
             for (var i = 0; i < CacheTable.Columns.Count; i++)
             {
@@ -698,13 +698,13 @@ namespace dexih.transforms
                             var newNode = new TransformNode {PrimaryTransform = transform, Name = "Internal Node"};
                             newNode.SetTable(transform.CacheTable, CacheTable);
                             newNode.SetParentRow(row);
-                            newNode.Open().Wait();
+                            await newNode.Open();
                             row[i] = newNode;
                             break;
                         case JArray jArray:
                             var childTable = new Table(column.Name, column.ChildColumns);
                             var jsonNode = new ReaderJson(jArray, childTable);
-                            jsonNode.Open().Wait();
+                            await jsonNode.Open();
                             row[i] = jsonNode;
                             break;
 //                        default:
@@ -1409,7 +1409,7 @@ namespace dexih.transforms
                         if (EncryptionMethod != EEncryptionMethod.NoEncryption)
                             EncryptRow(returnRecord);
 
-                        SetNodes(returnRecord);
+                        await SetNodes(returnRecord);
 
                         _nextRow = returnRecord;
 

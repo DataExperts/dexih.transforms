@@ -85,7 +85,7 @@ namespace dexih.connections.test
             var componentReader = connection.GetTransformReader(componentTable);
             var sortQuery = new SelectQuery()
             {
-                Sorts = new List<Sort>() {new Sort(componentTable["componentKey"])}
+                Sorts = new Sorts() {new Sort(componentTable["componentKey"])}
             };
             await componentReader.Open(0, sortQuery, CancellationToken.None);
 

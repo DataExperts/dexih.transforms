@@ -1,4 +1,5 @@
 ﻿using System;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace dexih.transforms
@@ -9,7 +10,7 @@ namespace dexih.transforms
     /// </summary>
     public class EncryptedObject: IEquatable<string>, IEquatable<EncryptedObject>
     {
-        [JsonIgnore]
+        [JsonIgnore, IgnoreMember]
         public object OriginalValue {get;set;}
         
         public string EncryptedValue {get;set;}

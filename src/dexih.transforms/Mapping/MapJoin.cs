@@ -28,8 +28,8 @@ namespace dexih.transforms.Mapping
         public TableColumn JoinColumn { get; set; }
         public object InputValue { get; set; }
         public object JoinValue { get; set; }
-        
-        public ECompare Compare { get; set; }
+
+        public ECompare Compare { get; set; } = ECompare.IsEqual;
         
         /// <summary>
         /// Stores the actual compare result.
@@ -75,7 +75,7 @@ namespace dexih.transforms.Mapping
         {
         }
 
-        public override Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public override Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
             if (row != null)
             {

@@ -53,7 +53,8 @@ namespace dexih.transforms
                 if (groupFields.Any())
                 {
                     var groupNames = groupFields.Select(c => c.InputColumn.Name).ToArray();
-                    selectQuery.Sorts = selectQuery.Sorts.Where(c => c.Column != null && groupNames.Contains(c.Column.Name)).ToList();
+                    selectQuery.Sorts =
+                        new Sorts(selectQuery.Sorts.Where(c => c.Column != null && groupNames.Contains(c.Column.Name)));
                 }
                 else
                 {
@@ -139,13 +140,13 @@ namespace dexih.transforms
         }
 
 
-        public override List<Sort> RequiredSortFields()
+        public override Sorts RequiredSortFields()
         {
             // return GroupFields.Select(c=> new Sort { Column = c.SourceColumn, Direction = Sort.EDirection.Ascending }).ToList();
             return null;
         }
 
-        public override List<Sort> RequiredReferenceSortFields()
+        public override Sorts RequiredReferenceSortFields()
         {
             return null;
         }

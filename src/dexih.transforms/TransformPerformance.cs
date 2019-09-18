@@ -1,9 +1,9 @@
-using ProtoBuf;
+using MessagePack;
 using System.Collections.Generic;
 
 namespace dexih.transforms
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class TransformPerformance
     {
         public TransformPerformance()
@@ -17,19 +17,19 @@ namespace dexih.transforms
             Seconds = seconds;
         }
         
-        [ProtoMember(1)]
+        [Key(0)]
         public string TransformName { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string Action { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public long Rows { get; set; }
 
-        [ProtoMember(4)]
+        [Key(3)]
         public double Seconds { get; set; }
 
-        [ProtoMember(5)]
+        [Key(4)]
         public List<TransformPerformance> Children { get; set; } = new List<TransformPerformance>();
     }
 }

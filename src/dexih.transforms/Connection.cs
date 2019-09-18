@@ -445,7 +445,7 @@ namespace dexih.transforms
             if (previousSuccessResult) filters.Add(new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), ECompare.IsEqual, true));
             if (parentAuditKey != null) filters.Add(new Filter(new TableColumn("ParentAuditKey", ETypeCode.Int64), ECompare.IsEqual, parentAuditKey));
 
-            var sorts = new List<Sort>() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), Sort.EDirection.Descending) };
+            var sorts = new Sorts() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), Sort.EDirection.Descending) };
             var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
 
             //add a sort transform to ensure sort order.

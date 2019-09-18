@@ -39,13 +39,12 @@ namespace dexih.transforms.Mapping
         /// <param name="row"></param>
         /// <param name="joinRow"></param>
         /// <returns>0 filters or joins match, -1 row less than joinRow, 1 row greater than joinRow--></returns>
-        public abstract Task<bool> ProcessInputRow(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken);
-
-        public bool ProcessInputRow(object[] row, object[] joinRow = null)
+        public abstract Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default);
+        
+        public Task<bool> ProcessInputRowAsync(object[] row, object[] joinRow = null)
         {
-            return ProcessInputRow(new FunctionVariables(), row, joinRow, CancellationToken.None).Result;
+            return ProcessInputRowAsync(new FunctionVariables(), row, joinRow, CancellationToken.None);
         }
-
         
         /// <summary>
         /// Gets the mapping result, and updates the row.

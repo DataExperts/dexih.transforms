@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Text;
 using dexih.repository;
-using ProtoBuf;
+using MessagePack;
 
 namespace dexih.functions.Query
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class InputParameters: List<InputParameter>
     {
         public void Add(string name, string value)

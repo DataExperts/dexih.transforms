@@ -21,7 +21,7 @@ namespace dexih.transforms.tests
         public async Task RunSingleColumnSort(string column, Sort.EDirection direction, string checkColumn)
         {
             var source = Helpers.CreateUnSortedTestData();
-            var transformSort = new TransformSort(source, new List<Sort> { new Sort(column, direction ) });
+            var transformSort = new TransformSort(source, new Sorts() { new Sort(column, direction ) });
             await transformSort.Open();
             
             var sortCount = 1;
@@ -66,7 +66,7 @@ namespace dexih.transforms.tests
         public async Task  RunDoubleColumnSort()
         {
             var source = Helpers.CreateUnSortedTestData();
-            var transformSort = new TransformSort(source, new List <Sort> { new Sort("GroupColumn"), new Sort("IntColumn") });
+            var transformSort = new TransformSort(source, new Sorts() { new Sort("GroupColumn"), new Sort("IntColumn") });
             await transformSort.Open();
             
             Assert.Equal(6, transformSort.FieldCount);
@@ -98,7 +98,7 @@ namespace dexih.transforms.tests
         public async Task SortLargeTable()
         {
             var source = Helpers.CreateLargeTable(100000);
-            var transformSort = new TransformSort(source, new List <Sort> { new Sort("random", Sort.EDirection.Ascending) });
+            var transformSort = new TransformSort(source, new Sorts() { new Sort("random", Sort.EDirection.Ascending) });
             transformSort.SetInTransform(source);
             await transformSort.Open();
 
