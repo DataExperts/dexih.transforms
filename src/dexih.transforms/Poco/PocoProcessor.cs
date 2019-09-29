@@ -91,13 +91,14 @@ namespace dexih.transforms.Poco
             switch (message.Operation)
             {
                 case EPocoOperation.Insert:
-                    _pocoTable.ExecuteInsert(message.Connection, message.InsertQuery, message.Item, CancellationToken.None).Wait();
+                    AsyncHelper.RunSync(() => _pocoTable.ExecuteInsert(message.Connection, message.InsertQuery,
+                        message.Item, CancellationToken.None));
                     break;
                 case EPocoOperation.Update:
-                    _pocoTable.ExecuteUpdate(message.Connection, message.UpdateQuery, CancellationToken.None).Wait();
+                    AsyncHelper.RunSync(() => _pocoTable.ExecuteUpdate(message.Connection, message.UpdateQuery, CancellationToken.None));
                     break;
                 case EPocoOperation.Delete:
-                    _pocoTable.ExecuteDelete(message.Connection, message.DeleteQuery, CancellationToken.None).Wait();
+                    AsyncHelper.RunSync(() => _pocoTable.ExecuteDelete(message.Connection, message.DeleteQuery, CancellationToken.None));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

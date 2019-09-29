@@ -331,7 +331,5 @@ namespace dexih.functions
                 ordinal++;
             }
         }
-        
-
     }
 }

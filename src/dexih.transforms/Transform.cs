@@ -1489,7 +1489,7 @@ namespace dexih.transforms
 
         public override bool Read()
         {
-            return ReadAsync(CancellationToken.None).Result;
+            return AsyncHelper.RunSync(() => ReadAsync(CancellationToken.None));
         }
 
         public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
@@ -1863,7 +1863,7 @@ namespace dexih.transforms
             public TransformEnumerator(Transform transform)
             {
                 _transform = transform.GetThread();
-                _transform.Open().Wait();
+                AsyncHelper.RunSync(() => _transform.Open());
             }
 
             public bool MoveNext()

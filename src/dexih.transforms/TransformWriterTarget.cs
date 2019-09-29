@@ -12,7 +12,7 @@ using Newtonsoft.Json.Converters;
 
 namespace dexih.transforms
 {
-    public class TransformWriterTarget
+    public class TransformWriterTarget: IDisposable
     {        
         
         #region Events
@@ -35,8 +35,7 @@ namespace dexih.transforms
 
         #region Initialize
 
-        public TransformWriterTarget() :
-            this( null, null)
+        public TransformWriterTarget(): this( null, null)
         {
             
         }
@@ -776,5 +775,18 @@ namespace dexih.transforms
             return result;
         }
 
+        public void Dispose()
+        {
+            _transformWriterTask?.Dispose();
+            WriterResult?.Dispose();
+
+            if (ChildWriterTargets != null)
+            {
+                foreach (var childWriter in ChildWriterTargets)
+                {
+                    childWriter.Dispose();
+                }
+            }
+        }
     }
 }

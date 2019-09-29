@@ -72,7 +72,7 @@ namespace dexih.transforms.Poco
 
         public bool MoveNext()
         {
-            return MoveNextAsync(CancellationToken.None).Result;
+            return AsyncHelper.RunSync(() => MoveNextAsync(CancellationToken.None));
         }
 
         public T this[int index]
@@ -85,7 +85,7 @@ namespace dexih.transforms.Poco
                 }
                 else
                 {
-                    while (ReadNextAsync(CancellationToken.None).Result && _maxRow < index)
+                    while (AsyncHelper.RunSync(() => ReadNextAsync(CancellationToken.None)) && _maxRow < index)
                     {}
 
                     if (_maxRow >= index)
@@ -107,6 +107,6 @@ namespace dexih.transforms.Poco
             return _maxRow+1;
         }
 
-        public int Count => CountAsync(CancellationToken.None).Result;
+        public int Count =>  AsyncHelper.RunSync(() => CountAsync(CancellationToken.None));
     }
 }

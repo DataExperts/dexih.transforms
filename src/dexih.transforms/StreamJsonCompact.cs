@@ -92,7 +92,7 @@ namespace dexih.transforms
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
+            return AsyncHelper.RunSync(() => ReadAsync(buffer, offset, count, CancellationToken.None));
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -112,21 +112,11 @@ namespace dexih.transforms
 
                 if (_first)
                 {
-                    try
+                    _hasRows = await _reader.ReadAsync(cancellationToken);
+
+                    if (_hasRows == false)
                     {
-                        _hasRows = await _reader.ReadAsync(cancellationToken);
-                        
-                        if (_hasRows == false)
-                        {
-                            await _streamWriter.WriteAsync("]");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        var status = new ReturnValue(false, ex.Message, ex);
-                        var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync("], \"status\":" + result);
-                        _hasRows = false;
+                        await _streamWriter.WriteAsync("]");
                     }
 
                     _first = false;
@@ -143,18 +133,20 @@ namespace dexih.transforms
 
                     _reader.GetValues(_valuesArray);
 
-                    for(var i = 0; i < _valuesArray.Length; i++)
+                    for (var i = 0; i < _valuesArray.Length; i++)
                     {
                         if (_valuesArray[i] is byte[])
                         {
                             _valuesArray[i] = "binary data not viewable.";
                         }
-                        if(_valuesArray[i] is Geometry geometry)
+
+                        if (_valuesArray[i] is Geometry geometry)
                         {
                             _valuesArray[i] = geometry.AsText();
                         }
 
-                        if (_valuesArray[i] is string valueString && _maxFieldSize >=0 && valueString.Length > _maxFieldSize)
+                        if (_valuesArray[i] is string valueString && _maxFieldSize >= 0 &&
+                            valueString.Length > _maxFieldSize)
                         {
                             _valuesArray[i] = valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
                         }
@@ -165,37 +157,27 @@ namespace dexih.transforms
                     await _streamWriter.WriteAsync(row);
 
                     _rowCount++;
-                    try
+                    _hasRows = await _reader.ReadAsync(cancellationToken);
+
+                    if (_hasRows && _rowCount < _maxRows)
                     {
-                        _hasRows = await _reader.ReadAsync(cancellationToken);
-
-                        if (_hasRows && _rowCount < _maxRows)
-                        {
-                            await _streamWriter.WriteAsync(",");
-                        }
-                        else
-                        {
-                            await _streamWriter.WriteAsync("]");
-
-                            if (_reader is Transform transform)
-                            {
-                                var properties = transform.GetTransformProperties(true);
-                                var propertiesSerialized = Json.SerializeObject(properties, "");
-                                await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
-                            }
-
-                            await _streamWriter.WriteAsync("}");
-
-                            _hasRows = false;
-                            break;
-                        }
+                        await _streamWriter.WriteAsync(",");
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        var status = new ReturnValue(false, ex.Message, ex);
-                        var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync("], \"status\":" + result);
+                        await _streamWriter.WriteAsync("]");
+
+                        if (_reader is Transform transform)
+                        {
+                            var properties = transform.GetTransformProperties(true);
+                            var propertiesSerialized = Json.SerializeObject(properties, "");
+                            await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
+                        }
+
+                        await _streamWriter.WriteAsync("}");
+
                         _hasRows = false;
+                        break;
                     }
                 }
 

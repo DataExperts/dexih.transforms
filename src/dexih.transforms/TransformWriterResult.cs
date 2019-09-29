@@ -221,7 +221,7 @@ namespace dexih.transforms
 
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
         [Key(41)]
-        public ETriggerMethod TriggerMethod { get; set; }
+        public ETriggerMethod TriggerMethod { get; set; } = ETriggerMethod.Manual;
 
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
         [Key(42)]
@@ -269,7 +269,7 @@ namespace dexih.transforms
         // [JsonConverter(typeof(StringEnumConverter))]
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
         [Key(51)]
-        public ERunStatus RunStatus { get; set; }
+        public ERunStatus RunStatus { get; set; } = ERunStatus.NotRunning;
 
         public void ResetStatistics()
         {
@@ -482,7 +482,7 @@ namespace dexih.transforms
             
             try
             {
-                await _task;
+                await _task.ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -498,8 +498,12 @@ namespace dexih.transforms
             {
                 return;
             }
+            else
+            {
+                AsyncHelper.RunSync(() => _task);    
+            }
 
-            _task.Wait();
+            _task = null;
         }
 
         private void AddExceptionDetails(Exception exception)

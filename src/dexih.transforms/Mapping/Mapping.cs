@@ -67,12 +67,7 @@ namespace dexih.transforms.Mapping
         {
             return Task.FromResult(false);
         }
-
-        public bool ProcessResultRow(object[] row, EFunctionType functionType)
-        {
-            return ProcessResultRow(new FunctionVariables(), row, functionType, CancellationToken.None).Result;
-        }
-
+        
         /// <summary>
         /// Runs any aggregate and other functions required a fill in a filler row (used by the series transform).
         /// </summary>
@@ -85,10 +80,10 @@ namespace dexih.transforms.Mapping
             return Task.FromResult(false);
         }
 
-        public void ProcessResultRow(object[] row, EFunctionType functionType, CancellationToken cancellationToken)
-        {
-            ProcessResultRow(new FunctionVariables(), row, functionType, cancellationToken);
-        }
+//        public void ProcessResultRow(object[] row, EFunctionType functionType, CancellationToken cancellationToken)
+//        {
+//            ProcessResultRow(new FunctionVariables(), row, functionType, cancellationToken);
+//        }
 
         public virtual void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue) {}
 

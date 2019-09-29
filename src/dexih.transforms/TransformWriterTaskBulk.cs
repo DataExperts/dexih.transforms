@@ -150,7 +150,27 @@ namespace dexih.transforms
                 WriteDataTicks += returnValue;
             }        
         }
-        
+
+        public override void Dispose()
+        {
+            DisposeTask(_createRecordsTask);
+            DisposeTask(_updateRecordsTask);
+            DisposeTask(_deleteRecordsTask);
+            DisposeTask(_rejectRecordsTask);
+            _createRecordsTask = null;
+            _updateRecordsTask = null;
+            _deleteRecordsTask = null;
+            _rejectRecordsTask = null;
+        }
+
+        public void DisposeTask(Task task)
+        {
+            if (task != null && task.Status == TaskStatus.Running)
+            {
+                AsyncHelper.RunSync(() => _deleteRecordsTask);
+            }
+        }
+
         private async Task DoCreates( CancellationToken cancellationToken = default)
         {
             //wait for the previous create task to finish before writing next buffer.

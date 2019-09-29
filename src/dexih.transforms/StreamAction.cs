@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Dexih.Utils.Crypto;
+using Dexih.Utils.MessageHelpers;
 using Newtonsoft.Json.Linq;
 
 namespace dexih.transforms
@@ -45,8 +46,8 @@ namespace dexih.transforms
         {
             if (isFirst)
             {
-                var result = _func.Invoke();
-                var json = Json.SerializeObject(result, "");
+                var value = _func.Invoke();
+                var json = Json.SerializeObject(value, "");
                 _streamWriter.Write(json);
                 _memoryStream.Position = 0;
                 isFirst = false;

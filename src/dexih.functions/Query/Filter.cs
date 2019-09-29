@@ -124,8 +124,8 @@ namespace dexih.functions.Query
         [Key(5)]
         public ECompare Operator { get; set; } = ECompare.IsEqual;
 
-        [Key(6)]
-        public EAndOr AndOr { get; set; }
+        [Key(6)] 
+        public EAndOr AndOr { get; set; } = EAndOr.And;
 
         public ETypeCode BestDataType()
         {

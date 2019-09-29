@@ -303,7 +303,7 @@ namespace dexih.transforms
 
                     if (_primaryReadTask.IsCompleted)
                     {
-                        var result = _primaryReadTask.Result;
+                        var result = await _primaryReadTask;
                         if (result)
                         {
                             var returnValue = CreateRecord(PrimaryTransform, _primaryMappings);
@@ -315,7 +315,7 @@ namespace dexih.transforms
 
                     if (_referenceReadTask.IsCompleted)
                     {
-                        var result = _referenceReadTask.Result;
+                        var result = await _referenceReadTask;
                         if (result)
                         {
                             var returnValue = CreateRecord(ReferenceTransform, _referenceMappings);

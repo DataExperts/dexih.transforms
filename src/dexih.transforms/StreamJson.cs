@@ -93,7 +93,7 @@ using Newtonsoft.Json.Linq;
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
+            return AsyncHelper.RunSync(() => ReadAsync(buffer, offset, count, CancellationToken.None));
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -113,23 +113,12 @@ using Newtonsoft.Json.Linq;
 
                 if (_first)
                 {
-                    try
-                    {
-                        _hasRows = await _reader.ReadAsync(cancellationToken);
+                    _hasRows = await _reader.ReadAsync(cancellationToken);
 
-                        if (_hasRows == false)
-                        {
-                            await _streamWriter.WriteAsync(endWrite);
-                        }
-                    }
-                    catch (Exception ex)
+                    if (_hasRows == false)
                     {
-                        var status = new ReturnValue(false, ex.Message, ex);
-                        var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync(endWrite + ", \"status\"=" + result + " }");
-                        _hasRows = false;
+                        await _streamWriter.WriteAsync(endWrite);
                     }
-
                     _first = false;
                 }
 
@@ -144,23 +133,26 @@ using Newtonsoft.Json.Linq;
 
                     var jObject = new JObject();
 
-                    foreach(var i in _ordinals)
+                    foreach (var i in _ordinals)
                     {
                         if (_reader[i] is byte[])
                         {
                             jObject[_reader.GetName(i)] = "binary data not viewable.";
                             continue;
                         }
+
                         if (_reader[i] is Geometry geometry)
                         {
                             jObject[_reader.GetName(i)] = geometry.AsText();
                             continue;
                         }
+
                         if (_reader[i] is null || _reader[i] is DBNull)
                         {
                             jObject[_reader.GetName(i)] = null;
                             continue;
                         }
+
                         jObject[_reader.GetName(i)] = JToken.FromObject(_reader[i]);
                     }
 
@@ -168,27 +160,17 @@ using Newtonsoft.Json.Linq;
                     await _streamWriter.WriteAsync(row);
 
                     _rowCount++;
-                    try
+                    _hasRows = await _reader.ReadAsync(cancellationToken);
+
+                    if (_hasRows && _rowCount < _maxRows)
                     {
-                        _hasRows = await _reader.ReadAsync(cancellationToken);
-                        
-                        if (_hasRows && _rowCount < _maxRows)
-                        {
-                            await _streamWriter.WriteAsync(",");
-                        }
-                        else
-                        {
-                            await _streamWriter.WriteAsync(endWrite);
-                            _hasRows = false;
-                            break;
-                        }
+                        await _streamWriter.WriteAsync(",");
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        var status = new ReturnValue(false, ex.Message, ex);
-                        var result = Json.SerializeObject(status, "");
-                        await _streamWriter.WriteAsync(endWrite + ", \"status\"=" + result + " }");
+                        await _streamWriter.WriteAsync(endWrite);
                         _hasRows = false;
+                        break;
                     }
                 }
 

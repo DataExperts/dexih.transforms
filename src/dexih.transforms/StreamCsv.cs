@@ -46,7 +46,7 @@ namespace dexih.transforms
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
+            return AsyncHelper.RunSync(() => ReadAsync(buffer, offset, count, CancellationToken.None));
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)

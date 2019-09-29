@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Dexih.Utils.Crypto;
+using Dexih.Utils.MessageHelpers;
 using Newtonsoft.Json.Linq;
 
 namespace dexih.transforms
@@ -42,7 +43,7 @@ namespace dexih.transforms
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
+            return AsyncHelper.RunSync(() => ReadAsync(buffer, offset, count, CancellationToken.None));
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
@@ -54,13 +55,14 @@ namespace dexih.transforms
             
             if (isFirst)
             {
-                var result = await _func.Invoke();
-                var json = Json.SerializeObject(result, "");
+                var value = await _func.Invoke();
+                var json = Json.SerializeObject(value, "");
+
                 await _streamWriter.WriteAsync(json);
                 _memoryStream.Position = 0;
                 isFirst = false;
             }
-
+            
             var readCount = _memoryStream.Read(buffer, offset, count);
             return readCount;  
         }

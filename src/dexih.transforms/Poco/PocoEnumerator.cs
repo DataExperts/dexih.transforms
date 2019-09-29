@@ -23,7 +23,7 @@ namespace dexih.transforms.Poco
 
         public bool MoveNext()
         {
-            return MoveNextAsync(CancellationToken.None).Result;
+            return AsyncHelper.RunSync(() => MoveNextAsync(CancellationToken.None));
         }
         
         public async Task<bool> MoveNextAsync(CancellationToken cancellationToken = default)

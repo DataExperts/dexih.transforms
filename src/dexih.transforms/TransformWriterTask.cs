@@ -5,7 +5,7 @@ using dexih.functions;
 
 namespace dexih.transforms
 {
-    public abstract class TransformWriterTask
+    public abstract class TransformWriterTask: IDisposable
     {
         protected Table TargetTable;
         protected Connection TargetConnection;
@@ -40,5 +40,7 @@ namespace dexih.transforms
         public abstract Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken = default);
 
         public abstract Task FinalizeWrites(CancellationToken cancellationToken = default);
+
+        public abstract void Dispose();
     }
 }

@@ -18,15 +18,12 @@ namespace dexih.transforms
         private MemoryStream _memoryStream;
         private long _position;
         private readonly long _maxRows;
-        private long _rowCount;
-        private bool _hasRows;
         private bool _first;
         private readonly DataPack _data;
 
         private readonly List<int> _ordinals;
-        private string endWrite;
 
-        private bool _hasNodes = false;
+        private readonly bool _hasNodes = false;
         
         public StreamMessagePack(string name, DbDataReader reader, long maxRows = -1)
         {
@@ -35,16 +32,14 @@ namespace dexih.transforms
             _position = 0;
 
             _maxRows = maxRows <= 0 ? long.MaxValue : maxRows;
-            _rowCount = 0;
-            _hasRows = true;
             _first = true;
 
             _ordinals = new List<int>();
 
-            _data = new DataPack();
+            _data = new DataPack
             {
-                name = name;
-            }
+                Name = name
+            };
 
             // if this is a transform, ignore any parent columns (this is when for writing nodes to json).
             if (reader is Transform transform)
@@ -87,7 +82,7 @@ namespace dexih.transforms
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
+            return AsyncHelper.RunSync(() => ReadAsync(buffer, offset, count, CancellationToken.None));
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -95,7 +90,6 @@ namespace dexih.transforms
             if (_first)
             {
                 _first = false;
-                var rows = 0;
                 if (!_hasNodes && _reader is Transform transform)
                 {
                     _data.Data = await GetTransformRowsAsync(transform, cancellationToken);

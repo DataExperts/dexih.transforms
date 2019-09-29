@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using dexih.repository;
 
 namespace dexih.connections.dexih
 {

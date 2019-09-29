@@ -120,5 +120,10 @@ namespace dexih.transforms
         {
             return Task.CompletedTask;
         }
+
+        public override void Dispose()
+        {
+        }
+
     }
 }

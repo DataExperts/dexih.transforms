@@ -556,7 +556,17 @@ namespace dexih.connections.sql
                     }
                 }
 
-                sql.Append(filter.AndOr.ToString());
+                switch (filter.AndOr)
+                {
+                    case Filter.EAndOr.And:
+                        sql.Append("and");
+                        break;
+                    case Filter.EAndOr.Or:
+                        sql.Append("or");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             sql.Remove(sql.Length - 3, 3); //remove last or/and
