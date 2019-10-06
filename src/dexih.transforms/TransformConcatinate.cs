@@ -52,7 +52,7 @@ namespace dexih.transforms
           return null;
       }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
@@ -187,12 +187,12 @@ namespace dexih.transforms
                     
                     if (primaryReadTask.IsFaulted)
                     {
-                        throw primaryReadTask.Exception;
+                        throw primaryReadTask.Exception ?? new Exception("Unknown error in concatenate transform reading the primary reader.");
                     }
 
                     if (referenceReadTask.IsFaulted)
                     {
-                        throw referenceReadTask.Exception;
+                        throw referenceReadTask.Exception ?? new Exception("Unknown error in concatenate transform reading the reference reader.");
                     }
 
                     _primaryMoreRecords = results[0];

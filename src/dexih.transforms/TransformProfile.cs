@@ -101,7 +101,7 @@ namespace dexih.transforms
                     // object profileResult = null;
                     try
                     {
-                        await profile.ProcessResultRow(new FunctionVariables(), profileRow, EFunctionType.Profile, cancellationToken);
+                        await profile.ProcessResultRowAsync(new FunctionVariables(), profileRow, EFunctionType.Profile, cancellationToken);
                         // profileResult = profile.ReturnValue;
                     }
                     catch (Exception ex)

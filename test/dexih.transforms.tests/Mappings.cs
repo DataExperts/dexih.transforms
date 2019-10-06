@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
+using dexih.transforms;
 using dexih.transforms.Mapping;
 using Dexih.Utils.DataType;
 using Xunit;
@@ -157,7 +159,7 @@ namespace dexih.functions.tests
                 await mapAggregate.ProcessInputRowAsync(new object[] {2});
                 await mapAggregate.ProcessInputRowAsync(new object[] {3});
                 var outputRow = new object[1];
-                mapAggregate.ProcessResultRow(outputRow, EFunctionType.Aggregate);
+                await mapAggregate.ProcessResultRowAsync(new FunctionVariables(), outputRow, EFunctionType.Aggregate, CancellationToken.None);
                 Assert.Equal(6, outputRow[0]);
                 mapAggregate.Reset(EFunctionType.Aggregate);
             }
@@ -197,7 +199,7 @@ namespace dexih.functions.tests
             };
 
             // map a value
-            var mapFunction = new MapFunction(transformFunction, parameters, MapFunction.EFunctionCaching.EnableCache);
+            var mapFunction = new MapFunction(transformFunction, parameters, EFunctionCaching.EnableCache);
             mapFunction.InitializeColumns(inputTable);
             mapFunction.AddOutputColumns(outputTable);
 

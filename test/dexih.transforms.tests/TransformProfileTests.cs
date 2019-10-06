@@ -31,7 +31,7 @@ namespace dexih.transforms.tests
             };
             
             var profileFunction = new TransformFunction(profileObject, methodName, null, parameters);
-            var mappings = new MapFunction(profileFunction, parameters, MapFunction.EFunctionCaching.NoCache);
+            var mappings = new MapFunction(profileFunction, parameters, EFunctionCaching.NoCache);
             return mappings;
         }
         

@@ -77,7 +77,7 @@ namespace dexih.connections.sqlite
                     using (var cmd = CreateCommand(connection,
                         "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
                     {
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
                         var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                         return tableExists != null;
                     }
@@ -214,6 +214,7 @@ namespace dexih.connections.sqlite
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength.ToString() + ")";
                     break;
+                case DataType.ETypeCode.Geometry:
 				case DataType.ETypeCode.Text:
                 case DataType.ETypeCode.Xml:
                 case DataType.ETypeCode.Json:

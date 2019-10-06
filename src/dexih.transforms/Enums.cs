@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace dexih.transforms
+﻿namespace dexih.transforms
 {
     // [JsonConverter(typeof(StringEnumConverter))]
     public enum ETransformType
@@ -13,7 +9,7 @@ namespace dexih.transforms
     // [JsonConverter(typeof(StringEnumConverter))]
     public enum EDuplicateStrategy
     {
-        Abend = 1,
+        Abend = 0,
         First,
         Last,
         All
@@ -21,16 +17,24 @@ namespace dexih.transforms
 
     public enum ECacheMethod
     {
-        NoCache = 1,
-        DemandCache = 2,
-        // PreLoadCache = 3,
-        LookupCache = 4
+        NoCache = 0,
+        DemandCache,
+        PreLoadCache,
+        LookupCache
     }
 
     public enum EEncryptionMethod
     {
-        NoEncryption = 1,
-        EncryptDecryptSecureFields = 2,
-        MaskSecureFields = 3
+        NoEncryption = 0,
+        EncryptDecryptSecureFields = 1,
+        MaskSecureFields = 2
+    }
+    
+    // [JsonConverter(typeof(StringEnumConverter))]
+    public enum EFunctionCaching
+    {
+        NoCache = 0,
+        EnableCache,
+        CallOnce
     }
 }

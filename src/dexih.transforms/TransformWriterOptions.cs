@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using dexih.functions;
 using dexih.functions.Query;
+using MessagePack;
 
 namespace dexih.transforms
 {
+    [MessagePackObject]
     public class TransformWriterOptions
     {
         public enum ETargetAction

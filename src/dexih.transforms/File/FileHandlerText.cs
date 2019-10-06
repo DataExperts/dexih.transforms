@@ -11,7 +11,7 @@ using Dexih.Utils.DataType;
 
 namespace dexih.transforms.File
 {
-    public class FileHandlerText : FileHandlerBase, IDisposable
+    public class FileHandlerText : FileHandlerBase
     {
         private readonly Table _table;
         private readonly FileConfiguration _fileConfiguration;

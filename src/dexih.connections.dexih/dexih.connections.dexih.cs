@@ -5,8 +5,9 @@ using dexih.transforms;
 using dexih.functions;
 using System.Data.Common;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using System.Threading;
+using System.Xml;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using dexih.repository;
@@ -59,7 +60,24 @@ namespace dexih.connections.dexih
             return url;
         }
 
-		public async Task<JObject> HttpPost(string function, HttpContent content, bool skipLogin = false)
+        private void ThrowError(JsonDocument document)
+        {
+            if (document == null)
+            {
+                throw new ConnectionException($"Unknown error");
+            }
+            var message = document?.RootElement.GetProperty("message").GetString();
+            var exception = document?.RootElement.GetProperty("exceptionDetails").GetString();
+
+            if (string.IsNullOrEmpty(message))
+            {
+                throw new ConnectionException($"Unknown error");
+            }
+
+            throw new ConnectionException($"Error {message}", new Exception(exception));   
+        }
+
+		public async Task<JsonDocument> HttpPost(string function, HttpContent content, bool skipLogin = false)
 		{
 		    try
 		    {
@@ -75,7 +93,7 @@ namespace dexih.connections.dexih
                     if (response.IsSuccessStatusCode)
                     {
                         var responseString = await response.Content.ReadAsStringAsync();
-                        var result = JObject.Parse(responseString);
+                        var result = JsonDocument.Parse(responseString);
                         return result;
                     }
                     
@@ -115,10 +133,9 @@ namespace dexih.connections.dexih
                 try
                 {
                     var result = await HttpPost("Login", content, true);
-                    if ((bool)result["success"])
+                    if (result.RootElement.GetProperty("success").GetBoolean())
                     {
-                        var agents = result["value"];
-                        if (agents != null)
+                        if (result.RootElement.TryGetProperty("value", out var agents))
                         {
                             _activeAgent = agents.ToObject<DexihActiveAgent>();
                         }
@@ -127,15 +144,13 @@ namespace dexih.connections.dexih
                     }
                     else
                     {
-                        throw new ConnectionException($"Error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
+                        ThrowError(result);
                     }
                 }
                 catch (HttpRequestException ex)
                 {
                     throw new ConnectionException($"Could not connect to server {Server}. {ex.Message}", ex);
                 }
-
-
             }
             catch(Exception ex)
             {
@@ -203,15 +218,15 @@ namespace dexih.connections.dexih
             try
             {
                 var result = await HttpPost("GetHubs", null);
-                if ((bool)result["success"])
+                if (result.RootElement.GetProperty("success").GetBoolean())
                 {
-                    var hubs = result["value"];
-                    var hubList = hubs.ToObject<List<string>>();
+                    var hubList = result.RootElement.GetProperty("value").ToObject<List<string>>();
                     return hubList;
                 }
                 else
                 {
-                    throw new ConnectionException($"Error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
+                    ThrowError(result);
+                    return null;
                 }
             }
             catch(Exception ex)
@@ -230,15 +245,15 @@ namespace dexih.connections.dexih
                 });
 
                 var result = await HttpPost("GetTables", content);
-                if ((bool)result["success"])
+                if (result.RootElement.GetProperty("success").GetBoolean())
                 {
-                    var tables = result["value"];
-                    var tableList = tables.ToObject<List<Table>>();
+                    var tableList = result.RootElement.GetProperty("value").ToObject<List<Table>>();
                     return tableList;
                 }
                 else
                 {
-                    throw new ConnectionException($"Error {result?["message"]}");
+                    ThrowError(result);
+                    return null;
                 }
             }
             catch(Exception ex)
@@ -267,14 +282,15 @@ namespace dexih.connections.dexih
 				});
 
 				var result = await HttpPost("GetTableInfo", content);
-                if ((bool)result["success"])
+                if (result.RootElement.GetProperty("success").GetBoolean())
                 {
-                    var table = result["value"].ToObject<Table>();
+                    var table = result.RootElement.GetProperty("value").ToObject<Table>();
                     return table;
                 }
                 else
                 {
-                    throw new ConnectionException($"Error {result?["message"]}", new Exception(result["exceptionDetails"].ToString()));
+                    ThrowError(result);
+                    return null;
                 }
             }
             catch (Exception ex)

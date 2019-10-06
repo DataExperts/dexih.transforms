@@ -6,7 +6,9 @@ using System.Xml;
 using dexih.functions.Exceptions;
 using Dexih.Utils.Crypto;
 using Dexih.Utils.DataType;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 
 namespace dexih.functions.BuiltIn
 {
@@ -16,6 +18,7 @@ namespace dexih.functions.BuiltIn
 
     public class MapFunctions
     {
+        [GlobalSettings]
         public GlobalSettings GlobalSettings { get; set; }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Concatenate Strings",
@@ -565,19 +568,19 @@ namespace dexih.functions.BuiltIn
             Description = "Parses a JSON string into a series of elements.  The JSON string must contain only one result set.",
             ImportMethod = nameof(JsonValuesImport))
         ]
-        public bool JsonValues(JToken json, [TransformFunctionLinkedParameter("JsonPath to Value")] string[] jsonPaths, [TransformFunctionLinkedParameter("JsonPath to Value")] out string[] values)
+        public bool JsonValues(string json, [TransformFunctionLinkedParameter("JsonPath to Value")] string[] jsonPaths, [TransformFunctionLinkedParameter("JsonPath to Value")] out string[] values)
         {
             try
             {
                 var returnValue = true;
 
-                // var results = JToken.Parse(json);
+                var jToken = JToken.Parse(json);
 
                 values = new string[jsonPaths.Length];
 
                 for (var i = 0; i < jsonPaths.Length; i++)
                 {
-                    var token = json.SelectToken(jsonPaths[i]);
+                    var token = jToken.SelectToken(jsonPaths[i]);
                     if (token == null)
                     {
                         returnValue = false;
@@ -631,11 +634,11 @@ namespace dexih.functions.BuiltIn
             Description = "Pivots a json array into column values. ",
             ImportMethod = nameof(JsonArrayToColumnsImport))
         ]
-        public bool JsonArrayToColumns(JToken json, string jsonPath, string columnPath, string valuePath, [TransformFunctionLinkedParameter("Column to Value")] string[] columns, [TransformFunctionLinkedParameter("Column to Value")] out string[] values)
+        public bool JsonArrayToColumns(string jsonString, string jsonPath, string columnPath, string valuePath, [TransformFunctionLinkedParameter("Column to Value")] string[] columns, [TransformFunctionLinkedParameter("Column to Value")] out string[] values)
         {
             try
             {
-                // var results = JToken.Parse(json);
+                var json = JToken.Parse(jsonString);
 
                 JToken array;
                 if (string.IsNullOrEmpty(jsonPath))
@@ -682,8 +685,9 @@ namespace dexih.functions.BuiltIn
             }
         }
 
-        public string[] JsonArrayToColumnsImport(JToken json, string jsonPath, string columnPath)
+        public string[] JsonArrayToColumnsImport(string jsonString, string jsonPath, string columnPath)
         {
+            var json = JToken.Parse(jsonString);
             JToken array;
             if (string.IsNullOrEmpty(jsonPath))
             {

@@ -8,8 +8,8 @@ using System.Diagnostics;
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
@@ -381,7 +381,7 @@ namespace dexih.transforms
 
         public virtual async Task<TransformWriterResult> GetPreviousResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken = default)
         {
-            var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, connectionKey, new[] { referenceKey }, null, null, null, true, false, false, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -391,7 +391,7 @@ namespace dexih.transforms
 
         public virtual async Task<TransformWriterResult> GetPreviousSuccessResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken = default)
         {
-            var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, connectionKey, new[] { referenceKey }, null, null, null, false, true, false, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -401,7 +401,7 @@ namespace dexih.transforms
 
         public virtual async Task<TransformWriterResult> GetCurrentResult(long hubKey, long connectionKey, long referenceKey, CancellationToken cancellationToken = default)
         {
-            var results = await GetTransformWriterResults(hubKey, connectionKey, new long[] { referenceKey }, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
+            var results = await GetTransformWriterResults(hubKey, connectionKey, new[] { referenceKey }, null, null, null, false, false, true, null, -1, null, false, cancellationToken);
             if (results == null || results.Count == 0)
             {
                 return null;
@@ -426,12 +426,11 @@ namespace dexih.transforms
 
         public virtual async Task<List<TransformWriterResult>> GetTransformWriterResults(long? hubKey, long connectionKey, long[] referenceKeys, string auditType, long? auditKey, TransformWriterResult.ERunStatus? runStatus, bool previousResult, bool previousSuccessResult, bool currentResult, DateTime? startTime, int rows, long? parentAuditKey, bool childItems, CancellationToken cancellationToken = default)
         {
-            Transform reader = null;
             var watch = new Stopwatch();
             watch.Start();
 
             var picoTable = new PocoTable<TransformWriterResult>();
-            reader = GetTransformReader(picoTable.Table);
+            var reader = GetTransformReader(picoTable.Table);
 
             var filters = new List<Filter>();
             if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), ECompare.IsEqual, hubKey));
@@ -499,7 +498,7 @@ namespace dexih.transforms
 
         public ConnectionReference GetConnectionReference()
         {
-            return Connections.GetConnection(this.GetType());
+            return Connections.GetConnection(GetType());
         }
 
         public Dictionary<string, string> ConnectionProperties()
@@ -603,7 +602,7 @@ namespace dexih.transforms
         }
 
 
-        public object ConvertForWrite(TableColumn column, object value)
+        public (ETypeCode typeCode, object value) ConvertForWrite(TableColumn column, object value)
         {
             return ConvertForWrite(column.Name, column.DataType, column.Rank, column.AllowDbNull, value);
         }
@@ -618,13 +617,13 @@ namespace dexih.transforms
         /// <param name="allowDbNull"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public object ConvertForWrite(string name, ETypeCode typeCode, int rank, bool allowDbNull, object value)
+        public (ETypeCode typeCode, object value) ConvertForWrite(string name, ETypeCode typeCode, int rank, bool allowDbNull, object value)
         {
             if (value == null || value == DBNull.Value)
             {
                 if (allowDbNull)
                 {
-                    return DBNull.Value;
+                    return (typeCode, DBNull.Value);
                 }
                 else
                 {
@@ -634,76 +633,77 @@ namespace dexih.transforms
 
             if (value is EncryptedObject encryptedObject)
             {
-                return encryptedObject.EncryptedValue;
+                return (ETypeCode.String, encryptedObject.EncryptedValue);
             }
 
             if (rank > 0 && !CanUseArray)
             {
-                return Operations.Parse<string>(value);
+                return (ETypeCode.String, Operations.Parse<string>(value));
             }
             
             switch (typeCode)
             {
                 case ETypeCode.Binary:
-                    if(!CanUseBinary) return Operations.Parse<string>(value);
+                    if(!CanUseBinary) 
+                        return (ETypeCode.String, Operations.Parse<string>(value));
                     goto default;
                 case ETypeCode.Geometry:
                         var geometry = Operations.Parse<Geometry>(value);
                         var binary = ConvertFromGeometry(geometry);
-                        if (CanUseBinary) return Operations.Parse<byte[]>(binary);
-                        return Operations.Parse<string>(binary);
+                        if (CanUseBinary) return (ETypeCode.Binary, Operations.Parse<byte[]>(binary));
+                        return (ETypeCode.String, Operations.Parse<string>(binary));
                 case ETypeCode.Boolean:
                     if (!CanUseBoolean)
                     {
                         if (value is bool b)
                         {
-                            return b ? 1 : 0;
+                            return (ETypeCode.Boolean,  b ? 1 : 0);
                         }
 
                         var b1 = Operations.Parse<bool>(value);
-                        return b1 ? 1 : 0;
+                        return (ETypeCode.Boolean, b1 ? 1 : 0);
                     }
                     goto default;
                 case ETypeCode.Json:
-                    if(!CanUseJson) return Operations.Parse<string>(value);
+                    if(!CanUseJson) return (ETypeCode.String, Operations.Parse<string>(value));
                     goto default;
                 case ETypeCode.Xml:
-                    if(!CanUseXml) return Operations.Parse<string>(value);
+                    if(!CanUseXml) return (ETypeCode.String, Operations.Parse<string>(value));
                     goto default;
                 case ETypeCode.CharArray:
-                    if(!CanUseCharArray) return Operations.Parse<string>(value);
+                    if(!CanUseCharArray) return (ETypeCode.String, Operations.Parse<string>(value));
                     goto default;
                 case ETypeCode.Guid:
-                    if(!CanUseGuid) return Operations.Parse<string>(value);
+                    if(!CanUseGuid) return (ETypeCode.String, Operations.Parse<string>(value));
                     goto default;
                 case ETypeCode.UInt16:
-                    if (!CanUseUnsigned) return Operations.Parse<int>(value);
+                    if (!CanUseUnsigned) return (ETypeCode.Int32, Operations.Parse<int>(value));
                     goto default;
                 case ETypeCode.UInt32:
-                    if (!CanUseUnsigned) return Operations.Parse<long>(value);
+                    if (!CanUseUnsigned) return (ETypeCode.Int64, Operations.Parse<long>(value));
                     goto default;
                 case ETypeCode.UInt64:
-                    if (!CanUseUnsigned) return Operations.Parse<long>(value);
+                    if (!CanUseUnsigned) return (ETypeCode.Int64, Operations.Parse<long>(value));
                     goto default;
                 case ETypeCode.SByte:
-                    if (!CanUseSByte) return Operations.Parse<short>(value);
+                    if (!CanUseSByte) return (ETypeCode.Int16, Operations.Parse<short>(value));
                     goto default;
                 case ETypeCode.Time:
-                    if (!CanUseTimeSpan) return Operations.Parse<string>(value);
+                    if (!CanUseTimeSpan) return (ETypeCode.String, Operations.Parse<string>(value));
                     goto default;
                 case ETypeCode.Node:
                     if (value is DbDataReader reader)
                     {
-                        var streamJson = new StreamJson(name, reader);
+                        var streamJson = new StreamJson(reader);
 
                         // convert stream to string
                         var streamReader = new StreamReader(streamJson);
-                        return streamReader.ReadToEnd();
+                        return (ETypeCode.String, streamReader.ReadToEnd());
                     }
 
-                    return null;
+                    return (ETypeCode.String, null);
                 default:
-                    return Operations.Parse(typeCode, rank, value);
+                    return (typeCode, Operations.Parse(typeCode, rank, value));
             }
         }
 
@@ -711,13 +711,17 @@ namespace dexih.transforms
         /// Converts a value to the required data type after being read from the data source.
         /// This includes transforming strings containing arrays/json/xml into native structures.
         /// </summary>
+        /// <param name="ordinal"></param>
         /// <param name="column"></param>
-        /// <param name="value"></param>
+        /// <param name="reader"></param>
         /// <returns></returns>
         public virtual object ConvertForRead(DbDataReader reader, int ordinal, TableColumn column)
         {
-            var value = reader[ordinal];
-
+            if (reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            
             if ((column.Rank > 0 && !CanUseArray) ||
                 (column.DataType == ETypeCode.CharArray && !CanUseCharArray) ||
                 (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
@@ -725,17 +729,63 @@ namespace dexih.transforms
                 (column.DataType == ETypeCode.Xml && !CanUseXml) ||
                 column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
             {
-                return Operations.Parse(column.DataType, value);
+                return Operations.Parse(column.DataType, column.Rank, reader[ordinal]);
             }
 
-            if(column.DataType == ETypeCode.Geometry)
+            if (column.Rank > 0)
             {
-               var bytes = Operations.Parse<byte[]>(value);
-                var binReader = new WKBReader();
-                return binReader.Read(bytes);
+                return reader[ordinal];
             }
-            
-            return value;
+
+            switch (column.DataType)
+            {
+                case ETypeCode.Byte:
+                    return reader.GetByte(ordinal);
+                case ETypeCode.Char:
+                    return reader.GetChar(ordinal);
+                case ETypeCode.SByte:
+                    return Operations.Parse<sbyte>(reader[ordinal]);
+                case ETypeCode.UInt16:
+                    return Operations.Parse<ushort>(reader[ordinal]);
+                case ETypeCode.UInt32:
+                    return Operations.Parse<uint>(reader[ordinal]);
+                case ETypeCode.UInt64:
+                    return Operations.Parse<ulong>(reader[ordinal]);
+                case ETypeCode.Int16:
+                    return reader.GetInt16(ordinal);
+                case ETypeCode.Int32:
+                    return reader.GetInt32(ordinal);
+                case ETypeCode.Int64:
+                    return reader.GetInt64(ordinal);
+                case ETypeCode.Decimal:
+                    return reader.GetDecimal(ordinal);
+                case ETypeCode.Double:
+                    return reader.GetDouble(ordinal);
+                case ETypeCode.Single:
+                    return reader.GetFloat(ordinal);
+                case ETypeCode.String:
+                case ETypeCode.Text:
+                    return reader.GetString(ordinal);
+                case ETypeCode.Boolean:
+                    return reader.GetBoolean(ordinal);
+                case ETypeCode.DateTime:
+                    return reader.GetDateTime(ordinal);
+                case ETypeCode.Guid:
+                    return reader.GetGuid(ordinal);
+                case ETypeCode.Geometry:
+                    var value = reader[ordinal];
+                    if (value == null || value is DBNull)
+                    {
+                        return null;
+                    }
+                    var bytes = Operations.Parse<byte[]>(value);
+                    var binReader = new WKBReader();
+                    return binReader.Read(bytes);
+                case ETypeCode.Time:
+                    return Operations.Parse<TimeSpan>(reader[ordinal]);
+                default:
+                    return reader[ordinal];
+            }
         }
 
         /// <summary>

@@ -3,7 +3,6 @@ using System.Data.Common;
 using System.Reflection;
 using dexih.functions;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
 
 namespace dexih.transforms.Poco
 {
@@ -76,9 +75,9 @@ namespace dexih.transforms.Poco
                         {
                             value = Enum.Parse(mapping.PropertyInfo.PropertyType, s);
                         }
-                        else if (!DataType.IsSimple(mapping.PropertyInfo.PropertyType) && value is string s1)
+                        else if (!DataType.IsSimple(mapping.PropertyInfo.PropertyType) && value is string s1 && column.DataType != DataType.ETypeCode.String)
                         {
-                            value = JsonConvert.DeserializeObject(s1, mapping.PropertyInfo.PropertyType);
+                            value = s1.Deserialize(mapping.PropertyInfo.PropertyType);
                         }
                         else
                         {

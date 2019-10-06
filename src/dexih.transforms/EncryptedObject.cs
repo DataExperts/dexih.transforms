@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using MessagePack;
-using Newtonsoft.Json;
+
 
 namespace dexih.transforms
 {
@@ -42,7 +43,7 @@ namespace dexih.transforms
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((EncryptedObject) obj);
         }
 

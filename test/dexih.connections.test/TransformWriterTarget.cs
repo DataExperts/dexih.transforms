@@ -91,7 +91,7 @@ namespace dexih.connections.test
 
             var componentKey = -1L;
             transactionKey = -1L;
-            for (var a = 1L; a <= 2; a++)
+            for (var a = 1; a <= 2; a++)
             {
                 if (transactionKey > -1) transactionKey++;
 
@@ -99,7 +99,7 @@ namespace dexih.connections.test
                 {
                     await componentReader.ReadAsync();
                     var componentId = (10 * a) + i;
-                    Assert.Equal((int)componentId, componentReader["itemId"]);
+                    Assert.Equal(componentId, componentReader["itemId"]);
                     Assert.Equal($"component {componentId}", componentReader["desc"]);
 
                     if (transactionKey == -1)

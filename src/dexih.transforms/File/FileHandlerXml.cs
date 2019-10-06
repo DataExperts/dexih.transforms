@@ -158,9 +158,6 @@ namespace dexih.transforms.File
 
         public override Task<object[]> GetRow()
         {
-            var rows = new List<object[]>();
-            var columnCount = _table.Columns.Count;
-
             if (_xPathNodeIterator != null && _xPathNodeIterator.MoveNext())
             {
                 var currentRow = _xPathNodeIterator.Current;

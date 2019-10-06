@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 using static Dexih.Utils.DataType.DataType;
 using MessagePack;
 
@@ -14,8 +14,8 @@ namespace dexih.functions
     
     [MessagePackObject]
     [ProtoInherit(1000)]
-    [MessagePack.Union(0, typeof(FlatFile))]
-    [MessagePack.Union(1, typeof(WebService))]
+    [Union(0, typeof(FlatFile))]
+    [Union(1, typeof(WebService))]
     public class Table
     {
 
@@ -227,18 +227,21 @@ namespace dexih.functions
         /// <param name="filters">Filter for the lookup.  For an index to be used, the filters must be in the same column order as the index.</param>
         /// <param name="startRow"></param>
         /// <returns></returns>
-        public object[] LookupSingleRow(List<Filter> filters, int startRow = 0)
+        public object[] LookupSingleRow(IEnumerable<Filter> filters, int startRow = 0)
         {
             try
             {
                 // use the index to reduce the scan rows
                 var data = IndexLookup(filters) ?? Data;
                 
-                //scan the data for a matching row.  
-                for (var i = startRow; i < Data.Count(); i++)
+                //scan the data for a matching row. 
+                var i = 0;
+                foreach(var item in data)
                 {
-                    if (RowMatch(filters, Data[i]))
-                        return Data[i];
+                    if(i++ < startRow) continue;
+                    
+                    if (RowMatch(filters, item))
+                        return item;
                 }
 
                 return null;
@@ -249,7 +252,7 @@ namespace dexih.functions
             }
         }
 
-        public List<object[]> LookupMultipleRows(List<Filter> filters, int startRow = 0)
+        public List<object[]> LookupMultipleRows(IEnumerable<Filter> filters, int startRow = 0)
         {
             try
             {
@@ -257,17 +260,21 @@ namespace dexih.functions
 
                 // use the index to reduce the scan rows
                 var data = IndexLookup(filters) ?? Data;
-
-                //scan the data for a matching row.  
-                for (var i = startRow; i < Data.Count(); i++)
+                
+                //scan the data for a matching row. 
+                var i = 0;
+                foreach(var item in data)
                 {
-                    if (RowMatch(filters, Data[i]))
+                    if(i++ < startRow) continue;
+                    
+                    if (RowMatch(filters, item))
                     {
                         if (rows == null)
                             rows = new List<object[]>();
-                        rows.Add(Data[i]);
+                        rows.Add(item);
                     }
                 }
+                
 
                 return rows;
             }

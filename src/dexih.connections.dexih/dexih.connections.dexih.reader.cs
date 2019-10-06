@@ -5,7 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
+
 using System.Threading;
 using System.Text;
 using dexih.functions.File;
@@ -56,7 +56,7 @@ namespace dexih.connections.dexih
                 var instanceId = await _dexihConnection.GetRemoteAgentInstanceId();
 
                 // call the central web server to requet the query start.
-                var message = Json.SerializeObject(new
+                var message = new
                 {
                     HubName = ReferenceConnection.DefaultDatabase,
                     CacheTable.SourceConnectionName,
@@ -65,18 +65,18 @@ namespace dexih.connections.dexih
                     Query = selectQuery,
                     DownloadUrl = downloadUrl,
                     InstanceId = instanceId
-                }, "");
+                }.Serialize();
                 
                 var content = new StringContent(message, Encoding.UTF8, "application/json");
 				var response = await _dexihConnection.HttpPost("OpenTableQuery", content);
 
-                if ((bool)response["success"])
+                if (response.RootElement.GetProperty("success").GetBoolean())
                 {
-                    _dataUrl = response["value"].ToString();
+                    _dataUrl = response.RootElement.GetProperty("value").GetString();
                 }
                 else
                 {
-                    throw new ConnectionException($"Error {response?["message"]}", new Exception(response["exceptionDetails"].ToString()));
+                    throw new ConnectionException($"Error {response.RootElement.GetProperty("message").GetString()}", new Exception(response.RootElement.GetProperty("exceptionDetails").GetString()));
                 }
                 
                 // use the returned url, to start streaming the data.
@@ -87,8 +87,7 @@ namespace dexih.connections.dexih
                     if (response2.StatusCode == HttpStatusCode.InternalServerError)
                     {
                         var responseString = await response2.Content.ReadAsStringAsync();
-                        var result = JObject.Parse(responseString);
-                        var returnValue = result.ToObject<ReturnValue>();
+                        var returnValue = responseString.Deserialize<ReturnValue>();
                         throw new ConnectionException("Dexih Reader Failed.  " + returnValue.Message,
                             returnValue.Exception);
                     }

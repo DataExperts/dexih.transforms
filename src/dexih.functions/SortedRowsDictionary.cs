@@ -47,7 +47,7 @@ namespace dexih.functions
                     continue;
                 }
 
-                var compareResult = Operations.Compare<T>(x[i], y[i]); 
+                var compareResult = Operations.Compare(x[i], y[i]); 
 
                 if (compareResult == 0 )
                 {

@@ -4,7 +4,7 @@ namespace dexih.transforms
 {
     public class TransformnNotFoundException : Exception
     {
-        public TransformnNotFoundException() : base()
+        public TransformnNotFoundException()
         {
         }
 

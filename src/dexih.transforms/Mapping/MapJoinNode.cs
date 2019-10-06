@@ -18,9 +18,9 @@ namespace dexih.transforms.Mapping
             Transform.SetTable(joinTable, null);
         }
 
-        public TableColumn NodeColumn;
+        public readonly TableColumn NodeColumn;
         public Transform InputTransform { get; set; }
-        protected int NodeOrdinal = -1;
+        private int _nodeOrdinal = -1;
 
         public override void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null)
         {
@@ -38,18 +38,18 @@ namespace dexih.transforms.Mapping
 
         public override void AddOutputColumns(Table table)
         {
-            NodeOrdinal = AddOutputColumn(table, NodeColumn);
+            _nodeOrdinal = AddOutputColumn(table, NodeColumn);
         }
 
         public override Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row,
-            object[] joinRow, CancellationToken cancellationToken)
+            object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }
 
         public override void MapOutputRow(object[] data)
         {
-            data[NodeOrdinal] = Transform;
+            data[_nodeOrdinal] = Transform;
         }
 
         public override object GetOutputValue(object[] row = null)

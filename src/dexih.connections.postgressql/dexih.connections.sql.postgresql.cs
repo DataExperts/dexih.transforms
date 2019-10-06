@@ -136,7 +136,7 @@ namespace dexih.connections.postgressql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "select table_name from information_schema.tables where table_name = @NAME"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
 
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
@@ -261,6 +261,7 @@ namespace dexih.connections.postgressql
                         sqlType= (column.IsUnicode == true ? "n" : "") + "char(" + column.MaxLength + ")";
                     break;
 				case DataType.ETypeCode.Text:
+                case DataType.ETypeCode.Geometry:
                     sqlType = (column.IsUnicode == true ? "n" : "") + "text";
                     break;
                 case DataType.ETypeCode.Json:
@@ -370,8 +371,7 @@ namespace dexih.connections.postgressql
             }
             catch (Exception ex)
             {
-                if (connection != null)
-                    connection.Dispose();
+                connection?.Dispose();
                 throw new ConnectionException($"Postgres connection failed. {ex.Message}", ex);
             }
         }
@@ -473,7 +473,7 @@ namespace dexih.connections.postgressql
                     // get the table type
                     using (var cmd = CreateCommand(connection, "select table_type from information_schema.tables where table_name = @NAME"))
                     {
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
 
                         var tableType = await cmd.ExecuteScalarAsync(cancellationToken);
 
@@ -693,7 +693,7 @@ ORDER BY c.ordinal_position"))
                                         query.InsertColumns[i].Column.Rank);
                                     param.Size = -1;
                                     param.NpgsqlValue = ConvertForWrite(query.InsertColumns[i].Column,
-                                        query.InsertColumns[i].Value);
+                                        query.InsertColumns[i].Value).value;
                                     cmd.Parameters.Add(param);
                                 }
                                 
@@ -748,7 +748,7 @@ ORDER BY c.ordinal_position"))
             {
                 return NpgsqlDbType.Array | GetTypeCodeDbType(typeCode, 0);
             }
-            
+
             switch (typeCode)
             {
                 case DataType.ETypeCode.Byte:
@@ -847,7 +847,7 @@ ORDER BY c.ordinal_position"))
                                     query.UpdateColumns[i].Column.Rank);
                                 param.Size = -1;
                                 param.Value = ConvertForWrite(query.UpdateColumns[i].Column,
-                                    query.UpdateColumns[i].Value);
+                                    query.UpdateColumns[i].Value).value;
                                 cmd.Parameters.Add(param);
                             }
 

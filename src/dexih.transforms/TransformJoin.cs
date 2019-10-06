@@ -41,7 +41,7 @@ namespace dexih.transforms
         private SortedDictionary<object[], List<object[]>> _joinHashData; //stores all the reference data grouped by the join keys (used for hashjoin).
 
         private List<object[]> _groupData;
-        private bool _writeGroup = false; //indicates a group is being written out
+        private bool _writeGroup; //indicates a group is being written out
         private int _writeGroupPosition; //indicates the position in the group.
         private bool _joinReaderOpen;
         private bool _groupsOpen;
@@ -49,8 +49,7 @@ namespace dexih.transforms
         private Table _referenceTable;
 
         private bool _containsJoinColumns;
-        private JoinKeyComparer _joinKeyComparer;
-        
+
         private int _nodeColumnOrdinal = -1;
         private MapJoinNode _nodeMapping;
 
@@ -218,7 +217,7 @@ namespace dexih.transforms
                         }).ToArray();
                         
                         var newParameters = new Parameters() {Inputs = newInputs};
-                        var newMapFunction = new MapFunction(mapFunction.Function, newParameters, MapFunction.EFunctionCaching.NoCache);
+                        var newMapFunction = new MapFunction(mapFunction.Function, newParameters, EFunctionCaching.NoCache);
                         referenceFilters.Add(newMapFunction);
                     }
                 }
@@ -256,7 +255,6 @@ namespace dexih.transforms
             _containsJoinColumns = Mappings.OfType<MapJoin>().Any();
             _primaryFieldCount = PrimaryTransform.BaseFieldCount;
             _referenceFieldCount = ReferenceTransform.BaseFieldCount;
-            _joinKeyComparer = new JoinKeyComparer();
 
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 

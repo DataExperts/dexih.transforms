@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 using dexih.functions.Exceptions;
 using dexih.transforms;
-using Newtonsoft.Json.Linq;
+
 
 namespace dexih.functions.external
 {
@@ -124,12 +125,12 @@ namespace dexih.functions.external
             var reader = new StreamReader(response.response);
             var jsonString = await reader.ReadToEndAsync();
 
-            JToken jToken;
+            JsonDocument jsonDocument;
 
             try
             {
-                jToken = JToken.Parse(jsonString);
-                if (jToken == null)
+                jsonDocument = JsonDocument.Parse(jsonString);
+                if (jsonDocument == null)
                 {
                     throw new FileHandlerException(
                         "The currency data not available, json parsing returned nothing.");
@@ -141,14 +142,13 @@ namespace dexih.functions.external
                     $"The currency data not available, error returned parsing json data: {ex.Message}", ex);
             }
 
-            var success = jToken["success"].Value<bool>();
+            var success = jsonDocument.RootElement.GetProperty("success").GetBoolean();
 
             if (!success)
             {
-                var error = jToken["error"];
-                if (error != null)
+                if (jsonDocument.RootElement.TryGetProperty("error", out var error))
                 {
-                    var errorMessage = error["info"].Value<string>();
+                    var errorMessage = error.GetProperty("info").GetString();
                     throw new FunctionException($"The currency data not loaded, error message: {errorMessage}.");
                 }
                 else
@@ -160,21 +160,17 @@ namespace dexih.functions.external
 
             var rates = new CurrencyDetails();
 
-            rates.TimeStamp = jToken["timestamp"].Value<long>().UnixTimeStampToDate();
-            rates.Source = jToken["source"].Value<string>();
+            rates.TimeStamp = jsonDocument.RootElement.GetProperty("timestamp").GetInt64().UnixTimeStampToDate();
+            rates.Source = jsonDocument.RootElement.GetProperty("source").GetString();
 
-            var quotes = jToken["quotes"];
-            if (quotes != null)
+            if (jsonDocument.RootElement.TryGetProperty("quotes", out var quotes))
             {
-                foreach (var quote in quotes.Children())
+                foreach (var quote in quotes.EnumerateObject())
                 {
-                    if (quote is JProperty property)
-                    {
-                        var sourceTo = property.Name; // should contain string like USDAUD
-                        var toCurrency = sourceTo.Substring(3, 3);
-                        var rate = property.Value.Value<double>();
-                        rates.Rates.Add(toCurrency, rate);
-                    }
+                    var sourceTo = quote.Name; // should contain string like USDAUD
+                    var toCurrency = sourceTo.Substring(3, 3);
+                    var rate = quote.Value.GetDouble();
+                    rates.Rates.Add(toCurrency, rate);
                 }
             }
 

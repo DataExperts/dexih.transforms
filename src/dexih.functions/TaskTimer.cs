@@ -9,7 +9,7 @@ namespace dexih.functions
 	/// </summary>
 	public static class TaskTimer<T>
 	{
-		public static async Task<(TimeSpan, T)>  Start(Func<Task<T>> func)
+		public static async Task<(TimeSpan, T)>  StartAsync(Func<Task<T>> func)
 		{
 			var timer = Stopwatch.StartNew();
 			var returnValue = await func();

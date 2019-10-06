@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Xml;
 using dexih.functions.BuiltIn;
@@ -73,7 +74,7 @@ namespace dexih.functions.builtIn.tests
         [InlineData(typeof(MathFunctions), nameof(MathFunctions.Sqrt), new object[] { 9 }, (double)3)]
         [InlineData(typeof(MathFunctions), nameof(MathFunctions.Truncate), new object[] { 6.4 }, (double)6)]
         [InlineData(typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.ArrayContains), new object[] { "test2", new string[] {"test1", "test2", "test3"} }, true)]
-        [InlineData(typeof(MapFunctions), nameof(GeometryFunctions.GeographicDistance), new object[] { -38, -145, -34 ,- 151 }, 699082.1288)] //melbourne to sydney distance
+        [InlineData(typeof(GeometryFunctions), nameof(GeometryFunctions.GeographicDistance), new object[] { -38, -145, -34 ,- 151 }, 699082.1288)] //melbourne to sydney distance
         [InlineData(typeof(ValidationFunctions), nameof(ValidationFunctions.MaxLength), new object[] { "abcdef", 5 }, false)]
         [InlineData(typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { 1, 2, 3, 4 }, false)] //(1,2)(3,4) not intersect
         [InlineData(typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { 1, 3, 3, 4 }, false)] //(1,3)(3,4) do intersect
@@ -526,8 +527,8 @@ namespace dexih.functions.builtIn.tests
         public void Function_JSONValue()
         {
             //Get a rows that exists.
-            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.JsonValues), BuiltInAssembly).GetTransformFunction(typeof(JToken));
-            var json = Operations.Parse<JToken>("{ 'value1': '1', 'value2' : '2', 'value3': '3', 'array' : {'v1' : '1', 'v2' : '2'} }");
+            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.JsonValues), BuiltInAssembly).GetTransformFunction(typeof(JsonElement));
+            var json = "{ \"value1\": \"1\", \"value2\" : \"2\", \"value3\": \"3\", \"array\" : {\"v1\" : \"1\", \"v2\" : \"2\"} }";
             var param = new object[] { json, new [] { "value1", "value2", "value3", "array", "badvalue" }};
             
             Assert.False((bool)function.RunFunction(new FunctionVariables(), param, out var outputs, CancellationToken.None).returnValue);
@@ -538,9 +539,9 @@ namespace dexih.functions.builtIn.tests
             Assert.Null(result[4]);
 
             //get the sub Json string, and run another parse over this.
-            var moreValues = Operations.Parse<JToken>(result[3]);
+            var moreValues = result[3];
             param = new object[] { moreValues, new [] { "v1", "v2"} };
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.JsonValues), BuiltInAssembly).GetTransformFunction(typeof(JToken));
+            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.JsonValues), BuiltInAssembly).GetTransformFunction(typeof(JsonElement));
             Assert.True((bool)function.RunFunction(param, out outputs, CancellationToken.None).returnValue);
             result = (object[]) outputs[0];;
             Assert.Equal("1", result[0]);
@@ -602,7 +603,7 @@ namespace dexih.functions.builtIn.tests
         {
             //Use a for loop to similate gen sequence.
             var function = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.JsonElementsToRows), BuiltInAssembly).GetTransformFunction(typeof(JToken));
-            var json = Operations.Parse<JToken>("{'results' : [{'value1' : 'r1v1', 'value2' : 'r1v2'}, {'value1' : 'r2v1', 'value2' : 'r2v2'}]} ");
+            var json = "{\"results\" : [{\"value1\" : \"r1v1\", \"value2\" : \"r1v2\"}, {\"value1\" : \"r2v1\", \"value2\" : \"r2v2\"}]} ";
             var param = new object[] { json , "results[*]", 2 };
             for (var i = 1; i <= 2; i++)
             {
@@ -622,7 +623,7 @@ namespace dexih.functions.builtIn.tests
         {
             //Use a for loop to simulate gen sequence.
             var function = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.JsonPivotElementToRows), BuiltInAssembly).GetTransformFunction(typeof(JToken));
-            var json = Operations.Parse<JToken>("{'results' : {'name1' : 'value1', 'name2' : 'value2', 'name3' : 'value3'}} ");
+            var json = "{\"results\" : {\"name1\" : \"value1\", \"name2\" : \"value2\", \"name3\" : \"value3\"}} ";
             var param = new object[] { json, "results", 3 };
             for (var i = 1; i <= 3; i++)
             {

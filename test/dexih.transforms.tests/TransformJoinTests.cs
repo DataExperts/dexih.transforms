@@ -192,7 +192,7 @@ namespace dexih.transforms.tests
                     new Parameters
                     {
                         Inputs = new List<Parameter> {new ParameterJoinColumn("IsValid", ETypeCode.Boolean, 0)}
-                    }, MapFunction.EFunctionCaching.NoCache)
+                    }, EFunctionCaching.NoCache)
             };
             
             var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.Abend, null, "Join");
@@ -378,7 +378,7 @@ namespace dexih.transforms.tests
                     new Parameters
                     {
                         Inputs = new List<Parameter> {new ParameterJoinColumn("IsValid", ETypeCode.Boolean, 0)}
-                    }, MapFunction.EFunctionCaching.NoCache)
+                    }, EFunctionCaching.NoCache)
             };
             
             var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EDuplicateStrategy.Abend, null, "Join");
@@ -428,7 +428,7 @@ namespace dexih.transforms.tests
                             new ParameterColumn("IntColumn", ETypeCode.Int32),
                             new ParameterJoinColumn("Join", new TableColumn("IntColumn", ETypeCode.Int32, parentTable: "Join"))
                         }
-                    }, MapFunction.EFunctionCaching.NoCache)
+                    }, EFunctionCaching.NoCache)
             };
             
             var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EDuplicateStrategy.Abend, null, "Join");
@@ -479,7 +479,7 @@ namespace dexih.transforms.tests
                             new ParameterColumn("IntColumn", ETypeCode.Int32),
                             new ParameterJoinColumn("Join", new TableColumn("IntColumn", ETypeCode.Int32, parentTable: "Join"))
                         }
-                    }, MapFunction.EFunctionCaching.NoCache)
+                    }, EFunctionCaching.NoCache)
             };
             
             var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EDuplicateStrategy.Abend, null, "Join");

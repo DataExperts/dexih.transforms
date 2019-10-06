@@ -59,41 +59,31 @@ namespace dexih.connections.sqlserver
             return sql;
         }
         
-        public override object GetConnectionMaxValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return new DateTime(9999,12,31);
                 default:
-                    return DataType.GetDataTypeMaxValue(typeCode, length);
+                    return GetDataTypeMaxValue(typeCode, length);
             }
         }
 	    
-        public override object GetConnectionMinValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return new DateTime(1753,1,1);
                 default:
-                    return DataType.GetDataTypeMinValue(typeCode, length);
+                    return GetDataTypeMinValue(typeCode, length);
             }
 		    
         }
 
         public override object ConvertForRead(DbDataReader reader, int ordinal, TableColumn column)
         {
-            if ((column.Rank > 0 && !CanUseArray) ||
-                (column.DataType == ETypeCode.CharArray && !CanUseCharArray) ||
-                (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
-                (column.DataType == ETypeCode.Json && !CanUseJson) ||
-                (column.DataType == ETypeCode.Xml && !CanUseXml) ||
-                column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
-            {
-                return Operations.Parse(column.DataType, reader[ordinal]);
-            }
-
             if (column.DataType == ETypeCode.Geometry && reader is SqlDataReader sqlReader)
             {
                 var geometryReader = new SqlServerBytesReader();
@@ -101,17 +91,18 @@ namespace dexih.connections.sqlserver
                 return geometryReader.Read(sqlReader.GetSqlBytes(ordinal).Value);
             }
 
-            return reader[ordinal];
+            return base.ConvertForRead(reader, ordinal, column);
         }
 
-        public override DbParameter CreateParameter(DbCommand command, string name, ETypeCode typeCode, ParameterDirection direction, object value)
+        public override DbParameter CreateParameter(DbCommand command, string name, ETypeCode typeCode, int rank, ParameterDirection direction, object value)
         {
             var param = command.CreateParameter();
             param.ParameterName = name;
             param.Direction = direction;
-            param.Value = ConvertForWrite(param.ParameterName, typeCode, 0, true, value);
+            var writeValue = ConvertForWrite(param.ParameterName, typeCode, rank, true, value);
+            param.Value = writeValue.value;
 
-            switch (typeCode)
+            switch (writeValue.typeCode)
             {
                 case ETypeCode.UInt16:
                     param.DbType = DbType.Int32;
@@ -123,7 +114,7 @@ namespace dexih.connections.sqlserver
                     param.DbType = DbType.Decimal;
                     break;
                 default:
-                    param.DbType = GetDbType(typeCode);
+                    param.DbType = GetDbType(writeValue.typeCode);
                     break;
             }
             
@@ -168,7 +159,7 @@ namespace dexih.connections.sqlserver
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "select name from sys.tables where object_id = OBJECT_ID(@NAME)"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.String, ParameterDirection.Input, SqlTableName(table)));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.String,0, ParameterDirection.Input, SqlTableName(table)));
                     var tableExistsResult = await cmd.ExecuteScalarAsync(cancellationToken);
                     if(tableExistsResult == null)
                     {
@@ -254,7 +245,7 @@ namespace dexih.connections.sqlserver
                     using (var cmd = connection.CreateCommand())
                     {
                         cmd.CommandText = "SELECT s.name SchemaName FROM sys.tables AS t INNER JOIN sys.schemas AS s ON t.[schema_id] = s.[schema_id] where object_id = OBJECT_ID(@NAME)";
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, ParameterDirection.Input, SqlTableName(table)));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, SqlTableName(table)));
 
                         try
                         {
@@ -279,9 +270,9 @@ namespace dexih.connections.sqlserver
                             using (var cmd = connection.CreateCommand())
                             {
                                 cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename";
-                                cmd.Parameters.Add(CreateParameter(cmd, "@description", ETypeCode.Text, ParameterDirection.Input, table.Description));
-                                cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", ETypeCode.Text, ParameterDirection.Input, schemaName));
-                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", ETypeCode.Text, ParameterDirection.Input, table.Name));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@description", ETypeCode.Text, 0, ParameterDirection.Input, table.Description));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", ETypeCode.Text, 0, ParameterDirection.Input, schemaName));
+                                cmd.Parameters.Add(CreateParameter(cmd, "@tablename", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
                             }
                         }
@@ -294,10 +285,10 @@ namespace dexih.connections.sqlserver
                                 using (var cmd = connection.CreateCommand())
                                 {
                                     cmd.CommandText = "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@description , @level0type=N'SCHEMA',@level0name=@schemaname, @level1type=N'TABLE',@level1name=@tablename, @level2type=N'COLUMN',@level2name=@columnname";
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@description", ETypeCode.Text, ParameterDirection.Input, col.Description));
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", ETypeCode.Text, ParameterDirection.Input, schemaName));
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", ETypeCode.Text, ParameterDirection.Input, table.Name));
-                                    cmd.Parameters.Add(CreateParameter(cmd, "@columnname", ETypeCode.Text, ParameterDirection.Input, col.Name));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@description", ETypeCode.Text, 0, ParameterDirection.Input, col.Description));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@schemaname", ETypeCode.Text, 0, ParameterDirection.Input, schemaName));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@tablename", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
+                                    cmd.Parameters.Add(CreateParameter(cmd, "@columnname", ETypeCode.Text, 0, ParameterDirection.Input, col.Name));
                                     await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 }
                             }
@@ -326,61 +317,61 @@ namespace dexih.connections.sqlserver
 
             switch (column.DataType)
             {
-                case DataType.ETypeCode.Int32:
-                case DataType.ETypeCode.UInt16:
+                case ETypeCode.Int32:
+                case ETypeCode.UInt16:
                     sqlType = "int";
                     break;
-                case DataType.ETypeCode.Byte:
+                case ETypeCode.Byte:
                     sqlType = "tinyint";
                     break;
-                case DataType.ETypeCode.Int16:
-                case DataType.ETypeCode.SByte:
+                case ETypeCode.Int16:
+                case ETypeCode.SByte:
                     sqlType = "smallint";
                     break;
-                case DataType.ETypeCode.Int64:
-                case DataType.ETypeCode.UInt32:
+                case ETypeCode.Int64:
+                case ETypeCode.UInt32:
                     sqlType = "bigint";
                     break;
-                case DataType.ETypeCode.String:
+                case ETypeCode.String:
                     if (column.MaxLength == null)
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(max)";
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
-                case DataType.ETypeCode.CharArray:
+                case ETypeCode.CharArray:
                     if (column.MaxLength == null)
                         throw new Exception($"The column {column.Name} has a char datatype however no length is specified.");
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "char(" + column.MaxLength + ")";
                     break;
-                case DataType.ETypeCode.Text:
-                case DataType.ETypeCode.Json:
-                case DataType.ETypeCode.Xml:
-                case DataType.ETypeCode.Node:
+                case ETypeCode.Text:
+                case ETypeCode.Json:
+                case ETypeCode.Xml:
+                case ETypeCode.Node:
 					sqlType = "text";
 					break;
-                case DataType.ETypeCode.Single:
-                    sqlType = "float";
+                case ETypeCode.Single:
+                    sqlType = "real";
                     break;
-                case DataType.ETypeCode.UInt64:
+                case ETypeCode.UInt64:
                     sqlType = "DECIMAL(20,0)";
                     break;
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     sqlType = "float";
                     break;
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Boolean:
                     sqlType = "bit";
                     break;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     sqlType = "datetime";
                     break;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     sqlType = "time(7)";
                     break;
-                case DataType.ETypeCode.Guid:
+                case ETypeCode.Guid:
                     sqlType = "uniqueidentifier";
                     break;
-                case DataType.ETypeCode.Binary:
+                case ETypeCode.Binary:
                     if (column.MaxLength == null)
                         sqlType = "varbinary(max)";
                     else
@@ -389,13 +380,13 @@ namespace dexih.connections.sqlserver
                 //case TypeCode.TimeSpan:
                 //    SQLType = "time(7)";
                 //    break;
-                case DataType.ETypeCode.Unknown:
+                case ETypeCode.Unknown:
                     sqlType = "nvarchar(max)";
                     break;
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
-                case DataType.ETypeCode.Geometry:
+                case ETypeCode.Geometry:
                     sqlType = "Geometry";
                     break;
                 default:
@@ -629,7 +620,7 @@ namespace dexih.connections.sqlserver
                                 DataType = ConvertSqlToTypeCode(reader["DataType"].ToString())
                             };
 
-                            if (col.DataType == DataType.ETypeCode.Unknown)
+                            if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -642,9 +633,9 @@ namespace dexih.connections.sqlserver
                                     col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-                            if (col.DataType == DataType.ETypeCode.String)
+                            if (col.DataType == ETypeCode.String)
                                 col.MaxLength = ConvertSqlMaxLength(reader["DataType"].ToString(), Convert.ToInt32(reader["Max_Length"]));
-                            else if (col.DataType == DataType.ETypeCode.Double || col.DataType == DataType.ETypeCode.Decimal)
+                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
                             {
                                 col.Precision = Convert.ToInt32(reader["Precision"]);
                                 if ((string)reader["DataType"] == "money" || (string)reader["DataType"] == "smallmoney") // this is required as bug in sqlschematable query for money types doesn't get proper scale.
@@ -684,44 +675,44 @@ namespace dexih.connections.sqlserver
             }
         }
 
-        public DataType.ETypeCode ConvertSqlToTypeCode(string sqlType)
+        public ETypeCode ConvertSqlToTypeCode(string sqlType)
         {
             switch (sqlType)
             {
-                case "bigint": return DataType.ETypeCode.Int64;
-                case "binary": return DataType.ETypeCode.Binary;
-                case "bit": return DataType.ETypeCode.Boolean;
-                case "char": return DataType.ETypeCode.String;
-                case "date": return DataType.ETypeCode.DateTime;
-                case "datetime": return DataType.ETypeCode.DateTime;
-                case "datetime2": return DataType.ETypeCode.DateTime;
-                case "datetimeoffset": return DataType.ETypeCode.Time;
-                case "decimal": return DataType.ETypeCode.Decimal;
-                case "float": return DataType.ETypeCode.Double;
-                case "image": return DataType.ETypeCode.Unknown;
-                case "int": return DataType.ETypeCode.Int32;
-                case "money": return DataType.ETypeCode.Decimal;
-                case "nchar": return DataType.ETypeCode.String;
-                case "ntext": return DataType.ETypeCode.String;
-                case "numeric": return DataType.ETypeCode.Decimal;
-                case "nvarchar": return DataType.ETypeCode.String;
-                case "real": return DataType.ETypeCode.Single;
-                case "rowversion": return DataType.ETypeCode.Unknown;
-                case "smalldatetime": return DataType.ETypeCode.DateTime;
-                case "smallint": return DataType.ETypeCode.Int16;
-                case "smallmoney": return DataType.ETypeCode.Int16;
-                case "text": return DataType.ETypeCode.String;
-                case "time": return DataType.ETypeCode.Time;
-                case "timestamp": return DataType.ETypeCode.Int64;
-                case "tinyint": return DataType.ETypeCode.Byte;
-                case "uniqueidentifier": return DataType.ETypeCode.Guid;
-                case "varbinary": return DataType.ETypeCode.Binary;
-                case "varchar": return DataType.ETypeCode.String;
-                case "xml": return DataType.ETypeCode.String;
-                case "geometry": return DataType.ETypeCode.Geometry;
-                case "geography": return DataType.ETypeCode.Geometry;
+                case "bigint": return ETypeCode.Int64;
+                case "binary": return ETypeCode.Binary;
+                case "bit": return ETypeCode.Boolean;
+                case "char": return ETypeCode.String;
+                case "date": return ETypeCode.DateTime;
+                case "datetime": return ETypeCode.DateTime;
+                case "datetime2": return ETypeCode.DateTime;
+                case "datetimeoffset": return ETypeCode.Time;
+                case "decimal": return ETypeCode.Decimal;
+                case "float": return ETypeCode.Double;
+                case "image": return ETypeCode.Unknown;
+                case "int": return ETypeCode.Int32;
+                case "money": return ETypeCode.Decimal;
+                case "nchar": return ETypeCode.String;
+                case "ntext": return ETypeCode.String;
+                case "numeric": return ETypeCode.Decimal;
+                case "nvarchar": return ETypeCode.String;
+                case "real": return ETypeCode.Single;
+                case "rowversion": return ETypeCode.Unknown;
+                case "smalldatetime": return ETypeCode.DateTime;
+                case "smallint": return ETypeCode.Int16;
+                case "smallmoney": return ETypeCode.Int16;
+                case "text": return ETypeCode.String;
+                case "time": return ETypeCode.Time;
+                case "timestamp": return ETypeCode.Int64;
+                case "tinyint": return ETypeCode.Byte;
+                case "uniqueidentifier": return ETypeCode.Guid;
+                case "varbinary": return ETypeCode.Binary;
+                case "varchar": return ETypeCode.String;
+                case "xml": return ETypeCode.String;
+                case "geometry": return ETypeCode.Geometry;
+                case "geography": return ETypeCode.Geometry;
             }
-            return DataType.ETypeCode.Unknown;
+            return ETypeCode.Unknown;
         }
 
         public int? ConvertSqlMaxLength(string sqlType, int byteLength)
@@ -793,10 +784,10 @@ namespace dexih.connections.sqlserver
                                 {
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = "@col" + i;
-                                    param.SqlDbType = GetSqlDbType(query.InsertColumns[i].Column.DataType,
-                                        query.InsertColumns[i].Column.Rank);
-                                    param.Value = ConvertForWrite(query.InsertColumns[i].Column,
+                                    var converted = ConvertForWrite(query.InsertColumns[i].Column,
                                         query.InsertColumns[i].Value);
+                                    param.SqlDbType = GetSqlDbType(converted.typeCode);
+                                    param.Value = converted.value ;
                                     cmd.Parameters.Add(param);
                                 }
 
@@ -842,50 +833,45 @@ namespace dexih.connections.sqlserver
             }
         }
 
-        public static SqlDbType GetSqlDbType(DataType.ETypeCode typeCode, int rank)
+        public static SqlDbType GetSqlDbType(ETypeCode typeCode)
         {
-            if (rank > 0)
-            {
-                return SqlDbType.NVarChar;
-            }
-            
             switch (typeCode)
             {
-                case DataType.ETypeCode.Byte:
+                case ETypeCode.Byte:
                     return SqlDbType.VarChar;
-                case DataType.ETypeCode.SByte:
+                case ETypeCode.SByte:
                     return SqlDbType.SmallInt;
-                case DataType.ETypeCode.UInt16:
+                case ETypeCode.UInt16:
                     return SqlDbType.Int;
-                case DataType.ETypeCode.UInt32:
+                case ETypeCode.UInt32:
                     return SqlDbType.BigInt;
-                case DataType.ETypeCode.UInt64:
+                case ETypeCode.UInt64:
                     return SqlDbType.VarChar;
-                case DataType.ETypeCode.Int16:
+                case ETypeCode.Int16:
                     return SqlDbType.SmallInt;
-                case DataType.ETypeCode.Int32:
+                case ETypeCode.Int32:
                     return SqlDbType.Int;
-                case DataType.ETypeCode.Int64:
+                case ETypeCode.Int64:
                     return SqlDbType.BigInt;
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     return SqlDbType.Decimal;
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     return SqlDbType.Float;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     return SqlDbType.Real;
-                case DataType.ETypeCode.String:
+                case ETypeCode.String:
                     return SqlDbType.NVarChar;
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Boolean:
                     return SqlDbType.Bit;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return SqlDbType.DateTime;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     return SqlDbType.Time;
-                case DataType.ETypeCode.Guid:
+                case ETypeCode.Guid:
                     return SqlDbType.UniqueIdentifier;
-                case DataType.ETypeCode.Binary:
+                case ETypeCode.Binary:
                     return SqlDbType.Binary;
-                case DataType.ETypeCode.Geometry:
+                case ETypeCode.Geometry:
                     return SqlDbType.Binary;
                 default:
                     return SqlDbType.VarChar;
@@ -932,13 +918,13 @@ namespace dexih.connections.sqlserver
                             var parameters = new SqlParameter[query.UpdateColumns.Count];
                             for (var i = 0; i < query.UpdateColumns.Count; i++)
                             {
+                                var converted = ConvertForWrite(query.UpdateColumns[i].Column,
+                                    query.UpdateColumns[i].Value);
                                 var param = cmd.CreateParameter();
                                 param.ParameterName = "@col" + i;
-                                param.SqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType,
-                                    query.UpdateColumns[i].Column.Rank);
+                                param.SqlDbType = GetSqlDbType(converted.typeCode);
                                 param.Size = -1;
-                                param.Value = ConvertForWrite(query.UpdateColumns[i].Column,
-                                    query.UpdateColumns[i].Value);
+                                param.Value = converted.value;
                                 cmd.Parameters.Add(param);
                                 parameters[i] = param;
                             }

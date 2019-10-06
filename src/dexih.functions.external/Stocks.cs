@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions.Exceptions;
 using dexih.transforms;
-using Newtonsoft.Json.Linq;
+
 
 namespace dexih.functions.external
 {
@@ -60,12 +61,12 @@ namespace dexih.functions.external
                 var reader = new StreamReader(response.response);
                 var jsonString = await reader.ReadToEndAsync();
             
-                JToken jToken;
+                JsonDocument jsonDocument;
 
                 try
                 {
-                    jToken = JToken.Parse(jsonString);
-                    if (jToken == null)
+                    jsonDocument = jsonString.ToJsonDocument();
+                    if (jsonDocument == null)
                     {
                         throw new FileHandlerException("The json data parsing returned nothing.");
                     }
@@ -75,54 +76,45 @@ namespace dexih.functions.external
                     throw new FileHandlerException($"The json data could not be parsed.  {ex.Message}", ex);
                 }
 
-                var errorMessage = jToken["Error Message"];
-                if (errorMessage != null)
+                if (jsonDocument.RootElement.TryGetProperty("Error Message", out var errorMessage))
                 {
-                    throw new FunctionException($"The stock service returned an error: {errorMessage.Value<string>()}");
+                    throw new FunctionException($"The stock service returned an error: {errorMessage.GetString()}");
                 }
 
-                var metadata = jToken["Meta Data"];
-                var timeSeries = jToken.Children().ElementAt(1);
+                
+                if (!jsonDocument.RootElement.TryGetProperty("Meta Data", out var metadata))
+                {
+                    throw new FunctionException("The stock data from AlphaVantage didn't contain the metadata elements.");
+                }
 
-                if (metadata == null || timeSeries == null)
+                if (jsonDocument.RootElement.EnumerateObject().Count() < 2)
                 {
                     throw new FunctionException("The stock data from AlphaVantage didn't contain the metadata and time series elements.");
                 }
 
+                var timeSeries = jsonDocument.RootElement[1];
+
+                var symbol = metadata.GetProperty("2. Symbol").GetString();
+                
                 var count = 0;
-                foreach (JToken stock in timeSeries.Children())
+                foreach (var stockTime in timeSeries.EnumerateObject())
                 {
-                    foreach (var entity in stock.Children())
+                    var stockEntity = new StockEntity
                     {
-                        if (entity is JProperty property)
-                        {
-                            var values = property.Children();
-
-                            var stockEntity = new StockEntity
-                            {
-                                Symbol = metadata["2. Symbol"].Value<string>(),
-                                Time = Convert.ToDateTime(property.Name),
-                                Open = values["1. open"].ElementAt(0).Value<double>(),
-                                High = values["2. high"].ElementAt(0).Value<double>(),
-                                Low = values["3. low"].ElementAt(0).Value<double>(),
-                                Close = values["4. close"].ElementAt(0).Value<double>(),
-                                Volume = values["5. volume"].ElementAt(0).Value<long>()
-                            };
+                        Symbol = symbol,
+                        Time = Convert.ToDateTime(stockTime.Name),
+                        Open = stockTime.Value.GetProperty("1. open").GetDouble(),
+                        High = stockTime.Value.GetProperty("2. high").GetDouble(),
+                        Low = stockTime.Value.GetProperty("3. low").GetDouble(),
+                        Close = stockTime.Value.GetProperty("4. close").GetDouble(),
+                        Volume = stockTime.Value.GetProperty("5. volume").GetInt64()
+                    };
                             
-                            stockEntities.Add(stockEntity);
+                    stockEntities.Add(stockEntity);
 
-                            count++;
-                            if (count > maxCount) return stockEntities;
+                    count++;
+                    if (count > maxCount) return stockEntities;
 
-                        }
-                        else
-                        {
-                            throw new FunctionException("Could not receive stock data, due to unexpected response.");
-                        }
-
-                        count++;
-                        if (count > maxCount) break;
-                    }
 
                 }
             }

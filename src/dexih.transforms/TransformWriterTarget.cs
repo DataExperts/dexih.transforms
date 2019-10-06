@@ -7,8 +7,8 @@ using dexih.functions;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using Dexih.Utils.CopyProperties;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 
 namespace dexih.transforms
 {
@@ -59,8 +59,6 @@ namespace dexih.transforms
             }
 
             WriterOptions = writerOptions ?? new TransformWriterOptions();
-
-            if (TargetTable == null) return;
         }
         
         #endregion
@@ -543,7 +541,7 @@ namespace dexih.transforms
                     {
                         if (table.Columns[i].DeltaType != TableColumn.EDeltaType.DbAutoIncrement)
                         {
-                            row[i] = TargetConnection.ConvertForWrite(table.Columns[i], transform[ordinal]);
+                            row[i] = TargetConnection.ConvertForWrite(table.Columns[i], transform[ordinal]).value;
                         }
                     }
                 }
@@ -719,8 +717,6 @@ namespace dexih.transforms
         private async Task WriterTargetFinalize(Transform transform, CancellationToken cancellationToken = default)
         {
             await FinishTasks(transform, cancellationToken);
-
-            var endTime = DateTime.Now;
 
             if (WriterResult != null)
             {

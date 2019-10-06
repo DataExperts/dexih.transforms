@@ -103,7 +103,7 @@ namespace dexih.transforms
                     continue;
                 } 
 
-                row[i] = _connection.ConvertForWrite(CacheTable.Columns[i], PrimaryTransform[i]);
+                row[i] = _connection.ConvertForWrite(CacheTable.Columns[i], PrimaryTransform[i]).value;
             }
 
             return row;

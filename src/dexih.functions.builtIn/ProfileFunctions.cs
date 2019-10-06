@@ -15,7 +15,7 @@ namespace dexih.functions.BuiltIn
 
         public bool DetailedResults { get; set; } = false;
 
-        [TransformGlobalVariables]
+        [GlobalSettings]
         public GlobalSettings GlobalSettings { get; set; }
         
         public void Reset()

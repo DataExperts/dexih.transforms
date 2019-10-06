@@ -7,7 +7,7 @@ namespace dexih.transforms
 
     [MessagePackObject]
     [ProtoInherit(1000)]
-    [MessagePack.Union(0, typeof(ConnectionReference))]
+    [Union(0, typeof(ConnectionReference))]
     public class ConnectionAttribute : Attribute
     {
         [IgnoreMember]

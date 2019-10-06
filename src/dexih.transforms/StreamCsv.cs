@@ -18,7 +18,7 @@ namespace dexih.transforms
         private readonly StreamWriter _streamWriter;
         private long _position;
 
-        private readonly char[] _quoteCharacters = new char[] { '"', ' ', ',' };
+        private readonly char[] _quoteCharacters = new[] { '"', ' ', ',' };
 
         private bool _isFirst = true;
 

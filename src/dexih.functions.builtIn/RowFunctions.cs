@@ -5,6 +5,7 @@ using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
 using Newtonsoft.Json.Linq;
 
+
 namespace dexih.functions.BuiltIn
 {
     public class RowFunctions
@@ -19,6 +20,7 @@ namespace dexih.functions.BuiltIn
         /// <summary>
         /// Used by row transform, contains the parameters used in the array.
         /// </summary>
+        [Parameters]
         public Parameters Parameters { get; set; }
 
 
@@ -149,8 +151,10 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "JSON Elements To Rows",
             Description = "Split a JSON array into separate rows", ResetMethod = nameof(Reset))]
 
-        public bool JsonElementsToRows(JToken json, string jsonPath, int maxItems, out string item)
+        public bool JsonElementsToRows(string jsonString, string jsonPath, int maxItems, out string item)
         {
+            var json = JToken.Parse(jsonString);
+            
             if (_cacheJsonTokens == null)
             {
                 // var results = JToken.Parse(json);
@@ -174,9 +178,11 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "Json Pivot Element To Rows",
             Description = "Splits the properties of a Json element into rows containing the property name and value.", ResetMethod = nameof(Reset))]
-        public bool JsonPivotElementToRows(JToken json, string jsonPath, int maxItems, out string name,
+        public bool JsonPivotElementToRows(string jsonString, string jsonPath, int maxItems, out string name,
             out string value)
         {
+            var json = JToken.Parse(jsonString);
+            
             if (json == null)
             {
                 throw new FunctionException("The json value contained no data.");

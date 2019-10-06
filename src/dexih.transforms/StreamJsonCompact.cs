@@ -6,12 +6,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
  using dexih.functions;
- using Dexih.Utils.Crypto;
- using Dexih.Utils.MessageHelpers;
-using NetTopologySuite.Geometries;
-using Newtonsoft.Json;
+ using NetTopologySuite.Geometries;
 
-namespace dexih.transforms
+
+ namespace dexih.transforms
 {
     
 
@@ -58,7 +56,7 @@ namespace dexih.transforms
                     return columns?.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType, childColumns = ColumnObject(c.ChildColumns)});
                 }
                 
-                var columnSerializeObject = JsonConvert.SerializeObject(ColumnObject( transform.CacheTable.Columns));
+                var columnSerializeObject = JsonExtensions.Serialize(ColumnObject( transform.CacheTable.Columns));
                 _streamWriter.Write(columnSerializeObject);
             }
             else
@@ -66,7 +64,7 @@ namespace dexih.transforms
                 for (var j = 0; j < reader.FieldCount; j++)
                 {
                     var colName = reader.GetName(j);
-                    _streamWriter.Write(JsonConvert.SerializeObject(new {name = colName, logicalName = colName, dataType = reader.GetDataTypeName(j)}) + ",");
+                    _streamWriter.Write(JsonExtensions.Serialize(new {name = colName, logicalName = colName, dataType = reader.GetDataTypeName(j)}) + ",");
                 }
             }
             
@@ -152,7 +150,7 @@ namespace dexih.transforms
                         }
                     }
 
-                    var row = JsonConvert.SerializeObject(_valuesArray);
+                    var row = JsonExtensions.Serialize(_valuesArray);
 
                     await _streamWriter.WriteAsync(row);
 
@@ -170,7 +168,7 @@ namespace dexih.transforms
                         if (_reader is Transform transform)
                         {
                             var properties = transform.GetTransformProperties(true);
-                            var propertiesSerialized = Json.SerializeObject(properties, "");
+                            var propertiesSerialized = JsonExtensions.Serialize(properties);
                             await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
                         }
 

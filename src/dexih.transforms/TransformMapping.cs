@@ -123,11 +123,12 @@ namespace dexih.transforms
 			return returnValue;
         }
 
-	    /// <summary>
-	    /// 
-	    /// </summary>
-	    /// <param name="targetColumn">Converts a target column into the mapped source column.</param>
-	    /// <returns></returns>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="targetColumn">Converts a target column into the mapped source column.</param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public (bool found, TableColumn column, object value) TranslateTargetColumn(TableColumn targetColumn, object value)
         {
 	        if (targetColumn == null)

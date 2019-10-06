@@ -16,7 +16,6 @@ namespace dexih.functions.Parameter
         /// Initializes are parameter
         /// </summary>
         /// <param name="name">Paramter name</param>
-        /// <param name="parameterType">Parameter datatype</param>
         /// <param name="column"></param>
         public ParameterColumn(
             string name, 
@@ -58,7 +57,7 @@ namespace dexih.functions.Parameter
         /// </summary>
         private int _rowOrdinal = -1;
 
-        private bool _useJoinTable = false;
+        private bool _useJoinTable;
 
         public override void InitializeOrdinal(Table table, Table joinTable = null)
         {

@@ -49,10 +49,10 @@ namespace dexih.transforms.Mapping
 
 
         public override async Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row,
-            object[] joinRow, CancellationToken cancellationToken)
+            object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             // process the current row
-            var (_, ignore) = await GroupMappings.ProcessInputData(row, cancellationToken);
+            await GroupMappings.ProcessInputData(row, cancellationToken);
 
             //create a cached current row.
             var cacheRow = new object[GroupTable.Columns.Count];
@@ -82,7 +82,7 @@ namespace dexih.transforms.Mapping
             throw new System.NotImplementedException();
         }
 
-        public override async Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row,
+        public override async Task<bool> ProcessResultRowAsync(FunctionVariables functionVariables, object[] row,
             EFunctionType functionType, CancellationToken cancellationToken)
         {
             await ProcessGroupChange(cancellationToken);

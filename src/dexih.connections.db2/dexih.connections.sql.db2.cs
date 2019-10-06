@@ -52,8 +52,8 @@ namespace dexih.connections.db2
                     using (var cmd = CreateCommand(connection,
                         $"select * from sysibm.SYSTABLES where {OwnerColumn} = @SCHEMA and name = @NAME and TYPE = 'T';"))
                     {
-                        cmd.Parameters.Add(CreateParameter(cmd, "@SCHEMA", ETypeCode.Text, ParameterDirection.Input, DefaultDatabase));
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, ParameterDirection.Input, table.Name));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@SCHEMA", ETypeCode.Text, 0, ParameterDirection.Input, DefaultDatabase));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
                         var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                         return tableExists != null;
                     }

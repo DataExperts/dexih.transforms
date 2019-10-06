@@ -812,9 +812,9 @@ namespace dexih.connections.azure
 
         private EntityProperty NewEntityProperty(TableColumn column, object value)
         {
-            var returnValue = ConvertForWrite(column, value);
-            var typeCode = column.DataType;
-            if (column.Rank > 0) typeCode = ETypeCode.String;
+            var convertedValue = ConvertForWrite(column, value);
+            var returnValue = convertedValue.value;
+            var typeCode = convertedValue.typeCode;
             if (returnValue is DBNull) returnValue = null;
 
             switch (typeCode)

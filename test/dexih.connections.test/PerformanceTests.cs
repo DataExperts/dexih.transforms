@@ -50,7 +50,7 @@ namespace dexih.connections.test
             {
                 if (typeCode == ETypeCode.Binary && !connection.CanUseBinary) continue;
                 if (typeCode == ETypeCode.CharArray && !connection.CanUseCharArray) continue;
-                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown || typeCode == ETypeCode.Char || typeCode == ETypeCode.Node) continue;
+                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown || typeCode == ETypeCode.Char || typeCode == ETypeCode.Node || typeCode == ETypeCode.Json) continue;
 
                 table.Columns.Add(new TableColumn()
                 {
@@ -150,7 +150,7 @@ namespace dexih.connections.test
                     {
                         if (reader[j] == null)
                         {
-                            Assert.Equal("", connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value));
+                            Assert.Equal(null, connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value));
                         }
                         else
                         {

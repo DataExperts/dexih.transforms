@@ -14,7 +14,6 @@ namespace dexih.functions.Parameter
         /// Initializes are parameter
         /// </summary>
         /// <param name="name">Paramter name</param>
-        /// <param name="parameterType">Parameter datatype</param>
         /// <param name="column"></param>
         public ParameterOutputColumn(
             string name, 

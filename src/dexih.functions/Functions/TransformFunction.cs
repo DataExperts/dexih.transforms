@@ -6,10 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions.Exceptions;
 using dexih.functions.Parameter;
-using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 
 namespace dexih.functions
 {
@@ -74,7 +73,7 @@ namespace dexih.functions
 				{
 					parameterClass = EParameterClass.Enum;
 				} 
-				else if(p.ParameterType.IsArray && p.ParameterType.GetElementType().IsEnum)
+				else if(p.ParameterType.IsArray && (p.ParameterType.GetElementType()?.IsEnum ?? false))
 				{
 					parameterClass = EParameterClass.EnumArray;
 				} 
@@ -117,7 +116,7 @@ namespace dexih.functions
 		
 		public EFunctionType FunctionType { get; set; }
 
-		public bool GeneratesRows = false;
+		public bool GeneratesRows;
 
 		private object _returnValue;
 
@@ -154,7 +153,7 @@ namespace dexih.functions
 
 		public EInvalidAction InvalidAction { get; set; } = EInvalidAction.Reject;
 
-		public ECompare? CompareEnum { get; set; } = ECompare.IsEqual;
+		public ECompare? Compare { get; set; } = ECompare.IsEqual;
 		
 		public GlobalSettings GlobalSettings { get; set; }
 
@@ -168,7 +167,9 @@ namespace dexih.functions
 		/// Createa a new function from a "Delegate".
 		/// </summary>
 		/// <param name="functionMethod">Reference to the function that will be executed.</param>
+		/// <param name="genericType"></param>
 		/// <param name="parameters"></param>
+		/// <param name="globalSettings"></param>
 		public TransformFunction(Delegate functionMethod, Type genericType, Parameters parameters, GlobalSettings globalSettings) :
 			this(functionMethod.Target, functionMethod.GetMethodInfo(), genericType, parameters, globalSettings)
 		{
@@ -179,7 +180,9 @@ namespace dexih.functions
 		/// </summary>
 		/// <param name="targetType">Type of the class which contains the method.  This class must contain a parameterless constructor.</param>
 		/// <param name="methodName">The name of the method to call.</param>
+		/// <param name="genericType"></param>
 		/// <param name="parameters"></param>
+		/// <param name="globalSettings"></param>
 		public TransformFunction(Type targetType, string methodName, Type genericType, Parameters parameters, GlobalSettings globalSettings)
 		{
 			FunctionName = methodName;
@@ -195,6 +198,7 @@ namespace dexih.functions
 		/// </summary>
 		/// <param name="target">An instantiated instance of the class containing the method.  Ensure a new instance of Target is created for each function to avoid issues with cached data.</param>
 		/// <param name="methodName">The name of the method to call.</param>
+		/// <param name="genericType"></param>
 		/// <param name="parameters"></param>
 		/// <param name="globalSettings"></param>
 		public TransformFunction(object target, string methodName, Type genericType = null,  Parameters parameters = null, GlobalSettings globalSettings = null)
@@ -241,24 +245,23 @@ namespace dexih.functions
 				GeneratesRows = attribute.GeneratesRows;
 			}
 
-			// sets the global variables to the object if the property exists.
-			var globalProperty = targetType.GetProperty("GlobalVariables");
-			if (GlobalSettings != null && globalProperty != null)
+			foreach (var property in targetType.GetProperties())
 			{
-				globalProperty.SetValue(target, GlobalSettings);
+				if (property.GetCustomAttribute(typeof(GlobalSettingsAttribute)) != null)
+				{
+					property.SetValue(target, GlobalSettings);
+				}
+				
+				if (parameters != null && property.GetCustomAttribute(typeof(ParametersAttribute)) != null)
+				{
+					property.SetValue(target, parameters);
+				}
 			}
 			
-			// sets the array parameters of the object if the property exists.
-			var parametersProperty = targetType.GetProperty("Parameters");
-			if (parameters != null && parametersProperty != null)
-			{
-				parametersProperty.SetValue(target, parameters);
-			}
-
 			ObjectReference = target;
 		}
 
-		public async Task Initialize(CancellationToken cancellationToken = default)
+		public async Task InitializeAsync(CancellationToken cancellationToken = default)
 		{
 			try
 			{
@@ -450,7 +453,7 @@ namespace dexih.functions
 		{
 			try
 			{
-				var (parameters, outputPos) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
+				var (parameters, _) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
 
 				if (parameters.Contains(null))
 				{

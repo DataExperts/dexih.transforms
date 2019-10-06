@@ -43,7 +43,7 @@ namespace dexih.transforms.tests
                 }
             };
             
-            mappings.Add(new MapFunction(split, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(split, parameters, EFunctionCaching.NoCache));
             
             var transformRow = new TransformRows(source, mappings);
             await transformRow.Open();
@@ -97,7 +97,7 @@ namespace dexih.transforms.tests
 
             var function = Functions.GetFunction(typeof(RowFunctions).FullName, nameof(RowFunctions.ColumnsToRows), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string), parameters);
 
-            mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(function, parameters, EFunctionCaching.NoCache));
             
             var transformRow = new TransformRows(source, mappings);
             await transformRow.Open();

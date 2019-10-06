@@ -5,10 +5,9 @@ using System.IO;
  using System.Linq;
  using System.Threading;
 using System.Threading.Tasks;
- using Dexih.Utils.Crypto;
- using Dexih.Utils.MessageHelpers;
-using NetTopologySuite.Geometries;
-using Newtonsoft.Json.Linq;
+ using NetTopologySuite.Geometries;
+ using Newtonsoft.Json.Linq;
+
 
  namespace dexih.transforms
 {
@@ -32,7 +31,7 @@ using Newtonsoft.Json.Linq;
         private readonly List<int> _ordinals;
         private string endWrite;
 
-        public StreamJson(string name, DbDataReader reader, long maxRows = -1, string topNode = null)
+        public StreamJson(DbDataReader reader, long maxRows = -1, string topNode = null)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);

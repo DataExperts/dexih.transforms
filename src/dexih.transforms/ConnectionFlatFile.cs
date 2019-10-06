@@ -5,7 +5,6 @@ using System.IO;
 using dexih.functions;
 using System.Data.Common;
 using System.Threading;
-using System.Diagnostics;
 using System.IO.Compression;
 using System.Linq;
 using CsvHelper;
@@ -64,7 +63,7 @@ namespace dexih.transforms
         {
             DefaultDatabase = databaseName;
             //create the subdirectories
-            var returnValue = await CreateDirectory(null, EFlatFilePath.None);
+            await CreateDirectory(null, EFlatFilePath.None);
         }
 
         public async Task<bool> CreateFilePaths(FlatFile flatFile)
@@ -94,9 +93,8 @@ namespace dexih.transforms
         {
             try
             {
-                var createDirectoryResult = await CreateDirectory(file, path);
+                await CreateDirectory(file, path);
 
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
                 var fileNameExtension = Path.GetExtension(fileName);
 
 				if(fileNameExtension == ".zip")
@@ -406,9 +404,7 @@ namespace dexih.transforms
         {
             try
             {
-                var rows = 0;
-
-				var fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
+                var fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
                 var flatFile = (FlatFile)table;
 
                 //open a new filestream 
@@ -423,7 +419,6 @@ namespace dexih.transforms
                     if (flatFile.FileConfiguration.HasHeaderRecord)
                     {
                         //write a header row.
-                        var s = new string[table.Columns.Count];
                         foreach (var column in table.Columns)
                         {
                             csv.WriteField(column.Name);
@@ -442,12 +437,11 @@ namespace dexih.transforms
                             }
                             else
                             {
-                                csv.WriteField(ConvertForWrite(insertColumn.Column, insertColumn.Value));    
+                                csv.WriteField(ConvertForWrite(insertColumn.Column, insertColumn.Value).value);    
                             }
                         }
                         
                         await csv.NextRecordAsync();
-                        rows++;
                     }
                 }
 
@@ -463,8 +457,6 @@ namespace dexih.transforms
 
         public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
-            var timer = Stopwatch.StartNew();
-
             var flatFile = (FlatFile)table;
             using (var reader = new ReaderFlatFile(this, flatFile, true))
             {

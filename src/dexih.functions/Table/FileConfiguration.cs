@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using MessagePack;
 
 namespace dexih.functions.File

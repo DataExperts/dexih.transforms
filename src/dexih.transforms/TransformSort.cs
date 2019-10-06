@@ -64,7 +64,7 @@ namespace dexih.transforms
             return null;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             _firstRead = true;
 

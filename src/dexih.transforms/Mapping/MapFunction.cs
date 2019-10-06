@@ -8,20 +8,14 @@ using dexih.functions;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 
 namespace dexih.transforms.Mapping
 {
     public class MapFunction: Mapping
     {
-        // [JsonConverter(typeof(StringEnumConverter))]
-        public enum EFunctionCaching
-        {
-            NoCache = 1,
-            EnableCache,
-            CallOnce
-        }
+
 
         public MapFunction()
         {
@@ -59,7 +53,7 @@ namespace dexih.transforms.Mapping
             Parameters.InitializeOutputOrdinals(table);
         }
 
-        public override async Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
+        public override async Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
             IgnoreRow = false;
             
@@ -118,6 +112,7 @@ namespace dexih.transforms.Mapping
                 }
                 else
                 {
+                    // ReSharper disable once VSTHRD103
                     (ReturnValue, IgnoreRow) = Function.RunFunction(functionVariables, parameters, out Outputs, cancellationToken);
                 }
 
@@ -187,7 +182,7 @@ namespace dexih.transforms.Mapping
             Parameters.SetFunctionResult(ReturnValue, Outputs, data);
         }
         
-        public override async Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken = default)
+        public override async Task<bool> ProcessResultRowAsync(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
         {
             IgnoreRow = false;
             
@@ -201,6 +196,7 @@ namespace dexih.transforms.Mapping
                 }
                 else
                 {
+                    // ReSharper disable once VSTHRD103
                     (ResultReturnValue, IgnoreRow) = Function.RunResult(functionVariables, parameters, out _resultOutputs, cancellationToken);    
                 }
                 
@@ -240,7 +236,6 @@ namespace dexih.transforms.Mapping
         /// <summary>
         /// Converts a standard function to a filter object.
         /// </summary>
-        /// <param name="mapFunction"></param>
         public Filter GetFilterFromFunction()
         {
 //            if (mapFunction.Function.Parameters.ReturnParameter.DataType != ETypeCode.Boolean)
@@ -249,7 +244,7 @@ namespace dexih.transforms.Mapping
 //                    $"The function {mapFunction.Function.FunctionName} does not have a return type of boolean and cannot be used as a filter.");
 //            }
 
-            if (Function.CompareEnum == null)
+            if (Function.Compare == null)
             {
                 return null;
             }
@@ -260,22 +255,41 @@ namespace dexih.transforms.Mapping
                 return null;
             }
             
-            var compare = (ECompare) Function.CompareEnum;
+            var compare = (ECompare) Function.Compare;
 
-            var filter = new Filter
+            if (compare == ECompare.IsIn)
             {
-                
-                Column1 = inputsArray[0] is ParameterColumn parameterColumn1 ? parameterColumn1.Column : null,
-                Value1 = inputsArray[0] is ParameterColumn parameterValue1 ? parameterValue1.Value : null,
-                Column2 = inputsArray[1] is ParameterColumn parameterColumn2 ? parameterColumn2.Column : null,
-                Value2 = inputsArray[1] is ParameterColumn parameterValue2 ? parameterValue2.Value : null,
-                CompareDataType = inputsArray[0].DataType,
-                Operator = compare
-            };
+                var filter = new Filter()
+                {
+                    Column1 = inputsArray[0] is ParameterColumn parameterColumn1 ? parameterColumn1.Column : null,
+                    Value1 = null,
+                    Column2 = null,
+                    Value2 = inputsArray[1] is ParameterArray parameterValue2
+                        ? parameterValue2.Parameters.Select(c => c.Value).ToArray()
+                        : null,
+                    CompareDataType = inputsArray[0].DataType,
+                    Operator = compare
+                };
 
-            return filter;
+                return filter;
+
+            }
+            {
+                var filter = new Filter
+                {
+
+                    Column1 = inputsArray[0] is ParameterColumn parameterColumn1 ? parameterColumn1.Column : null,
+                    Value1 = inputsArray[0] is ParameterColumn parameterValue1 ? parameterValue1.Value : null,
+                    Column2 = inputsArray[1] is ParameterColumn parameterColumn2 ? parameterColumn2.Column : null,
+                    Value2 = inputsArray[1] is ParameterColumn parameterValue2 ? parameterValue2.Value : null,
+                    CompareDataType = inputsArray[0].DataType,
+                    Operator = compare
+                };
+
+                return filter;
+            }
         }
-        
+
         public override IEnumerable<TableColumn> GetRequiredColumns()
         {
             var columns = Parameters.Inputs.SelectMany(c => c.GetRequiredColumns());

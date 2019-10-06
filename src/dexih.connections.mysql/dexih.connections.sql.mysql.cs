@@ -167,7 +167,7 @@ namespace dexih.connections.mysql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "SHOW TABLES LIKE @NAME"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
                 }
@@ -292,6 +292,7 @@ namespace dexih.connections.mysql
                 case DataType.ETypeCode.Json:
                 case DataType.ETypeCode.Xml:
                 case DataType.ETypeCode.Node:
+                case DataType.ETypeCode.Geometry:
                     sqlType = "longtext";
 					break;
                 case DataType.ETypeCode.Single:
@@ -681,152 +682,6 @@ namespace dexih.connections.mysql
             }
             return DataType.ETypeCode.Unknown;
         }
-
-
-//        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, CancellationToken cancellationToken = default)
-//        {
-//            try
-//            {
-//                var autoIncrementSql = "";
-//                var deltaColumn = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement);
-//                if (deltaColumn != null)
-//                {
-//                    autoIncrementSql = "SELECT max(" + AddDelimiter(deltaColumn.Name) + ") from " + AddDelimiter(table.Name);
-//                }
-//
-//                long identityValue = 0;
-//
-//                using (var connection = await NewConnection())
-//                {
-//                    var insert = new StringBuilder();
-//                    var values = new StringBuilder();
-//
-//                    using (var transaction = connection.BeginTransaction())
-//                    {
-//                        foreach (var query in queries)
-//                        {
-//                            cancellationToken.ThrowIfCancellationRequested();
-//
-//                            insert.Clear();
-//                            values.Clear();
-//
-//                            insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
-//                            values.Append("VALUES (");
-//
-//                            for (var i = 0; i < query.InsertColumns.Count; i++)
-//                            {
-//                                insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
-//                                values.Append("@col" + i + ",");
-//                            }
-//
-//                            var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
-//                                values.Remove(values.Length - 1, 1) + "); " + autoIncrementSql;
-//
-//                            try
-//                            {
-//                                using (var cmd = connection.CreateCommand())
-//                                {
-//                                    cmd.CommandText = insertCommand;
-//                                    cmd.Transaction = transaction;
-//
-//                                    for (var i = 0; i < query.InsertColumns.Count; i++)
-//                                    {
-//                                        var param = cmd.CreateParameter();
-//                                        param.ParameterName = "@col" + i;
-//                                        param.Value = ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value);
-//                                        cmd.Parameters.Add(param);
-//                                    }
-//
-//                                    var identity = await cmd.ExecuteScalarAsync(cancellationToken);
-//                                    identityValue = Convert.ToInt64(identity);
-//
-//                                }
-//                            }
-//                            catch (Exception ex)
-//                            {
-//                                throw new ConnectionException($"The insert query failed.  {ex.Message}");
-//                            }
-//                        }
-//                        transaction.Commit();
-//                    }
-//
-//					return identityValue;
-//                }
-//            }
-//            catch(Exception ex)
-//            {
-//                throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
-//            }
-//        }
-
-//        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken = default)
-//        {
-//            try
-//            {
-//
-//                using (var connection = await NewConnection())
-//                {
-//
-//                    var sql = new StringBuilder();
-//
-//                    var rows = 0;
-//
-//                    using (var transaction = connection.BeginTransaction())
-//                    {
-//                        foreach (var query in queries)
-//                        {
-//                            cancellationToken.ThrowIfCancellationRequested();
-//                            sql.Clear();
-//                            sql.Append("update " + AddDelimiter(table.Name) + " set ");
-//
-//                            var count = 0;
-//                            foreach (var column in query.UpdateColumns)
-//                            {
-//                                sql.Append(AddDelimiter(column.Column.Name) + " = @col" + count + ",");
-//                                count++;
-//                            }
-//                            sql.Remove(sql.Length - 1, 1); //remove last comma
-//
-//                            //  Retrieving schema for columns from a single table
-//                            using (var cmd = connection.CreateCommand())
-//                            {
-//                                sql.Append(" " + BuildFiltersString(query.Filters, cmd) + ";");
-//                                cmd.Transaction = transaction;
-//                                cmd.CommandText = sql.ToString();
-//
-//                                var parameters = new MySqlParameter[query.UpdateColumns.Count];
-//                                for (var i = 0; i < query.UpdateColumns.Count; i++)
-//                                {
-//                                    var param = new MySqlParameter
-//                                    {
-//                                        ParameterName = "@col" + i,
-//                                        Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value)
-//                                    };
-//                                    // param.MySqlDbType = GetSqlDbType(query.UpdateColumns[i].Column.Datatype);
-//                                    // param.Size = -1;
-//                                    cmd.Parameters.Add(param);
-//                                    parameters[i] = param;
-//                                }
-//
-//                                try
-//                                {
-//                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
-//                                }
-//                                catch (Exception ex)
-//                                {
-//                                    throw new ConnectionException($"The update query failed. {ex.Message}");
-//                                }
-//                            }
-//                        }
-//                        transaction.Commit();
-//                    }
-//                }
-//            }
-//            catch (Exception ex)
-//            {
-//                throw new ConnectionException($"Update table {table.Name} failed. {ex.Message}", ex);
-//            }
-//
-//        }
+        
     }
 }

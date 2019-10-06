@@ -2,9 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Dexih.Utils.Crypto;
-using Dexih.Utils.MessageHelpers;
-using Newtonsoft.Json.Linq;
+using dexih.functions;
+
 
 namespace dexih.transforms
 {
@@ -18,7 +17,7 @@ namespace dexih.transforms
         private readonly StreamWriter _streamWriter;
         
         private readonly Func<Task<T>> _func;
-        private bool isFirst = true;
+        private bool _isFirst = true;
 
         public StreamAsyncAction(Func<Task<T>> func)
         {
@@ -53,14 +52,14 @@ namespace dexih.transforms
                 throw new OperationCanceledException();
             }
             
-            if (isFirst)
+            if (_isFirst)
             {
                 var value = await _func.Invoke();
-                var json = Json.SerializeObject(value, "");
+                var json = value.Serialize();
 
                 await _streamWriter.WriteAsync(json);
                 _memoryStream.Position = 0;
-                isFirst = false;
+                _isFirst = false;
             }
             
             var readCount = _memoryStream.Read(buffer, offset, count);

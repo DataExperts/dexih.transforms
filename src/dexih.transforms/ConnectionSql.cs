@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -105,13 +104,14 @@ namespace dexih.connections.sql
         //    return param;
         //}
 
-        public virtual DbParameter CreateParameter(DbCommand command, string name, ETypeCode type, ParameterDirection direction, object value)
+        public virtual DbParameter CreateParameter(DbCommand command, string name, ETypeCode type, int rank, ParameterDirection direction, object value)
         {
             var param = command.CreateParameter();
             param.ParameterName = name;
             param.Direction = direction;
-            param.DbType = GetDbType(type);
-            param.Value = ConvertForWrite(param.ParameterName, type, 0, true, value);
+            var converted = ConvertForWrite(param.ParameterName, type, rank, true, value);
+            param.DbType = GetDbType(converted.typeCode);
+            param.Value = converted.value;
 
             return param;
         }
@@ -443,7 +443,11 @@ namespace dexih.connections.sql
                         var parameterName = $"{SqlParameterIdentifier}Filter{index}Column1Default";
                         if (cmd != null)
                         {
-                            var param = CreateParameter(cmd, parameterName, filter.Column1.DataType, ParameterDirection.Input,
+                            var param = CreateParameter(
+                                cmd, parameterName, 
+                                filter.Column1.DataType, 
+                                filter.Column1.Rank,
+                                ParameterDirection.Input,
                                 filter.Column1.DefaultValue);
 
                             //var param = cmd.CreateParameter();
@@ -466,7 +470,7 @@ namespace dexih.connections.sql
                     var parameterName = $"{SqlParameterIdentifier}Filter{index}Value1";
                     if (cmd != null)
                     {
-                        var param = CreateParameter(cmd, parameterName, filter.BestDataType(), ParameterDirection.Input,
+                        var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0, ParameterDirection.Input,
                             filter.Value1);
 
                         //var param = cmd.CreateParameter();
@@ -491,7 +495,7 @@ namespace dexih.connections.sql
                             var parameterName = $"{SqlParameterIdentifier}Filter{index}Column2Default";
                             if (cmd != null)
                             {
-                                var param = CreateParameter(cmd, parameterName, filter.Column2.DataType, ParameterDirection.Input,
+                                var param = CreateParameter(cmd, parameterName, filter.Column2.DataType, filter.Column2.Rank, ParameterDirection.Input,
                                     filter.Column2.DefaultValue);
 
                                 //var param = cmd.CreateParameter();
@@ -520,7 +524,7 @@ namespace dexih.connections.sql
                                            var parameterName = $"{SqlParameterIdentifier}Filter{index1}ArrayValue{arrayIndex}";
                                            if (cmd != null)
                                            {
-                                               var param = CreateParameter(cmd, parameterName, filter.BestDataType(), ParameterDirection.Input, c);
+                                               var param = CreateParameter(cmd, parameterName, filter.BestDataType(),0, ParameterDirection.Input, c);
 
                                                //var param = cmd.CreateParameter();
                                                //param.Direction = ParameterDirection.Input;
@@ -540,7 +544,7 @@ namespace dexih.connections.sql
                             var parameterName = $"{SqlParameterIdentifier}Filter{index}Value2";
                             if (cmd != null)
                             {
-                                var param = CreateParameter(cmd, parameterName, filter.BestDataType(), ParameterDirection.Input,
+                                var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0, ParameterDirection.Input,
                                     filter.Value2);
                                 //var param = cmd.CreateParameter();
                                 //param.ParameterName = parameterName;
@@ -666,8 +670,8 @@ namespace dexih.connections.sql
                                 for (var i = 0; i < query.InsertColumns.Count; i++)
                                 {
                                     var param = CreateParameter(cmd, $"{SqlParameterIdentifier}col{i}",
-                                        query.InsertColumns[i].Column.DataType, ParameterDirection.Input,
-                                        ConvertForWrite(query.InsertColumns[i].Column, query.InsertColumns[i].Value));
+                                        query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank, ParameterDirection.Input,
+                                         query.InsertColumns[i].Value);
                                     
                                     //    query.InsertColumns[i].Value) )
                                     //var param = cmd.CreateParameter();
@@ -726,7 +730,6 @@ namespace dexih.connections.sql
                 {
 
                     var sql = new StringBuilder();
-                    int rows = 0;
                     foreach (var query in queries)
                     {
                         sql.Clear();
@@ -752,9 +755,10 @@ namespace dexih.connections.sql
                             for (var i = 0; i < query.UpdateColumns.Count; i++)
                             {
                                 var param = CreateParameter(cmd, $"{SqlParameterIdentifier}col{i}",
-                                    query.UpdateColumns[i].Column.DataType, ParameterDirection.Input, ConvertForWrite(
-                                        query.UpdateColumns[i].Column,
-                                        query.UpdateColumns[i].Value));
+                                    query.UpdateColumns[i].Column.DataType,  
+                                    query.UpdateColumns[i].Column.Rank, 
+                                    ParameterDirection.Input, 
+                                    query.UpdateColumns[i].Value);
 
                                 //var param = cmd.CreateParameter();
                                 //param.ParameterName = $"{SqlParameterIdentifier}col{i}";
@@ -789,7 +793,6 @@ namespace dexih.connections.sql
                             try
                             {
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
-                                rows++;
                             }
                             catch (Exception ex)
                             {
@@ -817,9 +820,6 @@ namespace dexih.connections.sql
                 try
                 {
                     var sql = new StringBuilder();
-                    var rows = 0;
-
-                    var timer = Stopwatch.StartNew();
 
                     foreach (var query in queries)
                     {
@@ -837,7 +837,7 @@ namespace dexih.connections.sql
 
                             try
                             {
-                                rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
+                                await cmd.ExecuteNonQueryAsync(cancellationToken);
                             }
                             catch (Exception ex)
                             {

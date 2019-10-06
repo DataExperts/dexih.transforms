@@ -86,16 +86,16 @@ namespace dexih.functions
             return function;
         }
 
-        private static DataType.ETypeCode? GetElementType(Type p, out int rank)
-        {
-            if (p == typeof(void))
-            {
-                rank = 0;
-                return null;
-            }
-            
-            return DataType.GetTypeCode(p, out rank);   
-        }
+//        private static DataType.ETypeCode? GetElementType(Type p, out int rank)
+//        {
+//            if (p == typeof(void))
+//            {
+//                rank = 0;
+//                return null;
+//            }
+//            
+//            return DataType.GetTypeCode(p, out rank);   
+//        }
 //
 //        private static int GetRank(Type p)
 //        {
@@ -118,14 +118,14 @@ namespace dexih.functions
 
                 var compareAttribute = method.GetCustomAttribute<TransformFunctionCompareAttribute>();
 
-                bool isInputParameter(ParameterInfo p)
+                bool IsInputParameter(ParameterInfo p)
                 {
                     var variable = p.GetCustomAttribute<TransformFunctionVariableAttribute>();
 
                     return !p.IsOut && variable is null && !p.ParameterType.IsAssignableFrom(typeof(CancellationToken));
                 }
 
-                bool isIgnoreParameter(ParameterInfo p)
+                bool IsIgnoreParameter(ParameterInfo p)
                 {
                     var ignore = p.GetCustomAttribute<TransformParameterIgnoreAttribute>();
                     return ignore != null;
@@ -149,11 +149,11 @@ namespace dexih.functions
                     GenericType = attribute.GenericType,
                     GenericTypeDefault = attribute.GenericTypeDefault,
                     ReturnParameters = GetResultParameters(method, "Return"),
-                    InputParameters = parameters.Where(c => !isIgnoreParameter(c) && isInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
-                    OutputParameters = parameters.Where(c => !isIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray(),
+                    InputParameters = parameters.Where(c => !IsIgnoreParameter(c) && IsInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
+                    OutputParameters = parameters.Where(c => !IsIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray(),
                     ResultReturnParameters = GetResultParameters(resultMethod, "Group Return"),
-                    ResultInputParameters = resultMethod?.GetParameters().Where(c => !isIgnoreParameter(c) && isInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
-                    ResultOutputParameters = resultMethod?.GetParameters().Where(c => !isIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray()
+                    ResultInputParameters = resultMethod?.GetParameters().Where(c => !IsIgnoreParameter(c) && IsInputParameter(c) ).Select(p => GetFunctionParameter(p)).ToArray(),
+                    ResultOutputParameters = resultMethod?.GetParameters().Where(c => !IsIgnoreParameter(c) && c.IsOut).Select(p => GetFunctionParameter(p)).ToArray()
                 };
 
                 return function;

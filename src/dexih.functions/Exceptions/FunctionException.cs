@@ -81,7 +81,7 @@ namespace dexih.functions.Exceptions
 
     public class FunctionNotFoundException : FunctionException
     {
-        public FunctionNotFoundException() : base()
+        public FunctionNotFoundException()
         {
         }
 

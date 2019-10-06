@@ -367,7 +367,7 @@ namespace dexih.connections.excel
 								                }
 
 								                worksheet.SetValue(row, columnMappings[updateColumn.Column.Name],
-									                ConvertForWrite(updateColumn.Column, updateColumn.Value));
+									                ConvertForWrite(updateColumn.Column, updateColumn.Value).value);
 							                }
 						                }
 					                }
@@ -626,7 +626,7 @@ namespace dexih.connections.excel
 				                }
 
 				                worksheet.SetValue(row, columnMappings[column.Column.Name],
-					                ConvertForWrite(column.Column, column.Value));
+					                ConvertForWrite(column.Column, column.Value).value);
 			                }
 
 			                rowsInserted++;

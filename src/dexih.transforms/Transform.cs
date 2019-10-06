@@ -8,20 +8,17 @@ using dexih.functions;
 using System.Linq;
 using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
-using System.Reflection;
 using System.Threading;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.Crypto;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
-using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
+
 
 namespace dexih.transforms
 {
@@ -385,7 +382,13 @@ namespace dexih.transforms
                         break;
                     }
                     var actualField = actualSortEnumerator.Current;
-                    
+
+                    if (actualField == null)
+                    {
+                        match = false;
+                        break;
+                    }
+
                     if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName())
                     {
                         continue;
@@ -942,7 +945,6 @@ namespace dexih.transforms
         /// Performs a row lookup based on the filters.  For mutliple rows, only the first will be returned.
         /// The lookup will first attempt to retrieve a value from the cache (if cachemethod is set to PreLoad cache or OnDemandCache), and then a direct lookup if the transform supports it.
         /// </summary>
-        /// <param name="filters">Lookup filters</param>
         /// <param name="query"></param>
         /// <param name="duplicateStrategy">Action to take when duplicate rows are returned.</param>
         /// <param name="cancellationToken"></param>
@@ -957,7 +959,7 @@ namespace dexih.transforms
             }
             
             var lookupResult = new List<object[]>();
-            var initResult = await InitializeLookup(AuditKey, query, cancellationToken);
+            await InitializeLookup(AuditKey, query, cancellationToken);
 
             switch (duplicateStrategy)
             {
@@ -1149,15 +1151,15 @@ namespace dexih.transforms
 //            return null;
         }
 
-        public async Task<JObject> LookupJson(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken = default)
+        public async Task<string> LookupJson(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken = default)
         {
-            var rows = await Lookup(query, duplicateStrategy, cancellationToken);
+            // var rows = await Lookup(query, duplicateStrategy, cancellationToken);
 
             var jObject = new JObject();
             var jArray = await LookupJsonArray(query, duplicateStrategy, cancellationToken);
             jObject.Add("Success", true);
             jObject.Add(new JProperty("Data", jArray));
-            return jObject;
+            return jObject.ToString();
         }
         
         private async Task<JArray> LookupJsonArray(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken = default)
@@ -1191,13 +1193,11 @@ namespace dexih.transforms
             return jArray;
         }
 
-
-
         /// <summary>
         /// Recurses through the transforms to the primary transform, and sets the lookup filters.
         /// </summary>
         /// <param name="auditKey"></param>
-        /// <param name="filters"></param>
+        /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
@@ -1776,7 +1776,7 @@ namespace dexih.transforms
         public T GetValue<T>(string name, T defaultValue = default)
         {
             var ordinal = GetOrdinal(name);
-            return GetValue<T>(ordinal, defaultValue);
+            return GetValue(ordinal, defaultValue);
         }
 
         public object GetValue(EDeltaType deltaType)
@@ -1788,7 +1788,7 @@ namespace dexih.transforms
         public T GetValue<T>(EDeltaType deltaType, T defaultValue = default)
         {
             var ordinal = GetOrdinal(deltaType);
-            return GetValue<T>(ordinal, defaultValue);
+            return GetValue(ordinal, defaultValue);
         }
 
         public long GetAutoIncrementValue()

@@ -5,7 +5,7 @@ namespace dexih.transforms.Poco
 
     public class PocoException : Exception
     {
-        public PocoException() : base()
+        public PocoException()
         {
         }
         public PocoException(string message) : base(message)

@@ -34,7 +34,7 @@ namespace dexih.transforms
 
         public override Sorts SortFields { get; }
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
             ResetTransform();

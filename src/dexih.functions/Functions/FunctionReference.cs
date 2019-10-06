@@ -1,9 +1,8 @@
 ﻿using System;
 using dexih.functions.Parameter;
-using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 using MessagePack;
 
 namespace dexih.functions
@@ -88,8 +87,13 @@ namespace dexih.functions
 
         public TransformFunction GetTransformFunction(Type genericType, Parameters parameters = null, GlobalSettings globalSettings = null)
         {
-            var type = Functions.GetFunctionType(FunctionClassName, FunctionAssemblyName); 
-            return new TransformFunction(type, FunctionMethodName, genericType, parameters, globalSettings);
+            var type = Functions.GetFunctionType(FunctionClassName, FunctionAssemblyName);
+            var transformFunction =
+                new TransformFunction(type, FunctionMethodName, genericType, parameters, globalSettings)
+                {
+                    Compare = Compare
+                };
+            return transformFunction;
         }
 
 //        public TransformFunction GetTransformFunction(Parameters parameters, GlobalVariables globalVariables)

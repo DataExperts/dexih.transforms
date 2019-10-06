@@ -39,7 +39,7 @@ namespace dexih.transforms.tests
             };
 
             
-            mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(function, parameters, EFunctionCaching.NoCache));
             
             function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Substring), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
             parameters = new Parameters
@@ -52,7 +52,7 @@ namespace dexih.transforms.tests
                 },
                 ReturnParameters = new List<Parameter> { new ParameterOutputColumn("return", new TableColumn("Substring"))}
             };
-            mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(function, parameters, EFunctionCaching.NoCache));
             
             
             function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Concat), Helpers.BuiltInAssembly).GetTransformFunction(typeof(string));
@@ -67,7 +67,7 @@ namespace dexih.transforms.tests
                 },
                 ReturnParameters = new List<Parameter> {  new ParameterOutputColumn("return", new TableColumn("Concat"))}
             };
-            mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(function, parameters, EFunctionCaching.NoCache));
 
             mappings.Add(new MapColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new TableColumn("DateColumn", ETypeCode.DateTime)));
             mappings.Add(new MapColumn(new TableColumn("ArrayColumn", ETypeCode.DateTime), new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1)));
@@ -148,7 +148,7 @@ namespace dexih.transforms.tests
                     ReturnParameters = new List<Parameter> { new ParameterOutputColumn(data.GetName(i), ETypeCode.String)}
                 };
                 
-                mappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
+                mappings.Add(new MapFunction(function, parameters, EFunctionCaching.NoCache));
             }
 
             var transformMapping = new TransformMapping(data, mappings);

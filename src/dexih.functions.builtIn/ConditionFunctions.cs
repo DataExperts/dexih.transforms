@@ -47,7 +47,7 @@ namespace dexih.functions.BuiltIn
         
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Array Contains",
             Description = "The value is equal to at least one of the values in the values array", GenericType = EGenericType.All)]
-        [TransformFunctionCompare(Compare = ECompare.IsEqual)]
+        [TransformFunctionCompare(Compare = ECompare.IsIn)]
         public bool ArrayContains(T value, T[] values)
         {
             return values.Contains(value);

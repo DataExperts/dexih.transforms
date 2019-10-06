@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -83,7 +82,7 @@ namespace dexih.transforms
             CacheTable = newTable;
             
             // map any cached data from the primary table across.  this ensures transforms like the TransformThread work with nodes.
-            CacheTable.Data = _primaryTable.Data;
+            CacheTable.Data = _primaryTable?.Data;
 
             if (PrimaryTransform?.BaseFieldCount > FieldCount)
             {

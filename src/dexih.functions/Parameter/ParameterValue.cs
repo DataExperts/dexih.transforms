@@ -10,14 +10,13 @@ namespace dexih.functions.Parameter
         {
         }
 
-        /// <summary>
-        /// Initializes are parameter
-        /// </summary>
-        /// <param name="name">Paramter name</param>
-        /// <param name="parameterType">Parameter datatype</param>
-        /// <param name="value">Value for the parameter (note: requires isColumn = false)</param>
-        /// <param name="column">Column for the parameter to map to (note: requires isColumn = true)</param>
-        public ParameterValue(
+         /// <summary>
+         /// Initializes are parameter
+         /// </summary>
+         /// <param name="name">Paramter name</param>
+         /// <param name="parameterType">Parameter datatype</param>
+         /// <param name="value">Value for the parameter (note: requires isColumn = false)</param>
+         public ParameterValue(
             string name, 
             ETypeCode parameterType, 
             object value 

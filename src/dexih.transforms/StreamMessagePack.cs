@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CsvHelper.Configuration.Attributes;
 using Dexih.Utils.DataType;
 using MessagePack;
 
@@ -77,7 +76,7 @@ namespace dexih.transforms
         
         public override void Flush()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -155,17 +154,17 @@ namespace dexih.transforms
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public override void SetLength(long value)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public override bool CanRead => true;

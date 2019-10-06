@@ -10,12 +10,13 @@ namespace dexih.transforms.Mapping
         public bool IgnoreRow = false;
         
         public virtual TransformNode Transform { get; } = null;
-        
+
         /// <summary>
         /// Initializes the mapping
         /// </summary>
         /// <param name="table"></param>
         /// <param name="joinTable"></param>
+        /// <param name="mappings"></param>
         public abstract void InitializeColumns(Table table, Table joinTable = null, Mappings mappings = null);
         
         /// <summary>
@@ -38,6 +39,7 @@ namespace dexih.transforms.Mapping
         /// <param name="functionVariables"></param>
         /// <param name="row"></param>
         /// <param name="joinRow"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>0 filters or joins match, -1 row less than joinRow, 1 row greater than joinRow--></returns>
         public abstract Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default);
         
@@ -63,7 +65,7 @@ namespace dexih.transforms.Mapping
         /// <param name="row">The output row to populate</param>
         /// <param name="functionType"></param>
         /// <param name="cancellationToken"></param>
-        public virtual Task<bool> ProcessResultRow(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
+        public virtual Task<bool> ProcessResultRowAsync(FunctionVariables functionVariables, object[] row, EFunctionType functionType, CancellationToken cancellationToken)
         {
             return Task.FromResult(false);
         }

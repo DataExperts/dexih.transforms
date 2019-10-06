@@ -41,11 +41,16 @@ namespace dexih.transforms
             return null;
         }
         
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
+            if (selectQuery == null)
+            {
+                selectQuery = new SelectQuery();
+            }
+            
             if (selectQuery.Rows > 0 && selectQuery.Rows < MaxOutputRows)
             {
                 MaxOutputRows = selectQuery.Rows;
@@ -62,7 +67,7 @@ namespace dexih.transforms
             {
                 for(var i =0; i<requiredSorts.Count; i++)
                 {
-                    if (selectQuery.Sorts[i].Column == requiredSorts[i].Column)
+                    if (selectQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
                         requiredSorts[i].Direction = selectQuery.Sorts[i].Direction;
                     else
                         break;

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using dexih.functions.Query;
-using dexih.transforms.Transforms;
 using MessagePack;
 
 namespace dexih.transforms

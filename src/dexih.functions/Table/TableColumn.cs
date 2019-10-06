@@ -1,8 +1,8 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.CopyProperties;
-using Newtonsoft.Json.Converters;
+
 using MessagePack;
 
 namespace dexih.functions
@@ -130,7 +130,7 @@ namespace dexih.functions
         public string ColumnGroup { get; set; }
 
         [Key(7)]
-        public int Rank { get; set; } = 0;
+        public int Rank { get; set; }
 
         public bool IsArray() => Rank > 0;
 
@@ -177,7 +177,7 @@ namespace dexih.functions
 
         // used by the passthrough to indicate if the column is a part of the parent node, or part of current node.
         [Key(21)]
-        public bool IsParent { get; set; } = false;
+        public bool IsParent { get; set; }
 
         [Key(22)]
         public TableColumns ChildColumns { get; set; }
@@ -198,8 +198,6 @@ namespace dexih.functions
         /// <returns></returns>
         public string TableColumnName()
         {
-            var columnName = (string.IsNullOrEmpty(ReferenceTable) ? "" : ReferenceTable + ".") + (string.IsNullOrEmpty(ColumnGroup) ? "" : ColumnGroup + ".") + Name;
-
             if (!string.IsNullOrEmpty(ReferenceTable))
             {
                 return ReferenceTable + "." + Name;

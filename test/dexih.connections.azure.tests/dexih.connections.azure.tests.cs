@@ -58,7 +58,7 @@ namespace dexih.connections.azure
         [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
         //[InlineData(false, true)]
         //[InlineData(true, true)]
-        public async Task MySql_ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        public async Task Azure_ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();

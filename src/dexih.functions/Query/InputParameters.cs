@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Text;
-using dexih.repository;
 using MessagePack;
 
 namespace dexih.functions.Query
@@ -12,11 +11,10 @@ namespace dexih.functions.Query
         {
             Add(new InputParameter() { Name =  name, Value = value});
         }
-        
-            /// <summary>
+
+        /// <summary>
         /// Replaces parameters with values
         /// </summary>
-        /// <param name="value"></param>
         /// <returns></returns>
         public string SetParameters(object data)
         {

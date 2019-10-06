@@ -91,7 +91,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings
             {
-                new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache)
+                new MapFunction(function, parameters, EFunctionCaching.NoCache)
             };
 
             var transformFilter = new TransformFilter(table, mappings);
@@ -127,7 +127,7 @@ namespace dexih.transforms.tests
                 }
             };
 
-            var mappings = new Mappings { new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache) };
+            var mappings = new Mappings { new MapFunction(function, parameters, EFunctionCaching.NoCache) };
 
             var transformFilter = new TransformFilter(table, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
@@ -166,7 +166,7 @@ namespace dexih.transforms.tests
                     })
                 }
             };
-            var mappings = new Mappings { new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache) };
+            var mappings = new Mappings { new MapFunction(function, parameters, EFunctionCaching.NoCache) };
             var transformFilter = new TransformFilter(table, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
 
@@ -201,7 +201,7 @@ namespace dexih.transforms.tests
                 }
             };
             table.Reset();
-            var transformMapping = new TransformMapping(table, new Mappings { new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache) });
+            var transformMapping = new TransformMapping(table, new Mappings { new MapFunction(function, parameters, EFunctionCaching.NoCache) });
             
             function = Functions.GetFunction(typeof(ConditionFunctions<>).FullName, nameof(ConditionFunctions<int>.LessThan), Helpers.BuiltInAssembly).GetTransformFunction(typeof(int));
             parameters = new Parameters
@@ -213,7 +213,7 @@ namespace dexih.transforms.tests
                 },
             };
 
-            var mappings = new Mappings { new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache) };
+            var mappings = new Mappings { new MapFunction(function, parameters, EFunctionCaching.NoCache) };
             var transformFilter = new TransformFilter(transformMapping, mappings);
             await transformFilter.Open(0, null, CancellationToken.None);
 
@@ -260,7 +260,7 @@ namespace dexih.transforms.tests
                     {
                         new ParameterColumn("value", new TableColumn(data.GetName(0), ETypeCode.Int32))
                     }
-                }, MapFunction.EFunctionCaching.NoCache)
+                }, EFunctionCaching.NoCache)
             };
 
             var transformFilter = new TransformFilter(data, mappings);

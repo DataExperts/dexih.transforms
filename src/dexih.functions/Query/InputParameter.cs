@@ -1,8 +1,6 @@
 using MessagePack;
-using System;
-using System.Text;
 
-namespace dexih.repository
+namespace dexih.functions.Query
 {
     [MessagePackObject]
     public class InputParameter

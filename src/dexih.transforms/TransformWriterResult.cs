@@ -1,9 +1,10 @@
 ﻿using dexih.functions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.transforms.Exceptions;
@@ -83,7 +84,7 @@ namespace dexih.transforms
         }
         
         [PocoColumn(Skip = true)]
-        [Key(0)]
+        [IgnoreMember]
         public TransformWriterOptions TransformWriterOptions { get; set; }
 
 
@@ -259,7 +260,7 @@ namespace dexih.transforms
         public bool IsPreviousSuccess { get; set; }
 
         [PocoColumn(Skip = true)]
-        [IgnoreMember]
+        [IgnoreMember, JsonIgnore]
         public Connection AuditConnection { get; set; }
 
         [PocoColumn(Skip = true)]
@@ -270,6 +271,32 @@ namespace dexih.transforms
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
         [Key(51)]
         public ERunStatus RunStatus { get; set; } = ERunStatus.NotRunning;
+
+        [PocoColumn(Skip = true)]
+        [Key(52)]
+        public bool IsRunning => RunStatus == ERunStatus.Running || RunStatus == ERunStatus.RunningErrors || RunStatus == ERunStatus.Initialised || RunStatus == ERunStatus.Started;
+
+        [PocoColumn(Skip = true)]
+        [Key(53)]
+        public bool IsFinished => RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Cancelled || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Passed || RunStatus == ERunStatus.Failed;
+
+        [PocoColumn(Skip = true)]
+        [Key(54)]
+        public bool IsScheduled => RunStatus == ERunStatus.Scheduled;
+
+        [PocoColumn(Skip = true)]
+        [Key(55)]
+        public int PercentageComplete
+        {
+            get
+            {
+                if (RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.Abended) return 100;
+                if (RunStatus == ERunStatus.Initialised) return 0;
+                if (LastRowTotal == 0) return 50;
+                var value = Convert.ToInt32(100 * ((double)RowsTotal / LastRowTotal));
+                if (value > 100) return 100; else return value;
+            }
+        }
 
         public void ResetStatistics()
         {
@@ -315,7 +342,7 @@ namespace dexih.transforms
             else
             {
                 var ts = TimeSpan.FromTicks(WriteTicks);
-                return (decimal)RowsTotal / Convert.ToDecimal(ts.TotalSeconds);
+                return RowsTotal / Convert.ToDecimal(ts.TotalSeconds);
             }
         }
 
@@ -326,7 +353,7 @@ namespace dexih.transforms
             else
             {
                 var ts = TimeSpan.FromTicks(ProcessingTicks);
-                return (decimal)(RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
+                return (RowsReadPrimary + RowsReadReference) / Convert.ToDecimal(ts.TotalSeconds);
             }
         }
 
@@ -379,12 +406,12 @@ namespace dexih.transforms
             }
         }
 
-        private void DbOperationFailed(Task task, Exception exception)
-        {
-            AddExceptionDetails(exception);
-            RunStatus = ERunStatus.Abended;
-            AddMessage($"An error occurred when updating the audit table of connection {AuditConnection.Name}.  {exception.Message}");
-        }
+//        private void DbOperationFailed(Task task, Exception exception)
+//        {
+//            AddExceptionDetails(exception);
+//            RunStatus = ERunStatus.Abended;
+//            AddMessage($"An error occurred when updating the audit table of connection {AuditConnection.Name}.  {exception.Message}");
+//        }
 
         /// <summary>
         /// Updates the run status, the audit table, and sends a status update event
@@ -392,7 +419,6 @@ namespace dexih.transforms
         /// <param name="newStatus"></param>
         /// <param name="message"></param>
         /// <param name="exception"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public bool SetRunStatus(ERunStatus newStatus, string message, Exception exception)
         {
@@ -550,16 +576,7 @@ namespace dexih.transforms
                 Message += message + "\n\n" + Message;
             }
         }
-
-        [PocoColumn(Skip = true)]
-        public bool IsRunning => RunStatus == ERunStatus.Running || RunStatus == ERunStatus.RunningErrors || RunStatus == ERunStatus.Initialised || RunStatus == ERunStatus.Started;
-
-        [PocoColumn(Skip = true)]
-        public bool IsFinished => RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Cancelled || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Passed || RunStatus == ERunStatus.Failed;
-
-        [PocoColumn(Skip = true)]
-        public bool IsScheduled => RunStatus == ERunStatus.Scheduled;
-
+        
         public TimeSpan? ScheduleDuration()
         {
             if (ScheduledTime == null)
@@ -607,21 +624,6 @@ namespace dexih.transforms
                 OnProgressUpdate?.Invoke(this);
             }
         }
-
-        [PocoColumn(Skip = true)]
-        public int PercentageComplete
-        {
-            get
-            {
-                if (RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.Abended) return 100;
-                if (RunStatus == ERunStatus.Initialised) return 0;
-                if (LastRowTotal == 0) return 50;
-                var value = Convert.ToInt32(100 * ((double)RowsTotal / LastRowTotal));
-                if (value > 100) return 100; else return value;
-            }
-        }
-
-        
 
     }
 }

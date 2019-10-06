@@ -8,8 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.DataType;
 
@@ -57,7 +57,6 @@ namespace dexih.transforms
             }
         }
 
-        [JsonConverter(typeof (StringEnumConverter))]
         public enum EUpdateStrategy
         {
             Reload = 1, //truncates the table and reloads
@@ -782,7 +781,7 @@ namespace dexih.transforms
                     if (_validToOrdinal >= 0 && _sourceValidFromOrdinal >= 0 && _sourceValidToOrdinal < 0)
                     {
                         newRow[_validToOrdinal] = PrimaryTransform[_sourceValidFromOrdinal];
-                    } else if(_validToOrdinal >=0 && _validFromOrdinal >= 0)
+                    } 
 
                     newRow[0] = 'C';
                 }
@@ -807,7 +806,7 @@ namespace dexih.transforms
                     {
                         var returnValue = ReferenceTransform[_referenceSurrogateKeyOrdinal];
 
-                        //surogate key = 0, ignore as this is the defaulted value.
+                        //surrogate key = 0, ignore as this is the defaulted value.
                         if (Equals(returnValue, 0))
                         {
                             continue;

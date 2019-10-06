@@ -698,13 +698,8 @@ ORDER BY cols.table_name, cols.position"))
             }
         }
 
-        private OracleDbType GetSqlDbType(DataType.ETypeCode typeCode, int rank)
+        private OracleDbType GetSqlDbType(DataType.ETypeCode typeCode)
         {
-            if (rank > 0)
-            {
-                return OracleDbType.Varchar2;
-            }
-            
             switch (typeCode)
             {
                 case DataType.ETypeCode.Byte:
@@ -902,12 +897,12 @@ ORDER BY cols.table_name, cols.position"))
 
                                 for (var i = 0; i < query.InsertColumns.Count; i++)
                                 {
+                                    var converted = ConvertForWrite(query.InsertColumns[i].Column,
+                                        query.InsertColumns[i].Value);
                                     var param = cmd.CreateParameter();
                                     param.ParameterName = $"col{i}";
-                                    param.OracleDbType = GetSqlDbType(query.InsertColumns[i].Column.DataType,
-                                        query.InsertColumns[i].Column.Rank);
-                                    param.Value = ConvertForWrite(query.InsertColumns[i].Column,
-                                        query.InsertColumns[i].Value);
+                                    param.OracleDbType = GetSqlDbType(converted.typeCode);
+                                    param.Value = converted.value;
                                     cmd.Parameters.Add(param);
                                 }
                                 
@@ -1031,8 +1026,8 @@ ORDER BY cols.table_name, cols.position"))
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "select object_name from all_objects where object_type = 'TABLE' and OBJECT_NAME = :NAME and OWNER = :SCHEMA"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "NAME", DataType.ETypeCode.Text, ParameterDirection.Input, table.Name));
-                    cmd.Parameters.Add(CreateParameter(cmd, "SCHEMA", DataType.ETypeCode.Text, ParameterDirection.Input, DefaultDatabase));
+                    cmd.Parameters.Add(CreateParameter(cmd, "NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "SCHEMA", DataType.ETypeCode.Text, 0, ParameterDirection.Input, DefaultDatabase));
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
                 }

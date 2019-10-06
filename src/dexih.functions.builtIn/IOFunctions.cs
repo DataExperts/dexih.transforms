@@ -24,6 +24,7 @@ namespace dexih.functions.BuiltIn
             Abend
         }
         
+        [GlobalSettings]
         public GlobalSettings GlobalSettings { get; set; }
 
         private string GetFileNameUnique(string filePrefix, string fileNameBody, string filePostfix, string extension,

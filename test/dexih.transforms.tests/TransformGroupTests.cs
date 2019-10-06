@@ -28,7 +28,7 @@ namespace dexih.transforms.tests
                 {
                     Inputs = new Parameter[] {intParameter},
                     ResultReturnParameters = new [] {new ParameterOutputColumn("Sum", ETypeCode.Int32)}
-                }, MapFunction.EFunctionCaching.NoCache)
+                }, EFunctionCaching.NoCache)
             );
 
             var avg = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Average), Helpers.BuiltInAssembly)
@@ -38,7 +38,7 @@ namespace dexih.transforms.tests
                 {
                     Inputs = new Parameter[] {intParameter},
                     ResultReturnParameters = new [] {new ParameterOutputColumn("Average", ETypeCode.Double)}
-                }, MapFunction.EFunctionCaching.NoCache)
+                }, EFunctionCaching.NoCache)
             );
 
             var min = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Min), Helpers.BuiltInAssembly).GetTransformFunction(typeof(int));
@@ -47,7 +47,7 @@ namespace dexih.transforms.tests
                 {
                     Inputs = new Parameter[] {intParameter},
                     ResultReturnParameters = new [] {new ParameterOutputColumn("Minimum", ETypeCode.Int32)}
-                }, MapFunction.EFunctionCaching.NoCache)
+                }, EFunctionCaching.NoCache)
             );
 
             var max = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Max), Helpers.BuiltInAssembly).GetTransformFunction(typeof(int));
@@ -56,13 +56,13 @@ namespace dexih.transforms.tests
                 {
                     Inputs = new Parameter[] {intParameter},
                     ResultReturnParameters = new [] {new ParameterOutputColumn("Maximum", ETypeCode.Int32)}
-                }, MapFunction.EFunctionCaching.NoCache)
+                }, EFunctionCaching.NoCache)
             );
 
             var count = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.Count), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(int));
             mappings.Add(new MapFunction(count,
-                new Parameters {ResultReturnParameters = new [] { new ParameterOutputColumn("Count", ETypeCode.Int32)}}, MapFunction.EFunctionCaching.NoCache));
+                new Parameters {ResultReturnParameters = new [] { new ParameterOutputColumn("Count", ETypeCode.Int32)}}, EFunctionCaching.NoCache));
 
             var countDistinct = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<int>.CountDistinct), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(int));
@@ -71,7 +71,7 @@ namespace dexih.transforms.tests
                 {
                     Inputs = new Parameter[] {intParameter},
                     ResultReturnParameters = new [] {new ParameterOutputColumn("CountDistinct", ETypeCode.Int32)}
-                }, MapFunction.EFunctionCaching.NoCache)
+                }, EFunctionCaching.NoCache)
             );
             var concat = Functions.GetFunction(_aggregateFunctions, nameof(AggregateFunctions<string>.ConcatAgg), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(string));
@@ -84,7 +84,7 @@ namespace dexih.transforms.tests
                         new ParameterColumn("StringColumn", ETypeCode.String)
                     },
                     ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("Concat", ETypeCode.String)}
-                }, MapFunction.EFunctionCaching.NoCache));
+                }, EFunctionCaching.NoCache));
 
             return mappings;
         }

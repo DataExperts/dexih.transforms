@@ -7,14 +7,14 @@ namespace dexih.transforms
 {
     internal static class AsyncHelper
     {
-        private static readonly TaskFactory _myTaskFactory = new TaskFactory(CancellationToken.None,
+        private static readonly TaskFactory MyTaskFactory = new TaskFactory(CancellationToken.None,
             TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
 
         public static TResult RunSync<TResult>(Func<Task<TResult>> func)
         {
             var cultureUi = CultureInfo.CurrentUICulture;
             var culture = CultureInfo.CurrentCulture;
-            return _myTaskFactory.StartNew(() =>
+            return MyTaskFactory.StartNew(() =>
             {
                 Thread.CurrentThread.CurrentCulture = culture;
                 Thread.CurrentThread.CurrentUICulture = cultureUi;
@@ -26,7 +26,7 @@ namespace dexih.transforms
         {
             var cultureUi = CultureInfo.CurrentUICulture;
             var culture = CultureInfo.CurrentCulture;
-            _myTaskFactory.StartNew(() =>
+            MyTaskFactory.StartNew(() =>
             {
                 Thread.CurrentThread.CurrentCulture = culture;
                 Thread.CurrentThread.CurrentUICulture = cultureUi;

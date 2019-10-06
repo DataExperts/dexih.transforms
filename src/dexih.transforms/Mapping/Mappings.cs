@@ -38,14 +38,7 @@ namespace dexih.transforms.Mapping
         /// Dictionary stores intput-output ordinal mapping for passthrough columns.
         /// </summary>
         private Dictionary<int, int> _passThroughOrdinals;
-
-        private List<TableColumn> _referencePassThroughColumns;
-
-        /// <summary>
-        /// Dictionary stores intput-output ordinal mapping for passthrough columns.
-        /// </summary>
-        private Dictionary<int, int> _referencePassThroughOrdinals;
-
+        
         private MapGroupNode _groupNode;
 
         private Task<bool>[] _tasks;
@@ -74,8 +67,8 @@ namespace dexih.transforms.Mapping
                 {
                     switch (mapping)
                     {
-                        case MapGroupNode groupNode:
-                        case MapGroup mapGroup:
+                        case MapGroupNode _:
+                        case MapGroup _:
                             _primaryMappings.Add(mapping);
                             break;
                         default:
@@ -142,9 +135,6 @@ namespace dexih.transforms.Mapping
                     else
                     {
                         // add the join columns to the main table.
-                        _referencePassThroughColumns = new List<TableColumn>();
-                        _referencePassThroughOrdinals = new Dictionary<int, int>();
-
                         for (var i = 0; i < joinTable.Columns.Count; i++)
                         {
                             var column = joinTable.Columns[i];
@@ -158,8 +148,6 @@ namespace dexih.transforms.Mapping
                             {
                                 targetOrdinal++;
                                 table.Columns.Add(newColumn);
-                                _referencePassThroughColumns.Add(newColumn);
-                                _referencePassThroughOrdinals.Add(i, targetOrdinal);
                             }
                         }
                     }
@@ -345,6 +333,7 @@ namespace dexih.transforms.Mapping
         /// <param name="functionVariables"></param>
         /// <param name="row"></param>
         /// <param name="joinRow"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<(bool result, bool ignoreRow)> ProcessInputData(FunctionVariables functionVariables, object[] row, object[] joinRow, CancellationToken cancellationToken)
         {
@@ -419,7 +408,7 @@ namespace dexih.transforms.Mapping
             var ignoreRow = false;
             foreach (var mapping in _primaryMappings)
             {
-                result = result | await mapping.ProcessResultRow(functionVariables, row, functionType, cancellationToken);
+                result = result | await mapping.ProcessResultRowAsync(functionVariables, row, functionType, cancellationToken);
                 ignoreRow = ignoreRow || mapping.IgnoreRow;
             }
 

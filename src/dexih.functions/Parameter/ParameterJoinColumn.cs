@@ -16,7 +16,6 @@ namespace dexih.functions.Parameter
         /// Initializes are parameter
         /// </summary>
         /// <param name="name">Paramter name</param>
-        /// <param name="parameterType">Parameter datatype</param>
         /// <param name="column"></param>
         public ParameterJoinColumn(
             string name, 
@@ -45,7 +44,7 @@ namespace dexih.functions.Parameter
         /// </summary>
         private int _rowOrdinal;
 
-        public override void InitializeOrdinal(Table table, Table joinTable)
+        public override void InitializeOrdinal(Table table, Table joinTable = null)
         {
             if (joinTable == null)
             {
@@ -60,12 +59,12 @@ namespace dexih.functions.Parameter
             }
         }
 
-        public override void SetInputData(object[] data, object[] joinData)
+        public override void SetInputData(object[] data, object[] joinData = null)
         {
             SetValue(joinData?[_rowOrdinal]);
         }
 
-        public override void PopulateRowData(object value, object[] data, object[] joinData)
+        public override void PopulateRowData(object value, object[] data, object[] joinData = null)
         {
             SetValue(value);
             joinData[_rowOrdinal] = Value;

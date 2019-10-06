@@ -9,21 +9,21 @@ namespace dexih.functions.Parameter
     [MessagePackObject]
     public class Parameters
     {
-        public IList<Parameter> ReturnParameters { get; set; }
-        public IList<Parameter> Inputs { get; set; }
-        public IList<Parameter> Outputs { get; set; }
-        public IList<Parameter> ResultInputs { get; set; }
-        public IList<Parameter> ResultOutputs { get; set; }
-        public IList<Parameter> ResultReturnParameters { get; set; }
+        public IList<Parameter> ReturnParameters { get; set; } = new List<Parameter>();
+        public IList<Parameter> Inputs { get; set; } = new List<Parameter>();
+        public IList<Parameter> Outputs { get; set; } = new List<Parameter>();
+        public IList<Parameter> ResultInputs { get; set; } = new List<Parameter>();
+        public IList<Parameter> ResultOutputs { get; set; } = new List<Parameter>();
+        public IList<Parameter> ResultReturnParameters { get; set; } = new List<Parameter>();
 
         public Parameters()
         {
         }
         
-        public Parameters(IList<Parameter> inputs, Table table, Table joinTable = null)
-        {
-            InitializeInputs(inputs, table);
-        }
+//        public Parameters(IList<Parameter> inputs, Table table, Table joinTable = null)
+//        {
+//            InitializeInputs(inputs, table);
+//        }
 
         public void InitializeInputs(IList<Parameter> inputs, Table table, Table joinTable = null)
         {
@@ -110,11 +110,12 @@ namespace dexih.functions.Parameter
             }
         }
 
-        
+
         /// <summary>
         /// Updates the parameter values with a row of data.
         /// </summary>
         /// <param name="data"></param>
+        /// <param name="joinData"></param>
         public void SetFromRow(object[] data, object[] joinData = null)
         {
             if (Inputs == null)

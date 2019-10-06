@@ -57,7 +57,7 @@ namespace dexih.transforms.tests
                 ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
             };
             
-            mappings.Add(new MapFunction(mavg, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, true, null, null));
             
             var transformGroup = new TransformSeries(source, mappings);
@@ -115,7 +115,7 @@ namespace dexih.transforms.tests
                 ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
             };
             
-            mappings.Add(new MapFunction(mavg, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
 
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
             
@@ -162,7 +162,7 @@ namespace dexih.transforms.tests
                 ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
             };
             
-            mappings.Add(new MapFunction(mavg, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
             
             var highest = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.HighestSince), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             parameters = new Parameters
@@ -179,7 +179,7 @@ namespace dexih.transforms.tests
                 },
                 ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("Highest", DataType.ETypeCode.DateTime)}
             };
-            mappings.Add(new MapFunction(highest, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(highest, parameters, EFunctionCaching.NoCache));
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
 
             var transformGroup = new TransformSeries(source, mappings);

@@ -8,6 +8,7 @@ using dexih.functions.Query;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 
+
 namespace dexih.transforms.File
 {
     public class FileHandlerJson : FileHandlerBase
@@ -18,7 +19,6 @@ namespace dexih.transforms.File
         private IEnumerator<JToken> _jEnumerator;
         private readonly int _responseDataOrdinal;
         private readonly Dictionary<string, (int Ordinal, TableColumn column)> _responseSegmentOrdinals;
-        private readonly Dictionary<string, TransformNode> _nodeTransforms;
 
         public FileHandlerJson(Table table, string rowPath)
         {
@@ -28,14 +28,11 @@ namespace dexih.transforms.File
             _responseDataOrdinal = _table.GetOrdinal(TableColumn.EDeltaType.ResponseData);
             _responseSegmentOrdinals = new Dictionary<string, (int ordinal, TableColumn column)>();
             
-            _nodeTransforms = new Dictionary<string, TransformNode>();
-            
             foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
             {
                 _responseSegmentOrdinals.Add(column.TableColumnName(), (_table.GetOrdinal(column), column));
             }
             
-            _nodeTransforms.Clear();
             InitializeNodeTransforms(_table.Columns);
 
         }
@@ -97,8 +94,6 @@ namespace dexih.transforms.File
                 };
                 node.SetTable(childTable, parentTable);
                 
-                _nodeTransforms.Add(column.LogicalName, node);
-
                 InitializeNodeTransforms(column.ChildColumns);
             }
         }
@@ -126,7 +121,7 @@ namespace dexih.transforms.File
                 // if array of single values
                 if (value.Value.Type == JTokenType.Array && value.Value.First() is JValue jValue)
                 {
-                    DataType.ETypeCode dataType = DataType.GetTypeCode(jValue.Type);
+                    DataType.ETypeCode dataType = GetTypeCode(jValue.Type);
 
                     col.DataType = dataType;
                     col.Rank = 1;
@@ -192,7 +187,7 @@ namespace dexih.transforms.File
                 }
                 else
                 {
-                    DataType.ETypeCode dataType = DataType.GetTypeCode(value.Value.Type);
+                    DataType.ETypeCode dataType = GetTypeCode(value.Value.Type);
                     col.DataType = dataType;
                     return new [] {col};
                 }
@@ -216,6 +211,144 @@ namespace dexih.transforms.File
 
         }
 
+        /// <summary>
+        /// Converts a <see cref="JTokenType"/> into an ETypeCode
+        /// </summary>
+        /// <param name="jsonType"></param>
+        /// <returns></returns>
+        private DataType.ETypeCode GetTypeCode(JTokenType jsonType)
+        {
+            switch (jsonType)
+            {
+                case JTokenType.Object:
+                case JTokenType.Array:
+                case JTokenType.Constructor:
+                case JTokenType.Property:
+                    return DataType.ETypeCode.Json;
+                case JTokenType.None:
+                case JTokenType.Comment:
+                case JTokenType.Null:
+                case JTokenType.Undefined:
+                case JTokenType.Raw:
+                case JTokenType.Uri:
+                case JTokenType.String:
+                    return DataType.ETypeCode.String;
+                case JTokenType.Integer:
+                    return DataType.ETypeCode.Int32;
+                case JTokenType.Float:
+                    return DataType.ETypeCode.Double;
+                case JTokenType.Boolean:
+                    return DataType.ETypeCode.Boolean;
+                case JTokenType.Date:
+                    return DataType.ETypeCode.DateTime;
+                case JTokenType.Bytes:
+                    return DataType.ETypeCode.Binary;
+                case JTokenType.Guid:
+                    return DataType.ETypeCode.Guid;
+                case JTokenType.TimeSpan:
+                    return DataType.ETypeCode.Time;
+                default:
+                    return DataType.ETypeCode.String;
+            }
+
+        }
+
+        private object GetJTokenValue(DataType.ETypeCode typeCode, int rank, JToken jToken)
+        {
+            if (rank == 0)
+            {
+                switch (typeCode)
+                {
+                    case DataType.ETypeCode.Binary:
+                        return jToken.Value<byte[]>();
+                    case DataType.ETypeCode.Geometry:
+                        return jToken.Value<string>();
+                    case DataType.ETypeCode.Byte:
+                        return jToken.Value<byte>();
+                    case DataType.ETypeCode.Char:
+                        return jToken.Value<char>();
+                    case DataType.ETypeCode.SByte:
+                        return jToken.Value<sbyte>();
+                    case DataType.ETypeCode.UInt16:
+                        return jToken.Value<ushort>();
+                    case DataType.ETypeCode.UInt32:
+                        return jToken.Value<uint>();
+                    case DataType.ETypeCode.UInt64:
+                        return jToken.Value<ulong>();
+                    case DataType.ETypeCode.Int16:
+                        return jToken.Value<short>();
+                    case DataType.ETypeCode.Int32:
+                        return jToken.Value<int>();
+                    case DataType.ETypeCode.Int64:
+                        return jToken.Value<long>();
+                    case DataType.ETypeCode.Decimal:
+                        return jToken.Value<decimal>();
+                    case DataType.ETypeCode.Double:
+                        return jToken.Value<double>();
+                    case DataType.ETypeCode.Single:
+                        return jToken.Value<float>();
+                    case DataType.ETypeCode.String:
+                    case DataType.ETypeCode.Text:
+                        return jToken.Value<string>();
+                    case DataType.ETypeCode.Boolean:
+                        return jToken.Value<bool>();
+                    case DataType.ETypeCode.DateTime:
+                        return jToken.Value<DateTime>();
+                    case DataType.ETypeCode.Time:
+                        return jToken.Value<TimeSpan>();
+                    case DataType.ETypeCode.Guid:
+                        return jToken.Value<Guid>();
+                    case DataType.ETypeCode.Unknown:
+                        return jToken.Value<string>();
+                    case DataType.ETypeCode.Json:
+                        return jToken;
+                    case DataType.ETypeCode.Xml:
+                        return jToken.Value<string>();
+                    case DataType.ETypeCode.Enum:
+                        return jToken.Value<byte>();
+                    case DataType.ETypeCode.CharArray:
+                        return jToken.Value<string>();
+                    case DataType.ETypeCode.Object:
+                        return jToken.Value<string>();
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(typeCode), typeCode, null);
+                }
+            }
+
+            if (jToken is JArray jArray)
+            {
+                var dataType = DataType.GetType(typeCode);
+                if (rank == 1)
+                {
+                    var returnValue = Array.CreateInstance(dataType, jArray.Count);
+                    for (var i = 0; i < jArray.Count; i++)
+                    {
+                        returnValue.SetValue(GetJTokenValue(typeCode, 0, jArray[i]), i);
+                    }
+
+                    return returnValue;
+                }
+                else if (rank == 2)
+                {
+                    var array2 = (JArray) jArray.First();
+                    var returnValue = Array.CreateInstance(dataType, jArray.Count, array2.Count);
+
+                    for (var i = 0; i < jArray.Count; i++)
+                    {
+                        array2 = (JArray) jArray[i];
+                        for (var j = 0; j < array2.Count; j++)
+                        {
+                            returnValue.SetValue(GetJTokenValue(typeCode, 0, array2[j]), i, j);
+                        }
+                    }
+
+                    return returnValue;
+                }
+            }
+            
+            throw new ArgumentOutOfRangeException(nameof(typeCode), typeCode, null);
+        }
+        
         public override async Task SetStream(Stream stream, SelectQuery selectQuery)
         {
             var reader = new StreamReader(stream);
@@ -295,6 +428,7 @@ namespace dexih.transforms.File
                 if (column.DeltaType != TableColumn.EDeltaType.FileName &&
                     column.DeltaType != TableColumn.EDeltaType.FileRowNumber)
                 {
+                    return GetJTokenValue(column.DataType, column.Rank, jToken);
                     return Operations.Parse(column.DataType, column.Rank, jToken);
                 }
                 else

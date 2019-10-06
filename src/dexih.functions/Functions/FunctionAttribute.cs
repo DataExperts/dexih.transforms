@@ -1,8 +1,7 @@
 ﻿using System;
-using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 
 namespace dexih.functions
 {
@@ -56,13 +55,7 @@ namespace dexih.functions
         public string Name { get; set; }
         public string Description { get; set; }
         public string[] ListOfValues { get; set; }
-        
 
-        /// <summary>
-        /// Identifies an array parameter is a twin with an output array parameter.
-        /// This means the matching arrays should have the same length.
-        /// </summary>
-        // public string TwinParameterName { get; set; }
     }
 
     
@@ -124,7 +117,11 @@ namespace dexih.functions
         }
     }
     
-    public class TransformGlobalVariablesAttribute : Attribute
+    public class GlobalSettingsAttribute : Attribute
+    {
+    }
+
+    public class ParametersAttribute : Attribute
     {
     }
 }

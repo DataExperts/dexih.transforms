@@ -8,11 +8,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions.Exceptions;
 using dexih.transforms;
-using Newtonsoft.Json.Linq;
+
 
 namespace dexih.functions.external
 {
@@ -219,12 +221,12 @@ namespace dexih.functions.external
             var reader = new StreamReader(response);
             var jsonString = await reader.ReadToEndAsync();
 
-            JToken jToken;
+            JsonDocument jsonDocument;
 
             try
             {
-                jToken = JToken.Parse(jsonString);
-                if (jToken == null)
+                jsonDocument = JsonDocument.Parse(jsonString);
+                if (jsonDocument == null)
                 {
                     throw new FileHandlerException("The json data parsing returned nothing.");
                 }
@@ -234,69 +236,77 @@ namespace dexih.functions.external
                 throw new FileHandlerException($"The json data could not be parsed.  {ex.Message}", ex);
             }
 
-            var coord = jToken["coord"];
-            weatherDetails.Latitude = coord["lat"]?.Value<double>();
-            weatherDetails.Longitude = coord["lon"]?.Value<double>();
+            var coord = jsonDocument.RootElement.GetProperty("coord");
+            weatherDetails.Latitude = coord.GetProperty("lat").GetDouble();
+            weatherDetails.Longitude = coord.GetProperty("lon").GetDouble();
 
-            var weather = jToken["weather"][0];
-            weatherDetails.Weather = weather["main"]?.Value<string>();
-            weatherDetails.Description = weather["description"]?.Value<string>();
+            var weather = jsonDocument.RootElement.GetProperty("weather")[0];
+            weatherDetails.Weather = weather.GetProperty("main").GetString();
+            weatherDetails.Description = weather.GetProperty("description").GetString();
 
-            var main = jToken["main"];
-            weatherDetails.Temperature = ConvertTemperature(main["temp"]?.Value<double?>(), temperatureScale);
-            weatherDetails.Pressure = main["pressure"]?.Value<double?>();
-            weatherDetails.Humidity = main["humidity"]?.Value<double?>();
-            weatherDetails.TemperatureMin = ConvertTemperature(main["temp_min"]?.Value<double?>(), temperatureScale);
-            weatherDetails.TemperatureMax = ConvertTemperature(main["temp_max"]?.Value<double?>(), temperatureScale);
+            var main = jsonDocument.RootElement.GetProperty("main");
+            weatherDetails.Temperature = ConvertTemperature(main.GetProperty("temp").GetDouble(), temperatureScale);
+            weatherDetails.Pressure = main.GetProperty("pressure").GetDouble();
+            weatherDetails.Humidity = main.GetProperty("humidity").GetDouble();
+            weatherDetails.TemperatureMin = ConvertTemperature(main.GetProperty("temp_min").GetDouble(), temperatureScale);
+            weatherDetails.TemperatureMax = ConvertTemperature(main.GetProperty("temp_max").GetDouble(), temperatureScale);
 
-            weatherDetails.Visibility = jToken["visibility"]?.Value<int?>();
+            weatherDetails.Visibility = jsonDocument.RootElement.GetProperty("visibility").GetInt32();
 
-            var wind = jToken["wind"];
-            if (wind != null)
+            if (jsonDocument.RootElement.TryGetProperty("wind", out var wind))
             {
-                weatherDetails.WindSpeed = wind["speed"]?.Value<double?>();
-                weatherDetails.WindDegrees = wind["deg"]?.Value<int?>();
+                weatherDetails.WindSpeed = wind.GetProperty("speed").GetDouble();
+                weatherDetails.WindDegrees = wind.GetProperty("deg").GetInt32();
             }
 
-            var clouds = jToken["clouds"];
-            if (clouds != null)
+            if (jsonDocument.RootElement.TryGetProperty("clouds", out var clouds))
             {
-                weatherDetails.Cloudiness = clouds["all"]?.Value<int?>();
+                weatherDetails.Cloudiness = clouds.GetProperty("all").GetInt32();
             }
 
-            var rain = jToken["rain"];
-            if (rain != null)
+            if (jsonDocument.RootElement.TryGetProperty("rain", out var rain))
             {
-                weatherDetails.Rain1Hour = rain["1hr"]?.Value<double?>();
-                weatherDetails.Rain3Hour = rain["3hr"]?.Value<double?>();
+                weatherDetails.Rain1Hour = rain.GetProperty("1hr").GetDouble();
+                weatherDetails.Rain3Hour = rain.GetProperty("3hr").GetDouble();
             }
 
-            var snow = jToken["snow"];
-            if (snow != null)
+            if (jsonDocument.RootElement.TryGetProperty("snow", out var snow))
             {
-                weatherDetails.Snow1Hour = snow["1hr"]?.Value<double?>();
-                weatherDetails.Snow3Hour = snow["3hr"]?.Value<double?>();
+                weatherDetails.Snow1Hour = snow.GetProperty("1hr").GetDouble();
+                weatherDetails.Snow3Hour = snow.GetProperty("3hr").GetDouble();
             }
 
-            weatherDetails.ReadingTime = jToken["dt"]?.Value<long>().UnixTimeStampToDate();
+            weatherDetails.ReadingTime = jsonDocument.RootElement.GetProperty("dt").GetInt64().UnixTimeStampToDate();
 
-            var sys = jToken["sys"];
-            if (sys != null)
+            if (jsonDocument.RootElement.TryGetProperty("sys", out var sys))
             {
-                weatherDetails.Country = sys["country"]?.Value<string>();
-                weatherDetails.Sunrise = sys["sunrise"]?.Value<long>().UnixTimeStampToDate();
-                weatherDetails.Sunset = sys["sunset"]?.Value<long>().UnixTimeStampToDate();
+                weatherDetails.Country = sys.GetProperty("country").GetString();
+                weatherDetails.Sunrise = sys.GetProperty("sunrise").GetInt64().UnixTimeStampToDate();
+                weatherDetails.Sunset = sys.GetProperty("sunset").GetInt64().UnixTimeStampToDate();
             }
 
-            weatherDetails.CityId = jToken["id"].Value<int>();
-            weatherDetails.CityName = jToken["name"].Value<string>();
+            weatherDetails.CityId = jsonDocument.RootElement.GetProperty("id").GetInt32();
+            weatherDetails.CityName = jsonDocument.RootElement.GetProperty("name").GetString();
 
             return weatherDetails;
         }
 
-        private JArray _cachedCities;
+        private class City
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string Country { get; set; }
+            public Coord Coord { get; set; }
+        }
+
+        private class Coord
+        {
+            public double Lon { get; set; }
+            public double Lat { get; set; }
+        }
+
+        private List<City> _cachedCities;
         private int _index;
-        private int _childCount;
         
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Weather", Name = "Weather City List",
             Description = "Get a list of all the cities used for the weather functions.  Data from [openweathermap.org](https://openweathermap.org)")]
@@ -316,11 +326,11 @@ namespace dexih.functions.external
 
                     if (response.IsSuccessStatusCode)
                     {
-                        using( var stream = await response.Content.ReadAsStreamAsync())
+                        using(var stream = await response.Content.ReadAsStreamAsync())
                         using( var output = new MemoryStream())
-                        using( var sr = new GZipStream(stream, CompressionMode.Decompress))
+                        using (var sr = new GZipStream(stream, CompressionMode.Decompress))
                         {
-                            await sr.CopyToAsync(output);
+                            await sr.CopyToAsync(output, cancellationToken);
                             jsonString = Encoding.UTF8.GetString(output.GetBuffer(), 0, (int) output.Length);
                         }
                     }
@@ -332,22 +342,9 @@ namespace dexih.functions.external
                 
                 try
                 {
-                    var cities = JToken.Parse(jsonString);
-                    if (cities == null)
-                    {
-                        throw new FileHandlerException("The json data parsing returned nothing.");
-                    }
-                    
-                    if (cities is JArray jArray)
-                    {
-                        _cachedCities = jArray;
-                        _index = 0;
-                        _childCount = _cachedCities.Children().Count();
-                    }
-                    else
-                    {
-                        throw new FileHandlerException($"The json data read, as a json array was expected.");
-                    }
+                    var cities = jsonString.Deserialize<List<City>>();
+                    _cachedCities = cities ?? throw new FileHandlerException("The json data parsing returned nothing.");
+                    _index = 0;
                 }
                 catch (Exception ex)
                 {
@@ -355,16 +352,16 @@ namespace dexih.functions.external
                 }
             }
 
-            if (_index < _childCount)
+            if (_index < _cachedCities.Count)
             {    
-                var token = _cachedCities[_index];
+                var cityItem = _cachedCities[_index];
                 var city = new CityDetails()
                 {
-                    CityId = token["id"].Value<int>(),
-                    CityName = token["name"].Value<string>(),
-                    Country = token["country"].Value<string>(),
-                    Longitude = token["coord"]?["lon"].Value<double>() ?? 0,
-                    Latitude = token["coord"]?["lat"].Value<double>() ?? 0,
+                    CityId = cityItem.Id,
+                    CityName = cityItem.Name,
+                    Country = cityItem.Country,
+                    Longitude = cityItem.Coord.Lon,
+                    Latitude = cityItem.Coord.Lat
                 };
                 _index++;
                 return city;

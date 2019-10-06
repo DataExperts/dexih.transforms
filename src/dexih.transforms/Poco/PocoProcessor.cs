@@ -27,9 +27,9 @@ namespace dexih.transforms.Poco
     /// </summary>
     public class PocoProcessor<T>
         {
-        private const int _maxQueuedMessages = 1024;
+        private const int MaxQueuedMessages = 1024;
 
-        private readonly BlockingCollection<PocoProcessorEntry<T>> _messageQueue = new BlockingCollection<PocoProcessorEntry<T>>(_maxQueuedMessages);
+        private readonly BlockingCollection<PocoProcessorEntry<T>> _messageQueue = new BlockingCollection<PocoProcessorEntry<T>>(MaxQueuedMessages);
         private readonly Thread _outputThread;
 
         private readonly PocoTable<T> _pocoTable;

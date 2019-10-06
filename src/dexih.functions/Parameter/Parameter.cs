@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 using MessagePack;
 using static Dexih.Utils.DataType.DataType;
 
@@ -11,25 +11,28 @@ namespace dexih.functions.Parameter
 {
     [MessagePackObject]
     [ProtoInherit(1000)]
-    [MessagePack.Union(0, typeof(ParameterArray))]
-    [MessagePack.Union(1, typeof(ParameterColumn))]
-    [MessagePack.Union(2, typeof(ParameterJoinColumn))]
-    [MessagePack.Union(3, typeof(ParameterOutputColumn))]
-    [MessagePack.Union(4, typeof(ParameterValue))]
+    [Union(0, typeof(ParameterArray))]
+    [Union(1, typeof(ParameterColumn))]
+    [Union(2, typeof(ParameterJoinColumn))]
+    [Union(3, typeof(ParameterOutputColumn))]
+    [Union(4, typeof(ParameterValue))]
     public abstract class Parameter
     {
         public abstract void InitializeOrdinal(Table table, Table joinTable = null);
-        
+
         /// <summary>
         /// Set the parameter value to the data.
         /// </summary>
         /// <param name="row"></param>
+        /// <param name="joinRow"></param>
         public abstract void SetInputData(object[] row, object[] joinRow = null);
-        
+
         /// <summary>
         /// Gets the row position to the current value.
         /// </summary>
+        /// <param name="value"></param>
         /// <param name="row"></param>
+        /// <param name="joinRow"></param>
         public abstract void PopulateRowData(object value, object[] row, object[] joinRow = null);
 
         public abstract Parameter Copy();

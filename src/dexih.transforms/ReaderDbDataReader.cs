@@ -79,6 +79,7 @@ namespace dexih.transforms
                         Scale = columnDetail.NumericScale,
                         Precision = columnDetail.NumericPrecision
                     };
+                    CacheTable.Columns.Add(column);
                 }
             }
 #endif

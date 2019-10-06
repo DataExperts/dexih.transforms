@@ -155,7 +155,7 @@ namespace dexih.transforms.tests
                 },
                 ReturnParameters =  new List<Parameter> { new ParameterOutputColumn("parent_child", DataType.ETypeCode.String)}
             };   
-            nodeMappings.Add(new MapFunction(function, parameters, MapFunction.EFunctionCaching.NoCache));
+            nodeMappings.Add(new MapFunction(function, parameters, EFunctionCaching.NoCache));
 
             var mapping = new TransformMapping();
             var parentTransform = mapping.CreateNodeMapping(sourceReader, null, nodeMappings,new[] {new TableColumn("children")});

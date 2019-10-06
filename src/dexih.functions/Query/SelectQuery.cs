@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using dexih.repository;
+using System.Text.Json;
 using Dexih.Utils.DataType;
-using Newtonsoft.Json.Linq;
+
 using MessagePack;
 
 namespace dexih.functions.Query
@@ -54,7 +54,6 @@ namespace dexih.functions.Query
         /// Tests is a row should be filtered based on the filters provided.  
         /// </summary>
         /// <param name="row"></param>
-        /// <param name="filters"></param>
         /// <param name="table"></param>
         /// <returns>true = don't filter, false = filtered</returns>
         public bool EvaluateRowFilter(IReadOnlyList<object> row, Table table)
@@ -109,11 +108,11 @@ namespace dexih.functions.Query
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
-            return CompareSequences<SelectColumn>(Columns, other.Columns) && 
+            return CompareSequences(Columns, other.Columns) && 
                    string.Equals(Table, other.Table) && 
-                   CompareSequences<Filter>(Filters, other.Filters) && 
-                   CompareSequences<Sort>(Sorts, other.Sorts) && 
-                   CompareSequences<TableColumn>(Groups, other.Groups) && 
+                   CompareSequences(Filters, other.Filters) && 
+                   CompareSequences(Sorts, other.Sorts) && 
+                   CompareSequences(Groups, other.Groups) && 
                    Rows == other.Rows && 
                    string.Equals(FileName, other.FileName) && 
                    Path == other.Path;
@@ -180,103 +179,97 @@ namespace dexih.functions.Query
             }
         }
 
-        public void LoadJsonFilters(Table table, JObject jObject)
+        public void LoadJsonFilters(Table table, JsonDocument jsonDocument)
         {
-            if (jObject == null) return;
+            if (jsonDocument == null) return;
             
-            foreach (var item in jObject)
+            foreach (var item in jsonDocument.RootElement.EnumerateObject())
             {
-                var columnName = item.Key;
+                var columnName = item.Name;
                 var column = table.Columns[columnName];
                 if (column == null)
                 {
                     throw new Exception($"The column \"{columnName}\" could not be found.");
                 }
 
-                if (!item.Value.HasValues)
+                if (item.Value.ValueKind != JsonValueKind.Object)
                 {
                     var value = item.Value;
                     Filters.Add(new Filter(column, ECompare.IsEqual, value.ToString()) );
                 }
                 else
                 {
-                    var childValues = item.Value.Children();
-                    if (childValues.Any())
-                    {
-                        foreach (var childValue in childValues)
-                        {
-                            if (childValue is JProperty property)
-                            {
-                                ECompare op;
-                                object value = property.Value;
 
-                                switch (property.Name)
+                    foreach (var childValue in item.Value.EnumerateObject())
+                    {
+                        ECompare op;
+                        object value = childValue.Value.GetString();
+
+                        switch (childValue.Name)
+                        {
+                            case "eq":
+                            case "=":
+                                op = ECompare.IsEqual;
+                                break;
+                            case "lt":
+                            case "<":
+                                op = ECompare.LessThan;
+                                break;
+                            case "le":
+                            case "<=":
+                                op = ECompare.LessThanEqual;
+                                break;
+                            case "gt":
+                            case ">":
+                                op = ECompare.GreaterThan;
+                                break;
+                            case "ge":
+                            case ">=":
+                                op = ECompare.GreaterThanEqual;
+                                break;
+                            case "ne":
+                            case "!=":
+                            case "<>":
+                                op = ECompare.NotEqual;
+                                break;
+                            case "nl":
+                            case "null":
+                                op = ECompare.IsNull;
+                                break;
+                            case "nn":
+                            case "notnull":
+                                op = ECompare.IsNotNull;
+                                break;
+                            case "in":
+                                op = ECompare.IsIn;
+                                if (childValue.Value.ValueKind == JsonValueKind.Array)
                                 {
-                                    case "eq":
-                                    case "=":
-                                        op = ECompare.IsEqual;
-                                        break;
-                                    case "lt":
-                                    case "<":
-                                        op = ECompare.LessThan;
-                                        break;
-                                    case "le":
-                                    case "<=":
-                                        op = ECompare.LessThanEqual;
-                                        break;
-                                    case "gt":
-                                    case ">":
-                                        op = ECompare.GreaterThan;
-                                        break;
-                                    case "ge":
-                                    case ">=":
-                                        op = ECompare.GreaterThanEqual;
-                                        break;
-                                    case "ne":
-                                    case "!=":
-                                    case "<>":
-                                        op = ECompare.NotEqual;
-                                        break;
-                                    case "nl":
-                                    case "null":
-                                        op = ECompare.IsNull;
-                                        break;
-                                    case "nn":
-                                    case "notnull":
-                                        op = ECompare.IsNotNull;
-                                        break;
-                                    case "in":
-                                        op = ECompare.IsIn;
-                                        if (value is JArray jArray)
-                                        {
-                                            value = jArray.ToArray();
-                                        }
-                                        break;
-                                    default:
-                                        throw new Exception(
-                                            $"The operator \"{childValues[0].ToString()} is not recognized.");
+                                    value = childValue.Value.EnumerateArray().Select(c => c.GetString()).ToArray();
                                 }
 
-                                Filters.Add(new Filter(column, op, value));
-                            }
-
+                                break;
+                            default:
+                                throw new Exception(
+                                    $"The operator \"{childValue.Name} is not recognized.");
                         }
+
+                        Filters.Add(new Filter(column, op, value));
                     }
                 }
             }
         }
 
-        public void LoadJsonInputColumns(JObject jObject)
+        public void LoadJsonInputColumns(JsonDocument jObject)
         {
             if (jObject == null) return;
             
-            foreach (var item in jObject)
+            foreach (var item in jObject.RootElement.EnumerateObject())
             {
 
-                if (!item.Value.HasValues)
+                if (item.Value.ValueKind != JsonValueKind.Array)
                 {
-                    var columnName = item.Key;
-                    var column = new TableColumn(columnName) { IsInput = true, DefaultValue = item.Value };
+                    var columnName = item.Name;
+                    var column = new TableColumn(columnName) { IsInput = true, DefaultValue = item.Value.GetString() };
                     if(InputColumns == null) InputColumns = new List<TableColumn>();
                     InputColumns.Add(column);
                 }
@@ -287,17 +280,17 @@ namespace dexih.functions.Query
             }
         }
         
-        public void LoadJsonParameters(JObject jObject)
+        public void LoadJsonParameters(JsonDocument jObject)
         {
             if (jObject == null) return;
             
             var inputParameters = new InputParameters();
             
-            foreach (var item in jObject)
+            foreach (var item in jObject.RootElement.EnumerateObject())
             {
-                if (!item.Value.HasValues)
+                if (item.Value.ValueKind != JsonValueKind.Array)
                 {
-                    var name = item.Key;
+                    var name = item.Name;
                     var value = item.Value.ToString();
                     inputParameters.Add(name, value);
                 }

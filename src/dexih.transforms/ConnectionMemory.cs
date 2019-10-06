@@ -137,7 +137,7 @@ namespace dexih.transforms
                 insertTable.AddRow(row);
             }
 
-            return Task.FromResult<long>(maxIncrement);
+            return Task.FromResult(maxIncrement);
         }
 
         public TableCache GetTableData(Table table)

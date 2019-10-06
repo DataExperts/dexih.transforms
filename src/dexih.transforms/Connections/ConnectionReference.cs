@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using CsvHelper.Configuration.Attributes;
 
 namespace dexih.transforms
 {
@@ -24,13 +23,15 @@ namespace dexih.transforms
             }
             else
             {
-                var pathName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), ConnectionAssemblyName);
-                var assembly = Assembly.LoadFile(pathName);
-
-                if (assembly == null)
+                var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                if (string.IsNullOrEmpty(location))
                 {
                     throw new ConnectionNotFoundException($"The assembly {ConnectionAssemblyName} was not found.");
                 }
+
+                var pathName = Path.Combine(location, ConnectionAssemblyName);
+                var assembly = Assembly.LoadFile(pathName);
+
                 type = assembly.GetType(ConnectionClassName);
             }
 

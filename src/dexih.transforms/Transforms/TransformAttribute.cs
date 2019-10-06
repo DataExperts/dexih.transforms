@@ -1,14 +1,14 @@
 ﻿using System;
 using dexih.functions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+
+
 using MessagePack;
 
 namespace dexih.transforms.Transforms
 {
     [MessagePackObject]
     [ProtoInherit(1000)]
-    [MessagePack.Union(0, typeof(TransformReference))]
+    [Union(0, typeof(TransformReference))]
     public class TransformAttribute: Attribute
     {
         [IgnoreMember]

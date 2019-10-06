@@ -75,7 +75,7 @@ namespace dexih.transforms.tests
             //            var aggregates = new List<TransformFunction>();
             
             var mappings = new Mappings(false);
-            mappings.Add(new MapFunction(func, parameters, MapFunction.EFunctionCaching.NoCache));
+            mappings.Add(new MapFunction(func, parameters, EFunctionCaching.NoCache));
             var transformAggregate = new TransformAggregate(source, mappings);
             await transformAggregate.Open(0, null, CancellationToken.None);
             
@@ -134,7 +134,7 @@ namespace dexih.transforms.tests
                         new ParameterOutputColumn("percent", DataType.ETypeCode.Double)
                         
                     },
-                }, MapFunction.EFunctionCaching.NoCache
+                }, EFunctionCaching.NoCache
             );
 
             var rank = new MapFunction(
@@ -156,7 +156,7 @@ namespace dexih.transforms.tests
                     {
                         new ParameterOutputColumn("rank", DataType.ETypeCode.Int32)
                     },
-                }, MapFunction.EFunctionCaching.NoCache   
+                }, EFunctionCaching.NoCache   
             );
 
             var mappings = new Mappings(false)
