@@ -43,13 +43,13 @@ namespace dexih.connections.postgressql
 
 
 
-        public override object GetConnectionMaxValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.UInt64:
+                case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return new DateTime(9999, 12, 31, 23, 59, 59, 999);
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
@@ -136,7 +136,7 @@ namespace dexih.connections.postgressql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "select table_name from information_schema.tables where table_name = @NAME"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
 
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
@@ -233,72 +233,72 @@ namespace dexih.connections.postgressql
 
             switch (column.DataType)
             {
-                case DataType.ETypeCode.Int32:
-                case DataType.ETypeCode.UInt16:
+                case ETypeCode.Int32:
+                case ETypeCode.UInt16:
                     sqlType = "int";
                     break;
-                case DataType.ETypeCode.Byte:
-                case DataType.ETypeCode.Char:
-                case DataType.ETypeCode.Int16:
-                case DataType.ETypeCode.SByte:
+                case ETypeCode.Byte:
+                case ETypeCode.Char:
+                case ETypeCode.Int16:
+                case ETypeCode.SByte:
                     sqlType = "smallint";
                     break;
-                case DataType.ETypeCode.Int64:
-                case DataType.ETypeCode.UInt32:
-                case DataType.ETypeCode.UInt64:
+                case ETypeCode.Int64:
+                case ETypeCode.UInt32:
+                case ETypeCode.UInt64:
                     sqlType = "bigint";
                     break;
-                case DataType.ETypeCode.String:
+                case ETypeCode.String:
                     if (column.MaxLength == null)
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(10485760)";
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
-                case DataType.ETypeCode.CharArray:
+                case ETypeCode.CharArray:
                     if(column.MaxLength == null) 
                         sqlType = (column.IsUnicode == true ? "n" : "") + "char(0)";
                     else 
                         sqlType= (column.IsUnicode == true ? "n" : "") + "char(" + column.MaxLength + ")";
                     break;
-				case DataType.ETypeCode.Text:
-                case DataType.ETypeCode.Geometry:
+				case ETypeCode.Text:
+                case ETypeCode.Geometry:
                     sqlType = (column.IsUnicode == true ? "n" : "") + "text";
                     break;
-                case DataType.ETypeCode.Json:
-                case DataType.ETypeCode.Node:
+                case ETypeCode.Json:
+                case ETypeCode.Node:
                     sqlType = "json";
                     break;
-                case DataType.ETypeCode.Xml:
+                case ETypeCode.Xml:
                     sqlType = "xml";
                     break;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     sqlType = "real";
                     break;
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     sqlType = "double precision";
                     break;
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Boolean:
                     sqlType = "bool";
                     break;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     sqlType = "timestamp";
                     break;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     sqlType = "time";
                     break;
-                case DataType.ETypeCode.Guid:
+                case ETypeCode.Guid:
                     sqlType = "text";
                     break;
-                case DataType.ETypeCode.Binary:
+                case ETypeCode.Binary:
                     sqlType = "bytea";
                     break;
                 //case TypeCode.TimeSpan:
                 //    SQLType = "time(7)";
                 //    break;
-                case DataType.ETypeCode.Unknown:
+                case ETypeCode.Unknown:
                     sqlType = "varchar(10485760)";
                     break;
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     sqlType =  $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
@@ -473,7 +473,7 @@ namespace dexih.connections.postgressql
                     // get the table type
                     using (var cmd = CreateCommand(connection, "select table_type from information_schema.tables where table_name = @NAME"))
                     {
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
 
                         var tableType = await cmd.ExecuteScalarAsync(cancellationToken);
 
@@ -534,7 +534,7 @@ ORDER BY c.ordinal_position"))
                                 DataType = (string)reader["data_type"] == "ARRAY" ? ConvertSqlToTypeCode(reader["element_type"].ToString()) : ConvertSqlToTypeCode(reader["data_type"].ToString())
                             };
 
-                            if (col.DataType == DataType.ETypeCode.Unknown)
+                            if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -550,11 +550,11 @@ ORDER BY c.ordinal_position"))
                                 }
                             }
 
-                            if (col.DataType == DataType.ETypeCode.String || col.DataType == DataType.ETypeCode.CharArray)
+                            if (col.DataType == ETypeCode.String || col.DataType == ETypeCode.CharArray)
                             {
                                 col.MaxLength = ConvertNullableToInt(reader["character_maximum_length"]);
                             }
-                            else if (col.DataType == DataType.ETypeCode.Double || col.DataType == DataType.ETypeCode.Decimal)
+                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
                             {
                                 col.Precision = ConvertNullableToInt(reader["numeric_precision_radix"]);
                                 col.Scale = ConvertNullableToInt(reader["numeric_scale"]);
@@ -598,42 +598,42 @@ ORDER BY c.ordinal_position"))
         }
 
 
-        public DataType.ETypeCode ConvertSqlToTypeCode(string sqlType)
+        public ETypeCode ConvertSqlToTypeCode(string sqlType)
         {
             switch (sqlType)
             {
-                case "bit": return DataType.ETypeCode.Boolean;
-                case "varbit": return DataType.ETypeCode.Binary;
-                case "bytea": return DataType.ETypeCode.Binary;
-                case "smallint": return DataType.ETypeCode.Int16;
-                case "int": return DataType.ETypeCode.Int32;
-                case "integer": return DataType.ETypeCode.Int32;
-                case "bigint": return DataType.ETypeCode.Int64;
-                case "smallserial": return DataType.ETypeCode.Int16;
-                case "serial": return DataType.ETypeCode.Int32;
-                case "bigserial": return DataType.ETypeCode.Int64;
-                case "numeric": return DataType.ETypeCode.Decimal;
-                case "double precision": return DataType.ETypeCode.Double;
-                case "real": return DataType.ETypeCode.Double;
-                case "money": return DataType.ETypeCode.Decimal;
-                case "bool": return DataType.ETypeCode.Boolean;
-                case "boolean": return DataType.ETypeCode.Boolean;
-                case "date": return DataType.ETypeCode.DateTime;
-                case "timestamp": return DataType.ETypeCode.DateTime;
-                case "timestamp without time zone": return DataType.ETypeCode.DateTime;
-                case "timestamp with time zone": return DataType.ETypeCode.DateTime;
-                case "interval": return DataType.ETypeCode.Time;
-                case "time": return DataType.ETypeCode.Time;
-                case "time without time zone": return DataType.ETypeCode.Time;
-                case "time with time zone": return DataType.ETypeCode.Time;
-                case "character varying": return DataType.ETypeCode.String;
-                case "varchar": return DataType.ETypeCode.String;
-                case "character": return DataType.ETypeCode.CharArray;
-                case "text": return DataType.ETypeCode.Text;
-                case "json": return DataType.ETypeCode.Json;
-                case "xml": return DataType.ETypeCode.Xml;
+                case "bit": return ETypeCode.Boolean;
+                case "varbit": return ETypeCode.Binary;
+                case "bytea": return ETypeCode.Binary;
+                case "smallint": return ETypeCode.Int16;
+                case "int": return ETypeCode.Int32;
+                case "integer": return ETypeCode.Int32;
+                case "bigint": return ETypeCode.Int64;
+                case "smallserial": return ETypeCode.Int16;
+                case "serial": return ETypeCode.Int32;
+                case "bigserial": return ETypeCode.Int64;
+                case "numeric": return ETypeCode.Decimal;
+                case "double precision": return ETypeCode.Double;
+                case "real": return ETypeCode.Double;
+                case "money": return ETypeCode.Decimal;
+                case "bool": return ETypeCode.Boolean;
+                case "boolean": return ETypeCode.Boolean;
+                case "date": return ETypeCode.DateTime;
+                case "timestamp": return ETypeCode.DateTime;
+                case "timestamp without time zone": return ETypeCode.DateTime;
+                case "timestamp with time zone": return ETypeCode.DateTime;
+                case "interval": return ETypeCode.Time;
+                case "time": return ETypeCode.Time;
+                case "time without time zone": return ETypeCode.Time;
+                case "time with time zone": return ETypeCode.Time;
+                case "character varying": return ETypeCode.String;
+                case "varchar": return ETypeCode.String;
+                case "character": return ETypeCode.CharArray;
+                case "text": return ETypeCode.Text;
+                case "json": return ETypeCode.Json;
+                case "xml": return ETypeCode.Xml;
             }
-            return DataType.ETypeCode.Unknown;
+            return ETypeCode.Unknown;
         }
 
 
@@ -742,7 +742,7 @@ ORDER BY c.ordinal_position"))
 
         }
 
-        private NpgsqlDbType GetTypeCodeDbType(DataType.ETypeCode typeCode, int rank)
+        private NpgsqlDbType GetTypeCodeDbType(ETypeCode typeCode, int rank)
         {
             if (rank > 0)
             {
@@ -751,50 +751,50 @@ ORDER BY c.ordinal_position"))
 
             switch (typeCode)
             {
-                case DataType.ETypeCode.Byte:
+                case ETypeCode.Byte:
                     return NpgsqlDbType.Smallint;
-                case DataType.ETypeCode.Char:
+                case ETypeCode.Char:
                     return NpgsqlDbType.Smallint;
-                case DataType.ETypeCode.SByte:
+                case ETypeCode.SByte:
                     return NpgsqlDbType.Smallint;
-                case DataType.ETypeCode.UInt16:
+                case ETypeCode.UInt16:
                     return NpgsqlDbType.Integer;
-                case DataType.ETypeCode.UInt32:
+                case ETypeCode.UInt32:
                     return NpgsqlDbType.Bigint;
-                case DataType.ETypeCode.UInt64:
+                case ETypeCode.UInt64:
                     return NpgsqlDbType.Bigint;
-                case DataType.ETypeCode.Int16:
+                case ETypeCode.Int16:
                     return NpgsqlDbType.Smallint;
-                case DataType.ETypeCode.Int32:
+                case ETypeCode.Int32:
                     return NpgsqlDbType.Integer;
-                case DataType.ETypeCode.Int64:
+                case ETypeCode.Int64:
                     return NpgsqlDbType.Bigint;
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     return NpgsqlDbType.Numeric;
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     return NpgsqlDbType.Double;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     return NpgsqlDbType.Real;
-                case DataType.ETypeCode.String:
+                case ETypeCode.String:
                     return NpgsqlDbType.Varchar;
-				case DataType.ETypeCode.Text:
+				case ETypeCode.Text:
 				    return NpgsqlDbType.Text;
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Boolean:
                     return NpgsqlDbType.Boolean;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return NpgsqlDbType.Timestamp;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     return NpgsqlDbType.Time;
-                case DataType.ETypeCode.Guid:
+                case ETypeCode.Guid:
                     return NpgsqlDbType.Varchar;
-                case DataType.ETypeCode.Binary:
+                case ETypeCode.Binary:
                     return NpgsqlDbType.Bytea;
-                case DataType.ETypeCode.Json:
-                case DataType.ETypeCode.Node:
+                case ETypeCode.Json:
+                case ETypeCode.Node:
                     return NpgsqlDbType.Json;
-                case DataType.ETypeCode.Xml:
+                case ETypeCode.Xml:
                     return NpgsqlDbType.Xml;
-                case DataType.ETypeCode.CharArray:
+                case ETypeCode.CharArray:
                     return NpgsqlDbType.Char;
                 default:
                     return NpgsqlDbType.Varchar;

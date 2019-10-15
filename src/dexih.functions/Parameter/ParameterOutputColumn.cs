@@ -21,14 +21,14 @@ namespace dexih.functions.Parameter
         )
         {
             Name = name;
-            DataType = column?.DataType ?? Dexih.Utils.DataType.DataType.ETypeCode.Unknown;
+            DataType = column?.DataType ?? Dexih.Utils.DataType.ETypeCode.Unknown;
             Rank = column?.Rank ?? 0;
             Column = column;
         }
 
         public ParameterOutputColumn(
             string name, 
-            DataType.ETypeCode dataType,
+            ETypeCode dataType,
             int rank,
             TableColumn column
         )
@@ -39,7 +39,7 @@ namespace dexih.functions.Parameter
             Column = column;
         }
 
-        public ParameterOutputColumn(string columName, DataType.ETypeCode dataType)
+        public ParameterOutputColumn(string columName, ETypeCode dataType)
         {
             Name = columName;
             DataType = dataType;

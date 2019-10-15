@@ -17,7 +17,7 @@ namespace dexih.transforms.File
         private readonly Table _table;
         private readonly int _fieldCount;
         private readonly int _responseDataOrdinal;
-        private readonly Dictionary<string, (int Ordinal, DataType.ETypeCode Datatype)> _responseSegementOrdinals;
+        private readonly Dictionary<string, (int Ordinal, ETypeCode Datatype)> _responseSegementOrdinals;
         
         public FileHandlerXml(Table table, string rowPath)
         {
@@ -27,7 +27,7 @@ namespace dexih.transforms.File
             
             _responseDataOrdinal = _table.GetOrdinal(TableColumn.EDeltaType.ResponseData);
 
-            _responseSegementOrdinals = new Dictionary<string, (int ordinal, DataType.ETypeCode typeCode)>();
+            _responseSegementOrdinals = new Dictionary<string, (int ordinal, ETypeCode typeCode)>();
             
             foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
             {
@@ -124,7 +124,7 @@ namespace dexih.transforms.File
                             Name = nodePath,
                             IsInput = false,
                             LogicalName = node.Name,
-                            DataType = DataType.ETypeCode.Xml,
+                            DataType = ETypeCode.Xml,
                             DeltaType = TableColumn.EDeltaType.ResponseSegment,
                             MaxLength = null,
                             Description = "Xml from the " + nodePath + " path",
@@ -178,7 +178,7 @@ namespace dexih.transforms.File
                     }
                     else
                     {
-                        if (node.SelectChildren(XPathNodeType.All).Count == 1 || column.Value.Datatype == DataType.ETypeCode.Xml)
+                        if (node.SelectChildren(XPathNodeType.All).Count == 1 || column.Value.Datatype == ETypeCode.Xml)
                         {
                             row[column.Value.Ordinal] = node.OuterXml;
                         }

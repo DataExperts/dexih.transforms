@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions
 {
@@ -105,8 +106,20 @@ namespace dexih.functions
             {
                 return jsonElement.ToObject<T>();
             }
-            
-            return (T)Convert.ChangeType(value, typeof(T));
+
+            if (value is null)
+            {
+                return default;
+            }
+
+            var type = Nullable.GetUnderlyingType(typeof(T));
+            if (type == null)
+            {
+                return Operations.Parse<T>(value);
+            } else
+            {
+                return (T) Operations.Parse(type, value);
+            }
         }
     }
 }

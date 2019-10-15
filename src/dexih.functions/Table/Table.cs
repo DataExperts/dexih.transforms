@@ -13,7 +13,6 @@ namespace dexih.functions
 {
     
     [MessagePackObject]
-    [ProtoInherit(1000)]
     [Union(0, typeof(FlatFile))]
     [Union(1, typeof(WebService))]
     public class Table
@@ -158,7 +157,7 @@ namespace dexih.functions
         /// Indicates the type of table (i.e. table, view etc.)
         /// </summary>
         [Key(6)]
-        public ETableType TableType { get; set; }
+        public ETableType TableType { get; set; } = ETableType.Table;
 
         /// <summary>
         /// Indicates if the table contains versions (history) of data change, such as sql temporal tables.

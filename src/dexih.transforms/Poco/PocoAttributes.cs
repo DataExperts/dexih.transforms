@@ -1,6 +1,7 @@
 ﻿using System;
 using static dexih.functions.TableColumn;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms.Poco

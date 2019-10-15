@@ -28,7 +28,7 @@ namespace dexih.transforms
         public string LogicalName { get; set; }
 
         [Key("dataType")]
-        public DataType.ETypeCode DataType { get; set; }
+        public ETypeCode DataType { get; set; }
 
         [Key("childColumns")]
         public DataPackColumn[] ChildColumns;

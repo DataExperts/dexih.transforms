@@ -10,6 +10,7 @@ using static dexih.functions.TableColumn;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Text;
+using System.Text.Json;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.Crypto;
@@ -17,6 +18,7 @@ using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
+using Dexih.Utils.MessageHelpers;
 using Newtonsoft.Json.Linq;
 
 
@@ -1155,11 +1157,19 @@ namespace dexih.transforms
         {
             // var rows = await Lookup(query, duplicateStrategy, cancellationToken);
 
-            var jObject = new JObject();
-            var jArray = await LookupJsonArray(query, duplicateStrategy, cancellationToken);
-            jObject.Add("Success", true);
-            jObject.Add(new JProperty("Data", jArray));
-            return jObject.ToString();
+            try
+            {
+                var jArray = await LookupJsonArray(query, duplicateStrategy, cancellationToken);
+                return jArray.ToString();
+            }
+            catch (Exception ex)
+            {
+                var returnValue = new ReturnValue(false,
+                    "Failed to retrieve the requested data.  Message: " + ex.Message, ex);
+                return JsonSerializer.Serialize(returnValue);
+            }
+
+            
         }
         
         private async Task<JArray> LookupJsonArray(SelectQuery query, EDuplicateStrategy duplicateStrategy, CancellationToken cancellationToken = default)

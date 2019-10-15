@@ -9,7 +9,6 @@ using System.Data.Common;
 using dexih.transforms;
 using System.Text.RegularExpressions;
 using System.Threading;
-using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -82,7 +81,7 @@ namespace dexih.connections.azure
                 case ETypeCode.Single:
                     return -1E+37F;
                 default:
-                    return GetDataTypeMinValue(typeCode, length);
+                    return DataType.GetDataTypeMinValue(typeCode, length);
             }
         }
 
@@ -100,7 +99,7 @@ namespace dexih.connections.azure
                     return 1E+37F;
 
                 default:
-                    return GetDataTypeMaxValue(typeCode, length);
+                    return DataType.GetDataTypeMaxValue(typeCode, length);
             }
         }
         

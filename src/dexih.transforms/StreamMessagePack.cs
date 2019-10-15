@@ -52,7 +52,7 @@ namespace dexih.transforms
                     }
                 }
 
-                _hasNodes = columns.Any(c => c.DataType == DataType.ETypeCode.Node);
+                _hasNodes = columns.Any(c => c.DataType == ETypeCode.Node);
                 _data.Columns = columns.Select(c => new DataPackColumn(c)).ToArray();
 
             }

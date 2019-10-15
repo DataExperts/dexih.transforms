@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.CopyProperties;
-
+using Dexih.Utils.DataType;
 using MessagePack;
 
 namespace dexih.functions
@@ -48,7 +48,7 @@ namespace dexih.functions
         // [JsonConverter(typeof(StringEnumConverter))]
         public enum ESecurityFlag
         {
-            None = 1,
+            None = 0,
             FastEncrypt,
             FastDecrypt,
             FastEncrypted,

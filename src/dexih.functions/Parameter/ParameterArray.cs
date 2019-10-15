@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dexih.Utils.DataType;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.functions.Parameter

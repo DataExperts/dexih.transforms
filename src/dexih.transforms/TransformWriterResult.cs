@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
+using Dexih.Utils.DataType;
 using static Dexih.Utils.DataType.DataType;
 using MessagePack;
 

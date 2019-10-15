@@ -75,7 +75,7 @@ namespace dexih.transforms.Poco
                         {
                             value = Enum.Parse(mapping.PropertyInfo.PropertyType, s);
                         }
-                        else if (!DataType.IsSimple(mapping.PropertyInfo.PropertyType) && value is string s1 && column.DataType != DataType.ETypeCode.String)
+                        else if (!DataType.IsSimple(mapping.PropertyInfo.PropertyType) && value is string s1 && column.DataType != ETypeCode.String)
                         {
                             value = s1.Deserialize(mapping.PropertyInfo.PropertyType);
                         }

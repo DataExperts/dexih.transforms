@@ -28,7 +28,7 @@ namespace dexih.functions.Parameter
             Column = column;
         }
 
-        public ParameterJoinColumn(string columName, DataType.ETypeCode dataType, int rank)
+        public ParameterJoinColumn(string columName, ETypeCode dataType, int rank)
         {
             Name = columName;
             DataType = dataType;

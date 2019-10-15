@@ -47,8 +47,8 @@ namespace dexih.functions.Query
         [Key(7)]
         public string FileName { get; set; }
 
-        [Key(8)]
-        public EFlatFilePath Path { get; set; }
+        [Key(8)] 
+        public EFlatFilePath Path { get; set; } = EFlatFilePath.None;
 
         /// <summary>
         /// Tests is a row should be filtered based on the filters provided.  

@@ -7,7 +7,6 @@ using MessagePack;
 namespace dexih.transforms.Transforms
 {
     [MessagePackObject]
-    [ProtoInherit(1000)]
     [Union(0, typeof(TransformReference))]
     public class TransformAttribute: Attribute
     {

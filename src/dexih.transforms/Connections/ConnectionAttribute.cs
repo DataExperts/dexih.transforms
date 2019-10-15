@@ -6,7 +6,6 @@ namespace dexih.transforms
 {
 
     [MessagePackObject]
-    [ProtoInherit(1000)]
     [Union(0, typeof(ConnectionReference))]
     public class ConnectionAttribute : Attribute
     {

@@ -787,7 +787,7 @@ namespace dexih.functions.BuiltIn
             return value.Min();
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Switch Condition", GenericTypeDefault = DataType.ETypeCode.String,
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Switch Condition", GenericTypeDefault = ETypeCode.String,
             Description = "Maps the 'value' to the matching 'when' and returns the 'then'.  No matches returns default value (or original value if default is null."),
         ]
         public T Switch<T>(object value, [TransformFunctionLinkedParameter("When")] object[] when, [TransformFunctionLinkedParameter("When")] T[] then, T defaultValue)

@@ -86,7 +86,7 @@ namespace dexih.functions
             return function;
         }
 
-//        private static DataType.ETypeCode? GetElementType(Type p, out int rank)
+//        private static ETypeCode? GetElementType(Type p, out int rank)
 //        {
 //            if (p == typeof(void))
 //            {

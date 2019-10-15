@@ -84,7 +84,7 @@ namespace dexih.transforms.File
 
         private void InitializeNodeTransforms(ICollection<TableColumn> columns)
         {
-            foreach (var column in columns.Where(c => c.DataType == DataType.ETypeCode.Node && c.ChildColumns.Count > 0))
+            foreach (var column in columns.Where(c => c.DataType == ETypeCode.Node && c.ChildColumns.Count > 0))
             {
                 var parentTable = new Table("parent", new TableColumns(columns));
                 var childTable = new Table(column.Name, column.ChildColumns);
@@ -109,7 +109,7 @@ namespace dexih.transforms.File
                     Name = value.Name,
                     IsInput = false,
                     LogicalName = (groups.Any() ? $"{string.Join(".", groups)}." : "") + value.Name,
-                    DataType = DataType.ETypeCode.Json,
+                    DataType = ETypeCode.Json,
                     DeltaType = TableColumn.EDeltaType.ResponseSegment,
                     ColumnGroup = string.Join(".", groups),
                     MaxLength = null,
@@ -121,7 +121,7 @@ namespace dexih.transforms.File
                 // if array of single values
                 if (value.Value.Type == JTokenType.Array && value.Value.First() is JValue jValue)
                 {
-                    DataType.ETypeCode dataType = GetTypeCode(jValue.Type);
+                    ETypeCode dataType = GetTypeCode(jValue.Type);
 
                     col.DataType = dataType;
                     col.Rank = 1;
@@ -134,12 +134,12 @@ namespace dexih.transforms.File
                     
                     if (currentLevel < maxLevels)
                     {
-                        col.DataType = DataType.ETypeCode.Node;
+                        col.DataType = ETypeCode.Node;
                         var children = value.Value.Children();
 
                         if (children.Any())
                         {
-                            col.DataType = DataType.ETypeCode.Node;
+                            col.DataType = ETypeCode.Node;
                             children = children.First().Children();
 
                             var columns = new List<TableColumn>();
@@ -153,7 +153,7 @@ namespace dexih.transforms.File
                     }
                     else
                     {
-                        col.DataType = DataType.ETypeCode.Json;
+                        col.DataType = ETypeCode.Json;
                     }
 
                     return new [] {col};
@@ -187,7 +187,7 @@ namespace dexih.transforms.File
                 }
                 else
                 {
-                    DataType.ETypeCode dataType = GetTypeCode(value.Value.Type);
+                    ETypeCode dataType = GetTypeCode(value.Value.Type);
                     col.DataType = dataType;
                     return new [] {col};
                 }
@@ -199,7 +199,7 @@ namespace dexih.transforms.File
                     Name = jToken.Path,
                     IsInput = false,
                     LogicalName = jToken.Path,
-                    DataType = DataType.ETypeCode.Json,
+                    DataType = ETypeCode.Json,
                     DeltaType = TableColumn.EDeltaType.ResponseSegment,
                     MaxLength = null,
                     Description = "Json from the " + jToken.Path + " path",
@@ -216,7 +216,7 @@ namespace dexih.transforms.File
         /// </summary>
         /// <param name="jsonType"></param>
         /// <returns></returns>
-        private DataType.ETypeCode GetTypeCode(JTokenType jsonType)
+        private ETypeCode GetTypeCode(JTokenType jsonType)
         {
             switch (jsonType)
             {
@@ -224,7 +224,7 @@ namespace dexih.transforms.File
                 case JTokenType.Array:
                 case JTokenType.Constructor:
                 case JTokenType.Property:
-                    return DataType.ETypeCode.Json;
+                    return ETypeCode.Json;
                 case JTokenType.None:
                 case JTokenType.Comment:
                 case JTokenType.Null:
@@ -232,83 +232,83 @@ namespace dexih.transforms.File
                 case JTokenType.Raw:
                 case JTokenType.Uri:
                 case JTokenType.String:
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case JTokenType.Integer:
-                    return DataType.ETypeCode.Int32;
+                    return ETypeCode.Int32;
                 case JTokenType.Float:
-                    return DataType.ETypeCode.Double;
+                    return ETypeCode.Double;
                 case JTokenType.Boolean:
-                    return DataType.ETypeCode.Boolean;
+                    return ETypeCode.Boolean;
                 case JTokenType.Date:
-                    return DataType.ETypeCode.DateTime;
+                    return ETypeCode.DateTime;
                 case JTokenType.Bytes:
-                    return DataType.ETypeCode.Binary;
+                    return ETypeCode.Binary;
                 case JTokenType.Guid:
-                    return DataType.ETypeCode.Guid;
+                    return ETypeCode.Guid;
                 case JTokenType.TimeSpan:
-                    return DataType.ETypeCode.Time;
+                    return ETypeCode.Time;
                 default:
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
             }
 
         }
 
-        private object GetJTokenValue(DataType.ETypeCode typeCode, int rank, JToken jToken)
+        private object GetJTokenValue(ETypeCode typeCode, int rank, JToken jToken)
         {
             if (rank == 0)
             {
                 switch (typeCode)
                 {
-                    case DataType.ETypeCode.Binary:
+                    case ETypeCode.Binary:
                         return jToken.Value<byte[]>();
-                    case DataType.ETypeCode.Geometry:
+                    case ETypeCode.Geometry:
                         return jToken.Value<string>();
-                    case DataType.ETypeCode.Byte:
+                    case ETypeCode.Byte:
                         return jToken.Value<byte>();
-                    case DataType.ETypeCode.Char:
+                    case ETypeCode.Char:
                         return jToken.Value<char>();
-                    case DataType.ETypeCode.SByte:
+                    case ETypeCode.SByte:
                         return jToken.Value<sbyte>();
-                    case DataType.ETypeCode.UInt16:
+                    case ETypeCode.UInt16:
                         return jToken.Value<ushort>();
-                    case DataType.ETypeCode.UInt32:
+                    case ETypeCode.UInt32:
                         return jToken.Value<uint>();
-                    case DataType.ETypeCode.UInt64:
+                    case ETypeCode.UInt64:
                         return jToken.Value<ulong>();
-                    case DataType.ETypeCode.Int16:
+                    case ETypeCode.Int16:
                         return jToken.Value<short>();
-                    case DataType.ETypeCode.Int32:
+                    case ETypeCode.Int32:
                         return jToken.Value<int>();
-                    case DataType.ETypeCode.Int64:
+                    case ETypeCode.Int64:
                         return jToken.Value<long>();
-                    case DataType.ETypeCode.Decimal:
+                    case ETypeCode.Decimal:
                         return jToken.Value<decimal>();
-                    case DataType.ETypeCode.Double:
+                    case ETypeCode.Double:
                         return jToken.Value<double>();
-                    case DataType.ETypeCode.Single:
+                    case ETypeCode.Single:
                         return jToken.Value<float>();
-                    case DataType.ETypeCode.String:
-                    case DataType.ETypeCode.Text:
+                    case ETypeCode.String:
+                    case ETypeCode.Text:
                         return jToken.Value<string>();
-                    case DataType.ETypeCode.Boolean:
+                    case ETypeCode.Boolean:
                         return jToken.Value<bool>();
-                    case DataType.ETypeCode.DateTime:
+                    case ETypeCode.DateTime:
                         return jToken.Value<DateTime>();
-                    case DataType.ETypeCode.Time:
+                    case ETypeCode.Time:
                         return jToken.Value<TimeSpan>();
-                    case DataType.ETypeCode.Guid:
+                    case ETypeCode.Guid:
                         return jToken.Value<Guid>();
-                    case DataType.ETypeCode.Unknown:
+                    case ETypeCode.Unknown:
                         return jToken.Value<string>();
-                    case DataType.ETypeCode.Json:
+                    case ETypeCode.Json:
                         return jToken;
-                    case DataType.ETypeCode.Xml:
+                    case ETypeCode.Xml:
                         return jToken.Value<string>();
-                    case DataType.ETypeCode.Enum:
+                    case ETypeCode.Enum:
                         return jToken.Value<byte>();
-                    case DataType.ETypeCode.CharArray:
+                    case ETypeCode.CharArray:
                         return jToken.Value<string>();
-                    case DataType.ETypeCode.Object:
+                    case ETypeCode.Object:
                         return jToken.Value<string>();
                     default:
                         throw new ArgumentOutOfRangeException(nameof(typeCode), typeCode, null);
@@ -420,7 +420,7 @@ namespace dexih.transforms.File
         {
             try
             {
-                if (column.DataType == DataType.ETypeCode.Node && column.ChildColumns?.Count > 0)
+                if (column.DataType == ETypeCode.Node && column.ChildColumns?.Count > 0)
                 {
                     return GetArray(jToken, column);
                 }

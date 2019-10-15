@@ -51,7 +51,7 @@ namespace dexih.transforms.Mapping
             
             InputOrdinal = table.GetOrdinal(InputColumn);
 
-            if (InputOrdinal >= 0 && InputColumn.DataType == DataType.ETypeCode.Node)
+            if (InputOrdinal >= 0 && InputColumn.DataType == ETypeCode.Node)
             {
                 OutputColumn.ChildColumns = table[InputOrdinal].ChildColumns;
             }

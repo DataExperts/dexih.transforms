@@ -34,13 +34,13 @@ namespace dexih.transforms
 
             switch (table.FormatType)
             {
-                    case DataType.ETypeCode.Json:
+                    case ETypeCode.Json:
                         _fileHandler = new FileHandlerJson(table, table.RowPath);
                         break;
-                    case DataType.ETypeCode.Text:
+                    case ETypeCode.Text:
                         _fileHandler = new FileHandlerText(table, table.FileConfiguration);
                         break;
-                    case DataType.ETypeCode.Xml:
+                    case ETypeCode.Xml:
                         _fileHandler = new FileHandlerXml(table, table.RowPath);
                         break;
                     default:

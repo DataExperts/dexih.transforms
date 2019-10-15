@@ -38,10 +38,10 @@ namespace dexih.transforms
 
             foreach (var column in CacheTable.Columns)
             {
-                if (column.Rank > 0 && !connection.CanUseArray || column.DataType == DataType.ETypeCode.Node)
+                if (column.Rank > 0 && !connection.CanUseArray || column.DataType == ETypeCode.Node)
                 {
                     column.Rank = 0;
-                    column.DataType = DataType.ETypeCode.String;
+                    column.DataType = ETypeCode.String;
                 }
             }
 

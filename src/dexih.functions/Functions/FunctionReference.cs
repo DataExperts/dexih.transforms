@@ -56,7 +56,7 @@ namespace dexih.functions
         public EGenericType GenericType { get; set; }
 
         [Key(11)]
-        public DataType.ETypeCode GenericTypeDefault { get; set; }
+        public ETypeCode GenericTypeDefault { get; set; }
 
         /// <summary>
         /// Used to map a filter equivalent operator

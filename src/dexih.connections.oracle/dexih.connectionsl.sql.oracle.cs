@@ -49,31 +49,31 @@ namespace dexih.connections.oracle
         public override bool AllowsTruncate { get; } = false;
 
         
-        public override object GetConnectionMaxValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return new DateTime(9999,12,31, 23, 59, 59, 0);
-                case DataType.ETypeCode.UInt64:
+                case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
                 //TODO Oracle driver giving error when converting any numeric with scientific number 
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     return (double)1000000000000000F;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     return 1E20F;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
         }
         
-        public override object GetConnectionMinValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     return (double)-1000000000000000F;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     return -1E20F;
                 default:
                     return DataType.GetDataTypeMinValue(typeCode, length);
@@ -178,67 +178,67 @@ namespace dexih.connections.oracle
 
             switch (column.DataType)
             {
-                case DataType.ETypeCode.Byte:
+                case ETypeCode.Byte:
                     sqlType = "NUMBER(3, 0)";
                     break;
-                case DataType.ETypeCode.SByte:
+                case ETypeCode.SByte:
                     sqlType = "NUMBER(3, 0)";
                     break;
-                case DataType.ETypeCode.UInt16:
+                case ETypeCode.UInt16:
                     sqlType = "NUMBER(6, 0)";
                     break;
-				case DataType.ETypeCode.Int16:
+				case ETypeCode.Int16:
                     sqlType = "NUMBER(5, 0)";
                     break;
-                case DataType.ETypeCode.UInt32:
+                case ETypeCode.UInt32:
                     sqlType = "NUMBER(10, 0)";
                     break;
-                case DataType.ETypeCode.Int32:
+                case ETypeCode.Int32:
                     sqlType = "NUMBER(10, 0)";
                     break;
-                case DataType.ETypeCode.Int64:
+                case ETypeCode.Int64:
                     sqlType = "NUMBER(19,0)";
                     break;
-				case DataType.ETypeCode.UInt64:
+				case ETypeCode.UInt64:
 					sqlType = "NUMBER(19,0)";
                     break;
-                case DataType.ETypeCode.String:
+                case ETypeCode.String:
                     if (column.MaxLength == null)
                         sqlType = (column.IsUnicode == true ? "n" : "") +  "VARCHAR(2000)";
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "VARCHAR(" + column.MaxLength + ")";
                     break;
-				case DataType.ETypeCode.Text:
-                case DataType.ETypeCode.Json:
-                case DataType.ETypeCode.Xml:
-                case DataType.ETypeCode.Node:
+				case ETypeCode.Text:
+                case ETypeCode.Json:
+                case ETypeCode.Xml:
+                case ETypeCode.Node:
                     sqlType = "CLOB";
 					break;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     sqlType = "FLOAT(63)";
                     break;
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     sqlType = "FLOAT(126)";
                     break;
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Boolean:
                     sqlType = "NUMBER(1,0)";
                     break;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     sqlType = "DATE";
                     break;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     sqlType = "CHAR(40)";
                     break;
-                case DataType.ETypeCode.Guid:
+                case ETypeCode.Guid:
                     sqlType = "CHAR(36)";
                     break;
-                case DataType.ETypeCode.Binary:
+                case ETypeCode.Binary:
                     sqlType = "BLOB";
                     break;
-                case DataType.ETypeCode.Unknown:
+                case ETypeCode.Unknown:
                     sqlType = "CLOB";
                     break;
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     sqlType = $"NUMBER ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
@@ -528,27 +528,27 @@ namespace dexih.connections.oracle
             }
         }
         
-        public DataType.ETypeCode ConvertSqlToTypeCode(string sqlType, int? precision, int? scale)
+        public ETypeCode ConvertSqlToTypeCode(string sqlType, int? precision, int? scale)
         {
             switch (sqlType.ToLower())
             {
                 case "number":
-                    if (precision > 0) return DataType.ETypeCode.Decimal;
-                    if (scale < 5) return DataType.ETypeCode.Int16;
-                    if (scale < 10) return DataType.ETypeCode.Int32;
-                    return DataType.ETypeCode.Int64;
+                    if (precision > 0) return ETypeCode.Decimal;
+                    if (scale < 5) return ETypeCode.Int16;
+                    if (scale < 10) return ETypeCode.Int32;
+                    return ETypeCode.Int64;
                 case "integer": 
-                    return  DataType.ETypeCode.Int32;
+                    return  ETypeCode.Int32;
                 case "smallint": 
-                    return  DataType.ETypeCode.Int16;				       
+                    return  ETypeCode.Int16;				       
                 case "numeric": 
                 case "decimal": 
-                    return DataType.ETypeCode.Decimal;
+                    return ETypeCode.Decimal;
                 case "float":
-                    return DataType.ETypeCode.Double;
+                    return ETypeCode.Double;
                 case "date":
                 case "timestamp":
-                    return DataType.ETypeCode.DateTime;
+                    return ETypeCode.DateTime;
                 case "char": 
                 case "nchar": 
                 case "varchar": 
@@ -556,17 +556,17 @@ namespace dexih.connections.oracle
                 case "varchar2": 
                 case "nvarchar2": 
                 case "rowid": 
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case "long":
                 case "clob":
                 case "nclob":
-                    return DataType.ETypeCode.Text;
+                    return ETypeCode.Text;
                 case "bfile": 
                 case "blob": 
                 case "raw": 
-                    return DataType.ETypeCode.Binary;
+                    return ETypeCode.Binary;
             }
-            return DataType.ETypeCode.Unknown;
+            return ETypeCode.Unknown;
         }
         
         public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
@@ -619,7 +619,7 @@ namespace dexih.connections.oracle
                                 AllowDbNull = reader["NULLABLE"].ToString() != "N" 
                             };
 
-                            if (col.DataType == DataType.ETypeCode.Unknown)
+                            if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -630,11 +630,11 @@ namespace dexih.connections.oracle
 
 							switch (col.DataType)
 							{
-							    case DataType.ETypeCode.String:
+							    case ETypeCode.String:
 							        col.MaxLength = maxLength;
 							        break;
-							    case DataType.ETypeCode.Double:
-							    case DataType.ETypeCode.Decimal:
+							    case ETypeCode.Double:
+							    case ETypeCode.Decimal:
 							        col.Precision = precision;
 							        col.Scale = scale;
 							        break;
@@ -698,49 +698,49 @@ ORDER BY cols.table_name, cols.position"))
             }
         }
 
-        private OracleDbType GetSqlDbType(DataType.ETypeCode typeCode)
+        private OracleDbType GetSqlDbType(ETypeCode typeCode)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.Byte:
+                case ETypeCode.Byte:
                     return OracleDbType.Byte;
-                case DataType.ETypeCode.SByte:
+                case ETypeCode.SByte:
                     return OracleDbType.Int16;
-                case DataType.ETypeCode.UInt16:
+                case ETypeCode.UInt16:
                     return OracleDbType.Int32;
-                case DataType.ETypeCode.UInt32:
+                case ETypeCode.UInt32:
                     return OracleDbType.Int64;
-                case DataType.ETypeCode.UInt64:
+                case ETypeCode.UInt64:
                     return OracleDbType.Int64;
-                case DataType.ETypeCode.Int16:
+                case ETypeCode.Int16:
                     return OracleDbType.Int16;
-                case DataType.ETypeCode.Int32:
+                case ETypeCode.Int32:
                     return OracleDbType.Int32;
-                case DataType.ETypeCode.Int64:
+                case ETypeCode.Int64:
                     return OracleDbType.Int64;
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     return OracleDbType.Decimal;
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     return OracleDbType.Double;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     return OracleDbType.Double;
-                case DataType.ETypeCode.String:
+                case ETypeCode.String:
                     return OracleDbType.Varchar2;
-				case DataType.ETypeCode.Text:
-                case DataType.ETypeCode.Json:
-                case DataType.ETypeCode.Xml:
-                case DataType.ETypeCode.Node:
-                case DataType.ETypeCode.Unknown:
+				case ETypeCode.Text:
+                case ETypeCode.Json:
+                case ETypeCode.Xml:
+                case ETypeCode.Node:
+                case ETypeCode.Unknown:
 				    return OracleDbType.Clob;
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Boolean:
                     return OracleDbType.Byte;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return OracleDbType.Date;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     return OracleDbType.Varchar2;
-                case DataType.ETypeCode.Guid:
+                case ETypeCode.Guid:
                     return OracleDbType.Varchar2;
-                case DataType.ETypeCode.Binary:
+                case ETypeCode.Binary:
                     return OracleDbType.Blob;
                 default:
                     return OracleDbType.Varchar2;
@@ -1026,8 +1026,8 @@ ORDER BY cols.table_name, cols.position"))
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "select object_name from all_objects where object_type = 'TABLE' and OBJECT_NAME = :NAME and OWNER = :SCHEMA"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
-                    cmd.Parameters.Add(CreateParameter(cmd, "SCHEMA", DataType.ETypeCode.Text, 0, ParameterDirection.Input, DefaultDatabase));
+                    cmd.Parameters.Add(CreateParameter(cmd, "NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "SCHEMA", ETypeCode.Text, 0, ParameterDirection.Input, DefaultDatabase));
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
                 }

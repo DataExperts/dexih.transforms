@@ -40,32 +40,32 @@ namespace dexih.connections.mysql
         public override bool AllowsTruncate { get; } = true;
 
        
-        public override object GetConnectionMaxValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return new DateTime(9999,12,31);
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     return TimeSpan.FromDays(1) - TimeSpan.FromSeconds(1); //mysql doesn't support milliseconds
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     return 1E+100;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     return 1E+37F;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
         }
 	    
-        public override object GetConnectionMinValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     return new DateTime(1000,1,1);
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     return -1E+100;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     return -1E+37F;
                 default:
                     return DataType.GetDataTypeMinValue(typeCode, length);
@@ -167,7 +167,7 @@ namespace dexih.connections.mysql
                 using (var connection = await NewConnection())
                 using (var cmd = CreateCommand(connection, "SHOW TABLES LIKE @NAME"))
                 {
-                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
+                    cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                     return tableExists != null;
                 }
@@ -258,71 +258,71 @@ namespace dexih.connections.mysql
 
             switch (column.DataType)
             {
-                case DataType.ETypeCode.Byte:
+                case ETypeCode.Byte:
                     sqlType = "tinyint unsigned";
                     break;
-                case DataType.ETypeCode.SByte:
+                case ETypeCode.SByte:
                     sqlType = "tinyint";
                     break;
-                case DataType.ETypeCode.UInt16:
+                case ETypeCode.UInt16:
                     sqlType = "smallint unsigned";
                     break;
-				case DataType.ETypeCode.Int16:
+				case ETypeCode.Int16:
                     sqlType = "smallint";
                     break;
-                case DataType.ETypeCode.UInt32:
+                case ETypeCode.UInt32:
                     sqlType = "int unsigned";
                     break;
-                case DataType.ETypeCode.Int32:
+                case ETypeCode.Int32:
                     sqlType = "int";
                     break;
-                case DataType.ETypeCode.Int64:
+                case ETypeCode.Int64:
                     sqlType = "bigint";
                     break;
-				case DataType.ETypeCode.UInt64:
+				case ETypeCode.UInt64:
 					sqlType = "bigint unsigned";
                     break;
-                case DataType.ETypeCode.String:
+                case ETypeCode.String:
                     if (column.MaxLength == null)
                         sqlType = (column.IsUnicode == true ? "n" : "") +  "varchar(8000)";
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
-				case DataType.ETypeCode.Text:
-                case DataType.ETypeCode.Json:
-                case DataType.ETypeCode.Xml:
-                case DataType.ETypeCode.Node:
-                case DataType.ETypeCode.Geometry:
+				case ETypeCode.Text:
+                case ETypeCode.Json:
+                case ETypeCode.Xml:
+                case ETypeCode.Node:
+                case ETypeCode.Geometry:
                     sqlType = "longtext";
 					break;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     sqlType = "real";
                     break;
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     sqlType = "double";
                     break;
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Boolean:
                     sqlType = "bit(1)";
                     break;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     sqlType = "DateTime";
                     break;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     sqlType = "time";
                     break;
-                case DataType.ETypeCode.Guid:
+                case ETypeCode.Guid:
                     sqlType = "char(40)";
                     break;
-                case DataType.ETypeCode.Binary:
+                case ETypeCode.Binary:
                     sqlType = "blob";
                     break;
-                case DataType.ETypeCode.CharArray:
+                case ETypeCode.CharArray:
                     sqlType = "char";
                     break;
-                case DataType.ETypeCode.Unknown:
+                case ETypeCode.Unknown:
                     sqlType = "text";
                     break;
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
                 default:
@@ -337,7 +337,7 @@ namespace dexih.connections.mysql
         /// Gets the start quote to go around the values in sql insert statement based in the column type.
         /// </summary>
         /// <returns></returns>
-        protected string GetSqlFieldValueQuote(DataType.ETypeCode typeCode, int rank, object value)
+        protected string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
         {
             string returnValue;
 
@@ -352,43 +352,43 @@ namespace dexih.connections.mysql
 
             switch (typeCode)
             {
-                case DataType.ETypeCode.Byte:
-                case DataType.ETypeCode.Single:
-                case DataType.ETypeCode.Int16:
-                case DataType.ETypeCode.Int32:
-                case DataType.ETypeCode.Int64:
-                case DataType.ETypeCode.SByte:
-                case DataType.ETypeCode.UInt16:
-                case DataType.ETypeCode.UInt32:
-                case DataType.ETypeCode.UInt64:
-                case DataType.ETypeCode.Double:
-                case DataType.ETypeCode.Decimal:
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Byte:
+                case ETypeCode.Single:
+                case ETypeCode.Int16:
+                case ETypeCode.Int32:
+                case ETypeCode.Int64:
+                case ETypeCode.SByte:
+                case ETypeCode.UInt16:
+                case ETypeCode.UInt32:
+                case ETypeCode.UInt64:
+                case ETypeCode.Double:
+                case ETypeCode.Decimal:
+                case ETypeCode.Boolean:
                     returnValue = MySqlHelper.EscapeString(value.ToString());
                     break;
-                case DataType.ETypeCode.String:
-				case DataType.ETypeCode.Text:
-                case DataType.ETypeCode.Json:
-                case DataType.ETypeCode.Node:
-                case DataType.ETypeCode.Xml:
-                case DataType.ETypeCode.Guid:
-                case DataType.ETypeCode.Unknown:
+                case ETypeCode.String:
+				case ETypeCode.Text:
+                case ETypeCode.Json:
+                case ETypeCode.Node:
+                case ETypeCode.Xml:
+                case ETypeCode.Guid:
+                case ETypeCode.Unknown:
                     returnValue = "'" + MySqlHelper.EscapeString(value.ToString()) + "'";
                     break;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     if (value is DateTime)
                         returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     else
 						returnValue = "STR_TO_DATE('"+ MySqlHelper.EscapeString((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     break;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     if (value is TimeSpan span)
 						returnValue = "TIME_FORMAT('" + MySqlHelper.EscapeString(span.ToString("c")) + "', '%H:%i:%s.%f')";
 					else
                         returnValue = "TIME_FORMAT('" + MySqlHelper.EscapeString((string)value) + "', '%H:%i:%s.%f')";
 					break;
-                case DataType.ETypeCode.Binary:
-                    returnValue = "X'" + Operations.Parse(DataType.ETypeCode.String, value) +"'";
+                case ETypeCode.Binary:
+                    returnValue = "X'" + Operations.Parse(ETypeCode.String, value) +"'";
                     break;
                 default:
                     throw new Exception($"The datatype {typeCode} is not compatible with the sql insert statement.");
@@ -570,7 +570,7 @@ namespace dexih.connections.mysql
                             {
                                 col.DeltaType = TableColumn.EDeltaType.NaturalKey;
                             }
-                            else if (col.DataType == DataType.ETypeCode.Unknown)
+                            else if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -581,11 +581,11 @@ namespace dexih.connections.mysql
 
 							switch (col.DataType)
 							{
-							    case DataType.ETypeCode.String:
+							    case ETypeCode.String:
 							        col.MaxLength = ConvertNullableToInt(reader["CHARACTER_MAXIMUM_LENGTH"]);
 							        break;
-							    case DataType.ETypeCode.Double:
-							    case DataType.ETypeCode.Decimal:
+							    case ETypeCode.Double:
+							    case ETypeCode.Decimal:
 							        col.Precision = ConvertNullableToInt(reader["NUMERIC_PRECISION"]);
 							        col.Scale = ConvertNullableToInt(reader["NUMERIC_SCALE"]);
 							        break;
@@ -628,59 +628,59 @@ namespace dexih.connections.mysql
 		}
 
 
-        public DataType.ETypeCode ConvertSqlToTypeCode(string sqlType, bool isSigned)
+        public ETypeCode ConvertSqlToTypeCode(string sqlType, bool isSigned)
         {
             switch (sqlType)
             {
 				case "bit": 
-				    return DataType.ETypeCode.Boolean;
+				    return ETypeCode.Boolean;
 				case "tinyint": 
-				    return isSigned ? DataType.ETypeCode.SByte : DataType.ETypeCode.Byte;
+				    return isSigned ? ETypeCode.SByte : ETypeCode.Byte;
 				case "year": 
-				    return  DataType.ETypeCode.Int16;				       
+				    return  ETypeCode.Int16;				       
 				case "smallint": 
-                    return isSigned ? DataType.ETypeCode.Int16 : DataType.ETypeCode.UInt16;
+                    return isSigned ? ETypeCode.Int16 : ETypeCode.UInt16;
                 case "mediumint":
 				case "int": 
-                    return isSigned ? DataType.ETypeCode.Int32 : DataType.ETypeCode.UInt32;
+                    return isSigned ? ETypeCode.Int32 : ETypeCode.UInt32;
 				case "bigint": 
-                    return isSigned ? DataType.ETypeCode.Int64 : DataType.ETypeCode.UInt64;
+                    return isSigned ? ETypeCode.Int64 : ETypeCode.UInt64;
 				case "numeric": 
                 case "decimal": 
-                    return DataType.ETypeCode.Decimal;
+                    return ETypeCode.Decimal;
 				case "float":
                 case "real":
                 case "double precicion":
-				    return DataType.ETypeCode.Double;
+				    return ETypeCode.Double;
 				case "bool": 
 				case "boolean": 
-				    return DataType.ETypeCode.Boolean;
+				    return ETypeCode.Boolean;
 				case "date":
 				case "datetime":
 				case "timestamp":
-				    return DataType.ETypeCode.DateTime;
+				    return ETypeCode.DateTime;
 				case "time": 
-				    return DataType.ETypeCode.Time;
+				    return ETypeCode.Time;
 				case "char":
-                    return DataType.ETypeCode.Char;
+                    return ETypeCode.Char;
 				case "varchar": 
 				case "enum": 
 				case "set": 
 				case "tinytext": 
 				case "mediumtext": 
 				case "longtext": 
-				    return DataType.ETypeCode.String;
+				    return ETypeCode.String;
 				case "text":
-					return DataType.ETypeCode.Text;
+					return ETypeCode.Text;
                 case "binary": 
                 case "varbinary": 
                 case "tinyblob": 
                 case "blob": 
                 case "mediumblob": 
                 case "longblob":
-                    return DataType.ETypeCode.Binary;
+                    return ETypeCode.Binary;
             }
-            return DataType.ETypeCode.Unknown;
+            return ETypeCode.Unknown;
         }
         
     }

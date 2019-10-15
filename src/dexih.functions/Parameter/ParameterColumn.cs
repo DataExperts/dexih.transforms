@@ -31,7 +31,7 @@ namespace dexih.functions.Parameter
         
         public ParameterColumn(
             string name, 
-            DataType.ETypeCode dataType,
+            ETypeCode dataType,
             int rank,
             TableColumn column
         )
@@ -42,7 +42,7 @@ namespace dexih.functions.Parameter
             Column = column;
         }
 
-        public ParameterColumn(string columnName, DataType.ETypeCode dataType)
+        public ParameterColumn(string columnName, ETypeCode dataType)
         {
             Name = columnName;
             DataType = dataType;

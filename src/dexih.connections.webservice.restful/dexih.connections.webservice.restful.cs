@@ -112,7 +112,7 @@ namespace dexih.connections.webservice.restful
 						Name = name,
 						IsInput = true,
 						LogicalName = name,
-						DataType = DataType.ETypeCode.String,
+						DataType = ETypeCode.String,
 						DeltaType = TableColumn.EDeltaType.NaturalKey,
 						MaxLength = 1024,
 
@@ -155,7 +155,7 @@ namespace dexih.connections.webservice.restful
                     Name = "ResponseStatusCode",
                     IsInput = false,
                     LogicalName = "ResponseStatusCode",
-                    DataType = DataType.ETypeCode.String,
+                    DataType = ETypeCode.String,
                     DeltaType = TableColumn.EDeltaType.ResponseStatus,
                     MaxLength = null,
                     Description = "The status code returned by the service",
@@ -169,7 +169,7 @@ namespace dexih.connections.webservice.restful
                     Name = "ResponseSuccess",
                     IsInput = false,
                     LogicalName = "ResponseSuccess",
-                    DataType = DataType.ETypeCode.Boolean,
+                    DataType = ETypeCode.Boolean,
                     DeltaType = TableColumn.EDeltaType.ResponseSuccess,
                     MaxLength = null,
                     Description = "Is the web service call successful.",
@@ -183,7 +183,7 @@ namespace dexih.connections.webservice.restful
 					Name = "ResponseError",
 					IsInput = false,
 					LogicalName = "ResponseError",
-					DataType = DataType.ETypeCode.String,
+					DataType = ETypeCode.String,
 					DeltaType = TableColumn.EDeltaType.Error,
 					MaxLength = null,
 					Description = "Error message calling the web service.",
@@ -197,7 +197,7 @@ namespace dexih.connections.webservice.restful
 					Name = "Url",
 					IsInput = false,
 					LogicalName = "Url",
-					DataType = DataType.ETypeCode.String,
+					DataType = ETypeCode.String,
 					DeltaType = TableColumn.EDeltaType.Url,
 					MaxLength = null,
 					Description = "Url used to call the web service.",
@@ -228,15 +228,15 @@ namespace dexih.connections.webservice.restful
 
 					switch (newRestFunction.FormatType)
 					{
-						case DataType.ETypeCode.Json:
+						case ETypeCode.Json:
 							var jsonHandler = new FileHandlerJson(restFunction, rowPath);
 							fileColumns = await jsonHandler.GetSourceColumns(dataStream);
 							break;
-						case DataType.ETypeCode.Xml:
+						case ETypeCode.Xml:
 							var xmlHandler = new FileHandlerXml(restFunction, rowPath);
 							fileColumns = await xmlHandler.GetSourceColumns(dataStream);
 							break;
-						case DataType.ETypeCode.Text:
+						case ETypeCode.Text:
 							var textHandler = new FileHandlerText(restFunction, restFunction.FileConfiguration);
 							fileColumns = await textHandler.GetSourceColumns(dataStream);
 							break;
@@ -393,13 +393,13 @@ namespace dexih.connections.webservice.restful
 
 					switch (restFunction.FormatType)
 					{
-						case DataType.ETypeCode.Text:
+						case ETypeCode.Text:
 							fileHandler = new FileHandlerText(restFunction, restFunction.FileConfiguration);
 							break;
-						case DataType.ETypeCode.Json:
+						case ETypeCode.Json:
 							fileHandler = new FileHandlerJson(restFunction, restFunction.RowPath);
 							break;
-						case DataType.ETypeCode.Xml:
+						case ETypeCode.Xml:
 							fileHandler = new FileHandlerXml(restFunction, restFunction.RowPath);
 							break;
 						default:

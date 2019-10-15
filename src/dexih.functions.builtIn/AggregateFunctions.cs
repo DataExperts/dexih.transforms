@@ -56,11 +56,11 @@ namespace dexih.functions.BuiltIn
         public int CountResult() => _cacheCount;
 
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void Sum(T value) => _cacheNumber = Operations.Add<T>(_cacheNumber, value);
 
        
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Average", Description = "Average of the values", ResultMethod = nameof(AverageResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Average", Description = "Average of the values", ResultMethod = nameof(AverageResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void Average(T value)
         {
             _cacheNumber = Operations.Add<T>(_cacheNumber, value);
@@ -115,14 +115,14 @@ namespace dexih.functions.BuiltIn
             _cacheNumber = value;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count", Description = "Number of records", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Int32, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count", Description = "Number of records", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
         public void Count()
         {
             _cacheCount++;
         }
 
        
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountTrue", Description = "Count where the value is true", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Int32, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountTrue", Description = "Count where the value is true", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
         public void CountTrue(bool value)
         {
             
@@ -132,7 +132,7 @@ namespace dexih.functions.BuiltIn
             }
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountFalse", Description = "Count where the value is false", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Int32, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountFalse", Description = "Count where the value is false", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
         public void CountFalse(bool value)
         {
             
@@ -142,7 +142,7 @@ namespace dexih.functions.BuiltIn
             }
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountEqual", Description = "Count where the values are equal", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Int32, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "CountEqual", Description = "Count where the values are equal", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
         public void CountEqual(object[] values)
         {
             
@@ -155,7 +155,7 @@ namespace dexih.functions.BuiltIn
         }
 
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count Distinct", Description = "Number if distinct values", ResultMethod = nameof(CountDistinctResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Int32, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count Distinct", Description = "Number if distinct values", ResultMethod = nameof(CountDistinctResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
         public void CountDistinct(T value)
         {
             if (_hashSet == null) _hashSet = new HashSet<T>();
@@ -168,7 +168,7 @@ namespace dexih.functions.BuiltIn
             return _hashSet.Count;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Concatenate Aggregate", Description = "Returns concatenated string of repeating values.", ResultMethod = nameof(ConcatAggResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Int32, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Concatenate Aggregate", Description = "Returns concatenated string of repeating values.", ResultMethod = nameof(ConcatAggResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
         public void ConcatAgg(string value, string delimiter)
         {
             if (_cacheStringBuilder == null)
@@ -185,7 +185,7 @@ namespace dexih.functions.BuiltIn
             return _cacheStringBuilder.ToString();
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Median", Description = "The median value in a series", ResultMethod = nameof(MedianResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Median", Description = "The median value in a series", ResultMethod = nameof(MedianResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void Median(T value)
         {
             if (_cacheList == null) _cacheList = new List<T>();
@@ -211,7 +211,7 @@ namespace dexih.functions.BuiltIn
             return sorted[count / 2];
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Standard Deviation", Description = "The standard deviation in a set of numbers", ResultMethod = nameof(StdDevResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Standard Deviation", Description = "The standard deviation in a set of numbers", ResultMethod = nameof(StdDevResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void StdDev(double value)
         {
             Variance(value);
@@ -223,7 +223,7 @@ namespace dexih.functions.BuiltIn
             return sd;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Variance", Description = "The variance in a set of numbers.", ResultMethod = nameof(VarianceResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Variance", Description = "The variance in a set of numbers.", ResultMethod = nameof(VarianceResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void Variance(double value)
         {
             if (_doubleList == null) _doubleList = new List<double>();
@@ -295,7 +295,7 @@ namespace dexih.functions.BuiltIn
             AsPercent
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Percent of Total", Description = "The percentage total in the group.", ResultMethod = nameof(PercentTotalResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Percent of Total", Description = "The percentage total in the group.", ResultMethod = nameof(PercentTotalResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void PercentTotal(T value)
         {
             if (_cacheList == null)
@@ -318,7 +318,7 @@ namespace dexih.functions.BuiltIn
             return percentFormat == EPercentFormat.AsDecimal ? percent : Operations.Multiply<T>(percent, OneHundred);
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Rank", Description = "The ranking (starting at 1) of the item within the group", ResultMethod = nameof(RankResult), ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Rank", Description = "The ranking (starting at 1) of the item within the group", ResultMethod = nameof(RankResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void Rank(T[] values)
         {
             if (_sortedRowsDictionary == null)
@@ -374,21 +374,21 @@ namespace dexih.functions.BuiltIn
             return (int)_cacheArray[index];
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Count", Description = "The running count of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Int32, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Count", Description = "The running count of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
         public int RunningCount()
         {
             _cacheCount++;
             return _cacheCount;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public object RunningSum(T value)
         {
             _cacheNumber = Operations.Add(_cacheNumber, value);
             return _cacheNumber;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = DataType.ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public object RunningAverage(T value)
         {
             _cacheNumber = Operations.Add(_cacheNumber, value);

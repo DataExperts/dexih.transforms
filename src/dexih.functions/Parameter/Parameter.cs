@@ -10,7 +10,6 @@ using static Dexih.Utils.DataType.DataType;
 namespace dexih.functions.Parameter
 {
     [MessagePackObject]
-    [ProtoInherit(1000)]
     [Union(0, typeof(ParameterArray))]
     [Union(1, typeof(ParameterColumn))]
     [Union(2, typeof(ParameterJoinColumn))]

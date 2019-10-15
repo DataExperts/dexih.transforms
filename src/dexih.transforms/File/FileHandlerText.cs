@@ -28,25 +28,25 @@ namespace dexih.transforms.File
 
         private struct CsvField
         {
-            public DataType.ETypeCode TypeCode { get; set; }
+            public ETypeCode TypeCode { get; set; }
             public int Rank { get; set; }
             public int Position { get; set; }
             public Type DataType { get; set; }
 
-            public CsvField(int position, DataType.ETypeCode typeCode, int rank)
+            public CsvField(int position, ETypeCode typeCode, int rank)
             {
                 Position = position;
                 TypeCode = typeCode;
                 Rank = rank;
 
                 if (rank > 0
-                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Binary
-                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Byte
-                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.CharArray
-                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Guid
-                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Json
-                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Unknown
-                    || typeCode == Dexih.Utils.DataType.DataType.ETypeCode.Xml)
+                    || typeCode == Dexih.Utils.DataType.ETypeCode.Binary
+                    || typeCode == Dexih.Utils.DataType.ETypeCode.Byte
+                    || typeCode == Dexih.Utils.DataType.ETypeCode.CharArray
+                    || typeCode == Dexih.Utils.DataType.ETypeCode.Guid
+                    || typeCode == Dexih.Utils.DataType.ETypeCode.Json
+                    || typeCode == Dexih.Utils.DataType.ETypeCode.Unknown
+                    || typeCode == Dexih.Utils.DataType.ETypeCode.Xml)
                 {
                     DataType = typeof(string);
                 }
@@ -154,7 +154,7 @@ namespace dexih.transforms.File
                 Name = "FileRow",
                 LogicalName = "FileRow",
                 IsInput = false,
-                DataType = DataType.ETypeCode.Int32,
+                DataType = ETypeCode.Int32,
                 DeltaType = TableColumn.EDeltaType.FileRowNumber,
                 Description = "The file row number the record came from.",
                 AllowDbNull = false,

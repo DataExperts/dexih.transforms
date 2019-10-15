@@ -40,7 +40,7 @@ namespace dexih.functions
         /// </summary>
         public string ImportMethod { get; set; }
 
-        public DataType.ETypeCode GenericTypeDefault { get; set; } = DataType.ETypeCode.String;
+        public ETypeCode GenericTypeDefault { get; set; } = ETypeCode.String;
 
         public EGenericType GenericType { get; set; } = EGenericType.None;
 

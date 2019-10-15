@@ -42,24 +42,24 @@ namespace dexih.connections.sqlite
 
         public override bool AllowsTruncate { get; } = false;
         
-        public override object GetConnectionMaxValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-               case DataType.ETypeCode.Decimal:
+               case ETypeCode.Decimal:
                    return (decimal) 999999999999999;
-               case DataType.ETypeCode.UInt64:
+               case ETypeCode.UInt64:
                    return (ulong) long.MaxValue;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
         }
 
-        public override object GetConnectionMinValue(DataType.ETypeCode typeCode, int length = 0)
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     return (decimal)-999999999999999;
                 default:
                     return DataType.GetDataTypeMinValue(typeCode, length);
@@ -77,7 +77,7 @@ namespace dexih.connections.sqlite
                     using (var cmd = CreateCommand(connection,
                         "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
                     {
-                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", DataType.ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
+                        cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
                         var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
                         return tableExists != null;
                     }
@@ -193,68 +193,68 @@ namespace dexih.connections.sqlite
 
             switch (column.DataType)
             {
-                case DataType.ETypeCode.Int32:
-                case DataType.ETypeCode.UInt16:
+                case ETypeCode.Int32:
+                case ETypeCode.UInt16:
                     sqlType = "int";
                     break;
-                case DataType.ETypeCode.Byte:
+                case ETypeCode.Byte:
                     sqlType = "tinyint";
                     break;
-                case DataType.ETypeCode.Int16:
-                case DataType.ETypeCode.SByte:
+                case ETypeCode.Int16:
+                case ETypeCode.SByte:
                     sqlType = "smallint";
                     break;
-                case DataType.ETypeCode.Int64:
-                case DataType.ETypeCode.UInt32:
+                case ETypeCode.Int64:
+                case ETypeCode.UInt32:
                     sqlType = "bigint";
                     break;
-                case DataType.ETypeCode.String:
+                case ETypeCode.String:
                     if (column.MaxLength == null)
                         sqlType = (column.IsUnicode == true ? "n" : "") + "text";
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength.ToString() + ")";
                     break;
-                case DataType.ETypeCode.Geometry:
-				case DataType.ETypeCode.Text:
-                case DataType.ETypeCode.Xml:
-                case DataType.ETypeCode.Json:
-                case DataType.ETypeCode.Node:
+                case ETypeCode.Geometry:
+				case ETypeCode.Text:
+                case ETypeCode.Xml:
+                case ETypeCode.Json:
+                case ETypeCode.Node:
                     sqlType = (column.IsUnicode == true ? "n" : "") + "text";
 					break;
-                case DataType.ETypeCode.Single:
+                case ETypeCode.Single:
                     sqlType = "float";
                     break;
-                case DataType.ETypeCode.UInt64:
+                case ETypeCode.UInt64:
                     sqlType = "nvarchar(25)";
                     break;
-                case DataType.ETypeCode.Double:
+                case ETypeCode.Double:
                     sqlType = "float";
                     break;
-                case DataType.ETypeCode.Boolean:
+                case ETypeCode.Boolean:
                     sqlType = "boolean";
                     break;
-                case DataType.ETypeCode.DateTime:
+                case ETypeCode.DateTime:
                     sqlType = "datetime";
                     break;
-                case DataType.ETypeCode.Time:
+                case ETypeCode.Time:
                     sqlType = "text"; //sqlite doesn't have a time type.
                     break;
-                case DataType.ETypeCode.Guid:
+                case ETypeCode.Guid:
                     sqlType = "text";
                     break;
-                case DataType.ETypeCode.Unknown:
+                case ETypeCode.Unknown:
                     sqlType = "text";
                     break;
-                case DataType.ETypeCode.Decimal:
+                case ETypeCode.Decimal:
                     sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
                     break;
-                case DataType.ETypeCode.Binary:
+                case ETypeCode.Binary:
                     sqlType = "blob";
                     break;
-                case DataType.ETypeCode.Enum:
+                case ETypeCode.Enum:
                     sqlType = "text";
                     break;
-                case DataType.ETypeCode.CharArray:
+                case ETypeCode.CharArray:
                     sqlType = $"nchar({column.MaxLength})";
                     break;
                 default:
@@ -488,7 +488,7 @@ namespace dexih.connections.sqlite
 
                             var dataType = reader["type"].ToString().Split('(', ')');
                             col.DataType = ConvertSqlToTypeCode(dataType[0]);
-                            if (col.DataType == DataType.ETypeCode.Unknown)
+                            if (col.DataType == ETypeCode.Unknown)
                             {
                                 col.DeltaType = TableColumn.EDeltaType.IgnoreField;
                             }
@@ -501,12 +501,12 @@ namespace dexih.connections.sqlite
                                     col.DeltaType = TableColumn.EDeltaType.TrackingField;
                             }
 
-                            if (col.DataType == DataType.ETypeCode.String)
+                            if (col.DataType == ETypeCode.String)
                             {
                                 if (dataType.Length > 1)
                                     col.MaxLength = Convert.ToInt32(dataType[1]);
                             }
-                            else if (col.DataType == DataType.ETypeCode.Double || col.DataType == DataType.ETypeCode.Decimal)
+                            else if (col.DataType == ETypeCode.Double || col.DataType == ETypeCode.Decimal)
                             {
                                 if (dataType.Length > 1)
                                 {
@@ -536,70 +536,70 @@ namespace dexih.connections.sqlite
             }
         }
 
-        public DataType.ETypeCode ConvertSqlToTypeCode(string sqlType)
+        public ETypeCode ConvertSqlToTypeCode(string sqlType)
         {
             switch (sqlType)
             {
                 case "INT":
-                    return DataType.ETypeCode.Int32;
+                    return ETypeCode.Int32;
                 case "INTEGER":
-                    return DataType.ETypeCode.Int32;
+                    return ETypeCode.Int32;
                 case "TINYINT":
-                    return DataType.ETypeCode.Int16;
+                    return ETypeCode.Int16;
                 case "SMALLINT":
-                    return DataType.ETypeCode.Int16;
+                    return ETypeCode.Int16;
                 case "MEDIUMINT":
-                    return DataType.ETypeCode.Int32;
+                    return ETypeCode.Int32;
                 case "BIGINT":
-                    return DataType.ETypeCode.Int64;
+                    return ETypeCode.Int64;
                 case "UNSIGNED BIG INT":
-                    return DataType.ETypeCode.UInt64;
+                    return ETypeCode.UInt64;
                 case "INT2":
-                    return DataType.ETypeCode.UInt16;
+                    return ETypeCode.UInt16;
                 case "INT8":
-                    return DataType.ETypeCode.UInt32;
+                    return ETypeCode.UInt32;
                 case "CHARACTER":
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case "CHAR":
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case "CURRENCY":
-                    return DataType.ETypeCode.Decimal;
+                    return ETypeCode.Decimal;
                 case "VARCHAR":
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case "VARYING CHARACTER":
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case "NCHAR":
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case "NATIVE CHARACTER":
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case "NVARCHAR":
-                    return DataType.ETypeCode.String;
+                    return ETypeCode.String;
                 case "TEXT":
-                    return DataType.ETypeCode.Text;
+                    return ETypeCode.Text;
                 case "CLOB":
-                    return DataType.ETypeCode.Text;
+                    return ETypeCode.Text;
                 case "BLOB":
-                    return DataType.ETypeCode.Unknown;
+                    return ETypeCode.Unknown;
                 case "REAL":
-                    return DataType.ETypeCode.Double;
+                    return ETypeCode.Double;
                 case "DOUBLE":
-                    return DataType.ETypeCode.Double;
+                    return ETypeCode.Double;
                 case "DOUBLE PRECISION":
-                    return DataType.ETypeCode.Double;
+                    return ETypeCode.Double;
                 case "FLOAT":
-                    return DataType.ETypeCode.Double;
+                    return ETypeCode.Double;
                 case "NUMERIC":
-                    return DataType.ETypeCode.Decimal;
+                    return ETypeCode.Decimal;
                 case "DECIMAL":
-                    return DataType.ETypeCode.Decimal;
+                    return ETypeCode.Decimal;
                 case "BOOLEAN":
-                    return DataType.ETypeCode.Boolean;
+                    return ETypeCode.Boolean;
                 case "DATE":
-                    return DataType.ETypeCode.DateTime;
+                    return ETypeCode.DateTime;
                 case "DATETIME":
-                    return DataType.ETypeCode.DateTime;
+                    return ETypeCode.DateTime;
             }
-            return DataType.ETypeCode.Unknown;
+            return ETypeCode.Unknown;
         }
 
 //        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries,

@@ -21,7 +21,7 @@ namespace dexih.functions.ml
 
         public EEncoding? Encoding { get; }
 
-        public DataType.ETypeCode TypeCode { get; }
+        public ETypeCode TypeCode { get; }
 
         public object Convert(object value)
         {

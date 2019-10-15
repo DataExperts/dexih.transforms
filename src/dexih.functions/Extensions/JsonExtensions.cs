@@ -10,7 +10,8 @@ namespace dexih.functions
     {
         private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase, 
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new JsonObjectConverter()}
 //            IgnoreNullValues = true
         };
         

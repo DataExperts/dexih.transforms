@@ -62,7 +62,7 @@ namespace dexih.functions
 		}
 
 		[Key(8)]
-		public DataType.ETypeCode FormatType { get; set; }
+		public ETypeCode FormatType { get; set; }
 
 		[Key(9)]
 		public FileConfiguration FileConfiguration { get; set; } = new FileConfiguration();
