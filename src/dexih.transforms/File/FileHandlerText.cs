@@ -40,13 +40,13 @@ namespace dexih.transforms.File
                 Rank = rank;
 
                 if (rank > 0
-                    || typeCode == Dexih.Utils.DataType.ETypeCode.Binary
-                    || typeCode == Dexih.Utils.DataType.ETypeCode.Byte
-                    || typeCode == Dexih.Utils.DataType.ETypeCode.CharArray
-                    || typeCode == Dexih.Utils.DataType.ETypeCode.Guid
-                    || typeCode == Dexih.Utils.DataType.ETypeCode.Json
-                    || typeCode == Dexih.Utils.DataType.ETypeCode.Unknown
-                    || typeCode == Dexih.Utils.DataType.ETypeCode.Xml)
+                    || typeCode == ETypeCode.Binary
+                    || typeCode == ETypeCode.Byte
+                    || typeCode == ETypeCode.CharArray
+                    || typeCode == ETypeCode.Guid
+                    || typeCode == ETypeCode.Json
+                    || typeCode == ETypeCode.Unknown
+                    || typeCode == ETypeCode.Xml)
                 {
                     DataType = typeof(string);
                 }
@@ -78,8 +78,8 @@ namespace dexih.transforms.File
                 _fileConfiguration.Delimiter = _fileConfiguration.Delimiter.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\r", "\r");
             }
             
-            _fileRowNumberOrdinal = table.GetOrdinal(TableColumn.EDeltaType.FileRowNumber);
-            _responseDataOrdinal = _table.GetOrdinal(TableColumn.EDeltaType.ResponseData);
+            _fileRowNumberOrdinal = table.GetOrdinal(EDeltaType.FileRowNumber);
+            _responseDataOrdinal = _table.GetOrdinal(EDeltaType.ResponseData);
         }
 
         public override async Task<ICollection<TableColumn>> GetSourceColumns(Stream stream)
@@ -139,7 +139,7 @@ namespace dexih.transforms.File
                     LogicalName = header,
                     IsInput = false,
                     DataType = dataTypes[i].GetBestType(),
-                    DeltaType = TableColumn.EDeltaType.TrackingField,
+                    DeltaType = EDeltaType.TrackingField,
                     Description = "",
                     AllowDbNull = true,
                     IsUnique = false
@@ -155,7 +155,7 @@ namespace dexih.transforms.File
                 LogicalName = "FileRow",
                 IsInput = false,
                 DataType = ETypeCode.Int32,
-                DeltaType = TableColumn.EDeltaType.FileRowNumber,
+                DeltaType = EDeltaType.FileRowNumber,
                 Description = "The file row number the record came from.",
                 AllowDbNull = false,
                 IsUnique = false
@@ -197,7 +197,7 @@ namespace dexih.transforms.File
                 for(var col = 0; col < _table.Columns.Count; col++)
                 {
                     var column = _table.Columns[col];
-                    if (column.DeltaType != TableColumn.EDeltaType.FileName && column.DeltaType != TableColumn.EDeltaType.FileRowNumber)
+                    if (column.DeltaType != EDeltaType.FileName && column.DeltaType != EDeltaType.FileRowNumber)
                     {
                         for (var csvPos = 0; csvPos < _csvReader.Context.HeaderRecord.Length; csvPos++)
                         {
@@ -216,7 +216,7 @@ namespace dexih.transforms.File
                 for (var col = 0; col < _table.Columns.Count; col++)
                 {
                     var column = _table.Columns[col];
-                    if (column.DeltaType != TableColumn.EDeltaType.FileName && column.DeltaType != TableColumn.EDeltaType.FileRowNumber)
+                    if (column.DeltaType != EDeltaType.FileName && column.DeltaType != EDeltaType.FileRowNumber)
                     {
                         _csvOrdinalMappings.Add(col, new CsvField(col, column.DataType, column.Rank));
                     }

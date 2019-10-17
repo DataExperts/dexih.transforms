@@ -10,13 +10,13 @@ namespace dexih.transforms.tests
     public class dexih_functions_parameters
     {
         [Theory]
-        [InlineData(DataType.ETypeCode.Boolean, "abc", false)]
-        [InlineData(DataType.ETypeCode.Boolean, "true", true)]
-        [InlineData(DataType.ETypeCode.Int32, "abc", false)]
-        [InlineData(DataType.ETypeCode.Int32, "123", true)]
-        [InlineData(DataType.ETypeCode.DateTime, "32 january 2015", false)]
-        [InlineData(DataType.ETypeCode.DateTime, "31 january 2015", true)]
-        public void ParameterValue_Tests(DataType.ETypeCode dataType, object value, bool expectedSuccess)
+        [InlineData(ETypeCode.Boolean, "abc", false)]
+        [InlineData(ETypeCode.Boolean, "true", true)]
+        [InlineData(ETypeCode.Int32, "abc", false)]
+        [InlineData(ETypeCode.Int32, "123", true)]
+        [InlineData(ETypeCode.DateTime, "32 january 2015", false)]
+        [InlineData(ETypeCode.DateTime, "31 january 2015", true)]
+        public void ParameterValue_Tests(ETypeCode dataType, object value, bool expectedSuccess)
         {
             try
             {
@@ -30,13 +30,13 @@ namespace dexih.transforms.tests
         }
 
         [Theory]
-        [InlineData(DataType.ETypeCode.Boolean, "abc", false)]
-        [InlineData(DataType.ETypeCode.Boolean, "true", true)]
-        [InlineData(DataType.ETypeCode.Int32, "abc", false)]
-        [InlineData(DataType.ETypeCode.Int32, "123", true)]
-        [InlineData(DataType.ETypeCode.DateTime, "32 january 2015", false)]
-        [InlineData(DataType.ETypeCode.DateTime, "31 january 2015", true)]
-        public void ParameterColumn_Tests(DataType.ETypeCode dataType, object value, bool expectedSuccess)
+        [InlineData(ETypeCode.Boolean, "abc", false)]
+        [InlineData(ETypeCode.Boolean, "true", true)]
+        [InlineData(ETypeCode.Int32, "abc", false)]
+        [InlineData(ETypeCode.Int32, "123", true)]
+        [InlineData(ETypeCode.DateTime, "32 january 2015", false)]
+        [InlineData(ETypeCode.DateTime, "31 january 2015", true)]
+        public void ParameterColumn_Tests(ETypeCode dataType, object value, bool expectedSuccess)
         {
             var table = new Table("Test");
             var column = new TableColumn("test", dataType);
@@ -57,23 +57,23 @@ namespace dexih.transforms.tests
         }
         
         [Theory]
-        [InlineData(DataType.ETypeCode.Boolean, "abc", false)]
-        [InlineData(DataType.ETypeCode.Boolean, "true", true)]
-        [InlineData(DataType.ETypeCode.Int32, "abc", false)]
-        [InlineData(DataType.ETypeCode.Int32, "123", true)]
-        [InlineData(DataType.ETypeCode.DateTime, "32 january 2015", false)]
-        [InlineData(DataType.ETypeCode.DateTime, "31 january 2015", true)]
-        public void ParameterArray_Tests(DataType.ETypeCode dataType, object value, bool expectedSuccess)
+        [InlineData(ETypeCode.Boolean, "abc", false)]
+        [InlineData(ETypeCode.Boolean, "true", true)]
+        [InlineData(ETypeCode.Int32, "abc", false)]
+        [InlineData(ETypeCode.Int32, "123", true)]
+        [InlineData(ETypeCode.DateTime, "32 january 2015", false)]
+        [InlineData(ETypeCode.DateTime, "31 january 2015", true)]
+        public void ParameterArray_Tests(ETypeCode dataType, object value, bool expectedSuccess)
         {
             var parameters = new List<Parameter>();
-            parameters.Add(new ParameterValue("p1", DataType.ETypeCode.String, "abc"));
+            parameters.Add(new ParameterValue("p1", ETypeCode.String, "abc"));
             
             var table = new Table("Test");
             var column = new TableColumn("test", dataType);
             table.Columns.Add(column);
             parameters.Add(new ParameterColumn("p2", column));
 
-            var parameterArray = new ParameterArray("p2", DataType.ETypeCode.String, 1, parameters);
+            var parameterArray = new ParameterArray("p2", ETypeCode.String, 1, parameters);
             parameterArray.InitializeOrdinal(table);
 
             try
@@ -93,18 +93,18 @@ namespace dexih.transforms.tests
         public void Parameter_WriteInputs()
         {
             var table = new Table("test");
-            var column1 = new TableColumn("in1", DataType.ETypeCode.String);
-            var column2 = new TableColumn("in2", DataType.ETypeCode.String);
-            var column3 = new TableColumn("in3", DataType.ETypeCode.String);
+            var column1 = new TableColumn("in1", ETypeCode.String);
+            var column2 = new TableColumn("in2", ETypeCode.String);
+            var column3 = new TableColumn("in3", ETypeCode.String);
             table.Columns.Add(column1);
             table.Columns.Add(column2);
             table.Columns.Add(column3);
 
             var inputs = new List<Parameter>();
-            inputs.Add(new ParameterValue("p1", DataType.ETypeCode.String, "static"));
+            inputs.Add(new ParameterValue("p1", ETypeCode.String, "static"));
             inputs.Add(new ParameterColumn("p2", column1));
             var arrayParameters = new List<Parameter>() {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};
-            inputs.Add(new ParameterArray("p3", DataType.ETypeCode.String, 1, arrayParameters));
+            inputs.Add(new ParameterArray("p3", ETypeCode.String, 1, arrayParameters));
 
             var parameters = new Parameters();
             parameters.Inputs = inputs;
@@ -126,10 +126,10 @@ namespace dexih.transforms.tests
         public void Parameter_WriteOutputs()
         {
             var table = new Table("test");
-            var returnColumn = new TableColumn("return", DataType.ETypeCode.String);
-            var column1 = new TableColumn("out1", DataType.ETypeCode.String);
-            var column2 = new TableColumn("out2", DataType.ETypeCode.String);
-            var column3 = new TableColumn("out3", DataType.ETypeCode.String);
+            var returnColumn = new TableColumn("return", ETypeCode.String);
+            var column1 = new TableColumn("out1", ETypeCode.String);
+            var column2 = new TableColumn("out2", ETypeCode.String);
+            var column3 = new TableColumn("out3", ETypeCode.String);
 
             table.Columns.Add(returnColumn);
             table.Columns.Add(column1);
@@ -141,7 +141,7 @@ namespace dexih.transforms.tests
             var outputs = new Parameter[2];
             outputs[0] = new ParameterColumn("p2", column1);
             var arrayParameters = new List<Parameter>() {new ParameterColumn("p3a", column2), new ParameterColumn("p3b", column3)};
-            outputs[1] = new ParameterArray("p3", DataType.ETypeCode.String, 1, arrayParameters);
+            outputs[1] = new ParameterArray("p3", ETypeCode.String, 1, arrayParameters);
 
             var parameters = new Parameters();
             parameters.InitializeOutputs(returnParameter, outputs, table);

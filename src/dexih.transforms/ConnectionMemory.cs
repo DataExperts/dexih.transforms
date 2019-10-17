@@ -100,7 +100,7 @@ namespace dexih.transforms
 
             long maxIncrement = 0;
             var autoIncrementOrdinal = -1;
-            var autoIncrement = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+            var autoIncrement = table.GetColumn(EDeltaType.DbAutoIncrement);
             if(autoIncrement != null)
             {
                 autoIncrementOrdinal = table.GetOrdinal(autoIncrement.Name);

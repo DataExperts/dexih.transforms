@@ -67,7 +67,7 @@ namespace dexih.connections.sql
             string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
 
-            await new SqlReaderTests().Unit(connection, database);
+            await new SqlReaderTests(_output).Unit(connection, database);
         }
         
         [Theory]
@@ -79,7 +79,7 @@ namespace dexih.connections.sql
             var database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
 
-            await new TransformWriterTargetTests().ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
+            await new TransformWriterTargetTests(_output).ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
         }
     }
 }

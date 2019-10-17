@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
 using Xunit;
 using DataType = Dexih.Utils.DataType.DataType;
 
@@ -15,11 +16,11 @@ namespace dexih.transforms.tests
 
             var childTable = Helpers.CreateChildTable();
             childTable.AddAuditColumns("child_key");
-            childTable.AddColumn("parent_key", DataType.ETypeCode.Int64);
+            childTable.AddColumn("parent_key", ETypeCode.Int64);
 
             var grandChildTable = Helpers.CreateGrandChildTable();
             grandChildTable.AddAuditColumns("grandChild_key");
-            grandChildTable.AddColumn("child_key", DataType.ETypeCode.Int64);
+            grandChildTable.AddColumn("child_key", ETypeCode.Int64);
 
             var parentTarget = new TransformWriterTarget(targetConnection, parentTable);
             var childTarget = new TransformWriterTarget(targetConnection, childTable);

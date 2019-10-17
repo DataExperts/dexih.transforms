@@ -136,7 +136,7 @@ namespace dexih.connections.sqlserver
                     };
 
                     //Add column mapping to ensure unsupported columns (i.e. location datatype) are ignored.
-                    foreach(var column in table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.DbAutoIncrement))
+                    foreach(var column in table.Columns.Where(c => c.DeltaType != EDeltaType.DbAutoIncrement))
                     {
                         bulkCopy.ColumnMappings.Add(column.Name, column.Name);
                     }
@@ -206,7 +206,7 @@ namespace dexih.connections.sqlserver
                 foreach (var col in table.Columns)
                 {
                     createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col));
-                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                    if (col.DeltaType == EDeltaType.DbAutoIncrement)
                         createSql.Append(" IDENTITY(1,1)");
                     if (col.AllowDbNull == false)
                         createSql.Append(" NOT NULL");
@@ -622,15 +622,15 @@ namespace dexih.connections.sqlserver
 
                             if (col.DataType == ETypeCode.Unknown)
                             {
-                                col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+                                col.DeltaType = EDeltaType.IgnoreField;
                             }
                             else
                             {
                                 //add the primary key
                                 if (Convert.ToBoolean(reader["PrimaryKey"]))
-                                    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                    col.DeltaType = EDeltaType.NaturalKey;
                                 else
-                                    col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                    col.DeltaType = EDeltaType.TrackingField;
                             }
 
                             if (col.DataType == ETypeCode.String)
@@ -658,9 +658,9 @@ namespace dexih.connections.sqlserver
                                 var generatedAlwaysTypeValue = Convert.ToInt32(reader["generated_always_type"]);
                                 
                                 if(generatedAlwaysTypeValue == 1)
-                                    col.DeltaType = TableColumn.EDeltaType.ValidFromDate;
+                                    col.DeltaType = EDeltaType.ValidFromDate;
                                 if(generatedAlwaysTypeValue == 2)
-                                    col.DeltaType = TableColumn.EDeltaType.ValidToDate;
+                                    col.DeltaType = EDeltaType.ValidToDate;
                             }
 
                             table.Columns.Add(col);
@@ -736,7 +736,7 @@ namespace dexih.connections.sqlserver
         {
             try
             {
-                var autoIncrementSql = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement) == null ? "" : "SELECT SCOPE_IDENTITY()";
+                var autoIncrementSql = table.GetColumn(EDeltaType.DbAutoIncrement) == null ? "" : "SELECT SCOPE_IDENTITY()";
                 long identityValue = 0;
                 long autoIncrementValue = 0;
 
@@ -764,7 +764,7 @@ namespace dexih.connections.sqlserver
                             insert.Append("[" + query.InsertColumns[i].Column.Name + "],");
                             values.Append("@col" + i + ",");
 
-                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.AutoIncrement)
                             {
                                 autoIncrementValue = Convert.ToInt64(query.InsertColumns[i].Value);
                             }
@@ -807,7 +807,7 @@ namespace dexih.connections.sqlserver
                         return autoIncrementValue;
                     }
                     
-                    var deltaColumn = table.GetColumn(TableColumn.EDeltaType.AutoIncrement);
+                    var deltaColumn = table.GetColumn(EDeltaType.AutoIncrement);
                     if (deltaColumn != null)
                     {
                         var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";

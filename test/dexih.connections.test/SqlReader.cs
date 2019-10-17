@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.connections.sql;
@@ -7,6 +8,8 @@ using dexih.functions;
 using dexih.transforms;
 using Xunit;
 using dexih.functions.Query;
+using Dexih.Utils.DataType;
+using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test
@@ -16,8 +19,17 @@ namespace dexih.connections.test
     /// </summary>
     public class SqlReaderTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public SqlReaderTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public async Task Unit(Connection connection, string databaseName)
         {
+            _output.WriteLine("Using database: " + databaseName);
+            
             await connection.CreateDatabase(databaseName, CancellationToken.None);
 
             var newTable = DataSets.CreateTable(connection.CanUseDbAutoIncrement);
@@ -32,7 +44,7 @@ namespace dexih.connections.test
             var insertQuery = new InsertQuery( new List<QueryColumn>() {
                 new QueryColumn(new TableColumn("IntColumn", ETypeCode.Int32), 1),
                 new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value1" ),
-                new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21) ),
+                new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
                 new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Decimal), 1.1 ),
                 new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1m ),
                 new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), true ),
@@ -63,7 +75,7 @@ namespace dexih.connections.test
             // check the columns can be imported.
             var importTable = await connection.GetSourceTableInfo(sqlTable, CancellationToken.None);
 
-            Assert.Equal(10, importTable.Columns.Count);
+            Assert.Equal(10, importTable.Columns.Count(c => c.DeltaType != EDeltaType.RowKey));
             
             Assert.Equal("IntColumn", importTable.Columns["IntColumn"].Name);
             Assert.True(ETypeCode.Int32 == importTable.Columns["IntColumn"].DataType || ETypeCode.Int64 == importTable.Columns["IntColumn"].DataType);
@@ -103,7 +115,7 @@ namespace dexih.connections.test
             Assert.True(finished);
             Assert.Equal((long)1,  long.Parse(reader["IntColumn"].ToString()));
             Assert.Equal("value1", reader["StringColumn"]);
-            Assert.Equal(new DateTime(2001, 01, 21), DateTime.Parse(reader["DateColumn"].ToString()));
+            Assert.Equal(new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc), DateTime.Parse(reader["DateColumn"].ToString()));
             Assert.Equal((decimal)1.1, reader.GetDecimal(reader.GetOrdinal("DecimalColumn")));
             Assert.Equal(guid.ToString(), reader["GuidColumn"].ToString());
 

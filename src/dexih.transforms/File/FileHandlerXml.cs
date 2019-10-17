@@ -25,11 +25,11 @@ namespace dexih.transforms.File
             _fieldCount = table.Columns.Count;
             _rowPath = rowPath;
             
-            _responseDataOrdinal = _table.GetOrdinal(TableColumn.EDeltaType.ResponseData);
+            _responseDataOrdinal = _table.GetOrdinal(EDeltaType.ResponseData);
 
             _responseSegementOrdinals = new Dictionary<string, (int ordinal, ETypeCode typeCode)>();
             
-            foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
+            foreach (var column in _table.Columns.Where(c => c.DeltaType == EDeltaType.ResponseSegment))
             {
                 _responseSegementOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column.DataType));
             }
@@ -109,7 +109,7 @@ namespace dexih.transforms.File
                             LogicalName = node.Name,
                             DataType = dataType,
                             Rank = rank,
-                            DeltaType = TableColumn.EDeltaType.ResponseSegment,
+                            DeltaType = EDeltaType.ResponseSegment,
                             MaxLength = null,
                             Description = "Value of the " + nodePath + " path",
                             AllowDbNull = true,
@@ -125,7 +125,7 @@ namespace dexih.transforms.File
                             IsInput = false,
                             LogicalName = node.Name,
                             DataType = ETypeCode.Xml,
-                            DeltaType = TableColumn.EDeltaType.ResponseSegment,
+                            DeltaType = EDeltaType.ResponseSegment,
                             MaxLength = null,
                             Description = "Xml from the " + nodePath + " path",
                             AllowDbNull = true,

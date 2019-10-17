@@ -3,6 +3,7 @@ using dexih.transforms;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
+using Dexih.Utils.DataType;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test
@@ -53,7 +54,7 @@ namespace dexih.connections.test
         {
             Table table = new Table("test" + (counter++).ToString(), 0,
                 new TableColumn("StringColumn", ETypeCode.String),
-                new TableColumn("IntColumn", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
                 new TableColumn("DecimalColumn", ETypeCode.Decimal),
                 new TableColumn("DateColumn", ETypeCode.DateTime),
                 new TableColumn("GuidColumn", ETypeCode.Guid)
@@ -87,7 +88,7 @@ namespace dexih.connections.test
                 Name = "StringColumn",
                 Description = "A string column",
                 DataType = ETypeCode.String,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
 
             table.Columns.Add(new TableColumn()
@@ -95,7 +96,7 @@ namespace dexih.connections.test
                 Name = "IntColumn",
                 Description = "An integer column",
                 DataType = ETypeCode.Int32,
-                DeltaType = TableColumn.EDeltaType.NaturalKey
+                DeltaType = EDeltaType.NaturalKey
             });
 
             table.Columns.Add(new TableColumn()
@@ -103,7 +104,7 @@ namespace dexih.connections.test
                 Name = "DecimalColumn",
                 Description = "A decimal column",
                 DataType = ETypeCode.Decimal,
-                DeltaType = TableColumn.EDeltaType.TrackingField,
+                DeltaType = EDeltaType.TrackingField,
                 Scale = 2,
                 Precision = 10
             });
@@ -113,7 +114,7 @@ namespace dexih.connections.test
                 Name = "DateColumn",
                 Description = "A date column column",
                 DataType = ETypeCode.DateTime,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
 
             table.Columns.Add(new TableColumn()
@@ -121,7 +122,7 @@ namespace dexih.connections.test
                 Name = "GuidColumn",
                 Description = "A guid column",
                 DataType = ETypeCode.Guid,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
 
             return table;

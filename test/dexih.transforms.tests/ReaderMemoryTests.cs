@@ -18,12 +18,12 @@ namespace dexih.transforms.tests
         private Table CreateSampleTable()
         {
             var table = new Table("test", 0,
-                new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("SortColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
-                new TableColumn("ArrayColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField, 1)
+                new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", ETypeCode.Int32, EDeltaType.TrackingField),
+                new TableColumn("ArrayColumn", ETypeCode.Int32, EDeltaType.TrackingField, 1)
             );
 
             return table;

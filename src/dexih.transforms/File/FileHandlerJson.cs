@@ -25,10 +25,10 @@ namespace dexih.transforms.File
             _rowPath = rowPath;
             _table = table;
             _fieldCount = table.Columns.Count;
-            _responseDataOrdinal = _table.GetOrdinal(TableColumn.EDeltaType.ResponseData);
+            _responseDataOrdinal = _table.GetOrdinal(EDeltaType.ResponseData);
             _responseSegmentOrdinals = new Dictionary<string, (int ordinal, TableColumn column)>();
             
-            foreach (var column in _table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.ResponseSegment))
+            foreach (var column in _table.Columns.Where(c => c.DeltaType == EDeltaType.ResponseSegment))
             {
                 _responseSegmentOrdinals.Add(column.TableColumnName(), (_table.GetOrdinal(column), column));
             }
@@ -110,7 +110,7 @@ namespace dexih.transforms.File
                     IsInput = false,
                     LogicalName = (groups.Any() ? $"{string.Join(".", groups)}." : "") + value.Name,
                     DataType = ETypeCode.Json,
-                    DeltaType = TableColumn.EDeltaType.ResponseSegment,
+                    DeltaType = EDeltaType.ResponseSegment,
                     ColumnGroup = string.Join(".", groups),
                     MaxLength = null,
                     Description = "Json value of the " + value.Path + " path",
@@ -200,7 +200,7 @@ namespace dexih.transforms.File
                     IsInput = false,
                     LogicalName = jToken.Path,
                     DataType = ETypeCode.Json,
-                    DeltaType = TableColumn.EDeltaType.ResponseSegment,
+                    DeltaType = EDeltaType.ResponseSegment,
                     MaxLength = null,
                     Description = "Json from the " + jToken.Path + " path",
                     AllowDbNull = true,
@@ -425,8 +425,8 @@ namespace dexih.transforms.File
                     return GetArray(jToken, column);
                 }
 
-                if (column.DeltaType != TableColumn.EDeltaType.FileName &&
-                    column.DeltaType != TableColumn.EDeltaType.FileRowNumber)
+                if (column.DeltaType != EDeltaType.FileName &&
+                    column.DeltaType != EDeltaType.FileRowNumber)
                 {
                     return GetJTokenValue(column.DataType, column.Rank, jToken);
                     return Operations.Parse(column.DataType, column.Rank, jToken);

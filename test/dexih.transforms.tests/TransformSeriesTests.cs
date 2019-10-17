@@ -19,11 +19,11 @@ namespace dexih.transforms.tests
         public async Task Group_SeriesTests1()
         {
             var table = new Table("test", 0,
-                new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("SortColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", ETypeCode.Int32, EDeltaType.TrackingField)
             );
 
             // data with gaps in the date sequence.
@@ -46,15 +46,15 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterColumn("IntColumn", DataType.ETypeCode.Double),
-                    new ParameterValue("Aggregate", DataType.ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                    new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
                 },
                 ResultInputs = new Parameter[]
                 {
-                    new ParameterValue("PreCount", DataType.ETypeCode.Int32, 3),
-                    new ParameterValue("PostCount", DataType.ETypeCode.Int32, 3)
+                    new ParameterValue("PreCount", ETypeCode.Int32, 3),
+                    new ParameterValue("PostCount", ETypeCode.Int32, 3)
                 },
-                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", ETypeCode.Double)}
             };
             
             mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
@@ -81,11 +81,11 @@ namespace dexih.transforms.tests
         public async Task Group_SeriesTests_DuplicateRows()
         {
             var table = new Table("test", 0,
-                new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("SortColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", ETypeCode.Int32, EDeltaType.TrackingField)
             );
 
             // data with duplicates
@@ -104,15 +104,15 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterColumn("IntColumn", DataType.ETypeCode.Double),
-                    new ParameterValue("Aggregate", DataType.ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                    new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
                 },
                 ResultInputs = new Parameter[]
                 {
-                    new ParameterValue("PreCount", DataType.ETypeCode.Int32, 3),
-                    new ParameterValue("PostCount", DataType.ETypeCode.Int32, 3)
+                    new ParameterValue("PreCount", ETypeCode.Int32, 3),
+                    new ParameterValue("PostCount", ETypeCode.Int32, 3)
                 },
-                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", ETypeCode.Double)}
             };
             
             mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
@@ -151,15 +151,15 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterColumn("IntColumn", DataType.ETypeCode.Double),
-                    new ParameterValue("Aggregate", DataType.ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                    new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
                 },
                 ResultInputs = new Parameter[]
                 {
-                    new ParameterValue("PreCount", DataType.ETypeCode.Int32, 3),
-                    new ParameterValue("PostCount", DataType.ETypeCode.Int32, 3)
+                    new ParameterValue("PreCount", ETypeCode.Int32, 3),
+                    new ParameterValue("PostCount", ETypeCode.Int32, 3)
                 },
-                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", DataType.ETypeCode.Double)}
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("MAvg", ETypeCode.Double)}
             };
             
             mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
@@ -169,15 +169,15 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterColumn("IntColumn", DataType.ETypeCode.Double),
-                    new ParameterValue("Aggregate", DataType.ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                    new ParameterColumn("IntColumn", ETypeCode.Double),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
                 },
                 ResultOutputs = new Parameter[]
                 {
-                    new ParameterOutputColumn("Count", DataType.ETypeCode.Int32), 
-                    new ParameterOutputColumn("HighestValue", DataType.ETypeCode.Double), 
+                    new ParameterOutputColumn("Count", ETypeCode.Int32), 
+                    new ParameterOutputColumn("HighestValue", ETypeCode.Double), 
                 },
-                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("Highest", DataType.ETypeCode.DateTime)}
+                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("Highest", ETypeCode.DateTime)}
             };
             mappings.Add(new MapFunction(highest, parameters, EFunctionCaching.NoCache));
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));

@@ -1,4 +1,5 @@
 ﻿using System;
+using dexih.functions;
 using static dexih.functions.TableColumn;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;

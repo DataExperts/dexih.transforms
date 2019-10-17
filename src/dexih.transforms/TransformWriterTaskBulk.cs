@@ -240,7 +240,7 @@ namespace dexih.transforms
                 WriteDataTicks += result;
             }
 
-            //new DeleteQuery(_targetTable.Name, _targetTable.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.SurrogateKey).Select(c => new Filter(c, ECompare.IsEqual, "@surrogateKey")).ToList());
+            //new DeleteQuery(_targetTable.Name, _targetTable.Columns.Where(c => c.DeltaType == EDeltaType.SurrogateKey).Select(c => new Filter(c, ECompare.IsEqual, "@surrogateKey")).ToList());
 
             var deleteQueries = new List<DeleteQuery>();
             foreach (var row in _deleteRows)

@@ -37,7 +37,7 @@ namespace dexih.transforms.Poco
             {
                 var field = propertyInfo.GetCustomAttribute<PocoColumnAttribute>(false) ?? new PocoColumnAttribute(propertyInfo.Name);
 
-                if (field.DeltaType != TableColumn.EDeltaType.IgnoreField && !field.Skip)
+                if (field.DeltaType != EDeltaType.IgnoreField && !field.Skip)
                 {
                     var column = new TableColumn()
                     {
@@ -53,7 +53,7 @@ namespace dexih.transforms.Poco
                     table.Columns.Add(column);
                     mappings.Add(new PocoTableMapping(propertyInfo, position,field.IsKey));
 
-                    if(field.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                    if(field.DeltaType == EDeltaType.DbAutoIncrement)
                     {
                         AutoIncrementProperty = propertyInfo;
                     }
@@ -116,7 +116,7 @@ namespace dexih.transforms.Poco
             foreach (var mapping in TableMappings)
             {
                 var column = Table.Columns[mapping.Position];
-                if (column.DeltaType != TableColumn.EDeltaType.DbAutoIncrement)
+                if (column.DeltaType != EDeltaType.DbAutoIncrement)
                 {
                     var value = Operations.Parse(column.DataType, mapping.PropertyInfo.GetValue(item));
                     var queryColumn = new QueryColumn(column, value);

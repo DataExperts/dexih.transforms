@@ -5,6 +5,7 @@ using Dexih.Utils.DataType;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.transforms.Mapping;
@@ -39,25 +40,27 @@ namespace dexih.connections.test
         /// <param name="connection"></param>
         public async Task Performance(Connection connection, string databaseName, int rows)
         {
+            _output.WriteLine("Using database: " + databaseName);
+            
             await connection.CreateDatabase(databaseName, CancellationToken.None);
 
             //create a table that utilizes every available datatype.
             var table = new Table("LargeTable" + (DataSets.counter++));
-            table.Columns.Add(new TableColumn("SurrogateKey", ETypeCode.Int64, TableColumn.EDeltaType.AutoIncrement));
+            table.Columns.Add(new TableColumn("SurrogateKey", ETypeCode.Int64, EDeltaType.AutoIncrement));
             table.Columns.Add(new TableColumn("UpdateTest", ETypeCode.Int32));
 
             foreach (ETypeCode typeCode in Enum.GetValues(typeof(ETypeCode)))
             {
                 if (typeCode == ETypeCode.Binary && !connection.CanUseBinary) continue;
                 if (typeCode == ETypeCode.CharArray && !connection.CanUseCharArray) continue;
-                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown || typeCode == ETypeCode.Char || typeCode == ETypeCode.Node || typeCode == ETypeCode.Json) continue;
+                if (typeCode == ETypeCode.Enum || typeCode == ETypeCode.Object || typeCode == ETypeCode.Unknown || typeCode == ETypeCode.Char || typeCode == ETypeCode.Node) continue;
 
                 table.Columns.Add(new TableColumn()
                 {
                     Name = "column" + typeCode,
                     DataType = typeCode,
                     MaxLength = 50,
-                    DeltaType = TableColumn.EDeltaType.TrackingField,
+                    DeltaType = EDeltaType.TrackingField,
                     AllowDbNull = true
                 });
             }
@@ -140,7 +143,16 @@ namespace dexih.connections.test
                 {
                     for (var j = 2; j < table.Columns.Count; j++)
                     {
-                        Assert.Equal(connection.GetConnectionMaxValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value), reader[j]);
+                        var value = reader[j];
+                        var maxValue = connection.GetConnectionMaxValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value);
+                        if (value is JsonElement jsonElement)
+                        {
+                            Assert.Equal( ((JsonElement)maxValue).GetRawText(), jsonElement.GetRawText());
+                        }
+                        else
+                        {
+                            Assert.Equal(maxValue, reader[j]);
+                        }
                     }
                     
                 }
@@ -148,15 +160,16 @@ namespace dexih.connections.test
                 {
                     for (var j = 2; j < table.Columns.Count; j++)
                     {
-                        if (reader[j] == null)
+                        var value = reader[j];
+                        var minValue = connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value);
+                        if (value is JsonElement jsonElement)
                         {
-                            Assert.Equal(null, connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value));
+                            Assert.Equal( ((JsonElement)minValue).GetRawText(), jsonElement.GetRawText());
                         }
                         else
                         {
-                            Assert.Equal(connection.GetConnectionMinValue(table.Columns[j].DataType, table.Columns[j].MaxLength.Value), reader[j]);    
+                            Assert.Equal(minValue, reader[j]);
                         }
-                        
                     }
                 }
 
@@ -247,7 +260,7 @@ namespace dexih.connections.test
             selectQuery = new SelectQuery()
             {
                 Columns = new List<SelectColumn>() {new SelectColumn("SurrogateKey")},
-                //                Filters = new List<Filter>() { new Filter() { Column1 = "column1", CompareDataType = DataType.ETypeCode.String, Operator = Filter.ECompare.NotEqual, Value2 = "updated" } },
+                //                Filters = new List<Filter>() { new Filter() { Column1 = "column1", CompareDataType = ETypeCode.String, Operator = Filter.ECompare.NotEqual, Value2 = "updated" } },
                 Rows = -1,
                 Table = table.Name
             };
@@ -280,7 +293,7 @@ namespace dexih.connections.test
             var table = new Table("LargeTable" + (DataSets.counter++));
 
             table.Columns.Add(
-                new TableColumn("SurrogateKey", ETypeCode.Int32, TableColumn.EDeltaType.AutoIncrement)
+                new TableColumn("SurrogateKey", ETypeCode.Int32, EDeltaType.AutoIncrement)
                 {
                     IsIncrementalUpdate = true
                 });
@@ -296,7 +309,7 @@ namespace dexih.connections.test
                     Name = "column" + typeCode,
                     DataType = typeCode,
                     MaxLength = 50,
-                    DeltaType = TableColumn.EDeltaType.TrackingField
+                    DeltaType = EDeltaType.TrackingField
                 });
             }
 

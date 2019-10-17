@@ -8,8 +8,7 @@ using System.Diagnostics;
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
-
-
+using System.Text.Json;
 using dexih.functions.Query;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Exceptions;
@@ -535,10 +534,10 @@ namespace dexih.transforms
         /// Gets the next surrogatekey.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="surrogateKeyColumn"></param>
+        /// <param name="incrementalColumn"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<long> GetNextKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken = default)
+        public virtual async Task<long> GetLastKey(Table table, TableColumn incrementalColumn, CancellationToken cancellationToken = default)
         {
             if(DynamicTableCreation)
             {
@@ -547,7 +546,7 @@ namespace dexih.transforms
 
             var query = new SelectQuery()
             {
-                Columns = new List<SelectColumn> { new SelectColumn(surrogateKeyColumn, SelectColumn.EAggregate.Max) },
+                Columns = new List<SelectColumn> { new SelectColumn(incrementalColumn, SelectColumn.EAggregate.Max) },
                 Table = table.Name
             };
 
@@ -577,11 +576,11 @@ namespace dexih.transforms
         /// For sql databases, this does not thing as as select max(key) is called to get key, however nosql tables have no max() function.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="surrogateKeyColumn"></param>
+        /// <param name="incrementalColumnName"></param>
         /// <param name="value"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken = default)
+        public virtual Task UpdateIncrementalKey(Table table, string incrementalColumnName, object value, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
@@ -638,6 +637,12 @@ namespace dexih.transforms
 
             if (rank > 0 && !CanUseArray)
             {
+                if (CanUseJson)
+                {
+                    var jsonValue = Operations.Parse<string>(value);
+                    var jsonDocument = Operations.Parse<JsonDocument>(jsonValue);
+                    return (ETypeCode.Json, jsonDocument);
+                }
                 return (ETypeCode.String, Operations.Parse<string>(value));
             }
             
@@ -698,7 +703,12 @@ namespace dexih.transforms
 
                         // convert stream to string
                         var streamReader = new StreamReader(streamJson);
-                        return (ETypeCode.String, streamReader.ReadToEnd());
+                        
+                        if (CanUseJson)
+                        {
+                            return (ETypeCode.Json, Operations.Parse<JsonDocument>( streamReader.ReadToEnd()));
+                        }
+                        return (ETypeCode.String, Operations.Parse<string>( streamReader.ReadToEnd()));
                     }
 
                     return (ETypeCode.String, null);

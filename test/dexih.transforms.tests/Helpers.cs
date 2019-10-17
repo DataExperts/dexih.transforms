@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
+using Dexih.Utils.DataType;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.transforms.tests
@@ -15,12 +16,12 @@ namespace dexih.transforms.tests
         public static ReaderMemory CreateSortedTestData()
         {
             var table = new Table("test", 0,
-                new TableColumn("StringColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("IntColumn", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", ETypeCode.Double, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DateColumn", ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
-                new TableColumn("ArrayColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField, 1)
+                new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Double, EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", ETypeCode.Int32, EDeltaType.TrackingField),
+                new TableColumn("ArrayColumn", ETypeCode.Int32, EDeltaType.TrackingField, 1)
             );
 
             table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, new [] {1,1} );
@@ -42,10 +43,10 @@ namespace dexih.transforms.tests
         public static ReaderMemory CreateUnSortedTestData()
         {
             var table = new Table("test", 0, 
-                new TableColumn("StringColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("IntColumn", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DateColumn", ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, EDeltaType.NaturalKey),
                 new TableColumn("SortColumn", ETypeCode.Int32),
                 new TableColumn("GroupColumn", ETypeCode.String)
             );
@@ -136,7 +137,7 @@ namespace dexih.transforms.tests
             table.AddColumn("StringColumn", ETypeCode.String);
             table.AddColumn("IntColumn", ETypeCode.Int32);
             table.AddColumn("LookupValue", ETypeCode.String);
-            table.AddColumn("IsValid", ETypeCode.Boolean, TableColumn.EDeltaType.IsCurrentField);
+            table.AddColumn("IsValid", ETypeCode.Boolean, EDeltaType.IsCurrentField);
 
             table.AddRow("value09", 9, "lookup9", true);
             table.AddRow("value06", 6, "lookup6", true);
@@ -157,12 +158,12 @@ namespace dexih.transforms.tests
         public static ReaderMemory CreateValidationTestData()
         {
             var table = new Table("test", 0,
-                new TableColumn("StringColumn", ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("IntColumn", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DateColumn", ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("SortColumn", ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
-                new TableColumn("RejectReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason)
+                new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", ETypeCode.Int32, EDeltaType.TrackingField),
+                new TableColumn("RejectReason", ETypeCode.String, EDeltaType.RejectedReason)
             );
 
             table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10, "");
@@ -184,8 +185,8 @@ namespace dexih.transforms.tests
         public static Table CreateParentTable()
         {
             var table = new Table("parent", 0, 
-                new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("parent_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, EDeltaType.TrackingField)
             );
 
             return table;
@@ -206,9 +207,9 @@ namespace dexih.transforms.tests
         public static Table CreateChildTable()
         {
             var table = new Table("child", 0, 
-                new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("parent_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("child_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, EDeltaType.TrackingField)
             );
 
             return table;
@@ -229,9 +230,9 @@ namespace dexih.transforms.tests
         public static Table CreateGrandChildTable()
         {
             var table = new Table("grandChild", 0, 
-                new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("grandChild_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("child_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("grandChild_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, EDeltaType.TrackingField)
             );
 
             return table;
@@ -292,9 +293,9 @@ namespace dexih.transforms.tests
             var table = new Table("test");
 
             for (var i = 0; i < 10; i++)
-                table.Columns.Add(new TableColumn("column" + i, ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey));
+                table.Columns.Add(new TableColumn("column" + i, ETypeCode.Int32, EDeltaType.NaturalKey));
 
-            table.Columns.Add(new TableColumn("random", ETypeCode.String, TableColumn.EDeltaType.TrackingField) );
+            table.Columns.Add(new TableColumn("random", ETypeCode.String, EDeltaType.TrackingField) );
 
             for (var i = 0; i < rows; i++)
             {

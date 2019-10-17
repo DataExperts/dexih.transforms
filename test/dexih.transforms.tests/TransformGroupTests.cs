@@ -5,6 +5,7 @@ using dexih.functions.BuiltIn;
 using dexih.functions.Parameter;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
+using Dexih.Utils.DataType;
 using Xunit;
 using static Dexih.Utils.DataType.DataType;
 

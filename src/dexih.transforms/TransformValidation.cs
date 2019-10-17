@@ -60,11 +60,11 @@ namespace dexih.transforms
             var sourceTable = PrimaryTransform?.CacheTable;
             
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
-            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
+            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.DatabaseOperation) == null)
             {
                 table.Columns.Add(new TableColumn("Operation")
                 {
-                    DeltaType = TableColumn.EDeltaType.DatabaseOperation,
+                    DeltaType = EDeltaType.DatabaseOperation,
                     AllowDbNull = true
                 });
             } 
@@ -74,20 +74,20 @@ namespace dexih.transforms
                 table.Columns.Add(column);
             }
 
-            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.RejectedReason) == null)
+            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.RejectedReason) == null)
             {
                 table.Columns.Add(new TableColumn("RejectReason")
                 {
-                    DeltaType = TableColumn.EDeltaType.RejectedReason,
+                    DeltaType = EDeltaType.RejectedReason,
                     AllowDbNull = true
                 });
             } 
 
-            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.ValidationStatus) == null)
+            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.ValidationStatus) == null)
             {
                 table.Columns.Add(new TableColumn("ValidationStatus")
                 {
-                    DeltaType = TableColumn.EDeltaType.ValidationStatus,
+                    DeltaType = EDeltaType.ValidationStatus,
                     AllowDbNull = true
                 });
             } 
@@ -115,9 +115,9 @@ namespace dexih.transforms
             }
 
             //store reject column details to improve performance.
-            _rejectReasonOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.RejectedReason);
-            _operationOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
-            _validationStatusOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.ValidationStatus);
+            _rejectReasonOrdinal = CacheTable.GetOrdinal(EDeltaType.RejectedReason);
+            _operationOrdinal = CacheTable.GetOrdinal(EDeltaType.DatabaseOperation);
+            _validationStatusOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidationStatus);
 
             _primaryFieldCount = PrimaryTransform?.FieldCount ?? 0;
             _columnCount = CacheTable.Columns.Count;
@@ -256,7 +256,7 @@ namespace dexih.transforms
                         var value = passRow[i];
                         var col = CacheTable.Columns[i];
 
-                        if (col.DeltaType == TableColumn.EDeltaType.TrackingField || col.DeltaType == TableColumn.EDeltaType.NonTrackingField)
+                        if (col.DeltaType == EDeltaType.TrackingField || col.DeltaType == EDeltaType.NonTrackingField)
                         {
 
                             if (value == null || value is DBNull)

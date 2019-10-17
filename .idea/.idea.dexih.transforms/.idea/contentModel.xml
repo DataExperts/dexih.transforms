@@ -317,6 +317,19 @@
             <e p="dexih.transforms.pdb" t="Include" />
           </e>
         </e>
+        <e p="dexih.connections.mongo" t="IncludeRecursive">
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.mongo.cs" t="Include" />
+          <e p="dexih.connections.mongo.csproj" t="IncludeRecursive" />
+          <e p="dexih.connections.mongo.reader.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netstandard2.0" t="Include">
+                <e p="dexih.connections.mongo.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
         <e p="dexih.connections.mysql" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.connections.mysql.csproj" t="IncludeRecursive" />
@@ -473,15 +486,16 @@
         <e p="dexih.functions" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.functions.csproj" t="IncludeRecursive" />
+          <e p="Enums.cs" t="Include" />
           <e p="Exceptions" t="Include">
             <e p="FunctionException.cs" t="Include" />
           </e>
           <e p="Extensions" t="Include">
             <e p="Extensions.cs" t="Include" />
             <e p="JsonExtensions.cs" t="Include" />
+            <e p="SymbolExtensions.cs" t="Include" />
           </e>
           <e p="FilePermissions.cs" t="Include" />
-          <e p="FlatFile.cs" t="Include" />
           <e p="Functions" t="Include">
             <e p="FunctionAttribute.cs" t="Include" />
             <e p="FunctionParameter.cs" t="Include" />
@@ -491,6 +505,7 @@
             <e p="GlobalSettings.cs" t="Include" />
             <e p="TransformFunction.cs" t="Include" />
           </e>
+          <e p="JsonObjectConverter.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netstandard2.0" t="Include">
@@ -507,7 +522,6 @@
             <e p="Parameters.cs" t="Include" />
             <e p="ParameterValue.cs" t="Include" />
           </e>
-          <e p="ProtoInheritAttribute.cs" t="Include" />
           <e p="Query" t="Include">
             <e p="DeleteQuery.cs" t="Include" />
             <e p="Filter.cs" t="Include" />
@@ -524,11 +538,9 @@
             <e p="Sorts.cs" t="Include" />
             <e p="UpdateQuery.cs" t="Include" />
           </e>
-          <e p="Retry.cs" t="Include" />
           <e p="SeriesValue.cs" t="Include" />
           <e p="ShortGuid.cs" t="Include" />
           <e p="SortedRowsDictionary.cs" t="Include" />
-          <e p="SymbolExtensions.cs" t="Include" />
           <e p="Table" t="Include">
             <e p="FileConfiguration.cs" t="Include" />
             <e p="FlatFile.cs" t="Include" />
@@ -540,7 +552,6 @@
             <e p="TableIndex.cs" t="Include" />
             <e p="WebService.cs" t="Include" />
           </e>
-          <e p="TaskSequencer.cs" t="Include" />
           <e p="TaskTimer.cs" t="Include" />
         </e>
         <e p="dexih.functions.builtIn" t="IncludeRecursive">
@@ -860,6 +871,19 @@
             <e p="Debug" t="Include">
               <e p="netcoreapp3.0" t="Include">
                 <e p="dexih.connections.ftp.tests.AssemblyInfo.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="dexih.connections.mongo.tests" t="IncludeRecursive">
+          <e p="appsettings.json" t="Include" />
+          <e p="bin" t="ExcludeRecursive" />
+          <e p="dexih.connections.mongo.tests.csproj" t="IncludeRecursive" />
+          <e p="mongo.tests.cs" t="Include" />
+          <e p="obj" t="ExcludeRecursive">
+            <e p="Debug" t="Include">
+              <e p="netcoreapp3.0" t="Include">
+                <e p="dexih.connections.mongo.tests.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
           </e>

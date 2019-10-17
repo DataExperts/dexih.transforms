@@ -171,9 +171,9 @@ namespace dexih.connections.azure
                 {
                     ordinals[i] = reader.GetOrdinal(table.Columns[i].Name);
 
-                    if (table.Columns[i].DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                    if (table.Columns[i].DeltaType == EDeltaType.DbAutoIncrement)
                     {
-                        keyValue = await GetNextKey(table, sk, cancellationToken);
+                        keyValue = await GetLastKey(table, sk, cancellationToken);
                     }
                 }
 
@@ -203,7 +203,7 @@ namespace dexih.connections.azure
                         var ordinal = ordinals[i];
                         if (ordinal >= 0)
                         {
-                            if (table.Columns[i].DeltaType == TableColumn.EDeltaType.DbAutoIncrement &&
+                            if (table.Columns[i].DeltaType == EDeltaType.DbAutoIncrement &&
                                 (reader[ordinal] == null || reader[ordinal] is DBNull))
                             {
                                 row[i] = ++keyValue;
@@ -217,16 +217,16 @@ namespace dexih.connections.azure
                         {
                             switch (table.Columns[i].DeltaType)
                             {
-                                case TableColumn.EDeltaType.AzurePartitionKey:
+                                case EDeltaType.PartitionKey:
                                     row[i] = AzurePartitionKeyDefaultValue;
                                     break;
-                                case TableColumn.EDeltaType.AzureRowKey:
+                                case EDeltaType.RowKey:
                                     if (skOrdinal >= 0)
                                         row[i] = reader[skOrdinal];
                                     else
                                         row[i] = Guid.NewGuid().ToString();
                                     break;
-                                case TableColumn.EDeltaType.DbAutoIncrement:
+                                case EDeltaType.DbAutoIncrement:
                                     row[i] = 0;
                                     break;
                             }
@@ -267,8 +267,8 @@ namespace dexih.connections.azure
             // Create the batch operation.
             var batchOperation = new TableBatchOperation();
 
-            var partitionKey = table.GetOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
-            var rowKey = table.GetOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            var partitionKey = table.GetOrdinal(EDeltaType.PartitionKey);
+            var rowKey = table.GetOrdinal(EDeltaType.RowKey);
             var surrogateKey = table.GetAutoIncrementOrdinal();
 
             foreach (var row in buffer)
@@ -277,9 +277,9 @@ namespace dexih.connections.azure
                 for(var i = 0; i < table.Columns.Count; i++)
                 {
                     var column = table.Columns[i];
-                    if (column.DeltaType == TableColumn.EDeltaType.AzureRowKey ||
-                        column.DeltaType == TableColumn.EDeltaType.AzurePartitionKey ||
-                        column.DeltaType == TableColumn.EDeltaType.TimeStamp ) continue;
+                    if (column.DeltaType == EDeltaType.RowKey ||
+                        column.DeltaType == EDeltaType.PartitionKey ||
+                        column.DeltaType == EDeltaType.TimeStamp ) continue;
 
                     var value = row[i];
                     if (value == DBNull.Value) value = null;
@@ -365,7 +365,7 @@ namespace dexih.connections.azure
                 }
 
                 // reset the auto incremental table, when rebuilding the table.
-                var incremental = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                var incremental = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (incremental != null)
                 {
                     await UpdateIncrementalKey(table, incremental.TableColumnName(), 0, cancellationToken);
@@ -510,10 +510,10 @@ namespace dexih.connections.azure
         /// Note: Azure does not have a max function, so we used a key's table to store surrogate keys for each table.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="surrogateKeyColumn"></param>
+        /// <param name="incrementalColumn"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<long> GetNextKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken = default)
+        public override async Task<long> GetLastKey(Table table, TableColumn incrementalColumn, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -533,27 +533,23 @@ namespace dexih.connections.azure
                 do
                 {
                     //get the last key value if it exists.
-                    var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
+                    var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, incrementalColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
                     if (tableResult.Result == null)
                     {
-                        entity = new DynamicTableEntity(table.Name, surrogateKeyColumn.Name);
+                        entity = new DynamicTableEntity(table.Name, incrementalColumn.Name);
                         entity.Properties.Add(IncrementalValueName, new EntityProperty((long)1));
                         entity.Properties.Add(LockGuidName, new EntityProperty(lockGuid));
-                        incrementalKey = 1L;
+                        incrementalKey = 0L;
                     }
                     else
                     {
                         entity = tableResult.Result as DynamicTableEntity;
                         incrementalKey = Convert.ToInt64(entity.Properties[IncrementalValueName].PropertyAsObject);
-                        incrementalKey++;
                         entity.Properties[IncrementalValueName] = new EntityProperty(incrementalKey);
                         entity.Properties[LockGuidName] = new EntityProperty(lockGuid);
                     }
-
-                    //update the record with the new incremental value and the guid.
-                    await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
-
-                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
+                    
+                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, incrementalColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
                     entity = tableResult.Result as DynamicTableEntity;
 
                 } while (entity.Properties[LockGuidName].GuidValue.Value != lockGuid);
@@ -566,7 +562,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken = default)
+        public override async Task UpdateIncrementalKey(Table table, string incrementalColumnName, object value, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -579,7 +575,7 @@ namespace dexih.connections.azure
                 }
 
                 DynamicTableEntity entity = null;
-                entity = new DynamicTableEntity(table.Name, surrogateKeyColumn);
+                entity = new DynamicTableEntity(table.Name, incrementalColumnName);
                 switch (value)
                 {
                     case short shortValue:
@@ -750,7 +746,7 @@ namespace dexih.connections.azure
 
         public override Task<Table> InitializeTable(Table table, int position)
         {
-            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.AzurePartitionKey))
+            if (table.Columns.All(c => c.DeltaType != EDeltaType.PartitionKey))
             {
                 //partion key uses the AuditKey which allows bulk load, and can be used as an incremental checker.
                 table.Columns.Add(new TableColumn()
@@ -763,13 +759,13 @@ namespace dexih.connections.azure
                     LogicalName = table.Name + " partition key.",
                     Description = "The Azure partition key and UpdateAuditKey for this table.",
                     IsUnique = true,
-                    DeltaType = TableColumn.EDeltaType.AzurePartitionKey,
+                    DeltaType = EDeltaType.PartitionKey,
                     IsIncrementalUpdate = true,
                     IsMandatory = true
                 });
             }
 
-            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.AzureRowKey))
+            if (table.Columns.All(c => c.DeltaType != EDeltaType.RowKey))
             {
                 //add the special columns for managed tables.
                 table.Columns.Add(new TableColumn()
@@ -782,12 +778,12 @@ namespace dexih.connections.azure
                     LogicalName = table.Name + " surrogate key",
                     Description = "The azure rowKey and the natural key for this table.",
                     IsUnique = true,
-                    DeltaType = TableColumn.EDeltaType.AzureRowKey,
+                    DeltaType = EDeltaType.RowKey,
                     IsMandatory = true
                 });
             }
 
-            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.TimeStamp))
+            if (table.Columns.All(c => c.DeltaType != EDeltaType.TimeStamp))
             {
 
                 //add the special columns for managed tables.
@@ -801,7 +797,7 @@ namespace dexih.connections.azure
                     LogicalName = table.Name + " timestamp.",
                     Description = "The Azure Timestamp for the managed table.",
                     IsUnique = true,
-                    DeltaType = TableColumn.EDeltaType.TimeStamp,
+                    DeltaType = EDeltaType.TimeStamp,
                     IsMandatory = true
                 });
             }
@@ -811,9 +807,8 @@ namespace dexih.connections.azure
 
         private EntityProperty NewEntityProperty(TableColumn column, object value)
         {
-            var convertedValue = ConvertForWrite(column, value);
-            var returnValue = convertedValue.value;
-            var typeCode = convertedValue.typeCode;
+            var (typeCode, returnValue) = ConvertForWrite(column, value);
+
             if (returnValue is DBNull) returnValue = null;
 
             switch (typeCode)
@@ -928,10 +923,10 @@ namespace dexih.connections.azure
 
                 long keyValue = -1;
 
-                var dbAutoIncrement = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                var dbAutoIncrement = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (dbAutoIncrement != null)
                 {
-                    keyValue = await GetNextKey(table, dbAutoIncrement, cancellationToken);
+                    keyValue = await GetLastKey(table, dbAutoIncrement, cancellationToken);
                 }
 
                 long identityValue = 0;
@@ -939,8 +934,8 @@ namespace dexih.connections.azure
                 //start a batch operation to update the rows.
                 var batchOperation = new TableBatchOperation();
 
-                var partitionKey = table.GetColumn(TableColumn.EDeltaType.AzurePartitionKey);
-                var rowKey = table.GetColumn(TableColumn.EDeltaType.AzureRowKey);
+                var partitionKey = table.GetColumn(EDeltaType.PartitionKey);
+                var rowKey = table.GetColumn(EDeltaType.RowKey);
 
                 //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
@@ -956,14 +951,14 @@ namespace dexih.connections.azure
                         var field = query.InsertColumns[i];
 
                         if (field.Column.Name == "RowKey" || field.Column.Name == "PartitionKey" ||
-                            field.Column.Name == "Timestamp" || field.Column.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                            field.Column.Name == "Timestamp" || field.Column.DeltaType == EDeltaType.DbAutoIncrement)
                         {
                             continue;
                         }
 
-                        if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                        if (field.Column.DeltaType == EDeltaType.AutoIncrement)
                         {
-                            identityValue = Convert.ToInt64(query.InsertColumns[i].Value);
+                            identityValue = Convert.ToInt64(field.Value);
                         }
 
                         properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column], field.Value));
@@ -1014,6 +1009,11 @@ namespace dexih.connections.azure
 
                         batchOperation = new TableBatchOperation();
                     }
+                }
+                
+                if (keyValue > -1 && dbAutoIncrement != null)
+                {
+                    await UpdateIncrementalKey(table, dbAutoIncrement.Name, keyValue, cancellationToken);
                 }
 
                 if (batchOperation.Count > 0)

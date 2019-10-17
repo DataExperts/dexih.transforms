@@ -9,11 +9,19 @@ using dexih.transforms;
 using dexih.transforms.File;
 using Dexih.Utils.DataType;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.test
 {
     public class TransformWriterTargetTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public TransformWriterTargetTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
         private async Task<Transform> GetReader()
         {
             var stream = System.IO.File.OpenRead("Data/transactions.json");
@@ -35,9 +43,11 @@ namespace dexih.connections.test
         
         public async Task ParentChild_Write(Connection connection, string databaseName, bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
         {
+            _output.WriteLine("Using database: " + databaseName);
+            
             var autoIncrement = useDbAutoIncrement
-                ? TableColumn.EDeltaType.DbAutoIncrement
-                : TableColumn.EDeltaType.AutoIncrement;
+                ? EDeltaType.DbAutoIncrement
+                : EDeltaType.AutoIncrement;
 
             var transactionType = useTransaction
                 ? TransformWriterTarget.ETransformWriterMethod.Transaction
@@ -46,15 +56,15 @@ namespace dexih.connections.test
             await connection.CreateDatabase(databaseName, CancellationToken.None);
             
             var transactionTable = new Table("transaction");
-            transactionTable.Columns.Add(new TableColumn("transactionId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey));
-            transactionTable.Columns.Add(new TableColumn("desc", DataType.ETypeCode.String, TableColumn.EDeltaType.TrackingField));
-            transactionTable.Columns.Add(new TableColumn("transactionKey", DataType.ETypeCode.Int64, autoIncrement));
+            transactionTable.Columns.Add(new TableColumn("transactionId", ETypeCode.Int32, EDeltaType.NaturalKey));
+            transactionTable.Columns.Add(new TableColumn("desc", ETypeCode.String, EDeltaType.TrackingField));
+            transactionTable.Columns.Add(new TableColumn("transactionKey", ETypeCode.Int64, autoIncrement));
 
             var componentTable = new Table("component");
-            componentTable.Columns.Add(new TableColumn("itemId", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey));
-            componentTable.Columns.Add(new TableColumn("desc", DataType.ETypeCode.String, TableColumn.EDeltaType.TrackingField));
-            componentTable.Columns.Add(new TableColumn("componentKey", DataType.ETypeCode.Int64, autoIncrement));
-            componentTable.Columns.Add(new TableColumn("transactionKey", DataType.ETypeCode.Int64, TableColumn.EDeltaType.TrackingField));
+            componentTable.Columns.Add(new TableColumn("itemId", ETypeCode.Int32, EDeltaType.NaturalKey));
+            componentTable.Columns.Add(new TableColumn("desc", ETypeCode.String, EDeltaType.TrackingField));
+            componentTable.Columns.Add(new TableColumn("componentKey", ETypeCode.Int64, autoIncrement));
+            componentTable.Columns.Add(new TableColumn("transactionKey", ETypeCode.Int64, EDeltaType.TrackingField));
 
             var reader = await GetReader();
 
@@ -122,6 +132,8 @@ namespace dexih.connections.test
 
         public async Task ParentChild_Write_Large(Connection connection, int rows, string databaseName, bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
         {
+            _output.WriteLine("Using database: " + databaseName);
+            
             await connection.CreateDatabase(databaseName, CancellationToken.None);
             
             var parentTable = DataSets.CreateParentTable();
@@ -129,17 +141,17 @@ namespace dexih.connections.test
 
             var childTable = DataSets.CreateChildTable();
             childTable.AddAuditColumns("child_key");
-            childTable.AddColumn("parent_key", DataType.ETypeCode.Int64);
+            childTable.AddColumn("parent_key", ETypeCode.Int64);
 
             var grandChildTable = DataSets.CreateGrandChildTable();
             grandChildTable.AddAuditColumns("grandChild_key");
-            grandChildTable.AddColumn("child_key", DataType.ETypeCode.Int64);
+            grandChildTable.AddColumn("child_key", ETypeCode.Int64);
 
             if (useDbAutoIncrement)
             {
-                parentTable["parent_key"].DeltaType = TableColumn.EDeltaType.DbAutoIncrement;
-                childTable["child_key"].DeltaType = TableColumn.EDeltaType.DbAutoIncrement;
-                grandChildTable["grandChild_key"].DeltaType = TableColumn.EDeltaType.DbAutoIncrement;
+                parentTable["parent_key"].DeltaType = EDeltaType.DbAutoIncrement;
+                childTable["child_key"].DeltaType = EDeltaType.DbAutoIncrement;
+                grandChildTable["grandChild_key"].DeltaType = EDeltaType.DbAutoIncrement;
             }
 
             var parentTarget = new TransformWriterTarget(connection, parentTable);

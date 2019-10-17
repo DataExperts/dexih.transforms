@@ -1,33 +1,30 @@
 ﻿using dexih.transforms;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
-using Microsoft.WindowsAzure.Storage.Table;
-using Microsoft.WindowsAzure.Storage;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.DataType;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
-namespace dexih.connections.azure
+namespace dexih.connections.mongo
 {
-    public class ReaderAzure : Transform
+    public class ReaderMongo : Transform
     {
-        private TableContinuationToken _token;
-
-        private TableQuerySegment<DynamicTableEntity> _tableResult;
-        private TableQuery<DynamicTableEntity> _tableQuery;
-
-        private CloudTable _tableReference;
         private int _currentReadRow;
 
-        private readonly ConnectionAzureTable _connection;
+        private readonly ConnectionMongo _connection;
+        private IAsyncCursor<BsonDocument> _documents;
+        private IEnumerator<BsonDocument> _enumerator;
 
-        public ReaderAzure(Connection connection, Table table)
+        public ReaderMongo(Connection connection, Table table)
         {
-            _connection = (ConnectionAzureTable)connection;
+            _connection = (ConnectionMongo)connection;
             CacheTable = table;
         }
         
@@ -48,33 +45,7 @@ namespace dexih.connections.azure
             IsOpen = true;
             SelectQuery = selectQuery;
 
-            var tableClient = _connection.GetCloudTableClient();
-            _tableReference = tableClient.GetTableReference(CacheTable.Name);
-
-            _tableQuery = new TableQuery<DynamicTableEntity>().Take(1000);
-
-            if (selectQuery?.Columns?.Count > 0)
-                _tableQuery.SelectColumns = selectQuery.Columns.Select(c => c.Column.Name).ToArray();
-            else
-                _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => c.Name).ToArray();
-
-            if (selectQuery?.Filters != null)
-                _tableQuery.FilterString = _connection.BuildFilterString(selectQuery.Filters);
-
-            if(selectQuery?.Rows > 0 && selectQuery?.Rows < 1000)
-                _tableQuery.TakeCount = selectQuery.Rows;
-
-            try
-            {
-                _tableResult = await _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token);
-            }
-            catch (StorageException ex)
-            {
-                var message = "Error reading Azure Storage table: " + CacheTable.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation?.ExtendedErrorInformation?.ErrorMessage + ".";
-                throw new ConnectionException(message, ex);
-            }
-
-            _token = _tableResult.ContinuationToken;
+            _documents = await _connection.GetCollection(CacheTable.Name, selectQuery, cancellationToken);
 
             return true;
         }
@@ -96,66 +67,47 @@ namespace dexih.connections.azure
         {
             try
             {
-                if (!_tableResult.Any())
-                    return null;
-
-                if (_currentReadRow >= _tableResult.Count())
+                while (_enumerator == null || _enumerator.Current == null)
                 {
-                    if (_token == null)
+                    if (!await _documents.MoveNextAsync(cancellationToken))
+                    {
                         return null;
+                    }
 
-                    _tableResult = await _tableReference.ExecuteQuerySegmentedAsync(_tableQuery, _token);
-                    if (!_tableResult.Any())
-                        return null;
-
-                    _token = _tableResult.ContinuationToken;
-                    _currentReadRow = 0;
+                    var document = _documents.Current;
+                    _enumerator = document.GetEnumerator();
+                    _enumerator.MoveNext();
                 }
+                
+                var row = GetRow(_enumerator.Current);
 
-                var currentEntity = _tableResult.ElementAt(_currentReadRow);
-
-                var row = GetRow(currentEntity);
-
+                _enumerator.MoveNext();
+                
                 _currentReadRow++;
 
                 return row;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException("The azure storage table reader failed due to the following error: " + ex.Message, ex);
+                throw new ConnectionException("The mongo storage table reader failed due to the following error: " + ex.Message, ex);
             }
         }
 
-        private object[] GetRow(DynamicTableEntity currentEntity)
+        private object[] GetRow(BsonDocument document)
         {
             var row = new object[CacheTable.Columns.Count];
 
-            var partitionKeyOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
-            if(partitionKeyOrdinal >= 0)
-                row[partitionKeyOrdinal] = currentEntity.PartitionKey;
-
-            var rowKeyOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.AzureRowKey);
-            if (rowKeyOrdinal >= 0)
-                row[rowKeyOrdinal] = currentEntity.RowKey;
-
-            var timestampOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.TimeStamp);
-            if (timestampOrdinal >= 0)
-                row[timestampOrdinal] = currentEntity.Timestamp;
-
-            foreach (var value in currentEntity.Properties)
+            for (var i = 0; i < CacheTable.Columns.Count; i++)
             {
-                var column = CacheTable[value.Key];
-                var returnValue = value.Value.PropertyAsObject;
-                row[CacheTable.GetOrdinal(value.Key)] = Operations.Parse(column.DataType, column.Rank, returnValue);
-
-                //if (returnValue == null)
-                //    row[CacheTable.GetOrdinal(value.Key)] = DBNull.Value;
-                //else
-                //{
-                //    row[CacheTable.GetOrdinal(value.Key)] = _connection.ConvertEntityProperty(CacheTable[value.Key].DataType, returnValue);
-                //}
+                var column = CacheTable.Columns[i];
+                if( document.TryGetElement(column.Name, out var element))
+                {
+                    var value = BsonTypeMapper.MapToDotNetValue(element.Value);
+                    var converted = Operations.Parse(column.DataType, column.Rank, value);
+                    row[i] = converted;
+                }
             }
-
+            
             return row;
         }
 

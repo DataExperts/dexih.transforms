@@ -48,7 +48,7 @@ namespace dexih.transforms
                             $"The format type {table.FormatType} is not currently supported.");
             }
             
-            _fileNameOrdinal = table.GetOrdinal(TableColumn.EDeltaType.FileName);
+            _fileNameOrdinal = table.GetOrdinal(EDeltaType.FileName);
         }
         
         public override string TransformName { get; } = "Flat File Reader";

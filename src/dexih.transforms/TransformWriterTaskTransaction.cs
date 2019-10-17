@@ -57,7 +57,7 @@ namespace dexih.transforms
                     for (var i = 0; i < TargetTable.Columns.Count; i++)
                     {
                         var col = TargetTable.Columns[i];
-                        if (col.DeltaType != TableColumn.EDeltaType.DbAutoIncrement)
+                        if (col.DeltaType != EDeltaType.DbAutoIncrement)
                         {
                             queryColumns.Add(new QueryColumn(col, row[i]));
                         }
@@ -72,7 +72,7 @@ namespace dexih.transforms
                     for (var i = 0; i < TargetTable.Columns.Count; i++)
                     {
                         var col = TargetTable.Columns[i];
-                        if (col.DeltaType != TableColumn.EDeltaType.DbAutoIncrement)
+                        if (col.DeltaType != EDeltaType.DbAutoIncrement)
                         {
                             rejectQueryColumns.Add(new QueryColumn(col, row[i]));
                         }

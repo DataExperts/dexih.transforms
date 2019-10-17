@@ -16,7 +16,7 @@ namespace dexih.transforms.tests
         {
             var table = new Table("test", 0, new TableColumns
             {
-                new TableColumn("csvField", DataType.ETypeCode.String)
+                new TableColumn("csvField", ETypeCode.String)
             });
 
             var values = new[] {"a", "b", "c", "d", "e"};
@@ -33,13 +33,13 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterValue("separator", DataType.ETypeCode.String, ","),
-                    new ParameterColumn("csvField", DataType.ETypeCode.String),
-                    new ParameterValue("rows", DataType.ETypeCode.Int32, 4),
+                    new ParameterValue("separator", ETypeCode.String, ","),
+                    new ParameterColumn("csvField", ETypeCode.String),
+                    new ParameterValue("rows", ETypeCode.Int32, 4),
                 },
                 Outputs = new Parameter[] 
                 {
-                    new ParameterOutputColumn("Value", DataType.ETypeCode.String)
+                    new ParameterOutputColumn("Value", ETypeCode.String)
                 }
             };
             
@@ -80,18 +80,18 @@ namespace dexih.transforms.tests
             {
                 Inputs = new Parameter[]
                 {
-                    new ParameterArray("columns", DataType.ETypeCode.String, 1, new List<Parameter>
+                    new ParameterArray("columns", ETypeCode.String, 1, new List<Parameter>
                     {
-                        new ParameterColumn("col0", DataType.ETypeCode.String),
-                        new ParameterColumn("col1", DataType.ETypeCode.String),
-                        new ParameterColumn("col2", DataType.ETypeCode.String),
-                        new ParameterColumn("col3", DataType.ETypeCode.String),
+                        new ParameterColumn("col0", ETypeCode.String),
+                        new ParameterColumn("col1", ETypeCode.String),
+                        new ParameterColumn("col2", ETypeCode.String),
+                        new ParameterColumn("col3", ETypeCode.String),
                     }), 
                 },
                 Outputs = new Parameter[] 
                 {
-                    new ParameterOutputColumn("column", DataType.ETypeCode.String),
-                    new ParameterOutputColumn("value", DataType.ETypeCode.String),
+                    new ParameterOutputColumn("column", ETypeCode.String),
+                    new ParameterOutputColumn("value", ETypeCode.String),
                 }
             };
 

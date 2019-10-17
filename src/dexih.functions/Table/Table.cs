@@ -414,69 +414,69 @@ namespace dexih.functions
 
             //add the audit columns if they don't exist
             //get some of the key fields to save looking up for each row.
-            var colValidFrom = GetColumn(TableColumn.EDeltaType.ValidFromDate);
-            var colValidTo = GetColumn(TableColumn.EDeltaType.ValidToDate);
-            var colCreateDate = GetColumn(TableColumn.EDeltaType.CreateDate);
-            var colUpdateDate = GetColumn(TableColumn.EDeltaType.UpdateDate);
-            var colSurrogateKey = GetColumn(TableColumn.EDeltaType.AutoIncrement);
-            var colIsCurrentField = GetColumn(TableColumn.EDeltaType.IsCurrentField);
-            var colVersionField = GetColumn(TableColumn.EDeltaType.Version);
-            var colCreateAuditKey = GetColumn(TableColumn.EDeltaType.CreateAuditKey);
-            var colUpdateAuditKey = GetColumn(TableColumn.EDeltaType.UpdateAuditKey);
-//            var colSourceSurrogateKey = GetDeltaColumn(TableColumn.EDeltaType.SourceSurrogateKey);
-//            var colRejectedReason = GetDeltaColumn(TableColumn.EDeltaType.RejectedReason);
+            var colValidFrom = GetColumn(EDeltaType.ValidFromDate);
+            var colValidTo = GetColumn(EDeltaType.ValidToDate);
+            var colCreateDate = GetColumn(EDeltaType.CreateDate);
+            var colUpdateDate = GetColumn(EDeltaType.UpdateDate);
+            var colSurrogateKey = GetColumn(EDeltaType.AutoIncrement);
+            var colIsCurrentField = GetColumn(EDeltaType.IsCurrentField);
+            var colVersionField = GetColumn(EDeltaType.Version);
+            var colCreateAuditKey = GetColumn(EDeltaType.CreateAuditKey);
+            var colUpdateAuditKey = GetColumn(EDeltaType.UpdateAuditKey);
+//            var colSourceSurrogateKey = GetDeltaColumn(EDeltaType.SourceSurrogateKey);
+//            var colRejectedReason = GetDeltaColumn(EDeltaType.RejectedReason);
 
             if (colValidFrom == null)
             {
-                colValidFrom = new TableColumn("ValidFromDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidFromDate };
+                colValidFrom = new TableColumn("ValidFromDate", ETypeCode.DateTime) { DeltaType = EDeltaType.ValidFromDate };
                 Columns.Add(colValidFrom);
             }
             
             if (colValidTo == null)
             {
-                colValidTo = new TableColumn("ValidToDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.ValidToDate };
+                colValidTo = new TableColumn("ValidToDate", ETypeCode.DateTime) { DeltaType = EDeltaType.ValidToDate };
                 Columns.Add(colValidTo);
             }
             
             if (colCreateDate == null)
             {
-                colCreateDate = new TableColumn("CreateDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.CreateDate };
+                colCreateDate = new TableColumn("CreateDate", ETypeCode.DateTime) { DeltaType = EDeltaType.CreateDate };
                 Columns.Add(colCreateDate);
             }
             
             if (colUpdateDate == null)
             {
-                colUpdateDate = new TableColumn("UpdateDate", ETypeCode.DateTime) { DeltaType = TableColumn.EDeltaType.UpdateDate };
+                colUpdateDate = new TableColumn("UpdateDate", ETypeCode.DateTime) { DeltaType = EDeltaType.UpdateDate };
                 Columns.Add(colUpdateDate);
             }
             
             if (colSurrogateKey == null)
             {
-                colSurrogateKey = new TableColumn(surrogateKeyName, ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.AutoIncrement };
+                colSurrogateKey = new TableColumn(surrogateKeyName, ETypeCode.Int64) { DeltaType = EDeltaType.AutoIncrement };
                 Columns.Add(colSurrogateKey);
             }
 
             if (colIsCurrentField == null)
             {
-                colIsCurrentField = new TableColumn("IsCurrent", ETypeCode.Boolean) { DeltaType = TableColumn.EDeltaType.IsCurrentField };
+                colIsCurrentField = new TableColumn("IsCurrent", ETypeCode.Boolean) { DeltaType = EDeltaType.IsCurrentField };
                 Columns.Add(colIsCurrentField);
             }
 
             if (colVersionField == null)
             {
-                colVersionField = new TableColumn("Version", ETypeCode.Int32) { DeltaType = TableColumn.EDeltaType.Version };
+                colVersionField = new TableColumn("Version", ETypeCode.Int32) { DeltaType = EDeltaType.Version };
                 Columns.Add(colVersionField);
             }
             
             if (colCreateAuditKey == null)
             {
-                colCreateAuditKey = new TableColumn("CreateAuditKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.CreateAuditKey };
+                colCreateAuditKey = new TableColumn("CreateAuditKey", ETypeCode.Int64) { DeltaType = EDeltaType.CreateAuditKey };
                 Columns.Add(colCreateAuditKey);
             }
 
             if (colUpdateAuditKey == null)
             {
-                colUpdateAuditKey = new TableColumn("UpdateAuditKey", ETypeCode.Int64) { DeltaType = TableColumn.EDeltaType.UpdateAuditKey };
+                colUpdateAuditKey = new TableColumn("UpdateAuditKey", ETypeCode.Int64) { DeltaType = EDeltaType.UpdateAuditKey };
                 Columns.Add(colUpdateAuditKey);
             }
         }
@@ -494,14 +494,14 @@ namespace dexih.functions
             // reset delta types on reject table to ensure the reject table contains no keys.
             foreach(var column in table.Columns)
             {
-                column.DeltaType = TableColumn.EDeltaType.TrackingField;
+                column.DeltaType = EDeltaType.TrackingField;
             }
 
             table.Name = rejectedTableName;
             table.Description = "Rejected table for: " + Description;
 
-            if(GetColumn(TableColumn.EDeltaType.RejectedReason) == null)
-                table.Columns.Add(new TableColumn("RejectedReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason));
+            if(GetColumn(EDeltaType.RejectedReason) == null)
+                table.Columns.Add(new TableColumn("RejectedReason", ETypeCode.String, EDeltaType.RejectedReason));
 
             return table;
         }
@@ -517,7 +517,7 @@ namespace dexih.functions
             foreach(var column in table.Columns)
             {
                 column.SecurityFlag = Columns[column.Name].SecurityFlag;
-                if(column.SecurityFlag != TableColumn.ESecurityFlag.None)
+                if(column.SecurityFlag != ESecurityFlag.None)
                 {
                     column.DataType = ETypeCode.String;
                     column.MaxLength = 250;
@@ -542,7 +542,7 @@ namespace dexih.functions
 
             foreach (var column in Columns)
             {
-                if (!removeIgnoreColumns || column.DeltaType != TableColumn.EDeltaType.IgnoreField)
+                if (!removeIgnoreColumns || column.DeltaType != EDeltaType.IgnoreField)
                 {
                     var newCol = column.Copy();
                     if (removeSchema) newCol.ReferenceTable = null;
@@ -554,7 +554,7 @@ namespace dexih.functions
             return table;
         }
 
-        public void AddColumn(string columnName, ETypeCode dataType = ETypeCode.String, TableColumn.EDeltaType deltaType = TableColumn.EDeltaType.TrackingField, byte arrayDimensions = 0)
+        public void AddColumn(string columnName, ETypeCode dataType = ETypeCode.String, EDeltaType deltaType = EDeltaType.TrackingField, byte arrayDimensions = 0)
         {
             if (Columns == null)
                 Columns = new TableColumns();
@@ -596,19 +596,19 @@ namespace dexih.functions
         public bool TryGetColumn(string columnName, out TableColumn column) => Columns.TryGetColumn(columnName, out column);
 
         public bool TryGetColumn(TableColumn inColumn, out TableColumn column) => Columns.TryGetColumn(inColumn, out column);
-        public bool TryGetColumn(TableColumn.EDeltaType deltaType, out TableColumn column) => Columns.TryGetColumn(deltaType, out column);
+        public bool TryGetColumn(EDeltaType deltaType, out TableColumn column) => Columns.TryGetColumn(deltaType, out column);
         
-        public TableColumn GetColumn(TableColumn.EDeltaType deltaType) => Columns.GetColumn(deltaType);
+        public TableColumn GetColumn(EDeltaType deltaType) => Columns.GetColumn(deltaType);
 
-        public int GetOrdinal(TableColumn.EDeltaType deltaType) => Columns.GetOrdinal(deltaType);
+        public int GetOrdinal(EDeltaType deltaType) => Columns.GetOrdinal(deltaType);
 
-        public IEnumerable<int> GetOrdinals(TableColumn.EDeltaType deltaType) => Columns.GetOrdinals(deltaType);
+        public IEnumerable<int> GetOrdinals(EDeltaType deltaType) => Columns.GetOrdinals(deltaType);
 
         public TableColumn GetAutoIncrementColumn() => Columns.GetAutoIncrementColumn();
 
         public int GetAutoIncrementOrdinal() => Columns.GetAutoIncrementOrdinal();
 
-        public TableColumn[] GetColumns(TableColumn.EDeltaType deltaType) => Columns.GetColumns(deltaType);
+        public TableColumn[] GetColumns(EDeltaType deltaType) => Columns.GetColumns(deltaType);
         
 
         //creates a simple select query with all fields and no sorts, filters
@@ -616,7 +616,7 @@ namespace dexih.functions
         {
             return new SelectQuery
             {
-                Columns = Columns.Where(c=>c.DeltaType != TableColumn.EDeltaType.IgnoreField && c.DataType != ETypeCode.Unknown).Select(c => new SelectColumn(c)).ToList(),
+                Columns = Columns.Where(c=>c.DeltaType != EDeltaType.IgnoreField && c.DataType != ETypeCode.Unknown).Select(c => new SelectColumn(c)).ToList(),
                 Table = Name,
                 Rows = rows
             };

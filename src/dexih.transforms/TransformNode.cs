@@ -63,7 +63,7 @@ namespace dexih.transforms
                 {
                     var col = _parentTable.Columns[i];
                     
-                    if (col.DeltaType == TableColumn.EDeltaType.DatabaseOperation)
+                    if (col.DeltaType == EDeltaType.DatabaseOperation)
                     {
                         _parentTableSkipOrdinals.Add(i);
                         continue;
@@ -73,7 +73,7 @@ namespace dexih.transforms
                     parentCol.ColumnGroup = string.IsNullOrEmpty(parentCol.ColumnGroup) ? "parent" : "parent." + parentCol.ColumnGroup;
                     parentCol.IsParent = true;
 
-                    if (parentCol.IsAutoIncrement()) parentCol.DeltaType = TableColumn.EDeltaType.TrackingField;
+                    if (parentCol.IsAutoIncrement()) parentCol.DeltaType = EDeltaType.TrackingField;
                     newTable.Columns.Add(parentCol);
                 }
                 _parentAutoIncrementOrdinal = _parentTable.GetAutoIncrementOrdinal();

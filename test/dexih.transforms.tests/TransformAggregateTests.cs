@@ -17,8 +17,8 @@ namespace dexih.transforms.tests
         public async Task Group_ParentChild_Flatten()
         {
             var table = new Table("parent-child", 0, 
-                new TableColumn("child", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("parent", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey)
+                new TableColumn("child", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("parent", ETypeCode.String, EDeltaType.NaturalKey)
             );
             
             table.AddRow("EMP1", "MGR1");
@@ -55,19 +55,19 @@ namespace dexih.transforms.tests
                 },
                 ResultInputs = new Parameter []
                 {
-                     new ParameterValue("maxDepth", DataType.ETypeCode.Int32, 4 ), 
+                     new ParameterValue("maxDepth", ETypeCode.Int32, 4 ), 
                 },
                 ResultOutputs = new Parameter []
                 {
-                    new ParameterOutputColumn("leafValue", DataType.ETypeCode.String),
-                    new ParameterOutputColumn("depth", DataType.ETypeCode.Int32),
-                    new ParameterArray("levels", DataType.ETypeCode.String, 1, new List<Parameter>
+                    new ParameterOutputColumn("leafValue", ETypeCode.String),
+                    new ParameterOutputColumn("depth", ETypeCode.Int32),
+                    new ParameterArray("levels", ETypeCode.String, 1, new List<Parameter>
                     {
-                        new ParameterOutputColumn("level1", DataType.ETypeCode.String),
-                        new ParameterOutputColumn("level2", DataType.ETypeCode.String),
-                        new ParameterOutputColumn("level3", DataType.ETypeCode.String),
-                        new ParameterOutputColumn("level4", DataType.ETypeCode.String),
-                        new ParameterOutputColumn("level5", DataType.ETypeCode.String),
+                        new ParameterOutputColumn("level1", ETypeCode.String),
+                        new ParameterOutputColumn("level2", ETypeCode.String),
+                        new ParameterOutputColumn("level3", ETypeCode.String),
+                        new ParameterOutputColumn("level4", ETypeCode.String),
+                        new ParameterOutputColumn("level5", ETypeCode.String),
                     }), 
                 }
             };
@@ -93,8 +93,8 @@ namespace dexih.transforms.tests
         public async Task Group_PercentTotal_Rank()
         {
             var table = new Table("parent-child", 0, 
-                new TableColumn("group", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("value", DataType.ETypeCode.Double, TableColumn.EDeltaType.NaturalKey)
+                new TableColumn("group", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("value", ETypeCode.Double, EDeltaType.NaturalKey)
             );
             
             table.AddRow("GROUP1", 1);
@@ -127,11 +127,11 @@ namespace dexih.transforms.tests
                     },
                     ResultInputs = new Parameter []
                     {
-                        new ParameterValue("percentFormat", DataType.ETypeCode.Enum, AggregateFunctions<double>.EPercentFormat.AsPercent), 
+                        new ParameterValue("percentFormat", ETypeCode.Enum, AggregateFunctions<double>.EPercentFormat.AsPercent), 
                     },
                     ResultReturnParameters = new Parameter[]
                     {
-                        new ParameterOutputColumn("percent", DataType.ETypeCode.Double)
+                        new ParameterOutputColumn("percent", ETypeCode.Double)
                         
                     },
                 }, EFunctionCaching.NoCache
@@ -143,18 +143,18 @@ namespace dexih.transforms.tests
                 {
                     Inputs = new Parameter []
                     {
-                        new ParameterArray("values", DataType.ETypeCode.Double, 1, new List<Parameter>
+                        new ParameterArray("values", ETypeCode.Double, 1, new List<Parameter>
                         { 
                             new ParameterColumn("value", table["value"])
                         })
                     },
                     ResultInputs = new Parameter []
                     {
-                        new ParameterValue("direction", DataType.ETypeCode.Enum, Sort.EDirection.Ascending), 
+                        new ParameterValue("direction", ETypeCode.Enum, Sort.EDirection.Ascending), 
                     },
                     ResultReturnParameters = new Parameter[]
                     {
-                        new ParameterOutputColumn("rank", DataType.ETypeCode.Int32)
+                        new ParameterOutputColumn("rank", ETypeCode.Int32)
                     },
                 }, EFunctionCaching.NoCache   
             );

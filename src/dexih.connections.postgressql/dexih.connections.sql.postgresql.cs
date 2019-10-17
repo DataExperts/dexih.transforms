@@ -63,7 +63,7 @@ namespace dexih.connections.postgressql
                 var copyCommand = new StringBuilder();
                 copyCommand.Append($"COPY {SqlTableName(table)} (");
 
-                var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.DbAutoIncrement).ToArray();
+                var columns = table.Columns.Where(c => c.DeltaType != EDeltaType.DbAutoIncrement).ToArray();
                 var ordinals = new int[columns.Length];
                 var types = new NpgsqlDbType[columns.Length];
                     
@@ -176,7 +176,7 @@ namespace dexih.connections.postgressql
                 createSql.Append("create table " + AddDelimiter(table.Name) + " ( ");
                 foreach (var col in table.Columns)
                 {
-                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                    if (col.DeltaType == EDeltaType.DbAutoIncrement)
                         createSql.Append(AddDelimiter(col.Name) + " BIGSERIAL"); //TODO autoincrement for postgresql
                     else
                     {
@@ -536,17 +536,17 @@ ORDER BY c.ordinal_position"))
 
                             if (col.DataType == ETypeCode.Unknown)
                             {
-                                col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+                                col.DeltaType = EDeltaType.IgnoreField;
                             }
                             else
                             {
                                 if (pkColumns.Contains(col.Name))
                                 {
-                                    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                    col.DeltaType = EDeltaType.NaturalKey;
                                 }
                                 else
                                 {
-                                    col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                    col.DeltaType = EDeltaType.TrackingField;
                                 }
                             }
 
@@ -665,10 +665,10 @@ ORDER BY c.ordinal_position"))
 
                         for (var i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.DbAutoIncrement)
                                 continue;
                             
-                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.AutoIncrement)
                                 autoIncrementValue = Convert.ToInt64(query.InsertColumns[i].Value);
                             
                             insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
@@ -714,7 +714,7 @@ ORDER BY c.ordinal_position"))
                         return autoIncrementValue;
                     }
 
-                    var deltaColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    var deltaColumn = table.GetColumn(EDeltaType.DbAutoIncrement);
                     if (deltaColumn != null)
                     {
                         var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";

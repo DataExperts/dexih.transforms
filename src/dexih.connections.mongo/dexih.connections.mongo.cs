@@ -1,26 +1,30 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 using dexih.functions;
 using System.Data.Common;
+using System.Text.Json;
 using dexih.transforms;
 using System.Text.RegularExpressions;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
-namespace dexih.connections.azure
+namespace dexih.connections.mongo
 {
     [Connection(
         ConnectionCategory = EConnectionCategory.NoSqlDatabase,
-        Name = "Azure Storage Tables", 
-        Description = "A NoSQL key-value store which supports massive semi-structured data-sets",
-        DatabaseDescription = "Database Name",
-        ServerDescription = "Azure End Point",
+        Name = "MongoDB", 
+        Description = "MongoDB is a general purpose, document-based, distributed database built for modern application developers and for the cloud era.",
+        DatabaseDescription = "Database",
+        ServerDescription = "MongoDb Server:Port",
         AllowsConnectionString = true,
         AllowsSql = false,
         AllowsFlatFiles = false,
@@ -32,117 +36,174 @@ namespace dexih.connections.azure
         RequiresDatabase = true,
         RequiresLocalStorage = false
     )]
-    public class ConnectionAzureTable : Connection
+    public class ConnectionMongo : Connection
     {
         public override bool CanBulkLoad => true;
-        public override bool CanSort => false;
+        public override bool CanSort => true;
         public override bool CanFilter => true;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
         public override bool CanAggregate => false;
         public override bool CanUseBinary => true;
-        public override bool CanUseArray => false;
-        public override bool CanUseJson => false;
+        public override bool CanUseArray => true;
+        public override bool CanUseJson => true;
         public override bool CanUseXml => false;
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
         public override bool CanUseDbAutoIncrement => true;
         public override bool DynamicTableCreation => true;
-        
-        public override bool CanUseGuid => true;
+        public override bool CanUseGuid => false;
+        public override bool CanUseUnsigned => false;
+        public override bool CanUseTimeSpan => false;
 
-        /// <summary>
-        /// Name of the table used to store surrogate keys.
-        /// </summary>
-        public string IncrementalKeyTable { get; set; } = "DexihKeys";
-        
-        /// <summary>
-        /// Name of the column in the surrogate key table to store latest incremental value.
-        /// </summary>
-        public string IncrementalValueName => "IncrementalValue";
-        
-        /// <summary>
-        /// Name of the property which is a guid and used to lock rows when updating.
-        /// </summary>
-        public string LockGuidName => "LockGuid";
+        public const string IncrementalKeyTable = "_incrementalKeys";
 
-        public string AzurePartitionKeyDefaultValue => "default";
-        
-
-
-        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
-        {
-            switch (typeCode)
-            {
-                case ETypeCode.DateTime:
-                    return new DateTime(1800, 01, 02, 0, 0, 0, 0, DateTimeKind.Utc);
-                case ETypeCode.Double:
-                    return -1E+100;
-                case ETypeCode.Single:
-                    return -1E+37F;
-                default:
-                    return DataType.GetDataTypeMinValue(typeCode, length);
-            }
-        }
+//        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
+//        {
+//            switch (typeCode)
+//            {
+//                case ETypeCode.DateTime:
+//                    return new DateTime(1800, 01, 02, 0, 0, 0, 0, DateTimeKind.Utc);
+//                case ETypeCode.Double:
+//                    return -1E+100;
+//                case ETypeCode.Single:
+//                    return -1E+37F;
+//                default:
+//                    return DataType.GetDataTypeMinValue(typeCode, length);
+//            }
+//        }
 
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-                case ETypeCode.DateTime:
-                    return DateTime.MaxValue.ToUniversalTime();
+//                case ETypeCode.DateTime:
+//                    return DateTime.MaxValue.ToUniversalTime();
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
-                case ETypeCode.Double:
-                    return 1E+100;
-                case ETypeCode.Single:
-                    return 1E+37F;
+//                case ETypeCode.Double:
+//                    return 1E+100;
+//                case ETypeCode.Single:
+//                    return 1E+37F;
 
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
         }
         
-        public object ConvertParameterType(object value)
-        {
-            if (value == null)
-                return DBNull.Value;
-            
-            return value;
-        }
-
-        public override bool IsValidDatabaseName(string name)
-        {
-            return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,62}$");
-        }
-
-        public override bool IsValidTableName(string name)
-        {
-            return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,62}$");
-        }
-
-        public override bool IsValidColumnName(string name)
-        {
-            return Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9]{2,254}$");
-        }
-
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
+        public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
             try
             {
-                var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference(table.Name);
+                var database = GetMongoDatabase();
 
-                var exists = cTable.ExistsAsync(null, null, cancellationToken);
-
-                return exists;
+                var filter = new BsonDocument("name", table.Name);
+                //filter by collection name
+                var collections = await database.ListCollectionsAsync(new ListCollectionsOptions { Filter = filter }, cancellationToken);
+                //check for existence
+                return await collections.AnyAsync(cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Could not check if table exists.  {ex.Message}");
+                throw new ConnectionException($"Could not check if collection exists.  {ex.Message}");
             }
         }
 
+        private BsonDocument CreateDocumentRow(Table table, object[] row)
+        {
+            var document = new BsonDocument();
+
+            var elements = new List<BsonElement>();
+            for(var i = 0; i < table.Columns.Count; i++)
+            {
+                var column = table.Columns[i];
+                var dictionary = row.ToDictionary(d => column.Name, d => CreateBsonValue(d, column, column.Rank));
+                document.AddRange(dictionary);
+            }
+
+            return document;
+        }
+
+        private BsonValue CreateBsonValue(object value, TableColumn column, int rank)
+        {
+            var (convertedType, convertedValue) = ConvertForWrite(column.Name, column.DataType, rank, column.AllowDbNull, value);
+
+            if (convertedValue == null || convertedValue is DBNull)
+            {
+                return BsonNull.Value;
+            }
+
+            if (rank >= 1)
+            {
+                var type = value.GetType();
+                IEnumerable array;
+                if (type.GetArrayRank() == 2)
+                {
+                    array = Operations.ConvertToJaggedArray((Array) value);
+                }
+                else
+                {
+                    array = ((IEnumerable) value);
+                }
+
+                var enumerator = array.GetEnumerator();
+                var bsonValues = new List<BsonValue>();
+                while (enumerator.MoveNext())
+                {
+                    bsonValues.Add(CreateBsonValue(enumerator.Current, column, rank - 1));
+                }
+                return new BsonArray(bsonValues);
+            }
+            
+            switch (convertedType)
+            {
+                case ETypeCode.Unknown:
+                    return BsonValue.Create(convertedValue);
+                case ETypeCode.Binary:
+                    return new BsonBinaryData((byte[])convertedValue);
+                case ETypeCode.Byte:
+                    return new BsonInt32((byte)convertedValue);
+                case ETypeCode.Char:
+                    return new BsonInt32((char)convertedValue);
+                case ETypeCode.SByte:
+                    return new BsonInt32((sbyte)convertedValue);
+                case ETypeCode.Int16:
+                    return new BsonInt32((short)convertedValue);
+                case ETypeCode.Int32:
+                    return new BsonInt32((int)convertedValue);
+                case ETypeCode.Int64:
+                    return new BsonInt64((long)convertedValue);
+                case ETypeCode.Decimal:
+                    return new BsonDecimal128((decimal)convertedValue);
+                case ETypeCode.Double:
+                    return new BsonDouble((double)convertedValue);
+                case ETypeCode.Single:
+                    return new BsonDouble((Single)convertedValue);
+                case ETypeCode.String:
+                case ETypeCode.Text:
+                    return new BsonString((string)convertedValue);
+                case ETypeCode.Boolean:
+                    return new BsonBoolean((bool) convertedValue);
+                case ETypeCode.DateTime:
+                    return new BsonDateTime((DateTime) convertedValue);
+                case ETypeCode.Json:
+                    var json = ((JsonElement) convertedValue).GetRawText();
+                    var bson = BsonSerializer.Deserialize<BsonDocument>(json);
+                    return bson;
+                case ETypeCode.Xml:
+                    return new BsonString((string)convertedValue);
+                case ETypeCode.Enum:
+                    return new BsonInt32((int)convertedValue);
+                case ETypeCode.CharArray:
+                    return new BsonString((string)convertedValue);
+                case ETypeCode.Object:
+                    return new BsonString((string)convertedValue);
+                case ETypeCode.Geometry:
+                    return new BsonBinaryData((byte[]) convertedValue);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(convertedType), convertedType, null);
+            }
+        }
 
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
@@ -171,9 +232,9 @@ namespace dexih.connections.azure
                 {
                     ordinals[i] = reader.GetOrdinal(table.Columns[i].Name);
 
-                    if (table.Columns[i].DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                    if (table.Columns[i].DeltaType == EDeltaType.DbAutoIncrement)
                     {
-                        keyValue = await GetNextKey(table, sk, cancellationToken);
+                        keyValue = await GetLastKey(table, sk, cancellationToken);
                     }
                 }
 
@@ -203,7 +264,7 @@ namespace dexih.connections.azure
                         var ordinal = ordinals[i];
                         if (ordinal >= 0)
                         {
-                            if (table.Columns[i].DeltaType == TableColumn.EDeltaType.DbAutoIncrement &&
+                            if (table.Columns[i].DeltaType == EDeltaType.DbAutoIncrement &&
                                 (reader[ordinal] == null || reader[ordinal] is DBNull))
                             {
                                 row[i] = ++keyValue;
@@ -217,16 +278,7 @@ namespace dexih.connections.azure
                         {
                             switch (table.Columns[i].DeltaType)
                             {
-                                case TableColumn.EDeltaType.AzurePartitionKey:
-                                    row[i] = AzurePartitionKeyDefaultValue;
-                                    break;
-                                case TableColumn.EDeltaType.AzureRowKey:
-                                    if (skOrdinal >= 0)
-                                        row[i] = reader[skOrdinal];
-                                    else
-                                        row[i] = Guid.NewGuid().ToString();
-                                    break;
-                                case TableColumn.EDeltaType.DbAutoIncrement:
+                                case EDeltaType.DbAutoIncrement:
                                     row[i] = 0;
                                     break;
                             }
@@ -249,63 +301,37 @@ namespace dexih.connections.azure
 
                 await Task.WhenAll(tasks);
             }
-            catch (StorageException ex)
-            {
-                throw new ConnectionException($"Error writing to Azure Storage table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".", ex);
-            }
             catch (Exception ex)
             {
-                throw new ConnectionException("Error writing to Azure Storage table: " + table.Name + ".  Error: " + ex.Message, ex);
+                throw new ConnectionException("Error writing to Mongo collection: " + table.Name + ".  Error: " + ex.Message, ex);
             }
         }
 
         private Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken = default)
         {
-            var connection = GetCloudTableClient();
-            var cloudTable = connection.GetTableReference(targetTableName);
-
-            // Create the batch operation.
-            var batchOperation = new TableBatchOperation();
-
-            var partitionKey = table.GetOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
-            var rowKey = table.GetOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            var database = GetMongoDatabase();
+            var collection = database.GetCollection<BsonDocument>(targetTableName);
+            
             var surrogateKey = table.GetAutoIncrementOrdinal();
+            var data = new List<BsonDocument>();
 
             foreach (var row in buffer)
             {
-                var properties = new Dictionary<string, EntityProperty>();
+                var properties = new BsonDocument();
                 for(var i = 0; i < table.Columns.Count; i++)
                 {
                     var column = table.Columns[i];
-                    if (column.DeltaType == TableColumn.EDeltaType.AzureRowKey ||
-                        column.DeltaType == TableColumn.EDeltaType.AzurePartitionKey ||
-                        column.DeltaType == TableColumn.EDeltaType.TimeStamp ) continue;
-
                     var value = row[i];
                     if (value == DBNull.Value) value = null;
-                    properties.Add(column.Name, NewEntityProperty(column, value));
+                    
+                    var element = new BsonElement(column.Name, CreateBsonValue(value, column, column.Rank));
+                    properties.Add(element);
                 }
 
-                var partitionKeyValue = partitionKey >= 0 ? row[partitionKey] : AzurePartitionKeyDefaultValue;
-                var rowKeyValue = rowKey >= 0 ? row[rowKey] : surrogateKey >= 0 ? ConvertKeyValue(row[surrogateKey]) : Guid.NewGuid().ToString();
-                var entity = new DynamicTableEntity(partitionKeyValue.ToString(), rowKeyValue.ToString(), "*", properties);
-
-                batchOperation.Insert(entity);
+                data.Add(properties);
             }
-            return cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken);
-        }
 
-        private string ConvertKeyValue(object value)
-        {
-            switch (value)
-            {
-                case long longValue:
-                    return longValue.ToString("D20");
-                case int intValue:
-                    return intValue.ToString("D20");
-                default:
-                    return value.ToString();
-            }
+            return collection.InsertManyAsync(data, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -321,51 +347,39 @@ namespace dexih.connections.azure
             {
                 if (!IsValidTableName(table.Name))
                 {
-                    throw new ConnectionException("The table " + table.Name + " could not be created as it does not meet Azure table naming standards.");
+                    throw new ConnectionException("The table " + table.Name + " could not be created as it does not meet mongo table naming standards.");
                 }
 
                 foreach (var col in table.Columns)
                 {
                     if (!IsValidColumnName(col.Name))
                     {
-                        throw new ConnectionException("The table " + table.Name + " could not be created as the column " + col.Name + " does not meet Azure table naming standards.");
+                        throw new ConnectionException("The table " + table.Name + " could not be created as the column " + col.Name + " does not meet mongo table naming standards.");
                     }
                 }
 
-                var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference(table.Name);
-                if (dropTable)
-                    await cTable.DeleteIfExistsAsync();
-
-                var exists = await cTable.ExistsAsync();
-                if (exists)
+                var database = GetMongoDatabase();
+                var tableExists = await TableExists(table, cancellationToken);
+                if (dropTable && tableExists)
+                {
+                    await database.DropCollectionAsync(table.Name, cancellationToken);
+                }
+                else if (tableExists)
                 {
                     return;
                 }
+                
+                await database.CreateCollectionAsync(table.Name, cancellationToken: cancellationToken);
+                var collection = database.GetCollection<BsonDocument>(table.Name);
 
-                var isCreated = false;
-                for (var i = 0; i < 10; i++)
+                foreach (var column in table.Columns.Where(c =>
+                    c.DeltaType == EDeltaType.DbAutoIncrement || c.DeltaType == EDeltaType.AutoIncrement))
                 {
-                    try
-                    {
-                        isCreated = await GetCloudTableClient().GetTableReference(table.Name).CreateIfNotExistsAsync();
-                        if (isCreated)
-                            break;
-                        await Task.Delay(5000, cancellationToken);
-                    }
-                    catch
-                    {
-                        await Task.Delay(5000, cancellationToken);
-                    }
+                    await collection.Indexes.CreateOneAsync(Builders<BsonDocument>.IndexKeys.Ascending(column.Name));    
                 }
-
-                if(!isCreated)
-                {
-                    throw new ConnectionException("Failed to create table after 10 attempts.");
-                }
-
+                
                 // reset the auto incremental table, when rebuilding the table.
-                var incremental = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                var incremental = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (incremental != null)
                 {
                     await UpdateIncrementalKey(table, incremental.TableColumnName(), 0, cancellationToken);
@@ -373,69 +387,119 @@ namespace dexih.connections.azure
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Error creating Azure table {ex.Message}", ex);
+                throw new ConnectionException($"Error creating mongo table {ex.Message}", ex);
             }
         }
 
         /// <summary>
-        /// Gets a connection refererence to the Azure server.
+        /// Gets a connection refererence to the Mongo server.
         /// </summary>
         /// <returns></returns>
-        public CloudTableClient GetCloudTableClient()
+        private MongoClient GetMongoClient()
         {
-            CloudStorageAccount storageAccount;
+            MongoClient client;
 
             if (UseConnectionString)
-                storageAccount = CloudStorageAccount.Parse(ConnectionString);
+            {
+                client = new MongoClient(ConnectionString);
+            }
             else
-                storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=" + Username + ";AccountKey=" + Password + ";TableEndpoint=" + Server);
+            {
+                client = new MongoClient($"mongodb://{Username}:{Password}@{Server}");
+            }
 
             // Create the table client.
-            return storageAccount.CreateCloudTableClient();
+            return client;
+        }
+
+        private IMongoDatabase GetMongoDatabase()
+        {
+            var client = GetMongoClient();
+            return client.GetDatabase(DefaultDatabase);
+        }
+
+        public async Task<IAsyncCursor<BsonDocument>> GetCollection(string name, SelectQuery query, CancellationToken cancellationToken)
+        {
+            var database = GetMongoDatabase();
+            var collection = database.GetCollection<BsonDocument>(name);
+
+            IFindFluent<BsonDocument, BsonDocument> find;
+            if (query?.Filters != null && query.Filters.Count > 0)
+            {
+                find = collection.Find(BuildFilterDefinition(query.Filters));
+            }
+            else
+            {
+                find = collection.Find(new BsonDocument());
+            }
+
+            if (query?.Columns?.Count > 0)
+            {
+                find = find.Project(BuildProjectionDefinition(query.Columns));
+            }
+
+            if (query?.Sorts?.Count > 0)
+            {
+                find = find.Sort(BuildSortDefinition(query.Sorts));
+            }
+
+            return await find.ToCursorAsync(cancellationToken);
         }
 
         /// <summary>
-        /// Azure does not have databases, so this is a dummy function.
+        /// mongo does not have databases, so this is a dummy function.
         /// </summary>
         /// <param name="databaseName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
+            var client = GetMongoClient();
+            client.GetDatabase(databaseName);
+            DefaultDatabase = databaseName;
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Azure does not have databases, so this returns a dummy value.
+        /// mongo does not have databases, so this returns a dummy value.
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
+        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
-            var list = new List<string> { "Default" };
-            return Task.FromResult(list);
+            var client = GetMongoClient();
+            List<string> dbs = new List<string>();
+            using (IAsyncCursor<string> cursor = await client.ListDatabaseNamesAsync(cancellationToken))
+            {
+                while (await cursor.MoveNextAsync(cancellationToken))
+                {
+                    dbs.AddRange(cursor.Current.Select(doc => (doc)));
+                }
+            }
+
+            return dbs;
         }
 
         public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             try
             {
-                var connection = GetCloudTableClient();
-                TableContinuationToken continuationToken = null;
+                var database = GetMongoDatabase();
+
+                var collectionList = await database.ListCollectionsAsync(cancellationToken: cancellationToken);
+
                 var list = new List<Table>();
-                do
+
+                foreach (var collection in await collectionList.ToListAsync<BsonDocument>(cancellationToken: cancellationToken))
                 {
-                    var table = await connection.ListTablesSegmentedAsync(continuationToken);
-                    continuationToken = table.ContinuationToken;
-					list.AddRange(table.Results.Select(c => new Table(c.Name)));
-
-                } while (continuationToken != null);
-
+                    list.Add(new Table(collection["name"].AsString));
+                }
+                
                 return list;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Error getting Azure table list {ex.Message}", ex);
+                throw new ConnectionException($"Error getting mongo collection list {ex.Message}", ex);
             }
         }
 
@@ -443,7 +507,7 @@ namespace dexih.connections.azure
         {
             try
             {
-                var connection = GetCloudTableClient();
+                var database = GetMongoDatabase();
 
 
                 //The new data table that will contain the table schema
@@ -453,49 +517,92 @@ namespace dexih.connections.azure
                     Description = ""
                 };
 
-                var cloudTable = connection.GetTableReference(table.Name);
-                var query = new TableQuery().Take(1);
+                var collection = database.GetCollection<BsonDocument>(table.Name);
 
-                TableContinuationToken continuationToken = null;
-                var list = new List<DynamicTableEntity>();
-                do
+                var document = await collection.AsQueryable().Sample(1).FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+                if (document != null)
                 {
-                    var result = await cloudTable.ExecuteQuerySegmentedAsync(query, continuationToken);
-                    continuationToken = result.ContinuationToken;
-                    list.AddRange(result.Results);
-
-                } while (continuationToken != null);
-
-                if (list.Count > 0)
-                {
-                    var dynamicTableEntity = list[0];
-                    foreach (var property in dynamicTableEntity.Properties)
+                    foreach (var element in document.Elements)
                     {
+                        var (type, rank) = ConvertBsonType(element.Value);
                         //add the basic properties                            
                         var col = new TableColumn()
                         {
-                            Name = property.Key,
-                            LogicalName = property.Key,
+                            Name = element.Name,
+                            LogicalName = element.Name,
                             IsInput = false,
-                            ColumnGetType = property.Value.GetType(),
+                            DataType = type,
+                            Rank = rank,
                             Description = "",
                             AllowDbNull = true,
                             IsUnique = false
                         };
 
+                        if (element.Value.BsonType == BsonType.ObjectId)
+                        {
+                            col.MaxLength = element.Value.BsonType == BsonType.ObjectId ? 14 : (int?) null;
+                            col.DeltaType = EDeltaType.RowKey;
+
+                        }
                         table.Columns.Add(col);
                     }
                 }
+                
                 return table;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Error getting Azure table information for table {originalTable.Name}.  {ex.Message}", ex);
+                throw new ConnectionException($"Error getting mongo table information for table {originalTable.Name}.  {ex.Message}", ex);
+            }
+        }
+
+        private (ETypeCode typeCode, int rank) ConvertBsonType(BsonValue bsonValue)
+        {
+            switch (bsonValue.BsonType)
+            {
+                case BsonType.Double:
+                    return (ETypeCode.Double, 0);
+                case BsonType.String:
+                    return (ETypeCode.String, 0);
+                case BsonType.Document:
+                    return (ETypeCode.Json, 0);
+                case BsonType.Array:
+                    var array = bsonValue.AsBsonArray;
+                    if (array.Count == 0)
+                    {
+                        return (ETypeCode.String, 1);
+                    }
+                    else
+                    {
+                        var result = ConvertBsonType(array[0]);
+                        return (result.typeCode, result.rank + 1);
+                    }
+                case BsonType.Binary:
+                    return (ETypeCode.Binary, 0);
+                case BsonType.ObjectId:
+                    return (ETypeCode.String, 0);
+                case BsonType.Boolean:
+                    return (ETypeCode.Boolean, 0);
+                case BsonType.DateTime:
+                    return (ETypeCode.DateTime, 0);
+                case BsonType.Null:
+                    return (ETypeCode.String, 0);
+                case BsonType.Int32:
+                    return (ETypeCode.Int32, 0);
+                case BsonType.Timestamp:
+                    return (ETypeCode.Int64, 0);
+                case BsonType.Int64:
+                    return (ETypeCode.Int64, 0);
+                case BsonType.Decimal128:
+                    return (ETypeCode.Decimal, 0);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(bsonValue.BsonType), bsonValue.BsonType, null);
             }
         }
 
         /// <summary>
-        /// Azure can always return true for CompareTable, as the columns are not created in the same way relational tables are.
+        /// mongo can always return true for CompareTable, as the columns are not created in the same way relational tables are.
         /// </summary>
         /// <param name="table"></param>
         /// <param name="cancellationToken"></param>
@@ -504,150 +611,143 @@ namespace dexih.connections.azure
         {
             return Task.FromResult(true);
         }
-
-        /// <inheritdoc />
+        
+             /// <inheritdoc />
         /// <summary>
         /// Note: Azure does not have a max function, so we used a key's table to store surrogate keys for each table.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="surrogateKeyColumn"></param>
+        /// <param name="incrementalColumn"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<long> GetNextKey(Table table, TableColumn surrogateKeyColumn, CancellationToken cancellationToken = default)
+        public override async Task<long> GetLastKey(Table table, TableColumn incrementalColumn, CancellationToken cancellationToken = default)
         {
             try
             {
-                var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference(IncrementalKeyTable);
+                var database = GetMongoDatabase();
+                var collection = database.GetCollection<BsonDocument>(IncrementalKeyTable);
 
-                long incrementalKey;
-                var lockGuid = Guid.NewGuid();
+                var filterBuilder = Builders<BsonDocument>.Filter;
+                var filter = filterBuilder.Eq("tableName", table.Name) & filterBuilder.Eq("columnName", incrementalColumn.Name);
+                var document = await (await collection.FindAsync(filter, cancellationToken: cancellationToken)).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-                if (!await cTable.ExistsAsync())
+                if (document == null)
                 {
-                    await cTable.CreateAsync();
+                    return 0;
+                }
+                else
+                {
+                    var value = document["value"].ToInt64();
+                    return value;
                 }
 
-                DynamicTableEntity entity;
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Mongo Error getting incremental key for table {table.Name} {ex.Message}", ex);
+            }
+        }
 
-                do
+        public override async Task UpdateIncrementalKey(Table table, string incrementalColumnName, object value, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var database = GetMongoDatabase();
+                var collection = database.GetCollection<BsonDocument>(IncrementalKeyTable);
+
+                var filterBuilder = Builders<BsonDocument>.Filter;
+                var filter = filterBuilder.Eq("tableName", table.Name) & filterBuilder.Eq("columnName", incrementalColumnName);
+                var document = await (await collection.FindAsync(filter, cancellationToken: cancellationToken)).FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+                if (document == null)
                 {
-                    //get the last key value if it exists.
-                    var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
-                    if (tableResult.Result == null)
+                    var insertDocument = new BsonDocument()
                     {
-                        entity = new DynamicTableEntity(table.Name, surrogateKeyColumn.Name);
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty((long)1));
-                        entity.Properties.Add(LockGuidName, new EntityProperty(lockGuid));
-                        incrementalKey = 1L;
+                        {"tableName", table.Name},
+                        {"columnName", incrementalColumnName},
+                        {"value", 1}
+                    };
+                    await collection.InsertOneAsync(insertDocument, cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    var update = Builders<BsonDocument>.Update.Set("value", value);
+                    await collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Mongo Error updating incremental key for table {table.Name} {ex.Message}", ex);
+            }
+        }
+
+        public ProjectionDefinition<BsonDocument> BuildProjectionDefinition(List<SelectColumn> selectColumns)
+        {
+            if (selectColumns == null || selectColumns.Count == 0)
+                return null;
+            
+            ProjectionDefinition<BsonDocument> projectionDefinition = null;
+            foreach (var selectColumn in selectColumns)
+            {
+                if (projectionDefinition == null)
+                {
+                    projectionDefinition = Builders<BsonDocument>.Projection.Include(selectColumn.Column.Name);
+                }
+                else
+                {
+                    projectionDefinition = projectionDefinition.Include(selectColumn.Column.Name);
+                }
+            }
+
+            return projectionDefinition;
+        }
+        
+        public SortDefinition<BsonDocument> BuildSortDefinition(Sorts sortColumns)
+        {
+            if (sortColumns == null || sortColumns.Count == 0)
+                return null;
+            
+            SortDefinition<BsonDocument> sortDefinition = null;
+            foreach (var sortColumn in sortColumns)
+            {
+                if (sortDefinition == null)
+                {
+                    if (sortColumn.Direction == Sort.EDirection.Ascending)
+                    {
+                        sortDefinition = Builders<BsonDocument>.Sort.Ascending(sortColumn.Column.Name);    
                     }
                     else
                     {
-                        entity = tableResult.Result as DynamicTableEntity;
-                        incrementalKey = Convert.ToInt64(entity.Properties[IncrementalValueName].PropertyAsObject);
-                        incrementalKey++;
-                        entity.Properties[IncrementalValueName] = new EntityProperty(incrementalKey);
-                        entity.Properties[LockGuidName] = new EntityProperty(lockGuid);
+                        sortDefinition = Builders<BsonDocument>.Sort.Descending(sortColumn.Column.Name);    
                     }
-
-                    //update the record with the new incremental value and the guid.
-                    await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
-
-                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, surrogateKeyColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
-                    entity = tableResult.Result as DynamicTableEntity;
-
-                } while (entity.Properties[LockGuidName].GuidValue.Value != lockGuid);
-
-                return incrementalKey;
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Azure Error getting incremental key for table {table.Name} {ex.Message}", ex);
-            }
-        }
-
-        public override async Task UpdateIncrementalKey(Table table, string surrogateKeyColumn, object value, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference(IncrementalKeyTable);
-
-                if (!await cTable.ExistsAsync())
-                {
-                    await cTable.CreateAsync();
                 }
-
-                DynamicTableEntity entity = null;
-                entity = new DynamicTableEntity(table.Name, surrogateKeyColumn);
-                switch (value)
+                else
                 {
-                    case short shortValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(shortValue));
-                        break;
-                    case int intValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(intValue));
-                        break;
-                    case long longValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(longValue));
-                        break;
-                    case ushort ushortValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(ushortValue));
-                        break;
-                    case uint uintValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(uintValue));
-                        break;
-                    case ulong ulongValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(ulongValue));
-                        break;
-                    default:
-                        throw new ConnectionException($"The datatype {value.GetType()} is not supported for incremental columns.  Use an integer type instead.");
+                    if (sortColumn.Direction == Sort.EDirection.Ascending)
+                    {
+                        sortDefinition = sortDefinition.Ascending(sortColumn.Column.Name);    
+                    }
+                    else
+                    {
+                        sortDefinition = sortDefinition.Descending(sortColumn.Column.Name);    
+                    }
                 }
-
-                entity.Properties.Add(LockGuidName, new EntityProperty(Guid.NewGuid()));
-
-                //update the record with the new incremental value and the guid.
-                await cTable.ExecuteAsync(TableOperation.InsertOrReplace(entity));
             }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Azure Error updating incremental key for table {table.Name} {ex.Message}", ex);
-            }
+
+            return sortDefinition;
         }
-
-
-        public string ConvertOperator(ECompare Operator)
-        {
-            switch (Operator)
-            {
-                case ECompare.IsEqual:
-                    return "eq";
-                case ECompare.GreaterThan:
-                    return "gt";
-                case ECompare.GreaterThanEqual:
-                    return "ge";
-                case ECompare.LessThan:
-                    return "lt";
-                case ECompare.LessThanEqual:
-                    return "le";
-                case ECompare.NotEqual:
-                    return "ne";
-                default:
-                    throw new Exception("ConvertOperator failed");
-            }
-        }
-
-        public string BuildFilterString(List<Filter> filters)
+                
+        public FilterDefinition<BsonDocument> BuildFilterDefinition(List<Filter> filters)
         {
             if (filters == null || filters.Count == 0)
-                return "";
+                return null;
             else
             {
-                var combinedFilterString = "";
+                var filterDefinitions = new List<FilterDefinition<BsonDocument>>();
 
                 foreach (var filter in filters)
                 {
-                    string filterString;
+                    FilterDefinition<BsonDocument> filterDefinition;
 
                     if (filter.Value2.GetType().IsArray)
                     {
@@ -656,15 +756,18 @@ namespace dexih.connections.azure
                         {
                             try
                             {
-                                var valueparse = Operations.Parse(filter.CompareDataType, value);
-                                array.Add(valueparse);
+                                var valueParse = Operations.Parse(filter.CompareDataType, value);
+                                array.Add(valueParse);
                             }
                             catch (Exception ex)
                             {
                                 throw new ConnectionException($"The filter value could not be converted to a {filter.CompareDataType}.  {ex.Message}", ex, value);
                             }
                         }
-                        filterString = " (" + string.Join(" or ", array.Select(c => GenerateFilterCondition(filter.Column1.Name, ECompare.IsEqual, filter.CompareDataType, c))) + ")";
+
+                        var filtersArray = array.Select(c =>
+                            GenerateFilterCondition(filter.Column1.Name, ECompare.IsEqual, filter.CompareDataType, c));
+                        filterDefinition = Builders<BsonDocument>.Filter.Or(filtersArray);
                     }
                     else
                     {
@@ -678,61 +781,44 @@ namespace dexih.connections.azure
                             throw new ConnectionException($"The filter value could not be convered to a {filter.CompareDataType}.  {ex.Message}", ex, filter.Value2);
                         }
 
-                        filterString = GenerateFilterCondition(filter.Column1.Name, filter.Operator, filter.CompareDataType, value2);
+                        filterDefinition = GenerateFilterCondition(filter.Column1.Name, filter.Operator, filter.CompareDataType, value2);
                     }
 
-                    if (combinedFilterString == "")
-                        combinedFilterString = filterString;
-                    else if (filterString != "")
-                        combinedFilterString = TableQuery.CombineFilters(combinedFilterString, filter.AndOr.ToString().ToLower(), filterString);
+                    filterDefinitions.Add(filterDefinition);
                 }
-                return combinedFilterString;
+
+                var definitions = Builders<BsonDocument>.Filter.And(filterDefinitions);
+                return definitions;
+
             }
         }
 
-        private string GenerateFilterCondition(string column, ECompare filterOperator, ETypeCode compareDataType, object value)
+        private FilterDefinition<BsonDocument> GenerateFilterCondition(string column, ECompare filterOperator, ETypeCode compareDataType, object value)
         {
-            string filterString;
-
-            switch (compareDataType)
+            switch (filterOperator)
             {
-                case ETypeCode.String:
-				case ETypeCode.Text:
-				case ETypeCode.Json:
-                case ETypeCode.Node:
-				case ETypeCode.Xml:
-                case ETypeCode.Guid:
-                case ETypeCode.Unknown:
-                    filterString = TableQuery.GenerateFilterCondition(column, ConvertOperator(filterOperator), (string)value);
-                    break;
-                case ETypeCode.Boolean:
-                    filterString = TableQuery.GenerateFilterConditionForBool(column, ConvertOperator(filterOperator), (bool)value);
-                    break;
-                case ETypeCode.Int16:
-                case ETypeCode.Int32:
-                case ETypeCode.UInt16:
-                case ETypeCode.UInt32:
-                    filterString = TableQuery.GenerateFilterConditionForInt(column, ConvertOperator(filterOperator), (int)value);
-                    break;
-                case ETypeCode.UInt64:
-                case ETypeCode.Int64:
-                    filterString = TableQuery.GenerateFilterConditionForLong(column, ConvertOperator(filterOperator), (long)value);
-                    break;
-                case ETypeCode.DateTime:
-                    filterString = TableQuery.GenerateFilterConditionForDate(column, ConvertOperator(filterOperator), (DateTime)value);
-                    break;
-                case ETypeCode.Time:
-                    filterString = TableQuery.GenerateFilterCondition(column, ConvertOperator(filterOperator), value.ToString());
-                    break;
-                case ETypeCode.Double:
-                case ETypeCode.Decimal:
-                    filterString = TableQuery.GenerateFilterConditionForDouble(column, ConvertOperator(filterOperator), (double)value);
-                    break;
+                case ECompare.IsEqual:
+                    return Builders<BsonDocument>.Filter.Eq(column, value);
+                case ECompare.GreaterThan:
+                    return Builders<BsonDocument>.Filter.Gt(column, value);
+                case ECompare.GreaterThanEqual:
+                    return Builders<BsonDocument>.Filter.Gte(column, value);
+                case ECompare.LessThan:
+                    return Builders<BsonDocument>.Filter.Lt(column, value);
+                case ECompare.LessThanEqual:
+                    return Builders<BsonDocument>.Filter.Lte(column, value);
+                case ECompare.NotEqual:
+                    return Builders<BsonDocument>.Filter.Ne(column, value);
+                case ECompare.IsNull:
+                    return Builders<BsonDocument>.Filter.Eq(column, BsonNull.Value);
+                case ECompare.IsNotNull:
+                    return Builders<BsonDocument>.Filter.Ne(column, BsonNull.Value);
+                case ECompare.Like:
+                    return Builders<BsonDocument>.Filter.Regex(column, new BsonRegularExpression((string) value));
                 default:
-                    throw new Exception("The data type: " + compareDataType.ToString() + " is not supported by Azure table storage.");
+                    throw new ArgumentOutOfRangeException(nameof(filterOperator), filterOperator, null);
             }
 
-            return filterString;
         }
 
         public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
@@ -743,291 +829,74 @@ namespace dexih.connections.azure
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The truncate table failed for {table.Name}.  {ex.Message}", ex);
+                throw new ConnectionException($"The truncate collection failed for {table.Name}.  {ex.Message}", ex);
             }
         }
 
 
         public override Task<Table> InitializeTable(Table table, int position)
         {
-            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.AzurePartitionKey))
-            {
-                //partion key uses the AuditKey which allows bulk load, and can be used as an incremental checker.
-                table.Columns.Add(new TableColumn()
-                {
-                    Name = "PartitionKey",
-                    DataType = ETypeCode.String,
-                    MaxLength = 0,
-                    Precision = 0,
-                    AllowDbNull = false,
-                    LogicalName = table.Name + " partition key.",
-                    Description = "The Azure partition key and UpdateAuditKey for this table.",
-                    IsUnique = true,
-                    DeltaType = TableColumn.EDeltaType.AzurePartitionKey,
-                    IsIncrementalUpdate = true,
-                    IsMandatory = true
-                });
-            }
-
-            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.AzureRowKey))
-            {
-                //add the special columns for managed tables.
-                table.Columns.Add(new TableColumn()
-                {
-                    Name = "RowKey",
-                    DataType = ETypeCode.String,
-                    MaxLength = 0,
-                    Precision = 0,
-                    AllowDbNull = false,
-                    LogicalName = table.Name + " surrogate key",
-                    Description = "The azure rowKey and the natural key for this table.",
-                    IsUnique = true,
-                    DeltaType = TableColumn.EDeltaType.AzureRowKey,
-                    IsMandatory = true
-                });
-            }
-
-            if (table.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.TimeStamp))
-            {
-
-                //add the special columns for managed tables.
-                table.Columns.Add(new TableColumn()
-                {
-                    Name = "Timestamp",
-                    DataType = ETypeCode.DateTime,
-                    MaxLength = 0,
-                    Precision = 0,
-                    AllowDbNull = false,
-                    LogicalName = table.Name + " timestamp.",
-                    Description = "The Azure Timestamp for the managed table.",
-                    IsUnique = true,
-                    DeltaType = TableColumn.EDeltaType.TimeStamp,
-                    IsMandatory = true
-                });
-            }
-
             return Task.FromResult(table);
         }
-
-        private EntityProperty NewEntityProperty(TableColumn column, object value)
-        {
-            var convertedValue = ConvertForWrite(column, value);
-            var returnValue = convertedValue.value;
-            var typeCode = convertedValue.typeCode;
-            if (returnValue is DBNull) returnValue = null;
-
-            switch (typeCode)
-            {
-                case ETypeCode.Byte:
-                    return new EntityProperty((byte?)returnValue);
-                case ETypeCode.SByte:
-                    return new EntityProperty((sbyte?)returnValue);
-                case ETypeCode.UInt16:
-                    return new EntityProperty((ushort?)returnValue);
-                case ETypeCode.UInt32:
-                    return new EntityProperty((uint?)returnValue);
-                case ETypeCode.UInt64:
-                    return new EntityProperty(returnValue == null ? (long?) null : Convert.ToInt64(returnValue));
-                case ETypeCode.Int16:
-                    return new EntityProperty((short?)returnValue);
-                case ETypeCode.Enum:
-                case ETypeCode.Int32:
-                    return new EntityProperty((int?)returnValue);
-                case ETypeCode.Int64:
-                    return new EntityProperty((long?)returnValue);
-                case ETypeCode.Double:
-                    return new EntityProperty((double?)returnValue);
-                case ETypeCode.Single:
-                    return new EntityProperty((float?)returnValue);
-                case ETypeCode.Object:
-                case ETypeCode.CharArray:
-                case ETypeCode.Char:
-                case ETypeCode.String:
-				case ETypeCode.Text:
-				case ETypeCode.Json:
-				case ETypeCode.Xml:
-                case ETypeCode.Node:
-                    return new EntityProperty((string)returnValue);
-                case ETypeCode.Boolean:
-                    return new EntityProperty((bool?)returnValue);
-                case ETypeCode.DateTime:
-                    return new EntityProperty((DateTime?)returnValue);
-                case ETypeCode.Guid:
-                    return new EntityProperty((Guid?)returnValue);
-                case ETypeCode.Decimal:
-                case ETypeCode.Unknown:
-                    return new EntityProperty(returnValue?.ToString()); //decimal not supported, so convert to string
-                case ETypeCode.Time:
-                    return new EntityProperty(returnValue == null ? (long?) null : ((TimeSpan)value).Ticks); //timespan not supported, so convert to string.
-                case ETypeCode.Binary:
-                    return new EntityProperty((byte[])value);
-                default:
-                    throw new Exception("Cannot create new azure entity as the data type: " + typeCode.ToString() + " is not supported.");
-            }
-
-        }
-
-        public object ConvertEntityProperty(ETypeCode typeCode, object value)
-        {
-            if (value == null)
-                return null;
-
-            switch (typeCode)
-            {
-                case ETypeCode.Byte:
-                    return Convert.ToByte(value);
-                case ETypeCode.SByte:
-                    return Convert.ToSByte(value);
-                case ETypeCode.UInt16:
-                    return Convert.ToUInt16(value);
-                case ETypeCode.UInt32:
-                    return Convert.ToUInt32(value);
-                case ETypeCode.UInt64:
-                    return Convert.ToUInt64(value);
-                case ETypeCode.Int16:
-                    return Convert.ToInt16(value);
-                case ETypeCode.Int32:
-                    return Convert.ToInt32(value);
-                case ETypeCode.Int64:
-                    return Convert.ToInt64(value);
-                case ETypeCode.Double:
-                    return Convert.ToDouble(value);
-                case ETypeCode.Single:
-                    return Convert.ToSingle(value);
-                case ETypeCode.DateTime:
-                case ETypeCode.String:
-				case ETypeCode.Text:
-				case ETypeCode.Json:
-                case ETypeCode.Node:
-				case ETypeCode.Xml:
-                case ETypeCode.Boolean:
-                case ETypeCode.Guid:
-                    return value;
-                case ETypeCode.Decimal:
-                    return Convert.ToDecimal(value);
-                case ETypeCode.Time:
-                    return new TimeSpan((long)value);
-                case ETypeCode.Unknown:
-                    return value.ToString();
-                default:
-                    return value;
-            }
-        }
-
-
+        
+        
         public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
             try
             {
-                var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference(table.Name);
-
-                var rowCount = 0;
-
-                var batchTasks = new List<Task>();
-
+                var database = GetMongoDatabase();
+                var collection = database.GetCollection<BsonDocument>(table.Name);
+                var data = new List<BsonDocument>();
+                
                 long keyValue = -1;
 
-                var dbAutoIncrement = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                var dbAutoIncrement = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (dbAutoIncrement != null)
                 {
-                    keyValue = await GetNextKey(table, dbAutoIncrement, cancellationToken);
+                    keyValue = await GetLastKey(table, dbAutoIncrement, cancellationToken);
                 }
 
                 long identityValue = 0;
-
-                //start a batch operation to update the rows.
-                var batchOperation = new TableBatchOperation();
-
-                var partitionKey = table.GetColumn(TableColumn.EDeltaType.AzurePartitionKey);
-                var rowKey = table.GetColumn(TableColumn.EDeltaType.AzureRowKey);
-
-                //loop through all the queries to retrieve the rows to be updated.
+                
                 foreach (var query in queries)
                 {
-                    if (cancellationToken.IsCancellationRequested)
+                    var properties = new BsonDocument();
+                    foreach(var insertColumn in query.InsertColumns)
                     {
-                        throw new ConnectionException("Insert rows was cancelled.");
-                    }
-
-                    var properties = new Dictionary<string, EntityProperty>();
-                    for (var i = 0; i < query.InsertColumns.Count; i++)
-                    {
-                        var field = query.InsertColumns[i];
-
-                        if (field.Column.Name == "RowKey" || field.Column.Name == "PartitionKey" ||
-                            field.Column.Name == "Timestamp" || field.Column.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                        var column = insertColumn.Column;
+                        var value = insertColumn.Value;
+                        if (value == DBNull.Value) value = null;
+                    
+                        if (insertColumn.Column.DeltaType == EDeltaType.AutoIncrement)
                         {
-                            continue;
+                            identityValue = Convert.ToInt64(insertColumn.Value);
                         }
-
-                        if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
-                        {
-                            identityValue = Convert.ToInt64(query.InsertColumns[i].Value);
-                        }
-
-                        properties.Add(field.Column.Name, NewEntityProperty(table.Columns[field.Column], field.Value));
+                        
+                        var element = new BsonElement(column.Name, CreateBsonValue(value, column, column.Rank));
+                        properties.Add(element);
                     }
-
+                    
                     if (dbAutoIncrement != null)
                     {
                         identityValue = keyValue++;
-                        properties.Add(dbAutoIncrement.Name, NewEntityProperty(table.Columns[dbAutoIncrement], identityValue));
+                        var element = new BsonElement(dbAutoIncrement.Name, new BsonInt64(identityValue));
+                        properties.Add(element);
                     }
 
-                    string partitionKeyValue = null;
-                    if (partitionKey != null)
-                    {
-                        partitionKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column.Name == partitionKey.Name)
-                            ?.Value.ToString();
-                    }
-
-                    if (string.IsNullOrEmpty(partitionKeyValue)) partitionKeyValue = "default";
-
-                    string rowKeyValue = null;
-                    if (rowKey != null)
-                        rowKeyValue = query.InsertColumns.SingleOrDefault(c => c.Column.Name == rowKey.Name)?.Value.ToString();
-
-                    if (string.IsNullOrEmpty(rowKeyValue))
-                    {
-                        if (dbAutoIncrement == null)
-                            rowKeyValue = Guid.NewGuid().ToString();
-                        else
-                            rowKeyValue = identityValue.ToString("D20");
-                    }
-
-                    var entity = new DynamicTableEntity(partitionKeyValue, rowKeyValue, "*", properties);
-
-                    batchOperation.Insert(entity);
-
-                    rowCount++;
-
-                    if (rowCount > 99)
-                    {
-                        rowCount = 0;
-                        batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken = default));
-
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            throw new ConnectionException("Insert rows was cancelled.");
-                        }
-
-                        batchOperation = new TableBatchOperation();
-                    }
+                    data.Add(properties);
                 }
-
-                if (batchOperation.Count > 0)
+                
+                if (keyValue > -1 && dbAutoIncrement != null)
                 {
-                    batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation));
+                    await UpdateIncrementalKey(table, dbAutoIncrement.Name, keyValue, cancellationToken);
                 }
-
-                await Task.WhenAll(batchTasks.ToArray());
-
+                
+                collection.InsertManyAsync(data, cancellationToken: cancellationToken);
                 return identityValue;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The Azure insert query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The mongo insert query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 
@@ -1035,112 +904,25 @@ namespace dexih.connections.azure
         {
             try
             {
-                var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference(table.Name);
+                var database = GetMongoDatabase();
+                var collection = database.GetCollection<BsonDocument>(table.Name);
 
-                var rowcount = 0;
-
-                var batchTasks = new List<Task>();
-
-                //start a batch operation to update the rows.
-                var batchOperation = new TableBatchOperation();
-
-                var surrogateKeyColumn = table.GetAutoIncrementColumn();
-
-                //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
                 {
-                    //Read the key fields from the table
-                    var tableQuery = new TableQuery
+                    var filterDefinition = BuildFilterDefinition(query.Filters);
+
+                    var updates = query.UpdateColumns.Select(c =>
                     {
-                        //select all columns
-                        SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.Name != "PartitionKey" && c.Name != "RowKey").Select(c => c.Name)).ToList())
-                    };
-
-                    //the rowkey is the same as the surrogate key, so add this to the filter string if the surrogate key is used.
-                    if (surrogateKeyColumn != null)
-                    {
-                        var filterCount = query.Filters.Count;
-                        for (var i = 0; i < filterCount; i++)
-                        {
-                            if (query.Filters[i].Column1.Name == surrogateKeyColumn.Name)
-                            {
-                                var rowKeyValue = ((long)query.Filters[i].Value2).ToString("D20");
-
-                                query.Filters.Add(new Filter()
-                                {
-                                    Column1 = new TableColumn("RowKey", ETypeCode.String),
-                                    Column2 = query.Filters[i].Column2,
-                                    Value1 = query.Filters[i].Value1,
-                                    Value2 = rowKeyValue,
-                                    AndOr = query.Filters[i].AndOr,
-                                    CompareDataType = ETypeCode.String,
-                                    Operator = query.Filters[i].Operator
-                                });
-                            }
-                        }
-                    }
-
-                    tableQuery.FilterString = BuildFilterString(query.Filters);
-
-                    //run the update 
-                    TableContinuationToken continuationToken = null;
-                    do
-                    {
-                        var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancellationToken);
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            throw new ConnectionException("Update rows cancelled.");
-                        }
-
-                        continuationToken = result.ContinuationToken;
-
-                        foreach (var entity in result.Results)
-                        {
-
-                            foreach (var column in query.UpdateColumns)
-                            {
-                                switch (column.Column.Name)
-                                {
-                                    case "RowKey":
-                                        entity.RowKey = column.Value.ToString();
-                                        break;
-                                    case "PartitionKey":
-                                        entity.PartitionKey = column.Value.ToString();
-                                        break;
-                                    default:
-                                        var col = table[column.Column.Name];
-                                        entity.Properties[column.Column.Name] = NewEntityProperty(col, column.Value);
-                                        break;
-                                }
-                            }
-
-                            batchOperation.Replace(entity);
-
-                            rowcount++;
-
-                            if (rowcount > 99)
-                            {
-                                rowcount = 0;
-                                batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation));
-                                batchOperation = new TableBatchOperation();
-                            }
-                        }
-
-                    } while (continuationToken != null);
+                        var value = CreateBsonValue(c.Value, c.Column, c.Column.Rank);
+                        return Builders<BsonDocument>.Update.Set(c.Column.Name, value);
+                    });
+                    var update = Builders<BsonDocument>.Update.Combine(updates);
+                    await collection.UpdateManyAsync(filterDefinition, update, cancellationToken: cancellationToken);
                 }
-
-                if (batchOperation.Count > 0)
-                {
-                    batchTasks.Add(cTable.ExecuteBatchAsync(batchOperation));
-                }
-
-                await Task.WhenAll(batchTasks.ToArray());
-
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The Azure update query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The mongo update query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 
@@ -1148,62 +930,19 @@ namespace dexih.connections.azure
         {
             try
             {
-                var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference(table.Name);
+                var database = GetMongoDatabase();
+                var collection = database.GetCollection<BsonDocument>(table.Name);
 
-                var rowcount = 0;
-
-                //start a batch operation to update the rows.
-                var batchOperation = new TableBatchOperation();
-
-                //loop through all the queries to retrieve the rows to be updated.
                 foreach (var query in queries)
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        throw new ConnectionException("Delete rows cancelled.");
-                    }
-
-                    //Read the key fields from the table
-                    var tableQuery = new TableQuery
-                    {
-                        SelectColumns = new[] { "PartitionKey", "RowKey" },
-                        FilterString = BuildFilterString(query.Filters)
-                    };
-                    //TableResult = TableReference.ExecuteQuery(TableQuery);
-
-                    TableContinuationToken continuationToken = null;
-                    do
-                    {
-                        var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken, null, null, cancellationToken);
-                        continuationToken = result.ContinuationToken;
-
-                        foreach (var entity in result.Results)
-                        {
-                            batchOperation.Delete(entity);
-                            rowcount++;
-
-                            if (rowcount > 99)
-                            {
-                                await cTable.ExecuteBatchAsync(batchOperation);
-                                batchOperation = new TableBatchOperation();
-                                rowcount = 0;
-                            }
-                        }
-
-                    } while (continuationToken != null);
-
-                }
-
-                if (batchOperation.Count > 0)
-                {
-                    await cTable.ExecuteBatchAsync(batchOperation);
+                    var filterDefinition = BuildFilterDefinition(query.Filters);
+                    collection.DeleteMany(filterDefinition);
                 }
 
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The Azure delete query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The mongo delete query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 
@@ -1211,73 +950,30 @@ namespace dexih.connections.azure
         {
             try
             {
-                var connection = GetCloudTableClient();
-                var cTable = connection.GetTableReference(table.Name);
+                var documents = await GetCollection(table.Name, query, cancellationToken);
+                var document = await documents.FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-                //Read the key fields from the table
-                var tableQuery = new TableQuery
+                if (document == null)
                 {
-                    SelectColumns = query.Columns.Select(c => c.Column.Name).ToArray(),
-                    FilterString = BuildFilterString(query.Filters)
-                };
-                tableQuery.Take(1);
-
-                try
-                {
-                    var result = await cTable.ExecuteQuerySegmentedAsync(tableQuery, null, null, null, cancellationToken);
-
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        throw new ConnectionException("Execute scalar cancelled.");
-                    }
-
-                    object value;
-                    //get the result value
-                    if (result.Results.Count == 0)
-                        value = null;
-                    else
-                    {
-                        switch (query.Columns[0].Column.Name)
-                        {
-                            case "RowKey":
-                                value = result.Results[0].RowKey;
-                                break;
-                            case "PartitionKey":
-                                value = result.Results[0].PartitionKey;
-                                break;
-                            default:
-                                value = result.Results[0].Properties[query.Columns[0].Column.Name].PropertyAsObject;
-                                break;
-                        }
-                    }
-
-                    //convert it back to a .net type.
-                    value = ConvertEntityProperty(table.Columns[query.Columns[0].Column].DataType, value);
-                    return value;
-
-                }
-                catch (StorageException ex)
-                {
-                    var message = "Error running a command against table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".";
-                    throw new ConnectionException(message, ex);
+                    return null;
                 }
 
-
+                return BsonTypeMapper.MapToDotNetValue(document[1]); // get element 1 (element 0 is id field)
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The Azure execut scalar query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The Mongo scalar query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 
         public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException("A native database reader is not available for Azure table connections.");
+            throw new NotImplementedException("A native database reader is not available for mongo table connections.");
         }
 
         public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
-            var reader = new ReaderAzure(this, table);
+            var reader = new ReaderMongo(this, table);
             return reader;
         }
 

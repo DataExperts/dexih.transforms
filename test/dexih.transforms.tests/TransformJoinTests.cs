@@ -519,7 +519,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings
             {
-                new MapJoinNode(new TableColumn("array", DataType.ETypeCode.Node), source.CacheTable),
+                new MapJoinNode(new TableColumn("array", ETypeCode.Node), source.CacheTable),
                 new MapJoin(new TableColumn("parent_id"), new TableColumn("parent_id"))
             };
             var link = new TransformJoin(source, Helpers.CreateChildTableData(), mappings, EDuplicateStrategy.All, null, "Join");

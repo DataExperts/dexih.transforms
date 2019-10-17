@@ -257,10 +257,10 @@ namespace dexih.transforms
                 
             }
             // get the last surrogate key it there is one on the table.
-            var autoIncrement = TargetTable.GetColumn(TableColumn.EDeltaType.AutoIncrement);
+            var autoIncrement = TargetTable.GetColumn(EDeltaType.AutoIncrement);
             if (autoIncrement != null)
             {
-                return await TargetConnection.GetNextKey(TargetTable, autoIncrement, cancellationToken);
+                return await TargetConnection.GetLastKey(TargetTable, autoIncrement, cancellationToken);
             }
 
             return -1;
@@ -497,7 +497,7 @@ namespace dexih.transforms
                         }
                     }
 
-                    _operationOrdinal = transform.CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+                    _operationOrdinal = transform.CacheTable.GetOrdinal(EDeltaType.DatabaseOperation);
                     _ordinalsInitialized = true;
                 }
                 catch (Exception ex)
@@ -517,7 +517,7 @@ namespace dexih.transforms
                 ordinals = _rejectFieldOrdinals;
                 if (table == null)
                 {
-                    var rejectColumn = transform.CacheTable.GetOrdinal(TableColumn.EDeltaType.RejectedReason);
+                    var rejectColumn = transform.CacheTable.GetOrdinal(EDeltaType.RejectedReason);
                     var rejectReason = "";
                     rejectReason = rejectColumn > 0 ? transform[rejectColumn].ToString() : "No reject reason found.";
                     throw new TransformWriterException($"Transform write failed as a record was rejected, however there is no reject table set.  The reject reason was: {rejectReason}.");
@@ -539,7 +539,7 @@ namespace dexih.transforms
                     var ordinal = ordinals[i];
                     if (ordinal >= 0)
                     {
-                        if (table.Columns[i].DeltaType != TableColumn.EDeltaType.DbAutoIncrement)
+                        if (table.Columns[i].DeltaType != EDeltaType.DbAutoIncrement)
                         {
                             row[i] = TargetConnection.ConvertForWrite(table.Columns[i], transform[ordinal]).value;
                         }

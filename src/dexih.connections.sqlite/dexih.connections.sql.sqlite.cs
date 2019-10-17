@@ -128,7 +128,7 @@ namespace dexih.connections.sqlite
                     var col = table.Columns[i];
 
                     //ignore datatypes for autoincrement and create a primary key.
-                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                    if (col.DeltaType == EDeltaType.DbAutoIncrement)
                     {
                         createSql.Append(AddDelimiter(col.Name) + " INTEGER PRIMARY KEY ");
                     }
@@ -141,7 +141,7 @@ namespace dexih.connections.sqlite
                         else
                             createSql.Append("NULL ");
 
-                        if (col.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                        if (col.DeltaType == EDeltaType.AutoIncrement)
                         {
                             // createSql.Append("PRIMARY KEY ASC ");
                             createSql.Append("UNIQUE");
@@ -159,7 +159,7 @@ namespace dexih.connections.sqlite
 
                 createSql.AppendLine(");");
 
-                var naturalKey = table.GetColumns(TableColumn.EDeltaType.NaturalKey);
+                var naturalKey = table.GetColumns(EDeltaType.NaturalKey);
                 if (naturalKey.Length > 0)
                 {
                     createSql.AppendLine(
@@ -490,15 +490,15 @@ namespace dexih.connections.sqlite
                             col.DataType = ConvertSqlToTypeCode(dataType[0]);
                             if (col.DataType == ETypeCode.Unknown)
                             {
-                                col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+                                col.DeltaType = EDeltaType.IgnoreField;
                             }
                             else
                             {
                                 //add the primary key
                                 if (Convert.ToInt32(reader["pk"]) >= 1)
-                                    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                    col.DeltaType = EDeltaType.NaturalKey;
                                 else
-                                    col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                    col.DeltaType = EDeltaType.TrackingField;
                             }
 
                             if (col.DataType == ETypeCode.String)
@@ -608,7 +608,7 @@ namespace dexih.connections.sqlite
 //            try
 //            {
 //
-//                var autoIncrementSql = table.GetDeltaColumn(TableColumn.EDeltaType.AutoIncrement) == null
+//                var autoIncrementSql = table.GetDeltaColumn(EDeltaType.AutoIncrement) == null
 //                    ? ""
 //                    : " select last_insert_rowid() from [" + table.Name + "]";
 //                long identityValue = 0;

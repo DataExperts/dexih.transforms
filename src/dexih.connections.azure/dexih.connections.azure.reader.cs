@@ -56,7 +56,7 @@ namespace dexih.connections.azure
             if (selectQuery?.Columns?.Count > 0)
                 _tableQuery.SelectColumns = selectQuery.Columns.Select(c => c.Column.Name).ToArray();
             else
-                _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => c.Name).ToArray();
+                _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField).Select(c => c.Name).ToArray();
 
             if (selectQuery?.Filters != null)
                 _tableQuery.FilterString = _connection.BuildFilterString(selectQuery.Filters);
@@ -130,15 +130,15 @@ namespace dexih.connections.azure
         {
             var row = new object[CacheTable.Columns.Count];
 
-            var partitionKeyOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.AzurePartitionKey);
+            var partitionKeyOrdinal = CacheTable.GetOrdinal(EDeltaType.PartitionKey);
             if(partitionKeyOrdinal >= 0)
                 row[partitionKeyOrdinal] = currentEntity.PartitionKey;
 
-            var rowKeyOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.AzureRowKey);
+            var rowKeyOrdinal = CacheTable.GetOrdinal(EDeltaType.RowKey);
             if (rowKeyOrdinal >= 0)
                 row[rowKeyOrdinal] = currentEntity.RowKey;
 
-            var timestampOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.TimeStamp);
+            var timestampOrdinal = CacheTable.GetOrdinal(EDeltaType.TimeStamp);
             if (timestampOrdinal >= 0)
                 row[timestampOrdinal] = currentEntity.Timestamp;
 

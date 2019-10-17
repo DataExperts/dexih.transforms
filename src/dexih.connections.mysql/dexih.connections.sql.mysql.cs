@@ -81,7 +81,7 @@ namespace dexih.connections.mysql
                 {
                     var row = new StringBuilder();
                     
-                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.DbAutoIncrement).ToArray();
+                    var columns = table.Columns.Where(c => c.DeltaType != EDeltaType.DbAutoIncrement).ToArray();
                     var ordinals = new int[columns.Length];
                     
                     for(var i = 0; i< columns.Length; i++)
@@ -208,7 +208,7 @@ namespace dexih.connections.mysql
                 {
                     createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col));
                     
-                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                    if (col.DeltaType == EDeltaType.DbAutoIncrement)
                         createSql.Append(" auto_increment");
 
                     createSql.Append(col.AllowDbNull == false ? " NOT NULL" : " NULL");
@@ -568,15 +568,15 @@ namespace dexih.connections.mysql
 
                             if (reader["COLUMN_KEY"].ToString() == "PRI")
                             {
-                                col.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                col.DeltaType = EDeltaType.NaturalKey;
                             }
                             else if (col.DataType == ETypeCode.Unknown)
                             {
-                                col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+                                col.DeltaType = EDeltaType.IgnoreField;
                             }
                             else
                             {
-                                col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                col.DeltaType = EDeltaType.TrackingField;
                             }
 
 							switch (col.DataType)

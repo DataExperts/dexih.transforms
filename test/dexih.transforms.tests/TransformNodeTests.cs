@@ -150,10 +150,10 @@ namespace dexih.transforms.tests
             {
                 Inputs = new List<Parameter>
                 {
-                    new ParameterColumn("parent.name", DataType.ETypeCode.String),
-                    new ParameterColumn("name", DataType.ETypeCode.String),
+                    new ParameterColumn("parent.name", ETypeCode.String),
+                    new ParameterColumn("name", ETypeCode.String),
                 },
-                ReturnParameters =  new List<Parameter> { new ParameterOutputColumn("parent_child", DataType.ETypeCode.String)}
+                ReturnParameters =  new List<Parameter> { new ParameterOutputColumn("parent_child", ETypeCode.String)}
             };   
             nodeMappings.Add(new MapFunction(function, parameters, EFunctionCaching.NoCache));
 

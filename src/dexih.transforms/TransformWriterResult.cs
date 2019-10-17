@@ -89,7 +89,7 @@ namespace dexih.transforms
         public TransformWriterOptions TransformWriterOptions { get; set; }
 
 
-        [PocoColumn(DeltaType = TableColumn.EDeltaType.DbAutoIncrement, IsKey = true)]
+        [PocoColumn(DeltaType = EDeltaType.DbAutoIncrement, IsKey = true)]
         [Key(1)]
         public long AuditKey { get; set; }
 

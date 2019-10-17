@@ -129,7 +129,7 @@ namespace dexih.connections.sql
                     insert.Append("INSERT INTO " + SqlTableName(table) + " (");
                     values.Append("VALUES (");
 
-                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.DbAutoIncrement).ToArray();
+                    var columns = table.Columns.Where(c => c.DeltaType != EDeltaType.DbAutoIncrement).ToArray();
                     var ordinals = new int[columns.Length];
                     
                     for(var i = 0; i< columns.Length; i++)
@@ -374,7 +374,7 @@ namespace dexih.connections.sql
             if (query?.Columns?.Count > 0)
                 columns = string.Join(",", query.Columns.Select(AggregateFunction).ToArray());
             else
-                columns = string.Join(",", table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.IgnoreField).Select(c => AddDelimiter(c.Name)).ToArray());
+                columns = string.Join(",", table.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField).Select(c => AddDelimiter(c.Name)).ToArray());
 
             sql.Append("select ");
             sql.Append(columns + " ");
@@ -647,10 +647,10 @@ namespace dexih.connections.sql
 
                         for (var i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.DbAutoIncrement)
                                 continue;
 
-                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.AutoIncrement)
                                 identityValue = Convert.ToInt64(query.InsertColumns[i].Value);
 
                             insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
@@ -692,7 +692,7 @@ namespace dexih.connections.sql
                         }
                     }
 
-                    var deltaColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    var deltaColumn = table.GetColumn(EDeltaType.DbAutoIncrement);
 
                     if (deltaColumn != null)
                     {
@@ -1002,7 +1002,7 @@ namespace dexih.connections.sql
                             LogicalName = reader.GetName(i),
                             DataType = GetTypeCode(type, out var rank),
                             Rank = rank,
-                            DeltaType = TableColumn.EDeltaType.TrackingField
+                            DeltaType = EDeltaType.TrackingField
                         };
                         newTable.Columns.Add(col);
                     }

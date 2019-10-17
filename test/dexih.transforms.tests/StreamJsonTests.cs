@@ -20,21 +20,21 @@ namespace dexih.transforms.tests
 
             Assert.Equal("coord", columns[0].ColumnGroup);
             Assert.Equal("lon", columns[0].Name);
-            Assert.Equal(DataType.ETypeCode.Double, columns[1].DataType);
+            Assert.Equal(ETypeCode.Double, columns[1].DataType);
             Assert.Equal("coord", columns[1].ColumnGroup);
             Assert.Equal("lat", columns[1].Name);
-            Assert.Equal(DataType.ETypeCode.Double, columns[1].DataType);
+            Assert.Equal(ETypeCode.Double, columns[1].DataType);
 
             Assert.Equal("weather", columns[2].Name);
-            Assert.Equal(DataType.ETypeCode.Node, columns[2].DataType);
+            Assert.Equal(ETypeCode.Node, columns[2].DataType);
             Assert.Equal("id", columns[2].ChildColumns[0].Name);
-            Assert.Equal(DataType.ETypeCode.Int32, columns[2].ChildColumns[0].DataType);
+            Assert.Equal(ETypeCode.Int32, columns[2].ChildColumns[0].DataType);
             Assert.Equal("main", columns[2].ChildColumns[1].Name);
-            Assert.Equal(DataType.ETypeCode.String, columns[2].ChildColumns[1].DataType);
+            Assert.Equal(ETypeCode.String, columns[2].ChildColumns[1].DataType);
             Assert.Equal("description", columns[2].ChildColumns[2].Name);
-            Assert.Equal(DataType.ETypeCode.String, columns[2].ChildColumns[2].DataType);
+            Assert.Equal(ETypeCode.String, columns[2].ChildColumns[2].DataType);
             Assert.Equal("icon", columns[2].ChildColumns[3].Name);
-            Assert.Equal(DataType.ETypeCode.String, columns[2].ChildColumns[3].DataType);
+            Assert.Equal(ETypeCode.String, columns[2].ChildColumns[3].DataType);
 
         }    
         
@@ -83,9 +83,9 @@ namespace dexih.transforms.tests
             var columns = (await handler.GetSourceColumns(stream)).ToArray();
 
             Assert.Equal("name", columns[0].Name);
-            Assert.Equal(DataType.ETypeCode.String, columns[0].DataType);
+            Assert.Equal(ETypeCode.String, columns[0].DataType);
             Assert.Equal("age", columns[1].Name);
-            Assert.Equal(DataType.ETypeCode.Int32, columns[1].DataType);
+            Assert.Equal(ETypeCode.Int32, columns[1].DataType);
 
         } 
         

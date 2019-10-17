@@ -408,7 +408,7 @@ namespace dexih.connections.oracle
 
                         createSql.Append(AddDelimiter(col.Name) + " " + GetSqlType(col) + " ");
                         
-                        if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                        if (col.DeltaType == EDeltaType.DbAutoIncrement)
                             createSql.Append("GENERATED ALWAYS as IDENTITY(START with 1 INCREMENT by 1) ");
 
                         if (col.AllowDbNull == false)
@@ -621,11 +621,11 @@ namespace dexih.connections.oracle
 
                             if (col.DataType == ETypeCode.Unknown)
                             {
-                                col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+                                col.DeltaType = EDeltaType.IgnoreField;
                             }
                             else
                             {
-                                col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                col.DeltaType = EDeltaType.TrackingField;
                             }
 
 							switch (col.DataType)
@@ -685,7 +685,7 @@ ORDER BY cols.table_name, cols.position"))
                             var column = table.Columns[name];
                             if (column != null)
                             {
-                                column.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                column.DeltaType = EDeltaType.NaturalKey;
                             }
                         }
                     }
@@ -758,7 +758,7 @@ ORDER BY cols.table_name, cols.position"))
 //                    var fieldCount = reader.FieldCount;
 //                    var row = new StringBuilder();
 //                    
-//                    var columns = table.Columns.Where(c => c.DeltaType != TableColumn.EDeltaType.AutoIncrement).ToArray();
+//                    var columns = table.Columns.Where(c => c.DeltaType != EDeltaType.AutoIncrement).ToArray();
 //                    var ordinals = new int[columns.Length];
 //                    
 //                    for(var i = 0; i< columns.Length; i++)
@@ -875,10 +875,10 @@ ORDER BY cols.table_name, cols.position"))
 
                         for (var i = 0; i < query.InsertColumns.Count; i++)
                         {
-                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.DbAutoIncrement)
                                 continue;
                             
-                            if (query.InsertColumns[i].Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.AutoIncrement)
                                 autoIncrementValue = Convert.ToInt64(query.InsertColumns[i].Value);
                             
                             insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
@@ -924,7 +924,7 @@ ORDER BY cols.table_name, cols.position"))
                         return autoIncrementValue;
                     }
 
-                    var deltaColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+                    var deltaColumn = table.GetColumn(EDeltaType.DbAutoIncrement);
                     if (deltaColumn != null)
                     {
                         var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";

@@ -10,6 +10,7 @@ using dexih.connections.sql;
 using static Dexih.Utils.DataType.DataType;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
+using Dexih.Utils.DataType;
 using IBM.Data.DB2.Core;
 
 
@@ -104,7 +105,7 @@ namespace dexih.connections.db2
                     var col = table.Columns[i];
 
                     //ignore datatypes for autoincrement and create a primary key.
-                    if (col.DeltaType == TableColumn.EDeltaType.DbAutoIncrement)
+                    if (col.DeltaType == EDeltaType.DbAutoIncrement)
                     {
                         createSql.Append($"{AddDelimiter(col.Name)} {GetSqlType(col)} NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) ");
                     }
@@ -377,15 +378,15 @@ namespace dexih.connections.db2
                             col.DataType = ConvertSqlToTypeCode(dataType[0]);
                             if (col.DataType == ETypeCode.Unknown)
                             {
-                                col.DeltaType = TableColumn.EDeltaType.IgnoreField;
+                                col.DeltaType = EDeltaType.IgnoreField;
                             }
                             else
                             {
                                 //add the primary key
                                 if (Convert.ToInt32(reader["pk"]) >= 1)
-                                    col.DeltaType = TableColumn.EDeltaType.NaturalKey;
+                                    col.DeltaType = EDeltaType.NaturalKey;
                                 else
-                                    col.DeltaType = TableColumn.EDeltaType.TrackingField;
+                                    col.DeltaType = EDeltaType.TrackingField;
                             }
 
                             if (col.DataType == ETypeCode.String)

@@ -2,7 +2,7 @@
 using dexih.transforms;
 using System;
 using dexih.transforms.Mapping;
-using static Dexih.Utils.DataType.DataType;
+using Dexih.Utils.DataType;
 
 namespace dexih.connections.test
 {
@@ -14,7 +14,7 @@ namespace dexih.connections.test
         {
             Table table = new Table("test" + (counter++).ToString(), 0,
                 new TableColumn("StringColumn", ETypeCode.String),
-                new TableColumn("IntColumn", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
                 new TableColumn("DecimalColumn", ETypeCode.Decimal),
                 new TableColumn("DoubleColumn", ETypeCode.Double),
                 new TableColumn("BooleanColumn", ETypeCode.Boolean),
@@ -52,7 +52,7 @@ namespace dexih.connections.test
                 Name = "AutoIncrement",
                 Description = "A key column",
                 DataType = ETypeCode.Int32,
-                DeltaType = useDbAutoIncrement ? TableColumn.EDeltaType.DbAutoIncrement : TableColumn.EDeltaType.AutoIncrement,
+                DeltaType = useDbAutoIncrement ? EDeltaType.DbAutoIncrement : EDeltaType.AutoIncrement,
             });
 
             table.Columns.Add(new TableColumn()
@@ -60,7 +60,7 @@ namespace dexih.connections.test
                 Name = "StringColumn",
                 Description = "A string column",
                 DataType = ETypeCode.String,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
 
             table.Columns.Add(new TableColumn()
@@ -68,7 +68,7 @@ namespace dexih.connections.test
                 Name = "IntColumn",
                 Description = "An integer column",
                 DataType = ETypeCode.Int32,
-                DeltaType = TableColumn.EDeltaType.NaturalKey
+                DeltaType = EDeltaType.NaturalKey
             });
 
             table.Columns.Add(new TableColumn()
@@ -76,7 +76,7 @@ namespace dexih.connections.test
                 Name = "DecimalColumn",
                 Description = "A decimal column",
                 DataType = ETypeCode.Decimal,
-                DeltaType = TableColumn.EDeltaType.TrackingField,
+                DeltaType = EDeltaType.TrackingField,
                 Scale = 2,
                 Precision = 10
             });
@@ -86,7 +86,7 @@ namespace dexih.connections.test
                 Name = "DoubleColumn",
                 Description = "A double column",
                 DataType = ETypeCode.Double,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
 
             table.Columns.Add(new TableColumn()
@@ -94,7 +94,7 @@ namespace dexih.connections.test
                 Name = "BooleanColumn",
                 Description = "A boolean column column",
                 DataType = ETypeCode.Boolean,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
 
            
@@ -103,7 +103,7 @@ namespace dexih.connections.test
                 Name = "DateColumn",
                 Description = "A date column column",
                 DataType = ETypeCode.DateTime,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
             
             table.Columns.Add(new TableColumn()
@@ -111,7 +111,7 @@ namespace dexih.connections.test
                 Name = "GuidColumn",
                 Description = "A guid column",
                 DataType = ETypeCode.Guid,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
             
             
@@ -121,7 +121,7 @@ namespace dexih.connections.test
                 Description = "An array column",
                 DataType = ETypeCode.Int32,
                 Rank = 1,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
 
             table.Columns.Add(new TableColumn()
@@ -130,7 +130,7 @@ namespace dexih.connections.test
                 Description = "An matrix column",
                 DataType = ETypeCode.Int32,
                 Rank = 2,
-                DeltaType = TableColumn.EDeltaType.TrackingField
+                DeltaType = EDeltaType.TrackingField
             });
             
             return table;
@@ -139,8 +139,8 @@ namespace dexih.connections.test
             public static Table CreateParentTable()
         {
             var table = new Table("parent", 0, 
-                new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("parent_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, EDeltaType.TrackingField)
             );
 
             return table;
@@ -161,9 +161,9 @@ namespace dexih.connections.test
         public static Table CreateChildTable()
         {
             var table = new Table("child", 0, 
-                new TableColumn("parent_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("parent_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("child_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, EDeltaType.TrackingField)
             );
             table.AddIndex("parent_id");
 
@@ -185,9 +185,9 @@ namespace dexih.connections.test
         public static Table CreateGrandChildTable()
         {
             var table = new Table("grandChild", 0, 
-                new TableColumn("child_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("grandChild_id", ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("name", ETypeCode.String, TableColumn.EDeltaType.TrackingField)
+                new TableColumn("child_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("grandChild_id", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("name", ETypeCode.String, EDeltaType.TrackingField)
             );
             table.AddIndex("child_id");
 

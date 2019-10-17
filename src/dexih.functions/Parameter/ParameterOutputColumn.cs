@@ -21,7 +21,7 @@ namespace dexih.functions.Parameter
         )
         {
             Name = name;
-            DataType = column?.DataType ?? Dexih.Utils.DataType.ETypeCode.Unknown;
+            DataType = column?.DataType ?? ETypeCode.Unknown;
             Rank = column?.Rank ?? 0;
             Column = column;
         }

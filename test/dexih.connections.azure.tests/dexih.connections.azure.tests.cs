@@ -63,7 +63,7 @@ namespace dexih.connections.azure
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
 
-            await new TransformWriterTargetTests().ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
+            await new TransformWriterTargetTests(_output).ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
         }
 
     }

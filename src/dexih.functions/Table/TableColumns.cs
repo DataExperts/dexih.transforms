@@ -10,21 +10,21 @@ namespace dexih.functions
     {
         private readonly List<TableColumn> _tableColumns;
         private readonly Dictionary<string, int> _columnOrdinals;
-        private readonly Dictionary<TableColumn.EDeltaType, List<int>> _deltaOrdinals;
+        private readonly Dictionary<EDeltaType, List<int>> _deltaOrdinals;
         
 
         public TableColumns()
         {
             _tableColumns = new List<TableColumn>();
             _columnOrdinals = new Dictionary<string, int>();
-            _deltaOrdinals = new Dictionary<TableColumn.EDeltaType, List<int>>();
+            _deltaOrdinals = new Dictionary<EDeltaType, List<int>>();
         }
 
         public TableColumns(IEnumerable<TableColumn> tableColumns)
         {
             _tableColumns = new List<TableColumn>();
             _columnOrdinals = new Dictionary<string, int>();
-            _deltaOrdinals = new Dictionary<TableColumn.EDeltaType, List<int>>();
+            _deltaOrdinals = new Dictionary<EDeltaType, List<int>>();
 
             foreach (var column in tableColumns)
                 Add(column);
@@ -93,7 +93,7 @@ namespace dexih.functions
             return column != null;
         }
 
-        public bool TryGetColumn(TableColumn.EDeltaType deltaType, out TableColumn column)
+        public bool TryGetColumn(EDeltaType deltaType, out TableColumn column)
         {
             column = GetColumn(deltaType);
             return column != null;
@@ -125,7 +125,7 @@ namespace dexih.functions
 //            return -1;
 //        }
 
-        public int GetOrdinal(TableColumn.EDeltaType deltaType)
+        public int GetOrdinal(EDeltaType deltaType)
         {
             if(_deltaOrdinals.TryGetValue(deltaType, out var value))
             {
@@ -140,7 +140,7 @@ namespace dexih.functions
             return -1;
         }
         
-        public IEnumerable<int> GetOrdinals(TableColumn.EDeltaType deltaType)
+        public IEnumerable<int> GetOrdinals(EDeltaType deltaType)
         {
             if(_deltaOrdinals.TryGetValue(deltaType, out var value))
             {
@@ -150,7 +150,7 @@ namespace dexih.functions
             return null;
         }
         
-        public TableColumn GetColumn(TableColumn.EDeltaType deltaType)
+        public TableColumn GetColumn(EDeltaType deltaType)
         {
             var ordinal = GetOrdinal(deltaType);
             if (ordinal == -1) return null;
@@ -159,22 +159,22 @@ namespace dexih.functions
         
         public TableColumn GetAutoIncrementColumn()
         {
-            return GetColumn(TableColumn.EDeltaType.DbAutoIncrement) ??
-                   GetColumn(TableColumn.EDeltaType.AutoIncrement);
+            return GetColumn(EDeltaType.DbAutoIncrement) ??
+                   GetColumn(EDeltaType.AutoIncrement);
         }
 
         public int GetAutoIncrementOrdinal()
         {
-            var ordinal = GetOrdinal(TableColumn.EDeltaType.AutoIncrement);
+            var ordinal = GetOrdinal(EDeltaType.AutoIncrement);
             if (ordinal >= 0)
             {
                 return ordinal;
             }
 
-            return GetOrdinal(TableColumn.EDeltaType.DbAutoIncrement);
+            return GetOrdinal(EDeltaType.DbAutoIncrement);
         }
         
-        public TableColumn[] GetColumns(TableColumn.EDeltaType deltaType)
+        public TableColumn[] GetColumns(EDeltaType deltaType)
         {
             var ordinals = GetOrdinals(deltaType);
             if (ordinals == null)

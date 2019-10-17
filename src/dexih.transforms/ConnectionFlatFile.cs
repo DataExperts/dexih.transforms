@@ -337,7 +337,7 @@ namespace dexih.transforms
                     LogicalName = "FileName",
                     IsInput = false,
                     DataType = ETypeCode.String,
-                    DeltaType = TableColumn.EDeltaType.FileName,
+                    DeltaType = EDeltaType.FileName,
                     Description = "The name of the file the record was loaded from.",
                     AllowDbNull = false,
                     IsUnique = false

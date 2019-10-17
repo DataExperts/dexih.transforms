@@ -41,6 +41,8 @@ test_script:
 - dotnet test 
 - cd ..\dexih.connections.sqlserver.tests
 - dotnet test 
+- cd ..\dexih.connections.mongo.tests
+- dotnet test 
 - cd ..\dexih.connections.excel.tests
 - dotnet test 
 - cd ..\dexih.connections.webservice.restful.tests
@@ -52,6 +54,7 @@ services:
   - mssql2014
   - mysql
   - postgresql
+  - mongodb
 
 cache:
  - '%USERPROFILE%\.nuget\packages'

@@ -584,7 +584,7 @@ namespace dexih.connections.excel
 
 		                var columnMappings = GetHeaderOrdinals(worksheet);
 
-		                var autoIncrementColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+		                var autoIncrementColumn = table.GetColumn(EDeltaType.DbAutoIncrement);
 		                var autoIncrementOrdinal = -1;
 		                if (autoIncrementColumn != null && columnMappings.ContainsKey(autoIncrementColumn.Name))
 		                {
@@ -616,7 +616,7 @@ namespace dexih.connections.excel
 
 			                foreach (var column in query.InsertColumns)
 			                {
-				                if (column.Column.DeltaType == TableColumn.EDeltaType.AutoIncrement)
+				                if (column.Column.DeltaType == EDeltaType.AutoIncrement)
 					                identityValue = Convert.ToInt64(column.Value);
 
 				                if (!columnMappings.ContainsKey(column.Column.Name))
@@ -756,7 +756,7 @@ namespace dexih.connections.excel
 			            // get the position of each of the column names.
 			            var columnMappings = GetHeaderOrdinals(worksheet);
 
-			            var autoIncrementColumn = table.GetColumn(TableColumn.EDeltaType.DbAutoIncrement);
+			            var autoIncrementColumn = table.GetColumn(EDeltaType.DbAutoIncrement);
 			            var autoIncrementOrdinal = -1;
 			            if (autoIncrementColumn != null)
 			            {

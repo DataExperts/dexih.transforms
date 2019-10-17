@@ -17,12 +17,12 @@ namespace dexih.functions.tests
         private Table CreateSampleTable()
         {
             var table = new Table("test", 0,
-                new TableColumn("StringColumn", DataType.ETypeCode.String, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("IntColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DecimalColumn", DataType.ETypeCode.Decimal, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("DateColumn", DataType.ETypeCode.DateTime, TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("SortColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField),
-                new TableColumn("ArrayColumn", DataType.ETypeCode.Int32, TableColumn.EDeltaType.TrackingField, 1)
+                new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", ETypeCode.Int32, EDeltaType.TrackingField),
+                new TableColumn("ArrayColumn", ETypeCode.Int32, EDeltaType.TrackingField, 1)
             );
             table.AddAuditColumns();
 
@@ -73,7 +73,7 @@ namespace dexih.functions.tests
         public void Performance_Table_Ordinal_DeltaType(int iterations)
         {
             var table = CreateSampleTable();
-            var deltaType = TableColumn.EDeltaType.ValidToDate;
+            var deltaType = EDeltaType.ValidToDate;
 
             var time = TaskTimer.Start(() =>
             {
@@ -116,7 +116,7 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < iterations; i++)
                 {
-                    var cols = table.Columns.Where(c => c.DeltaType == TableColumn.EDeltaType.TrackingField).ToArray();
+                    var cols = table.Columns.Where(c => c.DeltaType == EDeltaType.TrackingField).ToArray();
                     Assert.Equal(2, cols.Length);
                 }
             });
@@ -127,7 +127,7 @@ namespace dexih.functions.tests
             {
                 for (var i = 0; i < iterations; i++)
                 {
-                    var cols = table.GetColumns(TableColumn.EDeltaType.TrackingField);
+                    var cols = table.GetColumns(EDeltaType.TrackingField);
                     Assert.Equal(2, cols.Length);
                 }
             });

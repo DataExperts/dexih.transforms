@@ -6,7 +6,7 @@ namespace FunctionExamples
 {
     public class BookClass
     {
-        [PocoColumn("code", DeltaType = TableColumn.EDeltaType.NaturalKey)]
+        [PocoColumn("code", DeltaType = EDeltaType.NaturalKey)]
         public string Code { get; set; }
 
         [PocoColumn("name")]

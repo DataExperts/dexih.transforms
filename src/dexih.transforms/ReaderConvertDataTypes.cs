@@ -34,7 +34,7 @@ namespace dexih.transforms
                 col.AllowDbNull = true;
             }
             
-            _operationOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
+            _operationOrdinal = CacheTable.GetOrdinal(EDeltaType.DatabaseOperation);
 
             foreach (var column in CacheTable.Columns)
             {
@@ -97,7 +97,7 @@ namespace dexih.transforms
             var row = new object[PrimaryTransform.FieldCount];
             for(var i = 0; i < PrimaryTransform.FieldCount; i++)
             {
-                if (CacheTable.Columns[i].DeltaType == TableColumn.EDeltaType.DatabaseOperation)
+                if (CacheTable.Columns[i].DeltaType == EDeltaType.DatabaseOperation)
                 {
                     row[i] = PrimaryTransform[i];
                     continue;

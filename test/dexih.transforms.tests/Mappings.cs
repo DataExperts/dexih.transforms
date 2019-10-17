@@ -45,8 +45,8 @@ namespace dexih.functions.tests
         [Fact]
         public async void Mapping_Group()
         {
-            var inputColumn = new TableColumn("input", DataType.ETypeCode.String);
-            var outputColumn = new TableColumn("input", DataType.ETypeCode.String);
+            var inputColumn = new TableColumn("input", ETypeCode.String);
+            var outputColumn = new TableColumn("input", ETypeCode.String);
             var inputRow = new object[] {"field1"};
             
             var inputTable = new Table("input");
@@ -75,9 +75,9 @@ namespace dexih.functions.tests
         [Fact]
         public async void Mapping_Filter()
         {
-            var inputColumn1 = new TableColumn("input1", DataType.ETypeCode.String);
-            var inputColumn2 = new TableColumn("input2", DataType.ETypeCode.String);
-            var inputColumn3 = new TableColumn("input3", DataType.ETypeCode.String);
+            var inputColumn1 = new TableColumn("input1", ETypeCode.String);
+            var inputColumn2 = new TableColumn("input2", ETypeCode.String);
+            var inputColumn3 = new TableColumn("input3", ETypeCode.String);
             var inputTable = new Table("input");
             inputTable.Columns.Add(inputColumn1);
             inputTable.Columns.Add(inputColumn2);
@@ -107,9 +107,9 @@ namespace dexih.functions.tests
         [Fact]
         public async void Mapping_Join()
         {
-            var inputColumn1 = new TableColumn("input1", DataType.ETypeCode.String);
-            var inputColumn2 = new TableColumn("input2", DataType.ETypeCode.String);
-            var inputColumn3 = new TableColumn("input3", DataType.ETypeCode.String);
+            var inputColumn1 = new TableColumn("input1", ETypeCode.String);
+            var inputColumn2 = new TableColumn("input2", ETypeCode.String);
+            var inputColumn3 = new TableColumn("input3", ETypeCode.String);
             var inputTable = new Table("input");
             var joinTable = new Table("join");
             inputTable.Columns.Add(inputColumn1);
@@ -141,8 +141,8 @@ namespace dexih.functions.tests
         [Fact]
         public async void Mapping_Aggregate()
         {
-            var inputColumn = new TableColumn("input", DataType.ETypeCode.Int32);
-            var outputColumn = new TableColumn("output", DataType.ETypeCode.Int32);
+            var inputColumn = new TableColumn("input", ETypeCode.Int32);
+            var outputColumn = new TableColumn("output", ETypeCode.Int32);
             
             var inputTable = new Table("input");
             inputTable.Columns.Add(inputColumn);
@@ -168,8 +168,8 @@ namespace dexih.functions.tests
         [Fact]
         public async void Mapping_Function()
         {
-            var inputColumn1 = new TableColumn("input1", DataType.ETypeCode.String);
-            var inputColumn2 = new TableColumn("input2", DataType.ETypeCode.String);
+            var inputColumn1 = new TableColumn("input1", ETypeCode.String);
+            var inputColumn2 = new TableColumn("input2", ETypeCode.String);
             var outputColumn = new TableColumn("output");
             var inputRow = new object[] {"aaa", "bbb"};
             
@@ -188,7 +188,7 @@ namespace dexih.functions.tests
             {
                 Inputs = new List<Parameter.Parameter>
                 {
-                    new ParameterArray("input", DataType.ETypeCode.String, 1,
+                    new ParameterArray("input", ETypeCode.String, 1,
                         new List<Parameter.Parameter>
                         {
                             new ParameterColumn("values", inputColumn1),
@@ -213,7 +213,7 @@ namespace dexih.functions.tests
         [Fact]
         public async void Mapping_Series()
         {
-            var inputColumn = new TableColumn("day", DataType.ETypeCode.DateTime);
+            var inputColumn = new TableColumn("day", ETypeCode.DateTime);
             
             var outputColumn = new TableColumn("output");
             var inputRow = new object[] {new DateTime(2018, 1,1, 12, 12, 12), };

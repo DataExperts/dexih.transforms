@@ -113,7 +113,7 @@ namespace dexih.connections.webservice.restful
 						IsInput = true,
 						LogicalName = name,
 						DataType = ETypeCode.String,
-						DeltaType = TableColumn.EDeltaType.NaturalKey,
+						DeltaType = EDeltaType.NaturalKey,
 						MaxLength = 1024,
 
 						Description = "Url Parameter " + name,
@@ -142,7 +142,7 @@ namespace dexih.connections.webservice.restful
                     IsInput = false,
                     LogicalName = "Response",
                     DataType = newRestFunction.FormatType,
-                    DeltaType = TableColumn.EDeltaType.ResponseData,
+                    DeltaType = EDeltaType.ResponseData,
                     MaxLength = null,
                     Description = "Response content from the service",
                     AllowDbNull = true,
@@ -156,7 +156,7 @@ namespace dexih.connections.webservice.restful
                     IsInput = false,
                     LogicalName = "ResponseStatusCode",
                     DataType = ETypeCode.String,
-                    DeltaType = TableColumn.EDeltaType.ResponseStatus,
+                    DeltaType = EDeltaType.ResponseStatus,
                     MaxLength = null,
                     Description = "The status code returned by the service",
                     AllowDbNull = true,
@@ -170,7 +170,7 @@ namespace dexih.connections.webservice.restful
                     IsInput = false,
                     LogicalName = "ResponseSuccess",
                     DataType = ETypeCode.Boolean,
-                    DeltaType = TableColumn.EDeltaType.ResponseSuccess,
+                    DeltaType = EDeltaType.ResponseSuccess,
                     MaxLength = null,
                     Description = "Is the web service call successful.",
                     AllowDbNull = true,
@@ -184,7 +184,7 @@ namespace dexih.connections.webservice.restful
 					IsInput = false,
 					LogicalName = "ResponseError",
 					DataType = ETypeCode.String,
-					DeltaType = TableColumn.EDeltaType.Error,
+					DeltaType = EDeltaType.Error,
 					MaxLength = null,
 					Description = "Error message calling the web service.",
 					AllowDbNull = true,
@@ -198,7 +198,7 @@ namespace dexih.connections.webservice.restful
 					IsInput = false,
 					LogicalName = "Url",
 					DataType = ETypeCode.String,
-					DeltaType = TableColumn.EDeltaType.Url,
+					DeltaType = EDeltaType.Url,
 					MaxLength = null,
 					Description = "Url used to call the web service.",
 					AllowDbNull = true,
@@ -341,11 +341,11 @@ namespace dexih.connections.webservice.restful
 
                 var response = await GetWebServiceResponse(restFunction, filters, cancellationToken);
 
-                var responseStatusOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.ResponseStatus);
-                var responseSuccessOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.ResponseSuccess);
-                var responseDataOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.ResponseData);
-				var urlOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.Url);
-				var errorOrdinal = restFunction.GetOrdinal(TableColumn.EDeltaType.Error);
+                var responseStatusOrdinal = restFunction.GetOrdinal(EDeltaType.ResponseStatus);
+                var responseSuccessOrdinal = restFunction.GetOrdinal(EDeltaType.ResponseSuccess);
+                var responseDataOrdinal = restFunction.GetOrdinal(EDeltaType.ResponseData);
+				var urlOrdinal = restFunction.GetOrdinal(EDeltaType.Url);
+				var errorOrdinal = restFunction.GetOrdinal(EDeltaType.Error);
 
                 var lookupResult = new List<object[]>();
 

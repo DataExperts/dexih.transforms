@@ -145,11 +145,11 @@ namespace dexih.transforms
             var table = ReferenceTransform.CacheTable.Copy();
 
             //add the operation type, which indicates whether record are C-create/U-update or D-Deletes
-            if (table.Columns.SingleOrDefault(c => c.DeltaType == TableColumn.EDeltaType.DatabaseOperation) == null)
+            if (table.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.DatabaseOperation) == null)
             {
                 table.Columns.Insert(0, new TableColumn("Operation", ETypeCode.Char)
                 {
-                    DeltaType = TableColumn.EDeltaType.DatabaseOperation
+                    DeltaType = EDeltaType.DatabaseOperation
                 });
             }
             
@@ -213,7 +213,7 @@ namespace dexih.transforms
                     "The delta transform requires target table table to have a one \"Auto Increment\" column, and one \"Is Current\" column for row preservation.");
             }
 
-            if (DoUpdate && CacheTable.Columns.All(c => c.DeltaType != TableColumn.EDeltaType.NaturalKey))
+            if (DoUpdate && CacheTable.Columns.All(c => c.DeltaType != EDeltaType.NaturalKey))
             {
                 throw new Exception(
                     "The delta transform requires the table to have at least one natural key column for updates to be possible.");
@@ -251,43 +251,43 @@ namespace dexih.transforms
         {
             //add the audit columns if they don't exist
             //get some of the key fields to save looking up for each row.
-            _colValidFrom = CacheTable.GetColumn(TableColumn.EDeltaType.ValidFromDate);
-            _colCreateDate = CacheTable.GetColumn(TableColumn.EDeltaType.CreateDate);
+            _colValidFrom = CacheTable.GetColumn(EDeltaType.ValidFromDate);
+            _colCreateDate = CacheTable.GetColumn(EDeltaType.CreateDate);
             _colAutoIncrement = CacheTable.GetAutoIncrementColumn();
-            _colIsCurrentField = CacheTable.GetColumn(TableColumn.EDeltaType.IsCurrentField);
-            _colCreateAuditKey = CacheTable.GetColumn(TableColumn.EDeltaType.CreateAuditKey);
-            _sourceOperationOrdinal = PrimaryTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.DatabaseOperation);
-            _validationStatusOrdinal = PrimaryTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.ValidationStatus);
+            _colIsCurrentField = CacheTable.GetColumn(EDeltaType.IsCurrentField);
+            _colCreateAuditKey = CacheTable.GetColumn(EDeltaType.CreateAuditKey);
+            _sourceOperationOrdinal = PrimaryTransform.CacheTable.GetOrdinal(EDeltaType.DatabaseOperation);
+            _validationStatusOrdinal = PrimaryTransform.CacheTable.GetOrdinal(EDeltaType.ValidationStatus);
 
-            _rejectedReasonOrdinal = PrimaryTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.RejectedReason);
-            if(CacheTable.GetColumn(TableColumn.EDeltaType.RejectedReason) == null)
+            _rejectedReasonOrdinal = PrimaryTransform.CacheTable.GetOrdinal(EDeltaType.RejectedReason);
+            if(CacheTable.GetColumn(EDeltaType.RejectedReason) == null)
             {
                 var rejectColumn =
-                    new TableColumn("RejectedReason", ETypeCode.String, TableColumn.EDeltaType.RejectedReason)
+                    new TableColumn("RejectedReason", ETypeCode.String, EDeltaType.RejectedReason)
                     {
                         AllowDbNull = true
                     };
                 CacheTable.Columns.Add(rejectColumn);
             }
 
-            _validFromOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.ValidFromDate);
-            _validToOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.ValidToDate);
-            _isCurrentOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.IsCurrentField);
-            _versionOrdinal = CacheTable.GetOrdinal(TableColumn.EDeltaType.Version);
+            _validFromOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidFromDate);
+            _validToOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidToDate);
+            _isCurrentOrdinal = CacheTable.GetOrdinal(EDeltaType.IsCurrentField);
+            _versionOrdinal = CacheTable.GetOrdinal(EDeltaType.Version);
 
-            _sourceSurrogateKeyOrdinal = PrimaryTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.SourceSurrogateKey);
-            _sourceValidFromOrdinal = GetSourceColumnOrdinal(TableColumn.EDeltaType.ValidFromDate);
-            _sourceValidToOrdinal = GetSourceColumnOrdinal(TableColumn.EDeltaType.ValidToDate);
-            _sourceIsCurrentOrdinal = PrimaryTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.IsCurrentField);
+            _sourceSurrogateKeyOrdinal = PrimaryTransform.CacheTable.GetOrdinal(EDeltaType.SourceSurrogateKey);
+            _sourceValidFromOrdinal = GetSourceColumnOrdinal(EDeltaType.ValidFromDate);
+            _sourceValidToOrdinal = GetSourceColumnOrdinal(EDeltaType.ValidToDate);
+            _sourceIsCurrentOrdinal = PrimaryTransform.CacheTable.GetOrdinal(EDeltaType.IsCurrentField);
 
             _columnCount = CacheTable.Columns.Count;
 
-            _referenceIsValidOrdinal = ReferenceTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.IsCurrentField);
+            _referenceIsValidOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.IsCurrentField);
             _referenceSurrogateKeyOrdinal = ReferenceTransform.CacheTable.GetAutoIncrementOrdinal();
-            _referenceCreateAuditOrdinal = ReferenceTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.CreateAuditKey);
-            _referenceCreateDateOrdinal = ReferenceTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.CreateDate);
-            _referenceValidToOrdinal = ReferenceTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.ValidToDate);
-            _referenceValidFromOrdinal = ReferenceTransform.CacheTable.GetOrdinal(TableColumn.EDeltaType.ValidFromDate);
+            _referenceCreateAuditOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.CreateAuditKey);
+            _referenceCreateDateOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.CreateDate);
+            _referenceValidToOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.ValidToDate);
+            _referenceValidFromOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.ValidFromDate);
             
             _naturalKeyOrdinals = new List<(int, int, int)>();
             _trackingOrdinals = new List<(int, int, int)>();
@@ -300,10 +300,10 @@ namespace dexih.transforms
                 var primaryOrdinal = -1;
                 switch (col.DeltaType)
                 {
-                    case TableColumn.EDeltaType.ValidToDate:
+                    case EDeltaType.ValidToDate:
                         primaryOrdinal = _sourceValidToOrdinal;
                         break;
-                    case TableColumn.EDeltaType.ValidFromDate:
+                    case EDeltaType.ValidFromDate:
                         primaryOrdinal = _sourceValidFromOrdinal;
                         break;
                     default:
@@ -315,10 +315,10 @@ namespace dexih.transforms
                 {
                     switch (col.DeltaType)
                     {
-                        case TableColumn.EDeltaType.TrackingField:
+                        case EDeltaType.TrackingField:
                             _trackingOrdinals.Add((ordinal, primaryOrdinal, referenceOrdinal));
                             break;
-                        case TableColumn.EDeltaType.NaturalKey:
+                        case EDeltaType.NaturalKey:
                             _naturalKeyOrdinals.Add((ordinal, primaryOrdinal, referenceOrdinal));
                             break;
                     }
@@ -326,7 +326,7 @@ namespace dexih.transforms
             }
         }
         
-        public int GetSourceColumnOrdinal(TableColumn.EDeltaType deltaType)
+        public int GetSourceColumnOrdinal(EDeltaType deltaType)
         {
             var sourceOrdinal = PrimaryTransform.CacheTable.GetOrdinal(deltaType);
             // if the source ValidFrom was not found on delta type, use the target table valid from and attempt to match on name.
@@ -351,15 +351,15 @@ namespace dexih.transforms
             {
                 switch (referenceColumn.SecurityFlag)
                 {
-                    case TableColumn.ESecurityFlag.FastEncrypted:
+                    case ESecurityFlag.FastEncrypted:
                         reference = FastDecrypt(referenceValue);
                         source = sourceObject.OriginalValue; 
                         break;
-                    case TableColumn.ESecurityFlag.StrongEncrypted:
+                    case ESecurityFlag.StrongEncrypted:
                         reference = StrongDecrypt(referenceValue);
                         source = sourceObject.OriginalValue; 
                         break;
-                    case TableColumn.ESecurityFlag.OneWayHashed:
+                    case ESecurityFlag.OneWayHashed:
                         return OneWayHashCompare(referenceValue, sourceObject.OriginalValue);
                 }
             }
@@ -920,19 +920,19 @@ namespace dexih.transforms
             {
                 switch(CacheTable.Columns[i].DeltaType)
                 {
-                    case TableColumn.EDeltaType.ValidToDate:
+                    case EDeltaType.ValidToDate:
                         if (nextRow != null && _colValidFrom != null)
                             newRow[i] = nextRow[_validFromOrdinal];
                         else
                             newRow[i] = _currentDateTime;
                         break;
-                    case TableColumn.EDeltaType.IsCurrentField:
+                    case EDeltaType.IsCurrentField:
                         newRow[i] = false;
                         break;
-                    case TableColumn.EDeltaType.UpdateDate:
+                    case EDeltaType.UpdateDate:
                         newRow[i] = _currentDateTime;
                         break;
-                    case TableColumn.EDeltaType.UpdateAuditKey:
+                    case EDeltaType.UpdateAuditKey:
                         newRow[i] = AuditKey;
                         break;
                     default:
@@ -966,7 +966,7 @@ namespace dexih.transforms
 
                 switch (CacheTable.Columns[referenceOrdinal].DeltaType)
                 {
-                    case TableColumn.EDeltaType.ValidFromDate:
+                    case EDeltaType.ValidFromDate:
                         if (_sourceValidFromOrdinal == -1 && sourceOrdinal == -1)
                             newRow[referenceOrdinal] = _currentDateTime;
                         else if(sourceOrdinal >= 0)
@@ -975,7 +975,7 @@ namespace dexih.transforms
                             newRow[referenceOrdinal] = PrimaryTransform[_sourceValidFromOrdinal];
 
                         break;
-                    case TableColumn.EDeltaType.ValidToDate:
+                    case EDeltaType.ValidToDate:
                         if (_sourceValidToOrdinal == -1 && sourceOrdinal == -1)
                             newRow[referenceOrdinal] = _defaultValidToDate;
                         else if(sourceOrdinal >= 0)
@@ -983,11 +983,11 @@ namespace dexih.transforms
                         else
                             newRow[referenceOrdinal] = PrimaryTransform[_sourceValidToOrdinal];
                         break;
-                    case TableColumn.EDeltaType.CreateDate:
-                    case TableColumn.EDeltaType.UpdateDate:
+                    case EDeltaType.CreateDate:
+                    case EDeltaType.UpdateDate:
                         newRow[referenceOrdinal] = _currentDateTime;
                         break;
-                    case TableColumn.EDeltaType.IsCurrentField:
+                    case EDeltaType.IsCurrentField:
                         if (_sourceIsCurrentOrdinal == -1 && sourceOrdinal == -1)
                             newRow[referenceOrdinal] = true;
                         else if (sourceOrdinal >= 0)
@@ -995,14 +995,14 @@ namespace dexih.transforms
                         else
                             newRow[referenceOrdinal] = PrimaryTransform[_sourceIsCurrentOrdinal];
                         break;
-                    case TableColumn.EDeltaType.Version:
+                    case EDeltaType.Version:
                         newRow[referenceOrdinal] = 1;
                         break;
-                    case TableColumn.EDeltaType.AutoIncrement:
+                    case EDeltaType.AutoIncrement:
                         _autoIncrementValue = Operations.Increment(_autoIncrementValue); //increment now that key has been used.
                         newRow[referenceOrdinal] = AutoIncrementValue;
                         break;
-                    case TableColumn.EDeltaType.SourceSurrogateKey:
+                    case EDeltaType.SourceSurrogateKey:
                         if (_colAutoIncrement == null && sourceOrdinal == -1)
                             newRow[referenceOrdinal] = 0;
                         else if (sourceOrdinal >= 0)
@@ -1012,19 +1012,19 @@ namespace dexih.transforms
                         else
                             newRow[referenceOrdinal] = PrimaryTransform[_sourceSurrogateKeyOrdinal];
                         break;
-                    case TableColumn.EDeltaType.CreateAuditKey:
-                    case TableColumn.EDeltaType.UpdateAuditKey:
-                    case TableColumn.EDeltaType.AzurePartitionKey:
+                    case EDeltaType.CreateAuditKey:
+                    case EDeltaType.UpdateAuditKey:
+                    case EDeltaType.PartitionKey:
                         newRow[referenceOrdinal] = AuditKey;
                         break;
-                    case TableColumn.EDeltaType.IgnoreField:
+                    case EDeltaType.IgnoreField:
                         //do nothing
                         break;
-                    case TableColumn.EDeltaType.ValidationStatus:
+                    case EDeltaType.ValidationStatus:
                         if(_validationStatusOrdinal >= 0)
                             newRow[referenceOrdinal] = PrimaryTransform[_validationStatusOrdinal];
                         break;
-                    case TableColumn.EDeltaType.RejectedReason:
+                    case EDeltaType.RejectedReason:
                         if (_rejectedReasonOrdinal >= 0)
                             newRow[referenceOrdinal] = PrimaryTransform[_rejectedReasonOrdinal];
                         break;
@@ -1072,40 +1072,40 @@ namespace dexih.transforms
                 {
                     switch (referenceColumn.DeltaType)
                     {
-                        case TableColumn.EDeltaType.ValidFromDate:
+                        case EDeltaType.ValidFromDate:
                             if (referenceColumn.DefaultValue.ObjectIsNullOrBlank())
                                 newRow[referenceOrdinal] = _defaultValidFromDate;
                             else
                                 newRow[referenceOrdinal] = referenceColumn.DefaultValue;
                             break;
-                        case TableColumn.EDeltaType.ValidToDate:
+                        case EDeltaType.ValidToDate:
                             if (referenceColumn.DefaultValue.ObjectIsNullOrBlank())
                                 newRow[referenceOrdinal] = _defaultValidToDate;
                             else
                                 newRow[referenceOrdinal] = referenceColumn.DefaultValue;
                             break;
-                        case TableColumn.EDeltaType.CreateDate:
-                        case TableColumn.EDeltaType.UpdateDate:
+                        case EDeltaType.CreateDate:
+                        case EDeltaType.UpdateDate:
                             newRow[referenceOrdinal] = _currentDateTime;
                             break;
-                        case TableColumn.EDeltaType.IsCurrentField:
+                        case EDeltaType.IsCurrentField:
                             newRow[referenceOrdinal] = true;
                             break;
-                        case TableColumn.EDeltaType.AutoIncrement:
+                        case EDeltaType.AutoIncrement:
                             newRow[referenceOrdinal] = 0;
                             break;
-                        case TableColumn.EDeltaType.SourceSurrogateKey:
+                        case EDeltaType.SourceSurrogateKey:
                             newRow[referenceOrdinal] = 0;
                             break;
-                        case TableColumn.EDeltaType.CreateAuditKey:
-                        case TableColumn.EDeltaType.UpdateAuditKey:
-                        case TableColumn.EDeltaType.AzurePartitionKey:
+                        case EDeltaType.CreateAuditKey:
+                        case EDeltaType.UpdateAuditKey:
+                        case EDeltaType.PartitionKey:
                             newRow[referenceOrdinal] = AuditKey;
                             break;
-                        case TableColumn.EDeltaType.IgnoreField:
+                        case EDeltaType.IgnoreField:
                             //do nothing
                             break;
-                        case TableColumn.EDeltaType.NaturalKey:
+                        case EDeltaType.NaturalKey:
                             if (referenceColumn.DefaultValue.ObjectIsNullOrBlank())
                                 throw new Exception("A default column could not be created as the column \"" + referenceColumn.Name + "\" is part of the natural key and has a default value of null.  Edit the target table columns and set the default value to a non-null value to continue.");
                             else
@@ -1160,7 +1160,7 @@ namespace dexih.transforms
             }
             else
             {
-                foreach (var col in ReferenceTransform.CacheTable.GetColumns(TableColumn.EDeltaType.NaturalKey))
+                foreach (var col in ReferenceTransform.CacheTable.GetColumns(EDeltaType.NaturalKey))
                 {
                     var primaryColumn = PrimaryTransform.CacheTable.Columns[col.Name];
                     if (primaryColumn == null)
@@ -1169,13 +1169,13 @@ namespace dexih.transforms
                     }
                     fields.Add(new Sort(primaryColumn));
                 }
-                var validFrom = ReferenceTransform.CacheTable.GetColumn(TableColumn.EDeltaType.ValidFromDate);
+                var validFrom = ReferenceTransform.CacheTable.GetColumn(EDeltaType.ValidFromDate);
                 if (validFrom != null)
                 {
                     var primaryValidFrom = PrimaryTransform.CacheTable.Columns[validFrom.Name];
                     if(primaryValidFrom == null)
                     {
-                        primaryValidFrom = PrimaryTransform.CacheTable.GetColumn(TableColumn.EDeltaType.ValidFromDate);
+                        primaryValidFrom = PrimaryTransform.CacheTable.GetColumn(EDeltaType.ValidFromDate);
                     }
 
                     if (primaryValidFrom != null)
@@ -1199,7 +1199,7 @@ namespace dexih.transforms
             {
                 // sure sort columns are same order or primary transform
                 
-                foreach (var col in ReferenceTransform.CacheTable.GetColumns(TableColumn.EDeltaType.NaturalKey))
+                foreach (var col in ReferenceTransform.CacheTable.GetColumns(EDeltaType.NaturalKey))
                 {
 //                    var referenceColumn = PrimaryTransform.CacheTable.Columns[col.Name];
 //                    if (referenceColumn == null)
@@ -1208,7 +1208,7 @@ namespace dexih.transforms
 //                    }
                     fields.Add(new Sort(col));
                 }
-                var validFrom = ReferenceTransform.CacheTable.GetColumn(TableColumn.EDeltaType.ValidFromDate);
+                var validFrom = ReferenceTransform.CacheTable.GetColumn(EDeltaType.ValidFromDate);
                 if (validFrom != null)
                 {
                     fields.Add(new Sort(validFrom));

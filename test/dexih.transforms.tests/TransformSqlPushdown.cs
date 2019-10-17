@@ -13,9 +13,9 @@ namespace dexih.transforms.tests
             Name = "Sample",
             Columns = new TableColumns()
             {
-                new TableColumn("key", TableColumn.EDeltaType.NaturalKey),
-                new TableColumn("track", TableColumn.EDeltaType.TrackingField),
-                new TableColumn("ignore", TableColumn.EDeltaType.IgnoreField),
+                new TableColumn("key", EDeltaType.NaturalKey),
+                new TableColumn("track", EDeltaType.TrackingField),
+                new TableColumn("ignore", EDeltaType.IgnoreField),
             }
         };
 
