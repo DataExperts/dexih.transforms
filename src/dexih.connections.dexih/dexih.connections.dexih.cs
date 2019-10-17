@@ -10,7 +10,6 @@ using System.Threading;
 using System.Xml;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using dexih.repository;
 
 namespace dexih.connections.dexih
 {

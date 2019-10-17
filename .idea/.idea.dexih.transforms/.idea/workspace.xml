@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/appveyor.yml" beforeDir="false" afterPath="$PROJECT_DIR$/appveyor.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dexih.transforms.sln" beforeDir="false" afterPath="$PROJECT_DIR$/dexih.transforms.sln" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -695,7 +694,7 @@
       <workItem from="1571280896261" duration="413000" />
       <workItem from="1571282843019" duration="4035000" />
       <workItem from="1571290412518" duration="161000" />
-      <workItem from="1571294547323" duration="314000" />
+      <workItem from="1571294547323" duration="720000" />
     </task>
     <task id="LOCAL-00011" summary="Fix some tests with SqlServer on Linux">
       <created>1501213510271</created>
