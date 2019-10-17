@@ -2,79 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
-      <change afterPath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/appveyor.yml" beforeDir="false" afterPath="$PROJECT_DIR$/appveyor.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dexih.transforms.sln" beforeDir="false" afterPath="$PROJECT_DIR$/dexih.transforms.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/samples/FunctionExamples/BookClass.cs" beforeDir="false" afterPath="$PROJECT_DIR$/samples/FunctionExamples/BookClass.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connectionsl.sql.oracle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connectionsl.sql.oracle.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Enums.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Enums.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterOutputColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterOutputColumn.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumns.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumns.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerJson.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerJson.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerText.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerText.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerXml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerXml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformNode.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformValidation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformValidation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTask.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTask.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskBulk.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskBulk.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskTransaction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskTransaction.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connections.db2.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connections.db2.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/Configuration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/Configuration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.tests/TableTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.tests/TableTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.parameters.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.parameters.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/PocoTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/PocoTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/ReaderMemoryTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/ReaderMemoryTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/StreamJsonTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/StreamJsonTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformAggregateTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformAggregateTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaParentChild.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaParentChild.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformGroupTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformGroupTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformMappingTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformMappingTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformNodeTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformNodeTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformRowTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformRowTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformValidationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformValidationTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -404,7 +334,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.functions/Parameter/Parameters.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" />
@@ -455,6 +384,7 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.mongo.tests/appsettings.json" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
       </list>
     </option>
   </component>
@@ -765,6 +695,7 @@
       <workItem from="1571280896261" duration="413000" />
       <workItem from="1571282843019" duration="4035000" />
       <workItem from="1571290412518" duration="161000" />
+      <workItem from="1571294547323" duration="314000" />
     </task>
     <task id="LOCAL-00011" summary="Fix some tests with SqlServer on Linux">
       <created>1501213510271</created>

@@ -49,9 +49,11 @@ test_script:
 - dotnet test 
 - cd ..\..
 artifacts:
-  - path: artifacts\*.nupkg
+  - path: artifacts\dexih.connections*.nupkg
+  - path: artifacts\dexih.transforms*.nupkg
+  - path: artifacts\dexih.functions*.nupkg
 services:
-  - mssql2014
+  - mssql2017
   - mysql
   - postgresql
   - mongodb
@@ -85,9 +87,7 @@ for:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
   # - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
-  - dotnet pack -c %CONFIGURATION% --no-build /p:Version=%APPVEYOR_BUILD_VERSION% -o ../../artifacts
-  - del .\artifacts\*test*
-  - del .\artifacts\*Example*
+  - dotnet pack -c %CONFIGURATION% --no-build /p:Version=%APPVEYOR_BUILD_VERSION% -o ./artifacts
   
 # test branch produces a nuget package with the version suffix added.
 -
@@ -99,9 +99,7 @@ for:
   build_script:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
-  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ../../artifacts
-  - del .\artifacts\*test*
-  - del .\artifacts\*Example*
+  - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ./artifacts
   
 # master and dev branchs runs test only, no publishing packages
 -

@@ -448,15 +448,6 @@
               </e>
             </e>
           </e>
-          <e p="releases" t="Include">
-            <e p="dexih.connections.sqlserver.deps.json" t="Include" />
-            <e p="dexih.connections.sqlserver.dll" t="Include" />
-            <e p="dexih.connections.sqlserver.pdb" t="Include" />
-            <e p="dexih.functions.dll" t="Include" />
-            <e p="dexih.functions.pdb" t="Include" />
-            <e p="dexih.transforms.dll" t="Include" />
-            <e p="dexih.transforms.pdb" t="Include" />
-          </e>
         </e>
         <e p="dexih.connections.webservice.restful" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />

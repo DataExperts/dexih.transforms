@@ -27,6 +27,7 @@
     <PackageReference Include="CsvHelper" Version="12.1.2" />
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.80" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.16" />
+    <PackageReference Include="Dexih.Utils.DataType" Version="0.1.119" />
     <PackageReference Include="MessagePack" Version="1.8.74" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
