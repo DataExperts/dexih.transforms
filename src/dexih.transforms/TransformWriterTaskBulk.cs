@@ -83,7 +83,7 @@ namespace dexih.transforms
                     }
                     break;
                 case 'T':
-                    if (!TargetConnection.DynamicTableCreation && !TruncateComplete)
+                    if (!TruncateComplete)
                     {
                         await TargetConnection.TruncateTable(TargetTable, cancellationToken);
                         TruncateComplete = true;

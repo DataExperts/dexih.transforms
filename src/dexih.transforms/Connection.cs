@@ -640,8 +640,8 @@ namespace dexih.transforms
                 if (CanUseJson)
                 {
                     var jsonValue = Operations.Parse<string>(value);
-                    var jsonDocument = Operations.Parse<JsonDocument>(jsonValue);
-                    return (ETypeCode.Json, jsonDocument);
+                    var jsonElement = Operations.Parse<JsonElement>(jsonValue);
+                    return (ETypeCode.Json, jsonElement);
                 }
                 return (ETypeCode.String, Operations.Parse<string>(value));
             }
@@ -706,9 +706,18 @@ namespace dexih.transforms
                         
                         if (CanUseJson)
                         {
-                            return (ETypeCode.Json, Operations.Parse<JsonDocument>( streamReader.ReadToEnd()));
+                            return (ETypeCode.Json, Operations.Parse<JsonElement>( streamReader.ReadToEnd()));
                         }
                         return (ETypeCode.String, Operations.Parse<string>( streamReader.ReadToEnd()));
+                    }
+
+                    if (value is JsonElement jsonElement)
+                    {
+                        if (CanUseJson)
+                        {
+                            return (ETypeCode.Json, jsonElement);
+                        }
+                        return (ETypeCode.String, jsonElement.GetRawText());
                     }
 
                     return (ETypeCode.String, null);

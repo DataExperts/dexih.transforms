@@ -185,11 +185,17 @@ namespace dexih.connections.mongo
                 case ETypeCode.Boolean:
                     return new BsonBoolean((bool) convertedValue);
                 case ETypeCode.DateTime:
-                    return new BsonDateTime((DateTime) convertedValue);
+                    return new BsonDateTime(((DateTime) convertedValue).ToUniversalTime());
                 case ETypeCode.Json:
-                    var json = ((JsonElement) convertedValue).GetRawText();
-                    var bson = BsonSerializer.Deserialize<BsonDocument>(json);
-                    return bson;
+                    var json = ((JsonElement) convertedValue);
+                    if (json.ValueKind == JsonValueKind.Array)
+                    {
+                        return BsonSerializer.Deserialize<BsonArray>(json.GetRawText());
+                    }
+                    else
+                    {
+                        return BsonSerializer.Deserialize<BsonDocument>(json.GetRawText());
+                    }
                 case ETypeCode.Xml:
                     return new BsonString((string)convertedValue);
                 case ETypeCode.Enum:
@@ -376,6 +382,30 @@ namespace dexih.connections.mongo
                     c.DeltaType == EDeltaType.DbAutoIncrement || c.DeltaType == EDeltaType.AutoIncrement))
                 {
                     await collection.Indexes.CreateOneAsync(Builders<BsonDocument>.IndexKeys.Ascending(column.Name));    
+                }
+
+                IndexKeysDefinition<BsonDocument> naturalKey = null;
+                foreach (var column in table.Columns.Where(c => c.DeltaType == EDeltaType.NaturalKey))
+                {
+                    if (naturalKey == null)
+                    {
+                        naturalKey = Builders<BsonDocument>.IndexKeys.Ascending(column.Name);
+                    }
+                    else
+                    {
+                        naturalKey.Ascending(column.Name);
+                    }     
+                }
+
+                if (naturalKey != null)
+                {
+                    var validFromDate = table.GetColumn(EDeltaType.ValidFromDate);
+                    if (validFromDate != null)
+                    {
+                        naturalKey.Ascending(validFromDate.Name);
+                    }
+
+                    await collection.Indexes.CreateOneAsync(naturalKey);
                 }
                 
                 // reset the auto incremental table, when rebuilding the table.

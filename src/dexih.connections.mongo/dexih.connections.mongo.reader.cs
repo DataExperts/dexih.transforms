@@ -102,9 +102,16 @@ namespace dexih.connections.mongo
                 var column = CacheTable.Columns[i];
                 if( document.TryGetElement(column.Name, out var element))
                 {
-                    var value = BsonTypeMapper.MapToDotNetValue(element.Value);
-                    var converted = Operations.Parse(column.DataType, column.Rank, value);
-                    row[i] = converted;
+                    if (element.Value.IsValidDateTime)
+                    {
+                        row[i] = element.Value.ToUniversalTime().ToLocalTime();
+                    }
+                    else
+                    {
+                        var value = BsonTypeMapper.MapToDotNetValue(element.Value);
+                        var converted = Operations.Parse(column.DataType, column.Rank, value);
+                        row[i] = converted;
+                    }
                 }
             }
             
