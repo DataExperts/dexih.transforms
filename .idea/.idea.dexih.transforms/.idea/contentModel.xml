@@ -238,15 +238,6 @@
               </e>
             </e>
           </e>
-          <e p="releases" t="Include">
-            <e p="dexih.connections.dexih.deps.json" t="Include" />
-            <e p="dexih.connections.dexih.dll" t="Include" />
-            <e p="dexih.connections.dexih.pdb" t="Include" />
-            <e p="dexih.functions.dll" t="Include" />
-            <e p="dexih.functions.pdb" t="Include" />
-            <e p="dexih.transforms.dll" t="Include" />
-            <e p="dexih.transforms.pdb" t="Include" />
-          </e>
         </e>
         <e p="dexih.connections.excel" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
@@ -477,6 +468,8 @@
         <e p="dexih.functions" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.functions.csproj" t="IncludeRecursive" />
+          <e p="DexihActiveAgent.cs" t="Include" />
+          <e p="DownloadUrl.cs" t="Include" />
           <e p="Enums.cs" t="Include" />
           <e p="Exceptions" t="Include">
             <e p="FunctionException.cs" t="Include" />
@@ -497,6 +490,7 @@
             <e p="TransformFunction.cs" t="Include" />
           </e>
           <e p="JsonObjectConverter.cs" t="Include" />
+          <e p="NamingStandards.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netstandard2.0" t="Include">

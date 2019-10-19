@@ -530,8 +530,8 @@ namespace dexih.connections.azure
 
                 DynamicTableEntity entity;
 
-                do
-                {
+//                do
+//                {
                     //get the last key value if it exists.
                     var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, incrementalColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
                     if (tableResult.Result == null)
@@ -551,8 +551,8 @@ namespace dexih.connections.azure
                     
                     tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, incrementalColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
                     entity = tableResult.Result as DynamicTableEntity;
-
-                } while (entity.Properties[LockGuidName].GuidValue.Value != lockGuid);
+//
+//                } while (entity.Properties[LockGuidName].GuidValue.Value != lockGuid);
 
                 return incrementalKey;
             }

@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dexih.transforms.sln" beforeDir="false" afterPath="$PROJECT_DIR$/dexih.transforms.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -364,7 +365,6 @@
         <option value="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connections.db2.tests.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.reader.cs" />
@@ -384,6 +384,7 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.mongo.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" />
       </list>
     </option>
   </component>
@@ -695,6 +696,8 @@
       <workItem from="1571282843019" duration="4035000" />
       <workItem from="1571290412518" duration="161000" />
       <workItem from="1571294547323" duration="720000" />
+      <workItem from="1571388063156" duration="73000" />
+      <workItem from="1571467402818" duration="327000" />
     </task>
     <task id="LOCAL-00011" summary="Fix some tests with SqlServer on Linux">
       <created>1501213510271</created>
