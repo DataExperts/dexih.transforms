@@ -28,7 +28,7 @@ namespace dexih.connections.sql.sqlserver
                 Password = Convert.ToString(Configuration.AppSettings["SqlServer:Password"]),
                 Server = Convert.ToString(Configuration.AppSettings["SqlServer:ServerName"]),
             };
-            this._output.WriteLine($"Server: {connection.Username}, User: {connection.Username}, Password: {connection.Password}, UseWindowsAuth: {connection.UseWindowsAuth}, UseConnectionString: {connection.UseConnectionString}.");
+            this._output.WriteLine($"Server: {connection.Server}, User: {connection.Username}, Password: {connection.Password}, UseWindowsAuth: {connection.UseWindowsAuth}, UseConnectionString: {connection.UseConnectionString}.");
 
             return connection;
         }

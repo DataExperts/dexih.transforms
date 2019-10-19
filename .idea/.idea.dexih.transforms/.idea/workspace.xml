@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -379,10 +380,10 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.mongo.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" />
       </list>
     </option>
   </component>
@@ -697,14 +698,7 @@
       <workItem from="1571388063156" duration="73000" />
       <workItem from="1571467402818" duration="1513000" />
       <workItem from="1571484875908" duration="150000" />
-      <workItem from="1571516199965" duration="220000" />
-    </task>
-    <task id="LOCAL-00013" summary="Grouping async tests to avoid deadlocks.">
-      <created>1501292006075</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1501292006075</updated>
+      <workItem from="1571516199965" duration="610000" />
     </task>
     <task id="LOCAL-00014" summary="Grouping async tests to avoid deadlocks.">
       <created>1501292450234</created>
@@ -1042,7 +1036,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571468508269</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="fix sql server connection.">
+      <created>1571516787833</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1571516787835</updated>
+    </task>
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1109,7 +1110,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="true" />
-    <MESSAGE value="fix issue with postgres numeric conversion" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="fixing tests." />
     <MESSAGE value="multiple refactors, modified standard encrypt functions." />
@@ -1134,7 +1134,8 @@
     <MESSAGE value="fixed tests for 3.0.0" />
     <MESSAGE value="fixed azure getlastkey" />
     <MESSAGE value="fixed azure azure geometry" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed azure azure geometry" />
+    <MESSAGE value="fix sql server connection." />
+    <option name="LAST_COMMIT_MESSAGE" value="fix sql server connection." />
   </component>
   <component name="WindowStateProjectService">
     <state width="1153" height="436" key="DebuggerActiveHint" />
