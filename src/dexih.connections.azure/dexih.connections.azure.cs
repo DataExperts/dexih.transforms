@@ -12,6 +12,8 @@ using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
 
 namespace dexih.connections.azure
 {
@@ -856,6 +858,8 @@ namespace dexih.connections.azure
                     return new EntityProperty(returnValue == null ? (long?) null : ((TimeSpan)value).Ticks); //timespan not supported, so convert to string.
                 case ETypeCode.Binary:
                     return new EntityProperty((byte[])value);
+                case ETypeCode.Geometry:
+                    return new EntityProperty(((Geometry)value).AsBinary());
                 default:
                     throw new Exception("Cannot create new azure entity as the data type: " + typeCode.ToString() + " is not supported.");
             }
@@ -904,6 +908,14 @@ namespace dexih.connections.azure
                     return new TimeSpan((long)value);
                 case ETypeCode.Unknown:
                     return value.ToString();
+                case ETypeCode.Geometry:
+                    if (value == null || value is DBNull)
+                    {
+                        return null;
+                    }
+                    var bytes = Operations.Parse<byte[]>(value);
+                    var binReader = new WKBReader();
+                    return binReader.Read(bytes);                
                 default:
                     return value;
             }
