@@ -381,8 +381,8 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.mongo.tests/appsettings.json" />
-        <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
       </list>
     </option>
   </component>
@@ -696,6 +696,8 @@
       <workItem from="1571294547323" duration="720000" />
       <workItem from="1571388063156" duration="73000" />
       <workItem from="1571467402818" duration="1513000" />
+      <workItem from="1571484875908" duration="150000" />
+      <workItem from="1571516199965" duration="220000" />
     </task>
     <task id="LOCAL-00013" summary="Grouping async tests to avoid deadlocks.">
       <created>1501292006075</created>

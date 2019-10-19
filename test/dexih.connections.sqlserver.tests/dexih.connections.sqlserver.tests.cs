@@ -20,7 +20,7 @@ namespace dexih.connections.sql.sqlserver
         
         public ConnectionSql GetConnection()
         {
-            return new ConnectionSqlServer()
+            var connection = new ConnectionSqlServer()
             {
                 Name = "Test Connection",
                 UseWindowsAuth = Convert.ToBoolean(Configuration.AppSettings["SqlServer:NTAuthentication"]),
@@ -28,6 +28,9 @@ namespace dexih.connections.sql.sqlserver
                 Password = Convert.ToString(Configuration.AppSettings["SqlServer:Password"]),
                 Server = Convert.ToString(Configuration.AppSettings["SqlServer:ServerName"]),
             };
+            this._output.WriteLine($"Server: {connection.Username}, User: {connection.Username}, Password: {connection.Password}, UseWindowsAuth: {connection.UseWindowsAuth}, UseConnectionString: {connection.UseConnectionString}.");
+
+            return connection;
         }
 
         [Fact]
