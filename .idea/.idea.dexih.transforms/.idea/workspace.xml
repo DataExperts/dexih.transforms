@@ -3,7 +3,16 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.azure.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.azure.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.excel.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.excel.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/appsettings.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -333,8 +342,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" />
@@ -382,8 +389,10 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.mongo.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/appsettings.json" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" />
       </list>
     </option>
   </component>
@@ -698,14 +707,7 @@
       <workItem from="1571388063156" duration="73000" />
       <workItem from="1571467402818" duration="1513000" />
       <workItem from="1571484875908" duration="150000" />
-      <workItem from="1571516199965" duration="610000" />
-    </task>
-    <task id="LOCAL-00014" summary="Grouping async tests to avoid deadlocks.">
-      <created>1501292450234</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1501292450234</updated>
+      <workItem from="1571516199965" duration="998000" />
     </task>
     <task id="LOCAL-00015" summary="Grouping async tests to avoid deadlocks.">
       <created>1501294264854</created>
@@ -1043,7 +1045,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571516787835</updated>
     </task>
-    <option name="localTasksCounter" value="63" />
+    <task id="LOCAL-00063" summary="fix sql server connection.">
+      <created>1571517281662</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1571517281662</updated>
+    </task>
+    <option name="localTasksCounter" value="64" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
