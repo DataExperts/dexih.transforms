@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -696,14 +695,7 @@
       <workItem from="1571290412518" duration="161000" />
       <workItem from="1571294547323" duration="720000" />
       <workItem from="1571388063156" duration="73000" />
-      <workItem from="1571467402818" duration="1017000" />
-    </task>
-    <task id="LOCAL-00012" summary="Fixing deadlocking issues with tests">
-      <created>1501216245997</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1501216245997</updated>
+      <workItem from="1571467402818" duration="1513000" />
     </task>
     <task id="LOCAL-00013" summary="Grouping async tests to avoid deadlocks.">
       <created>1501292006075</created>
@@ -1041,7 +1033,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571467817447</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="fixed azure azure geometry">
+      <created>1571468508269</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1571468508269</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1108,7 +1107,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="true" />
-    <MESSAGE value="fix excel issue with boolean" />
     <MESSAGE value="fix issue with postgres numeric conversion" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="fixing tests." />
@@ -1133,7 +1131,8 @@
     <MESSAGE value="fixed reference in functions.math" />
     <MESSAGE value="fixed tests for 3.0.0" />
     <MESSAGE value="fixed azure getlastkey" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed azure getlastkey" />
+    <MESSAGE value="fixed azure azure geometry" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed azure azure geometry" />
   </component>
   <component name="WindowStateProjectService">
     <state width="1153" height="436" key="DebuggerActiveHint" />
