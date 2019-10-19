@@ -46,9 +46,6 @@
     </PackageReference>
     <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.16" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\dexih.utils.datatype\src\Dexih.Utils.DataType\Dexih.Utils.DataType.csproj" />
-  </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>
   </PropertyGroup>

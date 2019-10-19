@@ -859,6 +859,10 @@ namespace dexih.connections.azure
                 case ETypeCode.Binary:
                     return new EntityProperty((byte[])value);
                 case ETypeCode.Geometry:
+                    if(value == null)
+                    {
+                        return new EntityProperty((byte[])null);
+                    }
                     return new EntityProperty(((Geometry)value).AsBinary());
                 default:
                     throw new Exception("Cannot create new azure entity as the data type: " + typeCode.ToString() + " is not supported.");
@@ -978,7 +982,7 @@ namespace dexih.connections.azure
 
                     if (dbAutoIncrement != null)
                     {
-                        identityValue = keyValue++;
+                        identityValue = ++keyValue;
                         properties.Add(dbAutoIncrement.Name, NewEntityProperty(table.Columns[dbAutoIncrement], identityValue));
                     }
 
