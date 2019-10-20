@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connectionsl.sql.oracle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -337,7 +334,6 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoMapper.cs" />
@@ -387,6 +383,7 @@
         <option value="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" />
       </list>
     </option>
   </component>
@@ -703,14 +700,7 @@
       <workItem from="1571484875908" duration="150000" />
       <workItem from="1571516199965" duration="3215000" />
       <workItem from="1571530060549" duration="98000" />
-      <workItem from="1571530273718" duration="960000" />
-    </task>
-    <task id="LOCAL-00016" summary="Grouping async tests to avoid deadlocks.">
-      <created>1501295558317</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1501295558317</updated>
+      <workItem from="1571530273718" duration="1649000" />
     </task>
     <task id="LOCAL-00017" summary="Grouping async tests to avoid deadlocks.">
       <created>1501561936639</created>
@@ -1048,7 +1038,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571517672982</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="fixed oracle and mongo tests">
+      <created>1571531310404</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1571531310405</updated>
+    </task>
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1115,7 +1112,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="true" />
-    <MESSAGE value="refactoring" />
     <MESSAGE value="fixing tests." />
     <MESSAGE value="multiple refactors, modified standard encrypt functions." />
     <MESSAGE value="MAJOR REBUILD OF TRANSFORMATION FUNCITON LOGIC" />
@@ -1140,7 +1136,8 @@
     <MESSAGE value="fixed azure getlastkey" />
     <MESSAGE value="fixed azure azure geometry" />
     <MESSAGE value="fix sql server connection." />
-    <option name="LAST_COMMIT_MESSAGE" value="fix sql server connection." />
+    <MESSAGE value="fixed oracle and mongo tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed oracle and mongo tests" />
   </component>
   <component name="WindowStateProjectService">
     <state width="1153" height="436" key="DebuggerActiveHint" />

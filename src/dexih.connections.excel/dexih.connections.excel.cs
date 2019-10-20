@@ -65,7 +65,7 @@ namespace dexih.connections.excel
 		    switch (typeCode)
 		    {
 			    case ETypeCode.DateTime:
-				    return new DateTime(9999,12,31,23,59,59,999); 
+				    return new DateTime(9999,12,31,23,59,59); 
 			    case ETypeCode.UInt64:
 				    return (ulong)999999999999999; 
 			    case ETypeCode.Int64:
@@ -88,6 +88,9 @@ namespace dexih.connections.excel
 				    return (long)-999999999999999; 
 			    case ETypeCode.Decimal:
 				    return (decimal)-999999999999999; 
+			    case ETypeCode.String:
+			    case ETypeCode.Text:
+				    return null;
 			    default:
 				    return GetDataTypeMinValue(typeCode, length);
 		    }
