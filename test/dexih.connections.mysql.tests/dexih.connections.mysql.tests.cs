@@ -36,7 +36,7 @@ namespace dexih.connections.sql
         {
             string database = "Test-" + Guid.NewGuid().ToString();
             ConnectionMySql connection = GetConnection();
-            await new UnitTests().Unit(connection, database);
+            await new UnitTests(_output).Unit(connection, database);
         }
 
         [Fact]

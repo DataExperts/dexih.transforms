@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CsvHelper.Configuration;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;
@@ -152,8 +153,10 @@ namespace dexih.connections.sql
 
                             for (var i = 0; i < columns.Count(); i++)
                             {
-                                var param = cmd.CreateParameter();
-                                param.ParameterName = $"{SqlParameterIdentifier}col{i}";
+                                var param = CreateParameter(cmd, $"{SqlParameterIdentifier}col{i}", columns[i].DataType,
+                                    columns[i].Rank, ParameterDirection.Input, null);
+//                                var param = cmd.CreateParameter();
+//                                param.ParameterName = $"{SqlParameterIdentifier}col{i}";
                                 cmd.Parameters.Add(param);
                                 parameters[i] = param;
                             }
@@ -163,7 +166,11 @@ namespace dexih.connections.sql
                             {
                                 for (var i = 0; i < columns.Count(); i++)
                                 {
-                                    parameters[i].Value = reader[ordinals[i]];
+                                    var column = columns[i];
+                                    var converted = ConvertForWrite(column.Name, column.DataType, column.Rank, true, reader[ordinals[i]]);
+                                    parameters[i].Value = converted.value;
+
+                                    // parameters[i].Value = reader[ordinals[i]];
                                 }
 
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
@@ -697,7 +704,7 @@ namespace dexih.connections.sql
                     if (deltaColumn != null)
                     {
                         var autoIncrementSql =
-                            $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
+                            $" select max({AddDelimiter(deltaColumn.Name)}) from {SqlTableName(table)}";
                         using (var cmd = transaction.connection.CreateCommand())
                         {
                             cmd.CommandText = autoIncrementSql;
@@ -995,7 +1002,7 @@ namespace dexih.connections.sql
                     for (var i = 0; i < reader.FieldCount; i++)
                     {
                         // use the type of the value (which is better for arrays) unless it's null, then use the GetFieldType.
-                        var type = !readerOpen || reader[i] is null ? reader.GetFieldType(i) : reader[i].GetType();
+                        var type = !readerOpen || reader.IsDBNull(i) ? reader.GetFieldType(i) : reader[i].GetType();
                         var col = new TableColumn
                         {
                             Name = reader.GetName(i),

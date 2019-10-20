@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using dexih.connections.db2;
+using dexih.transforms;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,7 +35,7 @@ namespace dexih.connections.sql
         {
             string database = "Test-" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
-            await new UnitTests().Unit(connection, database);
+            await new UnitTests(_output).Unit(connection, database);
         }
 
         [Fact]
@@ -67,6 +68,32 @@ namespace dexih.connections.sql
             var connection = GetConnection();
 
             await new SqlReaderTests(_output).Unit(connection, database);
+        }
+        
+        [Theory]
+        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
+        [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
+        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, true)]
+        [InlineData(true, TransformDelta.EUpdateStrategy.Reload, true)]
+        public async Task ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new TransformWriterTargetTests(_output).ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
+        }
+
+        [Theory]
+        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
+        [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
+        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, true)]
+        [InlineData(true, TransformDelta.EUpdateStrategy.Reload, true)]
+        public async Task ParentChild_Write_Large(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        {
+            var database = "Test-" + Guid.NewGuid().ToString();
+            var connection = GetConnection();
+
+            await new TransformWriterTargetTests(_output).ParentChild_Write_Large(connection, 1000, database, useDbAutoIncrement, updateStrategy, useTransaction);
         }
     }
 }

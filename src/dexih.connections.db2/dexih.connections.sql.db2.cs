@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Data;
 using dexih.functions;
 using System.Data.Common;
+using System.Linq;
 using System.Threading;
 using dexih.connections.sql;
 using static Dexih.Utils.DataType.DataType;
@@ -39,9 +40,66 @@ namespace dexih.connections.db2
         public override bool CanUseBoolean => false;
         public override bool CanUseDbAutoIncrement => true;
         public override bool CanUseArray => false;
-        
+
+        public override bool CanUseSByte => false;
+        public override bool CanUseByte => false;
+
         // this is creator for linux/ owner for zos (stupid IBM!!!!)
         protected virtual string OwnerColumn => "creator"; //owner
+        
+        public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.UInt64:
+                    return (ulong)long.MaxValue;
+                case ETypeCode.DateTime:
+                    return new DateTime(9999,12,31,23,59,59); 
+                case ETypeCode.Time:
+                    return new TimeSpan(23, 59, 59); 
+                default:
+                    return DataType.GetDataTypeMaxValue(typeCode, length);
+            }
+        }
+        
+//        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
+//        {
+//            switch (typeCode)
+//            {
+//                default:
+//                    return DataType.GetDataTypeMinValue(typeCode, length);
+//            }
+//        }
+        
+        public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                using (var connection = await NewConnection())
+                {
+
+                    var bulkCopy = new DB2BulkCopy((DB2Connection) connection)
+                    {
+                        DestinationTableName = SqlTableName(table),
+                        BulkCopyTimeout = 60,
+                    };
+
+                    //Add column mapping to ensure unsupported columns (i.e. location datatype) are ignored.
+                    foreach(var column in table.Columns.Where(c => c.DeltaType != EDeltaType.DbAutoIncrement))
+                    {
+                        bulkCopy.ColumnMappings.Add(column.Name, column.Name);
+                    }
+                    
+                    bulkCopy.WriteToServer(reader);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Bulk insert into table {table.Name} failed. {ex.Message}", ex);
+            }
+        }
         
         public override async Task<bool> TableExists(Table table, CancellationToken cancellationToken = default)
         {
@@ -64,6 +122,16 @@ namespace dexih.connections.db2
             {
                 throw new ConnectionException($"Table exists for table {table.Name} failed. {ex.Message}", ex);
             }
+        }
+        
+        public override string SqlTableName(Table table)
+        {
+            if (!string.IsNullOrEmpty(table.Schema))
+            {
+                return AddDelimiter(DefaultDatabase) + "." + AddDelimiter(table.Schema) + "." + AddDelimiter(table.Name);
+            }
+
+            return AddDelimiter(DefaultDatabase) + "." + AddDelimiter(table.Name);
         }
 
         /// <summary>
@@ -91,7 +159,7 @@ namespace dexih.connections.db2
                 var createSql = new StringBuilder();
 
                 //Create the table
-                createSql.Append($"create table {AddDelimiter(DefaultDatabase)}.{AddDelimiter(table.Name)} ");
+                createSql.Append($"create table {SqlTableName(table)} ");
 
                 //sqlite does not support table/column comments, so add a comment string into the ddl.
                 if (!string.IsNullOrEmpty(table.Description))
@@ -155,6 +223,12 @@ namespace dexih.connections.db2
 
         protected override string GetSqlType(TableColumn column)
         {
+
+            if (column.Rank > 0)
+            {
+                return "clob";
+            }
+            
             string sqlType;
 
             switch (column.DataType)
@@ -174,7 +248,7 @@ namespace dexih.connections.db2
                     break;
                 case ETypeCode.String:
                     if (column.MaxLength == null)
-                        sqlType = "clob";
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(4000)";
                     else
                         sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
@@ -215,10 +289,13 @@ namespace dexih.connections.db2
                     sqlType = "blob";
                     break;
                 case ETypeCode.Enum:
-                    sqlType = "clob";
+                    sqlType = "integer";
                     break;
                 case ETypeCode.CharArray:
                     sqlType = $"char({column.MaxLength})";
+                    break;
+                case ETypeCode.Geometry:
+                    sqlType = "blob";
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
@@ -489,7 +566,27 @@ namespace dexih.connections.db2
             }
             return ETypeCode.Unknown;
         }
+        
+        public override DbParameter CreateParameter(DbCommand command, string name, ETypeCode typeCode, int rank, ParameterDirection direction, object value)
+        {
+            var param = (DB2Parameter) command.CreateParameter();
+            param.ParameterName = name;
+            param.Direction = direction;
+            var writeValue = ConvertForWrite(param.ParameterName, typeCode, rank, true, value);
+            param.Value = writeValue.value;
 
+            switch (writeValue.typeCode)
+            {
+                case ETypeCode.Decimal:
+                    param.DB2Type = DB2Type.Decimal;
+                    break;
+                default:
+                    param.DbType = GetDbType(writeValue.typeCode);
+                    break;
+            }
+            
+            return param;
+        }
     }
 
 }

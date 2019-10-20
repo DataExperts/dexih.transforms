@@ -35,7 +35,7 @@ namespace dexih.connections.sql
         {
             string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
             var connection = GetConnection();
-            await new UnitTests().Unit(connection, database);
+            await new UnitTests(_output).Unit(connection, database);
         }
 
         [Fact]

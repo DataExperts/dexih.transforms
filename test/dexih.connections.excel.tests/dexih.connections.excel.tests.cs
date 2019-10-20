@@ -41,7 +41,7 @@ namespace dexih.connections.excel
         public async Task Excel_Basic()
         {
             var database = "Test-" + Guid.NewGuid().ToString();
-            await new UnitTests().Unit(GetLocalConnection(), database);
+            await new UnitTests(_output).Unit(GetLocalConnection(), database);
         }
         
         [Fact]

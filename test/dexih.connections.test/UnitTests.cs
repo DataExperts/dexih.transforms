@@ -8,17 +8,26 @@ using System.Threading.Tasks;
 using Xunit;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
+using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;
 
 namespace dexih.connections.test
 {
     public class UnitTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public UnitTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
 
         public async Task Unit(Connection connection, string databaseName)
         {
             await connection.CreateDatabase(databaseName, CancellationToken.None);
 
+            _output.WriteLine("Using database: " + databaseName);
+            
             var newTable = DataSets.CreateTable(connection.CanUseDbAutoIncrement);
             var table = await connection.InitializeTable(newTable, 1000);
 

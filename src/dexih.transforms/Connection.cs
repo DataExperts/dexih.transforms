@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
@@ -129,6 +130,8 @@ namespace dexih.transforms
         /// The connection can natively accept a signed byte.
         /// </summary>
         public virtual bool CanUseSByte { get; } = true;
+
+        public virtual bool CanUseByte { get; } = true;
 
         public abstract bool CanUseSql { get; }
 
@@ -606,6 +609,80 @@ namespace dexih.transforms
             return ConvertForWrite(column.Name, column.DataType, column.Rank, column.AllowDbNull, value);
         }
 
+        public ETypeCode ConvertTypeCodeForWrite(ETypeCode typeCode, int rank)
+        {
+              if (rank > 0 && !CanUseArray)
+            {
+                if (CanUseJson)
+                {
+                    return ETypeCode.Json;
+                }
+                return ETypeCode.String;
+            }
+            
+            switch (typeCode)
+            {
+                case ETypeCode.Binary:
+                    if (!CanUseBinary)
+                        return ETypeCode.String;
+                    goto default;
+                case ETypeCode.Geometry:
+                    if (CanUseBinary)
+                        return ETypeCode.Binary;
+                    return ETypeCode.String;
+                case ETypeCode.Boolean:
+                    if (!CanUseBoolean)
+                        return ETypeCode.Int32;
+                    goto default;
+                case ETypeCode.Json:
+                    if(!CanUseJson) 
+                        return ETypeCode.String;
+                    goto default;
+                case ETypeCode.Xml:
+                    if(!CanUseXml)
+                        return ETypeCode.String;
+                    goto default;
+                case ETypeCode.CharArray:
+                    if(!CanUseCharArray)
+                        return ETypeCode.String;
+                    goto default;
+                case ETypeCode.Guid:
+                    if(!CanUseGuid)
+                        return ETypeCode.String;
+                    goto default;
+                case ETypeCode.UInt16:
+                    if (!CanUseUnsigned) 
+                        return ETypeCode.Int32;
+                    goto default;
+                case ETypeCode.UInt32:
+                    if (!CanUseUnsigned) 
+                        return ETypeCode.Int64;
+                    goto default;
+                case ETypeCode.UInt64:
+                    if (!CanUseUnsigned) 
+                        return ETypeCode.Int64;
+                    goto default;
+                case ETypeCode.SByte:
+                    if (!CanUseSByte)
+                        return ETypeCode.Int16;
+                    goto default;
+                case ETypeCode.Byte:
+                    if (!CanUseByte)                         
+                        return ETypeCode.Int16;
+                    goto default;
+                case ETypeCode.Time:
+                    if (!CanUseTimeSpan) 
+                        return ETypeCode.String;
+                    goto default;
+                case ETypeCode.Node:
+                        if (CanUseJson)
+                            return ETypeCode.Json;
+                        return ETypeCode.String;
+                default:
+                    return typeCode;
+            }
+        }
+
         /// <summary>
         /// Converts a value to a datatype that can be written to the data source.
         /// This includes transforming json/xml/arrays into strings where necessary.
@@ -618,21 +695,23 @@ namespace dexih.transforms
         /// <returns></returns>
         public (ETypeCode typeCode, object value) ConvertForWrite(string name, ETypeCode typeCode, int rank, bool allowDbNull, object value)
         {
+            if (value is EncryptedObject encryptedObject)
+            {
+                return (ETypeCode.String, encryptedObject.EncryptedValue);
+            }
+
+
             if (value == null || value == DBNull.Value)
             {
+                var newTypeCode = ConvertTypeCodeForWrite(typeCode, rank);
                 if (allowDbNull)
                 {
-                    return (typeCode, DBNull.Value);
+                    return (newTypeCode, DBNull.Value);
                 }
                 else
                 {
                     throw new ConnectionException($"The {name} item has a value null which could not be inserted as the column does not allow nulls.");
                 }
-            }
-
-            if (value is EncryptedObject encryptedObject)
-            {
-                return (ETypeCode.String, encryptedObject.EncryptedValue);
             }
 
             if (rank > 0 && !CanUseArray)
@@ -693,6 +772,9 @@ namespace dexih.transforms
                 case ETypeCode.SByte:
                     if (!CanUseSByte) return (ETypeCode.Int16, Operations.Parse<short>(value));
                     goto default;
+                case ETypeCode.Byte:
+                    if (!CanUseByte) return (ETypeCode.Int16, Operations.Parse<short>(value));
+                    goto default;
                 case ETypeCode.Time:
                     if (!CanUseTimeSpan) return (ETypeCode.String, Operations.Parse<string>(value));
                     goto default;
@@ -747,6 +829,8 @@ namespace dexih.transforms
                 (column.DataType == ETypeCode.Json && !CanUseJson) ||
                 (column.DataType == ETypeCode.Xml && !CanUseXml) ||
                 (column.DataType == ETypeCode.Boolean && !CanUseBoolean) ||
+                (column.DataType == ETypeCode.SByte && !CanUseSByte) ||
+                (column.DataType == ETypeCode.Byte && !CanUseByte) ||
                 column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
             {
                 return Operations.Parse(column.DataType, column.Rank, reader[ordinal]);

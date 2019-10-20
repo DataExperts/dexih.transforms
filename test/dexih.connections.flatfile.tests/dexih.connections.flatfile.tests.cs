@@ -2,11 +2,19 @@
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.flatfile
 {
     public class ConnectionLocalFlatFileTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionLocalFlatFileTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionFlatFileLocal GetLocalConnection()
         {
             var ServerName = Convert.ToString(Configuration.AppSettings["FlatFileLocal:ServerName"]);
@@ -26,7 +34,7 @@ namespace dexih.connections.flatfile
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            await new UnitTests().Unit(GetLocalConnection(), database);
+            await new UnitTests(_output).Unit(GetLocalConnection(), database);
         }
     }
 }

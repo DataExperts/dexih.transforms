@@ -2,11 +2,19 @@
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.sftp
 {
     public class ConnectionSftpFlatFileTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionSftpFlatFileTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionFlatFileSftp GetConnection()
         {
             var serverName = Convert.ToString(Configuration.AppSettings["FlatFileSftp:ServerName"]);
@@ -30,7 +38,7 @@ namespace dexih.connections.sftp
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 
-            await new UnitTests().Unit(GetConnection(), database);
+            await new UnitTests(_output).Unit(GetConnection(), database);
         }
     }
 }

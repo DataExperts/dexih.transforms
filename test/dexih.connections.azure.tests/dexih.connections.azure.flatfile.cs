@@ -2,11 +2,19 @@
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace dexih.connections.azure.tests
 {
     public class ConnectionAzureFlatFileTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public ConnectionAzureFlatFileTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+        
         public ConnectionFlatFileAzureFile GetAzureConnection()
         {
             var ConnectionString = Convert.ToString(Configuration.AppSettings["FlatFileAzure:ConnectionString"]);
@@ -37,7 +45,7 @@ namespace dexih.connections.azure.tests
 
             Assert.NotNull(con);
 
-            await new UnitTests().Unit(con, database);
+            await new UnitTests(_output).Unit(con, database);
         }
 
     }

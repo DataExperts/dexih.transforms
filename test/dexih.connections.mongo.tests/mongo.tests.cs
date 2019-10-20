@@ -32,7 +32,7 @@ namespace dexih.connections.mongo.tests
         public async Task Mongo_Basic()
         {
             var database = "Test-" + Guid.NewGuid().ToString();
-            await new UnitTests().Unit(GetConnection(), database);
+            await new UnitTests(_output).Unit(GetConnection(), database);
         }
 
         [Fact]
