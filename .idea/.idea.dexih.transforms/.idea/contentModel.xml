@@ -345,7 +345,7 @@
         <e p="dexih.connections.oracle" t="IncludeRecursive">
           <e p="bin" t="ExcludeRecursive" />
           <e p="dexih.connections.oracle.csproj" t="IncludeRecursive" />
-          <e p="dexih.connectionsl.sql.oracle.cs" t="Include" />
+          <e p="dexih.connections.sql.oracle.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netcoreapp2.1" t="Include">

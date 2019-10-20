@@ -75,6 +75,9 @@ namespace dexih.connections.oracle
                     return (double)-1000000000000000F;
                 case ETypeCode.Single:
                     return -1E20F;
+                case ETypeCode.String:
+                case ETypeCode.Text:
+                    return null;
                 default:
                     return DataType.GetDataTypeMinValue(typeCode, length);
             }
@@ -240,6 +243,9 @@ namespace dexih.connections.oracle
                     break;
                 case ETypeCode.Decimal:
                     sqlType = $"NUMBER ({column.Precision??28}, {column.Scale??0})";
+                    break;
+                case ETypeCode.Geometry:
+                    sqlType = "BLOB";
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
@@ -950,69 +956,75 @@ ORDER BY cols.table_name, cols.position"))
             }        
         }
         
-//        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, CancellationToken cancellationToken = default)
+//        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
 //        {
 //            try
 //            {
-//                using (var connection = (OracleConnection) await NewConnection())
+//                var sql = new StringBuilder();
+//
+//                var rows = 0;
+//
+//                var transactionConnection = await GetTransaction(transactionReference);
+//                var connection = (OracleConnection) transactionConnection.connection;
+//                var transaction = (OracleTransaction) transactionConnection.transaction;
+//
+//                try
 //                {
-//
-//                    var sql = new StringBuilder();
-//
-//                    var rows = 0;
-//
-//                    using (var transaction = connection.BeginTransaction())
+//                    foreach (var query in queries)
 //                    {
-//                        foreach (var query in queries)
+//                        sql.Clear();
+//
+//                        sql.Append("update " + SqlTableName(table) + " set ");
+//
+//                        var count = 0;
+//                        foreach (var column in query.UpdateColumns)
 //                        {
-//                            sql.Clear();
+//                            sql.Append(AddDelimiter(column.Column.Name) + " = :col" + count + ",");
+//                            count++;
+//                        }
 //
-//                            sql.Append("update " + SqlTableName(table) + " set ");
+//                        sql.Remove(sql.Length - 1, 1); //remove last comma
 //
-//                            var count = 0;
-//                            foreach (var column in query.UpdateColumns)
+//                        //  Retrieving schema for columns from a single table
+//                        using (var cmd = connection.CreateCommand())
+//                        {
+//                            sql.Append(" " + BuildFiltersString(query.Filters, cmd));
+//
+//                            cmd.Transaction = transaction;
+//                            cmd.CommandText = sql.ToString();
+//
+//                            var parameters = new DbParameter[query.UpdateColumns.Count];
+//                            for (var i = 0; i < query.UpdateColumns.Count; i++)
 //                            {
-//                                sql.Append(AddDelimiter(column.Column.Name) + " = :col" + count + ",");
-//                                count++;
+//                                var param = cmd.CreateParameter();
+//                                param.ParameterName = ":col" + i;
+//                                var convert = ConvertForWrite(query.UpdateColumns[i].Column,
+//                                    query.UpdateColumns[i].Value);
+//                                param.OracleDbType = GetSqlDbType(convert.typeCode);
+//                                param.Value = convert.value;
+//                                cmd.Parameters.Add(param);
+//                                parameters[i] = param;
 //                            }
-//                            sql.Remove(sql.Length - 1, 1); //remove last comma
 //
-//                            //  Retrieving schema for columns from a single table
-//                            using (var cmd = connection.CreateCommand())
+//                            cancellationToken.ThrowIfCancellationRequested();
+//
+//                            try
 //                            {
-//                                sql.Append(" " + BuildFiltersString(query.Filters, cmd));
-//
-//                                cmd.Transaction = transaction;
-//                                cmd.CommandText = sql.ToString();
-//
-//                                var parameters = new DbParameter[query.UpdateColumns.Count];
-//                                for (var i = 0; i < query.UpdateColumns.Count; i++)
-//                                {
-//                                    var param = cmd.CreateParameter();
-//                                    param.ParameterName = ":col" + i;
-//                                    param.OracleDbType = GetSqlDbType(query.UpdateColumns[i].Column.DataType, query.UpdateColumns[i].Column.Rank);
-//                                    param.Value = ConvertForWrite(query.UpdateColumns[i].Column, query.UpdateColumns[i].Value);
-//                                    
-//                                    cmd.Parameters.Add(param);
-//                                    parameters[i] = param;
-//                                }
-//
-//                                cancellationToken.ThrowIfCancellationRequested();
-//
-//                                try
-//                                {
-//                                    rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
-//                                }
-//                                catch (Exception ex)
-//                                {
-//                                    throw new ConnectionException($"The update query failed. {ex.Message}", ex);
-//                                }
+//                                rows += await cmd.ExecuteNonQueryAsync(cancellationToken);
+//                            }
+//                            catch (Exception ex)
+//                            {
+//                                throw new ConnectionException($"The update query failed. {ex.Message}", ex);
 //                            }
 //                        }
-//                        transaction.Commit();
 //                    }
 //                }
+//                finally
+//                {
+//                    EndTransaction(transactionReference, transactionConnection);
+//                }
 //            }
+//
 //            catch (Exception ex)
 //            {
 //                throw new ConnectionException($"Update table {table.Name} failed.  {ex.Message}", ex);

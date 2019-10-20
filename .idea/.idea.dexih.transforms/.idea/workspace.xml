@@ -2,17 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.azure.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.azure.tests/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.excel.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.excel.tests/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connectionsl.sql.oracle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -287,7 +281,7 @@
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/SentimentAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RegressionPredictor.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connectionsl.sql.oracle.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicList.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicTypeProperty.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Enums.cs" root0="FORCE_HIGHLIGHTING" />
@@ -342,12 +336,10 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connectionsl.sql.oracle.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoMapper.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" />
@@ -365,7 +357,6 @@
         <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformValidationTests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.mongo.tests/Program.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Enums.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" />
@@ -377,8 +368,6 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" />
         <option value="$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/Operations.cs" />
         <option value="$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/DataType.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" />
@@ -393,6 +382,11 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connectionsl.sql.oracle.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
       </list>
     </option>
   </component>
@@ -707,14 +701,9 @@
       <workItem from="1571388063156" duration="73000" />
       <workItem from="1571467402818" duration="1513000" />
       <workItem from="1571484875908" duration="150000" />
-      <workItem from="1571516199965" duration="998000" />
-    </task>
-    <task id="LOCAL-00015" summary="Grouping async tests to avoid deadlocks.">
-      <created>1501294264854</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1501294264854</updated>
+      <workItem from="1571516199965" duration="3215000" />
+      <workItem from="1571530060549" duration="98000" />
+      <workItem from="1571530273718" duration="960000" />
     </task>
     <task id="LOCAL-00016" summary="Grouping async tests to avoid deadlocks.">
       <created>1501295558317</created>
@@ -1052,7 +1041,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571517281662</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <task id="LOCAL-00064" summary="fix sql server connection.">
+      <created>1571517672982</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1571517672982</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1227,19 +1223,6 @@
           <option name="timeStamp" value="1320" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/src/dexih.transforms/Connection.cs</url>
-          <line>774</line>
-          <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" initialLine="764">
-            <startOffsets>
-              <option value="33900" />
-            </startOffsets>
-            <endOffsets>
-              <option value="33932" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="1326" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs</url>
           <line>433</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" initialLine="432">
@@ -1277,6 +1260,19 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="1347" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/src/dexih.transforms/Connection.cs</url>
+          <line>789</line>
+          <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" initialLine="788">
+            <startOffsets>
+              <option value="34529" />
+            </startOffsets>
+            <endOffsets>
+              <option value="34563" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1348" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

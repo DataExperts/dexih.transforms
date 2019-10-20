@@ -435,7 +435,15 @@ namespace dexih.connections.mongo
             }
             else
             {
-                client = new MongoClient($"mongodb://{Username}:{Password}@{Server}");
+                if (string.IsNullOrEmpty(Username))
+                {
+                    client = new MongoClient($"mongodb://{Server}");
+                }
+                else
+                {
+                    client = new MongoClient($"mongodb://{Username}:{Password}@{Server}");    
+                }
+                
             }
 
             // Create the table client.

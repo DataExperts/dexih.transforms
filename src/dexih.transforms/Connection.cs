@@ -662,11 +662,11 @@ namespace dexih.transforms
                     {
                         if (value is bool b)
                         {
-                            return (ETypeCode.Boolean,  b ? 1 : 0);
+                            return (ETypeCode.Int32,  b ? 1 : 0);
                         }
 
                         var b1 = Operations.Parse<bool>(value);
-                        return (ETypeCode.Boolean, b1 ? 1 : 0);
+                        return (ETypeCode.Int32, b1 ? 1 : 0);
                     }
                     goto default;
                 case ETypeCode.Json:
@@ -746,6 +746,7 @@ namespace dexih.transforms
                 (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
                 (column.DataType == ETypeCode.Json && !CanUseJson) ||
                 (column.DataType == ETypeCode.Xml && !CanUseXml) ||
+                (column.DataType == ETypeCode.Boolean && !CanUseBoolean) ||
                 column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
             {
                 return Operations.Parse(column.DataType, column.Rank, reader[ordinal]);
