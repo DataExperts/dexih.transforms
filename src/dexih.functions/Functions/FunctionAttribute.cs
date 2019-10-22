@@ -58,6 +58,14 @@ namespace dexih.functions
 
     }
 
+    /// <summary>
+    /// Indicates field is password, and can be passed encrypted parameters.
+    /// </summary>
+    public class TransformFunctionPassword : Attribute
+    {
+        
+    }
+
     
     /// <summary>
     /// Identifies an array parameters which are logically linked.

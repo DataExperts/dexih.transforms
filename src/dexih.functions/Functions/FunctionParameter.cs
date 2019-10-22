@@ -45,5 +45,8 @@ namespace dexih.functions
         [Key(12)]
         public string DefaultValue { get; set; }
         
+        [Key(13)]
+        public bool IsPassword { get; set; }
+        
     }
 }

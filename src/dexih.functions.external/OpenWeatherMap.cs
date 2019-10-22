@@ -134,7 +134,7 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Name",
             Description = "Gets the weather based on a city name.")]
         public Task<WeatherDetails> WeatherByCityName(
-            [TransformFunctionParameter(Description = apiKey)] string key, 
+            [TransformFunctionParameter(Description = apiKey), TransformFunctionPassword] string key, 
             string cityName,
             TemperatureScale temperatureScale, 
             [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
@@ -146,7 +146,7 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Id",
             Description = "Gets the weather based on a city id.  Use the row function \"Weather Cities List\" for a list of cities.")]
         public Task<WeatherDetails> WeatherByCityId(
-            [TransformFunctionParameter(Description = apiKey)] string key, 
+            [TransformFunctionParameter(Description = apiKey), TransformFunctionPassword] string key, 
             int cityId,
             TemperatureScale temperatureScale, 
             [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
@@ -158,7 +158,7 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By Geo Coordinates",
             Description = "Gets the weather based on a longitude and latitude.")]
         public Task<WeatherDetails> WeatherByCoordinates(
-            [TransformFunctionParameter(Description = apiKey)] string key, 
+            [TransformFunctionParameter(Description = apiKey), TransformFunctionPassword] string key, 
             double latitude, 
             double longitude,
             TemperatureScale temperatureScale, 
@@ -171,7 +171,7 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By Zip Code",
             Description = "Gets the weather based on a zip code.  Note if country is not specified when USA will be default.")]
         public Task<WeatherDetails> WeatherByZipCode(
-            [TransformFunctionParameter(Description = apiKey)] string key, 
+            [TransformFunctionParameter(Description = apiKey), TransformFunctionPassword] string key, 
             string zipCode, 
             string country,
             TemperatureScale temperatureScale,
@@ -212,8 +212,21 @@ namespace dexih.functions.external
 
             if (!isSuccess)
             {
-                throw new FunctionException(
-                    $"Could not receive weather data due to failure to connect to url ({url}).  The response status was {statusCode}.");
+                try
+                {
+                    var errorResponse = await JsonDocument.ParseAsync(response, cancellationToken: cancellationToken);
+                    var message = errorResponse.RootElement.GetProperty("message").ToString();
+                    throw new FunctionException("Could not receive weather data: " + message);
+                }
+                catch (FunctionException)
+                {
+                    throw;
+                }
+                catch
+                {
+                    throw new FunctionException(
+                        $"Could not receive weather data due to failure to connect to url ({url}).  The response status was {statusCode}.");
+                }
             }
 
             var weatherDetails = new WeatherDetails();

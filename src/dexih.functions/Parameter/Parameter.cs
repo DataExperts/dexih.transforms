@@ -83,7 +83,7 @@ namespace dexih.functions.Parameter
         /// <param name="input"></param>
         public void SetValue(object input)
         {
-            if (DataType == ETypeCode.Unknown || input == null || Equals(input, ""))
+            if (DataType == ETypeCode.Unknown || DataType == ETypeCode.Enum || input == null || Equals(input, ""))
             {
                 Value = input;
             }

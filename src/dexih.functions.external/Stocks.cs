@@ -129,7 +129,7 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Stocks", Name = "Latest Stock Information",
             Description ="Gets the latest time interval data for the specified stock.")]
         public async Task<StockEntity> LatestStockInfo(
-            [TransformFunctionParameter(Description = KeyDescription)] string key, 
+            [TransformFunctionParameter(Description = KeyDescription), TransformFunctionPassword] string key, 
             string symbol,
             [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval = "1min",
             CancellationToken cancellationToken = default)
@@ -149,7 +149,7 @@ namespace dexih.functions.external
             Description =
                 "Gets the latest stock history time interval data for the specified stock.")]
         public Task<List<StockEntity>> LatestStockHistory(
-            [TransformFunctionParameter(Description = KeyDescription)] string key, 
+            [TransformFunctionParameter(Description = KeyDescription), TransformFunctionPassword] string key, 
             string symbol,
             int maxCount = 1,
             [TransformFunctionParameter(Name = "Interval", Description = "Interval between quotes", ListOfValues = new[] {"1min", "5min", "15min", "30min", "60min"} )] string interval = "15min",

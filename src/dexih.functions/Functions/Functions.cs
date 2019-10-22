@@ -230,6 +230,7 @@ namespace dexih.functions
                         IsLabel = property.GetCustomAttribute<TransformParameterLabelAttribute>() != null,
                         ListOfValues = propertyAttribute?.ListOfValues ?? EnumValues(property.PropertyType),
                         DefaultValue = null,
+                        IsPassword = property.GetCustomAttribute<TransformFunctionPassword>() != null,
                     });
                 }
             }
@@ -284,6 +285,7 @@ namespace dexih.functions
                 IsLabel = parameterInfo.GetCustomAttribute<TransformParameterLabelAttribute>() != null,
                 ListOfValues = parameterAttribute?.ListOfValues ?? EnumValues(paramType),
                 DefaultValue = DefaultValue(parameterInfo)?.ToString(),
+                IsPassword = parameterInfo.GetCustomAttribute<TransformFunctionPassword>() != null,
             };
         }
 
