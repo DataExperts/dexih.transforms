@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -45,11 +46,18 @@ namespace dexih.transforms
         {
             if (_isFirst)
             {
-                var value = _func.Invoke();
-                var json = value.Serialize();
-                _streamWriter.Write(json);
-                _memoryStream.Position = 0;
-                _isFirst = false;
+                try
+                {
+                    var value = _func.Invoke();
+                    var json = value.Serialize();
+                    _streamWriter.Write(json);
+                    _memoryStream.Position = 0;
+                    _isFirst = false;
+                }
+                catch (TargetInvocationException ex)
+                {
+                    throw ex.InnerException;
+                }
             }
 
             var readCount = _memoryStream.Read(buffer, offset, count);

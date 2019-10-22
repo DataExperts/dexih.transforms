@@ -59,13 +59,13 @@ namespace dexih.functions.external
             if (response.isSuccess)
             {
                 var reader = new StreamReader(response.response);
-                var jsonString = await reader.ReadToEndAsync();
+                // var jsonString = await reader.ReadToEndAsync();
             
                 JsonDocument jsonDocument;
 
                 try
                 {
-                    jsonDocument = jsonString.ToJsonDocument();
+                    jsonDocument = await JsonDocument.ParseAsync(response.response, cancellationToken: cancellationToken);
                     if (jsonDocument == null)
                     {
                         throw new FileHandlerException("The json data parsing returned nothing.");
