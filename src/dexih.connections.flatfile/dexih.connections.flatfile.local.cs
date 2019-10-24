@@ -285,7 +285,7 @@ namespace dexih.connections.flatfile
 	                var newFile = new FileStream(filePath, FileMode.Create, FileAccess.Write);
 	                //stream.Seek(0, SeekOrigin.Begin);
 	                await stream.CopyToAsync(newFile);
-	                await stream.FlushAsync();
+	                stream.Close();
 	                newFile.Dispose();
 
 	                return true;

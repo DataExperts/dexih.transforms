@@ -330,7 +330,7 @@ namespace dexih.connections.sftp
                 {
                     var newFile = client.OpenWrite(filePath);
                     await stream.CopyToAsync(newFile);
-                    await stream.FlushAsync();
+                    stream.Close();
                     return true;
                 }
             }

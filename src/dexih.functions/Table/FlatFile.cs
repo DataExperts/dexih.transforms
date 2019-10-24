@@ -101,6 +101,7 @@ namespace dexih.functions
 		        LogicalName = LogicalName,
 		        AutoManageFiles = AutoManageFiles,
 		        UseCustomFilePaths = UseCustomFilePaths,
+		        FileRootPath = FileRootPath,
 		        FileIncomingPath = FileIncomingPath,
 		        FileOutgoingPath = FileOutgoingPath,
 		        FileProcessedPath = FileProcessedPath,

@@ -338,7 +338,7 @@ namespace dexih.connections.ftp
                 using (var newFile = await client.OpenWriteAsync(filePath, FtpDataType.ASCII))
                 {
                     await stream.CopyToAsync(newFile);
-                    await stream.FlushAsync();
+                    stream.Close();
                     return true;
                 }
             }
