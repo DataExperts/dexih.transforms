@@ -391,12 +391,12 @@ namespace dexih.transforms
                         break;
                     }
 
-                    if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName())
+                    if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName() && requiredField.Direction == actualField.Direction)
                     {
                         continue;
                     }
 
-                    if (requiredField.Column.Name == actualField.Column.Name)
+                    if (requiredField.Column.Name == actualField.Column.Name && requiredField.Direction == actualField.Direction)
                     {
                         continue;
                     }
