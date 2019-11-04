@@ -71,8 +71,7 @@ using System.Threading.Tasks;
                 _streamWriter.Write("{ \"" + topNode + "\": [");
                 endWrite = "]}";
             }
-            
-            
+
             _memoryStream.Position = 0;
         }
 

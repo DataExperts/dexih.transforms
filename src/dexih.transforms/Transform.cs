@@ -1166,7 +1166,7 @@ namespace dexih.transforms
             {
                 var returnValue = new ReturnValue(false,
                     "Failed to retrieve the requested data.  Message: " + ex.Message, ex);
-                return JsonSerializer.Serialize(returnValue);
+                return returnValue.Serialize();
             }
 
             

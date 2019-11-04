@@ -150,7 +150,7 @@ using System.Threading.Tasks;
                         }
                     }
 
-                    var row = JsonExtensions.Serialize(_valuesArray);
+                    var row = _valuesArray.Serialize();
 
                     await _streamWriter.WriteAsync(row);
 
@@ -168,7 +168,7 @@ using System.Threading.Tasks;
                         if (_reader is Transform transform)
                         {
                             var properties = transform.GetTransformProperties(true);
-                            var propertiesSerialized = JsonExtensions.Serialize(properties);
+                            var propertiesSerialized = properties.Serialize();
                             await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
                         }
 

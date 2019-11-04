@@ -32,9 +32,16 @@ namespace dexih.functions
             return JsonSerializer.Serialize(value, SerializerOptions);
         }
 
-        public static T Deserialize<T>(this string value)
+        public static T Deserialize<T>(this string value, bool ignoreError = false)
         {
-            return JsonSerializer.Deserialize<T>(value, SerializerOptions);
+            try
+            {
+                return JsonSerializer.Deserialize<T>(value, SerializerOptions);
+            }
+            catch (Exception ex)
+            {
+                return default;
+            }
         }
 
         public static object Deserialize(this string value, Type type)
