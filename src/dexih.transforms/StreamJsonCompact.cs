@@ -31,7 +31,7 @@ using System.Threading.Tasks;
         private readonly object[] _valuesArray;
         private readonly int _maxFieldSize;
 
-        public StreamJsonCompact(string name, DbDataReader reader, int maxFieldSize = -1, long maxRows = -1)
+        public StreamJsonCompact(string name, DbDataReader reader, int maxFieldSize = -1, long maxRows = -1, object chartConfig = null)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
@@ -46,6 +46,11 @@ using System.Threading.Tasks;
 
             _streamWriter.Write("{\"name\": \"" + System.Web.HttpUtility.JavaScriptStringEncode(name) + "\"");
 
+            if (chartConfig != null)
+            {
+                _streamWriter.Write(", \"chartConfig\":" + chartConfig.Serialize());
+            }
+
             _streamWriter.Write(", \"columns\": ");
 
             // if this is a transform, then use the dataTypes from the cache table
@@ -56,7 +61,7 @@ using System.Threading.Tasks;
                     return columns?.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType, childColumns = ColumnObject(c.ChildColumns)});
                 }
                 
-                var columnSerializeObject = JsonExtensions.Serialize(ColumnObject( transform.CacheTable.Columns));
+                var columnSerializeObject = ColumnObject( transform.CacheTable.Columns).Serialize();
                 _streamWriter.Write(columnSerializeObject);
             }
             else
@@ -64,7 +69,7 @@ using System.Threading.Tasks;
                 for (var j = 0; j < reader.FieldCount; j++)
                 {
                     var colName = reader.GetName(j);
-                    _streamWriter.Write(JsonExtensions.Serialize(new {name = colName, logicalName = colName, dataType = reader.GetDataTypeName(j)}) + ",");
+                    _streamWriter.Write(new {name = colName, logicalName = colName, dataType = reader.GetDataTypeName(j)}.Serialize() + ",");
                 }
             }
             

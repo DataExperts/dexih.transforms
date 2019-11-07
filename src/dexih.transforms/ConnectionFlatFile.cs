@@ -11,7 +11,6 @@ using CsvHelper;
 using System.Text.RegularExpressions;
 using Dexih.Utils.CopyProperties;
 using dexih.transforms.Exceptions;
-using static Dexih.Utils.DataType.DataType;
 using dexih.functions.Query;
 using dexih.transforms.File;
 using Dexih.Utils.DataType;

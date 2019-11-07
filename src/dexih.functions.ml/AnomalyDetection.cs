@@ -5,7 +5,6 @@ using System.Linq;
 using dexih.functions.Query;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms.TimeSeries;
 
 namespace dexih.functions.ml

@@ -12,7 +12,6 @@ using dexih.functions.File;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.File;
-using Dexih.Utils.Crypto;
 using Dexih.Utils.MessageHelpers;
 
 namespace dexih.connections.dexih

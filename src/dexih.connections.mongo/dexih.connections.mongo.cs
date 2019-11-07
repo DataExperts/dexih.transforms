@@ -7,7 +7,6 @@ using dexih.functions;
 using System.Data.Common;
 using System.Text.Json;
 using dexih.transforms;
-using System.Text.RegularExpressions;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;

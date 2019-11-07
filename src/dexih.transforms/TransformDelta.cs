@@ -8,9 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
-
-
-using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms

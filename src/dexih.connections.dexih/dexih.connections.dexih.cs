@@ -7,7 +7,6 @@ using System.Data.Common;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
-using System.Xml;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 

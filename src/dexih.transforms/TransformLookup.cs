@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
-using static Dexih.Utils.DataType.DataType;
 using dexih.transforms.Transforms;
 using Dexih.Utils.DataType;
 

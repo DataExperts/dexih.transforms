@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CsvHelper.Configuration;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms;

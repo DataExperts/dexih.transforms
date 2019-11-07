@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using dexih.functions.Exceptions;
 using Microsoft.ML;
-using Microsoft.ML.Data;
 
 namespace dexih.functions.ml
 {
