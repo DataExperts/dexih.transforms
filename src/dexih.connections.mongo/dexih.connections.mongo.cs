@@ -376,23 +376,27 @@ namespace dexih.connections.mongo
                 
                 await database.CreateCollectionAsync(table.Name, cancellationToken: cancellationToken);
                 var collection = database.GetCollection<BsonDocument>(table.Name);
-
+                var indexBuilder = Builders<BsonDocument>.IndexKeys;
+                
                 foreach (var column in table.Columns.Where(c =>
                     c.DeltaType == EDeltaType.DbAutoIncrement || c.DeltaType == EDeltaType.AutoIncrement))
                 {
-                    await collection.Indexes.CreateOneAsync(Builders<BsonDocument>.IndexKeys.Ascending(column.Name));    
+                    var indexModel = new CreateIndexModel<BsonDocument>(indexBuilder.Ascending(column.Name));
+                    await collection.Indexes.CreateOneAsync(indexModel, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    
+                    // await collection.Indexes.CreateOneAsync(Builders<BsonDocument>.IndexKeys.Ascending(column.Name));    
                 }
 
-                IndexKeysDefinition<BsonDocument> naturalKey = null;
+                CreateIndexModel<BsonDocument> naturalKey = null;
                 foreach (var column in table.Columns.Where(c => c.DeltaType == EDeltaType.NaturalKey))
                 {
                     if (naturalKey == null)
                     {
-                        naturalKey = Builders<BsonDocument>.IndexKeys.Ascending(column.Name);
+                        naturalKey = new CreateIndexModel<BsonDocument>(indexBuilder.Ascending(column.Name));
                     }
                     else
                     {
-                        naturalKey.Ascending(column.Name);
+                        naturalKey.Keys.Ascending(column.Name);
                     }     
                 }
 
@@ -401,10 +405,10 @@ namespace dexih.connections.mongo
                     var validFromDate = table.GetColumn(EDeltaType.ValidFromDate);
                     if (validFromDate != null)
                     {
-                        naturalKey.Ascending(validFromDate.Name);
+                        naturalKey.Keys.Ascending(validFromDate.Name);
                     }
 
-                    await collection.Indexes.CreateOneAsync(naturalKey);
+                    await collection.Indexes.CreateOneAsync(naturalKey, cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 
                 // reset the auto incremental table, when rebuilding the table.
@@ -928,7 +932,7 @@ namespace dexih.connections.mongo
                     await UpdateIncrementalKey(table, dbAutoIncrement.Name, keyValue, cancellationToken);
                 }
                 
-                collection.InsertManyAsync(data, cancellationToken: cancellationToken);
+                await collection.InsertManyAsync(data, cancellationToken: cancellationToken);
                 return identityValue;
             }
             catch (Exception ex)
@@ -973,7 +977,7 @@ namespace dexih.connections.mongo
                 foreach (var query in queries)
                 {
                     var filterDefinition = BuildFilterDefinition(query.Filters);
-                    collection.DeleteMany(filterDefinition);
+                    await collection.DeleteManyAsync(filterDefinition, cancellationToken);
                 }
 
             }

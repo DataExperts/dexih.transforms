@@ -872,7 +872,7 @@ namespace dexih.connections.azure
 
         public object ConvertEntityProperty(ETypeCode typeCode, object value)
         {
-            if (value == null)
+            if (value == null || value is DBNull)
                 return null;
 
             switch (typeCode)
@@ -913,10 +913,6 @@ namespace dexih.connections.azure
                 case ETypeCode.Unknown:
                     return value.ToString();
                 case ETypeCode.Geometry:
-                    if (value == null || value is DBNull)
-                    {
-                        return null;
-                    }
                     var bytes = Operations.Parse<byte[]>(value);
                     var binReader = new WKBReader();
                     return binReader.Read(bytes);                

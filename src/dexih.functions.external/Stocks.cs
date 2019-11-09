@@ -87,12 +87,14 @@ namespace dexih.functions.external
                     throw new FunctionException("The stock data from AlphaVantage didn't contain the metadata elements.");
                 }
 
-                if (jsonDocument.RootElement.EnumerateObject().Count() < 2)
+                var rootArray = jsonDocument.RootElement.EnumerateObject().ToArray();
+
+                if (rootArray.Length < 2)
                 {
                     throw new FunctionException("The stock data from AlphaVantage didn't contain the metadata and time series elements.");
                 }
 
-                var timeSeries = jsonDocument.RootElement[1];
+                var timeSeries = rootArray[1].Value;
 
                 var symbol = metadata.GetProperty("2. Symbol").GetString();
                 
@@ -103,11 +105,11 @@ namespace dexih.functions.external
                     {
                         Symbol = symbol,
                         Time = Convert.ToDateTime(stockTime.Name),
-                        Open = stockTime.Value.GetProperty("1. open").GetDouble(),
-                        High = stockTime.Value.GetProperty("2. high").GetDouble(),
-                        Low = stockTime.Value.GetProperty("3. low").GetDouble(),
-                        Close = stockTime.Value.GetProperty("4. close").GetDouble(),
-                        Volume = stockTime.Value.GetProperty("5. volume").GetInt64()
+                        Open = Convert.ToDouble(stockTime.Value.GetProperty("1. open").GetString()),
+                        High = Convert.ToDouble(stockTime.Value.GetProperty("2. high").GetString()),
+                        Low = Convert.ToDouble(stockTime.Value.GetProperty("3. low").GetString()),
+                        Close = Convert.ToDouble(stockTime.Value.GetProperty("4. close").GetString()),
+                        Volume = Convert.ToInt64(stockTime.Value.GetProperty("5. volume").GetString())
                     };
                             
                     stockEntities.Add(stockEntity);
