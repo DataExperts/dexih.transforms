@@ -490,6 +490,7 @@
             <e p="TransformFunction.cs" t="Include" />
           </e>
           <e p="JsonObjectConverter.cs" t="Include" />
+          <e p="JsonTimeSpanConverter.cs" t="Include" />
           <e p="NamingStandards.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
@@ -548,6 +549,7 @@
           <e p="CategorizeFunctions.cs" t="Include" />
           <e p="ConditionFunctions.cs" t="Include" />
           <e p="ConversionFunctions.cs" t="Include" />
+          <e p="DateFunctions.cs" t="Include" />
           <e p="dexih.functions.builtIn.csproj" t="IncludeRecursive" />
           <e p="GeometryFunctions.cs" t="Include" />
           <e p="HierarchyFunctions.cs" t="Include" />
@@ -570,6 +572,7 @@
             <e p="dexih.functions.pdb" t="Include" />
           </e>
           <e p="RowFunctions.cs" t="Include" />
+          <e p="SecurityFunctions.cs" t="Include" />
           <e p="SeriesFunctions.cs" t="Include" />
           <e p="ThrottleFunctions.cs" t="Include" />
           <e p="ValidationFunctions.cs" t="Include" />

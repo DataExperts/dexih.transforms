@@ -654,5 +654,47 @@ namespace dexih.functions
             return csvData.ToString();
         }
 
+        /// <summary>
+        /// Gets a dbml string for the table
+        /// </summary>
+        /// <returns></returns>
+        public string DBML()
+        {
+            var dbml = new StringBuilder();
+            
+            dbml.AppendLine($"Table {Name} {{");
+
+            foreach (var column in Columns)
+            {
+                dbml.AppendLine("  " + column.DBML());
+            }
+
+            var indexes = new List<string>();
+            var naturalKey = Columns.Where(c => c.DeltaType == EDeltaType.NaturalKey).Select(c=> c.Name).ToArray();
+            if (naturalKey.Length > 0)
+            {
+                indexes.Add($"({string.Join(", ", naturalKey)}) [name: 'natural_key']");
+            }
+
+            var incremental = Columns.Where(c => c.IsAutoIncrement()).Select(c=> c.Name).ToArray();
+            if(incremental.Length > 0)
+            {
+                indexes.Add($"({string.Join(", ", incremental)}) [name: 'pk']");
+            }
+
+            if (indexes.Count > 0)
+            {
+                dbml.AppendLine();
+                dbml.AppendLine("  Indexes {");
+                foreach (var index in indexes)
+                {
+                    dbml.AppendLine("    " + index);
+                }
+
+                dbml.AppendLine("  }");
+            }
+            dbml.AppendLine("}");
+            return dbml.ToString();
+        }
     }
 }

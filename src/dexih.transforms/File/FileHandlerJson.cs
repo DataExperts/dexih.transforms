@@ -429,7 +429,6 @@ namespace dexih.transforms.File
                     column.DeltaType != EDeltaType.FileRowNumber)
                 {
                     return GetJTokenValue(column.DataType, column.Rank, jToken);
-                    return Operations.Parse(column.DataType, column.Rank, jToken);
                 }
                 else
                 {

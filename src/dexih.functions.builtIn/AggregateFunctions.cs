@@ -185,6 +185,22 @@ namespace dexih.functions.BuiltIn
             return _cacheStringBuilder.ToString();
         }
         
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Aggregate Array", Description = "Aggregates the values into an array variable.", ResultMethod = nameof(CreateArrayResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.String, GenericType = EGenericType.All)]
+        public void CreateArray(T value)
+        {
+            if (_cacheList == null)
+            {
+                _cacheList = new List<T>();
+            }
+            
+            _cacheList.Add(value);
+        }
+        
+        public T[] CreateArrayResult()
+        {
+            return _cacheList.ToArray();
+        }
+        
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Median", Description = "The median value in a series", ResultMethod = nameof(MedianResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void Median(T value)
         {

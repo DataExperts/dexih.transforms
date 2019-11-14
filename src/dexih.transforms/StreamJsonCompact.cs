@@ -119,7 +119,7 @@ using System.Threading.Tasks;
 
                     if (_hasRows == false)
                     {
-                        await _streamWriter.WriteAsync("]");
+                        await _streamWriter.WriteAsync("]}");
                     }
 
                     _first = false;

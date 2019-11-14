@@ -111,37 +111,43 @@ namespace dexih.functions.builtIn.tests
             get
             {
                 var date1 =  DateTime.Parse("2015-09-24");
+                var date2 = DateTime.Parse("2015-09-25");
 
                 return new[]
                 {
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.DayOfMonth), new object[] {date1}, 24},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.DaysInMonth), new object[] {date1}, 30},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.DayOfWeekName), new object[] {date1}, "Thursday"},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.DayOfWeekNumber), new object[] {date1}, 4},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.WeekOfYear), new object[] {date1}, 39},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.DayOfYear), new object[] {date1}, 267},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.Month), new object[] {date1}, 9},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.ShortMonth), new object[] {date1}, "Sep"},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.LongMonth), new object[] {date1}, "September"},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.Year), new object[] {date1}, 2015},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.ToLongDateString), new object[] {date1}, "Thursday, 24 September 2015"},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.ToLongTimeString), new object[] {date1}, "12:00:00 AM"},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.ToShortDateString), new object[] {date1}, "24/09/2015"},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.ToShortTimeString), new object[] {date1}, "12:00 AM"},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.DateToString), new object[] {date1, "dd MMM yyyy"}, "24 Sep 2015"},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DayOfMonth), new object[] {date1}, 24},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DaysInMonth), new object[] {date1}, 30},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DayOfWeekName), new object[] {date1}, "Thursday"},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DayOfWeekNumber), new object[] {date1}, 4},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.WeekOfYear), new object[] {date1}, 39},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DayOfYear), new object[] {date1}, 267},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.Month), new object[] {date1}, 9},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ShortMonth), new object[] {date1}, "Sep"},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.LongMonth), new object[] {date1}, "September"},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.Year), new object[] {date1}, 2015},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ToLongDateString), new object[] {date1}, "Thursday, 24 September 2015"},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ToLongTimeString), new object[] {date1}, "12:00:00 AM"},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ToShortDateString), new object[] {date1}, "24/09/2015"},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ToShortTimeString), new object[] {date1}, "12:00 AM"},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DateToString), new object[] {date1, "dd MMM yyyy"}, "24 Sep 2015"},
                     new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsLeapYear), new object[] {date1}, false},
                     new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsWeekend), new object[] { date1 }, false},
                     new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsWeekDay), new object[] { date1 }, true},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AddDays), new object[] { date1, 1 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AddHours), new object[] { date1, 24 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AddMilliseconds), new object[] { date1, 86400000 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AddMinutes), new object[] { date1, 1440 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AddMonths), new object[] { date1, 1 }, DateTime.Parse("24 Oct 2015")},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AddSeconds), new object[] { date1, 86400 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AddYears), new object[] { date1, 1 }, DateTime.Parse("24 Sep 2016")},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AgeInYearsAtDate), new object[] { date1,  DateTime.Parse("2016-09-24") }, 1},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AgeInYearsAtDate), new object[] { date1,  date1 }, 0},
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.AgeInYearsAtDate), new object[] { date1,  DateTime.Parse("2017-09-25") }, 2},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddDays), new object[] { date1, 1 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddHours), new object[] { date1, 24 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddMilliseconds), new object[] { date1, 86400000 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddMinutes), new object[] { date1, 1440 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddMonths), new object[] { date1, 1 }, DateTime.Parse("24 Oct 2015")},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddSeconds), new object[] { date1, 86400 }, DateTime.Parse("25 Sep 2015")},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddYears), new object[] { date1, 1 }, DateTime.Parse("24 Sep 2016")},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DaysBetween), new object[] { date1, date2 }, 1d},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.HoursBetween), new object[] { date1, date2 }, 24d},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.MinutesBetween), new object[] { date1, date2 }, 1440d},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.SecondsBetween), new object[] { date1, date2 }, 86400d},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.MillisecondsBetween), new object[] { date1, date2 }, 86400000d},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate), new object[] { date1,  DateTime.Parse("2016-09-24") }, 1},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate), new object[] { date1,  date1 }, 0},
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate), new object[] { date1,  DateTime.Parse("2017-09-25") }, 2},
                     new object[] { typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Add), new object[] { 1m, new [] {2m} }, 3m},
                     new object[] { typeof(MathFunctions), nameof(MathFunctions.Ceiling), new object[] { 6.4m }, (decimal)7 },
                     new object[] { typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] { 6m, 2m }, (decimal)3 },
@@ -153,7 +159,7 @@ namespace dexih.functions.builtIn.tests
                     new object[] { typeof(ConditionFunctions<DateTime>), nameof(ConditionFunctions<int>.IsEqual), new object[] { new [] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015")} }, true },
                     new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsBetween), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("25 Sep 2015"), DateTime.Parse("27 Sep 2015") }, true },
                     new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsBetweenInclusive), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015") }, true },
-                    new object[] { typeof(MapFunctions), nameof(MapFunctions.UnixTimeStampToDate), new object[] { 1518739200 }, new DateTime(2018, 2, 16, 0, 0, 0, 0, DateTimeKind.Utc).ToLocalTime() },
+                    new object[] { typeof(DateFunctions), nameof(DateFunctions.UnixTimeStampToDate), new object[] { 1518739200 }, new DateTime(2018, 2, 16, 0, 0, 0, 0, DateTimeKind.Utc).ToLocalTime() },
                     new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, false },
                     new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, false },
                     new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("29 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, true },
@@ -372,10 +378,10 @@ namespace dexih.functions.builtIn.tests
         {
             var globalVariables = new GlobalSettings("abc");
             const string value = "encrypt this";
-            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.FastEncrypt), BuiltInAssembly).GetTransformFunction(typeof(string), null, globalVariables);
+            var function = Functions.GetFunction(typeof(SecurityFunctions).FullName, nameof(SecurityFunctions.FastEncrypt), BuiltInAssembly).GetTransformFunction(typeof(string), null, globalVariables);
             var encrypted = function.RunFunction(new object[] {value}, CancellationToken.None).returnValue;
 
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.FastDecrypt), BuiltInAssembly).GetTransformFunction(typeof(string),null , globalVariables);
+            function = Functions.GetFunction(typeof(SecurityFunctions).FullName, nameof(SecurityFunctions.FastDecrypt), BuiltInAssembly).GetTransformFunction(typeof(string),null , globalVariables);
             var decrypted = function.RunFunction(new[] {encrypted}, CancellationToken.None).returnValue;
 
             Assert.Equal(value, decrypted);
@@ -386,10 +392,10 @@ namespace dexih.functions.builtIn.tests
         {
             var globalVariables = new GlobalSettings("abc");
             const string value = "encrypt this";
-            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.StrongEncrypt), BuiltInAssembly).GetTransformFunction(typeof(string), null, globalVariables);
+            var function = Functions.GetFunction(typeof(SecurityFunctions).FullName, nameof(SecurityFunctions.StrongEncrypt), BuiltInAssembly).GetTransformFunction(typeof(string), null, globalVariables);
             var encrypted = function.RunFunction(new object[] {value}, CancellationToken.None).returnValue;
 
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.StrongDecrypt), BuiltInAssembly).GetTransformFunction(typeof(string), null, globalVariables);
+            function = Functions.GetFunction(typeof(SecurityFunctions).FullName, nameof(SecurityFunctions.StrongDecrypt), BuiltInAssembly).GetTransformFunction(typeof(string), null, globalVariables);
             var decrypted = function.RunFunction(new[] {encrypted}, CancellationToken.None).returnValue;
 
             Assert.Equal(value, decrypted);
@@ -401,10 +407,10 @@ namespace dexih.functions.builtIn.tests
             const string value = "encrypt this";
             const string key = "abc";
             const int iterations = 10;
-            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Encrypt), BuiltInAssembly).GetTransformFunction(typeof(string));
+            var function = Functions.GetFunction(typeof(SecurityFunctions).FullName, nameof(SecurityFunctions.Encrypt), BuiltInAssembly).GetTransformFunction(typeof(string));
             var encrypted = function.RunFunction(new object[] {value, key, iterations}, CancellationToken.None).returnValue;
 
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.Decrypt), BuiltInAssembly).GetTransformFunction(typeof(string));
+            function = Functions.GetFunction(typeof(SecurityFunctions).FullName, nameof(SecurityFunctions.Decrypt), BuiltInAssembly).GetTransformFunction(typeof(string));
             var decrypted = function.RunFunction(new [] {encrypted, key, iterations}, CancellationToken.None).returnValue;
 
             Assert.Equal(value, decrypted);
@@ -414,10 +420,10 @@ namespace dexih.functions.builtIn.tests
         public void HashTest()
         {
             const string value = "hash this";
-            var function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.SecureHash), BuiltInAssembly).GetTransformFunction(typeof(string));
+            var function = Functions.GetFunction(typeof(SecurityFunctions).FullName, nameof(SecurityFunctions.SecureHash), BuiltInAssembly).GetTransformFunction(typeof(string));
             var hashed = function.RunFunction(new object[] {value}, CancellationToken.None).returnValue;
 
-            function = Functions.GetFunction(typeof(MapFunctions).FullName, nameof(MapFunctions.ValidateSecureHash), BuiltInAssembly).GetTransformFunction(typeof(string));
+            function = Functions.GetFunction(typeof(SecurityFunctions).FullName, nameof(SecurityFunctions.ValidateSecureHash), BuiltInAssembly).GetTransformFunction(typeof(string));
             var passed = (bool)function.RunFunction(new object[] {value, hashed}, CancellationToken.None).returnValue;
 
             Assert.True(passed);

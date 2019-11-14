@@ -28,6 +28,7 @@ namespace dexih.transforms.Mapping
         private TableColumn NodeColumn { get; set; }
         private readonly ICollection<TableColumn> _columns;
         private int _nodeColumnOrdinal = -1;
+        private List<int> _inputOrdinals; 
         private List<int> _outputOrdinals;
 
         private Transform _transform;
@@ -37,6 +38,14 @@ namespace dexih.transforms.Mapping
             if (NodeColumn == null) return;
             
             _nodeColumnOrdinal = table.GetOrdinal(NodeColumn);
+            _inputOrdinals = new List<int>();
+            
+            var childColumns = table[_nodeColumnOrdinal].ChildColumns;
+
+            foreach (var column in _columns)
+            {
+                _inputOrdinals.Add(childColumns.GetOrdinal(column));
+            }
         }
 
         public override void AddOutputColumns(Table table)
@@ -68,7 +77,7 @@ namespace dexih.transforms.Mapping
             var hasRow = _transform.CurrentRow != null;
             for (var i = 0; i < _outputOrdinals.Count; i++)
             {
-                row[_outputOrdinals[i]] = hasRow ? _transform[i] : null;
+                row[_outputOrdinals[i]] = hasRow ? _transform[_inputOrdinals[i]] : null;
             }
         }
 

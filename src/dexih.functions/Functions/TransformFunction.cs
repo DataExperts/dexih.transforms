@@ -504,7 +504,7 @@ namespace dexih.functions
 				var (parameters, outputPos) =
 					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
 
-				if (parameters.Contains(null))
+				if (parameters.Take(outputPos).Contains(null))
 				{
 					switch (OnNull)
 					{
@@ -512,10 +512,10 @@ namespace dexih.functions
 							throw new FunctionException(
 								$"The function {FunctionName} contains null parameters.  Change the \"Action when null\" setting to ignore this.");
 						case EErrorAction.Null:
-							outputs = null;
+							outputs = new object[parameters.Length - outputPos];
 							return (Activator.CreateInstance(methodInfo.MethodInfo.ReturnType), false);
 						case EErrorAction.Ignore:
-							outputs = null;
+							outputs = new object[parameters.Length - outputPos];
 							return (null, true);
 					}
 				}

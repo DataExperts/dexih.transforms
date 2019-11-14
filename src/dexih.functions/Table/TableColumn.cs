@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Text.Json.Serialization;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.CopyProperties;
@@ -341,6 +343,76 @@ namespace dexih.functions
 
             return TableColumnName() == other.TableColumnName() ||
                    Name == other.Name;
+        }
+
+        public string DBML()
+        {
+            var desc = new StringBuilder();
+            desc.Append($"{Name} {DataType}");
+
+            if (MaxLength != null && (DataType == ETypeCode.Byte || DataType == ETypeCode.Char || DataType == ETypeCode.String))
+            {
+                desc.Append($"({MaxLength})");
+            }
+
+            if (DataType == ETypeCode.Decimal || DataType == ETypeCode.Single)
+            {
+                desc.Append($"({Precision}, {Scale})");
+            }
+            
+            for (var i = 0; i < Rank; i++)
+            {
+                desc.Append("()");
+            }
+            
+            var columnSettings = new List<string>();
+                
+            if (IsAutoIncrement())
+            {
+                columnSettings.Add("pk");
+                columnSettings.Add("increment");
+            }
+
+            if (IsUnique)
+            {
+                columnSettings.Add("unique");
+            }
+
+            if (AllowDbNull)
+            {
+                columnSettings.Add("null");
+            }
+            else
+            {
+                columnSettings.Add("not null");
+            }
+
+            if (!string.IsNullOrEmpty(LogicalName) && LogicalName != Name)
+            {
+                columnSettings.Add($"note: 'Local Name: {LogicalName}'");
+            }
+
+            
+            if (!string.IsNullOrEmpty(Description))
+            {
+                columnSettings.Add($"comment: '{Description}'");
+            }
+
+            if (DefaultValue != null)
+            {
+                if (Dexih.Utils.DataType.DataType.IsNumber(DataType))
+                {
+                    columnSettings.Add($"default: {DefaultValue}");
+                }
+                else
+                {
+                    columnSettings.Add($"default: '{DefaultValue}'");
+                }
+            }
+
+            desc.Append($" [{string.Join(", ", columnSettings)}]");
+
+            return desc.ToString();
         }
 
         public bool Equals(TableColumn other)
