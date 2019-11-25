@@ -8,34 +8,32 @@ using System.Data.Common;
 using System.Text.Json;
 using dexih.transforms;
 using System.Threading;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
-namespace dexih.connections.mongo
+namespace dexih.connections.dynamoDB
 {
     [Connection(
         ConnectionCategory = EConnectionCategory.NoSqlDatabase,
-        Name = "MongoDB", 
-        Description = "MongoDB is a general purpose, document-based, distributed database built for modern application developers and for the cloud era.",
-        DatabaseDescription = "Database",
-        ServerDescription = "MongoDb Server:Port",
-        AllowsConnectionString = true,
+        Name = "DynamoDB", 
+        Description = "DynamoDB is an AWS based key-pair highly scalable database.",
+        DatabaseDescription = "",
+        ServerDescription = "Service Url (e.g. http://localhost:8000)",
+        AllowsConnectionString = false,
         AllowsSql = false,
         AllowsFlatFiles = false,
         AllowsManagedConnection = true,
         AllowsSourceConnection = true,
         AllowsTargetConnection = true,
-        AllowsUserPassword = true,
+        AllowsUserPassword = false,
         AllowsWindowsAuth = false,
-        RequiresDatabase = true,
+        RequiresDatabase = false,
         RequiresLocalStorage = false
     )]
-    public class ConnectionMongo : Connection
+    public class ConnectionDynamoDB : Connection
     {
         public override bool CanBulkLoad => true;
         public override bool CanSort => true;
@@ -50,13 +48,14 @@ namespace dexih.connections.mongo
         public override bool CanUseCharArray => false;
         public override bool CanUseSql => false;
         public override bool CanUseDbAutoIncrement => true;
+        
         public override bool DynamicTableCreation => true;
         public override bool CanUseGuid => false;
         public override bool CanUseUnsigned => false;
         public override bool CanUseTimeSpan => false;
-
         public const string IncrementalKeyTable = "_incrementalKeys";
 
+        private ScalarAttributeType AttributeBinary = ScalarAttributeType.B;
 //        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
 //        {
 //            switch (typeCode)
@@ -94,17 +93,14 @@ namespace dexih.connections.mongo
         {
             try
             {
-                var database = GetMongoDatabase();
+                var client = GetClient();
 
-                var filter = new BsonDocument("name", table.Name);
-                //filter by collection name
-                var collections = await database.ListCollectionsAsync(new ListCollectionsOptions { Filter = filter }, cancellationToken);
-                //check for existence
-                return await collections.AnyAsync(cancellationToken: cancellationToken);
+                var tables = await client.ListTablesAsync(cancellationToken);
+                return tables.TableNames.Contains(table.Name);
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Could not check if collection exists.  {ex.Message}");
+                throw new ConnectionException($"Could not check if table exists.  {ex.Message}");
             }
         }
 
@@ -308,13 +304,13 @@ namespace dexih.connections.mongo
             }
             catch (Exception ex)
             {
-                throw new ConnectionException("Error writing to Mongo collection: " + table.Name + ".  Error: " + ex.Message, ex);
+                throw new ConnectionException("Error writing to DynamoDB collection: " + table.Name + ".  Error: " + ex.Message, ex);
             }
         }
 
         private Task WriteDataBuffer(Table table, IEnumerable<object[]> buffer, string targetTableName, CancellationToken cancellationToken = default)
         {
-            var database = GetMongoDatabase();
+            var database = GetDynamoDBDatabase();
             var collection = database.GetCollection<BsonDocument>(targetTableName);
             
             var surrogateKey = table.GetAutoIncrementOrdinal();
@@ -352,65 +348,57 @@ namespace dexih.connections.mongo
             {
                 if (!IsValidTableName(table.Name))
                 {
-                    throw new ConnectionException("The table " + table.Name + " could not be created as it does not meet mongo table naming standards.");
+                    throw new ConnectionException("The table " + table.Name + " could not be created as it does not meet dynamoDB table naming standards.");
                 }
 
                 foreach (var col in table.Columns)
                 {
                     if (!IsValidColumnName(col.Name))
                     {
-                        throw new ConnectionException("The table " + table.Name + " could not be created as the column " + col.Name + " does not meet mongo table naming standards.");
+                        throw new ConnectionException("The table " + table.Name + " could not be created as the column " + col.Name + " does not meet dynamoDB table naming standards.");
                     }
                 }
 
-                var database = GetMongoDatabase();
+                var client = GetClient();
                 var tableExists = await TableExists(table, cancellationToken);
                 if (dropTable && tableExists)
                 {
-                    await database.DropCollectionAsync(table.Name, cancellationToken);
+                    await client.DeleteTableAsync(table.Name, cancellationToken);
                 }
                 else if (tableExists)
                 {
                     return;
                 }
-                
-                await database.CreateCollectionAsync(table.Name, cancellationToken: cancellationToken);
-                var collection = database.GetCollection<BsonDocument>(table.Name);
-                var indexBuilder = Builders<BsonDocument>.IndexKeys;
-                
-                foreach (var column in table.Columns.Where(c =>
-                    c.DeltaType == EDeltaType.DbAutoIncrement || c.DeltaType == EDeltaType.AutoIncrement))
-                {
-                    var indexModel = new CreateIndexModel<BsonDocument>(indexBuilder.Ascending(column.Name));
-                    await collection.Indexes.CreateOneAsync(indexModel, cancellationToken: cancellationToken).ConfigureAwait(false);
-                    
-                    // await collection.Indexes.CreateOneAsync(Builders<BsonDocument>.IndexKeys.Ascending(column.Name));    
-                }
 
-                CreateIndexModel<BsonDocument> naturalKey = null;
-                foreach (var column in table.Columns.Where(c => c.DeltaType == EDeltaType.NaturalKey))
+                var tableAttributes = new List<AttributeDefinition>();
+                var keySchema = new List<KeySchemaElement>();
+
+                foreach (var column in table.Columns)
                 {
-                    if (naturalKey == null)
+                    tableAttributes.Add(new AttributeDefinition(
                     {
-                        naturalKey = new CreateIndexModel<BsonDocument>(indexBuilder.Ascending(column.Name));
+                        AttributeName = column.Name,
+                        AttributeType = GetAttributeType(column.DataType)
+                    });
+
+                    if (column.IsUnique)
+                    {
+                        keySchema.Add(new KeySchemaElement()
+                        {
+                            AttributeName = column.Name,
+                            KeyType = KeyType.HASH
+                        });   
                     }
-                    else
-                    {
-                        naturalKey.Keys.Ascending(column.Name);
-                    }     
-                }
-
-                if (naturalKey != null)
-                {
-                    var validFromDate = table.GetColumn(EDeltaType.ValidFromDate);
-                    if (validFromDate != null)
-                    {
-                        naturalKey.Keys.Ascending(validFromDate.Name);
-                    }
-
-                    await collection.Indexes.CreateOneAsync(naturalKey, cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 
+                var tableRequest = new CreateTableRequest()
+                {
+                    TableName = table.Name,
+                    AttributeDefinitions = tableAttributes,
+                    KeySchema = keySchema
+                };
+                client.CreateTableAsync(tableRequest);
+ 
                 // reset the auto incremental table, when rebuilding the table.
                 var incremental = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (incremental != null)
@@ -420,127 +408,104 @@ namespace dexih.connections.mongo
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Error creating mongo table {ex.Message}", ex);
+                throw new ConnectionException($"Error creating dynamoDB table {ex.Message}", ex);
+            }
+        }
+
+        private ScalarAttributeType GetAttributeType(ETypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Unknown:
+                    return ScalarAttributeType.S;
+                case ETypeCode.Binary:
+                    return ScalarAttributeType.B;
+                case ETypeCode.Byte:
+                    return ScalarAttributeType.B;
+                case ETypeCode.Char:
+                    return ScalarAttributeType.S;
+                case ETypeCode.SByte:
+                case ETypeCode.UInt16:
+                case ETypeCode.UInt32:
+                case ETypeCode.UInt64:
+                case ETypeCode.Int16:
+                case ETypeCode.Int32:
+                case ETypeCode.Int64:
+                case ETypeCode.Decimal:
+                case ETypeCode.Double:
+                case ETypeCode.Single:
+                case ETypeCode.String:
+                case ETypeCode.Text:
+                case ETypeCode.Boolean:
+                    return ScalarAttributeType.N;
+                case ETypeCode.DateTime:
+                case ETypeCode.Time:
+                case ETypeCode.Guid:
+                case ETypeCode.Json:
+                case ETypeCode.Xml:
+                case ETypeCode.Enum:
+                case ETypeCode.CharArray:
+                case ETypeCode.Object:
+                case ETypeCode.Node:
+                case ETypeCode.Geometry:
+                    return ScalarAttributeType.S;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(typeCode), typeCode, null);
             }
         }
 
         /// <summary>
-        /// Gets a connection refererence to the Mongo server.
+        /// Gets a connection refererence to the DynamoDB server.
         /// </summary>
         /// <returns></returns>
-        private MongoClient GetMongoClient()
+        private AmazonDynamoDBClient GetClient()
         {
-            MongoClient client;
-
-            if (UseConnectionString)
-            {
-                client = new MongoClient(ConnectionString);
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(Username))
-                {
-                    client = new MongoClient($"mongodb://{Server}");
-                }
-                else
-                {
-                    client = new MongoClient($"mongodb://{Username}:{Password}@{Server}");    
-                }
-                
-            }
-
-            // Create the table client.
+            var ddbConfig = new AmazonDynamoDBConfig {ServiceURL = Server};
+            var client = new AmazonDynamoDBClient(ddbConfig);
             return client;
         }
-
-        private IMongoDatabase GetMongoDatabase()
-        {
-            var client = GetMongoClient();
-            return client.GetDatabase(DefaultDatabase);
-        }
-
-        public async Task<IAsyncCursor<BsonDocument>> GetCollection(string name, SelectQuery query, CancellationToken cancellationToken)
-        {
-            var database = GetMongoDatabase();
-            var collection = database.GetCollection<BsonDocument>(name);
-
-            IFindFluent<BsonDocument, BsonDocument> find;
-            if (query?.Filters != null && query.Filters.Count > 0)
-            {
-                find = collection.Find(BuildFilterDefinition(query.Filters));
-            }
-            else
-            {
-                find = collection.Find(new BsonDocument());
-            }
-
-            if (query?.Columns?.Count > 0)
-            {
-                find = find.Project(BuildProjectionDefinition(query.Columns));
-            }
-
-            if (query?.Sorts?.Count > 0)
-            {
-                find = find.Sort(BuildSortDefinition(query.Sorts));
-            }
-
-            return await find.ToCursorAsync(cancellationToken);
-        }
-
+        
         /// <summary>
-        /// mongo does not have databases, so this is a dummy function.
+        /// dynamoDB does not have databases, so this is a dummy function.
         /// </summary>
         /// <param name="databaseName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
-            var client = GetMongoClient();
-            client.GetDatabase(databaseName);
-            DefaultDatabase = databaseName;
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// mongo does not have databases, so this returns a dummy value.
+        /// dynamoDB does not have databases, so this returns a dummy value.
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
+        public override Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
-            var client = GetMongoClient();
-            List<string> dbs = new List<string>();
-            using (IAsyncCursor<string> cursor = await client.ListDatabaseNamesAsync(cancellationToken))
-            {
-                while (await cursor.MoveNextAsync(cancellationToken))
-                {
-                    dbs.AddRange(cursor.Current.Select(doc => (doc)));
-                }
-            }
-
-            return dbs;
+            return Task.FromResult(new List<string>());
         }
 
         public override async Task<List<Table>> GetTableList(CancellationToken cancellationToken = default)
         {
             try
             {
-                var database = GetMongoDatabase();
+                var client = GetClient();
 
-                var collectionList = await database.ListCollectionsAsync(cancellationToken: cancellationToken);
+                var tableList = await client.ListTablesAsync(cancellationToken);
 
                 var list = new List<Table>();
 
-                foreach (var collection in await collectionList.ToListAsync<BsonDocument>(cancellationToken: cancellationToken))
+                foreach (var table in tableList.TableNames)
                 {
-                    list.Add(new Table(collection["name"].AsString));
+                    list.Add(new Table(table));
                 }
                 
                 return list;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Error getting mongo collection list {ex.Message}", ex);
+                throw new ConnectionException($"Error getting dynamoDB collection list {ex.Message}", ex);
             }
         }
 
@@ -548,8 +513,7 @@ namespace dexih.connections.mongo
         {
             try
             {
-                var database = GetMongoDatabase();
-
+                var client = GetClient();
 
                 //The new data table that will contain the table schema
                 var table = new Table(originalTable.Name)
@@ -558,92 +522,51 @@ namespace dexih.connections.mongo
                     Description = ""
                 };
 
-                var collection = database.GetCollection<BsonDocument>(table.Name);
+                var tableDesc = await client.DescribeTableAsync(table.Name, cancellationToken);
 
-                var document = await collection.AsQueryable().Sample(1).FirstOrDefaultAsync(cancellationToken: cancellationToken);
-
-                if (document != null)
+                foreach (var attribute in tableDesc.Table.AttributeDefinitions)
                 {
-                    foreach (var element in document.Elements)
+                    ETypeCode dataType = ETypeCode.String;
+                    if (attribute.AttributeType == ScalarAttributeType.B)
                     {
-                        var (type, rank) = ConvertBsonType(element.Value);
-                        //add the basic properties                            
-                        var col = new TableColumn()
-                        {
-                            Name = element.Name,
-                            LogicalName = element.Name,
-                            IsInput = false,
-                            DataType = type,
-                            Rank = rank,
-                            Description = "",
-                            AllowDbNull = true,
-                            IsUnique = false
-                        };
-
-                        if (element.Value.BsonType == BsonType.ObjectId)
-                        {
-                            col.MaxLength = element.Value.BsonType == BsonType.ObjectId ? 14 : (int?) null;
-                            col.DeltaType = EDeltaType.RowKey;
-
-                        }
-                        table.Columns.Add(col);
+                        dataType = ETypeCode.Binary;
                     }
+                    else if (attribute.AttributeType == ScalarAttributeType.S)
+                    {
+                        dataType = ETypeCode.String;
+                    }
+                    else if (attribute.AttributeType == ScalarAttributeType.N)
+                    {
+                        dataType = ETypeCode.Double;
+                    }                    
+
+                    var col = new TableColumn()
+                    {
+                        Name = attribute.AttributeName,
+                        LogicalName = attribute.AttributeName,
+                        IsInput = false,
+                        DataType = dataType,
+                        Rank = 0,
+                        Description = "",
+                        AllowDbNull = true,
+                        IsUnique = false
+                    };
+                    table.Columns.Add(col);
                 }
+                
                 
                 return table;
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Error getting mongo table information for table {originalTable.Name}.  {ex.Message}", ex);
+                throw new ConnectionException($"Error getting dynamoDB table information for table {originalTable.Name}.  {ex.Message}", ex);
             }
         }
 
-        private (ETypeCode typeCode, int rank) ConvertBsonType(BsonValue bsonValue)
-        {
-            switch (bsonValue.BsonType)
-            {
-                case BsonType.Double:
-                    return (ETypeCode.Double, 0);
-                case BsonType.String:
-                    return (ETypeCode.String, 0);
-                case BsonType.Document:
-                    return (ETypeCode.Json, 0);
-                case BsonType.Array:
-                    var array = bsonValue.AsBsonArray;
-                    if (array.Count == 0)
-                    {
-                        return (ETypeCode.String, 1);
-                    }
-                    else
-                    {
-                        var result = ConvertBsonType(array[0]);
-                        return (result.typeCode, result.rank + 1);
-                    }
-                case BsonType.Binary:
-                    return (ETypeCode.Binary, 0);
-                case BsonType.ObjectId:
-                    return (ETypeCode.String, 0);
-                case BsonType.Boolean:
-                    return (ETypeCode.Boolean, 0);
-                case BsonType.DateTime:
-                    return (ETypeCode.DateTime, 0);
-                case BsonType.Null:
-                    return (ETypeCode.String, 0);
-                case BsonType.Int32:
-                    return (ETypeCode.Int32, 0);
-                case BsonType.Timestamp:
-                    return (ETypeCode.Int64, 0);
-                case BsonType.Int64:
-                    return (ETypeCode.Int64, 0);
-                case BsonType.Decimal128:
-                    return (ETypeCode.Decimal, 0);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(bsonValue.BsonType), bsonValue.BsonType, null);
-            }
-        }
+      
 
         /// <summary>
-        /// mongo can always return true for CompareTable, as the columns are not created in the same way relational tables are.
+        /// dynamoDB can always return true for CompareTable, as the columns are not created in the same way relational tables are.
         /// </summary>
         /// <param name="table"></param>
         /// <param name="cancellationToken"></param>
@@ -665,7 +588,7 @@ namespace dexih.connections.mongo
         {
             try
             {
-                var database = GetMongoDatabase();
+                var database = GetDynamoDBDatabase();
                 var collection = database.GetCollection<BsonDocument>(IncrementalKeyTable);
 
                 var filterBuilder = Builders<BsonDocument>.Filter;
@@ -685,7 +608,7 @@ namespace dexih.connections.mongo
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Mongo Error getting incremental key for table {table.Name} {ex.Message}", ex);
+                throw new ConnectionException($"DynamoDB Error getting incremental key for table {table.Name} {ex.Message}", ex);
             }
         }
 
@@ -693,7 +616,7 @@ namespace dexih.connections.mongo
         {
             try
             {
-                var database = GetMongoDatabase();
+                var database = GetDynamoDBDatabase();
                 var collection = database.GetCollection<BsonDocument>(IncrementalKeyTable);
 
                 var filterBuilder = Builders<BsonDocument>.Filter;
@@ -718,7 +641,7 @@ namespace dexih.connections.mongo
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Mongo Error updating incremental key for table {table.Name} {ex.Message}", ex);
+                throw new ConnectionException($"DynamoDB Error updating incremental key for table {table.Name} {ex.Message}", ex);
             }
         }
 
@@ -885,7 +808,7 @@ namespace dexih.connections.mongo
         {
             try
             {
-                var database = GetMongoDatabase();
+                var database = GetDynamoDBDatabase();
                 var collection = database.GetCollection<BsonDocument>(table.Name);
                 var data = new List<BsonDocument>();
                 
@@ -937,7 +860,7 @@ namespace dexih.connections.mongo
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The mongo insert query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The dynamoDB insert query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 
@@ -945,7 +868,7 @@ namespace dexih.connections.mongo
         {
             try
             {
-                var database = GetMongoDatabase();
+                var database = GetDynamoDBDatabase();
                 var collection = database.GetCollection<BsonDocument>(table.Name);
 
                 foreach (var query in queries)
@@ -963,7 +886,7 @@ namespace dexih.connections.mongo
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The mongo update query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The dynamoDB update query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 
@@ -971,7 +894,7 @@ namespace dexih.connections.mongo
         {
             try
             {
-                var database = GetMongoDatabase();
+                var database = GetDynamoDBDatabase();
                 var collection = database.GetCollection<BsonDocument>(table.Name);
 
                 foreach (var query in queries)
@@ -983,7 +906,7 @@ namespace dexih.connections.mongo
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The mongo delete query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The dynamoDB delete query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 
@@ -1003,18 +926,18 @@ namespace dexih.connections.mongo
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The Mongo scalar query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The DynamoDB scalar query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 
         public override Task<DbDataReader> GetDatabaseReader(Table table, DbConnection connection, SelectQuery query, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException("A native database reader is not available for mongo table connections.");
+            throw new NotImplementedException("A native database reader is not available for dynamoDB table connections.");
         }
 
         public override Transform GetTransformReader(Table table, bool previewMode = false)
         {
-            var reader = new ReaderMongo(this, table);
+            var reader = new ReaderDynamoDB(this, table);
             return reader;
         }
 

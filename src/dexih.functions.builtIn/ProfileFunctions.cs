@@ -103,7 +103,7 @@ namespace dexih.functions.BuiltIn
                 distribution = null;
                 return "N/A";
             }
-            var count = _dictionary.Count();
+            var count = _dictionary.Count;
             if (count == 0)
                 result = "N/A";
             if (count == 1 && _dictionary.ContainsKey("DateTime"))
@@ -299,9 +299,9 @@ namespace dexih.functions.BuiltIn
 
             if (_recordCount == 0)
                 return "N/A";
-            if (_dictionary.Count() == _recordCount)
+            if (_dictionary.Count == _recordCount)
                 return "Unique";
-            return _dictionary.Count().ToString();
+            return _dictionary.Count.ToString();
         }
 
         [TransformFunction(FunctionType = EFunctionType.Profile, Category = "Profile", Name = "Patterns", Description = "Find different types of string/numerical patterns.", ResultMethod = nameof(PatternsResult), ResetMethod = nameof(Reset))]

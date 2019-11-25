@@ -150,7 +150,7 @@ namespace dexih.connections.sql
 
                             var parameters = new DbParameter[fieldCount];
 
-                            for (var i = 0; i < columns.Count(); i++)
+                            for (var i = 0; i < columns.Length; i++)
                             {
                                 var param = CreateParameter(cmd, $"{SqlParameterIdentifier}col{i}", columns[i].DataType,
                                     columns[i].Rank, ParameterDirection.Input, null);
@@ -163,7 +163,7 @@ namespace dexih.connections.sql
 
                             while (await reader.ReadAsync(cancellationToken))
                             {
-                                for (var i = 0; i < columns.Count(); i++)
+                                for (var i = 0; i < columns.Length; i++)
                                 {
                                     var column = columns[i];
                                     var converted = ConvertForWrite(column.Name, column.DataType, column.Rank, true, reader[ordinals[i]]);

@@ -673,7 +673,7 @@ namespace dexih.connections.azure
                         }
                         catch (Exception ex)
                         {
-                            throw new ConnectionException($"The filter value could not be convered to a {filter.CompareDataType}.  {ex.Message}", ex, filter.Value2);
+                            throw new ConnectionException($"The filter value could not be converted to a {filter.CompareDataType}.  {ex.Message}", ex, filter.Value2);
                         }
 
                         filterString = GenerateFilterCondition(filter.Column1.Name, filter.Operator, filter.CompareDataType, value2);
@@ -1278,7 +1278,7 @@ namespace dexih.connections.azure
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"The Azure execut scalar query for {table.Name} failed.  { ex.Message} ", ex);
+                throw new ConnectionException($"The Azure execute scalar query for {table.Name} failed.  { ex.Message} ", ex);
             }
         }
 

@@ -80,12 +80,17 @@ namespace dexih.transforms.Mapping
         
         public override object GetOutputValue(object[] row = null)
         {
+            object returnValue;
             if (InputOrdinal == -1 )
             {
-                return InputValue;
+                returnValue = InputValue;
+            }
+            else
+            {
+                returnValue = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];    
             }
 
-            return row == null ? RowData?[InputOrdinal] : row[InputOrdinal];
+            return InputColumn.DataType == OutputColumn.DataType ? returnValue : Operations.Parse(OutputColumn.DataType, returnValue);
         }
 
         public override string Description()

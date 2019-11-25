@@ -150,7 +150,7 @@ using System.Threading.Tasks;
                             jObject[_reader.GetName(i)] = null;
                             continue;
                         }
-
+                        
                         jObject[_reader.GetName(i)] = JToken.FromObject(_reader[i]);
                     }
 

@@ -99,7 +99,7 @@ namespace dexih.transforms
             if (_firstRecord)
             {
                 var seriesMappings = Mappings.OfType<MapSeries>().ToArray();
-                if (seriesMappings.Count() != 1)
+                if (seriesMappings.Length != 1)
                 {
                     throw new TransformException("The series transform must have one (and only on) series mapping defined.");
                 }

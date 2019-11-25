@@ -100,6 +100,11 @@ using System.Threading.Tasks;
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            if (_first && _reader is Transform t && !t.IsOpen )
+            {
+                await t.Open(0, null, cancellationToken);
+            }
+            
             if(!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
             {
                 _reader.Close();

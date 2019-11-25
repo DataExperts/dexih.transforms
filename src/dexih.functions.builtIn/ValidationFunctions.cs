@@ -4,7 +4,7 @@ namespace dexih.functions.BuiltIn
 {
     public class ValidationFunctions
     {
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Clean Blank String", Description = "Checks if the string is blank or null, and sets to the defualtValue when true.")]
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Clean Blank String", Description = "Checks if the string is blank or null, and sets to the default value when true.")]
         public bool CleanBlankString(
             [TransformFunctionParameter(Description = "Value to test for blanks")] string value,
             [TransformFunctionParameter(Description = "Value to set when blank")] string defaultValue,
@@ -19,7 +19,7 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Clean Null", Description = "Checks if the string is null, and sets to the defualtValue when true.")]
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Clean Null", Description = "Checks if the string is null, and sets to the default value when true.")]
         public bool CleanNull(
             [TransformFunctionParameter(Description = "Value to test for nulls")] string value,
             [TransformFunctionParameter(Description = "Value to set when null")] string defaultValue,

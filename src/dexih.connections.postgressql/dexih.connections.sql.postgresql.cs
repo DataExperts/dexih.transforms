@@ -333,7 +333,7 @@ namespace dexih.connections.postgressql
                     var hostport = Server.Split(':');
                     string port;
                     var host = hostport[0];
-                    if (hostport.Count() == 1)
+                    if (hostport.Length == 1)
                     {
                         port = "5432";
                     } else

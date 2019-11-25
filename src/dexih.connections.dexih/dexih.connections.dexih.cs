@@ -187,7 +187,7 @@ namespace dexih.connections.dexih
             {
                 if (_activeAgent.DownloadUrls.Length == 0)
                 {
-                    throw new ConnectionException($"There are no download urls available for the remoate agent {_activeAgent.Name}.");
+                    throw new ConnectionException($"There are no download urls available for the remote agent {_activeAgent.Name}.");
                 }
 
                 foreach (var downloadUrl in _activeAgent.DownloadUrls)
@@ -200,7 +200,7 @@ namespace dexih.connections.dexih
                     }
                 }
 
-                throw new ConnectionException($"Could not connect with any of the download urls for the remoate agent {_activeAgent.Name}.");
+                throw new ConnectionException($"Could not connect with any of the download urls for the remote agent {_activeAgent.Name}.");
             }
 
             return _downloadUrl;

@@ -2,18 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
-      <change afterPath="$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.builtIn/AggregateFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.builtIn/AggregateFunctions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.builtIn/MapFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.builtIn/MapFunctions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/Functions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/Functions.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerJson.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerJson.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformValidation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformValidation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -134,6 +127,7 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/F2C302CA-191A-4ADF-889D-A299A582E348/64/1bcb442c/IMongoCollectionExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.initialize.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.ftp/FtpStream.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/Stocks.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapValidation.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" root0="FORCE_HIGHLIGHTING" />
@@ -199,7 +193,6 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableIndex.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/FilePermissions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/dexih.connections.webservice.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/SortedRowsDictionary.cs" root0="FORCE_HIGHLIGHTING" />
@@ -316,6 +309,7 @@
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/31575819-B2FF-42E0-944E-7701C0D109C7/bb/c036c307/Operations`1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Extensions/JsonExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/obj/Debug/netcoreapp2.0/ReaderExamples.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
@@ -348,7 +342,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" />
@@ -399,6 +392,7 @@
         <option value="$PROJECT_DIR$/src/dexih.functions.builtIn/MapFunctions.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" />
         <option value="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" />
       </list>
     </option>
   </component>
@@ -717,6 +711,8 @@
       <workItem from="1571530060549" duration="98000" />
       <workItem from="1571530273718" duration="13991000" />
       <workItem from="1573689233360" duration="1381000" />
+      <workItem from="1574118074218" duration="1894000" />
+      <workItem from="1574120123016" duration="943000" />
     </task>
     <task id="LOCAL-00019" summary="fixing soap project to compile.">
       <created>1501808925968</created>

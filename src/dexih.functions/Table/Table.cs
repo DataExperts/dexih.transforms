@@ -561,7 +561,7 @@ namespace dexih.functions
 
         public void AddRow(params object[] values)
         {
-            if (values.Length != Columns.Count())
+            if (values.Length != Columns.Count)
                 throw new Exception("The number of parameters must match the number of columns (" + Columns.Count + ") precisely.");
 
             var row = new object[Columns.Count];

@@ -109,10 +109,10 @@ namespace dexih.functions
     /// <returns></returns>
     public override bool Equals(object obj)
     {
-      if (obj is ShortGuid)
-        return _guid.Equals(((ShortGuid)obj)._guid);
-      if (obj is Guid)
-        return _guid.Equals((Guid)obj);
+      if (obj is ShortGuid guid)
+        return _guid.Equals(guid._guid);
+      if (obj is Guid guid1)
+        return _guid.Equals(guid1);
       if (obj is string)
         return _guid.Equals(((ShortGuid)obj)._guid);
       return false;

@@ -173,9 +173,8 @@ namespace dexih.connections.ftp
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
                 var fileNameExtension = Path.GetExtension(fileName);
                 var version = 0;
-                string newFileName;
 
-                newFileName = fileName;
+                var newFileName = fileName;
                 var fullToDirectory = GetFullPath(file, toPath);
                 var fullFromDirectory = GetFullPath(file, fromPath);
 

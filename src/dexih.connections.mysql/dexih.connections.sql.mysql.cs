@@ -376,8 +376,8 @@ namespace dexih.connections.mysql
                     returnValue = "'" + MySqlHelper.EscapeString(value.ToString()) + "'";
                     break;
                 case ETypeCode.DateTime:
-                    if (value is DateTime)
-                        returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
+                    if (value is DateTime time)
+                        returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(time.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     else
 						returnValue = "STR_TO_DATE('"+ MySqlHelper.EscapeString((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     break;
@@ -410,7 +410,7 @@ namespace dexih.connections.mysql
                 {
                     var hostport = Server.Split(':');
                     string port;
-                    if (hostport.Count() == 1)
+                    if (hostport.Length == 1)
                     {
                         port = "";
                     }
@@ -650,7 +650,7 @@ namespace dexih.connections.mysql
                     return ETypeCode.Decimal;
 				case "float":
                 case "real":
-                case "double precicion":
+                case "double precision":
 				    return ETypeCode.Double;
 				case "bool": 
 				case "boolean": 

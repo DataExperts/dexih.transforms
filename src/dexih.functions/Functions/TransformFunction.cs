@@ -455,7 +455,7 @@ namespace dexih.functions
 			{
 				var (parameters, _) = SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
 
-				if (parameters.Contains(null))
+				if (inputParameters.Contains(null) || inputParameters.Contains(DBNull.Value))
 				{
 					switch (OnNull)
 					{
@@ -504,7 +504,7 @@ namespace dexih.functions
 				var (parameters, outputPos) =
 					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
 
-				if (parameters.Take(outputPos).Contains(null))
+				if (inputParameters.Contains(null) || inputParameters.Contains(DBNull.Value))
 				{
 					switch (OnNull)
 					{

@@ -497,12 +497,12 @@ namespace dexih.connections.excel
 	    public object ParseExcelValue(object value, TableColumn column)
 	    {
 		    object parsedValue;
-		    if (value is double && column.DataType == ETypeCode.DateTime)
+		    if (value is double d && column.DataType == ETypeCode.DateTime)
 		    {
-			    parsedValue = FromExcelSerialDate((double) value);
-		    } else if (value is double && column.DataType == ETypeCode.Time)
+			    parsedValue = FromExcelSerialDate(d);
+		    } else if (value is double value1 && column.DataType == ETypeCode.Time)
 		    {
-			    parsedValue = FromExcelSerialTime((double) value);
+			    parsedValue = FromExcelSerialTime(value1);
 		    }
 		    else
 		    {

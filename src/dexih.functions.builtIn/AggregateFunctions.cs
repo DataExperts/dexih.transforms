@@ -372,7 +372,7 @@ namespace dexih.functions.BuiltIn
                 }
                 else
                 {
-                    rank = _sortedRowsDictionary.Count();
+                    rank = _sortedRowsDictionary.Count;
                     increment = -1;
                 }
                 

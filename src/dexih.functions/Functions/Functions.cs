@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -329,6 +330,7 @@ namespace dexih.functions
         {
             var functions = new List<FunctionReference>();
 
+            var count = 0;
             foreach (var path in SearchPaths())
             {
                 if (Directory.Exists(path.path))
@@ -353,12 +355,15 @@ namespace dexih.functions
                                 {
                                     function.FunctionAssemblyName = assemblyName;
                                     functions.Add(function);
+                                    count++;
                                 }
                             }
                         }
                     }
                 }
             }
+            
+            Debug.WriteLine($"Total of {count} functions loaded.");
 
             return functions;
         }

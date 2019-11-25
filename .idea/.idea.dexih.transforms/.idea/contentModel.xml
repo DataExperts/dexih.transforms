@@ -582,6 +582,7 @@
           <e p="Currency.cs" t="Include" />
           <e p="dexih.functions.external.csproj" t="IncludeRecursive" />
           <e p="dexih.functions.external.csproj.DotSettings" t="Include" />
+          <e p="IpAddress.cs" t="Include" />
           <e p="obj" t="ExcludeRecursive">
             <e p="Debug" t="Include">
               <e p="netcoreapp2.1" t="Include">
