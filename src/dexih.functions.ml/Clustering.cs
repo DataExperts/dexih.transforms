@@ -124,8 +124,8 @@ namespace dexih.functions.ml
         
         public byte[] ClusteringSdcaTrainResult(
             [TransformFunctionParameter(Description = "Maximum number of passes to iterate over the data.")] int maximumNumberOfIterations = 30,
-            [TransformFunctionParameter(Description = "The L2 weight for [https://en.wikipedia.org/wiki/Regularization_(mathematics)](regularization))")] float? l2Regularization = null,
-            [TransformFunctionParameter(Description = "The L1 [https://en.wikipedia.org/wiki/Regularization_(mathematics)](regularization) hyperparameter. Higher values will tend to lead to more sparse model.")] float? l1Regularization = null
+            [TransformFunctionParameter(Description = "The L2 weight for [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics)))")] float? l2Regularization = null,
+            [TransformFunctionParameter(Description = "The L1 [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics)) hyperparameter. Higher values will tend to lead to more sparse model.")] float? l1Regularization = null
             )
         {
             // Create a new context for ML.NET operations. It can be used for exception tracking and logging,

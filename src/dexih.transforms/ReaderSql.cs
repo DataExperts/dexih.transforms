@@ -21,7 +21,7 @@ namespace dexih.connections.sql
         public ReaderSql(ConnectionSql connection, Table table)
         {
             ReferenceConnection = connection;
-            CacheTable = table;
+            CacheTable = table.Copy(removeIgnoreColumns: true);
             Name = table.Name;
         }
         

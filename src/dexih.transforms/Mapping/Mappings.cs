@@ -100,10 +100,12 @@ namespace dexih.transforms.Mapping
                 _passThroughOrdinals = new Dictionary<int, int>();
                 _passThroughColumns = new List<TableColumn>();
                 var targetOrdinal = table.Columns.Count - 1;
+
+                var inputColumns = inputTable.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField).ToArray();
                 
-                for(var i = 0; i < inputTable.Columns.Count; i++)
+                for(var i = 0; i < inputColumns.Length; i++)
                 {
-                    var column = inputTable.Columns[i];
+                    var column = inputColumns[i];
                     
                     if(column.IsParent) { continue; }
 
@@ -135,9 +137,11 @@ namespace dexih.transforms.Mapping
                     else
                     {
                         // add the join columns to the main table.
-                        for (var i = 0; i < joinTable.Columns.Count; i++)
+                        var joinColumns = joinTable.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField).ToArray();
+                        
+                        for (var i = 0; i < joinColumns.Length; i++)
                         {
-                            var column = joinTable.Columns[i];
+                            var column = joinColumns[i];
 
                             var newColumn = column.Copy();
                             newColumn.ReferenceTable = joinTableAlias;
