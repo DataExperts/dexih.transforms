@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
-      <change afterPath="$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/Functions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/Functions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -713,6 +709,7 @@
       <workItem from="1573689233360" duration="1381000" />
       <workItem from="1574118074218" duration="1894000" />
       <workItem from="1574120123016" duration="943000" />
+      <workItem from="1574752035056" duration="642000" />
     </task>
     <task id="LOCAL-00019" summary="fixing soap project to compile.">
       <created>1501808925968</created>
@@ -1308,6 +1305,32 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="1362" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs</url>
+          <line>110</line>
+          <properties documentPath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" initialLine="110">
+            <startOffsets>
+              <option value="5495" />
+            </startOffsets>
+            <endOffsets>
+              <option value="5563" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1363" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs</url>
+          <line>40</line>
+          <properties documentPath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" initialLine="40">
+            <startOffsets>
+              <option value="1200" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1226" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1364" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

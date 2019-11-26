@@ -533,7 +533,9 @@ namespace dexih.functions
             var table = new Table(Name, Schema)
             {
                 Description = Description,
-                LogicalName = LogicalName
+                LogicalName = LogicalName,
+                UseQuery = UseQuery,
+                QueryString = QueryString
             };
 
 
