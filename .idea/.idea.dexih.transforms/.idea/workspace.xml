@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -338,7 +336,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.reader.cs" />
@@ -389,6 +386,7 @@
         <option value="$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" />
         <option value="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" />
       </list>
     </option>
   </component>
@@ -709,7 +707,7 @@
       <workItem from="1573689233360" duration="1381000" />
       <workItem from="1574118074218" duration="1894000" />
       <workItem from="1574120123016" duration="943000" />
-      <workItem from="1574752035056" duration="642000" />
+      <workItem from="1574752035056" duration="1125000" />
     </task>
     <task id="LOCAL-00019" summary="fixing soap project to compile.">
       <created>1501808925968</created>

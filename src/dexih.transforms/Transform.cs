@@ -154,6 +154,11 @@ namespace dexih.transforms
 
         public virtual long AutoIncrementValue => PrimaryTransform?.AutoIncrementValue ?? 0;
 
+        public virtual bool CanPushAggregate { get; } = false;
+        public virtual bool CanPushSort { get; } = false;
+        public virtual bool CanPushFilter { get; } = false;
+        public virtual bool CanPushMap { get; } = false;
+
         #endregion
 
         #region Abstract Properties
@@ -230,6 +235,7 @@ namespace dexih.transforms
 
             CacheTable = InitializeCacheTable(mapAllReferenceColumns); // Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
 
+            
             //if the transform requires a sort and input data it not sorted, then add a sort transform.
             if (RequiresSort)
             {
@@ -270,6 +276,11 @@ namespace dexih.transforms
             return true;
         }
 
+        /// <summary>
+        /// Adjusts the selectQuery items such as rows
+        /// </summary>
+        /// <param name="selectQuery"></param>
+        /// <param name="resetRows"></param>
         protected void SetSelectQuery(SelectQuery selectQuery, bool resetRows)
         {
             if (selectQuery == null)
@@ -1354,7 +1365,7 @@ namespace dexih.transforms
                 {
                     if (Mappings != null)
                     {
-                        await Mappings.Open();
+                        await Mappings.Open(PrimaryTransform.CacheTable, ReferenceTransform?.CacheTable);
                     }
 
                     if (IsReader)

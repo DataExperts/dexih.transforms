@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms.Mapping
@@ -154,14 +155,14 @@ namespace dexih.transforms.Mapping
             return $"Join({item1} {Compare} {item2}";
         }
 
-        public override IEnumerable<TableColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns()
         {
             if (InputColumn == null)
             {
-                return new TableColumn[0];
+                return new SelectColumn[0];
             }
 
-            return new[] {InputColumn};
+            return new[] {new SelectColumn(InputColumn)};
         }
 
         public override IEnumerable<TableColumn> GetRequiredReferenceColumns()

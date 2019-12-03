@@ -218,10 +218,13 @@ namespace dexih.transforms.Mapping
         /// Run any open function logic such as preloading caches.
         /// </summary>
         /// <returns></returns>
-        public async Task Open()
+        public async Task Open(Table inputTable, Table joinTable = null)
         {
             foreach (var mapping in _primaryMappings)
             {
+                // re-initialize the columns as the ordinals might change between initialize call and open call
+                mapping.InitializeColumns(inputTable, joinTable, _detailMappings);
+                
                 await mapping.Open();
             }
         }
@@ -451,14 +454,14 @@ namespace dexih.transforms.Mapping
         /// Gets the required source columns required for the mappings.
         /// </summary>
         /// <returns></returns>
-        public TableColumn[] GetRequiredColumns(bool ignorePassthrough = false)
+        public SelectColumn[] GetRequiredColumns(bool ignorePassthrough = false)
         {
             if (PassThroughColumns && !ignorePassthrough)
             {
                 return null;
             }
             
-            var columns = new HashSet<TableColumn>();
+            var columns = new HashSet<SelectColumn>();
             
             foreach (var mapping in this)
             {

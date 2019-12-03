@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Query;
 
 namespace dexih.transforms.Mapping
 {
@@ -43,10 +44,6 @@ namespace dexih.transforms.Mapping
         /// <returns>0 filters or joins match, -1 row less than joinRow, 1 row greater than joinRow--></returns>
         public abstract Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default);
         
-        public Task<bool> ProcessInputRowAsync(object[] row, object[] joinRow = null)
-        {
-            return ProcessInputRowAsync(new FunctionVariables(), row, joinRow, CancellationToken.None);
-        }
         
         /// <summary>
         /// Gets the mapping result, and updates the row.
@@ -108,7 +105,7 @@ namespace dexih.transforms.Mapping
             return ordinal;
         }
 
-        public abstract IEnumerable<TableColumn> GetRequiredColumns();
+        public abstract IEnumerable<SelectColumn> GetRequiredColumns();
 
         public virtual IEnumerable<TableColumn> GetRequiredReferenceColumns()
         {

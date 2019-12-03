@@ -65,7 +65,7 @@ namespace dexih.transforms
 
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
-            await _profileMappings.Open();
+            await _profileMappings.Open(PrimaryTransform.CacheTable, ReferenceTransform?.CacheTable);
             await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 
             IsOpen = true;

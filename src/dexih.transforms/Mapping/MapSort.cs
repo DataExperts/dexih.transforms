@@ -71,14 +71,14 @@ namespace dexih.transforms.Mapping
             _rowData = null;
         }
         
-        public override IEnumerable<TableColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns()
         {
             if (InputColumn == null)
             {
-                return new TableColumn[0];
+                return new SelectColumn[0];
             }
 
-            return new[] {InputColumn};
+            return new[] {new SelectColumn(InputColumn)};
         }
 
     }

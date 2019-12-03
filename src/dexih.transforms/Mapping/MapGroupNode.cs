@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Query;
 
 namespace dexih.transforms.Mapping
 {
@@ -150,9 +151,9 @@ namespace dexih.transforms.Mapping
         {
         }
 
-        public override IEnumerable<TableColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns()
         {
-            return new[] {NodeColumn};
+            return new[] {new SelectColumn(NodeColumn)};
         }
     }
 }

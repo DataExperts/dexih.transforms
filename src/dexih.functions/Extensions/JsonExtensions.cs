@@ -11,7 +11,7 @@ namespace dexih.functions
         private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonObjectConverter(), new JsonTimeSpanConverter()}
+            Converters = { new JsonObjectConverter(), new JsonTimeSpanConverter(), new JsonDoubleConverter(), new JsonFloatConverter()}
 //            IgnoreNullValues = true
         };
         

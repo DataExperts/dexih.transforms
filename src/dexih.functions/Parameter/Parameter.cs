@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using dexih.functions.Exceptions;
+using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 
@@ -97,18 +98,18 @@ namespace dexih.functions.Parameter
         ///  gets input columns required by this parameter.
         /// </summary>
         /// <returns></returns>
-        public virtual IEnumerable<TableColumn> GetRequiredColumns()
+        public virtual IEnumerable<SelectColumn> GetRequiredColumns()
         {
-            return new TableColumn[0];
+            return new SelectColumn[0];
         }
 
         /// <summary>
         /// Gets reference columns required by this parameter.
         /// </summary>
         /// <returns></returns>
-        public virtual IEnumerable<TableColumn> GetRequiredReferenceColumns()
+        public virtual IEnumerable<SelectColumn> GetRequiredReferenceColumns()
         {
-            return new TableColumn[0];
+            return new SelectColumn[0];
         }
 
     }

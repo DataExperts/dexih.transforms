@@ -322,17 +322,24 @@ namespace dexih.connections.sql
 
         protected string AggregateFunction(SelectColumn column)
         {
-            switch (column.Aggregate)
-            {
-                case null: return AddDelimiter(column.Column.Name);
-                case SelectColumn.EAggregate.Sum: return "sum(" + AddDelimiter(column.Column.Name) + ")";
-                case SelectColumn.EAggregate.Average: return "avg(" + AddDelimiter(column.Column.Name) + ")";
-                case SelectColumn.EAggregate.Min: return "min(" + AddDelimiter(column.Column.Name) + ")";
-                case SelectColumn.EAggregate.Max: return "max(" + AddDelimiter(column.Column.Name) + ")";
-                case SelectColumn.EAggregate.Count: return "count(" + AddDelimiter(column.Column.Name) + ")";
-            }
+            var selectColumn = AddDelimiter(column.Column.Name);
 
-            return ""; //not possible to get here.
+            if (column.Aggregate == SelectColumn.EAggregate.None)
+            {
+                return selectColumn;
+            }
+            
+            var agg = column.Aggregate switch
+            {
+                SelectColumn.EAggregate.Sum => "sum",
+                SelectColumn.EAggregate.Average => "sum",
+                SelectColumn.EAggregate.Min => "min",
+                SelectColumn.EAggregate.Max => "max",
+                SelectColumn.EAggregate.Count => "count",
+                _ => throw new NotSupportedException()
+            };
+
+            return $"{agg}({selectColumn}) {AddDelimiter(column.GetOutputName())}";
         }
 
         public override async Task<int> StartTransaction()
@@ -1040,7 +1047,7 @@ namespace dexih.connections.sql
 #if DEBUG
                     throw new ConnectionException($"The reader for table {table.Name} returned failed.  {ex.Message}.  The command was: {cmd.CommandText}", ex);
 #else
-                        throw new ConnectionException($"The reader for table {table.Name} returned failed.  {ex.Message}", ex);
+                    throw new ConnectionException($"The reader for table {table.Name} returned failed.  {ex.Message}", ex);
 #endif
                 }
 

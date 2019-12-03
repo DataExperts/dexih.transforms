@@ -13,31 +13,34 @@ namespace dexih.functions.Query
         public SelectColumn(TableColumn column)
         {
             Column = column;
-            Aggregate = null;
+            Aggregate = EAggregate.None;
         }
 
-        public SelectColumn(TableColumn column, EAggregate aggregate)
+        public SelectColumn(TableColumn column, EAggregate aggregate, TableColumn outputColumn)
         {
             Column = column;
             Aggregate = aggregate;
+            OutputColumn = outputColumn;
         }
 
         public SelectColumn(string columnName)
         {
             Column = new TableColumn(columnName);
-            Aggregate = null;
+            Aggregate = EAggregate.None;
         }
 
-        public SelectColumn(string columnName, EAggregate aggregate)
+        public SelectColumn(string columnName, EAggregate aggregate, string outputColumnName)
         {
             Column = new TableColumn(columnName);
             Aggregate = aggregate;
+            OutputColumn = new TableColumn(outputColumnName);
         }
 
         // [JsonConverter(typeof(StringEnumConverter))]
         public enum EAggregate
         {
-            Sum = 1,
+            None = 0,
+            Sum,
             Average,
             Min,
             Max,
@@ -49,8 +52,16 @@ namespace dexih.functions.Query
         [Key(0)]
         public TableColumn Column { get; set; }
 
-        [Key(1)]
-        public EAggregate? Aggregate { get; set; }
+        [Key(1)] 
+        public EAggregate Aggregate { get; set; } = EAggregate.None;
+
+        [Key(2)] 
+        public TableColumn OutputColumn { get; set; }
+        
+        public string GetOutputName()
+        {
+            return OutputColumn?.Name ?? Column.Name;
+        }
 
         public bool Equals(SelectColumn other)
         {

@@ -45,7 +45,7 @@ namespace dexih.transforms
             selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
-            selectQuery.Columns = Mappings.GetRequiredColumns()?.Select(c => new SelectColumn(c)).ToList();
+            selectQuery.Columns = Mappings.GetRequiredColumns()?.ToList();
             
 	        //we need to translate filters and sorts to source column names before passing them through.
             if(selectQuery?.Filters != null)

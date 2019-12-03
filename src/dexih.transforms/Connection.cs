@@ -548,7 +548,7 @@ namespace dexih.transforms
 
             var query = new SelectQuery()
             {
-                Columns = new List<SelectColumn> { new SelectColumn(incrementalColumn, SelectColumn.EAggregate.Max) },
+                Columns = new List<SelectColumn> { new SelectColumn(incrementalColumn, SelectColumn.EAggregate.Max, incrementalColumn) },
                 Table = table.Name
             };
 

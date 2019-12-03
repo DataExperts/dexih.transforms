@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.Parameter
@@ -78,7 +79,7 @@ namespace dexih.functions.Parameter
 		    set { }
 	    }
 
-	    public override IEnumerable<TableColumn> GetRequiredColumns()
+	    public override IEnumerable<SelectColumn> GetRequiredColumns()
 	    {
 		    return Parameters.SelectMany(c => c.GetRequiredColumns());
 	    }

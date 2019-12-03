@@ -108,9 +108,9 @@ namespace dexih.transforms
             }
             
             // if there are aggregates ,insert a group transform.
-            if (SelectQuery.Columns.Any(c => c.Aggregate != null) || SelectQuery.Groups?.Count > 0)
+            if (SelectQuery.Columns.Any(c => c.Aggregate != SelectColumn.EAggregate.None) || SelectQuery.Groups?.Count > 0)
             {
-                if (SelectQuery.Columns.Any(c => c.Aggregate == null))
+                if (SelectQuery.Columns.Any(c => c.Aggregate == SelectColumn.EAggregate.None))
                 {
                     throw new TransformException("The query transform failed as there was a mix of aggregate and non aggregate columns in the one query.");
                 }
@@ -121,9 +121,9 @@ namespace dexih.transforms
                     mappings.Add(new MapGroup(group));
                 }
 
-                foreach (var column in SelectQuery.Columns.Where(c => c.Aggregate != null))
+                foreach (var column in SelectQuery.Columns.Where(c => c.Aggregate != SelectColumn.EAggregate.None))
                 {
-                    mappings.Add(new MapAggregate(column.Column, column.Column, column.Aggregate.Value));
+                    mappings.Add(new MapAggregate(column.Column, column.Column, column.Aggregate));
                 }
 
                 var groupTransform = new TransformGroup(PrimaryTransform, mappings)

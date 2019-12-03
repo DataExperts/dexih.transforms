@@ -139,7 +139,6 @@ namespace dexih.functions
         public TableColumns ChildColumns { get; set; }
 
         public bool IsAutoIncrement() => DeltaType == EDeltaType.DbAutoIncrement || DeltaType == EDeltaType.AutoIncrement;
-
         
         [JsonIgnore, CopyIgnore, IgnoreMember]
         public Type ColumnGetType

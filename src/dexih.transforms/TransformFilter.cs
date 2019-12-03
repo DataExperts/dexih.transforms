@@ -42,7 +42,7 @@ namespace dexih.transforms
 
             if (selectQuery.Columns != null && selectQuery.Columns.Count > 0)
             {
-                var requiredColumns = Mappings.GetRequiredColumns(true)?.Select(c => new SelectColumn(c)).ToList();
+                var requiredColumns = Mappings.GetRequiredColumns(true)?.ToList();
 
                 if (requiredColumns == null)
                 {

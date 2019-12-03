@@ -46,13 +46,15 @@ namespace dexih.transforms
         public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
-            SelectQuery = selectQuery;
+            
+            SetSelectQuery(selectQuery, true);
+
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 
             ReferenceTransform.SetCacheMethod(ECacheMethod.LookupCache, 1000);
             
-            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
             return returnValue;
         }
 

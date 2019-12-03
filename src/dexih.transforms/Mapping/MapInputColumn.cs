@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Query;
 
 namespace dexih.transforms.Mapping
 {
@@ -62,14 +63,14 @@ namespace dexih.transforms.Mapping
         {
         }
 
-        public override IEnumerable<TableColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns()
         {
             if (InputColumn == null)
             {
-                return new TableColumn[0];
+                return new SelectColumn[0];
             }
 
-            return new[] {InputColumn};
+            return new[] {new SelectColumn(InputColumn), };
         }
 
         public void SetInput(IEnumerable<TableColumn> inputColumns)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms.Mapping
@@ -108,11 +109,11 @@ namespace dexih.transforms.Mapping
             return filter;
         }
         
-        public override IEnumerable<TableColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns()
         {
-            var columns = new List<TableColumn>();
-            if(Column1 != null) { columns.Add(Column1);}
-            if(Column2 != null) { columns.Add(Column2);}
+            var columns = new List<SelectColumn>();
+            if (Column1 != null) { columns.Add(new SelectColumn(Column1));}
+            if(Column2 != null) { columns.Add(new SelectColumn(Column2));}
             return columns;
         }
 

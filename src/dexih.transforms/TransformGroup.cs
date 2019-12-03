@@ -32,6 +32,9 @@ namespace dexih.transforms
         
         private Queue<object[]> _cachedRows;
 
+        // indicates the database is executing the group by function.
+        private bool _isPushDownQuery;
+
         public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
 
         public override string TransformName { get; } = "Group";
@@ -58,8 +61,7 @@ namespace dexih.transforms
             selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
-            selectQuery.Columns = Mappings.GetRequiredColumns()?.Select(c => new SelectColumn(c)).ToList();
-
+            selectQuery.Columns = Mappings.GetRequiredColumns()?.ToList();
 
             var requiredSorts = RequiredSortFields();
 
@@ -74,6 +76,52 @@ namespace dexih.transforms
                 }
             }
 
+            var canPushDownGroup = false;
+            var groups = new List<TableColumn>();
+
+            if (PrimaryTransform.CanPushAggregate)
+            {
+                canPushDownGroup = true;
+                foreach (var mapping in Mappings)
+                {
+                    switch (mapping)
+                    {
+                        case MapGroup mapGroup:
+                            groups.Add(mapGroup.InputColumn);
+                            break;
+                        case MapAggregate mapAggregate:
+                            // first & last aggregates are not supported for push down
+                            if (mapAggregate.Aggregate == SelectColumn.EAggregate.First ||
+                                mapAggregate.Aggregate == SelectColumn.EAggregate.Last)
+                                canPushDownGroup = false;
+                            break;
+                        default:
+                            canPushDownGroup = false;
+                            break;
+                    }
+
+                    if (!canPushDownGroup) break;
+                }
+            }
+
+            if (canPushDownGroup)
+            {
+                _isPushDownQuery = true;
+                selectQuery.Groups = groups;
+            }
+            else
+            {
+                var newColumns = new HashSet<SelectColumn>();
+                foreach (var column in selectQuery.Columns)
+                {
+                    column.Aggregate = SelectColumn.EAggregate.None;
+                    column.OutputColumn = null;
+                    newColumns.Add(column);
+                }
+
+                selectQuery.Columns = newColumns.ToList();
+            }
+
             selectQuery.Sorts = requiredSorts;
 
             SetSelectQuery(selectQuery, true);
@@ -81,8 +129,7 @@ namespace dexih.transforms
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             return returnValue;
         }
-
-
+        
         public override bool ResetTransform()
         {
             Mappings.Reset(EFunctionType.Aggregate);
@@ -96,6 +143,12 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
+            if (_isPushDownQuery)
+            {
+                var returnValue = PrimaryTransform.Read();
+                return returnValue ? PrimaryTransform.CurrentRow : null;
+            }
+            
             var outputRow = new object[FieldCount];
 
             if (_firstRecord)
@@ -112,7 +165,6 @@ namespace dexih.transforms
                 {
                     TransformRowsIgnored += 1;
                 }
-                
             }
             
             // used to track if the group fields have changed

@@ -42,7 +42,7 @@ namespace dexih.transforms
             selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
-            selectQuery.Columns = Mappings.GetRequiredColumns()?.Select(c => new SelectColumn(c)).ToList();
+            selectQuery.Columns = Mappings.GetRequiredColumns()?.ToList();
 
 
             var groupFields = Mappings.OfType<MapGroup>().ToArray();

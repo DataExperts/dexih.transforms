@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
+using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms.Mapping
@@ -84,13 +85,13 @@ namespace dexih.transforms.Mapping
             if (InputOrdinal == -1 )
             {
                 returnValue = InputValue;
+                return Operations.Parse(OutputColumn.DataType, returnValue);
             }
             else
             {
-                returnValue = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];    
+                returnValue = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];
+                return InputColumn.DataType == OutputColumn.DataType ? returnValue : Operations.Parse(OutputColumn.DataType, returnValue);
             }
-
-            return InputColumn.DataType == OutputColumn.DataType ? returnValue : Operations.Parse(OutputColumn.DataType, returnValue);
         }
 
         public override string Description()
@@ -102,9 +103,9 @@ namespace dexih.transforms.Mapping
         {
         }
         
-        public override IEnumerable<TableColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns()
         {
-            return new []{InputColumn};
+            return new []{new SelectColumn(InputColumn)};
         }
 
 

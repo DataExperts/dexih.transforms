@@ -12,6 +12,8 @@ namespace dexih.connections.sql
 {
     public sealed class ReaderSql : Transform
     {
+        public override bool CanPushAggregate { get; } = true;
+        
         private DbDataReader _sqlReader;
         private DbConnection _sqlConnection;
 
@@ -60,6 +62,15 @@ namespace dexih.connections.sql
                 AuditKey = auditKey;
                 IsOpen = true;
                 SelectQuery = selectQuery;
+
+                if (SelectQuery.Columns?.Count > 0)
+                {
+                    CacheTable.Columns.Clear();
+                    foreach (var column in SelectQuery.Columns)
+                    {
+                        CacheTable.Columns.Add(column.OutputColumn?? column.Column);
+                    }
+                }
 
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
                 _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, selectQuery, cancellationToken);

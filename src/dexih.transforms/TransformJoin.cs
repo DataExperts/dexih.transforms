@@ -268,21 +268,8 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
-            if (selectQuery == null)
-            {
-                selectQuery = new SelectQuery();
-            }
-            else
-            {
-                if (selectQuery.Rows > 0 && selectQuery.Rows < MaxOutputRows)
-                {
-                    MaxOutputRows = selectQuery.Rows;
-                }
+            SetSelectQuery(selectQuery, true);
 
-                selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
-                selectQuery.Rows = -1;
-            }
-            
             if (_cacheLoaded) return true;
 
             await InitializeOutputFields();
@@ -290,7 +277,6 @@ namespace dexih.transforms
             //only apply a sort if there is not already a sort applied.
             selectQuery.Sorts = RequiredSortFields();
 
-            SetSelectQuery(selectQuery, true);
 
             var referenceQuery = new SelectQuery()
             {

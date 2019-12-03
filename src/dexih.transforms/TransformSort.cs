@@ -17,6 +17,8 @@ namespace dexih.transforms
     )]
     public class TransformSort : Transform
     {
+        public override bool CanPushAggregate => PrimaryTransform?.CanPushAggregate ?? false;
+
         private bool _alreadySorted;
         private bool _firstRead;
         private SortedRowsDictionary<object> _sortedDictionary;
@@ -32,8 +34,6 @@ namespace dexih.transforms
         {
             Mappings = mappings;
             SetInTransform(inTransform);
-            
-            
         }
 
         public TransformSort(Transform inTransform, Sorts sortFields)
