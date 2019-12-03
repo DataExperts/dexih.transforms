@@ -12,6 +12,8 @@ namespace dexih.functions.tests
 {
     public class MappingsTests
     {
+        static FunctionVariables _functionVariables = new FunctionVariables();
+        
         [Fact]
         public async void Mapping_Column()
         {
@@ -28,7 +30,7 @@ namespace dexih.functions.tests
             mapColumn.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
-            await mapColumn.ProcessInputRowAsync(inputRow);
+            await mapColumn.ProcessInputRowAsync(_functionVariables, inputRow);
             mapColumn.MapOutputRow(outputRow);
 
             Assert.Equal("123", outputRow[0]);
@@ -36,7 +38,7 @@ namespace dexih.functions.tests
             mapColumn = new MapColumn(inputColumn, outputColumn);
             mapColumn.InitializeColumns(inputTable);
             mapColumn.AddOutputColumns(outputTable);
-            await mapColumn.ProcessInputRowAsync(inputRow);
+            await mapColumn.ProcessInputRowAsync(_functionVariables, inputRow);
             mapColumn.MapOutputRow(outputRow);
             
             Assert.Equal("field1", outputRow[0]);
@@ -58,7 +60,7 @@ namespace dexih.functions.tests
             mapColumn.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
-            await mapColumn.ProcessInputRowAsync(inputRow);
+            await mapColumn.ProcessInputRowAsync(_functionVariables, inputRow);
             mapColumn.MapOutputRow(outputRow);
 
             Assert.Equal("123", outputRow[0]);
@@ -66,7 +68,7 @@ namespace dexih.functions.tests
             mapColumn = new MapGroup(inputColumn, outputColumn);
             mapColumn.InitializeColumns(inputTable);
             mapColumn.AddOutputColumns(outputTable);
-            await mapColumn.ProcessInputRowAsync(inputRow);
+            await mapColumn.ProcessInputRowAsync(_functionVariables, inputRow);
             mapColumn.MapOutputRow(outputRow);
             
             Assert.Equal("field1", outputRow[0]);
@@ -88,19 +90,19 @@ namespace dexih.functions.tests
             // test filter
             var mapFilter = new MapFilter(inputColumn1, "val1");
             mapFilter.InitializeColumns(inputTable);
-            Assert.True(await mapFilter.ProcessInputRowAsync(inputRow));
+            Assert.True(await mapFilter.ProcessInputRowAsync(_functionVariables, inputRow));
             
             mapFilter = new MapFilter(inputColumn1, "not val1");
             mapFilter.InitializeColumns(inputTable);
-            Assert.False(await mapFilter.ProcessInputRowAsync(inputRow));
+            Assert.False(await mapFilter.ProcessInputRowAsync(_functionVariables, inputRow));
 
             mapFilter = new MapFilter(inputColumn1, inputColumn2);
             mapFilter.InitializeColumns(inputTable);
-            Assert.True(await mapFilter.ProcessInputRowAsync(inputRow));
+            Assert.True(await mapFilter.ProcessInputRowAsync(_functionVariables, inputRow));
 
             mapFilter = new MapFilter(inputColumn1, inputColumn3);
             mapFilter.InitializeColumns(inputTable);
-            Assert.False(await mapFilter.ProcessInputRowAsync(inputRow));
+            Assert.False(await mapFilter.ProcessInputRowAsync(_functionVariables, inputRow));
 
         }
         
@@ -130,11 +132,11 @@ namespace dexih.functions.tests
 
             var mapJoin = new MapJoin(inputColumn1, inputColumn2);
             mapJoin.InitializeColumns(inputTable, joinTable);
-            Assert.True( await mapJoin.ProcessInputRowAsync(inputRow, joinRow));
+            Assert.True( await mapJoin.ProcessInputRowAsync(_functionVariables, inputRow, joinRow));
 
             mapJoin = new MapJoin(inputColumn1, inputColumn3);
             mapJoin.InitializeColumns(inputTable, joinTable);
-            Assert.False( await mapJoin.ProcessInputRowAsync(inputRow, joinRow));
+            Assert.False( await mapJoin.ProcessInputRowAsync(_functionVariables, inputRow, joinRow));
 
         }
         
@@ -155,9 +157,9 @@ namespace dexih.functions.tests
             //run twice to ensure reset works.
             for (var i = 0; i < 2; i++)
             {
-                await mapAggregate.ProcessInputRowAsync(new object[] {1});
-                await mapAggregate.ProcessInputRowAsync(new object[] {2});
-                await mapAggregate.ProcessInputRowAsync(new object[] {3});
+                await mapAggregate.ProcessInputRowAsync(_functionVariables, new object[] {1});
+                await mapAggregate.ProcessInputRowAsync(_functionVariables, new object[] {2});
+                await mapAggregate.ProcessInputRowAsync(_functionVariables, new object[] {3});
                 var outputRow = new object[1];
                 await mapAggregate.ProcessResultRowAsync(new FunctionVariables(), outputRow, EFunctionType.Aggregate, CancellationToken.None);
                 Assert.Equal(6, outputRow[0]);
@@ -204,7 +206,7 @@ namespace dexih.functions.tests
             mapFunction.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
-            await mapFunction.ProcessInputRowAsync(inputRow);
+            await mapFunction.ProcessInputRowAsync(_functionVariables, inputRow);
             mapFunction.MapOutputRow(outputRow);
 
             Assert.Equal("aaabbb", outputRow[0]);
@@ -229,7 +231,7 @@ namespace dexih.functions.tests
             mapSeries.AddOutputColumns(outputTable);
 
             var outputRow = new object[1];
-            await mapSeries.ProcessInputRowAsync(inputRow);
+            await mapSeries.ProcessInputRowAsync(_functionVariables, inputRow);
             mapSeries.MapOutputRow(outputRow);
 
             // series value should have the non day elements removed.

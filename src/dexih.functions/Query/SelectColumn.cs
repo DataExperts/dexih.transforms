@@ -29,6 +29,12 @@ namespace dexih.functions.Query
             Aggregate = EAggregate.None;
         }
 
+        public SelectColumn(string columnName, EAggregate aggregate)
+        {
+            Column = new TableColumn(columnName);
+            Aggregate = aggregate;
+            OutputColumn = new TableColumn(columnName);
+        }
         public SelectColumn(string columnName, EAggregate aggregate, string outputColumnName)
         {
             Column = new TableColumn(columnName);
