@@ -216,15 +216,17 @@ namespace dexih.connections.test
             {
                 await connection.ExecuteUpdate(table, updateQueries, CancellationToken.None);    
             });
-            
+
+
+            var updateTestColumn = new TableColumn("UpdateTest", ETypeCode.Int32);
 
             //check the table loaded 1,000 rows updated successfully
             var selectQuery = new SelectQuery()
             {
-                Columns = new List<SelectColumn>() {new SelectColumn("UpdateTest")},
+                Columns = new List<SelectColumn>() {new SelectColumn(updateTestColumn)},
                 Filters = new List<Filter>()
                 {
-                    new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), ECompare.IsEqual, 1)
+                    new Filter(updateTestColumn, ECompare.IsEqual, 1)
                 },
                 Rows = -1,
                 Table = table.Name

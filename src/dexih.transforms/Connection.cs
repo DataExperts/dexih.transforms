@@ -940,7 +940,6 @@ namespace dexih.transforms
                     watch.Stop();
                     return reader.CacheTable;
                 }
-
             }
             catch (Exception ex)
             {
