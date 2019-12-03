@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math" />
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,6 +130,7 @@
     <setting file="file://$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.flatfile.ftp.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/OpenWeatherMap.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSeries.cs" root0="FORCE_HIGHLIGHTING" />
@@ -231,6 +236,7 @@
     <setting file="file://$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties/CopyProperties.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7C0C1FA0-F21E-411F-AA79-02E74C06182F/ba/acdeebbf/DbDataReader.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/CreatePocoReader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/BookClass.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/Program.cs" root0="FORCE_HIGHLIGHTING" />
@@ -336,11 +342,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.reader.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" />
-        <option value="$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/Operations.cs" />
         <option value="$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/DataType.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.mongo.tests/appsettings.json" />
@@ -387,6 +388,11 @@
         <option value="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.functions.tests/selectQuery.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" />
       </list>
     </option>
   </component>
@@ -708,6 +714,7 @@
       <workItem from="1574118074218" duration="1894000" />
       <workItem from="1574120123016" duration="943000" />
       <workItem from="1574752035056" duration="1125000" />
+      <workItem from="1575357625459" duration="1115000" />
     </task>
     <task id="LOCAL-00019" summary="fixing soap project to compile.">
       <created>1501808925968</created>
@@ -1199,7 +1206,7 @@
           <properties exception="System.Threading.ThreadAbortException" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="566" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <condition expression="column.Name == &quot;MaxIncrementalValue&quot;" language="C#" custom="RiderImportsList:" />
           <url>file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoMapper.cs</url>
           <line>65</line>
@@ -1213,7 +1220,7 @@
           </properties>
           <option name="timeStamp" value="1320" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs</url>
           <line>433</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" initialLine="432">
@@ -1226,7 +1233,7 @@
           </properties>
           <option name="timeStamp" value="1327" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs</url>
           <line>231</line>
           <properties documentPath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" initialLine="222">
@@ -1239,7 +1246,7 @@
           </properties>
           <option name="timeStamp" value="1346" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs</url>
           <line>233</line>
           <properties documentPath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" initialLine="224">
@@ -1252,7 +1259,7 @@
           </properties>
           <option name="timeStamp" value="1347" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/src/dexih.transforms/Connection.cs</url>
           <line>873</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" initialLine="788">
@@ -1265,7 +1272,7 @@
           </properties>
           <option name="timeStamp" value="1348" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs</url>
           <line>175</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" initialLine="173">
@@ -1278,7 +1285,7 @@
           </properties>
           <option name="timeStamp" value="1360" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs</url>
           <line>170</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" initialLine="168">
@@ -1291,7 +1298,7 @@
           </properties>
           <option name="timeStamp" value="1361" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/src/dexih.functions.builtIn/DateFunctions.cs</url>
           <line>273</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.functions.builtIn/DateFunctions.cs" initialLine="273">
@@ -1304,7 +1311,7 @@
           </properties>
           <option name="timeStamp" value="1362" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs</url>
           <line>110</line>
           <properties documentPath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" initialLine="110">
@@ -1317,7 +1324,7 @@
           </properties>
           <option name="timeStamp" value="1363" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+        <line-breakpoint type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs</url>
           <line>40</line>
           <properties documentPath="$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" initialLine="40">
@@ -1329,6 +1336,19 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="1364" />
+        </line-breakpoint>
+        <line-breakpoint type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs</url>
+          <line>277</line>
+          <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" initialLine="277">
+            <startOffsets>
+              <option value="11285" />
+            </startOffsets>
+            <endOffsets>
+              <option value="11325" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1365" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

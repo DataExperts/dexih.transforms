@@ -63,7 +63,7 @@ namespace dexih.connections.sql
                 IsOpen = true;
                 SelectQuery = selectQuery;
 
-                if (SelectQuery.Columns?.Count > 0)
+                if (SelectQuery?.Columns?.Count > 0)
                 {
                     CacheTable.Columns.Clear();
                     foreach (var column in SelectQuery.Columns)

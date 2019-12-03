@@ -275,10 +275,9 @@ namespace dexih.transforms
             await InitializeOutputFields();
 
             //only apply a sort if there is not already a sort applied.
-            selectQuery.Sorts = RequiredSortFields();
+            SelectQuery.Sorts = RequiredSortFields();
 
-
-            var referenceQuery = new SelectQuery()
+            var referenceQuery = new SelectQuery
             {
                 Sorts = RequiredReferenceSortFields()
             };
