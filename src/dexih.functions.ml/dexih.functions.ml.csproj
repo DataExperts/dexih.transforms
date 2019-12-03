@@ -5,7 +5,7 @@
         <AssemblyTitle>Data Experts Group - Dexih Machine Learning</AssemblyTitle>
         <VersionPrefix>1.0.1</VersionPrefix>
         <Authors>Gary Holland</Authors>
-        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
         <AssemblyName>dexih.functions.ml</AssemblyName>
         <PackageId>dexih.functions.ml</PackageId>
         <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
@@ -18,7 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.3.1" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.4.0" />
       <PackageReference Include="Microsoft.ML" Version="1.4.0" />
       <PackageReference Include="Microsoft.ML.FastTree" Version="1.4.0" />
         <PackageReference Include="Microsoft.ML.AutoML" Version="0.16.0" />

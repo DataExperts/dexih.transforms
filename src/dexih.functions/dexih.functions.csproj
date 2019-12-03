@@ -34,11 +34,11 @@
     </PackageReference>
     <PackageReference Include="System.Data.Common" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.6.0" />
-    <PackageReference Include="System.Text.Json" Version="4.6.0" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
+    <PackageReference Include="System.Text.Json" Version="4.7.0" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1">
     </PackageReference>
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.10.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="System.Xml.XPath" Version="4.3.0">
     </PackageReference>

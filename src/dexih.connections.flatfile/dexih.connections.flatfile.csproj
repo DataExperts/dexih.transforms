@@ -4,7 +4,7 @@
     <AssemblyTitle>Data Experts Group - Flat File Connections</AssemblyTitle>
     <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>dexih.connections.flatfile</AssemblyName>
     <PackageId>dexih.connections.flatfile</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>

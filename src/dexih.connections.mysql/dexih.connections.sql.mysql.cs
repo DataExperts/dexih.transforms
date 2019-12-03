@@ -96,7 +96,7 @@ namespace dexih.connections.mysql
                         // build an sql command that looks like
                         // INSERT INTO User (FirstName, LastName) VALUES ('gary','holland'),('jack','doe'),... ;
                         insert.Append("INSERT INTO " + SqlTableName(table) );
-                        insert.Append(" (" + string.Join(',', columns.Select(c => AddDelimiter(c.Name))) + ")");
+                        insert.Append(" (" + string.Join(",", columns.Select(c => AddDelimiter(c.Name))) + ")");
                         insert.Append(" values ");
 
                         var isFirstRow = true;
@@ -112,7 +112,7 @@ namespace dexih.connections.mysql
                         while (await reader.ReadAsync(cancellationToken))
                         {
                             row.Append("(");
-                            row.Append(string.Join(',', columns.Select((c, i) => GetSqlFieldValueQuote(c.DataType, c.Rank, reader[ordinals[i]]))));
+                            row.Append(string.Join(",", columns.Select((c, i) => GetSqlFieldValueQuote(c.DataType, c.Rank, reader[ordinals[i]]))));
                             row.Append(")");
 
                             // if the maximum sql size will be exceeded with this value, then break, so the command can be executed.

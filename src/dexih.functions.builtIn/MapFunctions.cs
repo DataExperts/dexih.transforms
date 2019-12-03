@@ -94,13 +94,13 @@ namespace dexih.functions.BuiltIn
             Description = "Splits a string into multiple return fields that are based on the characters in an array.")]
         public int Split(string value, string separator, int? count, out string[] result)
         {
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(separator))
             {
                 result = null;
                 return 0;
             }
 
-            result = count == null ? value.Split(separator) : value.Split(separator, count.Value);
+            result = count == null ? value.Split(separator.ToCharArray()) : value.Split(separator.ToCharArray(), count.Value);
             
             return result.Length;
         }

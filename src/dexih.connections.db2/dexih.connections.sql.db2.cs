@@ -315,7 +315,7 @@ namespace dexih.connections.db2
                     connectionString = ConnectionString;
                 else
                 {
-                    var server = Server.Split("/");
+                    var server = Server.Split('/');
                     if (server.Length != 2)
                     {
                         throw new ConnectionException("The server must be in the format server:port/database.");
