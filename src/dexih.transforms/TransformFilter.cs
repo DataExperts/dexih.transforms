@@ -25,7 +25,6 @@ namespace dexih.transforms
         }
         
         public override string TransformName { get; } = "Filter";
-
         public override Dictionary<string, object> TransformProperties()
         {
             return null;
@@ -94,6 +93,8 @@ namespace dexih.transforms
             SetSelectQuery(selectQuery, true);
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            
+            CacheTable = PrimaryTransform.CacheTable;
 
             return returnValue;
         }

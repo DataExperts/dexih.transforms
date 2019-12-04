@@ -109,7 +109,7 @@ namespace dexih.transforms.Mapping
             return filter;
         }
         
-        public override IEnumerable<SelectColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
             var columns = new List<SelectColumn>();
             if (Column1 != null) { columns.Add(new SelectColumn(Column1));}

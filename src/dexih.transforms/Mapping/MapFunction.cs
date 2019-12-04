@@ -290,7 +290,7 @@ namespace dexih.transforms.Mapping
             }
         }
 
-        public override IEnumerable<SelectColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
             var columns = Parameters.Inputs.SelectMany(c => c.GetRequiredColumns());
             var columns2 = columns.Concat(Parameters.ResultInputs.SelectMany(c => c.GetRequiredColumns()));

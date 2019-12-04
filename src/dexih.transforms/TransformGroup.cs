@@ -61,7 +61,7 @@ namespace dexih.transforms
             selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
-            selectQuery.Columns = Mappings.GetRequiredColumns()?.ToList();
+            selectQuery.Columns = Mappings.GetRequiredColumns(includeAggregate: true)?.ToList();
 
             var requiredSorts = RequiredSortFields();
 

@@ -71,7 +71,7 @@ namespace dexih.transforms.Mapping
             _rowData = null;
         }
         
-        public override IEnumerable<SelectColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
             if (InputColumn == null)
             {

@@ -454,7 +454,7 @@ namespace dexih.transforms.Mapping
         /// Gets the required source columns required for the mappings.
         /// </summary>
         /// <returns></returns>
-        public SelectColumn[] GetRequiredColumns(bool ignorePassthrough = false)
+        public SelectColumn[] GetRequiredColumns(bool ignorePassthrough = false, bool includeAggregate = false)
         {
             if (PassThroughColumns && !ignorePassthrough)
             {
@@ -465,7 +465,7 @@ namespace dexih.transforms.Mapping
             
             foreach (var mapping in this)
             {
-                var cols = mapping.GetRequiredColumns();
+                var cols = mapping.GetRequiredColumns(includeAggregate);
                 foreach (var col in cols)
                 {
                     columns.Add(col);

@@ -168,9 +168,16 @@ namespace dexih.transforms.Mapping
             }
         }
 
-        public override IEnumerable<SelectColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
-            return new [] {new SelectColumn(InputColumn, Aggregate, OutputColumn), };
+            if (includeAggregate)
+            {
+                return new [] {new SelectColumn(InputColumn, Aggregate, OutputColumn), };    
+            }
+            else
+            {
+                return new [] {new SelectColumn(InputColumn, SelectColumn.EAggregate.None, InputColumn), };
+            }
         }
 
         public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)

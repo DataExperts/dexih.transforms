@@ -48,7 +48,8 @@ namespace dexih.transforms
             IsOpen = true;
             
             SetSelectQuery(selectQuery, true);
-
+            SelectQuery.Columns = null;
+            
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 

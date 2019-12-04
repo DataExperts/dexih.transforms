@@ -45,6 +45,9 @@ namespace dexih.transforms
             }
 
             SetInTransform(inTransform);
+            
+            CacheTable = PrimaryTransform.CacheTable;
+            
             _sortFields = sortFields;
         }
 

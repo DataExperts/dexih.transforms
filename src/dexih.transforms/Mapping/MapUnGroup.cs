@@ -92,7 +92,7 @@ namespace dexih.transforms.Mapping
             return $"UnGroup {NodeColumn.Name}";
         }
         
-        public override IEnumerable<SelectColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
             if (NodeColumn == null)
             {

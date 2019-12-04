@@ -63,7 +63,7 @@ namespace dexih.transforms.Mapping
         {
         }
 
-        public override IEnumerable<SelectColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
             if (InputColumn == null)
             {

@@ -269,7 +269,8 @@ namespace dexih.transforms
             IsOpen = true;
 
             SetSelectQuery(selectQuery, true);
-
+            SelectQuery.Columns = null;
+            
             if (_cacheLoaded) return true;
 
             await InitializeOutputFields();
@@ -282,7 +283,7 @@ namespace dexih.transforms
                 Sorts = RequiredReferenceSortFields()
             };
 
-            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
             if (!returnValue) return false;
 
             returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);

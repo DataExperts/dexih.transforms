@@ -155,7 +155,7 @@ namespace dexih.transforms.Mapping
             return $"Join({item1} {Compare} {item2}";
         }
 
-        public override IEnumerable<SelectColumn> GetRequiredColumns()
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
             if (InputColumn == null)
             {
