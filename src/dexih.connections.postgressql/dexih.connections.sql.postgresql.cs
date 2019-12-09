@@ -237,8 +237,10 @@ namespace dexih.connections.postgressql
                 case ETypeCode.UInt16:
                     sqlType = "int";
                     break;
-                case ETypeCode.Byte:
                 case ETypeCode.Char:
+                    sqlType = "char";
+                    break;
+                case ETypeCode.Byte:
                 case ETypeCode.Int16:
                 case ETypeCode.SByte:
                     sqlType = "smallint";

@@ -319,26 +319,64 @@ namespace dexih.transforms
                     throw new TransformWriterException(message, ex);
                 }
 
-                using (var targetReader = TargetConnection.GetTransformReader(TargetTable))
+                if (TargetConnection != null && TargetTable != null)
                 {
-                    if (updateStrategy != null)
+                    using (var targetReader = TargetConnection.GetTransformReader(TargetTable))
                     {
-                        var autoIncrementKey = await GetIncrementalKey(cancellationToken);
-                        transform = new TransformDelta(transform, targetReader, updateStrategy.Value,
-                            autoIncrementKey,
-                            WriterOptions.AddDefaultRow, new DeltaValues('C'));
-                        transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
-                            WriterOptions?.GlobalSettings?.EncryptionKey);
-
-                        if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken))
+                        if (updateStrategy != null)
                         {
-                            throw new TransformWriterException($"Failed to open the data reader {transform.Name}.");
+                            var autoIncrementKey = await GetIncrementalKey(cancellationToken);
+                            transform = new TransformDelta(transform, targetReader, updateStrategy.Value,
+                                autoIncrementKey,
+                                WriterOptions.AddDefaultRow, new DeltaValues('C'));
+                            transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
+                                WriterOptions?.GlobalSettings?.EncryptionKey);
+
+                            if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken))
+                            {
+                                throw new TransformWriterException($"Failed to open the data reader {transform.Name}.");
+                            }
+                        }
+
+                        await ProcessRecords(transform, targetReader, -1, updateStrategy, cancellationToken);
+                    }
+                }
+                else
+                {
+                    // if there are no target tables, then just read all the records.
+                    // this may be necessary if there are functions in the transforms which perform write actions.
+                    var firstRead = true;
+                    if (!await transform.Open(WriterResult?.AuditKey ?? 0, null, cancellationToken))
+                    {
+                        throw new TransformWriterException($"Failed to open the data reader {transform.Name}.");
+                    }
+                    
+                    while (await transform.ReadAsync(cancellationToken))
+                    {
+                        if (firstRead)
+                        {
+                            if (WriterResult != null)
+                            {
+                                var runStatusResult = WriterResult.SetRunStatus(TransformWriterResult.ERunStatus.Running,
+                                    null, null);
+                                if (!runStatusResult)
+                                {
+                                    return;
+                                }
+                            }
+
+                            firstRead = false;
+                        }
+
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            throw new TaskCanceledException();
                         }
                     }
-
-                    await ProcessRecords(transform, targetReader, -1, updateStrategy, cancellationToken);
-                    await FinishTasks(transform, cancellationToken);
                 }
+
+                await FinishTasks(transform, cancellationToken);
+
             }
             catch (OperationCanceledException)
             {
@@ -654,7 +692,10 @@ namespace dexih.transforms
 
             try
             {
-                await TargetConnection.DataWriterFinish(TargetTable);
+                if (TargetConnection != null)
+                {
+                    await TargetConnection?.DataWriterFinish(TargetTable);
+                }
             }
             catch(Exception ex)
             {
@@ -682,7 +723,7 @@ namespace dexih.transforms
                 var performance = inTransform.PerformanceSummary();
                 if (performance != null)
                 {
-                    performance.Add(new TransformPerformance(TargetTable.Name, rowsWritten,
+                    performance.Add(new TransformPerformance(TargetTable?.Name, rowsWritten,
                         _transformWriterTask?.WriteDataTicks.TotalSeconds ?? 0));
 
                     WriterResult.PerformanceSummary = performance;

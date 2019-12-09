@@ -40,6 +40,13 @@ namespace dexih.functions
             DeltaType = deltaType;
             ReferenceTable = parentTable;
         }
+        
+        //this is the underlying datatype of a non encrypted data type.  
+        private ETypeCode _baseDataType { get; set; }
+
+        //this is the max length of the non-encrypted data type.
+        private int? _baseMaxLength { get; set; }
+
 
         [Key(0)]
         public string ReferenceTable { get; set; }
@@ -60,10 +67,10 @@ namespace dexih.functions
             {
                 if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.FastDecrypt ||
                     SecurityFlag == ESecurityFlag.StrongDecrypt)
-                    return BaseDataType;
+                    return _baseDataType;
                 return ETypeCode.String;
             }
-            set => BaseDataType = value;
+            set => _baseDataType = value;
         }
 
         [Key(5)]
@@ -73,10 +80,10 @@ namespace dexih.functions
             {
                 if (SecurityFlag == ESecurityFlag.None || SecurityFlag == ESecurityFlag.FastDecrypt ||
                     SecurityFlag == ESecurityFlag.StrongDecrypt)
-                    return BaseMaxLength;
+                    return _baseMaxLength;
                 return 250;
             }
-            set => BaseMaxLength = value;
+            set => _baseMaxLength = value;
         }
 
         /// <summary>
@@ -88,55 +95,49 @@ namespace dexih.functions
         [Key(7)]
         public int Rank { get; set; }
 
-        public bool IsArray() => Rank > 0;
 
-        //this is the underlying datatype of a non encrypted data type.  
+
         [Key(8)]
-        public ETypeCode BaseDataType { get; set; }
-
-        //this is the max length of the non-encrypted data type.
-        [Key(9)]
-        public int? BaseMaxLength { get; set; }
-
-        [Key(10)]
         public int? Precision { get; set; }
 
-        [Key(11)]
+        [Key(9)]
         public int? Scale { get; set; }
 
-        [Key(12)]
+        [Key(10)]
         public bool AllowDbNull { get; set; }
 
-        [Key(13)]
+        [Key(11)]
         public EDeltaType DeltaType { get; set; }
 
-        [Key(14)]
+        [Key(12)]
         public bool? IsUnicode { get; set; }
 
-        [Key(15)]
+        [Key(13)]
         public object DefaultValue { get; set; }
 
-        [Key(16)]
+        [Key(14)]
         public bool IsUnique { get; set; }
 
-        [Key(17)]
+        [Key(15)]
         public bool IsMandatory { get; set; }
 
-        [Key(18)]
+        [Key(16)]
         public ESecurityFlag SecurityFlag { get; set; } = ESecurityFlag.None;
 
-        [Key(19)]
+        [Key(17)]
         public bool IsInput { get; set; }
 
-        [Key(20)]
+        [Key(18)]
         public bool IsIncrementalUpdate { get; set; }
 
         // used by the passthrough to indicate if the column is a part of the parent node, or part of current node.
-        [Key(21)]
+        [Key(19)]
         public bool IsParent { get; set; }
 
-        [Key(22)]
+        [Key(20)]
         public TableColumns ChildColumns { get; set; }
+
+        public bool IsArray() => Rank > 0;
 
         public bool IsAutoIncrement() => DeltaType == EDeltaType.DbAutoIncrement || DeltaType == EDeltaType.AutoIncrement;
         
@@ -424,8 +425,8 @@ namespace dexih.functions
                 string.Equals(LogicalName, other.LogicalName) &&
                 string.Equals(Description, other.Description) &&
                 Rank == other.Rank &&
-                BaseDataType == other.BaseDataType &&
-                BaseMaxLength == other.BaseMaxLength &&
+                _baseDataType == other._baseDataType &&
+                _baseMaxLength == other._baseMaxLength &&
                 Precision == other.Precision &&
                 Scale == other.Scale &&
                 AllowDbNull == other.AllowDbNull &&
@@ -456,8 +457,8 @@ namespace dexih.functions
                 hashCode = (hashCode * 397) ^ (LogicalName != null ? LogicalName.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Description != null ? Description.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ Rank;
-                hashCode = (hashCode * 397) ^ (int) BaseDataType;
-                hashCode = (hashCode * 397) ^ BaseMaxLength.GetHashCode();
+                hashCode = (hashCode * 397) ^ (int) _baseDataType;
+                hashCode = (hashCode * 397) ^ _baseMaxLength.GetHashCode();
                 hashCode = (hashCode * 397) ^ Precision.GetHashCode();
                 hashCode = (hashCode * 397) ^ Scale.GetHashCode();
                 hashCode = (hashCode * 397) ^ AllowDbNull.GetHashCode();

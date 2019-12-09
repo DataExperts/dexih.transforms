@@ -467,7 +467,7 @@ namespace dexih.transforms
                 
                 if(childItems)
                 {
-                    result.ChildResults = await GetTransformWriterResults(hubKey, connectionKey, null, null, null, null, previousResult, previousSuccessResult, currentResult, null, rows, result.AuditKey, false, cancellationToken);
+                    result.ChildResults = await GetTransformWriterResults(hubKey, connectionKey, null, null, null, null, previousResult, previousSuccessResult, currentResult, null, -1, result.AuditKey, false, cancellationToken);
                 }
 
                 if (cancellationToken.IsCancellationRequested)

@@ -26,8 +26,8 @@ namespace dexih.transforms
             RejectConnection = rejectConnection;
             TruncateComplete = false;
 
-            AutoIncrementOrdinal = targetTable.GetOrdinal(EDeltaType.AutoIncrement);
-            DbAutoIncrementOrdinal = targetTable.GetOrdinal(EDeltaType.DbAutoIncrement);
+            AutoIncrementOrdinal = targetTable?.GetOrdinal(EDeltaType.AutoIncrement)??-1;
+            DbAutoIncrementOrdinal = targetTable?.GetOrdinal(EDeltaType.DbAutoIncrement)??-1;
         }
 
         public abstract Task<int> StartTransaction(int transactionReference = -1);
