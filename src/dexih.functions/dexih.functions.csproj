@@ -24,9 +24,9 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>-->
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="12.2.1" />
+    <PackageReference Include="CsvHelper" Version="12.2.2" />
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="0.1.90" />
-    <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.16" />
+    <PackageReference Include="Dexih.Utils.Crypto" Version="0.1.28" />
     <PackageReference Include="Dexih.Utils.DataType" Version="0.1.119" />
     <PackageReference Include="MessagePack" Version="1.8.80" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />

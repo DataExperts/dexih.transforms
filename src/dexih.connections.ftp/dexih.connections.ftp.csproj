@@ -19,6 +19,6 @@
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentFTP" Version="28.0.2" />
+    <PackageReference Include="FluentFTP" Version="28.0.3" />
   </ItemGroup>
 </Project>
