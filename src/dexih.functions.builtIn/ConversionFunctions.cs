@@ -70,7 +70,7 @@ namespace dexih.functions.BuiltIn
             Milligram,
             Microgram,
             ImperialTon,
-            USTon,
+            UsTon,
             Stone,
             Pound,
             Ounce
@@ -84,7 +84,7 @@ namespace dexih.functions.BuiltIn
             {EMassScale.Milligram, 1e-6},
             {EMassScale.Microgram, 1e-9},
             {EMassScale.ImperialTon, 1016.05},
-            {EMassScale.USTon, 907.18749965598},
+            {EMassScale.UsTon, 907.18749965598},
             {EMassScale.Stone, 6.3503124975918607831},
             {EMassScale.Pound, 0.45359374982799000042},
             {EMassScale.Ounce, 0.028349609364249375026},

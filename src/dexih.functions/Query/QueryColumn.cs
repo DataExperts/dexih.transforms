@@ -21,10 +21,10 @@ namespace dexih.functions.Query
         }
 
         [Key(0)]
-        public TableColumn Column { get; }
+        public TableColumn Column { get; set; }
 
         [Key(1)]
-        public object Value { get; }
+        public object Value { get; set; }
 
         public bool Equals(QueryColumn other)
         {

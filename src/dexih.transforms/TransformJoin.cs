@@ -9,7 +9,6 @@ using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
-using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
 
 namespace dexih.transforms

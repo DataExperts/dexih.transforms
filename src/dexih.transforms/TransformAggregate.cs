@@ -186,9 +186,10 @@ namespace dexih.transforms
                         //if not first row, then check if the group values have changed from the previous row
                         for (var i = 0; i < nextGroupValues.Length; i++)
                         {
-                            if (nextGroupValues[i] == null && _groupValues != null ||
+                            if (
+                                (nextGroupValues[i] == null && _groupValues != null) ||
                                 (nextGroupValues[i] != null && _groupValues == null) ||
-                                !Equals(nextGroupValues[i], _groupValues[i]) )
+                                !Equals(nextGroupValues[i], _groupValues?[i]) )
                             {
                                 groupChanged = true;
                                 break;

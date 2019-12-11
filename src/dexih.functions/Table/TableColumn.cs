@@ -42,10 +42,10 @@ namespace dexih.functions
         }
         
         //this is the underlying datatype of a non encrypted data type.  
-        private ETypeCode _baseDataType { get; set; }
+        private ETypeCode _baseDataType;
 
         //this is the max length of the non-encrypted data type.
-        private int? _baseMaxLength { get; set; }
+        private int? _baseMaxLength;
 
 
         [Key(0)]

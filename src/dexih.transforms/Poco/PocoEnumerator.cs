@@ -54,7 +54,7 @@ namespace dexih.transforms.Poco
 
         public T this[int index] => throw new NotImplementedException();
 
-        public int Count { get; }
+        public int Count => throw new NotImplementedException();
         public Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();

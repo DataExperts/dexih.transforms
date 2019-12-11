@@ -12,10 +12,10 @@ namespace dexih.transforms.Poco
     {
         private IPocoEnumerator<T> _enumerator;
 
-        public async Task<List<T>> ToListAsync(DbDataReader reader)
-        {
-            return await ToListAsync(reader, CancellationToken.None);
-        }
+//        public async Task<List<T>> ToListAsync(DbDataReader reader)
+//        {
+//            return await ToListAsync(reader, CancellationToken.None);
+//        }
 
         public async Task<List<T>> ToListAsync(DbDataReader reader, CancellationToken cancellationToken = default)
         {

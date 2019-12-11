@@ -29,7 +29,7 @@ using System.Threading.Tasks;
         private bool _first;
 
         private readonly List<int> _ordinals;
-        private string endWrite;
+        private readonly string _endWrite;
 
         public StreamJson(DbDataReader reader, long maxRows = -1, string topNode = null)
         {
@@ -65,11 +65,11 @@ using System.Threading.Tasks;
             if(string.IsNullOrEmpty(topNode))
             {
                 _streamWriter.Write("[");
-                endWrite = "]";
+                _endWrite = "]";
             } else
             {
                 _streamWriter.Write("{ \"" + topNode + "\": [");
-                endWrite = "]}";
+                _endWrite = "]}";
             }
 
             _memoryStream.Position = 0;
@@ -115,7 +115,7 @@ using System.Threading.Tasks;
 
                     if (_hasRows == false)
                     {
-                        await _streamWriter.WriteAsync(endWrite);
+                        await _streamWriter.WriteAsync(_endWrite);
                     }
                     _first = false;
                 }
@@ -166,7 +166,7 @@ using System.Threading.Tasks;
                     }
                     else
                     {
-                        await _streamWriter.WriteAsync(endWrite);
+                        await _streamWriter.WriteAsync(_endWrite);
                         _hasRows = false;
                         break;
                     }

@@ -13,7 +13,7 @@ namespace dexih.functions.BuiltIn
 
         private int _recordCount;
 
-        public bool DetailedResults { get; set; } = false;
+        public bool DetailedResults { get; set; }
 
         [GlobalSettings]
         public GlobalSettings GlobalSettings { get; set; }
@@ -51,7 +51,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            if (long.TryParse(sValue, out var valueInt64))
+            if (long.TryParse(sValue, out var _))
             {
                 if (_dictionary.ContainsKey("Int64"))
                     _dictionary["Int64"]++;
@@ -60,7 +60,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            if (double.TryParse(sValue, out var valueDouble))
+            if (double.TryParse(sValue, out var _))
             {
                 if (_dictionary.ContainsKey("Double"))
                     _dictionary["Double"]++;
@@ -69,7 +69,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            if (float.TryParse(sValue, out var valueFloat))
+            if (float.TryParse(sValue, out var _))
             {
                 if (_dictionary.ContainsKey("Float"))
                     _dictionary["Float"]++;
@@ -78,7 +78,7 @@ namespace dexih.functions.BuiltIn
                 return;
             }
 
-            if (DateTime.TryParse(sValue, out var valueDateTime))
+            if (DateTime.TryParse(sValue, out var _))
             {
                 if (_dictionary.ContainsKey("DateTime"))
                     _dictionary["DateTime"]++;

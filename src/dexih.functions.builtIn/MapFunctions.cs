@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Xml;
 using dexih.functions.Exceptions;
-using Dexih.Utils.Crypto;
 using Dexih.Utils.DataType;
 using Newtonsoft.Json.Linq;
 

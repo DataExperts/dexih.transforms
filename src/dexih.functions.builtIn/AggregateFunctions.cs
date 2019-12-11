@@ -9,10 +9,8 @@ namespace dexih.functions.BuiltIn
 {
     public class AggregateFunctions<T>
     {
-        private T OneHundred;
+        private T _oneHundred;
 
-        private const string NullPlaceHolder = "A096F007-26EE-479E-A9E1-4E12427A5AF0"; //used a a unique string that can be substituted for null
-        
         //The cache parameters are used by the functions to maintain a state during a transform process.
         // private int? _cacheInt;
         private double _cacheDouble;
@@ -23,7 +21,7 @@ namespace dexih.functions.BuiltIn
         private StringBuilder _cacheStringBuilder;
         private object _cacheObject;
         private object[] _cacheArray;
-        private SortedRowsDictionary<T> _sortedRowsDictionary = null;
+        private SortedRowsDictionary<T> _sortedRowsDictionary;
         private T _cacheNumber;
         private int _cacheCount;
         private HashSet<T> _hashSet;
@@ -57,23 +55,18 @@ namespace dexih.functions.BuiltIn
 
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public void Sum(T value) => _cacheNumber = Operations.Add<T>(_cacheNumber, value);
+        public void Sum(T value) => _cacheNumber = Operations.Add(_cacheNumber, value);
 
        
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Average", Description = "Average of the values", ResultMethod = nameof(AverageResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void Average(T value)
         {
-            _cacheNumber = Operations.Add<T>(_cacheNumber, value);
+            _cacheNumber = Operations.Add(_cacheNumber, value);
             _cacheCount = _cacheCount + 1;
         }
         public T AverageResult()
         {
-            if (_cacheCount == 0)
-                return default(T);
-
-            var type = typeof(T);
-
-            return Operations.DivideInt<T>(_cacheNumber, _cacheCount);
+            return _cacheCount == 0 ? default(T) : Operations.DivideInt(_cacheNumber, _cacheCount);
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
@@ -84,7 +77,7 @@ namespace dexih.functions.BuiltIn
                 _isFirst = false;
                 _cacheNumber = value;
             }
-            else if (Operations.LessThan<T>(value, _cacheNumber)) _cacheNumber = value;
+            else if (Operations.LessThan(value, _cacheNumber)) _cacheNumber = value;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Maximum", Description = "Maximum Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
@@ -95,7 +88,7 @@ namespace dexih.functions.BuiltIn
                 _isFirst = false;
                 _cacheNumber = value;
             }
-            else if (Operations.GreaterThan<T>(value, _cacheNumber)) _cacheNumber = value;
+            else if (Operations.GreaterThan(value, _cacheNumber)) _cacheNumber = value;
         }
 
         
@@ -214,14 +207,12 @@ namespace dexih.functions.BuiltIn
             var sorted = _cacheList.OrderBy(c => c).ToArray();
             var count = sorted.Length;
 
-            var type = typeof(T);
-
             if (count % 2 == 0)
             {
                 // count is even, average two middle elements
                 var a = sorted[count / 2 - 1];
                 var b = sorted[count / 2];
-                return Operations.DivideInt<T>(Operations.Add<T>(a, b), 2);
+                return Operations.DivideInt(Operations.Add(a, b), 2);
             }
             // count is odd, return the middle element
             return sorted[count / 2];
@@ -318,20 +309,20 @@ namespace dexih.functions.BuiltIn
             {
                 _cacheList = new List<T>();
                 _cacheNumber = default(T);
-                OneHundred = Operations.Parse<T>(100);
+                _oneHundred = Operations.Parse<T>(100);
             }
-            _cacheNumber = Operations.Add<T>(_cacheNumber, value);
+            _cacheNumber = Operations.Add(_cacheNumber, value);
             _cacheList.Add(value);        
         }
 
         public T PercentTotalResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, EPercentFormat percentFormat = EPercentFormat.AsPercent)
         {
-            if (_cacheList == null || Operations.Equal<T>(_cacheNumber, default(T)))
+            if (_cacheList == null || Operations.Equal(_cacheNumber, default(T)))
                 return default(T);
 
-            var percent = Operations.Divide<T>(_cacheList[index], _cacheNumber);
+            var percent = Operations.Divide(_cacheList[index], _cacheNumber);
             
-            return percentFormat == EPercentFormat.AsDecimal ? percent : Operations.Multiply<T>(percent, OneHundred);
+            return percentFormat == EPercentFormat.AsDecimal ? percent : Operations.Multiply(percent, _oneHundred);
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Rank", Description = "The ranking (starting at 1) of the item within the group", ResultMethod = nameof(RankResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]

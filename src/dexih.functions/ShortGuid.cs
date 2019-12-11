@@ -20,7 +20,7 @@ namespace dexih.functions
 
     #region Fields
 
-    Guid _guid;
+    readonly Guid _guid;
     string _value;
 
     #endregion
@@ -52,37 +52,37 @@ namespace dexih.functions
 
     #region Properties
 
-    /// <summary>
-    /// Gets/sets the underlying Guid
-    /// </summary>
-    public Guid Guid
-    {
-      get { return _guid; }
-      set
-      {
-        if (value != _guid)
-        {
-          _guid = value;
-          _value = Encode(value);
-        }
-      }
-    }
+//    /// <summary>
+//    /// Gets/sets the underlying Guid
+//    /// </summary>
+//    public Guid Guid
+//    {
+//      get { return _guid; }
+//      set
+//      {
+//        if (value != _guid)
+//        {
+//          _guid = value;
+//          _value = Encode(value);
+//        }
+//      }
+//    }
 
-    /// <summary>
-    /// Gets/sets the underlying base64 encoded string
-    /// </summary>
-    public string Value
-    {
-      get { return _value; }
-      set
-      {
-        if (value != _value)
-        {
-          _value = value;
-          _guid = Decode(value);
-        }
-      }
-    }
+//    /// <summary>
+//    /// Gets/sets the underlying base64 encoded string
+//    /// </summary>
+//    public string Value
+//    {
+//      get { return _value; }
+//      set
+//      {
+//        if (value != _value)
+//        {
+//          _value = value;
+//          _guid = Decode(value);
+//        }
+//      }
+//    }
 
     #endregion
 

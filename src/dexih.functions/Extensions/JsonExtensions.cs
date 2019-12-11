@@ -38,7 +38,7 @@ namespace dexih.functions
             {
                 return JsonSerializer.Deserialize<T>(value, SerializerOptions);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return default;
             }
