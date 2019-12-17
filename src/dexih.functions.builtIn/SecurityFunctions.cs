@@ -15,7 +15,7 @@ namespace dexih.functions.builtIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Manual Decrypt",
-            Description = "Decrypts the string using the key string and iteractions.  More iterations = stronger/slower encrypt.")]
+            Description = "Decrypts the string using the key string and iterations.  More iterations = stronger/slower encrypt.")]
         public string Decrypt(string value, string key, int iterations)
         {
             return EncryptString.Decrypt(value, key, iterations);
@@ -51,17 +51,17 @@ namespace dexih.functions.builtIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Secure Hash",
             Description =
-                "Creates a random-salted, SHA256 hash of the string.  This is secure and can be used for passwords and other sensative data.  This can only be validated using the Validate Hash function.")]
+                "Creates a random-salted, PBKDF2 hash of the string.  This is secure and can be used for passwords and other sensitive data.  This can only be validated using the Validate Hash function.")]
         public string SecureHash(string value)
         {
-            return HashString.CreateHash(value);
+            return Dexih.Utils.Crypto.SecureHash.CreateHash(value);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Security", Name = "Validate Secure Hash",
             Description = "Validates a value created from the Secure Hash function.")]
         public bool ValidateSecureHash(string value, string hash)
         {
-            return HashString.ValidateHash(value, hash);
+            return Dexih.Utils.Crypto.SecureHash.ValidateHash(value, hash);
         }
     }
 }

@@ -110,7 +110,7 @@ namespace dexih.connections.sql
             param.ParameterName = name;
             param.Direction = direction;
             var converted = ConvertForWrite(param.ParameterName, type, rank, true, value);
-            param.DbType = GetDbType(converted.typeCode);
+            param.DbType = converted.typeCode.GetDbType();
             param.Value = converted.value;
 
             return param;

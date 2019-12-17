@@ -76,7 +76,7 @@ namespace dexih.connections.ftp
 
             var serverName = paths[0];
             var workingDirectory = "/" + string.Join("/", paths.Skip(1));
-
+            
             var client = new FtpClient(serverName);
 
             if (!string.IsNullOrEmpty(Username))

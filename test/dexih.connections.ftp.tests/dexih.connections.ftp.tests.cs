@@ -34,7 +34,7 @@ namespace dexih.connections.ftp
         }
 
         [Fact]
-        public async Task FlatFileLocal_Basic()
+        public async Task FlatFileFtp_Basic()
         {
             string database = "Test-" + Guid.NewGuid().ToString();
 

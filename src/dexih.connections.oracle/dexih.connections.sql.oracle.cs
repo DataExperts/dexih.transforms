@@ -242,7 +242,7 @@ namespace dexih.connections.oracle
                     sqlType = "CLOB";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"NUMBER ({column.Precision??28}, {column.Scale??0})";
+                    sqlType = $"NUMBER ({column.Precision??29}, {column.Scale??0})";
                     break;
                 case ETypeCode.Geometry:
                     sqlType = "BLOB";

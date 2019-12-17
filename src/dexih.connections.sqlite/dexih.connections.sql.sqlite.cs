@@ -246,7 +246,7 @@ namespace dexih.connections.sqlite
                     sqlType = "text";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
+                    sqlType = $"numeric ({column.Precision??29}, {column.Scale??0})";
                     break;
                 case ETypeCode.Binary:
                     sqlType = "blob";

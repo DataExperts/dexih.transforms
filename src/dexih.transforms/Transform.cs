@@ -626,13 +626,13 @@ namespace dexih.transforms
         protected string OneWayHash(object value)
         {
             if (value is null) return null;
-            return HashString.CreateHash(value.ToString());
+            return SecureHash.CreateHash(value.ToString());
         }
 
         protected bool OneWayHashCompare(object hashedValue, object value)
         {
             if (value is null) return false;
-            return HashString.ValidateHash(value.ToString(), hashedValue.ToString());
+            return SecureHash.ValidateHash(value.ToString(), hashedValue.ToString());
         }
         
 

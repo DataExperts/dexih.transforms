@@ -353,6 +353,5 @@ namespace dexih.connections.flatfile
                 throw new ConnectionException($"Error occurred testing if a directory exists for flatfile {table.Name}.  {ex.Message}", ex);
             }
         }
-
     }
 }

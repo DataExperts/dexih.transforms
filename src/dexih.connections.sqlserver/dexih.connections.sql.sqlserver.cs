@@ -114,7 +114,7 @@ namespace dexih.connections.sqlserver
                     param.DbType = DbType.Decimal;
                     break;
                 default:
-                    param.DbType = GetDbType(writeValue.typeCode);
+                    param.DbType = writeValue.typeCode.GetDbType();
                     break;
             }
             
@@ -384,7 +384,7 @@ namespace dexih.connections.sqlserver
                     sqlType = "nvarchar(max)";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
+                    sqlType = $"DECIMAL ({column.Precision??29}, {column.Scale??0})";
                     break;
                 case ETypeCode.Geometry:
                     sqlType = "Geometry";

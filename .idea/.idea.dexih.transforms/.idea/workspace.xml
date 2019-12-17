@@ -2,11 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed reference in functions.math">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/riderModule.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/riderModule.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.flatfile.ftp.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.flatfile.ftp.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.ftp.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.ftp.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.cs" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,343 +30,337 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/1e/8bc981a6/BsonValue.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transform.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/EncryptedObject.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/75A0DADE-A899-45CD-9974-B93CE4F52BC5/1e/cc8961a1/Operations`1.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/CF7E36D3-0CB9-4298-86ED-CEDD6FABA935/05/88b97646/DataType.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/0348F5FF-22CB-4C23-9A19-7236327BB562/1d/68b32ed4/ClusteringMetrics.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderJson.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTask.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/2c/f946a0f5/BsonTypeMapper.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.reader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformNode.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionConvertString.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.financial/FinancialAggregate.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformConcatinate.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.financial/FinancialFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterOptions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/90/519adcd2/Operations.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/AvailableDataTypes.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderFileHandler.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.reader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DeltaValues.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamAction.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/f1/ece6e3bf/ECompare.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/5c/4fa6c184/SdcaTrainerBase`3.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/Operations.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/CurveFittingFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/75A0DADE-A899-45CD-9974-B93CE4F52BC5/53/3bfc0e7a/DataType.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/EuclidFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/ProbabilityDistributionFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/Matrix.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/DataType.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/SpecialFunctions.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/4e/ef465e4f/SdcaMulticlassTrainerBase`1.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPack.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPackColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/17/280abaf3/Extensions.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/CF7E36D3-0CB9-4298-86ED-CEDD6FABA935/39/aeed89e0/ECompare.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.mongo.tests/mongo.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/e6/eaea8a25/StandardTrainersCatalog.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/a2/481cdcd5/SdcaMaximumEntropyMulticlassTrainer.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerBase.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerText.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/84/0f528c67/PathFilter.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/regression.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerExceptions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/sentiment.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.tableCache.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerXml.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerJson.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/anomalyprediction.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTableMapping.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoMapper.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/recommendation.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.parameters.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8517F607-C12A-4B50-8364-C3F896F0FE6F/2e/7a648d42/Assert.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/IPocoEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/clustering.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/TableTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/d7/0f867b58/SdcaRegressionTrainer.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoCachedEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoExceptions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/18B2FEF3-2436-49F4-90B7-17A88499F6A6/92/7d8b3afd/DbDataReader.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoLoader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/F163DB5B-26F1-4970-920F-4519EA0B7531/e3/085bc907/TreeExtensions.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoProcessor.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/selectQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2E213E25-936E-4437-AF2F-6D830172A8BD/04/55128766/KMeansClusteringExtensions.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/1f/649f86e5/JPath.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/F2C302CA-191A-4ADF-889D-A299A582E348/64/1bcb442c/IMongoCollectionExtensions.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.initialize.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.ftp/FtpStream.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/Stocks.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapValidation.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.flatfile.ftp.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/OpenWeatherMap.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSeries.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapNode.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroup.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/Currency.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamJsonTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapInputColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFunction.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connections.db2.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapAggregate.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.reader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Exceptions/TransformExceptions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Exceptions/TransformWriterExceptions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Exceptions/ConnectionExceptions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transforms/Transforms.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/ParentChildNavigate.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/Configuration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transforms/TransformAttribute.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionsExceptions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionBase.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionAttribute.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionReference.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/Connections.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sftp/SftpStream.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sftp/SftpClientWrapper.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sftp/dexih.connections.flatfile.sftp.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/ConnectionStubs.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/GeometryFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/08/79d4c405/JToken.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Enums.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/SeriesValue.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableColumns.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableCache.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/TaskTimer.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/FileConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/WebService.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/DateFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableIndex.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/FilePermissions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/dexih.connections.webservice.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/SortedRowsDictionary.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionParameter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionAttribute.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/Functions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionVariables.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/Parameters.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterValue.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterOutputColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterArray.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/Parameter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterJoinColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Exceptions/FunctionException.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/A0907515-DAD5-48EA-A8E6-608EDFEB982A/bb/4e1bc850/DbDataReader.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/HierarchyFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/RowFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/IOFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/1368AD18-7505-4917-BFEF-14BBCE89BAB3/7b/00e89213/SqlDataReader.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/ArrayFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/ConditionFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/AggregateFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/MapFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/75931FF5-95A6-424B-9CAD-DE3E028C2E06/58/0a059e1e/TimeSeriesCatalog.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/ConversionFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/A0907515-DAD5-48EA-A8E6-608EDFEB982A/d1/382e239f/SqlBytes.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/SeriesFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/ProfileFunctions.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties/PropertyStructure.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Filters.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/DeleteQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/QueryColumn.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/SelectQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties/CopyPropertyAttributes.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/InsertQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/UpdateQuery.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties/CopyProperties.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7C0C1FA0-F21E-411F-AA79-02E74C06182F/ba/acdeebbf/DbDataReader.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/CreatePocoReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/BookClass.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/Program.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sorts.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/QueryColumns.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformThreadTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamCsvTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/MockConnection.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformGroupTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TestSoureDbReader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformAggregateTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformConcatinateTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformNodeTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformMappingTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/dataadapter.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/lookup.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/MockReader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformRowTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/lookup.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RecommendationAnalysis.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/MockReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Prediction.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/15/a2c2fb45/BsonUtils.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaParentChild.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/selectQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapAggregate.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/c2/860dccb4/BsonDateTime.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformWriterBulk.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformLookupTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/c2/860dccb4/BsonDateTime.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableIndex.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.reader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Exceptions/ConnectionExceptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Exceptions/TransformExceptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Exceptions/TransformWriterExceptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transforms/Transforms.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/Library/Preferences/Rider2018.3/resharper-host/DecompilerCache/decompiler/A7EE3220-A973-4E62-97FD-F3DFA45CD816/97/2c35dcdd/Enumerable.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformFilterTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transforms/TransformAttribute.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionsExceptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6DADD22E-0197-42CE-80AA-EFEF99855BE0/d8/d8eaa461/Lazy`1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionBase.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/DataReaderAdapterTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionReference.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/ConnectionAttribute.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformFilterTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sftp/SftpStream.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connections/Connections.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/PocoTests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/3F9A6BF9-CC47-4E04-95B6-4187B8F17D2C/56/4437c89b/Nullable`1.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/ReaderMemoryTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sftp/SftpClientWrapper.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformValidationTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/PocoTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/B1B72A43-33F2-4A15-981D-A2AC7AE57428/c1/ecb00724/DataType.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sftp.tests/dexih.connections.sftp.test.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Clustering.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sftp/dexih.connections.flatfile.sftp.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/Library/Preferences/Rider2018.3/resharper-host/DecompilerCache/decompiler/3F9A6BF9-CC47-4E04-95B6-4187B8F17D2C/35/0af20526/List`1.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/AnomalyDetection.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Helpers.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicType.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/SentimentAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RegressionPredictor.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicList.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicTypeProperty.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Enums.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RegressionAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RecommendationAnalysis.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Prediction.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableColumns.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.oracle.tests.cs" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/GeometryFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableCache.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/FileConfiguration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/08/79d4c405/JToken.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/SeriesValue.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.postgreSql.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/a3/5f53c13a/BsonElement.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sqlite.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/WebService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sqlserver.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.standard.function.tests/MapFunctions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.mysql.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.flatfile.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/1e/8bc981a6/BsonValue.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/a3/5f53c13a/BsonElement.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sql.tests/dexih.connections.sqlite.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/75A0DADE-A899-45CD-9974-B93CE4F52BC5/1e/cc8961a1/Operations`1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/project.lock.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/27/4e771cd6/DataType.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/TaskTimer.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.flatfile.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/27/4e771cd6/DataType.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/FilePermissions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/31575819-B2FF-42E0-944E-7701C0D109C7/bb/c036c307/Operations`1.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Extensions/JsonExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/CF7E36D3-0CB9-4298-86ED-CEDD6FABA935/05/88b97646/DataType.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/SortedRowsDictionary.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/0348F5FF-22CB-4C23-9A19-7236327BB562/1d/68b32ed4/ClusteringMetrics.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/obj/Debug/netcoreapp2.0/ReaderExamples.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/AsyncHelper.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.flatfile.azure.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.excel.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BEDF07CA-F01B-436A-9DD6-EC30B81CCE8D/2c/f946a0f5/BsonTypeMapper.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/75A0DADE-A899-45CD-9974-B93CE4F52BC5/98/f8a8d867/Operations.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamJsonCompact.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/f1/ece6e3bf/ECompare.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/A0907515-DAD5-48EA-A8E6-608EDFEB982A/bb/4e1bc850/DbDataReader.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformProfile.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformThread.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Connection.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/75A0DADE-A899-45CD-9974-B93CE4F52BC5/98/f8a8d867/Operations.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AD40F26B-F12D-4890-B4D7-6E49FBEFC054/90/519adcd2/Operations.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformThread.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.reader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskTransaction.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformValidation.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskBulk.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamMessagePack.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6DADD22E-0197-42CE-80AA-EFEF99855BE0/d8/d8eaa461/Lazy`1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/FileEnum.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/5c/4fa6c184/SdcaTrainerBase`3.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/E64B1D67-5385-4E4A-A595-DD662D77EF22/b5/89aafbcd/FtpClient.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderRowCreator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/FileEnum.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Filters.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/Functions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/DeleteQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionParameter.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformCache.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionAttribute.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Transform.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/EncryptedObject.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Functions/FunctionVariables.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/4e/ef465e4f/SdcaMulticlassTrainerBase`1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/QueryColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/75A0DADE-A899-45CD-9974-B93CE4F52BC5/53/3bfc0e7a/DataType.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/InsertQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/SelectQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/AvailableDataTypes.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderJson.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/UpdateQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterTask.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/17/280abaf3/Extensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamAsyncAction.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.reader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/Parameters.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/CF7E36D3-0CB9-4298-86ED-CEDD6FABA935/39/aeed89e0/ECompare.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ConnectionConvertString.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformNode.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.mongo.tests/mongo.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterValue.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Enums.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformConcatinate.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.financial/FinancialAggregate.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Table/TableColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.oracle.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/Operations.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sorts.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.financial/FinancialFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/e6/eaea8a25/StandardTrainersCatalog.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamCsv.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/SqlReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/QueryColumns.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterOptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/DateFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/a2/481cdcd5/SdcaMaximumEntropyMulticlassTrainer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderFileHandler.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterOutputColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/84/0f528c67/PathFilter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/DataType.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterArray.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/regression.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/Parameter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/sentiment.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.tableCache.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterJoinColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.parameters.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/anomalyprediction.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Exceptions/FunctionException.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/recommendation.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/EuclidFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/ProbabilityDistributionFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/CurveFittingFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/SpecialFunctions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8517F607-C12A-4B50-8364-C3F896F0FE6F/2e/7a648d42/Assert.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.maths/Matrix.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/TableTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPack.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/MathFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/clustering.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4F36F0FB-8AEE-4F77-939E-572283185D7B/d7/0f867b58/SdcaRegressionTrainer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamAction.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DataPack/DataPackColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/18B2FEF3-2436-49F4-90B7-17A88499F6A6/92/7d8b3afd/DbDataReader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/HierarchyFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/IOFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/RowFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/F163DB5B-26F1-4970-920F-4519EA0B7531/e3/085bc907/TreeExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2E213E25-936E-4437-AF2F-6D830172A8BD/04/55128766/KMeansClusteringExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/ArrayFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamJson.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Enums.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/ConditionFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/DeltaValues.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/12891E82-5FCE-44A5-81E5-BBBB579C1D49/1f/649f86e5/JPath.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Clustering.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/F2C302CA-191A-4ADF-889D-A299A582E348/64/1bcb442c/IMongoCollectionExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.initialize.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamJsonTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamActionTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/TransformWriterResult.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/AggregateFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/DataSets.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/ParentChildNavigate.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/Configuration.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerBase.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerText.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerExceptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/MapFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerJson.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerXml.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoMapper.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/ConversionFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoAttributes.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.test/ConnectionStubs.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/SeriesFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoExceptions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.builtIn/ProfileFunctions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoCachedEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions/Extensions/JsonExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/dexih.connections.webservice.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoProcessor.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoLoader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.flatfile.azure.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/1368AD18-7505-4917-BFEF-14BBCE89BAB3/7b/00e89213/SqlDataReader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/AsyncHelper.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/75931FF5-95A6-424B-9CAD-DE3E028C2E06/58/0a059e1e/TimeSeriesCatalog.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/IPocoEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/A0907515-DAD5-48EA-A8E6-608EDFEB982A/d1/382e239f/SqlBytes.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/AnomalyDetection.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties/PropertyStructure.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTableMapping.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.sftp.tests/dexih.connections.sftp.test.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/Stocks.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicType.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties/CopyPropertyAttributes.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/Helpers.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/StreamMessagePack.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapValidation.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.ftp/FtpStream.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/SentimentAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSeries.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../Dexih.Utils.CopyProperties/src/Dexih.Utils.CopyProperties/CopyProperties.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/project.lock.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/OpenWeatherMap.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/CreatePocoReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.flatfile.ftp.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapNode.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connections.db2.tests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7C0C1FA0-F21E-411F-AA79-02E74C06182F/ba/acdeebbf/DbDataReader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RegressionPredictor.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.external/Currency.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/B1B72A43-33F2-4A15-981D-A2AC7AE57428/c1/ecb00724/DataType.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformThreadTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/StreamCsvTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/BookClass.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/samples/FunctionExamples/Program.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroup.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TestSoureDbReader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformAggregateTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformProfileTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicList.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/MockConnection.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformGroupTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/DynamicTypeProperty.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformNodeTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapInputColumn.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformMappingTests.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/dataadapter.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.functions.ml/RegressionAnalysis.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFunction.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/dexih.transforms.tests/TransformConcatinateTests.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/DataType.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.connections.mongo.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/appsettings.json" />
         <option value="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connectionsl.sql.oracle.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/appsettings.json" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.flatfile.cs" />
@@ -365,27 +373,19 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sftp.tests/dexih.connections.sftp.test.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connections.db2.tests.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" />
         <option value="$PROJECT_DIR$/test/dexih.transforms.tests/MockConnection.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionConvertString.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/File/FileHandlerJson.cs" />
         <option value="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions.builtIn/DateFunctions.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions.builtIn/MapFunctions.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" />
         <option value="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/BuiltIn.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions.external/IpAddress.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" />
@@ -394,33 +394,39 @@
         <option value="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" />
-        <option value="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.functions.builtIn/SecurityFunctions.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.oracle/dexih.connections.sql.oracle.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.db2/dexih.connections.sql.db2.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.mysql/dexih.connections.sql.mysql.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.sqlite/dexih.connections.sql.sqlite.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.flatfile/dexih.connections.flatfile.local.cs" />
+        <option value="$PROJECT_DIR$/src/dexih.connections.ftp/dexih.connections.flatfile.ftp.cs" />
       </list>
     </option>
   </component>
   <component name="ProjectId" id="1PobDBLVEQhptQNjRAQeOBkFMdn" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
     <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
     <property name="Rider.DefaultBreakpoints.AreToggled" value="true" />
     <property name="Rider.ProjectViewActivator.IsNotFirstRun" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/garyholland/Source/dexih.transforms/src/dexih.functions/Mappings/Mappings.cs" />
+    <property name="TWShift.4" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../dexih.utils.datatype/Dexih.Utils.DataType.sln" />
     <property name="settings.editor.selected.configurable" value="project.propDebugger" />
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
   </component>
   <component name="RunManager" selected=".NET Project.samples\FunctionExamples">
     <configuration name="Default" type="DotNetProject" factoryName=".NET Project">
@@ -502,6 +508,18 @@
         <item itemvalue=".NET Project.test\dexih.connections.sql.tests" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -720,6 +738,7 @@
       <workItem from="1575357625459" duration="1455000" />
       <workItem from="1575399617670" duration="116000" />
       <workItem from="1575399839837" duration="927000" />
+      <workItem from="1576611986190" duration="6855000" />
     </task>
     <task id="LOCAL-00019" summary="fixing soap project to compile.">
       <created>1501808925968</created>
@@ -1130,7 +1149,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="true" />
     <MESSAGE value="MAJOR REBUILD OF TRANSFORMATION FUNCITON LOGIC" />
     <MESSAGE value="fixes to multiple transforms." />
     <MESSAGE value="added hierarchy functions" />
@@ -1159,50 +1177,140 @@
     <option name="LAST_COMMIT_MESSAGE" value="db2 connection working!!!" />
   </component>
   <component name="WindowStateProjectService">
-    <state width="1153" height="436" key="DebuggerActiveHint" />
-    <state width="1153" height="436" key="DebuggerActiveHint/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.0.bottom" />
-    <state width="3798" height="466" key="GridCell.Tab.0.bottom/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.0.center" />
-    <state width="3798" height="466" key="GridCell.Tab.0.center/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.0.left" />
-    <state width="3798" height="466" key="GridCell.Tab.0.left/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.0.right" />
-    <state width="3798" height="466" key="GridCell.Tab.0.right/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.1.bottom" />
-    <state width="3798" height="466" key="GridCell.Tab.1.bottom/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.1.center" />
-    <state width="3798" height="466" key="GridCell.Tab.1.center/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.1.left" />
-    <state width="3798" height="466" key="GridCell.Tab.1.left/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.1.right" />
-    <state width="3798" height="466" key="GridCell.Tab.1.right/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.2.bottom" />
-    <state width="3798" height="466" key="GridCell.Tab.2.bottom/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.2.center" />
-    <state width="3798" height="466" key="GridCell.Tab.2.center/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.2.left" />
-    <state width="3798" height="466" key="GridCell.Tab.2.left/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.2.right" />
-    <state width="3798" height="466" key="GridCell.Tab.2.right/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.3.bottom" />
-    <state width="3798" height="466" key="GridCell.Tab.3.bottom/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.3.center" />
-    <state width="3798" height="466" key="GridCell.Tab.3.center/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.3.left" />
-    <state width="3798" height="466" key="GridCell.Tab.3.left/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.3.right" />
-    <state width="3798" height="466" key="GridCell.Tab.3.right/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.4.bottom" />
-    <state width="3798" height="466" key="GridCell.Tab.4.bottom/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.4.center" />
-    <state width="3798" height="466" key="GridCell.Tab.4.center/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.4.left" />
-    <state width="3798" height="466" key="GridCell.Tab.4.left/3840.2160/3360.2100" />
-    <state width="3798" height="466" key="GridCell.Tab.4.right" />
-    <state width="3798" height="466" key="GridCell.Tab.4.right/3840.2160/3360.2100" />
-    <state x="3424" y="-286" width="1951" height="1679" key="find.popup" />
-    <state x="3424" y="-286" width="1951" height="1679" key="find.popup/3840.2160/3360.2100" />
+    <state width="1153" height="436" key="DebuggerActiveHint" timestamp="1576624595573">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1153" height="436" key="DebuggerActiveHint/0.0.1680.1050@0.0.1680.1050" timestamp="1576624595573" />
+    <state width="1153" height="436" key="DebuggerActiveHint/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.0.bottom" timestamp="1576624899452">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899452" />
+    <state width="1638" height="219" key="GridCell.Tab.0.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348468" />
+    <state width="3798" height="466" key="GridCell.Tab.0.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.0.center" timestamp="1576624899451">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899451" />
+    <state width="1638" height="219" key="GridCell.Tab.0.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348467" />
+    <state width="3798" height="466" key="GridCell.Tab.0.center/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.0.left" timestamp="1576624899450">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899450" />
+    <state width="1638" height="219" key="GridCell.Tab.0.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348466" />
+    <state width="3798" height="466" key="GridCell.Tab.0.left/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.0.right" timestamp="1576624899451">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899451" />
+    <state width="1638" height="219" key="GridCell.Tab.0.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348468" />
+    <state width="3798" height="466" key="GridCell.Tab.0.right/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.1.bottom" timestamp="1576624899453">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899453" />
+    <state width="1638" height="219" key="GridCell.Tab.1.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348362" />
+    <state width="3798" height="466" key="GridCell.Tab.1.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.1.center" timestamp="1576624899453">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899453" />
+    <state width="1638" height="219" key="GridCell.Tab.1.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348361" />
+    <state width="3798" height="466" key="GridCell.Tab.1.center/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.1.left" timestamp="1576624899452">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899452" />
+    <state width="1638" height="219" key="GridCell.Tab.1.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348360" />
+    <state width="3798" height="466" key="GridCell.Tab.1.left/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.1.right" timestamp="1576624899453">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899453" />
+    <state width="1638" height="219" key="GridCell.Tab.1.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348361" />
+    <state width="3798" height="466" key="GridCell.Tab.1.right/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.2.bottom" timestamp="1576624899455">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.2.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899455" />
+    <state width="1638" height="219" key="GridCell.Tab.2.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348364" />
+    <state width="3798" height="466" key="GridCell.Tab.2.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.2.center" timestamp="1576624899454">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.2.center/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899454" />
+    <state width="1638" height="219" key="GridCell.Tab.2.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348363" />
+    <state width="3798" height="466" key="GridCell.Tab.2.center/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.2.left" timestamp="1576624899454">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.2.left/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899454" />
+    <state width="1638" height="219" key="GridCell.Tab.2.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348363" />
+    <state width="3798" height="466" key="GridCell.Tab.2.left/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.2.right" timestamp="1576624899455">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.2.right/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899455" />
+    <state width="1638" height="219" key="GridCell.Tab.2.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348364" />
+    <state width="3798" height="466" key="GridCell.Tab.2.right/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.3.bottom" timestamp="1576624899458">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.3.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899458" />
+    <state width="1638" height="219" key="GridCell.Tab.3.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348367" />
+    <state width="3798" height="466" key="GridCell.Tab.3.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.3.center" timestamp="1576624899456">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.3.center/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899456" />
+    <state width="1638" height="219" key="GridCell.Tab.3.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348365" />
+    <state width="3798" height="466" key="GridCell.Tab.3.center/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.3.left" timestamp="1576624899455">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.3.left/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899455" />
+    <state width="1638" height="219" key="GridCell.Tab.3.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348365" />
+    <state width="3798" height="466" key="GridCell.Tab.3.left/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.3.right" timestamp="1576624899458">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.3.right/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899458" />
+    <state width="1638" height="219" key="GridCell.Tab.3.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348366" />
+    <state width="3798" height="466" key="GridCell.Tab.3.right/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.4.bottom" timestamp="1576624899460">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.4.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899460" />
+    <state width="1638" height="219" key="GridCell.Tab.4.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348369" />
+    <state width="3798" height="466" key="GridCell.Tab.4.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.4.center" timestamp="1576624899459">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.4.center/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899459" />
+    <state width="1638" height="219" key="GridCell.Tab.4.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348368" />
+    <state width="3798" height="466" key="GridCell.Tab.4.center/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.4.left" timestamp="1576624899458">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.4.left/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899458" />
+    <state width="1638" height="219" key="GridCell.Tab.4.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348367" />
+    <state width="3798" height="466" key="GridCell.Tab.4.left/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state width="1638" height="219" key="GridCell.Tab.4.right" timestamp="1576624899459">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1638" height="219" key="GridCell.Tab.4.right/0.0.1680.1050@0.0.1680.1050" timestamp="1576624899459" />
+    <state width="1638" height="219" key="GridCell.Tab.4.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348369" />
+    <state width="3798" height="466" key="GridCell.Tab.4.right/3840.2160/3360.2100" timestamp="1576620685861" />
+    <state x="700" y="230" key="RiderGenerateDialog" timestamp="1576624310901">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="700" y="230" key="RiderGenerateDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1576624310901" />
+    <state x="17" y="58" width="1644" height="910" key="find.popup" timestamp="1576620765552">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="17" y="58" width="1644" height="910" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1576620765552" />
+    <state x="3424" y="-286" width="1951" height="1679" key="find.popup/3840.2160/3360.2100" timestamp="1576620685861" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1269,10 +1377,10 @@
           <line>175</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" initialLine="173">
             <startOffsets>
-              <option value="7250" />
+              <option value="7251" />
             </startOffsets>
             <endOffsets>
-              <option value="7300" />
+              <option value="7301" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="1360" />
@@ -1282,10 +1390,10 @@
           <line>170</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" initialLine="168">
             <startOffsets>
-              <option value="7061" />
+              <option value="7062" />
             </startOffsets>
             <endOffsets>
-              <option value="7099" />
+              <option value="7100" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="1361" />
@@ -1347,10 +1455,10 @@
           <line>870</line>
           <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" initialLine="870">
             <startOffsets>
-              <option value="37651" />
+              <option value="37664" />
             </startOffsets>
             <endOffsets>
-              <option value="37684" />
+              <option value="37697" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="1366" />

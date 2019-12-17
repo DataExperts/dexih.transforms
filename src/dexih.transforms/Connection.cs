@@ -19,7 +19,7 @@ using NetTopologySuite.IO;
 
 namespace dexih.transforms
 {
-    public abstract class Connection
+    public abstract class Connection: IDisposable
     {
 
         #region Enums
@@ -1059,6 +1059,9 @@ namespace dexih.transforms
             return true;
         }
 
+        public virtual void Dispose()
+        {
+        }
     }
 }
 

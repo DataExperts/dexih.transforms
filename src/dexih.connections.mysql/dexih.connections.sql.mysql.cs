@@ -323,7 +323,7 @@ namespace dexih.connections.mysql
                     sqlType = "text";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"numeric ({column.Precision??28}, {column.Scale??0})";
+                    sqlType = $"numeric ({column.Precision??29}, {column.Scale??0})";
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
