@@ -43,7 +43,7 @@
     </PackageReference>
     <PackageReference Include="System.Xml.XPath.XDocument" Version="4.3.0">
     </PackageReference>
-    <PackageReference Include="Dexih.Utils.MessageHelpers" Version="0.1.16" />
+    <PackageReference Include="Dexih.Utils.MessageHelpers" Version="1.0.19" />
   </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>
