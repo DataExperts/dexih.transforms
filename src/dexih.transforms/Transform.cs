@@ -70,10 +70,7 @@ namespace dexih.transforms
 
         public TableColumn JoinSortField { get; set; }
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
-
-//        public virtual bool PassThroughColumns { get; set; } //indicates that any non-mapped columns should be mapped to the target.
-        public virtual Sorts SortFields => PrimaryTransform?.SortFields; //indicates fields for the sort transform.
-
+        
         public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
@@ -88,6 +85,20 @@ namespace dexih.transforms
 
         public long MaxInputRows { get; set; }
         public long MaxOutputRows { get; set; }
+
+        /// <summary>
+        /// Shows the generated query result.  Used by parent transforms to indicate what has been pushed down.
+        /// </summary>
+        public SelectQuery GeneratedQuery { get; set; }
+
+        public Sorts SortFields => GeneratedQuery?.Sorts;
+        public Filters Filters => GeneratedQuery?.Filters;
+
+        /// <summary>
+        /// Ignores the SelectQuery specified in the open statement.
+        /// This only applied to transforms which are the base reader. 
+        /// </summary>
+        public bool IgnoreQuery { get; set; }
 
         #endregion
 
@@ -153,11 +164,6 @@ namespace dexih.transforms
         public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input 
 
         public virtual long AutoIncrementValue => PrimaryTransform?.AutoIncrementValue ?? 0;
-
-        public virtual bool CanPushAggregate { get; } = false;
-        public virtual bool CanPushSort { get; } = false;
-        public virtual bool CanPushFilter { get; } = false;
-        public virtual bool CanPushMap { get; } = false;
 
         #endregion
 
@@ -399,12 +405,12 @@ namespace dexih.transforms
                         break;
                     }
 
-                    if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName() && requiredField.Direction == actualField.Direction)
+                    if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName() && requiredField.SortDirection == actualField.SortDirection)
                     {
                         continue;
                     }
 
-                    if (requiredField.Column.Name == actualField.Column.Name && requiredField.Direction == actualField.Direction)
+                    if (requiredField.Column.Name == actualField.Column.Name && requiredField.SortDirection == actualField.SortDirection)
                     {
                         continue;
                     }

@@ -52,7 +52,7 @@ namespace dexih.transforms
             selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
-            selectQuery.Columns = Mappings.GetRequiredColumns()?.ToList();
+            selectQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
 
             var requiredSorts = RequiredSortFields();
 
@@ -61,7 +61,7 @@ namespace dexih.transforms
                 for(var i =0; i<requiredSorts.Count; i++)
                 {
                     if (selectQuery.Sorts[i].Column.Equals(requiredSorts[i].Column))
-                        requiredSorts[i].Direction = selectQuery.Sorts[i].Direction;
+                        requiredSorts[i].SortDirection = selectQuery.Sorts[i].SortDirection;
                     else
                         break;
                 }
@@ -91,6 +91,12 @@ namespace dexih.transforms
             {
                 _groupNodeOrdinal = -1;
             }
+
+            GeneratedQuery = new SelectQuery()
+            {
+                Sorts = PrimaryTransform.SortFields,
+                Filters = PrimaryTransform.Filters
+            };
             
             return true;
         }
@@ -369,13 +375,13 @@ namespace dexih.transforms
         public override Sorts RequiredSortFields()
         {
             var sortFields = new Sorts(Mappings.OfType<MapGroup>().Select(c => new Sort
-                {Column = c.InputColumn, Direction = Sort.EDirection.Ascending}));
+                {Column = c.InputColumn, SortDirection = ESortDirection.Ascending}));
             
 
             var seriesMapping = (MapSeries) Mappings.SingleOrDefault(c => c is MapSeries _);
             if (seriesMapping != null)
             {
-                sortFields.Add(new Sort { Column = seriesMapping.InputColumn, Direction = Sort.EDirection.Ascending });
+                sortFields.Add(new Sort { Column = seriesMapping.InputColumn, SortDirection = ESortDirection.Ascending });
             }
             
             return sortFields;

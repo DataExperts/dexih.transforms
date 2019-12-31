@@ -16,7 +16,7 @@ namespace dexih.functions.financial
       return true;
     }
 
-    private void AddSeries(object series, double value, SelectColumn.EAggregate duplicateAggregate)
+    private void AddSeries(object series, double value, EAggregate duplicateAggregate)
     {
       if (_cacheSeries == null)
       {

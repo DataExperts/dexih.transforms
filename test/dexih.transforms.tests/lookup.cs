@@ -17,7 +17,7 @@ namespace dexih.transforms.tests
 
             var query = new SelectQuery
             {
-                Filters = new List<Filter> { new Filter("StringColumn", ECompare.IsEqual, "value04") }
+                Filters = new Filters() { new Filter("StringColumn", ECompare.IsEqual, "value04") }
             };
             var row = await testTransform.Lookup(query, EDuplicateStrategy.Abend, CancellationToken.None);
             Assert.True((string)row.First()[0] == "value04", "Correct row not found");

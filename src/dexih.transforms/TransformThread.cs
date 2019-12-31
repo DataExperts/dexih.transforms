@@ -28,7 +28,7 @@ namespace dexih.transforms
             return null;
         }
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
@@ -41,11 +41,13 @@ namespace dexih.transforms
 
             if (!PrimaryTransform.IsOpen && !PrimaryTransform.IsReaderFinished)
             {
-                return PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+                var result = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+                GeneratedQuery = PrimaryTransform.GeneratedQuery;
+                return result;
             }
-            
 
-            return Task.FromResult(true);
+
+            return true;
         }
         
  

@@ -24,15 +24,17 @@ namespace dexih.transforms
 
         public ReaderMemory(Table dataTable, Sorts sortFields = null)
         {
-            CacheTable = new Table(dataTable.Name, dataTable.Columns, new TableCache()) {OutputSortFields = sortFields};
-
+            CacheTable = new Table(dataTable.Name, dataTable.Columns, new TableCache())
+            {
+                OutputSortFields = sortFields
+            };
+            
             DataTable = dataTable;
             _data = dataTable.Data;
             
             Reset();
 
             IsOpen = true;
-            SortFields = sortFields;
         }
         
         public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
@@ -41,11 +43,17 @@ namespace dexih.transforms
             SelectQuery = selectQuery;
             _data = DataTable.Data;
 
+            if (CacheTable.OutputSortFields?.Count > 0)
+            {
+                GeneratedQuery = new SelectQuery()
+                {
+                    Sorts = CacheTable.OutputSortFields
+                };
+            }
+
             return Task.FromResult(true);
         }
-
-        public override Sorts SortFields { get; }
-
+        
         #endregion
 
         public override string TransformName { get; } = "Memory Reader";

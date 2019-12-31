@@ -49,6 +49,8 @@ namespace dexih.transforms
                 CacheTable = _transform.CacheTable.Copy();
                 await _transform.Open(auditKey, selectQuery, cancellationToken);
 
+                GeneratedQuery = _transform.GeneratedQuery;
+                
                 // load the cache.
                 while (await _transform.ReadAsync(cancellationToken))
                 {

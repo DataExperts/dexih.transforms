@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
@@ -46,6 +47,12 @@ namespace dexih.functions.BuiltIn
             return string.Join(separator, values);
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Regex Replace",
+            Description = "Replaces a string value with a regular expression match.")]
+        public string RegExMatch(string input, string regEx, string replacement)
+        {
+            return Regex.Replace(input, regEx, replacement);
+        }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Pad Left",
             Description =

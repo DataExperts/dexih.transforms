@@ -150,7 +150,7 @@ namespace dexih.transforms.tests
                     },
                     ResultInputs = new Parameter []
                     {
-                        new ParameterValue("direction", ETypeCode.Enum, Sort.EDirection.Ascending), 
+                        new ParameterValue("direction", ETypeCode.Enum, ESortDirection.Ascending), 
                     },
                     ResultReturnParameters = new Parameter[]
                     {

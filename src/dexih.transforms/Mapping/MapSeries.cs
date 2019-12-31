@@ -1,5 +1,6 @@
 ﻿using System;
 using dexih.functions;
+using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 
@@ -241,6 +242,12 @@ namespace dexih.transforms.Mapping
         {
             fillerRow[InputOrdinal] = seriesValue;
         }
+        
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            return false;
+        }
+
 
     }
 }

@@ -241,7 +241,7 @@ namespace dexih.transforms.tests
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.Equal(TransformJoin.EJoinAlgorithm.Sorted, transformJoin.JoinAlgorithm);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())

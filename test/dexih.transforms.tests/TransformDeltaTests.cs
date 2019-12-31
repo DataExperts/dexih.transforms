@@ -19,7 +19,7 @@ namespace dexih.transforms.tests
             var target = new ReaderMemory(targetTable);
 
             //run a reload.  
-            var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.Reload, 0, false);
+            var transformDelta = new TransformDelta(source, target, EUpdateStrategy.Reload, 0, false);
             await transformDelta.Open(0, null, CancellationToken.None);
             await transformDelta.ReadAsync();
             Assert.True((char) transformDelta["Operation"] == 'T');
@@ -37,7 +37,7 @@ namespace dexih.transforms.tests
             Assert.True(count == 10);
 
             //run an append.  (only difference from reload is no truncate record at start.
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.Append, 0, false);
+            transformDelta = new TransformDelta(source, target, EUpdateStrategy.Append, 0, false);
             await transformDelta.Open(0, null, CancellationToken.None);
             transformDelta.Reset();
 
@@ -66,7 +66,7 @@ namespace dexih.transforms.tests
             Transform target = new ReaderMemory(targetTable);
 
             //run an update load with nothing in the target, which will result in 10 rows created.
-            var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
+            var transformDelta = new TransformDelta(source, target, EUpdateStrategy.AppendUpdate, 0, false);
             transformDelta.SetCacheMethod(ECacheMethod.DemandCache);
             await transformDelta.Open(0, null, CancellationToken.None);
 
@@ -97,7 +97,7 @@ namespace dexih.transforms.tests
             target.SetRowNumber(0);
 
             //run an append.  (only difference from reload is no truncate record at start.
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdate, 0, false);
+            transformDelta = new TransformDelta(source, target, EUpdateStrategy.AppendUpdate, 0, false);
             await transformDelta.Open();
 
             count = 0;
@@ -192,7 +192,7 @@ namespace dexih.transforms.tests
             target.SetCacheMethod(ECacheMethod.DemandCache);
 
             //run an update load with nothing in the target.  
-            var transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve,  surrrogateKey, false);
+            var transformDelta = new TransformDelta(source, target, EUpdateStrategy.AppendUpdateDeletePreserve,  surrrogateKey, false);
             transformDelta.SetCacheMethod(ECacheMethod.DemandCache);
             await transformDelta.Open(0, null, CancellationToken.None);
 
@@ -236,7 +236,7 @@ namespace dexih.transforms.tests
             target.SetCacheMethod(ECacheMethod.DemandCache);
 
             //run an append.  (only difference from reload is no truncate record at start.
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve,  surrrogateKey, false);
+            transformDelta = new TransformDelta(source, target, EUpdateStrategy.AppendUpdatePreserve,  surrrogateKey, false);
             await transformDelta.Open(0, null, CancellationToken.None);
 
             count = 0;
@@ -256,7 +256,7 @@ namespace dexih.transforms.tests
             table.Data[9].CopyTo(row, 0);
             table.AddRow(row);
 
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
+            transformDelta = new TransformDelta(source, target, EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
             transformDelta.SetCacheMethod(ECacheMethod.DemandCache);
             await transformDelta.Open(0, null, CancellationToken.None);
 
@@ -306,7 +306,7 @@ namespace dexih.transforms.tests
 //            await writer.WriteRecordsAsync(transformDelta, CancellationToken.None);
 //            
             target = memoryConnection.GetTransformReader(table);
-            transformDelta = new TransformDelta(source, target, TransformDelta.EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
+            transformDelta = new TransformDelta(source, target, EUpdateStrategy.AppendUpdatePreserve, surrrogateKey, false);
             await transformDelta.Open(0, null, CancellationToken.None);
 
             count = 0;
@@ -418,13 +418,13 @@ namespace dexih.transforms.tests
         //}
 
         [Theory]
-        [InlineData(100000, TransformDelta.EUpdateStrategy.Append)]
-        [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdate)]
-        [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdateDelete)]
-        [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve)]
-        [InlineData(100000, TransformDelta.EUpdateStrategy.AppendUpdatePreserve)]
-        [InlineData(100000, TransformDelta.EUpdateStrategy.Reload)]
-        public async Task TransformDeltaPerformance(int rows, TransformDelta.EUpdateStrategy updateStrategy)
+        [InlineData(100000, EUpdateStrategy.Append)]
+        [InlineData(100000, EUpdateStrategy.AppendUpdate)]
+        [InlineData(100000, EUpdateStrategy.AppendUpdateDelete)]
+        [InlineData(100000, EUpdateStrategy.AppendUpdateDeletePreserve)]
+        [InlineData(100000, EUpdateStrategy.AppendUpdatePreserve)]
+        [InlineData(100000, EUpdateStrategy.Reload)]
+        public async Task TransformDeltaPerformance(int rows, EUpdateStrategy updateStrategy)
         {
             var source = Helpers.CreateLargeTable(rows);
 
@@ -443,11 +443,11 @@ namespace dexih.transforms.tests
             }
 
             //appendupdate and appenddelete will merge all rows in to one.  
-            if (updateStrategy == TransformDelta.EUpdateStrategy.AppendUpdate ||
-                updateStrategy == TransformDelta.EUpdateStrategy.AppendUpdateDelete)
+            if (updateStrategy == EUpdateStrategy.AppendUpdate ||
+                updateStrategy == EUpdateStrategy.AppendUpdateDelete)
                 Assert.True(count == 1);
             //reload has one extract row which is the truncate row.
-            else if (updateStrategy == TransformDelta.EUpdateStrategy.Reload)
+            else if (updateStrategy == EUpdateStrategy.Reload)
                 Assert.True(count == rows + 1);
             else
                 Assert.True(count == rows);

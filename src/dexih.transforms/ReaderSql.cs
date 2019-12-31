@@ -12,8 +12,6 @@ namespace dexih.connections.sql
 {
     public sealed class ReaderSql : Transform
     {
-        public override bool CanPushAggregate { get; } = true;
-        
         private DbDataReader _sqlReader;
         private DbConnection _sqlConnection;
 
@@ -61,6 +59,13 @@ namespace dexih.connections.sql
             {
                 AuditKey = auditKey;
                 IsOpen = true;
+
+                // disables push down query logic
+                if (IgnoreQuery)
+                {
+                    selectQuery = null;
+                }
+
                 SelectQuery = selectQuery;
 
                 if (SelectQuery?.Columns?.Count > 0)
@@ -71,6 +76,8 @@ namespace dexih.connections.sql
                         CacheTable.Columns.Add(column.OutputColumn?? column.Column);
                     }
                 }
+                
+                GeneratedQuery = selectQuery;
 
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
                 _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, selectQuery, cancellationToken);
@@ -96,7 +103,6 @@ namespace dexih.connections.sql
             }
         }
 
-        public override Sorts SortFields => SelectQuery?.Sorts;
         public override bool ResetTransform() => IsOpen;
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)

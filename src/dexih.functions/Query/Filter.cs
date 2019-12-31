@@ -94,15 +94,7 @@ namespace dexih.functions.Query
             Column2 = new TableColumn(columnName2);
             CompareDataType = dataType;
         }
-
-
-
-        // [JsonConverter(typeof(StringEnumConverter))]
-        public enum EAndOr
-        {
-            And = 1, Or
-        }
-
+        
         [Key(0)]
         public TableColumn Column1 { get; set; }
 

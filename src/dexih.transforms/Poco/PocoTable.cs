@@ -157,7 +157,7 @@ namespace dexih.transforms.Poco
 
         public DeleteQuery PrepareDelete(T item)
         {
-            var filters = new List<Filter>();
+            var filters = new Filters();
 
             foreach (var mapping in TableMappings)
             {
@@ -195,7 +195,7 @@ namespace dexih.transforms.Poco
 
         public UpdateQuery PrepareUpdate(T item)
         {
-            var filters = new List<Filter>();
+            var filters = new Filters();
             var updateColumns = new List<QueryColumn>();
 
             foreach (var mapping in TableMappings)

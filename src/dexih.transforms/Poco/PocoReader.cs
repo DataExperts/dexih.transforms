@@ -37,9 +37,7 @@ namespace dexih.transforms.Poco
             CacheTable = _pocoTable.Table;
             Reset();
         }
-
-        public override Sorts SortFields { get => _pocoTable?.Table?.OutputSortFields; }
-
+        
 
         #endregion
 

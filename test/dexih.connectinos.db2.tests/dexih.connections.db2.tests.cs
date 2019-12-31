@@ -71,11 +71,11 @@ namespace dexih.connections.sql
         }
         
         [Theory]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
-        [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, true)]
-        [InlineData(true, TransformDelta.EUpdateStrategy.Reload, true)]
-        public async Task ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        [InlineData(false, EUpdateStrategy.Reload, false)]
+        [InlineData(false, EUpdateStrategy.AppendUpdateDelete, false)]
+        [InlineData(false, EUpdateStrategy.Reload, true)]
+        [InlineData(true, EUpdateStrategy.Reload, true)]
+        public async Task ParentChild_Write(bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
@@ -84,11 +84,11 @@ namespace dexih.connections.sql
         }
 
         [Theory]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
-        [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, true)]
-        [InlineData(true, TransformDelta.EUpdateStrategy.Reload, true)]
-        public async Task ParentChild_Write_Large(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        [InlineData(false, EUpdateStrategy.Reload, false)]
+        [InlineData(false, EUpdateStrategy.AppendUpdateDelete, false)]
+        [InlineData(false, EUpdateStrategy.Reload, true)]
+        [InlineData(true, EUpdateStrategy.Reload, true)]
+        public async Task ParentChild_Write_Large(bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();

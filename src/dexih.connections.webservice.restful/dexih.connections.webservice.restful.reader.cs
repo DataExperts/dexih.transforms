@@ -14,7 +14,7 @@ namespace dexih.connections.webservice.restful
     {
         private IEnumerator<object[]> _cachedRows;
 
-        private List<Filter> _filter;
+        private Filters _filter;
 
         public ReaderRestful(Connection connection, Table table)
         {
@@ -48,7 +48,7 @@ namespace dexih.connections.webservice.restful
                 _filter = selectQuery?.Filters;
                 if (_filter == null)
                 {
-                    _filter = new List<Filter>();
+                    _filter = new Filters();
                 }
                 
                 IsOpen = true;

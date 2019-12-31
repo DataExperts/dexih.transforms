@@ -304,7 +304,7 @@ namespace dexih.connections.dexih
         /// <param name="filters"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public object[] LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken = default)
+        public object[] LookupRow(Table table, Filters filters, CancellationToken cancellationToken = default)
         {
 			throw new NotImplementedException();
 		}

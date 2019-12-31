@@ -836,8 +836,8 @@ ORDER BY c.ordinal_position"))
                         //  Retrieving schema for columns from a single table
                         using (var cmd = connection.CreateCommand())
                         {
-                            sql.Append(" " + BuildFiltersString(query.Filters, cmd) + ";");
-
+                            sql.Append(BuildFiltersString(query.Filters, cmd) + ";");
+                            
                             cmd.Transaction = transaction;
                             cmd.CommandText = sql.ToString();
 

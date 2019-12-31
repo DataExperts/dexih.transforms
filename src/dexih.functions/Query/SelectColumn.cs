@@ -10,51 +10,23 @@ namespace dexih.functions.Query
     {
         public SelectColumn() { }
 
-        public SelectColumn(TableColumn column)
-        {
-            Column = column;
-            Aggregate = EAggregate.None;
-        }
-
-        public SelectColumn(TableColumn column, EAggregate aggregate, TableColumn outputColumn)
+        public SelectColumn(TableColumn column, EAggregate aggregate = EAggregate.None, TableColumn outputColumn = null)
         {
             Column = column;
             Aggregate = aggregate;
             OutputColumn = outputColumn;
         }
 
-        public SelectColumn(string columnName)
-        {
-            Column = new TableColumn(columnName);
-            Aggregate = EAggregate.None;
-        }
-
-        public SelectColumn(string columnName, EAggregate aggregate)
+        public SelectColumn(string columnName, EAggregate aggregate = EAggregate.None, string outputColumnName = null)
         {
             Column = new TableColumn(columnName);
             Aggregate = aggregate;
-            OutputColumn = new TableColumn(columnName);
+            if (!string.IsNullOrEmpty(outputColumnName))
+            {
+                OutputColumn = new TableColumn(outputColumnName);
+            }
         }
-        public SelectColumn(string columnName, EAggregate aggregate, string outputColumnName)
-        {
-            Column = new TableColumn(columnName);
-            Aggregate = aggregate;
-            OutputColumn = new TableColumn(outputColumnName);
-        }
-
-        // [JsonConverter(typeof(StringEnumConverter))]
-        public enum EAggregate
-        {
-            None = 0,
-            Sum,
-            Average,
-            Min,
-            Max,
-            Count,
-            First,
-            Last,
-        }
-
+        
         [Key(0)]
         public TableColumn Column { get; set; }
 

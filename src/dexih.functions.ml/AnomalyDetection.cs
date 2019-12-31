@@ -25,7 +25,7 @@ namespace dexih.functions.ml
         public string[] ImportModelLabels(byte[] model) => Helpers.ImportModelLabels(model);
 
 
-        private void AddSeries(object series, float value, SelectColumn.EAggregate duplicateAggregate)
+        private void AddSeries(object series, float value, EAggregate duplicateAggregate)
         {
             if (_cacheSeries == null)
             {
@@ -76,7 +76,7 @@ namespace dexih.functions.ml
         public void SpikeDetection(
             [TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, 
             float value, 
-            SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum
+            EAggregate duplicateAggregate = EAggregate.Sum
             )
         {
             AddSeries(series, value, duplicateAggregate);
@@ -125,7 +125,7 @@ namespace dexih.functions.ml
 //        public void SpikeDetectionModel(
 //            [TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, 
 //            float value, 
-//            SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum
+//            EAggregate duplicateAggregate = EAggregate.Sum
 //            )
 //        {
 //            AddSeries(series, value, duplicateAggregate);

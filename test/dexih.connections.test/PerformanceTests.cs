@@ -132,7 +132,7 @@ namespace dexih.connections.test
             var sortQuery = new SelectQuery()
             {
                 Sorts = new Sorts() {new Sort("SurrogateKey")},
-                Table = table.Name
+                TableName = table.Name
             };
             
             await reader.Open(0, sortQuery, CancellationToken.None);
@@ -192,7 +192,7 @@ namespace dexih.connections.test
             //run a update on 10% of rows
             for (long i = 0; i < rows / 10; i++)
             {
-                var updateColumns = new List<QueryColumn>();
+                var updateColumns = new QueryColumns();
 
                 //use this column to validate the update success
                 var updateColumn = new QueryColumn(table.Columns["UpdateTest"], 1);
@@ -207,7 +207,7 @@ namespace dexih.connections.test
                 }
                 updateQueries.Add(new UpdateQuery()
                 {
-                    Filters = new List<Filter>() {new Filter("SurrogateKey", ECompare.IsEqual, i+1)},
+                    Filters = new Filters() {new Filter("SurrogateKey", ECompare.IsEqual, i+1)},
                     UpdateColumns = updateColumns
                 });
             }
@@ -223,13 +223,13 @@ namespace dexih.connections.test
             //check the table loaded 1,000 rows updated successfully
             var selectQuery = new SelectQuery()
             {
-                Columns = new List<SelectColumn>() {new SelectColumn(updateTestColumn)},
-                Filters = new List<Filter>()
+                Columns = new SelectColumns() {new SelectColumn(updateTestColumn)},
+                Filters = new Filters()
                 {
                     new Filter(updateTestColumn, ECompare.IsEqual, 1)
                 },
                 Rows = -1,
-                Table = table.Name
+                TableName = table.Name
             };
 
             //count rows using reader
@@ -244,7 +244,7 @@ namespace dexih.connections.test
                 //delete 10,000 rows
                 new DeleteQuery()
                 {
-                    Filters = new List<Filter>()
+                    Filters = new Filters()
                     {
                         new Filter(new TableColumn("UpdateTest", ETypeCode.Int32), ECompare.IsEqual, 1)
                     },
@@ -261,10 +261,10 @@ namespace dexih.connections.test
 
             selectQuery = new SelectQuery()
             {
-                Columns = new List<SelectColumn>() {new SelectColumn("SurrogateKey")},
+                Columns = new SelectColumns() {new SelectColumn("SurrogateKey")},
                 //                Filters = new List<Filter>() { new Filter() { Column1 = "column1", CompareDataType = ETypeCode.String, Operator = Filter.ECompare.NotEqual, Value2 = "updated" } },
                 Rows = -1,
-                Table = table.Name
+                TableName = table.Name
             };
 
             //count rows using reader

@@ -42,7 +42,7 @@ namespace dexih.transforms
             selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
-            selectQuery.Columns = Mappings.GetRequiredColumns()?.ToList();
+            selectQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
 
 
             var groupFields = Mappings.OfType<MapGroup>().ToArray();
@@ -68,9 +68,9 @@ namespace dexih.transforms
                 if (groupFields.Any())
                 {
                     var groupNames = groupFields.Select(c => c.InputColumn.Name).ToArray();
-                    selectQuery.Filters = selectQuery.Filters.Where(c =>
-                        (c.Column1 != null && groupNames.Contains(c.Column1.Name)) && 
-                        (c.Column2 != null &&  groupNames.Contains((c.Column2.Name)))).ToList();
+                    selectQuery.Filters = new Filters(selectQuery.Filters.Where(c =>
+                        (c.Column1 != null && groupNames.Contains(c.Column1.Name)) &&
+                        (c.Column2 != null && groupNames.Contains((c.Column2.Name)))));
                 }
                 else
                 {
@@ -81,6 +81,13 @@ namespace dexih.transforms
             SetSelectQuery(selectQuery, true);
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            
+            GeneratedQuery = new SelectQuery()
+            {
+                Sorts = PrimaryTransform.SortFields,
+                Filters = PrimaryTransform.Filters
+            };
+            
             _firstRecord = true;
             return returnValue;
         }
@@ -142,7 +149,7 @@ namespace dexih.transforms
 
         public override Sorts RequiredSortFields()
         {
-            // return GroupFields.Select(c=> new Sort { Column = c.SourceColumn, Direction = Sort.EDirection.Ascending }).ToList();
+            // return GroupFields.Select(c=> new Sort { Column = c.SourceColumn, Direction = EDirection.Ascending }).ToList();
             return null;
         }
 

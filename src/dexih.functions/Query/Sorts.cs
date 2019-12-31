@@ -10,10 +10,9 @@ namespace dexih.functions.Query
 
         public Sorts(IEnumerable<Sort> sorts)
         {
-            foreach (var sort in sorts)
-            {
-                Add(sort);
-            }
+            if (sorts == null) return;
+
+            AddRange(sorts);
         }
         
         public Sorts(params string[] columnNames)
@@ -24,12 +23,22 @@ namespace dexih.functions.Query
             }
         }
 
-        public Sorts(params (string columnName, Sort.EDirection direction)[] sorts)
+        public Sorts(params (string columnName, ESortDirection direction)[] sorts)
         {
             foreach (var sort in sorts)
             {
                 Add(new Sort(sort.columnName, sort.direction));
             }
+        }
+
+        public void Add(string name, ESortDirection sortDirection)
+        {
+            base.Add(new Sort(name, sortDirection));
+        }
+
+        public void Add(TableColumn column, ESortDirection sortDirection)
+        {
+            base.Add(new Sort(column, sortDirection));
         }
 
     }

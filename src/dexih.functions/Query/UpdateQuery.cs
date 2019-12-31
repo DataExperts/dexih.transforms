@@ -6,16 +6,16 @@ namespace dexih.functions.Query
     [MessagePackObject]
     public class UpdateQuery
     {
-        public UpdateQuery(List<QueryColumn> updateColumns, List<Filter> filters)
+        public UpdateQuery(IEnumerable<QueryColumn> updateColumns, IEnumerable<Filter> filters)
         {
-            UpdateColumns = updateColumns;
-            Filters = filters;
+            UpdateColumns = new QueryColumns(updateColumns);
+            Filters = new Filters(filters);
         }
 
         public UpdateQuery()
         {
-            UpdateColumns = new List<QueryColumn>();
-            Filters = new List<Filter>();
+            UpdateColumns = new QueryColumns();
+            Filters = new Filters();
         }
 
         public UpdateQuery(string updateColumn, object updateValue, string filterColumn = null, object filterValue = null)
@@ -29,9 +29,9 @@ namespace dexih.functions.Query
         }
 
         [Key(0)]
-        public List<QueryColumn> UpdateColumns { get; set; }
+        public QueryColumns UpdateColumns { get; set; }
 
         [Key(1)]
-        public List<Filter> Filters { get; set; }
+        public Filters Filters { get; set; }
     }
 }

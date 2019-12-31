@@ -111,5 +111,12 @@ namespace dexih.transforms.Mapping
         {
             return new TableColumn[0];
         }
+
+        /// <summary>
+        /// Contains a matching mapping in the select query
+        /// </summary>
+        /// <param name="selectQuery"></param>
+        /// <returns></returns>
+        public abstract bool MatchesSelectQuery(SelectQuery selectQuery);
     }
 }

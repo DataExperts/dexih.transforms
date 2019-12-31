@@ -82,5 +82,10 @@ namespace dexih.transforms.Mapping
             }
         }
 
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            return false;
+        }
+
     }
 }

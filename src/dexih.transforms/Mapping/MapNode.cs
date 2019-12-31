@@ -105,6 +105,11 @@ namespace dexih.transforms.Mapping
             return new[] {new SelectColumn(InputColumn)};
         }
         
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            return false;
+        }
+
     }
 
 }

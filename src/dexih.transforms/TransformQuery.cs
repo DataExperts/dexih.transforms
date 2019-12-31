@@ -108,9 +108,9 @@ namespace dexih.transforms
             }
             
             // if there are aggregates ,insert a group transform.
-            if (SelectQuery.Columns.Any(c => c.Aggregate != SelectColumn.EAggregate.None) || SelectQuery.Groups?.Count > 0)
+            if (SelectQuery.Columns.Any(c => c.Aggregate != EAggregate.None) || SelectQuery.IsGroup())
             {
-                if (SelectQuery.Columns.Any(c => c.Aggregate == SelectColumn.EAggregate.None))
+                if (SelectQuery.Columns.Any(c => c.Aggregate == EAggregate.None))
                 {
                     throw new TransformException("The query transform failed as there was a mix of aggregate and non aggregate columns in the one query.");
                 }
@@ -121,7 +121,7 @@ namespace dexih.transforms
                     mappings.Add(new MapGroup(group));
                 }
 
-                foreach (var column in SelectQuery.Columns.Where(c => c.Aggregate != SelectColumn.EAggregate.None))
+                foreach (var column in SelectQuery.Columns.Where(c => c.Aggregate != EAggregate.None))
                 {
                     mappings.Add(new MapAggregate(column.Column, column.Column, column.Aggregate));
                 }
@@ -156,9 +156,12 @@ namespace dexih.transforms
                 CacheTable = PrimaryTransform.CacheTable.Copy(false, true);
                 _fieldOrdinals = CacheTable.Columns.Select(c => PrimaryTransform.CacheTable.GetOrdinal(c)).ToList();
             }
+            
 
             CacheTable.Name = "Query";
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
+
+            GeneratedQuery = selectQuery;
 
             return returnValue;
         }
@@ -192,7 +195,7 @@ namespace dexih.transforms
                             showRecord = filter.Evaluate(column1Value, column2Value);
                             isFirst = false;
                         }
-                        else if (filter.AndOr == Filter.EAndOr.And)
+                        else if (filter.AndOr == EAndOr.And)
                         {
                             showRecord = showRecord && filter.Evaluate(column1Value, column2Value);
                         }

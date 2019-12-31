@@ -17,13 +17,13 @@ namespace dexih.functions.ml.tests
                 switch (i)
                 {
                     case 20:
-                        anomaly.SpikeDetection(i, 200, SelectColumn.EAggregate.Average);
+                        anomaly.SpikeDetection(i, 200, EAggregate.Average);
                         break;
                     case 60:
-                        anomaly.SpikeDetection(i, 0, SelectColumn.EAggregate.Average);
+                        anomaly.SpikeDetection(i, 0, EAggregate.Average);
                         break;
                     default:
-                        anomaly.SpikeDetection(i, i, SelectColumn.EAggregate.Average);
+                        anomaly.SpikeDetection(i, i, EAggregate.Average);
                         break;
                 }
             }
@@ -61,13 +61,13 @@ namespace dexih.functions.ml.tests
 //                switch (i)
 //                {
 //                    case 20:
-//                        anomaly.SpikeDetectionModel(i, 200, SelectColumn.EAggregate.Average);
+//                        anomaly.SpikeDetectionModel(i, 200, EAggregate.Average);
 //                        break;
 //                    case 60:
-//                        anomaly.SpikeDetectionModel(i, 0, SelectColumn.EAggregate.Average);
+//                        anomaly.SpikeDetectionModel(i, 0, EAggregate.Average);
 //                        break;
 //                    default:
-//                        anomaly.SpikeDetectionModel(i, i, SelectColumn.EAggregate.Average);
+//                        anomaly.SpikeDetectionModel(i, i, EAggregate.Average);
 //                        break;
 //                }
 //            }

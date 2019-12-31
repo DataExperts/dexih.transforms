@@ -7,6 +7,7 @@ using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
+using MessagePack.Formatters;
 
 namespace dexih.transforms
 {
@@ -17,8 +18,6 @@ namespace dexih.transforms
     )]
     public class TransformSort : Transform
     {
-        public override bool CanPushAggregate => PrimaryTransform?.CanPushAggregate ?? false;
-
         private bool _alreadySorted;
         private bool _firstRead;
         private SortedRowsDictionary<object> _sortedDictionary;
@@ -41,7 +40,7 @@ namespace dexih.transforms
             Mappings = new Mappings();
             foreach(var sortField in sortFields)
             {
-                Mappings.Add(new MapSort(sortField.Column, sortField.Direction));
+                Mappings.Add(new MapSort(sortField.Column, sortField.SortDirection));
             }
 
             SetInTransform(inTransform);
@@ -51,10 +50,10 @@ namespace dexih.transforms
             _sortFields = sortFields;
         }
 
-        public TransformSort(Transform inTransform, string columnName, Sort.EDirection direction = Sort.EDirection.Ascending)
+        public TransformSort(Transform inTransform, string columnName, ESortDirection sortDirection = ESortDirection.Ascending)
         {
             var column = new TableColumn(columnName);
-            Mappings = new Mappings {new MapSort(column, direction)};
+            Mappings = new Mappings {new MapSort(column, sortDirection)};
             SetInTransform(inTransform);
         }
 
@@ -73,7 +72,7 @@ namespace dexih.transforms
 
             if (_sortFields == null)
             {
-                _sortFields = new Sorts(Mappings.OfType<MapSort>().Select(c => new Sort(c.InputColumn, c.Direction)));
+                _sortFields = new Sorts(Mappings.OfType<MapSort>().Select(c => new Sort(c.InputColumn, c.SortDirection)));
             }
 
             AuditKey = auditKey;
@@ -90,6 +89,15 @@ namespace dexih.transforms
             CacheTable = PrimaryTransform.CacheTable.Copy();
             CacheTable.OutputSortFields = _sortFields;
 
+            GeneratedQuery = new SelectQuery()
+            {
+                Sorts = _sortFields,
+            };
+
+            if (PrimaryTransform.Filters != null)
+            {
+                GeneratedQuery.Filters = PrimaryTransform.Filters;
+            }
 
             //check if the transform has already sorted the data, using sql or a presort.
             _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);
@@ -115,7 +123,7 @@ namespace dexih.transforms
             }
             if (_firstRead) //load the entire record into a sorted list.
             {
-                _sortedDictionary = new SortedRowsDictionary<object>(_sortFields.Select(c=>c.Direction).ToList());
+                _sortedDictionary = new SortedRowsDictionary<object>(_sortFields.Select(c=>c.SortDirection).ToList());
 
                 var rowcount = 0;
                 while (await PrimaryTransform.ReadAsync(cancellationToken))
@@ -172,8 +180,6 @@ namespace dexih.transforms
         {
             return null;
         }
-
-        public override Sorts SortFields => _sortFields;
     }
 
 

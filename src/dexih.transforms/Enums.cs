@@ -37,4 +37,14 @@
         EnableCache,
         CallOnce
     }
+    
+    public enum EUpdateStrategy
+    {
+        Reload = 1, //truncates the table and reloads
+        Append, //inserts records.  use if the data feed is always new data.
+        AppendUpdate, //inserts new records, and updates records.  use if the data feed is new and existing data.
+        AppendUpdateDelete, //inserts new records, updates existing records, and (logically) deletes removed records.  use to maintain an exact copy of the data feed.
+        AppendUpdatePreserve, //inserts new records, updates existing records, and preserves the changes.
+        AppendUpdateDeletePreserve // inserts new records, updates existing records, (logically) deletes removed records.
+    }
 }

@@ -9,39 +9,35 @@ namespace dexih.functions.Query
     public class Sort : IEquatable<Sort>
     {
         // [JsonConverter(typeof(StringEnumConverter))]
-        public enum EDirection
-        {
-            Ascending = 1,
-            Descending
-        }
+
 
         public Sort()
         {
         }
 
-        public Sort(TableColumn column, EDirection direction = EDirection.Ascending)
+        public Sort(TableColumn column, ESortDirection sortDirection = ESortDirection.Ascending)
         {
             Column = column;
-            Direction = direction;
+            SortDirection = sortDirection;
         }
 
-        public Sort(string columnName, EDirection direction = EDirection.Ascending)
+        public Sort(string columnName, ESortDirection sortDirection = ESortDirection.Ascending)
         {
             Column = new TableColumn(columnName);
-            Direction = direction;
+            SortDirection = sortDirection;
         }
 
         [Key(0)]
         public TableColumn Column { get; set; }
 
         [Key(1)]
-        public EDirection Direction { get; set; }
+        public ESortDirection SortDirection { get; set; }
 
         public bool Equals(Sort other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Equals(Column, other.Column) && Direction == other.Direction;
+            return Equals(Column, other.Column) && SortDirection == other.SortDirection;
         }
 
         public override bool Equals(object obj)
@@ -56,7 +52,7 @@ namespace dexih.functions.Query
         {
             unchecked
             {
-                return ((Column != null ? Column.GetHashCode() : 0) * 397) ^ (int)Direction;
+                return ((Column != null ? Column.GetHashCode() : 0) * 397) ^ (int)SortDirection;
             }
         }
     }

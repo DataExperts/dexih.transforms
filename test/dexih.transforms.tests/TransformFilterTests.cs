@@ -197,7 +197,6 @@ namespace dexih.transforms.tests
                 ReturnParameters = new List<Parameter>
                 {
                     new ParameterOutputColumn("return", new TableColumn("Substring"))
-                    
                 }
             };
             table.Reset();

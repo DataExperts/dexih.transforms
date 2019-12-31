@@ -6,20 +6,20 @@ namespace dexih.functions.Query
     [MessagePackObject]
     public class DeleteQuery
     {
-        public DeleteQuery(string table, List<Filter> filters)
+        public DeleteQuery(string table, Filters filters)
         {
             Table = table;
             Filters = filters;
         }
         public DeleteQuery()
         {
-            Filters = new List<Filter>();
+            Filters = new Filters();
         }
 
         [Key(0)]
         public string Table { get; set; }
 
         [Key(1)]
-        public List<Filter> Filters { get; set; }
+        public Filters Filters { get; set; }
     }
 }

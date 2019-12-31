@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
@@ -47,7 +48,6 @@ namespace dexih.transforms
                         throw new ConnectionException(
                             $"The format type {table.FormatType} is not currently supported.");
             }
-            
             _fileNameOrdinal = table.GetOrdinal(EDeltaType.FileName);
         }
         
@@ -104,6 +104,15 @@ namespace dexih.transforms
             catch (Exception ex)
             {
                 throw new ConnectionException($"Failed to read the file {_files.Current.FileName}.  {ex.Message}", ex);
+            }
+            
+            // if the flatfile is already sorted, then update the generated query to indicate this.
+            if (CacheFlatFile.OutputSortFields?.Count > 0)
+            {
+                GeneratedQuery = new SelectQuery()
+                {
+                    Sorts = CacheFlatFile.OutputSortFields
+                };
             }
 
             return true;

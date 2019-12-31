@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
@@ -16,6 +17,9 @@ namespace dexih.transforms
     )]
     public class TransformFilter : Transform
     {
+        // mappings after any already filtered data has been excluded
+        private Mappings _requiredMappings;
+        
         public TransformFilter() { }
 
         public TransformFilter(Transform inReader, Mappings mappings)
@@ -41,7 +45,7 @@ namespace dexih.transforms
 
             if (selectQuery.Columns != null && selectQuery.Columns.Count > 0)
             {
-                var requiredColumns = Mappings.GetRequiredColumns(true)?.ToList();
+                var requiredColumns = Mappings?.GetRequiredColumns(true)?.ToList();
 
                 if (requiredColumns == null)
                 {
@@ -60,7 +64,7 @@ namespace dexih.transforms
             }
 
             if (selectQuery.Filters == null)
-                selectQuery.Filters = new List<Filter>();
+                selectQuery.Filters = new Filters();
 
             if (Mappings != null)
             {
@@ -70,7 +74,7 @@ namespace dexih.transforms
                     var filter = condition.GetFilterFromFunction();
                     if (filter != null)
                     {
-                        filter.AndOr = Filter.EAndOr.And;
+                        filter.AndOr = EAndOr.And;
                         selectQuery.Filters.Add(filter);
                     }
                 }
@@ -79,12 +83,12 @@ namespace dexih.transforms
                 {
                     if (filterPair.Column2 == null)
                     {
-                        var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Value2);
+                        var filter = new Filter(filterPair.Column1, filterPair.Operator, filterPair.Value2);
                         selectQuery.Filters.Add(filter);
                     }
                     else
                     {
-                        var filter = new Filter(filterPair.Column1, filterPair.Compare, filterPair.Column2);
+                        var filter = new Filter(filterPair.Column1, filterPair.Operator, filterPair.Column2);
                         selectQuery.Filters.Add(filter);
                     }
                 }
@@ -93,6 +97,37 @@ namespace dexih.transforms
             SetSelectQuery(selectQuery, true);
 
             var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+
+            // the generated query will be the same, but with the filters added.
+            GeneratedQuery = PrimaryTransform.GeneratedQuery.CloneProperties<SelectQuery>(true) ?? new SelectQuery();
+            if (GeneratedQuery.IsGroup())
+            {
+                foreach (var filter in selectQuery.Filters)
+                {
+                    GeneratedQuery.GroupFilters.Add(filter);
+                }
+            }
+            else
+            {
+                foreach (var filter in selectQuery.Filters)
+                {
+                    GeneratedQuery.Filters.Add(filter);
+                }
+            }
+
+            // required mapping are any ones not already completed.
+            if (Mappings != null)
+            {
+                _requiredMappings = Mappings.NonQueryMappings(PrimaryTransform.GeneratedQuery);
+                _requiredMappings.Initialize(PrimaryTransform.CacheTable);
+            }
+
+            // the generated query will be the child query, plus any additional filters.
+            GeneratedQuery = PrimaryTransform.GeneratedQuery.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            foreach (var filter in selectQuery.Filters)
+            {
+                GeneratedQuery.Filters.Add(filter);
+            }
             
             CacheTable = PrimaryTransform.CacheTable;
 
@@ -107,13 +142,13 @@ namespace dexih.transforms
             }
 
             var showRecord = true;
-            var ignoreRow = false;
-            
-            if (Mappings != null && ( Mappings.OfType<MapFunction>().Any() || Mappings.OfType<MapFilter>().Any()))
+
+            if (_requiredMappings != null && ( _requiredMappings.OfType<MapFunction>().Any() || _requiredMappings.OfType<MapFilter>().Any()))
             {
                 do //loop through the records util the filter is true
                 {
-                    (showRecord, ignoreRow) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    bool ignoreRow;
+                    (showRecord, ignoreRow) = await _requiredMappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
 
                     if (!showRecord)
                     {

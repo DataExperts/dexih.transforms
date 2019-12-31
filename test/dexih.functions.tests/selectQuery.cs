@@ -23,11 +23,11 @@ namespace dexih.functions.tests
             Assert.NotEqual(select1.GetHashCode(), select2.GetHashCode());
 
             select2.Rows = 100;
-            select1.Columns.Add(new SelectColumn("test1", SelectColumn.EAggregate.Sum));
+            select1.Columns.Add(new SelectColumn("test1", EAggregate.Sum));
             Assert.NotEqual(select1, select2);
             Assert.NotEqual(select1.GetHashCode(), select2.GetHashCode());
 
-            select2.Columns.Add(new SelectColumn("test2", SelectColumn.EAggregate.Sum));
+            select2.Columns.Add(new SelectColumn("test2", EAggregate.Sum));
             Assert.NotEqual(select1, select2);
             Assert.NotEqual(select1.GetHashCode(), select2.GetHashCode());
 
@@ -62,16 +62,16 @@ namespace dexih.functions.tests
             Assert.Equal(select1, select2);
             Assert.Equal(select1.GetHashCode(), select2.GetHashCode());
             
-            select1.Sorts.Add(new Sort("sort1", Sort.EDirection.Ascending));
+            select1.Sorts.Add(new Sort("sort1", ESortDirection.Ascending));
             Assert.NotEqual(select1, select2);
             Assert.NotEqual(select1.GetHashCode(), select2.GetHashCode());
             
-            select2.Sorts.Add(new Sort("sort1", Sort.EDirection.Descending));
+            select2.Sorts.Add(new Sort("sort1", ESortDirection.Descending));
             Assert.NotEqual(select1, select2);
             Assert.NotEqual(select1.GetHashCode(), select2.GetHashCode());
             
             select2.Sorts.Clear();
-            select2.Sorts.Add(new Sort("sort1", Sort.EDirection.Ascending));
+            select2.Sorts.Add(new Sort("sort1", ESortDirection.Ascending));
             Assert.Equal(select1, select2);
             Assert.Equal(select1.GetHashCode(), select2.GetHashCode());
             

@@ -151,7 +151,7 @@ namespace dexih.functions.tests
             var outputTable = new Table("output");
             
             // map a value
-            var mapAggregate = new MapAggregate(inputColumn, outputColumn, SelectColumn.EAggregate.Sum);
+            var mapAggregate = new MapAggregate(inputColumn, outputColumn, EAggregate.Sum);
             mapAggregate.AddOutputColumns(outputTable);
 
             //run twice to ensure reset works.

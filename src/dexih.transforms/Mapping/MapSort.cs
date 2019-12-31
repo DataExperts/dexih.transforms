@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -9,13 +10,13 @@ namespace dexih.transforms.Mapping
     public class MapSort: Mapping
     {
        
-        public MapSort(TableColumn inputColumn, Sort.EDirection direction)
+        public MapSort(TableColumn inputColumn, ESortDirection sortDirection)
         {
             InputColumn = inputColumn;
-            Direction = direction;
+            SortDirection = sortDirection;
         }
         
-        public Sort.EDirection Direction;
+        public ESortDirection SortDirection;
         public object InputValue;
         public TableColumn InputColumn;
 
@@ -63,7 +64,7 @@ namespace dexih.transforms.Mapping
 
         public override string Description()
         {
-            return $"Sort {InputColumn?.Name} {Direction}";
+            return $"Sort {InputColumn?.Name} {SortDirection}";
         }
 
         public override void Reset(EFunctionType functionType)
@@ -81,5 +82,29 @@ namespace dexih.transforms.Mapping
             return new[] {new SelectColumn(InputColumn)};
         }
 
+        /// <summary>
+        /// Note, with the sort extra checked need to be made to ensure sorts are in correct order.
+        /// </summary>
+        /// <param name="selectQuery"></param>
+        /// <returns></returns>
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            if(selectQuery.Sorts == null || 
+               !selectQuery.Sorts.Any() ||
+               InputColumn == null)
+            {
+                return false;
+            }
+
+            foreach (var sortColumn in selectQuery.Sorts)
+            {
+                if (sortColumn.Column.Name == InputColumn.Name && sortColumn.SortDirection == SortDirection)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

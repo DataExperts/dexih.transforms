@@ -7,12 +7,12 @@ namespace dexih.functions
 {
     public class SortedRowsDictionary<T> : SortedDictionary<T[], object[]>
     {
-        public SortedRowsDictionary(List<Sort.EDirection> sortDirections): base(new SortKeyComparer<T>(sortDirections))
+        public SortedRowsDictionary(List<ESortDirection> sortDirections): base(new SortKeyComparer<T>(sortDirections))
         {
             
         }
 
-        public SortedRowsDictionary(Sort.EDirection sortDirection = Sort.EDirection.Ascending): base(new SortKeyComparer<T>(sortDirection))
+        public SortedRowsDictionary(ESortDirection sortSortDirection = ESortDirection.Ascending): base(new SortKeyComparer<T>(sortSortDirection))
         {
             
         }
@@ -24,17 +24,17 @@ namespace dexih.functions
     /// </summary>
     public class SortKeyComparer<T> : IComparer<T[]>
     {
-        private readonly List<Sort.EDirection> _sortDirections;
-        private readonly Sort.EDirection _sortDirection = Sort.EDirection.Ascending;
+        private readonly List<ESortDirection> _sortDirections;
+        private readonly ESortDirection _sortSortDirection = ESortDirection.Ascending;
 
-        public SortKeyComparer(List<Sort.EDirection> sortDirections)
+        public SortKeyComparer(List<ESortDirection> sortDirections)
         {
             _sortDirections = sortDirections;
         }
 
-        public SortKeyComparer(Sort.EDirection sortDirection = Sort.EDirection.Ascending)
+        public SortKeyComparer(ESortDirection sortSortDirection = ESortDirection.Ascending)
         {
-            _sortDirection = sortDirection;
+            _sortSortDirection = sortSortDirection;
         }
         
 
@@ -56,10 +56,10 @@ namespace dexih.functions
 
                 if (_sortDirections == null || _sortDirections.Count <= i)
                 {
-                    return _sortDirection == Sort.EDirection.Ascending ? compareResult : -compareResult;
+                    return _sortSortDirection == ESortDirection.Ascending ? compareResult : -compareResult;
                 }
 
-                if (_sortDirections[i] == Sort.EDirection.Ascending)
+                if (_sortDirections[i] == ESortDirection.Ascending)
                 {
                     return compareResult;
                 }

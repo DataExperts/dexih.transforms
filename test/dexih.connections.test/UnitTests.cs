@@ -87,10 +87,10 @@ namespace dexih.connections.test
             {
                 selectQuery = new SelectQuery()
                 {
-                    Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("StringColumn")) },
-                    Sorts = new Sorts() { new Sort { Column = new TableColumn("IntColumn"), Direction = Sort.EDirection.Descending } },
+                    Columns = new SelectColumns() { new SelectColumn(new TableColumn("StringColumn")) },
+                    Sorts = new Sorts() { new Sort { Column = new TableColumn("IntColumn"), SortDirection = ESortDirection.Descending } },
                     Rows = 1,
-                    Table = "test_table"
+                    TableName = "test_table"
                 };
 
                 //should return value2 from second row
@@ -107,8 +107,8 @@ namespace dexih.connections.test
                 //run an update query which will change the second date value to 2001-01-21
                 var updateQuery = new UpdateQuery()
                 {
-                    UpdateColumns = new List<QueryColumn>() { new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc)) },
-                    Filters = new List<Filter>() { new Filter() { Column1 = new TableColumn("IntColumn", ETypeCode.Int32), Operator = ECompare.IsEqual, Value2 = 2, CompareDataType = ETypeCode.Int32 } }
+                    UpdateColumns = new QueryColumns() { new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc)) },
+                    Filters = new Filters() { new Filter() { Column1 = new TableColumn("IntColumn", ETypeCode.Int32), Operator = ECompare.IsEqual, Value2 = 2, CompareDataType = ETypeCode.Int32 } }
                 };
 
                 await connection.ExecuteUpdate(table, new List<UpdateQuery>() { updateQuery }, CancellationToken.None);
@@ -116,10 +116,10 @@ namespace dexih.connections.test
                 //run a select query to validate the updated row.
                 selectQuery = new SelectQuery()
                 {
-                    Columns = new List<SelectColumn>() { new SelectColumn(new TableColumn("DateColumn", ETypeCode.DateTime)) },
-                    Filters = new List<Filter>() { new Filter(new TableColumn("IntColumn", ETypeCode.Int32), ECompare.IsEqual, 2) },
+                    Columns = new SelectColumns() { new SelectColumn(new TableColumn("DateColumn", ETypeCode.DateTime)) },
+                    Filters = new Filters() { new Filter(new TableColumn("IntColumn", ETypeCode.Int32), ECompare.IsEqual, 2) },
                     Rows = 1,
-                    Table = "test_table"
+                    TableName = "test_table"
                 };
 
                 //should return updated date 
@@ -132,11 +132,11 @@ namespace dexih.connections.test
             {
                 selectQuery = new SelectQuery()
                 {
-                    Columns = new List<SelectColumn>() { new SelectColumn("DecimalColumn", SelectColumn.EAggregate.Max) },
+                    Columns = new SelectColumns() { new SelectColumn("DecimalColumn", EAggregate.Max) },
                     Sorts = new Sorts(){ new Sort("DateColumn") },
                     Groups = new List<TableColumn>() { new TableColumn("DateColumn") },
                     Rows = 1,
-                    Table = "test_table"
+                    TableName = "test_table"
                 };
 
                 //should return value2 from second row
@@ -149,7 +149,7 @@ namespace dexih.connections.test
                 //run a delete query.
                 var deleteQuery = new DeleteQuery()
                 {
-                    Filters = new List<Filter>() { new Filter("IntColumn", ECompare.IsEqual, 1) },
+                    Filters = new Filters() { new Filter("IntColumn", ECompare.IsEqual, 1) },
                     Table = "test_table"
                 };
 
@@ -159,10 +159,10 @@ namespace dexih.connections.test
                 //run a select query to check row is deleted
                 selectQuery = new SelectQuery()
                 {
-                    Columns = new List<SelectColumn>() { new SelectColumn("DateColumn") },
-                    Filters = new List<Filter>() { new Filter("IntColumn", ECompare.IsEqual, 1) },
+                    Columns = new SelectColumns() { new SelectColumn("DateColumn") },
+                    Filters = new Filters() { new Filter("IntColumn", ECompare.IsEqual, 1) },
                     Rows = 1,
-                    Table = "test_table"
+                    TableName = "test_table"
                 };
 
                 //should return null
@@ -174,9 +174,9 @@ namespace dexih.connections.test
                 {
                     selectQuery = new SelectQuery()
                     {
-                        Columns = new List<SelectColumn>() { new SelectColumn("IntColumn", SelectColumn.EAggregate.Count) },
+                        Columns = new SelectColumns() { new SelectColumn("IntColumn", EAggregate.Count) },
                         Rows = 1000,
-                        Table = "test_table"
+                        TableName = "test_table"
                     };
 
                     returnScalar = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
@@ -189,9 +189,9 @@ namespace dexih.connections.test
                 //check the table is empty following truncate 
                 selectQuery = new SelectQuery()
                 {
-                    Columns = new List<SelectColumn>() { new SelectColumn("StringColumn") },
+                    Columns = new SelectColumns() { new SelectColumn("StringColumn") },
                     Rows = 1,
-                    Table = "test_table"
+                    TableName = "test_table"
                 };
 
                 //should return null
@@ -238,7 +238,7 @@ namespace dexih.connections.test
             if (connection.CanFilter)
             {
                 //run a lookup query.
-                var filters = new List<Filter> { new Filter("IntColumn", ECompare.IsEqual, 5) };
+                var filters = new Filters { new Filter("IntColumn", ECompare.IsEqual, 5) };
                 var query = new SelectQuery
                 {
                     Filters = filters

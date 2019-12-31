@@ -13,41 +13,49 @@ namespace dexih.functions.Query
     {
         public SelectQuery()
         {
-            Columns = new List<SelectColumn>();
-            Filters = new List<Filter>();
+            Columns = new SelectColumns();
+            Filters = new Filters();
             Sorts = new Sorts();
             Groups = new List<TableColumn>();
             Rows = -1; //-1 means show all rows.
+            GroupFilters = new Filters();
+            // Joins = new List<Join>();
         }
 
         [Key(0)]
-        public List<SelectColumn> Columns { get; set; }
+        public SelectColumns Columns { get; set; }
 
         [Key(1)]
-        public string Table { get; set; }
+        public string TableName { get; set; }
 
         [Key(2)]
-        public List<Filter> Filters { get; set; }
+        public Filters Filters { get; set; }
 
         [Key(3)]
         public Sorts Sorts { get; set; }
 
         [Key(4)]
         public List<TableColumn> Groups { get; set; }
+        
+        [Key(5)]
+        public Filters GroupFilters { get; set; }
+        
+        // [Key(6)]
+        // public List<Join> Joins { get; set; }
 
-        [Key(5)] 
+        [Key(6)] 
         public int Rows { get; set; }
 
-        [Key(6)]
+        [Key(7)]
         public List<TableColumn> InputColumns { get; set; }
 
         /// <summary>
         /// Used for flat files to specify only a specific filename
         /// </summary>
-        [Key(7)]
+        [Key(8)]
         public string FileName { get; set; }
 
-        [Key(8)] 
+        [Key(9)] 
         public EFlatFilePath Path { get; set; } = EFlatFilePath.None;
         
         /// <summary>
@@ -63,22 +71,33 @@ namespace dexih.functions.Query
                 var filterResult = true;
                 var isFirst = true;
 
+                object GetColumnOrValue(TableColumn column, object value)
+                {
+                    if (column == null)
+                    {
+                        return value;
+                    }
+
+                    var index = table.GetOrdinal(column.Name);
+                    if (index < 0)
+                    {
+                        throw new QueryException($"The filter column {column.Name} was not found.");
+                    }
+
+                    return row[index];
+                }
+                
                 foreach (var filter in Filters)
                 {
-                    var column1Value = filter.Column1 == null
-                        ? filter.Value1
-                        : row[table.GetOrdinal(filter.Column1.Name)];
-                    
-                    var column2Value = filter.Column2 == null
-                        ? filter.Value2
-                        : row[table.GetOrdinal(filter.Column2.Name)];
+                    var column1Value = GetColumnOrValue(filter.Column1, filter.Value1);
+                    var column2Value = GetColumnOrValue(filter.Column2, filter.Value2);
 
                     if (isFirst)
                     {
                         filterResult = filter.Evaluate(column1Value, column2Value);
                         isFirst = false;
                     }
-                    else if (filter.AndOr == Filter.EAndOr.And)
+                    else if (filter.AndOr == EAndOr.And)
                     {
                         filterResult = filterResult && filter.Evaluate(column1Value, column2Value);
                     }
@@ -103,13 +122,28 @@ namespace dexih.functions.Query
             return seq1.SequenceEqual(seq2);
         }
 
+        public bool IsGroup()
+        {
+            if (Groups?.Count > 0)
+            {
+                return true;
+            }
+
+            if (Columns.Exists(c => c.Aggregate != EAggregate.None))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public bool Equals(SelectQuery other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
             return CompareSequences(Columns, other.Columns) && 
-                   string.Equals(Table, other.Table) && 
+                   string.Equals(TableName, other.TableName) && 
                    CompareSequences(Filters, other.Filters) && 
                    CompareSequences(Sorts, other.Sorts) && 
                    CompareSequences(Groups, other.Groups) && 
@@ -139,7 +173,7 @@ namespace dexih.functions.Query
                     }
                 }
 
-                hashCode = (hashCode * 397) ^ (Table != null ? Table.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (TableName != null ? TableName.GetHashCode() : 0);
 
                 if (Filters != null && Filters.Count > 0)
                 {

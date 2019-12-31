@@ -10,24 +10,28 @@ namespace dexih.transforms.Mapping
 {
     public class MapUnGroup: Mapping
     {
-        public MapUnGroup()
-        {
-        }
+        // public MapUnGroup()
+        // {
+        // }
 
         public MapUnGroup(TableColumn nodeColumn, ICollection<TableColumn> columns = null)
         {
             NodeColumn = nodeColumn;
 
-            _columns = columns ?? NodeColumn.ChildColumns.Where(c=> !c.IsParent).Select(column =>
+            _inputColumns = columns ?? NodeColumn.ChildColumns;
+            
+            _outputColumns = columns ?? NodeColumn.ChildColumns.Where(c=> !c.IsParent).Select(column =>
             {
                 var newColumn = column.Copy();
-                newColumn.Name = nodeColumn.Name + "." + newColumn.Name;
+                newColumn.Name = nodeColumn.Name + "." + newColumn.Name; // add node to name to ensure unique when flattened.
                 return newColumn;
             }).ToArray();
+            
         }
 
         private TableColumn NodeColumn { get; set; }
-        private readonly ICollection<TableColumn> _columns;
+        private readonly ICollection<TableColumn> _inputColumns;
+        private readonly ICollection<TableColumn> _outputColumns;
         private int _nodeColumnOrdinal = -1;
         private List<int> _inputOrdinals; 
         private List<int> _outputOrdinals;
@@ -43,7 +47,7 @@ namespace dexih.transforms.Mapping
             
             var childColumns = table[_nodeColumnOrdinal].ChildColumns;
 
-            foreach (var column in _columns)
+            foreach (var column in _inputColumns)
             {
                 _inputOrdinals.Add(childColumns.GetOrdinal(column));
             }
@@ -52,7 +56,7 @@ namespace dexih.transforms.Mapping
         public override void AddOutputColumns(Table table)
         {
             _outputOrdinals = new List<int>();
-            foreach (var column in _columns)
+            foreach (var column in _outputColumns)
             {
                 _outputOrdinals.Add(AddOutputColumn(table, column));
             }
@@ -101,5 +105,11 @@ namespace dexih.transforms.Mapping
 
             return new[] {new SelectColumn(NodeColumn)};
         }
+        
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            return false;
+        }
+
     }
 }

@@ -215,9 +215,13 @@ namespace dexih.functions
 		private void Constructor(object target, MethodInfo functionMethod, Type genericType, Parameters parameters, GlobalSettings globalSettings)
 		{
 			FunctionMethod = new TransformMethod(functionMethod, genericType);
-			
-			
 			GlobalSettings = globalSettings;
+
+			if (target == null)
+			{
+				ObjectReference = null;
+				return;
+			}
 
 			var attribute = functionMethod.GetCustomAttribute<TransformFunctionAttribute>();
 			var targetType = target.GetType();
@@ -504,7 +508,7 @@ namespace dexih.functions
 				var (parameters, outputPos) =
 					SetParameters(methodInfo.ParameterInfo, functionVariables, inputParameters, cancellationToken);
 
-				if (inputParameters.Contains(null) || inputParameters.Contains(DBNull.Value))
+				if (inputParameters != null && (inputParameters.Contains(null) || inputParameters.Contains(DBNull.Value)))
 				{
 					switch (OnNull)
 					{

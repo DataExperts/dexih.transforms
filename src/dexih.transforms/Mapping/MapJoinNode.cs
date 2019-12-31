@@ -87,5 +87,11 @@ namespace dexih.transforms.Mapping
 
             return new[] {NodeColumn};
         }
+        
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            return false;
+        }
+
     }
 }

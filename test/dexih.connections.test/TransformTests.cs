@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions;
 using Dexih.Utils.DataType;
 using Xunit;
 
@@ -37,7 +38,7 @@ namespace dexih.connections.test
 
                 var query = new SelectQuery()
                 {
-                    Sorts = new Sorts() { new Sort("IntColumn", Sort.EDirection.Descending) }
+                    Sorts = new Sorts() { new Sort("IntColumn", ESortDirection.Descending) }
                 };
                 await reader.Open(0, query, CancellationToken.None);
 
@@ -81,7 +82,7 @@ namespace dexih.connections.test
             var targetReader = connection.GetTransformReader(deltaTable);
             reader = connection.GetTransformReader(table);
             
-//            var transformDelta = new TransformDelta(reader, targetReader, TransformDelta.EUpdateStrategy.AppendUpdate, 1, false);
+//            var transformDelta = new TransformDelta(reader, targetReader, EUpdateStrategy.AppendUpdate, 1, false);
 //            await transformDelta.Open(0, null, CancellationToken.None);
 //
 //            writerResult = new TransformWriterResult(0, 1, "Datalink", 1, 2, "Test", 1, "Source", 2, "Target", null, null);
@@ -95,7 +96,7 @@ namespace dexih.connections.test
             
             var options = new TransformWriterOptions();
             var target = new transforms.TransformWriterTarget(connection, deltaTable, writerResult);
-            await target.WriteRecordsAsync(reader, TransformDelta.EUpdateStrategy.Reload, CancellationToken.None);
+            await target.WriteRecordsAsync(reader, EUpdateStrategy.Reload, CancellationToken.None);
 
             Assert.Equal(10L, writerResult.RowsCreated);
 

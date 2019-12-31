@@ -180,12 +180,7 @@ namespace dexih.functions
         /// <returns></returns>
         [Key(10)]
         public Sorts OutputSortFields { get; set; }
-
-        //        /// <summary>
-        //        /// Indicates the key that should be used when running update/delete operations against the target.
-        //        /// </summary>
-        //        public List<string> KeyFields { get; set; }
-
+        
         [IgnoreMember]
         public TableCache Data { get; set; }
 
@@ -615,8 +610,8 @@ namespace dexih.functions
         {
             return new SelectQuery
             {
-                Columns = Columns.Where(c=>c.DeltaType != EDeltaType.IgnoreField && c.DataType != ETypeCode.Unknown).Select(c => new SelectColumn(c)).ToList(),
-                Table = Name,
+                Columns = new SelectColumns(Columns.Where(c=>c.DeltaType != EDeltaType.IgnoreField && c.DataType != ETypeCode.Unknown).Select(c => new SelectColumn(c))),
+                TableName = Name,
                 Rows = rows
             };
         }

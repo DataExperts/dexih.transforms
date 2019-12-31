@@ -247,7 +247,7 @@ namespace dexih.transforms
             {
                 var deleteQuery = new DeleteQuery(
                 TargetTable.Name,
-                TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
+                new Filters(TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])))
                 );
 
                 deleteQueries.Add(deleteQuery);

@@ -54,11 +54,11 @@ namespace dexih.connections.azure
         }
 
         [Theory]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
-        [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
+        [InlineData(false, EUpdateStrategy.Reload, false)]
+        [InlineData(false, EUpdateStrategy.AppendUpdateDelete, false)]
         //[InlineData(false, true)]
         //[InlineData(true, true)]
-        public async Task Azure_ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        public async Task Azure_ParentChild_Write(bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -85,12 +86,20 @@ namespace dexih.transforms.Mapping
             if (InputOrdinal == -1 )
             {
                 returnValue = InputValue;
-                return Operations.Parse(OutputColumn.DataType, returnValue);
+                return Operations.Parse(OutputColumn.DataType, OutputColumn.Rank, returnValue);
             }
             else
             {
                 returnValue = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];
-                return InputColumn.DataType == OutputColumn.DataType ? returnValue : Operations.Parse(OutputColumn.DataType, returnValue);
+
+                if (InputColumn.DataType == OutputColumn.DataType && InputColumn.Rank == OutputColumn.Rank)
+                {
+                    return returnValue;
+                }
+                else
+                {
+                    return Operations.Parse(OutputColumn.DataType, OutputColumn.Rank, returnValue);
+                }
             }
         }
 
@@ -108,6 +117,24 @@ namespace dexih.transforms.Mapping
             return new []{new SelectColumn(InputColumn)};
         }
 
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            if(selectQuery.Columns == null || 
+               !selectQuery.Columns.Any() ||
+               InputColumn == null)
+            {
+                return false;
+            }
 
+            foreach (var selectColumn in selectQuery.Columns)
+            {
+                if (selectColumn.Column.Name == InputColumn.Name && selectColumn.Aggregate == EAggregate.None)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

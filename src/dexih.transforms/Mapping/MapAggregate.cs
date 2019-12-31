@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -10,7 +11,7 @@ namespace dexih.transforms.Mapping
 {
     public class MapAggregate: Mapping
     {
-        public MapAggregate(TableColumn inputColumn, TableColumn outputColumn, SelectColumn.EAggregate aggregate = SelectColumn.EAggregate.Sum)
+        public MapAggregate(TableColumn inputColumn, TableColumn outputColumn, EAggregate aggregate = EAggregate.Sum)
         {
             InputColumn = inputColumn;
             OutputColumn = outputColumn;
@@ -19,7 +20,7 @@ namespace dexih.transforms.Mapping
 
         public TableColumn InputColumn;
         public TableColumn OutputColumn;
-        public SelectColumn.EAggregate Aggregate { get; set; }
+        public EAggregate Aggregate { get; set; }
 
         private int _inputOrdinal;
         private int _outputOrdinal;
@@ -52,34 +53,34 @@ namespace dexih.transforms.Mapping
             {
                 switch (Aggregate)
                 {
-                    case SelectColumn.EAggregate.Sum:
-                    case SelectColumn.EAggregate.Average:
+                    case EAggregate.Sum:
+                    case EAggregate.Average:
                         if (value != null)
                         {
                             Value = Operations.Add(InputColumn.DataType, Value ?? 0, value);
                         }
 
                         break;
-                    case SelectColumn.EAggregate.Min:
+                    case EAggregate.Min:
                         if (Operations.LessThan(InputColumn.DataType, value, Value))
                         {
                             Value = value;
                         }
                         break;
-                    case SelectColumn.EAggregate.Max:
+                    case EAggregate.Max:
                         if (Operations.GreaterThan(InputColumn.DataType, value, Value))
                         {
                             Value = value;
                         }
                         break;
-                    case SelectColumn.EAggregate.First:
+                    case EAggregate.First:
                         if (_firstRow)
                         {
                             Value = value;
                             _firstRow = false;
                         }
                         break;
-                    case SelectColumn.EAggregate.Last:
+                    case EAggregate.Last:
                         Value = value;
                         break;
                 }
@@ -104,17 +105,17 @@ namespace dexih.transforms.Mapping
                 object value = null;
                 switch (Aggregate)
                 {
-                    case SelectColumn.EAggregate.Count:
+                    case EAggregate.Count:
                         value = Count;
                         break;
-                    case SelectColumn.EAggregate.First:
-                    case SelectColumn.EAggregate.Last:
-                    case SelectColumn.EAggregate.Max:
-                    case SelectColumn.EAggregate.Min:
-                    case SelectColumn.EAggregate.Sum:
+                    case EAggregate.First:
+                    case EAggregate.Last:
+                    case EAggregate.Max:
+                    case EAggregate.Min:
+                    case EAggregate.Sum:
                         value = Value;
                         break;
-                    case SelectColumn.EAggregate.Average:
+                    case EAggregate.Average:
                     // average may have a different output datatype than input, so parse it.  
                     // TODO: Find way to avoid parse as this causes minor performance.
                         var input = Operations.Parse(OutputColumn.DataType, Value);
@@ -135,13 +136,13 @@ namespace dexih.transforms.Mapping
                 object value = null;
                 switch (Aggregate)
                 {
-                    case SelectColumn.EAggregate.Count:
+                    case EAggregate.Count:
                         value = 0;
                         break;
-                    case SelectColumn.EAggregate.Max:
-                    case SelectColumn.EAggregate.Min:
-                    case SelectColumn.EAggregate.Sum:
-                    case SelectColumn.EAggregate.Average:
+                    case EAggregate.Max:
+                    case EAggregate.Min:
+                    case EAggregate.Sum:
+                    case EAggregate.Average:
                         value = null;
                         break;
                 }
@@ -176,7 +177,7 @@ namespace dexih.transforms.Mapping
             }
             else
             {
-                return new [] {new SelectColumn(InputColumn, SelectColumn.EAggregate.None, InputColumn), };
+                return new [] {new SelectColumn(InputColumn, EAggregate.None, InputColumn), };
             }
         }
 
@@ -184,12 +185,34 @@ namespace dexih.transforms.Mapping
         {
             switch (Aggregate)
             {
-                case SelectColumn.EAggregate.Sum:
-                case SelectColumn.EAggregate.Average:
-                case SelectColumn.EAggregate.Count:
+                case EAggregate.Sum:
+                case EAggregate.Average:
+                case EAggregate.Count:
                     fillerRow[_inputOrdinal] = 0;
                     break;
             }   
+        }
+
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            if(selectQuery.Columns == null || 
+               !selectQuery.Columns.Any() ||
+               InputColumn == null ||
+               Aggregate == EAggregate.First ||
+               Aggregate == EAggregate.Last)
+            {
+                return false;
+            }
+
+            foreach (var selectColumn in selectQuery.Columns)
+            {
+                if (selectColumn.Column.Name == InputColumn.Name && selectColumn.Aggregate == Aggregate)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

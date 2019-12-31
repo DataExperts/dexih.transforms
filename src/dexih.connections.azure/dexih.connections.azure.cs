@@ -635,7 +635,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public string BuildFilterString(List<Filter> filters)
+        public string BuildFilterString(Filters filters)
         {
             if (filters == null || filters.Count == 0)
                 return "";

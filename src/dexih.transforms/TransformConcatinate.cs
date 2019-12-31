@@ -79,13 +79,13 @@ namespace dexih.transforms
                         var column = PrimaryTransform.CacheTable[sort.Column.Name];
                         if (column != null)
                         {
-                            primarySorts.Add(new Sort(column, sort.Direction));
+                            primarySorts.Add(new Sort(column, sort.SortDirection));
                         }
                         
                         column = ReferenceTransform.CacheTable[sort.Column.Name];
                         if (column != null)
                         {
-                            referenceSorts.Add(new Sort(column, sort.Direction));
+                            referenceSorts.Add(new Sort(column, sort.SortDirection));
                         }
                     }
                 }
@@ -148,7 +148,7 @@ namespace dexih.transforms
 
                     var referenceSortField = referenceSortFields[index];
                     if (sortField.Column.Name == referenceSortField.Column.Name &&
-                        sortField.Direction == referenceSortField.Direction)
+                        sortField.SortDirection == referenceSortField.SortDirection)
                     {
                         newSortFields.Add(sortField);
                         
@@ -168,6 +168,11 @@ namespace dexih.transforms
                     _sortedMerge = true;
                     CacheTable.OutputSortFields = newSortFields;
                 }
+                
+                GeneratedQuery = new SelectQuery()
+                {
+                    Sorts = newSortFields
+                };
             }
             
             return returnValue;
@@ -248,9 +253,9 @@ namespace dexih.transforms
                             PrimaryTransform[_primarySortOrdinals[i]], ReferenceTransform[_referenceSortOrdinals[i]]);
 
                         if ((compareResult > 0 &&
-                             SortFields[i].Direction == Sort.EDirection.Ascending) ||
+                             SortFields[i].SortDirection == ESortDirection.Ascending) ||
                             (compareResult < 0 &&
-                             SortFields[i].Direction == Sort.EDirection.Descending))
+                             SortFields[i].SortDirection == ESortDirection.Descending))
                         {
                             usePrimary = false;
                             break;

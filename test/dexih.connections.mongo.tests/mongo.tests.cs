@@ -77,9 +77,9 @@ namespace dexih.connections.mongo.tests
         }
         
         [Theory]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
-        [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
-        public async Task Mongo_ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        [InlineData(false, EUpdateStrategy.Reload, false)]
+        [InlineData(false, EUpdateStrategy.AppendUpdateDelete, false)]
+        public async Task Mongo_ParentChild_Write(bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
@@ -88,9 +88,9 @@ namespace dexih.connections.mongo.tests
         }
 
         [Theory]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
-        [InlineData(false, TransformDelta.EUpdateStrategy.AppendUpdateDelete, false)]
-        public async Task Mongo_ParentChild_Write_Large(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        [InlineData(false, EUpdateStrategy.Reload, false)]
+        [InlineData(false, EUpdateStrategy.AppendUpdateDelete, false)]
+        public async Task Mongo_ParentChild_Write_Large(bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();

@@ -52,6 +52,9 @@ namespace dexih.transforms
         {
             await PrimaryTransform?.Open(auditKey, selectQuery, cancellationToken);
             IsOpen = PrimaryTransform.IsOpen;
+
+            GeneratedQuery = PrimaryTransform.GeneratedQuery;
+            
             return IsOpen;
         }
 

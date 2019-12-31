@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using dexih.functions;
 using dexih.functions.Parameter;
+using dexih.functions.Query;
 
 namespace dexih.transforms.Mapping
 {
@@ -46,5 +47,11 @@ namespace dexih.transforms.Mapping
             }
             
         }
+        
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            return false;
+        }
+
     }
 }

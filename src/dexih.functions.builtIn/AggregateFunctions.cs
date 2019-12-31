@@ -349,14 +349,14 @@ namespace dexih.functions.BuiltIn
             _cacheCount++;
         }
 
-        public int RankResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, Sort.EDirection sortDirection)
+        public int RankResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, ESortDirection sortSortDirection)
         {
             if (_cacheArray == null)
             {
                 _cacheArray = new object[_cacheCount];
                 int rank;
                 int increment;
-                if (sortDirection == Sort.EDirection.Ascending)
+                if (sortSortDirection == ESortDirection.Ascending)
                 {
                     rank = 1;
                     increment = 1;

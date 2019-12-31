@@ -68,6 +68,8 @@ namespace dexih.transforms
             await _profileMappings.Open(PrimaryTransform.CacheTable, ReferenceTransform?.CacheTable);
             await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
 
+            GeneratedQuery = PrimaryTransform.GeneratedQuery;
+            
             IsOpen = true;
             AuditKey = auditKey;
             SelectQuery = selectQuery;

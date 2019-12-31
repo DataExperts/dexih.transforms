@@ -48,85 +48,164 @@ namespace dexih.transforms
         {
             AuditKey = auditKey;
             IsOpen = true;
-
-            if (selectQuery == null)
-            {
-                selectQuery = new SelectQuery();
-            }
             
-            if (selectQuery.Rows > 0 && selectQuery.Rows < MaxOutputRows)
+            if (selectQuery?.Rows > 0 && selectQuery.Rows < MaxOutputRows)
             {
                 MaxOutputRows = selectQuery.Rows;
             }
-            selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
-            
+
+            var newSelectQuery = new SelectQuery
+            {
+                Columns = new SelectColumns(Mappings.GetRequiredColumns(includeAggregate: true))
+            };
+
             // get only the required columns
-            selectQuery.Columns = Mappings.GetRequiredColumns(includeAggregate: true)?.ToList();
 
             var requiredSorts = RequiredSortFields();
 
-            if(selectQuery.Sorts != null && selectQuery.Sorts.Count > 0)
+            if (selectQuery?.Sorts?.Count > 0)
             {
-                for(var i =0; i<requiredSorts.Count; i++)
+                for(var i =0; i < requiredSorts.Count; i++)
                 {
                     if (selectQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
-                        requiredSorts[i].Direction = selectQuery.Sorts[i].Direction;
+                    {
+                        requiredSorts[i].SortDirection = newSelectQuery.Sorts[i].SortDirection;
+                    }
                     else
+                    {
                         break;
+                    }
                 }
             }
 
-            var canPushDownGroup = false;
             var groups = new List<TableColumn>();
 
-            if (PrimaryTransform.CanPushAggregate)
+            // check if all the data can be pushed to a query.
+            var canPushDownGroup = true;
+            foreach (var mapping in Mappings)
             {
-                canPushDownGroup = true;
+                switch (mapping)
+                {
+                    case MapGroup mapGroup:
+                        groups.Add(mapGroup.InputColumn);
+                        break;
+                    case MapAggregate mapAggregate:
+                        // first & last aggregates are not supported for push down
+                        if (mapAggregate.Aggregate == EAggregate.First ||
+                            mapAggregate.Aggregate == EAggregate.Last)
+                            canPushDownGroup = false;
+                        break;
+                    default:
+                        canPushDownGroup = false;
+                        break;
+                }
+
+                if (!canPushDownGroup) break;
+            }
+
+            if (canPushDownGroup)
+            {
+                newSelectQuery.Groups = groups;
+
+                // transform any requested filters, to group filters.
+                if (selectQuery?.Filters?.Count > 0)
+                {
+                    foreach (var filter in selectQuery.Filters)
+                    {
+                        var groupFilter = new Filter()
+                        {
+                            Value1 = filter.Value1,
+                            Value2 = filter.Value2,
+                            Operator = filter.Operator
+                        };
+                        if (filter.Column1 != null)
+                        {
+                            var col = selectQuery.Columns.SingleOrDefault(c =>
+                                c.OutputColumn.Name == filter.Column1.Name);
+                            if (col == null)
+                            {
+                                continue;
+                            }
+
+                            groupFilter.Column1 = col.OutputColumn;
+                        }
+                        if (filter.Column2 != null)
+                        {
+                            var col = selectQuery.Columns.SingleOrDefault(c =>
+                                c.OutputColumn.Name == filter.Column2.Name);
+                            if (col == null)
+                            {
+                                continue;
+                            }
+
+                            groupFilter.Column2 = col.OutputColumn;
+                        }
+
+                        newSelectQuery.GroupFilters.Add(groupFilter);
+                    }
+                }
+            }
+            else
+            {
+                var newColumns = new HashSet<SelectColumn>();
+                foreach (var column in newSelectQuery.Columns)
+                {
+                    column.Aggregate = EAggregate.None;
+                    column.OutputColumn = null;
+                    newColumns.Add(column);
+                }
+
+                newSelectQuery.Columns = new SelectColumns(newColumns);
+            }
+
+            newSelectQuery.Sorts = requiredSorts;
+            
+            SetSelectQuery(newSelectQuery, true);
+
+            var returnValue = await PrimaryTransform.Open(auditKey, newSelectQuery, cancellationToken);
+
+            // the group will maintain the sorts
+            GeneratedQuery = new SelectQuery()
+            {
+                Sorts = newSelectQuery.Sorts,
+            };
+                
+            // confirm if the query was successfully pushed down by matching the generated query columns with expected columns
+            if (canPushDownGroup && PrimaryTransform.GeneratedQuery != null)
+            {
+                var generatedQuery = PrimaryTransform.GeneratedQuery;
+                var matched = true;
                 foreach (var mapping in Mappings)
                 {
                     switch (mapping)
                     {
                         case MapGroup mapGroup:
-                            groups.Add(mapGroup.InputColumn);
+                            if (!(generatedQuery?.Groups?.Exists(c => c.Name == mapGroup.InputColumn.Name) ?? true))
+                            {
+                                matched = false;
+                            }
                             break;
                         case MapAggregate mapAggregate:
-                            // first & last aggregates are not supported for push down
-                            if (mapAggregate.Aggregate == SelectColumn.EAggregate.First ||
-                                mapAggregate.Aggregate == SelectColumn.EAggregate.Last)
-                                canPushDownGroup = false;
+                            if (!(generatedQuery?.Columns?.Exists(c => c.Column.Name == mapAggregate.InputColumn.Name && c.Aggregate == mapAggregate.Aggregate) ?? true))
+                            {
+                                matched = false;
+                            }
                             break;
                         default:
                             canPushDownGroup = false;
                             break;
                     }
 
-                    if (!canPushDownGroup) break;
+                    if (!matched) break;
                 }
-            }
 
-            if (canPushDownGroup)
-            {
-                _isPushDownQuery = true;
-                selectQuery.Groups = groups;
-            }
-            else
-            {
-                var newColumns = new HashSet<SelectColumn>();
-                foreach (var column in selectQuery.Columns)
+                if (matched)
                 {
-                    column.Aggregate = SelectColumn.EAggregate.None;
-                    column.OutputColumn = null;
-                    newColumns.Add(column);
+                    _isPushDownQuery = true;
+                    GeneratedQuery.Filters = selectQuery.GroupFilters;
                 }
-
-                selectQuery.Columns = newColumns.ToList();
             }
-
-            selectQuery.Sorts = requiredSorts;
-
-            SetSelectQuery(selectQuery, true);
-
-            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            
             return returnValue;
         }
         
@@ -289,12 +368,12 @@ namespace dexih.transforms
 
         public override Sorts RequiredSortFields()
         {
-            var sortFields = new Sorts(Mappings.OfType<MapGroup>().Select(c=> new Sort { Column = c.InputColumn, Direction = Sort.EDirection.Ascending }));
+            var sortFields = new Sorts(Mappings.OfType<MapGroup>().Select(c=> new Sort { Column = c.InputColumn, SortDirection = ESortDirection.Ascending }));
 
             var seriesMapping = (MapSeries) Mappings.SingleOrDefault(c => c is MapSeries _);
             if (seriesMapping != null)
             {
-                sortFields.Add(new Sort { Column = seriesMapping.InputColumn, Direction = Sort.EDirection.Ascending });
+                sortFields.Add(new Sort { Column = seriesMapping.InputColumn, SortDirection = ESortDirection.Ascending });
             }
             
             return sortFields;

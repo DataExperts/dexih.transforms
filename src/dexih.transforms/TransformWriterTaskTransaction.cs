@@ -97,8 +97,8 @@ namespace dexih.transforms
                 case 'D':
                     var deleteQuery = new DeleteQuery(
                         TargetTable.Name,
-                        TargetTable.Columns.Where(c => c.IsAutoIncrement())
-                            .Select((c, index) => new Filter(c, ECompare.IsEqual, row[index])).ToList()
+                        new Filters(TargetTable.Columns.Where(c => c.IsAutoIncrement())
+                            .Select((c, index) => new Filter(c, ECompare.IsEqual, row[index])))
                     );
                     await TargetConnection.ExecuteDelete(TargetTable, new List<DeleteQuery>() {deleteQuery}, _transactionReference,
                         cancellationToken = default);

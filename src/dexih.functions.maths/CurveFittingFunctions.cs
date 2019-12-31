@@ -26,7 +26,7 @@ namespace dexih.functions.maths
             return true;
         }
 
-        private void AddSeries(object series, double value, SelectColumn.EAggregate duplicateAggregate)
+        private void AddSeries(object series, double value, EAggregate duplicateAggregate)
         {
             if (_cacheSeries == null)
             {
@@ -48,7 +48,7 @@ namespace dexih.functions.maths
         private double[] YValues() => _cacheSeries.Values.OfType<SeriesValue<double>>().Select(c => c.Value).ToArray();
         
         [TransformFunction(FunctionType = EFunctionType.Series, Category = "Curve Fit", Name = "Linear Regression", Description = "Least-Squares fitting the points (x,y) to a line y : x -> a+b*x", ResultMethod = nameof(LinearRegressionResult), ResetMethod = nameof(Reset))]
-        public void LinearRegression([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, [TransformFunctionVariable(EFunctionVariable.Forecast)] bool isForecast, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
+        public void LinearRegression([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, [TransformFunctionVariable(EFunctionVariable.Forecast)] bool isForecast, double value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             if (!isForecast)
             {
@@ -73,7 +73,7 @@ namespace dexih.functions.maths
         }
         
         [TransformFunction(FunctionType = EFunctionType.Series, Category = "Curve Fit", Name = "Polynomial Regression", Description = "Least-Squares fitting the points (x,y) to a k-order polynomial y : x -> p0 + p1*x + p2*x^2 + ... + pk*x^k", ResultMethod = nameof(PolynomialRegressionResult), ResetMethod = nameof(Reset))]
-        public void PolynomialRegression([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
+        public void PolynomialRegression([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
         }

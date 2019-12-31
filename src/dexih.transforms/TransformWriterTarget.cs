@@ -95,7 +95,7 @@ namespace dexih.transforms
         [CopyReference]
         public List<TransformWriterTarget> ChildWriterTargets { get; set; } = new List<TransformWriterTarget>();
 
-        public TransformDelta.EUpdateStrategy? UpdateStrategy { get; set; }
+        public EUpdateStrategy? UpdateStrategy { get; set; }
 
         #endregion
         
@@ -268,17 +268,17 @@ namespace dexih.transforms
 
         public Task WriteRecordsAsync(Transform transform, CancellationToken cancellationToken = default)
         {
-            return WriteRecordsAsync(transform, TransformDelta.EUpdateStrategy.Append, ETransformWriterMethod.Bulk, cancellationToken);
+            return WriteRecordsAsync(transform, EUpdateStrategy.Append, ETransformWriterMethod.Bulk, cancellationToken);
         }
 
-        public Task WriteRecordsAsync(Transform transform, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken)
+        public Task WriteRecordsAsync(Transform transform, EUpdateStrategy? updateStrategy, CancellationToken cancellationToken)
         {
             return WriteRecordsAsync(transform, updateStrategy, ETransformWriterMethod.Bulk, cancellationToken);
         }
         
         public Task WriteRecordsAsync(Transform transform, ETransformWriterMethod transformWriterMethod, CancellationToken cancellationToken = default)
         {
-            return WriteRecordsAsync(transform, TransformDelta.EUpdateStrategy.Append, transformWriterMethod, cancellationToken);
+            return WriteRecordsAsync(transform, EUpdateStrategy.Append, transformWriterMethod, cancellationToken);
         }
         
         /// <summary>
@@ -291,7 +291,7 @@ namespace dexih.transforms
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="TransformWriterException"></exception>
-        public async Task WriteRecordsAsync(Transform transform, TransformDelta.EUpdateStrategy? updateStrategy = null, ETransformWriterMethod transformWriterMethod = ETransformWriterMethod.Bulk, CancellationToken cancellationToken = default)
+        public async Task WriteRecordsAsync(Transform transform, EUpdateStrategy? updateStrategy = null, ETransformWriterMethod transformWriterMethod = ETransformWriterMethod.Bulk, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -400,7 +400,7 @@ namespace dexih.transforms
             }
         }
 
-        private async Task WriteChildRecordsAsync(TransformNode transformNode, TableColumn keyColumn, DeltaValues deltaValues, Connection parentConnection, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
+        private async Task WriteChildRecordsAsync(TransformNode transformNode, TableColumn keyColumn, DeltaValues deltaValues, Connection parentConnection, int transactionReference, EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
         {
 
             if (parentConnection != TargetConnection)
@@ -435,8 +435,8 @@ namespace dexih.transforms
                 }
 
                 // if the update strategy is reload, change it to append to avoid the delta pushing a truncate on every set of child rows.
-                var childUpdateStrategy = updateStrategy == TransformDelta.EUpdateStrategy.Reload
-                    ? TransformDelta.EUpdateStrategy.Append
+                var childUpdateStrategy = updateStrategy == EUpdateStrategy.Reload
+                    ? EUpdateStrategy.Append
                     : updateStrategy;
 
                 if (updateStrategy != null)
@@ -458,7 +458,7 @@ namespace dexih.transforms
             }
         }
 
-        private async Task ProcessRecords(Transform transform, Transform targetTransform, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
+        private async Task ProcessRecords(Transform transform, Transform targetTransform, int transactionReference, EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
         {
             var firstRead = true;
 
@@ -511,7 +511,7 @@ namespace dexih.transforms
         /// <param name="cancellationToken"></param>
         /// <param name="transactionReference"></param>
         /// <returns>The operation, and the tableCache if the rows have been exceeded.</returns>
-        private async Task WriteRecord(Transform transform, int transactionReference, TransformDelta.EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
+        private async Task WriteRecord(Transform transform, int transactionReference, EUpdateStrategy? updateStrategy, CancellationToken cancellationToken = default)
         {
             // initialize the ordinal lookups if this is the first write.
             if (!_ordinalsInitialized)

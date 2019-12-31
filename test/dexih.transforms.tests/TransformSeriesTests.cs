@@ -47,7 +47,7 @@ namespace dexih.transforms.tests
                 Inputs = new Parameter[]
                 {
                     new ParameterColumn("IntColumn", ETypeCode.Double),
-                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, EAggregate.Sum), 
                 },
                 ResultInputs = new Parameter[]
                 {
@@ -105,7 +105,7 @@ namespace dexih.transforms.tests
                 Inputs = new Parameter[]
                 {
                     new ParameterColumn("IntColumn", ETypeCode.Double),
-                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, EAggregate.Sum), 
                 },
                 ResultInputs = new Parameter[]
                 {
@@ -152,7 +152,7 @@ namespace dexih.transforms.tests
                 Inputs = new Parameter[]
                 {
                     new ParameterColumn("IntColumn", ETypeCode.Double),
-                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, EAggregate.Sum), 
                 },
                 ResultInputs = new Parameter[]
                 {
@@ -170,7 +170,7 @@ namespace dexih.transforms.tests
                 Inputs = new Parameter[]
                 {
                     new ParameterColumn("IntColumn", ETypeCode.Double),
-                    new ParameterValue("Aggregate", ETypeCode.Unknown, SelectColumn.EAggregate.Sum), 
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, EAggregate.Sum), 
                 },
                 ResultOutputs = new Parameter[]
                 {

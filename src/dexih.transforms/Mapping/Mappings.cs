@@ -172,7 +172,7 @@ namespace dexih.transforms.Mapping
                         {
                             if (mapColumn.InputColumn.Compare(t.Column))
                             {
-                                fields.Add(new Sort(mapColumn.OutputColumn, t.Direction));
+                                fields.Add(new Sort(mapColumn.OutputColumn, t.SortDirection));
                                 found = true;
                                 break;
                             }
@@ -182,7 +182,7 @@ namespace dexih.transforms.Mapping
                         {
                             if (mapGroup.InputColumn.Compare(t.Column))
                             {
-                                fields.Add(new Sort(mapGroup.InputColumn, t.Direction));
+                                fields.Add(new Sort(mapGroup.InputColumn, t.SortDirection));
                                 found = true;
                                 break;
                             }
@@ -194,7 +194,7 @@ namespace dexih.transforms.Mapping
                         var column = _passThroughColumns.SingleOrDefault(c => c.Compare(t.Column));
                         if (column != null)
                         {
-                            fields.Add(new Sort(column, t.Direction));
+                            fields.Add(new Sort(column, t.SortDirection));
                         }
                     }
                 }
@@ -494,6 +494,62 @@ namespace dexih.transforms.Mapping
             }
 
             return columns.ToArray();
+        }
+
+        // returns only mappings which are not covered by the selectQuery.
+        public Mappings NonQueryMappings(SelectQuery selectQuery)
+        {
+            var mappings = new Mappings(PassThroughColumns);
+
+            // sorts are treated specifically, as the order is important when determining matches
+            if (selectQuery?.Sorts != null && selectQuery.Sorts.Any())
+            {
+                var sortPos = 0;
+                var sortsMatch = true;
+                foreach (var mapping in this.OfType<MapSort>())
+                {
+                    if (selectQuery.Sorts.Count > sortPos + 1)
+                    {
+                        var sort = selectQuery.Sorts[sortPos];
+                        sortPos++;
+                        if (mapping.InputColumn?.Name != sort.Column?.Name || mapping.SortDirection != sort.SortDirection)
+                        {
+                            sortsMatch = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        sortsMatch = false;
+                        break;
+                    }
+                }
+
+                if (!sortsMatch)
+                {
+                    foreach (var mapping in this.OfType<MapSort>())
+                    {
+                        mappings.Add(mapping);
+                    }
+                }
+            }
+
+            if (selectQuery == null)
+            {
+                mappings.AddRange(this);
+            }
+            else
+            {
+                foreach (var mapping in this)
+                {
+                    if (!(mapping is MapSort) && !mapping.MatchesSelectQuery(selectQuery))
+                    {
+                        mappings.Add(mapping);
+                    }
+                }
+            }
+
+            return mappings;
         }
         
 

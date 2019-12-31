@@ -509,10 +509,15 @@
             <e p="InputParameter.cs" t="Include" />
             <e p="InputParameters.cs" t="Include" />
             <e p="InsertQuery.cs" t="Include" />
+            <e p="Join.cs" t="Include" />
+            <e p="JoinFilter.cs" t="Include" />
+            <e p="JoinFilters.cs" t="Include" />
+            <e p="Joins.cs" t="Include" />
             <e p="QueryColumn.cs" t="Include" />
             <e p="QueryColumns.cs" t="Include" />
             <e p="QueryExceptions.cs" t="Include" />
             <e p="SelectColumn.cs" t="Include" />
+            <e p="SelectColumns.cs" t="Include" />
             <e p="SelectQuery.cs" t="Include" />
             <e p="Sort.cs" t="Include" />
             <e p="Sorts.cs" t="Include" />
@@ -972,6 +977,7 @@
           <e p="Properties" t="Include">
             <e p="AssemblyInfo.cs" t="Include" />
           </e>
+          <e p="SelectQueryTests.cs" t="Include" />
           <e p="SqlReader.cs" t="Include" />
           <e p="TransformTests.cs" t="Include" />
           <e p="TransformWriterTarget.cs" t="Include" />

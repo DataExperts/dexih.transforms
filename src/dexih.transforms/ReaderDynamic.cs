@@ -28,12 +28,8 @@ namespace dexih.transforms
             CacheTable = dataTable;
             CacheTable.OutputSortFields = sortFields;
             Reset();
-
-            SortFields = sortFields;
         }
-
-        public override Sorts SortFields { get; }
-
+        
         public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
@@ -63,6 +59,14 @@ namespace dexih.transforms
             }
 
             CacheTable.AddRow(row);
+            
+            if (CacheTable.OutputSortFields?.Count > 0)
+            {
+                GeneratedQuery = new SelectQuery()
+                {
+                    Sorts = CacheTable.OutputSortFields
+                };
+            }
 
             return Task.FromResult(true);
         }

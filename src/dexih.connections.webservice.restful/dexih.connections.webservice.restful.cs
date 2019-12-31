@@ -209,7 +209,7 @@ namespace dexih.connections.webservice.restful
                 var query = new SelectQuery();
                 query.Columns.Add(new SelectColumn(new TableColumn("Response")));
                 query.Columns.Add(new SelectColumn(new TableColumn("ResponseSuccess")));
-                query.Table = newRestFunction.Name;
+                query.TableName = newRestFunction.Name;
                 query.Rows = 1;
 
                 if (newRestFunction.Columns.Count > 0)
@@ -264,7 +264,7 @@ namespace dexih.connections.webservice.restful
             return Task.FromResult(new List<Table>());
         }
 
-        private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(WebService restFunction, List<Filter> filters, CancellationToken cancellationToken = default)
+        private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(WebService restFunction, Filters filters, CancellationToken cancellationToken = default)
         {
             var uri = restFunction.RestfulUri;
 
@@ -333,7 +333,7 @@ namespace dexih.connections.webservice.restful
         /// <param name="filters"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ICollection<object[]>> LookupRow(Table table, List<Filter> filters, CancellationToken cancellationToken = default)
+        public async Task<ICollection<object[]>> LookupRow(Table table, Filters filters, CancellationToken cancellationToken = default)
         {
             try
             {

@@ -9,7 +9,7 @@ namespace dexih.transforms.tests
 {
     public class TransformDeltaParentChild
     {
-        private async Task InitialLoadTargetTables(Connection targetConnection, TransformDelta.EUpdateStrategy updateStrategy)
+        private async Task InitialLoadTargetTables(Connection targetConnection, EUpdateStrategy updateStrategy)
         {
             var parentTable = Helpers.CreateParentTable();
             parentTable.AddAuditColumns("parent_key");
@@ -155,13 +155,13 @@ namespace dexih.transforms.tests
         }
         
         [Theory]
-        [InlineData(TransformDelta.EUpdateStrategy.Append)]
-        [InlineData(TransformDelta.EUpdateStrategy.Reload)]
-        [InlineData(TransformDelta.EUpdateStrategy.AppendUpdate)]
-        [InlineData(TransformDelta.EUpdateStrategy.AppendUpdateDelete)]
-        [InlineData(TransformDelta.EUpdateStrategy.AppendUpdatePreserve)]
-        [InlineData(TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve)]
-        public async Task Load_Empty_targets(TransformDelta.EUpdateStrategy updateStrategy)
+        [InlineData(EUpdateStrategy.Append)]
+        [InlineData(EUpdateStrategy.Reload)]
+        [InlineData(EUpdateStrategy.AppendUpdate)]
+        [InlineData(EUpdateStrategy.AppendUpdateDelete)]
+        [InlineData(EUpdateStrategy.AppendUpdatePreserve)]
+        [InlineData(EUpdateStrategy.AppendUpdateDeletePreserve)]
+        public async Task Load_Empty_targets(EUpdateStrategy updateStrategy)
         {
             var targetConnection = new ConnectionMemory();
             await InitialLoadTargetTables(targetConnection, updateStrategy);
@@ -169,12 +169,12 @@ namespace dexih.transforms.tests
         }
 
         [Theory]
-        [InlineData(TransformDelta.EUpdateStrategy.Reload)]
-        [InlineData(TransformDelta.EUpdateStrategy.AppendUpdate)]
-        [InlineData(TransformDelta.EUpdateStrategy.AppendUpdateDelete)]
-        [InlineData(TransformDelta.EUpdateStrategy.AppendUpdatePreserve)]
-        [InlineData(TransformDelta.EUpdateStrategy.AppendUpdateDeletePreserve)]
-        public async Task Modify_Parent_Record(TransformDelta.EUpdateStrategy updateStrategy)
+        [InlineData(EUpdateStrategy.Reload)]
+        [InlineData(EUpdateStrategy.AppendUpdate)]
+        [InlineData(EUpdateStrategy.AppendUpdateDelete)]
+        [InlineData(EUpdateStrategy.AppendUpdatePreserve)]
+        [InlineData(EUpdateStrategy.AppendUpdateDeletePreserve)]
+        public async Task Modify_Parent_Record(EUpdateStrategy updateStrategy)
         {
             var targetConnection = new ConnectionMemory();
             await InitialLoadTargetTables(targetConnection, updateStrategy);

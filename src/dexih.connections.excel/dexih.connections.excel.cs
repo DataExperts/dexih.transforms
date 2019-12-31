@@ -534,7 +534,7 @@ namespace dexih.connections.excel
             return parsedValue;
 	    }
 
-	    public bool EvaluateRowFilter(ExcelWorksheet worksheet, int row, IReadOnlyDictionary<string, int> headerOrdinals, List<Filter> filters)
+	    public bool EvaluateRowFilter(ExcelWorksheet worksheet, int row, IReadOnlyDictionary<string, int> headerOrdinals, Filters filters)
 	    {
 		    if (filters == null)
 		    {
@@ -558,7 +558,7 @@ namespace dexih.connections.excel
 				    filterResult = filter.Evaluate(value1, value2);
 				    isFirst = false;
 			    }
-			    else if (filter.AndOr == Filter.EAndOr.And)
+			    else if (filter.AndOr == EAndOr.And)
 			    {
 				    filterResult = filterResult && filter.Evaluate(value1, value2);
 			    }

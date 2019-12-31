@@ -15,8 +15,7 @@ namespace dexih.transforms
     {
         private JArray _jArray;
         private int _rowNumber;
-
-
+        
         public ReaderJson(JArray jArray, Table table)
         {
             _jArray = jArray;
@@ -39,6 +38,7 @@ namespace dexih.transforms
         {
             AuditKey = auditKey;
             IsOpen = true;
+            
             return Task.FromResult(true);
         }
 

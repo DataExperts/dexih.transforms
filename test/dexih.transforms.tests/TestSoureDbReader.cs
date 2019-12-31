@@ -27,7 +27,7 @@ namespace dexih.transforms.tests
             var reader = cmd.ExecuteReader();
 
             //run tests with no cache.
-            var dbReader = new ReaderDbDataReader(reader, null);
+            var dbReader = new ReaderDbDataReader(reader);
             dbReader.SetCacheMethod(ECacheMethod.NoCache);
             await dbReader.Open();
 
@@ -49,7 +49,7 @@ namespace dexih.transforms.tests
             reader = cmd.ExecuteReader();
 
             //run tests with pre-load cache.
-            dbReader = new ReaderDbDataReader(reader, null);
+            dbReader = new ReaderDbDataReader(reader);
             dbReader.SetCacheMethod(ECacheMethod.DemandCache);
             await dbReader.Open();
 

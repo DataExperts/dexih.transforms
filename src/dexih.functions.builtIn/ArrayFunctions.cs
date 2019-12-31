@@ -40,9 +40,9 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Array", Name = "Sort",
             Description = "Sorts the array elements.", GenericType = EGenericType.All)]
-        public T[] ArraySort(T[] values, Sort.EDirection sortDirection)
+        public T[] ArraySort(T[] values, ESortDirection sortSortDirection)
         {
-            if (sortDirection == Sort.EDirection.Ascending)
+            if (sortSortDirection == ESortDirection.Ascending)
             {
                 return values.OrderBy(c => c).ToArray();
             }

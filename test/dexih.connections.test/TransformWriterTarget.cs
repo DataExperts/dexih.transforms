@@ -41,7 +41,7 @@ namespace dexih.connections.test
             return transform;
         }
         
-        public async Task ParentChild_Write(Connection connection, string databaseName, bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        public async Task ParentChild_Write(Connection connection, string databaseName, bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             _output.WriteLine("Using database: " + databaseName);
             
@@ -130,7 +130,7 @@ namespace dexih.connections.test
         
 
 
-        public async Task ParentChild_Write_Large(Connection connection, int rows, string databaseName, bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        public async Task ParentChild_Write_Large(Connection connection, int rows, string databaseName, bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             _output.WriteLine("Using database: " + databaseName);
             

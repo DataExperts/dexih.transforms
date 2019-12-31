@@ -46,8 +46,13 @@ namespace dexih.transforms
         public Table GetTable()
         {
             var table = new Table("RowCreator");
-            table.Columns.Add(new TableColumn("RowNumber", ETypeCode.Int32) { IsMandatory = true});
-            table.OutputSortFields = SortFields;
+            var column = new TableColumn("RowNumber", ETypeCode.Int32, EDeltaType.NaturalKey) {IsMandatory = true};
+            table.Columns.Add(column);
+            table.OutputSortFields = new Sorts
+            {
+                new Sort(column,
+                    Increment > 0 ? ESortDirection.Ascending : ESortDirection.Descending)
+            };
             return table;
         }
         
@@ -70,6 +75,20 @@ namespace dexih.transforms
         }
 
         public override bool RequiresSort => false;
+
+        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null,
+            CancellationToken cancellationToken = default)
+        {
+            AuditKey = auditKey;
+            SelectQuery = selectQuery;
+            
+            GeneratedQuery = new SelectQuery()
+            {
+                Sorts = CacheTable.OutputSortFields
+            };
+
+            return Task.FromResult(true);
+        }
 
         protected override Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
@@ -110,11 +129,6 @@ namespace dexih.transforms
         {
             return null;
         }
-
-        public override Sorts SortFields => new Sorts
-        {
-            new Sort(new TableColumn("RowNumber", ETypeCode.Int32), Increment > 0 ? Sort.EDirection.Ascending : Sort.EDirection.Descending)
-        };
 
         public override async Task<bool> InitializeLookup(long auditKey, SelectQuery query, CancellationToken cancellationToken = default)
         {

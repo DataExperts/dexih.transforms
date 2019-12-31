@@ -68,4 +68,43 @@ namespace dexih.functions
         Proxy = 1,
         Direct
     }
+    
+    public enum ESortDirection
+    {
+        Ascending = 1,
+        Descending
+    }
+
+    public enum EJoinType
+    {
+        Inner = 1,
+        Left,
+        Right,
+        Full
+    }
+    
+    public enum EAggregate
+    {
+        None = 0,
+        Sum,
+        Average,
+        Min,
+        Max,
+        Count,
+        First,
+        Last,
+    }
+
+    // [JsonConverter(typeof(StringEnumConverter))]
+    public enum EAndOr
+    {
+        And = 1, Or
+    }
+    
+    // [JsonConverter(typeof(StringEnumConverter))]
+    public enum EFunctionType
+    {
+        Map = 1, Condition, Aggregate, Series, Rows, Validate, Profile, Sort, JoinCondition
+    }
+
 }

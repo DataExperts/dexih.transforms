@@ -33,7 +33,6 @@ namespace dexih.functions
         public TableColumn this[int index]
         {
             get => _tableColumns[index];
-
             set => _tableColumns[index] = value;
         }
 

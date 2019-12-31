@@ -42,15 +42,17 @@ namespace dexih.transforms
             {
                 MaxOutputRows = selectQuery.Rows;
             }
-            selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            var newSelectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
-            selectQuery.Columns = Mappings.GetRequiredColumns()?.ToList();
+            newSelectQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
+            
+            var mappedFilters = new Dictionary<Filter, Filter>();
             
 	        //we need to translate filters and sorts to source column names before passing them through.
             if(selectQuery?.Filters != null)
             {
-                var newFilters = new List<Filter>();
+                var newFilters = new Filters();
                 foreach(var filter in selectQuery.Filters)
                 {
                     TableColumn column1 = null;
@@ -84,12 +86,15 @@ namespace dexih.transforms
 						CompareDataType = filter.CompareDataType
 					};
 
+					mappedFilters.Add(newFilter, filter);
 					newFilters.Add(newFilter);
 				}
 
-				selectQuery.Filters = newFilters;
+                newSelectQuery.Filters = newFilters;
 			}
 
+            var mappedSorts = new Dictionary<Sort, Sort>();
+            
 			//we need to translate filters and sorts to source column names before passing them through.
 			if (selectQuery?.Sorts != null)
 			{
@@ -108,18 +113,38 @@ namespace dexih.transforms
 					var newSort = new Sort
 					{
 						Column = column,
-						Direction = sort.Direction
+						SortDirection = sort.SortDirection
 					};
+					mappedSorts.Add(newSort, sort);
 					newSorts.Add(newSort);
 				}
 
-				selectQuery.Sorts = newSorts;
+				newSelectQuery.Sorts = newSorts;
 			}
 
-            SetSelectQuery(selectQuery, false);
+            SetSelectQuery(newSelectQuery, false);
 
-            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, newSelectQuery, cancellationToken);
 			
+            GeneratedQuery = new SelectQuery();
+
+            // if the primary transform is sorted, pass the sorts through based on the stored transalations
+            if (PrimaryTransform.SortFields?.Count > 0)
+            {
+	            var sorts = PrimaryTransform.SortFields.Where(c => mappedSorts.ContainsKey(c)).Select(c => mappedSorts[c]).ToArray();
+	            if (sorts.Length > 0)
+	            {
+		            GeneratedQuery.Sorts = new Sorts(sorts);
+	            }
+            }
+            
+            // if the primary transform is fil, pass the sorts through based on the stored transalations
+            if (PrimaryTransform.Filters?.Count > 0)
+            {
+	            var filters = PrimaryTransform.Filters.Select(c => mappedFilters[c]).Where(c => c != null);
+		        GeneratedQuery.Filters = new Filters(filters);
+            }
+            
 			return returnValue;
         }
 
@@ -173,9 +198,7 @@ namespace dexih.transforms
         #region Transform Implementations
 
         public override bool RequiresSort => false;
-
-	    public override Sorts SortFields => CacheTable.OutputSortFields;
-
+        
 	    public override bool ResetTransform()
         {
             return true;

@@ -167,15 +167,15 @@ namespace dexih.transforms.tests
             var intColumn = new TableColumn("IntColumn", ETypeCode.Int32);
 
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Sum", ETypeCode.Int32),
-                SelectColumn.EAggregate.Sum));
+                EAggregate.Sum));
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Average", ETypeCode.Decimal),
-                SelectColumn.EAggregate.Average));
+                EAggregate.Average));
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Minimum", ETypeCode.Int32),
-                SelectColumn.EAggregate.Min));
+                EAggregate.Min));
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Maximum", ETypeCode.Int32),
-                SelectColumn.EAggregate.Max));
+                EAggregate.Max));
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Count", ETypeCode.Int32),
-                SelectColumn.EAggregate.Count));
+                EAggregate.Count));
 
             var transformGroup = new TransformGroup(source, mappings);
             await transformGroup.Open();
@@ -206,15 +206,15 @@ namespace dexih.transforms.tests
             var intColumn = new TableColumn("IntColumn", ETypeCode.Int32);
 
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Sum", ETypeCode.Int32),
-                SelectColumn.EAggregate.Sum));
+                EAggregate.Sum));
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Average", ETypeCode.Int32),
-                SelectColumn.EAggregate.Average));
+                EAggregate.Average));
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Minimum", ETypeCode.Int32),
-                SelectColumn.EAggregate.Min));
+                EAggregate.Min));
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Maximum", ETypeCode.Int32),
-                SelectColumn.EAggregate.Max));
+                EAggregate.Max));
             mappings.Add(new MapAggregate(intColumn, new TableColumn("Count", ETypeCode.Int32),
-                SelectColumn.EAggregate.Count));
+                EAggregate.Count));
 
             //add a row to use for grouping.
             source.DataTable.AddRow(new object[] {"value10", 10, 10.1, "2015/01/10", 10, "Even"});

@@ -53,6 +53,12 @@ namespace dexih.connections.sql
 
         protected string AddDelimiter(string name)
         {
+            // if it ends with ), then it's a function like max(abc), so do not delimit
+            if (name.EndsWith(")"))
+            {
+                return name;
+            }
+            
             var newName = AddEscape(name);
 
             if (newName.Substring(0, SqlDelimiterOpen.Length) != SqlDelimiterOpen)
@@ -324,22 +330,22 @@ namespace dexih.connections.sql
         {
             var selectColumn = AddDelimiter(column.Column.Name);
 
-            if (column.Aggregate == SelectColumn.EAggregate.None)
+            if (column.Aggregate == EAggregate.None)
             {
                 return selectColumn;
             }
             
             var agg = column.Aggregate switch
             {
-                SelectColumn.EAggregate.Sum => "sum",
-                SelectColumn.EAggregate.Average => "sum",
-                SelectColumn.EAggregate.Min => "min",
-                SelectColumn.EAggregate.Max => "max",
-                SelectColumn.EAggregate.Count => "count",
+                EAggregate.Sum => "sum",
+                EAggregate.Average => "sum",
+                EAggregate.Min => "min",
+                EAggregate.Max => "max",
+                EAggregate.Count => "count",
                 _ => throw new NotSupportedException()
             };
 
-            return $"{agg}({selectColumn}) {AddDelimiter(column.GetOutputName())}";
+            return $"{agg}({selectColumn})";
         }
 
         public override async Task<int> StartTransaction()
@@ -378,66 +384,97 @@ namespace dexih.connections.sql
             transaction.connection.Dispose();
         }
 
+        public virtual string GetJoinType(EJoinType joinType)
+        {
+            switch (joinType)
+            {
+                case EJoinType.Inner:
+                    return "inner";
+                case EJoinType.Left:
+                    return "left";
+                case EJoinType.Right:
+                    return "right";
+                case EJoinType.Full:
+                    return "full";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(joinType), joinType, null);
+            }
+        }
+
         private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
         {
             var sql = new StringBuilder();
 
             //if the query doesn't have any columns, then use all columns from the table.
-            string columns;
+            Dictionary<string, string> columns;
             if (query?.Columns?.Count > 0)
-                columns = string.Join(",", query.Columns.Select(AggregateFunction).ToArray());
-            else
-                columns = string.Join(",", table.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField).Select(c => AddDelimiter(c.Name)).ToArray());
-
-            sql.Append("select ");
-            sql.Append(columns + " ");
-            sql.Append("from " + SqlTableName(table) + " ");
-            sql.Append(" " + SqlFromAttribute(table) + " ");
-
-            if (query?.Filters != null)
             {
-                var filters = new List<Filter>();
-                if (query?.Filters != null && query.Filters.Any() )
-                {
-                    filters.AddRange(query.Filters);
-                }
-
-                var inputColumns = table.Columns.Where(c => c.IsInput && !c.DefaultValue.ObjectIsNullOrBlank()).ToArray();
-                if (inputColumns.Any())
-                {
-                    foreach (var inputColumn in inputColumns)
-                    {
-                        var filter = new Filter(inputColumn, ECompare.IsEqual, inputColumn.DefaultValue);
-                        filters.Add(filter);
-                    }
-                    sql.Append(BuildFiltersString(filters, cmd));
-                }
-
-                sql.Append(BuildFiltersString(query.Filters, cmd));
+                columns = query.Columns.ToDictionary(c => c.GetOutputName(), AggregateFunction);
+            }
+            else
+            {
+                columns = table.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField)
+                    .ToDictionary(c => c.Name, c => c.Name);
             }
 
+            sql.Append("select ");
+            sql.Append(string.Join(",", columns.Select(c => AddDelimiter(c.Value) + " " + AddDelimiter(c.Key))) + " ");
+            sql.Append("from " + SqlTableName(table) + " ");
+            sql.Append(" " + SqlFromAttribute(table) + " ");
+            
+            var filters = new Filters();
+            if (query?.Filters != null && query.Filters.Any() )
+            {
+                filters.AddRange(query.Filters);
+            }
+
+            // set default value on any input columns.
+            var inputColumns = table.Columns.Where(c => c.IsInput && !c.DefaultValue.ObjectIsNullOrBlank()).ToArray();
+            foreach (var inputColumn in inputColumns)
+            {
+                var filter = new Filter(inputColumn, ECompare.IsEqual, inputColumn.DefaultValue);
+                filters.Add(filter);
+            }
+
+            sql.Append(BuildFiltersString(filters, cmd));
 
             if (query?.Groups?.Count > 0)
             {
                 sql.Append(" group by ");
                 sql.Append(string.Join(",", query.Groups.Select(c => AddDelimiter(c.Name)).ToArray()));
             }
+
+            if (query?.GroupFilters?.Count > 0)
+            {
+                var groupFilters = query.GroupFilters.Select(c => new Filter()
+                {
+                    Column1 = c.Column1 == null ? null : new TableColumn(columns[c.Column1.Name], c.Column1.DataType, c.Column1.DeltaType, c.Column1.Rank),
+                    Column2 = c.Column2 == null ? null :new TableColumn(columns[c.Column2.Name], c.Column2.DataType, c.Column2.DeltaType, c.Column2.Rank),
+                    Value1 =  c.Value1,
+                    Value2 = c.Value2,
+                    Operator = c.Operator,
+                    CompareDataType = c.CompareDataType
+                }).ToList();
+
+                sql.Append(BuildFiltersString(groupFilters, cmd, "having"));
+            }
+
             if (query?.Sorts?.Count > 0)
             {
                 sql.Append(" order by ");
-                sql.Append(string.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.Direction == Sort.EDirection.Descending ? " desc" : "")).ToArray()));
+                sql.Append(string.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.SortDirection == ESortDirection.Descending ? " desc" : "")).ToArray()));
             }
 
             return sql.ToString();
         }
-
-        protected string BuildFiltersString(List<Filter> filters, DbCommand cmd)
+        
+        protected string BuildFiltersString(List<Filter> filters, DbCommand cmd, string prefix = "where")
         {
             if (filters == null || filters.Count == 0)
                 return "";
             
             var sql = new StringBuilder();
-            sql.Append(" where ");
+            sql.Append(" " + prefix + " ");
 
             var index = 0;
             foreach (var filter in filters)
@@ -453,7 +490,7 @@ namespace dexih.connections.sql
                 {
                     if (filter.Column1.IsInput && filter.Value2 == null)
                     {
-                        var parameterName = $"{SqlParameterIdentifier}Filter{index}Column1Default";
+                        var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column1Default";
                         if (cmd != null)
                         {
                             var param = CreateParameter(
@@ -480,7 +517,7 @@ namespace dexih.connections.sql
                 }
                 else
                 {
-                    var parameterName = $"{SqlParameterIdentifier}Filter{index}Value1";
+                    var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value1";
                     if (cmd != null)
                     {
                         var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0, ParameterDirection.Input,
@@ -505,7 +542,7 @@ namespace dexih.connections.sql
                     if (filter.Column2 != null)
                         if (filter.Column2.IsInput)
                         {
-                            var parameterName = $"{SqlParameterIdentifier}Filter{index}Column2Default";
+                            var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column2Default";
                             if (cmd != null)
                             {
                                 var param = CreateParameter(cmd, parameterName, filter.Column2.DataType, filter.Column2.Rank, ParameterDirection.Input,
@@ -534,7 +571,7 @@ namespace dexih.connections.sql
                             var index1 = index;
                             sql.Append(" (" + string.Join(",", array.Select((c, arrayIndex) =>
                                        {
-                                           var parameterName = $"{SqlParameterIdentifier}Filter{index1}ArrayValue{arrayIndex}";
+                                           var parameterName = $"{SqlParameterIdentifier}{prefix}{index1}ArrayValue{arrayIndex}";
                                            if (cmd != null)
                                            {
                                                var param = CreateParameter(cmd, parameterName, filter.BestDataType(),0, ParameterDirection.Input, c);
@@ -554,7 +591,7 @@ namespace dexih.connections.sql
                         }
                         else
                         {
-                            var parameterName = $"{SqlParameterIdentifier}Filter{index}Value2";
+                            var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value2";
                             if (cmd != null)
                             {
                                 var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0, ParameterDirection.Input,
@@ -575,10 +612,10 @@ namespace dexih.connections.sql
 
                 switch (filter.AndOr)
                 {
-                    case Filter.EAndOr.And:
+                    case EAndOr.And:
                         sql.Append("and");
                         break;
-                    case Filter.EAndOr.Or:
+                    case EAndOr.Or:
                         sql.Append("or");
                         break;
                     default:
@@ -591,7 +628,7 @@ namespace dexih.connections.sql
             return sql.ToString();
         }
 
-
+ 
         
         /// <summary>
         /// Either gets an active transaction, or creates a new transaction
@@ -798,7 +835,8 @@ namespace dexih.connections.sql
                                 parameters[i] = param;
                             }
 
-                            sql.Append(" " + BuildFiltersString(query.Filters, cmd));
+                            sql.Append(BuildFiltersString(query.Filters, cmd));
+
                             cmd.CommandText = sql.ToString();
 
                             cancellationToken.ThrowIfCancellationRequested();

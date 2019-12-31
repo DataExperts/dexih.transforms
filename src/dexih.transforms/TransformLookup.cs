@@ -56,6 +56,13 @@ namespace dexih.transforms
             ReferenceTransform.SetCacheMethod(ECacheMethod.LookupCache, 1000);
             
             var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
+            
+            GeneratedQuery = new SelectQuery()
+            {
+                Sorts = PrimaryTransform.SortFields,
+                Filters = PrimaryTransform.Filters
+            };
+            
             return returnValue;
         }
 
@@ -128,13 +135,13 @@ namespace dexih.transforms
             // create a select query with filters set to the values of the current row
             var selectQuery = new SelectQuery
             {
-                Filters = Mappings.OfType<MapJoin>().Select(c => new Filter()
+                Filters = new Filters(Mappings.OfType<MapJoin>().Select(c => new Filter()
                 {
                     Column1 = c.JoinColumn,
                     CompareDataType = ETypeCode.String,
                     Operator = ECompare.IsEqual,
                     Value2 = c.GetOutputValue()
-                }).ToList()
+                }))
             };
 
             var lookupResult = await ReferenceTransform.Lookup(selectQuery, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);

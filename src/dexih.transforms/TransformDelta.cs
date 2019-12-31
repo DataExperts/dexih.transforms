@@ -54,15 +54,7 @@ namespace dexih.transforms
             }
         }
 
-        public enum EUpdateStrategy
-        {
-            Reload = 1, //truncates the table and reloads
-            Append, //inserts records.  use if the data feed is always new data.
-            AppendUpdate, //inserts new records, and updates records.  use if the data feed is new and existing data.
-            AppendUpdateDelete, //inserts new records, updates existing records, and (logically) deletes removed records.  use to maintain an exact copy of the data feed.
-            AppendUpdatePreserve, //inserts new records, updates existing records, and preserves the changes.
-            AppendUpdateDeletePreserve // inserts new records, updates existing records, (logically) deletes removed records.
-        }
+
 
         private readonly DateTime _defaultValidFromDate = new DateTime(1900, 01, 01);
         private readonly DateTime _defaultValidToDate = new DateTime(2099, 12, 31, 23, 59, 59);
@@ -185,15 +177,16 @@ namespace dexih.transforms
                 returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
             }
 
+            // doesn't change any sort/filters from previous transforms
+            GeneratedQuery = PrimaryTransform.GeneratedQuery;
+
             SelectQuery = selectQuery;
 
             if (ReferenceTransform == null)
             {
                 throw new Exception("There must be a target table specified.");
             }
-
-
-
+            
             //get the available audit columns
             SetAuditColumns();
 
@@ -403,7 +396,7 @@ namespace dexih.transforms
                     return newRow;
 
                 //query the reference transform to check if the row already exists.
-                var filters = new List<Filter>();
+                var filters = new Filters();
 
                 //lookup the default value by the surrogate key (always = 0) or natural key if a target surrogate key does not exist.
                 if (_colAutoIncrement != null)
@@ -481,7 +474,7 @@ namespace dexih.transforms
                 _primaryOpen = await PrimaryTransform.ReadAsync(cancellationToken);
 
                 //create a filter that will be passed (if supported to the database).  Improves performance.
-                var filters = new List<Filter>();
+                var filters = new Filters();
 
                 //first add a where IsCurrentField = true
                 if (_colIsCurrentField != null)

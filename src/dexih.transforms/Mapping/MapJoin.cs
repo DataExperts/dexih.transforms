@@ -190,6 +190,11 @@ namespace dexih.transforms.Mapping
             return row == null ? _joinRow[_column2Ordinal] : row[_column2Ordinal];
         }
 
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            return false;
+        }
+
 
     }
 }

@@ -342,7 +342,7 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), false)
                 };
 
-                var updateLatestFilters = new List<Filter>() {
+                var updateLatestFilters = new Filters() {
                     new Filter(new TableColumn("HubKey", ETypeCode.Int64), ECompare.IsEqual, writerResult.HubKey),
                     new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), ECompare.IsEqual, writerResult.ReferenceKey),
                     new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), ECompare.IsEqual, true),
@@ -362,7 +362,7 @@ namespace dexih.transforms
                     new QueryColumn(new TableColumn("IsPrevious", ETypeCode.Boolean), false)
                 };
 
-                var updateLatestFilters = new List<Filter>() {
+                var updateLatestFilters = new Filters() {
                     new Filter(new TableColumn("HubKey", ETypeCode.Int64), ECompare.IsEqual, writerResult.HubKey),
                     new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), ECompare.IsEqual, writerResult.ReferenceKey),
                     new Filter(new TableColumn("IsPrevious", ETypeCode.Boolean), ECompare.IsEqual, true),
@@ -433,7 +433,7 @@ namespace dexih.transforms
             var picoTable = new PocoTable<TransformWriterResult>();
             var reader = GetTransformReader(picoTable.Table);
 
-            var filters = new List<Filter>();
+            var filters = new Filters();
             if(hubKey != null) filters.Add(new Filter(new TableColumn("HubKey", ETypeCode.Int64), ECompare.IsEqual, hubKey));
             if (referenceKeys != null && referenceKeys.Length > 0) filters.Add(new Filter(new TableColumn("ReferenceKey", ETypeCode.Int64), ECompare.IsIn, referenceKeys));
             if (auditType != null) filters.Add(new Filter(new TableColumn("AuditType", ETypeCode.String), ECompare.IsEqual, auditType));
@@ -445,7 +445,7 @@ namespace dexih.transforms
             if (previousSuccessResult) filters.Add(new Filter(new TableColumn("IsPreviousSuccess", ETypeCode.Boolean), ECompare.IsEqual, true));
             if (parentAuditKey != null) filters.Add(new Filter(new TableColumn("ParentAuditKey", ETypeCode.Int64), ECompare.IsEqual, parentAuditKey));
 
-            var sorts = new Sorts() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), Sort.EDirection.Descending) };
+            var sorts = new Sorts() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), ESortDirection.Descending) };
             var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
 
             //add a sort transform to ensure sort order.
@@ -548,8 +548,8 @@ namespace dexih.transforms
 
             var query = new SelectQuery()
             {
-                Columns = new List<SelectColumn> { new SelectColumn(incrementalColumn, SelectColumn.EAggregate.Max, incrementalColumn) },
-                Table = table.Name
+                Columns = new SelectColumns() { new SelectColumn(incrementalColumn, EAggregate.Max, incrementalColumn) },
+                TableName = table.Name
             };
 
             long surrogateKeyValue;
@@ -1003,7 +1003,7 @@ namespace dexih.transforms
         {
             var query = new SelectQuery()
             {
-                Columns = new List<SelectColumn>() {new SelectColumn(column)},
+                Columns = new SelectColumns() {new SelectColumn(column)},
                 Groups = new List<TableColumn>() {column},
             };
             

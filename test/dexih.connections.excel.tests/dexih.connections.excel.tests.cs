@@ -68,8 +68,8 @@ namespace dexih.connections.excel
         }
         
         [Theory]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
-        public async Task Excel_ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        [InlineData(false, EUpdateStrategy.Reload, false)]
+        public async Task Excel_ParentChild_Write(bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetLocalConnection();

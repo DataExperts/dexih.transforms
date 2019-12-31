@@ -296,6 +296,39 @@ namespace dexih.transforms.Mapping
             var columns2 = columns.Concat(Parameters.ResultInputs.SelectMany(c => c.GetRequiredColumns()));
             return columns2;
         }
+        
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            if(selectQuery.Filters == null || 
+               !selectQuery.Filters.Any())
+            {
+                return false;
+            }
+
+            var functionFilter = GetFilterFromFunction();
+
+            if (functionFilter == null)
+            {
+                return false;
+            }
+            
+            foreach (var filter in selectQuery.Filters)
+            {
+                
+                if (filter.Column1?.Name == functionFilter.Column1?.Name && filter.Operator == functionFilter.Operator )
+                {
+                    if(filter.Column2 == null && functionFilter.Column2 == null && functionFilter.Value2 == filter.Value2) return true;
+                    if(filter.Column2 != null && functionFilter.Column2 != null && filter.Column2.Name == functionFilter.Column2.Name) return true;
+                }
+                if (filter.Column2?.Name == functionFilter.Column2?.Name && filter.Operator == functionFilter.Operator )
+                {
+                    if(filter.Column1 == null && functionFilter.Column1 == null && functionFilter.Value1 == filter.Value1) return true;
+                    if(filter.Column1 != null && functionFilter.Column1 != null && filter.Column1.Name == functionFilter.Column1.Name) return true;
+                }
+            }
+
+            return false;
+        }
     }
     
     public class FunctionCacheComparer : IEqualityComparer<object[]>
@@ -328,7 +361,5 @@ namespace dexih.transforms.Mapping
             }
             return result;
         }
-        
-
     }
 }

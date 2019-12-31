@@ -15,19 +15,22 @@ namespace dexih.transforms
     {
         public ReaderDbDataReader() { }
 
-        private readonly Sorts _sortFields;
-
         /// <summary>
         /// Initialises a transform source.  
         /// </summary>
         /// <param name="inReader">An initialized DbDataReader.</param>
         /// <param name="sortFields">A list of already sorted fields in the inReader.  If the fields are not sorted in the source data and sortfields are set, transforms such as group, row, join will fail or return incorrect results.</param>
-        public ReaderDbDataReader(DbDataReader inReader, Sorts sortFields = null)
+        public ReaderDbDataReader(DbDataReader inReader, Sorts sortFields = (Sorts) null)
         {
             InReader = inReader;
             var fieldCount = inReader.FieldCount;
 
-            CacheTable = new Table("InReader");
+            CacheTable = new Table("InReader") {OutputSortFields = sortFields};
+            
+            GeneratedQuery = new SelectQuery()
+            {
+                Sorts = sortFields
+            };
 
 #if NET462
             try
@@ -83,8 +86,6 @@ namespace dexih.transforms
                 }
             }
 #endif
-
-            _sortFields = sortFields;
         }
 
         /// <summary>
@@ -93,12 +94,19 @@ namespace dexih.transforms
         /// <param name="inReader"></param>
         /// <param name="table"></param>
         /// <param name="sortFields"></param>
-        public ReaderDbDataReader(DbDataReader inReader, Table table, Sorts sortFields = null)
+        public ReaderDbDataReader(DbDataReader inReader, Table table)
         {
             InReader = inReader;
 
             CacheTable = table;
-            _sortFields = sortFields;
+
+            if (table.OutputSortFields != null)
+            {
+                GeneratedQuery = new SelectQuery()
+                {
+                    Sorts = table.OutputSortFields
+                };
+            }
         }
 
         public DbDataReader InReader { get; set; }
@@ -122,8 +130,6 @@ namespace dexih.transforms
 
             return null;
         }
-
-        public override Sorts SortFields => _sortFields;
 
         public override bool ResetTransform()
         {

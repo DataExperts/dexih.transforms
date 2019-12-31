@@ -753,7 +753,7 @@ namespace dexih.connections.mongo
             {
                 if (sortDefinition == null)
                 {
-                    if (sortColumn.Direction == Sort.EDirection.Ascending)
+                    if (sortColumn.SortDirection == ESortDirection.Ascending)
                     {
                         sortDefinition = Builders<BsonDocument>.Sort.Ascending(sortColumn.Column.Name);    
                     }
@@ -764,7 +764,7 @@ namespace dexih.connections.mongo
                 }
                 else
                 {
-                    if (sortColumn.Direction == Sort.EDirection.Ascending)
+                    if (sortColumn.SortDirection == ESortDirection.Ascending)
                     {
                         sortDefinition = sortDefinition.Ascending(sortColumn.Column.Name);    
                     }
@@ -778,7 +778,7 @@ namespace dexih.connections.mongo
             return sortDefinition;
         }
                 
-        public FilterDefinition<BsonDocument> BuildFilterDefinition(List<Filter> filters)
+        public FilterDefinition<BsonDocument> BuildFilterDefinition(Filters filters)
         {
             if (filters == null || filters.Count == 0)
                 return null;

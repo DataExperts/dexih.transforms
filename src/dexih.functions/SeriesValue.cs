@@ -9,7 +9,7 @@ namespace dexih.functions
     /// </summary>
     public class SeriesValue<T>
     {
-        public SeriesValue(object series, T value, SelectColumn.EAggregate aggregate)
+        public SeriesValue(object series, T value, EAggregate aggregate)
         {
             Series = series;
             Value = value;
@@ -30,7 +30,7 @@ namespace dexih.functions
         public object Series { get; set; }
         public T Value { get; set; }
         public int Count { get; set; }
-        public SelectColumn.EAggregate Aggregate { get; set; }
+        public EAggregate Aggregate { get; set; }
 
         public void AddValue(T value)
         {
@@ -38,29 +38,29 @@ namespace dexih.functions
 
             switch (Aggregate)
             {
-                case SelectColumn.EAggregate.Sum:
-                case SelectColumn.EAggregate.Average:
+                case EAggregate.Sum:
+                case EAggregate.Average:
                     Value = _addFunc(Value, value);
                     break;
-                case SelectColumn.EAggregate.Min:
+                case EAggregate.Min:
                     if (_lessThanFunc(value, Value))
                     {
                         Value = value;
                     }
 
                     break;
-                case SelectColumn.EAggregate.Max:
+                case EAggregate.Max:
                     if (_greaterThanFunc(value, Value))
                     {
                         Value = value;
                     }
 
                     break;
-                case SelectColumn.EAggregate.Count:
+                case EAggregate.Count:
                     break;
-                case SelectColumn.EAggregate.First:
+                case EAggregate.First:
                     break;
-                case SelectColumn.EAggregate.Last:
+                case EAggregate.Last:
                     Value = value;
                     break;
                 default:
@@ -72,7 +72,7 @@ namespace dexih.functions
         {
             get
             {
-                if (Aggregate == SelectColumn.EAggregate.Average)
+                if (Aggregate == EAggregate.Average)
                 {
                     return _divFunc(Value, Count);
                 }

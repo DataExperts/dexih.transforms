@@ -10,18 +10,18 @@ namespace dexih.transforms.tests
     public class TransformSortTests
     {
         [Theory]
-        [InlineData("StringColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("StringColumn", Sort.EDirection.Descending, "SortColumn")]
-        [InlineData("IntColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("IntColumn", Sort.EDirection.Descending, "SortColumn")]
-        [InlineData("DecimalColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("DecimalColumn", Sort.EDirection.Descending, "SortColumn")]
-        [InlineData("DateColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("DateColumn", Sort.EDirection.Descending, "SortColumn")]
-        public async Task RunSingleColumnSort(string column, Sort.EDirection direction, string checkColumn)
+        [InlineData("StringColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("StringColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("IntColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("IntColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("DecimalColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("DecimalColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("DateColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("DateColumn", ESortDirection.Descending, "SortColumn")]
+        public async Task RunSingleColumnSort(string column, ESortDirection sortDirection, string checkColumn)
         {
             var source = Helpers.CreateUnSortedTestData();
-            var transformSort = new TransformSort(source, new Sorts() { new Sort(column, direction ) });
+            var transformSort = new TransformSort(source, new Sorts() { new Sort(column, sortDirection ) });
             await transformSort.Open();
             
             var sortCount = 1;
@@ -36,18 +36,18 @@ namespace dexih.transforms.tests
         }
         
         [Theory]
-        [InlineData("StringColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("StringColumn", Sort.EDirection.Descending, "SortColumn")]
-        [InlineData("IntColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("IntColumn", Sort.EDirection.Descending, "SortColumn")]
-        [InlineData("DecimalColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("DecimalColumn", Sort.EDirection.Descending, "SortColumn")]
-        [InlineData("DateColumn", Sort.EDirection.Ascending, "IntColumn")]
-        [InlineData("DateColumn", Sort.EDirection.Descending, "SortColumn")]
-        public async Task RunSingleColumnSort2(string column, Sort.EDirection direction, string checkColumn)
+        [InlineData("StringColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("StringColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("IntColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("IntColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("DecimalColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("DecimalColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("DateColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("DateColumn", ESortDirection.Descending, "SortColumn")]
+        public async Task RunSingleColumnSort2(string column, ESortDirection sortDirection, string checkColumn)
         {
             var source = Helpers.CreateUnSortedTestData();
-            var mappings = new Mappings {new MapSort(new TableColumn(column), direction)};
+            var mappings = new Mappings {new MapSort(new TableColumn(column), sortDirection)};
             var transformSort = new TransformSort(source, mappings);
             await transformSort.Open();
             var sortCount = 1;
@@ -98,7 +98,7 @@ namespace dexih.transforms.tests
         public async Task SortLargeTable()
         {
             var source = Helpers.CreateLargeTable(100000);
-            var transformSort = new TransformSort(source, new Sorts() { new Sort("random", Sort.EDirection.Ascending) });
+            var transformSort = new TransformSort(source, new Sorts() { new Sort("random", ESortDirection.Ascending) });
             transformSort.SetInTransform(source);
             await transformSort.Open();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -12,18 +13,18 @@ namespace dexih.transforms.Mapping
     {
         public MapFilter() {}
         
-        public MapFilter(TableColumn column1, TableColumn column2, ECompare compare = ECompare.IsEqual)
+        public MapFilter(TableColumn column1, TableColumn column2, ECompare @operator = ECompare.IsEqual)
         {
             Column1 = column1;
             Column2 = column2;
-            Compare = compare;
+            Operator = @operator;
         }
 
-        public MapFilter(TableColumn column1, object value2, ECompare compare = ECompare.IsEqual)
+        public MapFilter(TableColumn column1, object value2, ECompare @operator = ECompare.IsEqual)
         {
             Column1 = column1;
             Value2 = value2;
-            Compare = compare;
+            Operator = @operator;
         }
 
         public TableColumn Column1 { get; set; }
@@ -31,7 +32,7 @@ namespace dexih.transforms.Mapping
         public object Value1 { get; set; }
         public object Value2 { get; set; }
         
-        public ECompare Compare { get; set; } = ECompare.IsEqual;
+        public ECompare Operator { get; set; } = ECompare.IsEqual;
 
         private int _column1Ordinal = -1;
         private int _column2Ordinal = -1;
@@ -74,7 +75,7 @@ namespace dexih.transforms.Mapping
             var value1 = _column1Ordinal == -1 ? Value1 : row[_column1Ordinal];
             var value2 = _column2Ordinal == -1 ? Value2 : row[_column2Ordinal];
 
-            var returnValue = Operations.Evaluate(Compare, Column1.DataType, value1, value2);
+            var returnValue = Operations.Evaluate(Operator, Column1.DataType, value1, value2);
             return Task.FromResult(returnValue);
         }
 
@@ -91,7 +92,7 @@ namespace dexih.transforms.Mapping
         {
             var item1 = _column1Ordinal == -1 ? Value1 : Column1.Name;
             var item2 = _column2Ordinal == -1 ? Value2 : Column2.Name;
-            return $"Filter({item1} {Compare} {item2}";
+            return $"Filter({item1} {Operator} {item2}";
         }
 
 
@@ -103,7 +104,7 @@ namespace dexih.transforms.Mapping
                 Column2 = Column2,
                 Value1 = Value1,
                 Value2 = Value2,
-                Compare = Compare
+                Operator = Operator
             };
 
             return filter;
@@ -117,5 +118,29 @@ namespace dexih.transforms.Mapping
             return columns;
         }
 
+        public override bool MatchesSelectQuery(SelectQuery selectQuery)
+        {
+            if(selectQuery.Filters == null || 
+               !selectQuery.Filters.Any())
+            {
+                return false;
+            }
+
+            foreach (var filter in selectQuery.Filters)
+            {
+                if (filter.Column1?.Name == Column1?.Name && filter.Operator == Operator )
+                {
+                    if(filter.Column2 == null && Column2 == null && Value2 == filter.Value2) return true;
+                    if(filter.Column2 != null && Column2 != null && filter.Column2.Name == Column2.Name) return true;
+                }
+                if (filter.Column2?.Name == Column2?.Name && filter.Operator == Operator )
+                {
+                    if(filter.Column1 == null && Column1 == null && Value1 == filter.Value1) return true;
+                    if(filter.Column1 != null && Column1 != null && filter.Column1.Name == Column1.Name) return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

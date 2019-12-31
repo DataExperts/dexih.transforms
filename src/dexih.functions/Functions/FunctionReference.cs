@@ -7,11 +7,7 @@ using MessagePack;
 
 namespace dexih.functions
 {
-    // [JsonConverter(typeof(StringEnumConverter))]
-    public enum EFunctionType
-    {
-        Map = 1, Condition, Aggregate, Series, Rows, Validate, Profile, Sort, JoinCondition
-    }
+
     
     /// <summary>
     /// Function reference contains details of a standard function

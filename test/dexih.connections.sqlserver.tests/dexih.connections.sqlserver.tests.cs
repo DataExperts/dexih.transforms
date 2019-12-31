@@ -75,10 +75,10 @@ namespace dexih.connections.sql.sqlserver
         }
         
         [Theory]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, false)]
-        [InlineData(false, TransformDelta.EUpdateStrategy.Reload, true)]
-        [InlineData(true, TransformDelta.EUpdateStrategy.Reload, true)]
-        public async Task SqlServer_ParentChild_Write(bool useDbAutoIncrement, TransformDelta.EUpdateStrategy updateStrategy, bool useTransaction)
+        [InlineData(false, EUpdateStrategy.Reload, false)]
+        [InlineData(false, EUpdateStrategy.Reload, true)]
+        [InlineData(true, EUpdateStrategy.Reload, true)]
+        public async Task SqlServer_ParentChild_Write(bool useDbAutoIncrement, EUpdateStrategy updateStrategy, bool useTransaction)
         {
             var database = "Test-" + Guid.NewGuid().ToString();
             var connection = GetConnection();
@@ -127,7 +127,7 @@ namespace dexih.connections.sql.sqlserver
         //    Transform transform = connection.GetTransformReader(salesOrder);
         //    transform = new TransformMapping(transform, true, null, null);
         //    transform = new TransformValidation(transform, null, true);
-        //    transform = new TransformDelta(transform, targetTransform, TransformDelta.EUpdateStrategy.AppendUpdate, 1, 1);
+        //    transform = new TransformDelta(transform, targetTransform, EUpdateStrategy.AppendUpdate, 1, 1);
 
         //    TransformWriter writer = new TransformWriter();
         //    TransformWriterResult writerResult = new TransformWriterResult();

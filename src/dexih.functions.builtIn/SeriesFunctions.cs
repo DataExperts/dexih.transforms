@@ -6,7 +6,7 @@ namespace dexih.functions.BuiltIn
 {
     public class SeriesValue
     {
-        public SeriesValue(object series, double value, SelectColumn.EAggregate aggregate)
+        public SeriesValue(object series, double value, EAggregate aggregate)
         {
             Series = series;
             Value = value;
@@ -17,7 +17,7 @@ namespace dexih.functions.BuiltIn
         public object Series { get; set; }
         public double Value { get; set; }
         public int Count { get; set; }
-        public SelectColumn.EAggregate Aggregate { get; set; }
+        public EAggregate Aggregate { get; set; }
 
         public void AddValue(double value)
         {
@@ -25,27 +25,27 @@ namespace dexih.functions.BuiltIn
             
             switch (Aggregate)
             {
-                case SelectColumn.EAggregate.Sum:
-                case SelectColumn.EAggregate.Average:
+                case EAggregate.Sum:
+                case EAggregate.Average:
                     Value += value;
                     break;
-                case SelectColumn.EAggregate.Min:
+                case EAggregate.Min:
                     if (value < Value)
                     {
                         Value = value;
                     }
                     break;
-                case SelectColumn.EAggregate.Max:
+                case EAggregate.Max:
                     if (value > Value)
                     {
                         Value = value;
                     }
                     break;
-                case SelectColumn.EAggregate.Count:
+                case EAggregate.Count:
                     break;
-                case SelectColumn.EAggregate.First:
+                case EAggregate.First:
                     break;
-                case SelectColumn.EAggregate.Last:
+                case EAggregate.Last:
                     Value = value;
                     break;
                 default:
@@ -55,7 +55,7 @@ namespace dexih.functions.BuiltIn
 
         public double Result()
         {
-            if (Aggregate == SelectColumn.EAggregate.Average)
+            if (Aggregate == EAggregate.Average)
             {
                 return Value / Count;
             }
@@ -75,7 +75,7 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        private void AddSeries(object series, double value, SelectColumn.EAggregate duplicateAggregate)
+        private void AddSeries(object series, double value, EAggregate duplicateAggregate)
         {
             if (_cacheSeries == null)
             {
@@ -94,7 +94,7 @@ namespace dexih.functions.BuiltIn
         }
         
         [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Moving Average", Description = "Calculates the average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset))]
-        public void MovingAverage([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
+        public void MovingAverage([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
         }
@@ -124,7 +124,7 @@ namespace dexih.functions.BuiltIn
         }
         
         [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Highest Value Since ", Description = "Return the last period that had a higher value than this.", ResultMethod = nameof(HighestSinceResult), ResetMethod = nameof(Reset))]
-        public void HighestSince([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
+        public void HighestSince([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
         }
@@ -152,7 +152,7 @@ namespace dexih.functions.BuiltIn
         }
         
         [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Highest Value Since ", Description = "Return the last period that had a lower value than this.", ResultMethod = nameof(LowestSinceResult), ResetMethod = nameof(Reset))]
-        public void LowestSince([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, SelectColumn.EAggregate duplicateAggregate = SelectColumn.EAggregate.Sum)
+        public void LowestSince([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
         }

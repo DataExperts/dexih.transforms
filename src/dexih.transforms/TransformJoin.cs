@@ -285,6 +285,12 @@ namespace dexih.transforms
             var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
             if (!returnValue) return false;
 
+            GeneratedQuery = new SelectQuery()
+            {
+                Sorts = PrimaryTransform.SortFields,
+                Filters = PrimaryTransform.Filters
+            };
+
             returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
             if (!returnValue)
             {
@@ -666,7 +672,7 @@ namespace dexih.transforms
             var fields = new Sorts();
             foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.InputColumn != null))
             {
-                fields.Add(new Sort {Column = joinPair.InputColumn, Direction = Sort.EDirection.Ascending});
+                fields.Add(new Sort {Column = joinPair.InputColumn, SortDirection = ESortDirection.Ascending});
             }
             return fields;
         }
@@ -676,7 +682,7 @@ namespace dexih.transforms
             var fields = new Sorts();
             foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.JoinColumn != null))
             {
-                fields.Add(new Sort {Column = joinPair.JoinColumn, Direction = Sort.EDirection.Ascending});
+                fields.Add(new Sort {Column = joinPair.JoinColumn, SortDirection = ESortDirection.Ascending});
             }
 
             if (JoinSortField != null)
