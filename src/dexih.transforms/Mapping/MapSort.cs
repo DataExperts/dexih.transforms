@@ -98,7 +98,7 @@ namespace dexih.transforms.Mapping
 
             foreach (var sortColumn in selectQuery.Sorts)
             {
-                if (sortColumn.Column.Name == InputColumn.Name && sortColumn.SortDirection == SortDirection)
+                if (sortColumn.Column.Name == InputColumn.Name && sortColumn.Direction == SortDirection)
                 {
                     return true;
                 }

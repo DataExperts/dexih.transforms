@@ -172,7 +172,7 @@ namespace dexih.transforms.Mapping
                         {
                             if (mapColumn.InputColumn.Compare(t.Column))
                             {
-                                fields.Add(new Sort(mapColumn.OutputColumn, t.SortDirection));
+                                fields.Add(new Sort(mapColumn.OutputColumn, t.Direction));
                                 found = true;
                                 break;
                             }
@@ -182,7 +182,7 @@ namespace dexih.transforms.Mapping
                         {
                             if (mapGroup.InputColumn.Compare(t.Column))
                             {
-                                fields.Add(new Sort(mapGroup.InputColumn, t.SortDirection));
+                                fields.Add(new Sort(mapGroup.InputColumn, t.Direction));
                                 found = true;
                                 break;
                             }
@@ -194,7 +194,7 @@ namespace dexih.transforms.Mapping
                         var column = _passThroughColumns.SingleOrDefault(c => c.Compare(t.Column));
                         if (column != null)
                         {
-                            fields.Add(new Sort(column, t.SortDirection));
+                            fields.Add(new Sort(column, t.Direction));
                         }
                     }
                 }
@@ -512,7 +512,7 @@ namespace dexih.transforms.Mapping
                     {
                         var sort = selectQuery.Sorts[sortPos];
                         sortPos++;
-                        if (mapping.InputColumn?.Name != sort.Column?.Name || mapping.SortDirection != sort.SortDirection)
+                        if (mapping.InputColumn?.Name != sort.Column?.Name || mapping.SortDirection != sort.Direction)
                         {
                             sortsMatch = false;
                             break;

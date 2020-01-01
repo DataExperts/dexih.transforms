@@ -113,7 +113,7 @@ namespace dexih.transforms
 					var newSort = new Sort
 					{
 						Column = column,
-						SortDirection = sort.SortDirection
+						Direction = sort.Direction
 					};
 					mappedSorts.Add(newSort, sort);
 					newSorts.Add(newSort);

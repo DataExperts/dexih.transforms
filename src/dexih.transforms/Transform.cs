@@ -405,12 +405,12 @@ namespace dexih.transforms
                         break;
                     }
 
-                    if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName() && requiredField.SortDirection == actualField.SortDirection)
+                    if (requiredField.Column.TableColumnName() == actualField.Column.TableColumnName() && requiredField.Direction == actualField.Direction)
                     {
                         continue;
                     }
 
-                    if (requiredField.Column.Name == actualField.Column.Name && requiredField.SortDirection == actualField.SortDirection)
+                    if (requiredField.Column.Name == actualField.Column.Name && requiredField.Direction == actualField.Direction)
                     {
                         continue;
                     }

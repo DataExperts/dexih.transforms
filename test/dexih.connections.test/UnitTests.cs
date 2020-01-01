@@ -88,7 +88,7 @@ namespace dexih.connections.test
                 selectQuery = new SelectQuery()
                 {
                     Columns = new SelectColumns() { new SelectColumn(new TableColumn("StringColumn")) },
-                    Sorts = new Sorts() { new Sort { Column = new TableColumn("IntColumn"), SortDirection = ESortDirection.Descending } },
+                    Sorts = new Sorts() { new Sort { Column = new TableColumn("IntColumn"), Direction = ESortDirection.Descending } },
                     Rows = 1,
                     TableName = "test_table"
                 };

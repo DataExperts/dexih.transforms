@@ -61,7 +61,7 @@ namespace dexih.transforms
                 for(var i =0; i<requiredSorts.Count; i++)
                 {
                     if (selectQuery.Sorts[i].Column.Equals(requiredSorts[i].Column))
-                        requiredSorts[i].SortDirection = selectQuery.Sorts[i].SortDirection;
+                        requiredSorts[i].Direction = selectQuery.Sorts[i].Direction;
                     else
                         break;
                 }
@@ -375,13 +375,13 @@ namespace dexih.transforms
         public override Sorts RequiredSortFields()
         {
             var sortFields = new Sorts(Mappings.OfType<MapGroup>().Select(c => new Sort
-                {Column = c.InputColumn, SortDirection = ESortDirection.Ascending}));
+                {Column = c.InputColumn, Direction = ESortDirection.Ascending}));
             
 
             var seriesMapping = (MapSeries) Mappings.SingleOrDefault(c => c is MapSeries _);
             if (seriesMapping != null)
             {
-                sortFields.Add(new Sort { Column = seriesMapping.InputColumn, SortDirection = ESortDirection.Ascending });
+                sortFields.Add(new Sort { Column = seriesMapping.InputColumn, Direction = ESortDirection.Ascending });
             }
             
             return sortFields;

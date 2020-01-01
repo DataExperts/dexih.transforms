@@ -753,7 +753,7 @@ namespace dexih.connections.mongo
             {
                 if (sortDefinition == null)
                 {
-                    if (sortColumn.SortDirection == ESortDirection.Ascending)
+                    if (sortColumn.Direction == ESortDirection.Ascending)
                     {
                         sortDefinition = Builders<BsonDocument>.Sort.Ascending(sortColumn.Column.Name);    
                     }
@@ -764,7 +764,7 @@ namespace dexih.connections.mongo
                 }
                 else
                 {
-                    if (sortColumn.SortDirection == ESortDirection.Ascending)
+                    if (sortColumn.Direction == ESortDirection.Ascending)
                     {
                         sortDefinition = sortDefinition.Ascending(sortColumn.Column.Name);    
                     }

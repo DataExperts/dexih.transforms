@@ -1,121 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="refactoring updates.">
-      <change afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Join.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dexih.functions/Query/JoinFilter.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dexih.functions/Query/JoinFilters.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Joins.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/dexih.functions/Query/SelectColumns.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/dexih.connections.test/SelectQueryTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.postgressql/dexih.connections.sql.postgresql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.reader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.builtIn/AggregateFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.builtIn/AggregateFunctions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.builtIn/ArrayFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.builtIn/ArrayFunctions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.builtIn/MapFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.builtIn/MapFunctions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.builtIn/SeriesFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.builtIn/SeriesFunctions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.financial/FinancialFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.financial/FinancialFunctions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.maths/CurveFittingFunctions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.maths/CurveFittingFunctions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions.ml/AnomalyDetection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions.ml/AnomalyDetection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Enums.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Enums.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/DeleteQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/DeleteQuery.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Filter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/Filters.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Filters.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/QueryColumns.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/QueryColumns.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/SelectColumn.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/SelectQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/SelectQuery.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Sort.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/Sorts.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/Sorts.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Query/UpdateQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Query/UpdateQuery.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/SeriesValue.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/SeriesValue.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/SortedRowsDictionary.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/SortedRowsDictionary.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/Table.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumns.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/Table/TableColumns.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.functions/dexih.functions.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Enums.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Enums.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapAggregate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapAggregate.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapColumn.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFunction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFunction.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroupNode.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapInputColumn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapInputColumn.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapNode.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSeries.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSeries.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapUnGroup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapValidation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapValidation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mappings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoReader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderDbDataReader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderJson.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderJson.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderRowCreator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderRowCreator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformCache.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformCache.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformConcatinate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformConcatinate.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformProfile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformProfile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformThread.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformThread.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTarget.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskBulk.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskBulk.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskTransaction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformWriterTaskTransaction.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connections.db2.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connections.db2.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mongo.tests/mongo.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mongo.tests/mongo.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/PerformanceTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/TransformWriterTarget.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.ml.tests/anomalyprediction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.ml.tests/anomalyprediction.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.tests/selectQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.tests/selectQuery.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TestSoureDbReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TestSoureDbReader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformAggregateTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformAggregateTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaParentChild.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaParentChild.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformFilterTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformFilterTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformGroupTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformGroupTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformJoinTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSeriesTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSortTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/lookup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/lookup.cs" afterDir="false" />
-    </list>
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="finished multiple refactors, fixed tests" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -870,14 +756,7 @@
       <workItem from="1575399839837" duration="927000" />
       <workItem from="1576611986190" duration="7209000" />
       <workItem from="1576891425673" duration="36236000" />
-      <workItem from="1577498101055" duration="16185000" />
-    </task>
-    <task id="LOCAL-00020" summary="fixed flatfile basic test">
-      <created>1504666919568</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1504666919568</updated>
+      <workItem from="1577498101055" duration="16250000" />
     </task>
     <task id="LOCAL-00021" summary="fixes, mostly to dexih.reader">
       <created>1509235082858</created>
@@ -1215,7 +1094,14 @@
       <option name="project" value="LOCAL" />
       <updated>1576626118334</updated>
     </task>
-    <option name="localTasksCounter" value="69" />
+    <task id="LOCAL-00069" summary="finished multiple refactors, fixed tests">
+      <created>1577836274422</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1577836274423</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1281,7 +1167,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixes to multiple transforms." />
     <MESSAGE value="added hierarchy functions" />
     <MESSAGE value="split group transforms, added new function (rank)." />
     <MESSAGE value="fixed tests" />
@@ -1306,7 +1191,8 @@
     <MESSAGE value="fixed excel tests" />
     <MESSAGE value="db2 connection working!!!" />
     <MESSAGE value="refactoring updates." />
-    <option name="LAST_COMMIT_MESSAGE" value="refactoring updates." />
+    <MESSAGE value="finished multiple refactors, fixed tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="finished multiple refactors, fixed tests" />
   </component>
   <component name="WindowStateProjectService">
     <state x="722" y="366" width="597" height="498" key="#xdebugger.evaluate" timestamp="1577832574881">
@@ -1326,143 +1212,143 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="136" y="267" width="1480" height="850" key="DiffContextDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1577834879464" />
-    <state width="1638" height="195" key="GridCell.Tab.0.bottom" timestamp="1577836050042">
+    <state width="1638" height="195" key="GridCell.Tab.0.bottom" timestamp="1577836297129">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050042" />
+    <state width="1638" height="195" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297129" />
     <state width="1638" height="219" key="GridCell.Tab.0.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348468" />
     <state width="3318" height="430" key="GridCell.Tab.0.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655200" />
     <state width="3798" height="466" key="GridCell.Tab.0.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.0.center" timestamp="1577836050041">
+    <state width="1638" height="195" key="GridCell.Tab.0.center" timestamp="1577836297128">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050041" />
+    <state width="1638" height="195" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297128" />
     <state width="1638" height="219" key="GridCell.Tab.0.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348467" />
     <state width="3318" height="430" key="GridCell.Tab.0.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655198" />
     <state width="3798" height="466" key="GridCell.Tab.0.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.0.left" timestamp="1577836050040">
+    <state width="1638" height="195" key="GridCell.Tab.0.left" timestamp="1577836297127">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050040" />
+    <state width="1638" height="195" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297127" />
     <state width="1638" height="219" key="GridCell.Tab.0.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348466" />
     <state width="3318" height="430" key="GridCell.Tab.0.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655196" />
     <state width="3798" height="466" key="GridCell.Tab.0.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.0.right" timestamp="1577836050041">
+    <state width="1638" height="195" key="GridCell.Tab.0.right" timestamp="1577836297128">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050041" />
+    <state width="1638" height="195" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297128" />
     <state width="1638" height="219" key="GridCell.Tab.0.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348468" />
     <state width="3318" height="430" key="GridCell.Tab.0.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655199" />
     <state width="3798" height="466" key="GridCell.Tab.0.right/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.1.bottom" timestamp="1577836050044">
+    <state width="1638" height="195" key="GridCell.Tab.1.bottom" timestamp="1577836297131">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050044" />
+    <state width="1638" height="195" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297131" />
     <state width="1638" height="219" key="GridCell.Tab.1.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348362" />
     <state width="3318" height="430" key="GridCell.Tab.1.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997662257" />
     <state width="3798" height="466" key="GridCell.Tab.1.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.1.center" timestamp="1577836050043">
+    <state width="1638" height="195" key="GridCell.Tab.1.center" timestamp="1577836297130">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050043" />
+    <state width="1638" height="195" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297130" />
     <state width="1638" height="219" key="GridCell.Tab.1.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348361" />
     <state width="3318" height="430" key="GridCell.Tab.1.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997662255" />
     <state width="3798" height="466" key="GridCell.Tab.1.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.1.left" timestamp="1577836050042">
+    <state width="1638" height="195" key="GridCell.Tab.1.left" timestamp="1577836297129">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050042" />
+    <state width="1638" height="195" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297129" />
     <state width="1638" height="219" key="GridCell.Tab.1.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348360" />
     <state width="3318" height="430" key="GridCell.Tab.1.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997662254" />
     <state width="3798" height="466" key="GridCell.Tab.1.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.1.right" timestamp="1577836050043">
+    <state width="1638" height="195" key="GridCell.Tab.1.right" timestamp="1577836297130">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050043" />
+    <state width="1638" height="195" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297130" />
     <state width="1638" height="219" key="GridCell.Tab.1.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348361" />
     <state width="3318" height="430" key="GridCell.Tab.1.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997662256" />
     <state width="3798" height="466" key="GridCell.Tab.1.right/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.2.bottom" timestamp="1577836050045">
+    <state width="1638" height="195" key="GridCell.Tab.2.bottom" timestamp="1577836297132">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.2.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050045" />
+    <state width="1638" height="195" key="GridCell.Tab.2.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297132" />
     <state width="1638" height="219" key="GridCell.Tab.2.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348364" />
     <state width="3318" height="430" key="GridCell.Tab.2.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655037" />
     <state width="3798" height="466" key="GridCell.Tab.2.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.2.center" timestamp="1577836050045">
+    <state width="1638" height="195" key="GridCell.Tab.2.center" timestamp="1577836297131">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.2.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050045" />
+    <state width="1638" height="195" key="GridCell.Tab.2.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297131" />
     <state width="1638" height="219" key="GridCell.Tab.2.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348363" />
     <state width="3318" height="430" key="GridCell.Tab.2.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655035" />
     <state width="3798" height="466" key="GridCell.Tab.2.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.2.left" timestamp="1577836050044">
+    <state width="1638" height="195" key="GridCell.Tab.2.left" timestamp="1577836297131">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.2.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050044" />
+    <state width="1638" height="195" key="GridCell.Tab.2.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297131" />
     <state width="1638" height="219" key="GridCell.Tab.2.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348363" />
     <state width="3318" height="430" key="GridCell.Tab.2.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655034" />
     <state width="3798" height="466" key="GridCell.Tab.2.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.2.right" timestamp="1577836050045">
+    <state width="1638" height="195" key="GridCell.Tab.2.right" timestamp="1577836297132">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.2.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050045" />
+    <state width="1638" height="195" key="GridCell.Tab.2.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297132" />
     <state width="1638" height="219" key="GridCell.Tab.2.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348364" />
     <state width="3318" height="430" key="GridCell.Tab.2.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655036" />
     <state width="3798" height="466" key="GridCell.Tab.2.right/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.3.bottom" timestamp="1577836050047">
+    <state width="1638" height="195" key="GridCell.Tab.3.bottom" timestamp="1577836297134">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.3.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050047" />
+    <state width="1638" height="195" key="GridCell.Tab.3.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297134" />
     <state width="1638" height="219" key="GridCell.Tab.3.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348367" />
     <state width="3318" height="430" key="GridCell.Tab.3.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655040" />
     <state width="3798" height="466" key="GridCell.Tab.3.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.3.center" timestamp="1577836050046">
+    <state width="1638" height="195" key="GridCell.Tab.3.center" timestamp="1577836297133">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.3.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050046" />
+    <state width="1638" height="195" key="GridCell.Tab.3.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297133" />
     <state width="1638" height="219" key="GridCell.Tab.3.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348365" />
     <state width="3318" height="430" key="GridCell.Tab.3.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655038" />
     <state width="3798" height="466" key="GridCell.Tab.3.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.3.left" timestamp="1577836050046">
+    <state width="1638" height="195" key="GridCell.Tab.3.left" timestamp="1577836297133">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.3.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050046" />
+    <state width="1638" height="195" key="GridCell.Tab.3.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297133" />
     <state width="1638" height="219" key="GridCell.Tab.3.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348365" />
     <state width="3318" height="430" key="GridCell.Tab.3.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655038" />
     <state width="3798" height="466" key="GridCell.Tab.3.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.3.right" timestamp="1577836050047">
+    <state width="1638" height="195" key="GridCell.Tab.3.right" timestamp="1577836297134">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.3.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050047" />
+    <state width="1638" height="195" key="GridCell.Tab.3.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297134" />
     <state width="1638" height="219" key="GridCell.Tab.3.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348366" />
     <state width="3318" height="430" key="GridCell.Tab.3.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655039" />
     <state width="3798" height="466" key="GridCell.Tab.3.right/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.4.bottom" timestamp="1577836050049">
+    <state width="1638" height="195" key="GridCell.Tab.4.bottom" timestamp="1577836297136">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.4.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050049" />
+    <state width="1638" height="195" key="GridCell.Tab.4.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297136" />
     <state width="1638" height="219" key="GridCell.Tab.4.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348369" />
     <state width="3318" height="430" key="GridCell.Tab.4.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655043" />
     <state width="3798" height="466" key="GridCell.Tab.4.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.4.center" timestamp="1577836050048">
+    <state width="1638" height="195" key="GridCell.Tab.4.center" timestamp="1577836297135">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.4.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050048" />
+    <state width="1638" height="195" key="GridCell.Tab.4.center/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297135" />
     <state width="1638" height="219" key="GridCell.Tab.4.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348368" />
     <state width="3318" height="430" key="GridCell.Tab.4.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655042" />
     <state width="3798" height="466" key="GridCell.Tab.4.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.4.left" timestamp="1577836050047">
+    <state width="1638" height="195" key="GridCell.Tab.4.left" timestamp="1577836297134">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.4.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050047" />
+    <state width="1638" height="195" key="GridCell.Tab.4.left/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297134" />
     <state width="1638" height="219" key="GridCell.Tab.4.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348367" />
     <state width="3318" height="430" key="GridCell.Tab.4.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655041" />
     <state width="3798" height="466" key="GridCell.Tab.4.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="195" key="GridCell.Tab.4.right" timestamp="1577836050048">
+    <state width="1638" height="195" key="GridCell.Tab.4.right" timestamp="1577836297136">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="195" key="GridCell.Tab.4.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836050048" />
+    <state width="1638" height="195" key="GridCell.Tab.4.right/0.0.1680.1050@0.0.1680.1050" timestamp="1577836297136" />
     <state width="1638" height="219" key="GridCell.Tab.4.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348369" />
     <state width="3318" height="430" key="GridCell.Tab.4.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576997655043" />
     <state width="3798" height="466" key="GridCell.Tab.4.right/3840.2160/3360.2100" timestamp="1576620685861" />
@@ -1471,10 +1357,10 @@
     </state>
     <state x="700" y="230" key="RiderGenerateDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1576624310901" />
     <state x="3080" y="414" key="RiderGenerateDialog/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576976648749" />
-    <state x="440" y="253" key="Vcs.Push.Dialog.v2" timestamp="1576626120811">
+    <state x="440" y="253" key="Vcs.Push.Dialog.v2" timestamp="1577836278342">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="440" y="253" key="Vcs.Push.Dialog.v2/0.0.1680.1050@0.0.1680.1050" timestamp="1576626120811" />
+    <state x="440" y="253" key="Vcs.Push.Dialog.v2/0.0.1680.1050@0.0.1680.1050" timestamp="1577836278342" />
     <state width="840" height="525" key="XDebugger.FullValuePopup" timestamp="1577489524908">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>

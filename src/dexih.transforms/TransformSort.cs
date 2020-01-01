@@ -40,7 +40,7 @@ namespace dexih.transforms
             Mappings = new Mappings();
             foreach(var sortField in sortFields)
             {
-                Mappings.Add(new MapSort(sortField.Column, sortField.SortDirection));
+                Mappings.Add(new MapSort(sortField.Column, sortField.Direction));
             }
 
             SetInTransform(inTransform);
@@ -123,7 +123,7 @@ namespace dexih.transforms
             }
             if (_firstRead) //load the entire record into a sorted list.
             {
-                _sortedDictionary = new SortedRowsDictionary<object>(_sortFields.Select(c=>c.SortDirection).ToList());
+                _sortedDictionary = new SortedRowsDictionary<object>(_sortFields.Select(c=>c.Direction).ToList());
 
                 var rowcount = 0;
                 while (await PrimaryTransform.ReadAsync(cancellationToken))

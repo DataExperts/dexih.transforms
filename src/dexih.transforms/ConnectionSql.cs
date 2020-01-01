@@ -462,7 +462,7 @@ namespace dexih.connections.sql
             if (query?.Sorts?.Count > 0)
             {
                 sql.Append(" order by ");
-                sql.Append(string.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.SortDirection == ESortDirection.Descending ? " desc" : "")).ToArray()));
+                sql.Append(string.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.Direction == ESortDirection.Descending ? " desc" : "")).ToArray()));
             }
 
             return sql.ToString();

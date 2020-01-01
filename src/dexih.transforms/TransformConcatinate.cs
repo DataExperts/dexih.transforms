@@ -79,13 +79,13 @@ namespace dexih.transforms
                         var column = PrimaryTransform.CacheTable[sort.Column.Name];
                         if (column != null)
                         {
-                            primarySorts.Add(new Sort(column, sort.SortDirection));
+                            primarySorts.Add(new Sort(column, sort.Direction));
                         }
                         
                         column = ReferenceTransform.CacheTable[sort.Column.Name];
                         if (column != null)
                         {
-                            referenceSorts.Add(new Sort(column, sort.SortDirection));
+                            referenceSorts.Add(new Sort(column, sort.Direction));
                         }
                     }
                 }
@@ -148,7 +148,7 @@ namespace dexih.transforms
 
                     var referenceSortField = referenceSortFields[index];
                     if (sortField.Column.Name == referenceSortField.Column.Name &&
-                        sortField.SortDirection == referenceSortField.SortDirection)
+                        sortField.Direction == referenceSortField.Direction)
                     {
                         newSortFields.Add(sortField);
                         
@@ -253,9 +253,9 @@ namespace dexih.transforms
                             PrimaryTransform[_primarySortOrdinals[i]], ReferenceTransform[_referenceSortOrdinals[i]]);
 
                         if ((compareResult > 0 &&
-                             SortFields[i].SortDirection == ESortDirection.Ascending) ||
+                             SortFields[i].Direction == ESortDirection.Ascending) ||
                             (compareResult < 0 &&
-                             SortFields[i].SortDirection == ESortDirection.Descending))
+                             SortFields[i].Direction == ESortDirection.Descending))
                         {
                             usePrimary = false;
                             break;
