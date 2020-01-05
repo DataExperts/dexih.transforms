@@ -63,16 +63,16 @@ namespace dexih.transforms
             return true;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             await _profileMappings.Open(PrimaryTransform.CacheTable, ReferenceTransform?.CacheTable);
-            await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
 
             GeneratedQuery = PrimaryTransform.GeneratedQuery;
             
             IsOpen = true;
             AuditKey = auditKey;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
             return true;
 
         }

@@ -38,7 +38,7 @@ namespace dexih.connections.excel
             return null;
         }
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             try
@@ -55,7 +55,7 @@ namespace dexih.connections.excel
                 _currentRow = connection.ExcelDataRow;
                 _excelWorkSheet = connection.GetWorkSheet(_excelPackage, CacheTable.Name);
 
-                SelectQuery = selectQuery;
+                SelectQuery = requestQuery;
 
                 // get the position of each of the column names.
                 _columnMappings = new Dictionary<int, (int ordinal, TableColumn column)>();

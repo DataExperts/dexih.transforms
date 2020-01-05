@@ -34,6 +34,7 @@ namespace dexih.transforms.tests
             
             Assert.Single(reader.SelectQuery.Sorts);
             Assert.Equal("key", reader.SelectQuery.Sorts[0].Column.Name);
+            Assert.Equal("key", reader.SelectQuery.Sorts[0].Column.Name);
 
         }
         
@@ -120,6 +121,74 @@ namespace dexih.transforms.tests
             
             Assert.Single(reader.SelectQuery.Sorts);
             Assert.Equal("key", reader.SelectQuery.Sorts[0].Column.Name);
+        }
+
+        [Fact]
+        public void TestGroupPushdown()
+        {
+            var table = SampleTable;
+            
+            var connection = new MockConnection();
+
+            var reader = connection.GetTransformReader(table);
+
+            var mappings = new Mappings(false)
+            {
+                new MapGroup(table.Columns[0]),
+                new MapAggregate(table.Columns[1], new TableColumn("sum"), EAggregate.Sum)
+            };
+
+            var group = new TransformGroup(reader, mappings);
+
+            group.Open();
+
+            Assert.Single(reader.SelectQuery.Groups);
+            Assert.Equal(table[0].Name, reader.SelectQuery.Groups[0].Name);
+            Assert.Single(reader.SelectQuery.Columns);
+            Assert.Equal(table.Columns[1].Name, reader.SelectQuery.Columns[0].Column.Name);
+            
+        }
+        
+        [Fact]
+        public void TestGroupFilterHavingPushdown()
+        {
+            var table = SampleTable;
+            
+            var connection = new MockConnection();
+
+            var reader = connection.GetTransformReader(table);
+            
+            var filter = new TransformFilter(reader, new Mappings()
+            {
+                new MapFilter(table.Columns[2], 5, ECompare.IsEqual)
+            });
+            
+            var sumColumn = new TableColumn("sum");
+            
+            var mappings = new Mappings(false)
+            {
+                new MapGroup(table.Columns[0]),
+                new MapAggregate(table.Columns[1], sumColumn, EAggregate.Sum)
+            };
+
+            var group = new TransformGroup(filter, mappings);
+            
+            var having = new TransformFilter(group, new Mappings()
+            {
+                new MapFilter(sumColumn, 10, ECompare.GreaterThan)
+            });
+
+            having.Open();
+
+            Assert.Single(reader.SelectQuery.Groups);
+            Assert.Equal(table[0].Name, reader.SelectQuery.Groups[0].Name);
+            Assert.Single(reader.SelectQuery.Columns);
+            Assert.Equal(table.Columns[1].Name, reader.SelectQuery.Columns[0].Column.Name);
+            Assert.Single(reader.SelectQuery.Filters);
+            Assert.Equal(table.Columns[2].Name, reader.SelectQuery.Filters[0].Column1.Name);
+            Assert.Single(reader.SelectQuery.GroupFilters);
+            Assert.Equal(sumColumn.Name, reader.SelectQuery.GroupFilters[0].Column1.Name);
+
         }
     }
 }

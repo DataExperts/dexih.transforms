@@ -43,11 +43,11 @@ namespace dexih.transforms
             return null;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
             
-            SetSelectQuery(selectQuery, true);
+            SetRequestQuery(requestQuery, true);
             SelectQuery.Columns = null;
             
             _primaryFieldCount = PrimaryTransform.FieldCount;

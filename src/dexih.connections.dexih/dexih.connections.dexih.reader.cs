@@ -37,7 +37,7 @@ namespace dexih.connections.dexih
             return null;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
 
@@ -49,7 +49,7 @@ namespace dexih.connections.dexih
                 }
 
                 IsOpen = true;
-                SelectQuery = selectQuery;
+                SelectQuery = requestQuery;
 
                 var downloadUrl = await _dexihConnection.GetDownloadUrl();
                 var instanceId = await _dexihConnection.GetRemoteAgentInstanceId();
@@ -61,7 +61,7 @@ namespace dexih.connections.dexih
                     CacheTable.SourceConnectionName,
                     TableName = CacheTable.Name,
                     TableSchema = CacheTable.Schema,
-                    Query = selectQuery,
+                    Query = requestQuery,
                     DownloadUrl = downloadUrl,
                     InstanceId = instanceId
                 }.Serialize();

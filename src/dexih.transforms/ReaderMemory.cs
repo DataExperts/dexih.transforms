@@ -37,10 +37,10 @@ namespace dexih.transforms
             IsOpen = true;
         }
         
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
             _data = DataTable.Data;
 
             if (CacheTable.OutputSortFields?.Count > 0)

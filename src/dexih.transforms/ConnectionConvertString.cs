@@ -24,7 +24,7 @@ namespace dexih.transforms
 
         public override bool CanDelete => throw new NotImplementedException();
 
-        public override bool CanAggregate => throw new NotImplementedException();
+        public override bool CanGroup => throw new NotImplementedException();
 
         public override bool CanUseBinary => false;
 

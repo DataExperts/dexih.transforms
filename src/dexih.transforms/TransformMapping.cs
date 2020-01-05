@@ -33,16 +33,16 @@ namespace dexih.transforms
 	        return null;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            if (selectQuery?.Rows > 0 && selectQuery.Rows < MaxOutputRows)
+            if (requestQuery?.Rows > 0 && requestQuery.Rows < MaxOutputRows)
             {
-                MaxOutputRows = selectQuery.Rows;
+                MaxOutputRows = requestQuery.Rows;
             }
-            var newSelectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            var newSelectQuery = requestQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
             newSelectQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
@@ -50,10 +50,10 @@ namespace dexih.transforms
             var mappedFilters = new Dictionary<Filter, Filter>();
             
 	        //we need to translate filters and sorts to source column names before passing them through.
-            if(selectQuery?.Filters != null)
+            if(requestQuery?.Filters != null)
             {
                 var newFilters = new Filters();
-                foreach(var filter in selectQuery.Filters)
+                foreach(var filter in requestQuery.Filters)
                 {
                     TableColumn column1 = null;
                     TableColumn column2 = null;
@@ -96,10 +96,10 @@ namespace dexih.transforms
             var mappedSorts = new Dictionary<Sort, Sort>();
             
 			//we need to translate filters and sorts to source column names before passing them through.
-			if (selectQuery?.Sorts != null)
+			if (requestQuery?.Sorts != null)
 			{
 				var newSorts = new Sorts();
-				foreach (var sort in selectQuery.Sorts)
+				foreach (var sort in requestQuery.Sorts)
 				{
 					TableColumn column = null;
 					if (sort.Column != null)
@@ -122,7 +122,7 @@ namespace dexih.transforms
 				newSelectQuery.Sorts = newSorts;
 			}
 
-            SetSelectQuery(newSelectQuery, false);
+            SetRequestQuery(newSelectQuery, false);
 
             var returnValue = await PrimaryTransform.Open(auditKey, newSelectQuery, cancellationToken);
 			
@@ -147,6 +147,7 @@ namespace dexih.transforms
             
 			return returnValue;
         }
+        
 
         /// <summary>
         /// 

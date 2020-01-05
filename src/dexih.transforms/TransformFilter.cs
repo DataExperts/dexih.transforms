@@ -36,35 +36,15 @@ namespace dexih.transforms
         
         public override bool RequiresSort => false;
        
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
-
-            if (selectQuery.Columns != null && selectQuery.Columns.Count > 0)
-            {
-                var requiredColumns = Mappings?.GetRequiredColumns(true)?.ToList();
-
-                if (requiredColumns == null)
-                {
-                    selectQuery.Columns = null;
-                }
-                else
-                {
-                    foreach (var column in requiredColumns)
-                    {
-                        if (!selectQuery.Columns.Exists(c => c.Column.Name == column.Column.Name))
-                        {
-                            selectQuery.Columns.Add(column);
-                        }
-                    }
-                }
-            }
-
-            if (selectQuery.Filters == null)
-                selectQuery.Filters = new Filters();
+            requestQuery = requestQuery?.CloneProperties() ?? new SelectQuery();
+            
+            if (requestQuery.Filters == null)
+                requestQuery.Filters = new Filters();
 
             if (Mappings != null)
             {
@@ -75,7 +55,7 @@ namespace dexih.transforms
                     if (filter != null)
                     {
                         filter.AndOr = EAndOr.And;
-                        selectQuery.Filters.Add(filter);
+                        requestQuery.Filters.Add(filter);
                     }
                 }
 
@@ -84,54 +64,56 @@ namespace dexih.transforms
                     if (filterPair.Column2 == null)
                     {
                         var filter = new Filter(filterPair.Column1, filterPair.Operator, filterPair.Value2);
-                        selectQuery.Filters.Add(filter);
+                        requestQuery.Filters.Add(filter);
                     }
                     else
                     {
                         var filter = new Filter(filterPair.Column1, filterPair.Operator, filterPair.Column2);
-                        selectQuery.Filters.Add(filter);
+                        requestQuery.Filters.Add(filter);
                     }
                 }
             }
 
-            SetSelectQuery(selectQuery, true);
+            SetRequestQuery(requestQuery, true);
 
-            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
 
-            // the generated query will be the same, but with the filters added.
-            GeneratedQuery = PrimaryTransform.GeneratedQuery.CloneProperties<SelectQuery>(true) ?? new SelectQuery();
-            if (GeneratedQuery.IsGroup())
-            {
-                foreach (var filter in selectQuery.Filters)
-                {
-                    GeneratedQuery.GroupFilters.Add(filter);
-                }
-            }
-            else
-            {
-                foreach (var filter in selectQuery.Filters)
-                {
-                    GeneratedQuery.Filters.Add(filter);
-                }
-            }
-
+            GeneratedQuery = GetGeneratedQuery(requestQuery);
+            
             // required mapping are any ones not already completed.
             if (Mappings != null)
             {
                 _requiredMappings = Mappings.NonQueryMappings(PrimaryTransform.GeneratedQuery);
                 _requiredMappings.Initialize(PrimaryTransform.CacheTable);
             }
-
-            // the generated query will be the child query, plus any additional filters.
-            GeneratedQuery = PrimaryTransform.GeneratedQuery.CloneProperties<SelectQuery>() ?? new SelectQuery();
-            foreach (var filter in selectQuery.Filters)
-            {
-                GeneratedQuery.Filters.Add(filter);
-            }
             
             CacheTable = PrimaryTransform.CacheTable;
 
             return returnValue;
+        }
+
+        protected override SelectQuery GetGeneratedQuery(SelectQuery requestQuery)
+        {
+            if (requestQuery == null) return null;
+
+            var generatedQuery = PrimaryTransform.GeneratedQuery.CloneProperties() ?? new SelectQuery();
+            
+            if (generatedQuery.IsGroup())
+            {
+                foreach (var filter in requestQuery.Filters)
+                {
+                    generatedQuery.GroupFilters.Add(filter);
+                }
+            }
+            else
+            {
+                foreach (var filter in requestQuery.Filters)
+                {
+                    generatedQuery.Filters.Add(filter);
+                }
+            }
+            
+            return generatedQuery;
         }
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
@@ -184,8 +166,7 @@ namespace dexih.transforms
         {
             return true;
         }
-
-
+        
 
         public override Sorts RequiredSortFields()
         {

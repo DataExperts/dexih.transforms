@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using Dexih.Utils.CopyProperties;
 
 namespace dexih.connections.sql
 {
@@ -48,7 +49,7 @@ namespace dexih.connections.sql
             _sqlConnection?.Dispose();
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             if (IsOpen)
             {
@@ -63,24 +64,23 @@ namespace dexih.connections.sql
                 // disables push down query logic
                 if (IgnoreQuery)
                 {
-                    selectQuery = null;
+                    requestQuery = null;
                 }
 
-                SelectQuery = selectQuery;
+                SelectQuery = requestQuery;
+                GeneratedQuery = GetGeneratedQuery(requestQuery);
 
-                if (SelectQuery?.Columns?.Count > 0)
+                if (GeneratedQuery?.Columns?.Count > 0)
                 {
                     CacheTable.Columns.Clear();
-                    foreach (var column in SelectQuery.Columns)
+                    foreach (var column in GeneratedQuery.Columns)
                     {
                         CacheTable.Columns.Add(column.OutputColumn?? column.Column);
                     }
                 }
                 
-                GeneratedQuery = selectQuery;
-
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
-                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, selectQuery, cancellationToken);
+                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, requestQuery, cancellationToken);
                 _fieldCount = _sqlReader.FieldCount;
                 _fieldOrdinals = new List<int>();
                 

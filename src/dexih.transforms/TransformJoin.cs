@@ -262,12 +262,12 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            SetSelectQuery(selectQuery, true);
+            SetRequestQuery(requestQuery, true);
             SelectQuery.Columns = null;
             
             if (_cacheLoaded) return true;

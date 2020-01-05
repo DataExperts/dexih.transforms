@@ -44,30 +44,28 @@ namespace dexih.transforms
             return null;
         }
         
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
             
-            if (selectQuery?.Rows > 0 && selectQuery.Rows < MaxOutputRows)
+            if (requestQuery?.Rows > 0 && requestQuery.Rows < MaxOutputRows)
             {
-                MaxOutputRows = selectQuery.Rows;
+                MaxOutputRows = requestQuery.Rows;
             }
 
             var newSelectQuery = new SelectQuery
             {
                 Columns = new SelectColumns(Mappings.GetRequiredColumns(includeAggregate: true))
             };
-
-            // get only the required columns
-
+            
             var requiredSorts = RequiredSortFields();
 
-            if (selectQuery?.Sorts?.Count > 0)
+            if (requestQuery?.Sorts?.Count > 0)
             {
                 for(var i =0; i < requiredSorts.Count; i++)
                 {
-                    if (selectQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
+                    if (requestQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
                     {
                         requiredSorts[i].Direction = newSelectQuery.Sorts[i].Direction;
                     }
@@ -108,9 +106,9 @@ namespace dexih.transforms
                 newSelectQuery.Groups = groups;
 
                 // transform any requested filters, to group filters.
-                if (selectQuery?.Filters?.Count > 0)
+                if (requestQuery?.Filters?.Count > 0)
                 {
-                    foreach (var filter in selectQuery.Filters)
+                    foreach (var filter in requestQuery.Filters)
                     {
                         var groupFilter = new Filter()
                         {
@@ -120,7 +118,7 @@ namespace dexih.transforms
                         };
                         if (filter.Column1 != null)
                         {
-                            var col = selectQuery.Columns.SingleOrDefault(c =>
+                            var col = newSelectQuery.Columns.SingleOrDefault(c =>
                                 c.OutputColumn.Name == filter.Column1.Name);
                             if (col == null)
                             {
@@ -131,7 +129,7 @@ namespace dexih.transforms
                         }
                         if (filter.Column2 != null)
                         {
-                            var col = selectQuery.Columns.SingleOrDefault(c =>
+                            var col = newSelectQuery.Columns.SingleOrDefault(c =>
                                 c.OutputColumn.Name == filter.Column2.Name);
                             if (col == null)
                             {
@@ -160,7 +158,7 @@ namespace dexih.transforms
 
             newSelectQuery.Sorts = requiredSorts;
             
-            SetSelectQuery(newSelectQuery, true);
+            SetRequestQuery(newSelectQuery, true);
 
             var returnValue = await PrimaryTransform.Open(auditKey, newSelectQuery, cancellationToken);
 
@@ -202,13 +200,18 @@ namespace dexih.transforms
                 if (matched)
                 {
                     _isPushDownQuery = true;
-                    GeneratedQuery.Filters = selectQuery.GroupFilters;
+                    GeneratedQuery.Filters = requestQuery.GroupFilters;
                 }
             }
             
             return returnValue;
         }
-        
+
+        protected override SelectQuery GetGeneratedQuery(SelectQuery requestQuery)
+        {
+            return base.GetGeneratedQuery(requestQuery);
+        }
+
         public override bool ResetTransform()
         {
             Mappings.Reset(EFunctionType.Aggregate);

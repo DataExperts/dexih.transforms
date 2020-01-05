@@ -76,11 +76,11 @@ namespace dexih.transforms
 
         public override bool RequiresSort => false;
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null,
+        public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null,
             CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
             
             GeneratedQuery = new SelectQuery()
             {

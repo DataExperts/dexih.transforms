@@ -41,7 +41,7 @@ namespace dexih.connections.azure
         public override bool CanFilter => true;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
-        public override bool CanAggregate => false;
+        public override bool CanGroup => false;
         public override bool CanUseBinary => true;
         public override bool CanUseArray => false;
         public override bool CanUseJson => false;

@@ -37,7 +37,7 @@ namespace dexih.connections.azure
             return null;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             if (IsOpen)
@@ -46,23 +46,24 @@ namespace dexih.connections.azure
             }
 
             IsOpen = true;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
+            GeneratedQuery = GetGeneratedQuery(requestQuery);
 
             var tableClient = _connection.GetCloudTableClient();
             _tableReference = tableClient.GetTableReference(CacheTable.Name);
 
             _tableQuery = new TableQuery<DynamicTableEntity>().Take(1000);
 
-            if (selectQuery?.Columns?.Count > 0)
-                _tableQuery.SelectColumns = selectQuery.Columns.Select(c => c.Column.Name).ToArray();
+            if (GeneratedQuery?.Columns?.Count > 0)
+                _tableQuery.SelectColumns = GeneratedQuery.Columns.Select(c => c.Column.Name).ToArray();
             else
                 _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField).Select(c => c.Name).ToArray();
 
-            if (selectQuery?.Filters != null)
-                _tableQuery.FilterString = _connection.BuildFilterString(selectQuery.Filters);
+            if (GeneratedQuery?.Filters != null)
+                _tableQuery.FilterString = _connection.BuildFilterString(GeneratedQuery.Filters);
 
-            if(selectQuery?.Rows > 0 && selectQuery?.Rows < 1000)
-                _tableQuery.TakeCount = selectQuery.Rows;
+            if(GeneratedQuery?.Rows > 0 && GeneratedQuery?.Rows < 1000)
+                _tableQuery.TakeCount = GeneratedQuery.Rows;
 
             try
             {

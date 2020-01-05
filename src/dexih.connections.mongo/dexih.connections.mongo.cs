@@ -42,7 +42,7 @@ namespace dexih.connections.mongo
         public override bool CanFilter => true;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
-        public override bool CanAggregate => false;
+        public override bool CanGroup => false;
         public override bool CanUseBinary => true;
         public override bool CanUseArray => true;
         public override bool CanUseJson => true;

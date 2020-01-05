@@ -32,7 +32,7 @@ namespace dexih.connections.mongo
             return null;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             if (IsOpen)
@@ -41,9 +41,10 @@ namespace dexih.connections.mongo
             }
 
             IsOpen = true;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
+            GeneratedQuery = GetGeneratedQuery(requestQuery);
 
-            _documents = await _connection.GetCollection(CacheTable.Name, selectQuery, cancellationToken);
+            _documents = await _connection.GetCollection(CacheTable.Name, requestQuery, cancellationToken);
 
             return true;
         }

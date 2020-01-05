@@ -105,7 +105,10 @@ namespace dexih.transforms.Mapping
             return ordinal;
         }
 
-        public abstract IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate);
+        public virtual IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
+        {
+            return new SelectColumn[0];
+        }
 
         public virtual IEnumerable<TableColumn> GetRequiredReferenceColumns()
         {

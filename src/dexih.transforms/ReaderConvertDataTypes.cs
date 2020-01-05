@@ -48,9 +48,9 @@ namespace dexih.transforms
             IsOpen = PrimaryTransform.IsOpen;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
-            await PrimaryTransform?.Open(auditKey, selectQuery, cancellationToken);
+            await PrimaryTransform?.Open(auditKey, requestQuery, cancellationToken);
             IsOpen = PrimaryTransform.IsOpen;
 
             GeneratedQuery = PrimaryTransform.GeneratedQuery;

@@ -91,15 +91,15 @@ namespace dexih.transforms
         /// </summary>
         public SelectQuery GeneratedQuery { get; set; }
 
-        public Sorts SortFields => GeneratedQuery?.Sorts;
-        public Filters Filters => GeneratedQuery?.Filters;
+        public Sorts SortFields => GeneratedQuery?.Sorts ?? new Sorts();
+        public Filters Filters => GeneratedQuery?.Filters ?? new Filters();
 
         /// <summary>
         /// Ignores the SelectQuery specified in the open statement.
         /// This only applied to transforms which are the base reader. 
         /// </summary>
         public bool IgnoreQuery { get; set; }
-
+        
         #endregion
 
         #region Statistics
@@ -287,7 +287,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="selectQuery"></param>
         /// <param name="resetRows"></param>
-        protected void SetSelectQuery(SelectQuery selectQuery, bool resetRows)
+        protected void SetRequestQuery(SelectQuery selectQuery, bool resetRows)
         {
             if (selectQuery == null)
             {
@@ -438,31 +438,124 @@ namespace dexih.transforms
             return Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
         }
 
+        /// <summary>
+        /// Initializes the generated  query, which is the query executed by the transform and passed back up the
+        /// transform tree.
+        /// </summary>
+        /// <param name="requestQuery"></param>
+        /// <returns></returns>
+        protected virtual SelectQuery GetGeneratedQuery(SelectQuery requestQuery)
+        {
+            if (IgnoreQuery || requestQuery ==  null)
+            {
+                return new SelectQuery();
+            }
+
+            var generatedQuery = new SelectQuery()
+            {
+                Rows = requestQuery.Rows,
+                Path = requestQuery.Path,
+                FileName = requestQuery.FileName,
+                TableName = requestQuery.TableName,
+                InputColumns = requestQuery.InputColumns?.ToList()
+            };
+
+            if (IsReader && ReferenceConnection != null)
+            {
+                var canGroup = true;
+                var columns = new SelectColumns(requestQuery.Columns);
+
+                if (ReferenceConnection.CanFilter)
+                {
+                    generatedQuery.Filters = new Filters(requestQuery.Filters);
+                }
+                else
+                {
+                    void AddFilters(Filters filters)
+                    {
+                        if (filters == null) return;
+                        // if the reader cannot filter, the filter columns will need to be included in the select list.
+                        canGroup = false;
+                        var selectColumns1 =
+                            filters.Where(c => c.Column1 != null)
+                                .Select(c => new SelectColumn(c.Column1));
+                        var selectColumns2 =
+                            filters.Where(c => c.Column2 != null)
+                                .Select(c => new SelectColumn(c.Column2));
+
+                        columns.AddIfNotExists(selectColumns1);
+                        columns.AddIfNotExists(selectColumns2);
+                    }
+
+                    AddFilters(requestQuery.Filters);
+                    AddFilters(requestQuery.GroupFilters);
+                }
+
+                if (ReferenceConnection.CanSort)
+                {
+                    generatedQuery.Sorts = new Sorts(requestQuery.Sorts);
+                }
+                else
+                {
+                    // if the reader cannot filter, the filter columns will need to be included in the select list.
+                    canGroup = false;
+                    var sortColumns =
+                        requestQuery.Sorts.Where(c => c.Column != null)
+                            .Select(c => new SelectColumn(c.Column));
+                    columns.AddIfNotExists(sortColumns);
+                }
+
+                if (ReferenceConnection.CanGroup && canGroup)
+                {
+                    generatedQuery.Groups = new List<TableColumn>(requestQuery.Groups);
+                    generatedQuery.GroupFilters = new Filters(requestQuery.GroupFilters);
+                }
+                else
+                {
+                    foreach (var column in columns)
+                    {
+                        column.Aggregate = EAggregate.None;
+                    }
+
+                    if (requestQuery.Groups != null)
+                    {
+                        columns.AddIfNotExists(requestQuery.Groups.Select(c => new SelectColumn(c)));
+                    }
+                }
+
+                generatedQuery.Columns = columns;
+            }
+
+            return generatedQuery;
+        }
+
         public Task<bool> Open(CancellationToken cancellationToken = default)
         {
             return Open(0, null, cancellationToken);
         }
 
-        public Task<bool> Open(SelectQuery selectQuery, CancellationToken cancellationToken = default)
+        public Task<bool> Open(SelectQuery requestQuery, CancellationToken cancellationToken = default)
         {
-            return Open(0, selectQuery, cancellationToken);
+            return Open(0, requestQuery, cancellationToken);
         }
 
         /// <summary>
         /// Opens underlying connections passing sort and filter requests through.
         /// </summary>
         /// <param name="auditKey"></param>
-        /// <param name="selectQuery">Query to apply (note only filters are used)</param>
+        /// <param name="requestQuery">Query to apply (note only filters are used)</param>
         /// <param name="cancellationToken"></param>
         /// <returns>True is successful, False is unsuccessful.</returns>
-        public virtual async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            var primaryOpen = PrimaryTransform != null ? PrimaryTransform.Open(auditKey, selectQuery, cancellationToken) : Task.FromResult(true);
-            var referenceOpen = ReferenceTransform != null ? ReferenceTransform.Open(auditKey, selectQuery, cancellationToken) : Task.FromResult(true);
+            var primaryOpen = PrimaryTransform != null ? PrimaryTransform.Open(auditKey, requestQuery, cancellationToken) : Task.FromResult(true);
+            var referenceOpen = ReferenceTransform != null ? ReferenceTransform.Open(auditKey, requestQuery, cancellationToken) : Task.FromResult(true);
 
+            GeneratedQuery = GetGeneratedQuery(requestQuery);
+            
             var result = await primaryOpen && await referenceOpen;
             return result;
         }

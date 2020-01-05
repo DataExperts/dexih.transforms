@@ -1,4 +1,6 @@
-﻿using dexih.functions;
+﻿using System.Collections.Generic;
+using dexih.functions;
+using dexih.functions.Query;
 
 namespace dexih.transforms.Mapping
 {
@@ -27,6 +29,10 @@ namespace dexih.transforms.Mapping
             fillerRow[InputOrdinal] = row == null ? RowData?[InputOrdinal] : row[InputOrdinal];   
         }
 
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
+        {
+            return new SelectColumn[0];
+        }
 
     }
 }

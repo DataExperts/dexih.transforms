@@ -36,7 +36,7 @@ namespace dexih.connections.dexih
         public override bool CanFilter => false;
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
-        public override bool CanAggregate => false;
+        public override bool CanGroup => false;
 	    public override bool CanUseBinary => true;
         public override bool CanUseArray => true;
         public override bool CanUseJson => true;

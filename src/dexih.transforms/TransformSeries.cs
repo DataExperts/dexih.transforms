@@ -48,38 +48,38 @@ namespace dexih.transforms
         {
             return null;
         }
-        public override  async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override  async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            requestQuery = requestQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
-            selectQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
+            requestQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
 
             var requiredSorts = RequiredSortFields();
 
-            if(selectQuery.Sorts != null && selectQuery.Sorts.Count > 0)
+            if(requestQuery.Sorts != null && requestQuery.Sorts.Count > 0)
             {
                 for(var i =0; i<requiredSorts.Count; i++)
                 {
-                    if (selectQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
-                        requiredSorts[i].Direction = selectQuery.Sorts[i].Direction;
+                    if (requestQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
+                        requiredSorts[i].Direction = requestQuery.Sorts[i].Direction;
                     else
                         break;
                 }
             }
 
-            selectQuery.Sorts = requiredSorts;
+            requestQuery.Sorts = requiredSorts;
 
-            SetSelectQuery(selectQuery, true);
+            SetRequestQuery(requestQuery, true);
 
-            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
             
             GeneratedQuery = new SelectQuery()
             {
-                Sorts = selectQuery.Sorts,
+                Sorts = requestQuery.Sorts,
                 Filters = PrimaryTransform.Filters
             };
             

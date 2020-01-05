@@ -43,7 +43,7 @@ namespace dexih.connections.webservice.restful
         public override bool CanFilter => false;
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
-        public override bool CanAggregate => false;
+        public override bool CanGroup => false;
         public override bool CanUseBinary => false;
 	    public override bool CanUseArray => false;
 	    public override bool CanUseJson => true;

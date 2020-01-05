@@ -157,7 +157,7 @@ namespace dexih.transforms
         }
 
         
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
@@ -165,22 +165,22 @@ namespace dexih.transforms
 
             if (DeltaType == EUpdateStrategy.Append || DeltaType == EUpdateStrategy.Reload)
             {
-                returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+                returnValue = await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
             }
             else
             {
-                if (selectQuery == null)
-                    selectQuery = new SelectQuery();
+                if (requestQuery == null)
+                    requestQuery = new SelectQuery();
 
-                selectQuery.Sorts = RequiredSortFields();
+                requestQuery.Sorts = RequiredSortFields();
 
-                returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+                returnValue = await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
             }
 
             // doesn't change any sort/filters from previous transforms
             GeneratedQuery = PrimaryTransform.GeneratedQuery;
 
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
 
             if (ReferenceTransform == null)
             {

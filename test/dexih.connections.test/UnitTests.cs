@@ -128,7 +128,7 @@ namespace dexih.connections.test
             }
 
             //run a simple aggregate query to get max value from decimaColumn
-            if (connection.CanAggregate)
+            if (connection.CanGroup)
             {
                 selectQuery = new SelectQuery()
                 {
@@ -170,7 +170,7 @@ namespace dexih.connections.test
                 Assert.True(returnScalar == null);
 
                 //run an aggregate query to check rows left
-                if (connection.CanAggregate)
+                if (connection.CanGroup)
                 {
                     selectQuery = new SelectQuery()
                     {

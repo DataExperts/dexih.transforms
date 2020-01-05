@@ -39,15 +39,15 @@ namespace dexih.transforms
             return true;
         }
         
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
             
             if (!IsOpen)
             {
                 IsOpen = true;
                 CacheTable = _transform.CacheTable.Copy();
-                await _transform.Open(auditKey, selectQuery, cancellationToken);
+                await _transform.Open(auditKey, requestQuery, cancellationToken);
 
                 GeneratedQuery = _transform.GeneratedQuery;
                 

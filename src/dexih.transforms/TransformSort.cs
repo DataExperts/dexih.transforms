@@ -66,7 +66,7 @@ namespace dexih.transforms
             return null;
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             _firstRead = true;
 
@@ -78,33 +78,35 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
-            selectQuery = selectQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            requestQuery = requestQuery?.CloneProperties() ?? new SelectQuery();
 
-            selectQuery.Sorts = RequiredSortFields();
+            requestQuery.Sorts = RequiredSortFields();
 
-            SetSelectQuery(selectQuery, true);
+            SetRequestQuery(requestQuery, true);
 
-            var returnValue = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
 
             CacheTable = PrimaryTransform.CacheTable.Copy();
             CacheTable.OutputSortFields = _sortFields;
 
-            GeneratedQuery = new SelectQuery()
-            {
-                Sorts = _sortFields,
-            };
-
-            if (PrimaryTransform.Filters != null)
-            {
-                GeneratedQuery.Filters = PrimaryTransform.Filters;
-            }
-
+            GeneratedQuery = GetGeneratedQuery(requestQuery);
+            
             //check if the transform has already sorted the data, using sql or a presort.
             _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);
 
             return returnValue;
         }
 
+        protected override SelectQuery GetGeneratedQuery(SelectQuery requestQuery)
+        {
+            var generatedQuery = new SelectQuery()
+            {
+                Sorts = _sortFields,
+                Filters = PrimaryTransform.Filters
+            };
+
+            return generatedQuery;
+        }
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {

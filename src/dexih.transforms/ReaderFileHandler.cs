@@ -26,7 +26,7 @@ namespace dexih.transforms
             _fileHandler?.Dispose();
         }
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             if (IsOpen)
             {
@@ -35,7 +35,7 @@ namespace dexih.transforms
             
             AuditKey = auditKey;
             IsOpen = true;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
             return Task.FromResult(true);
         }
 

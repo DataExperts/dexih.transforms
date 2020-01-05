@@ -52,27 +52,27 @@ namespace dexih.transforms
           return null;
       }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
 
-            if (selectQuery == null)
+            if (requestQuery == null)
             {
-                selectQuery = new SelectQuery();
+                requestQuery = new SelectQuery();
             }
             else
             {
-                selectQuery = selectQuery.CloneProperties<SelectQuery>(true);
+                requestQuery = requestQuery.CloneProperties<SelectQuery>(true);
             }
             
             var primarySorts = new Sorts();
             var referenceSorts = new Sorts();
             
             //we need to translate filters and sorts to source column names before passing them through.
-            if (selectQuery?.Sorts != null)
+            if (requestQuery?.Sorts != null)
             {
-                foreach (var sort in selectQuery.Sorts)
+                foreach (var sort in requestQuery.Sorts)
                 {
                     if (sort.Column != null)
                     {
@@ -91,7 +91,7 @@ namespace dexih.transforms
                 }
             }
 
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
 
             var primaryQuery = new SelectQuery() {Sorts = primarySorts};
             var referenceQuery = new SelectQuery() {Sorts = referenceSorts};

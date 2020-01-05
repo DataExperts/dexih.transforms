@@ -66,10 +66,10 @@ namespace dexih.transforms
             _fileHandler?.Dispose();
         }
 
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
 
             if (IsOpen)
             {
@@ -79,15 +79,15 @@ namespace dexih.transforms
             IsOpen = true;
             
             // if a filename was specified in the query, use this, otherwise, get a list of files from the incoming directory.
-            if (string.IsNullOrEmpty(selectQuery?.FileName))
+            if (string.IsNullOrEmpty(requestQuery?.FileName))
             {
                 _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, EFlatFilePath.Incoming,
                     CacheFlatFile.FileMatchPattern);
             }
             else
             {
-                _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, selectQuery.Path,
-                    selectQuery.FileName);
+                _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, requestQuery.Path,
+                    requestQuery.FileName);
             }
             
             if (_files.MoveNext() == false)
@@ -99,7 +99,7 @@ namespace dexih.transforms
 
             try
             {
-                await _fileHandler.SetStream(fileStream, selectQuery);
+                await _fileHandler.SetStream(fileStream, requestQuery);
             }
             catch (Exception ex)
             {

@@ -18,9 +18,9 @@ namespace dexih.transforms.tests
             throw new System.NotImplementedException();
         }
         
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
             return Task.FromResult(true);
         }
 

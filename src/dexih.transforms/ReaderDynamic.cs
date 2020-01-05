@@ -30,7 +30,7 @@ namespace dexih.transforms
             Reset();
         }
         
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             IsOpen = true;
             ResetTransform();
@@ -40,9 +40,9 @@ namespace dexih.transforms
             for(var i =0; i < CacheTable.Columns.Count; i++)
             {
                 var column = CacheTable.Columns[i];
-                if (selectQuery?.Filters != null)
+                if (requestQuery?.Filters != null)
                 {
-                    var filter = selectQuery.Filters.SingleOrDefault(c => c.Column1 != null && c.Column1.Name == column.Name);
+                    var filter = requestQuery.Filters.SingleOrDefault(c => c.Column1 != null && c.Column1.Name == column.Name);
                     if(filter == null)
                     {
                         row[i] = column.DefaultValue;

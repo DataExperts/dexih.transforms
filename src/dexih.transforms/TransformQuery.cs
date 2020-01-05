@@ -41,7 +41,7 @@ namespace dexih.transforms
             return null;
         }
         
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
            
             AuditKey = auditKey;
@@ -49,7 +49,7 @@ namespace dexih.transforms
 
             SelectQuery = new SelectQuery();
 
-            if (selectQuery == null && _selectQuery != null)
+            if (requestQuery == null && _selectQuery != null)
             {
                 SelectQuery.Rows = _selectQuery.Rows;
                 SelectQuery.Filters = _selectQuery.Filters;
@@ -57,11 +57,11 @@ namespace dexih.transforms
                 SelectQuery.Groups = _selectQuery.Groups;
                 SelectQuery.Columns = _selectQuery.Columns;
             }
-            else if(selectQuery != null)
+            else if(requestQuery != null)
             {
-                SelectQuery.Rows = _selectQuery.Rows < selectQuery.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : selectQuery.Rows;
+                SelectQuery.Rows = _selectQuery.Rows < requestQuery.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : requestQuery.Rows;
 
-                SelectQuery.Filters = selectQuery.Filters;
+                SelectQuery.Filters = requestQuery.Filters;
                 if (_selectQuery?.Filters != null)
                 {
                     SelectQuery.Filters.AddRange(_selectQuery.Filters);
@@ -73,7 +73,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    SelectQuery.Sorts = selectQuery.Sorts;
+                    SelectQuery.Sorts = requestQuery.Sorts;
                 }
 
                 if (_selectQuery?.Groups != null && _selectQuery.Groups.Count > 0)
@@ -82,7 +82,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    SelectQuery.Groups = selectQuery.Groups;
+                    SelectQuery.Groups = requestQuery.Groups;
                 }
                 
                 if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
@@ -91,7 +91,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    SelectQuery.Columns = selectQuery.Columns;
+                    SelectQuery.Columns = requestQuery.Columns;
                 }
             }
             
@@ -161,7 +161,7 @@ namespace dexih.transforms
             CacheTable.Name = "Query";
             CacheTable.OutputSortFields = PrimaryTransform.CacheTable.OutputSortFields;
 
-            GeneratedQuery = selectQuery;
+            GeneratedQuery = requestQuery;
 
             return returnValue;
         }

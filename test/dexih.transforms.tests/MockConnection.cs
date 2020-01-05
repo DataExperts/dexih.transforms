@@ -14,7 +14,7 @@ namespace dexih.transforms.tests
         public override bool CanFilter { get; } = true;
         public override bool CanUpdate { get; } = true;
         public override bool CanDelete { get; } = true;
-        public override bool CanAggregate { get; } = true;
+        public override bool CanGroup { get; } = true;
         public override bool CanUseBinary { get; } = true;
         public override bool CanUseArray { get; } = true;
         public override bool CanUseJson { get; } = true;

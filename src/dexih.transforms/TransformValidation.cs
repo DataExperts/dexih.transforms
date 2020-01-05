@@ -94,17 +94,17 @@ namespace dexih.transforms
             return table;
         }
         
-        public override async Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
             IsOpen = true;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
             
             var result = true;
 
             if (PrimaryTransform != null)
             {
-                result = await PrimaryTransform.Open(auditKey, selectQuery, cancellationToken);
+                result = await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
                 if (!result) return false;
             }
 

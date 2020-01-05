@@ -29,10 +29,10 @@ namespace dexih.connections.webservice.restful
             return null;
         }
 
-        public override Task<bool> Open(long auditKey, SelectQuery selectQuery = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;
-            SelectQuery = selectQuery;
+            SelectQuery = requestQuery;
 
             try
             {
@@ -45,7 +45,7 @@ namespace dexih.connections.webservice.restful
                 rowCreator.InitializeRowCreator(1, 1, 1);
                 ReferenceTransform = rowCreator;
 
-                _filter = selectQuery?.Filters;
+                _filter = requestQuery?.Filters;
                 if (_filter == null)
                 {
                     _filter = new Filters();
