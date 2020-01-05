@@ -1,61 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="modified SortDirection to Direction">
-      <change afterPath="$PROJECT_DIR$/test/dexih.functions.tests/ExtensionsTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/contentModel.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.azure/dexih.connections.azure.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.reader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.dexih/dexih.connections.dexih.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.excel/dexih.connections.excel.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.reader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.mongo/dexih.connections.mongo.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.reader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.connections.webservice.restful/dexih.connections.webservice.restful.reader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionConvertString.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionConvertString.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionFlatFile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionMemory.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapFilter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapGroup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoin.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapJoinNode.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/MapSort.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Mapping/Mapping.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderConvertDataTypes.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderFileHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderFileHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderFlatFile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderJson.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderJson.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderRowCreator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderRowCreator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ReaderSql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Transform.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformAggregate.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformCache.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformCache.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformConcatinate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformConcatinate.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformJoin.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformLookup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformMapping.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformProfile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformProfile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformQuery.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformRows.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformSeries.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformThread.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformThread.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/TransformValidation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/TransformValidation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/UnitTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/MockConnection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/MockConnection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/MockReader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/MockReader.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformSqlPushdown.cs" afterDir="false" />
-    </list>
+    <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixing pushdown for group" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -813,14 +759,7 @@
       <workItem from="1578024585894" duration="211000" />
       <workItem from="1578024895397" duration="315000" />
       <workItem from="1578025359717" duration="177000" />
-      <workItem from="1578259652452" duration="1454000" />
-    </task>
-    <task id="LOCAL-00022" summary="added sftp/ftp connections">
-      <created>1513124901077</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1513124901077</updated>
+      <workItem from="1578259652452" duration="1663000" />
     </task>
     <task id="LOCAL-00023" summary="added JsonRowPivot function">
       <created>1517696767734</created>
@@ -1158,7 +1097,14 @@
       <option name="project" value="LOCAL" />
       <updated>1577837215561</updated>
     </task>
-    <option name="localTasksCounter" value="71" />
+    <task id="LOCAL-00071" summary="fixing pushdown for group">
+      <created>1578261929815</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1578261929816</updated>
+    </task>
+    <option name="localTasksCounter" value="72" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1224,7 +1170,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="split group transforms, added new function (rank)." />
     <MESSAGE value="fixed tests" />
     <MESSAGE value="fixing azure" />
     <MESSAGE value="fixing issue with operation code converting to string" />
@@ -1249,7 +1194,8 @@
     <MESSAGE value="refactoring updates." />
     <MESSAGE value="finished multiple refactors, fixed tests" />
     <MESSAGE value="modified SortDirection to Direction" />
-    <option name="LAST_COMMIT_MESSAGE" value="modified SortDirection to Direction" />
+    <MESSAGE value="fixing pushdown for group" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixing pushdown for group" />
   </component>
   <component name="WindowStateProjectService">
     <state x="722" y="366" width="597" height="498" key="#xdebugger.evaluate" timestamp="1577832574881">
@@ -1269,162 +1215,162 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="136" y="267" width="1480" height="850" key="DiffContextDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1577834879464" />
-    <state width="1638" height="172" key="GridCell.Tab.0.bottom" timestamp="1578261704964">
+    <state width="1638" height="172" key="GridCell.Tab.0.bottom" timestamp="1578261971990">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704964" />
+    <state width="1638" height="172" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971990" />
     <state width="1638" height="172" key="GridCell.Tab.0.bottom/0.23.1680.963@0.23.1680.963" timestamp="1578261232040" />
     <state width="1638" height="219" key="GridCell.Tab.0.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348468" />
     <state width="3318" height="345" key="GridCell.Tab.0.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552715" />
     <state width="3798" height="466" key="GridCell.Tab.0.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.0.center" timestamp="1578261704963">
+    <state width="1638" height="172" key="GridCell.Tab.0.center" timestamp="1578261971989">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704963" />
+    <state width="1638" height="172" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971989" />
     <state width="1638" height="172" key="GridCell.Tab.0.center/0.23.1680.963@0.23.1680.963" timestamp="1578261232037" />
     <state width="1638" height="219" key="GridCell.Tab.0.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348467" />
     <state width="3318" height="345" key="GridCell.Tab.0.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552710" />
     <state width="3798" height="466" key="GridCell.Tab.0.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.0.left" timestamp="1578261704962">
+    <state width="1638" height="172" key="GridCell.Tab.0.left" timestamp="1578261971988">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704962" />
+    <state width="1638" height="172" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971988" />
     <state width="1638" height="172" key="GridCell.Tab.0.left/0.23.1680.963@0.23.1680.963" timestamp="1578261232036" />
     <state width="1638" height="219" key="GridCell.Tab.0.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348466" />
     <state width="3318" height="345" key="GridCell.Tab.0.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552709" />
     <state width="3798" height="466" key="GridCell.Tab.0.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.0.right" timestamp="1578261704963">
+    <state width="1638" height="172" key="GridCell.Tab.0.right" timestamp="1578261971989">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704963" />
+    <state width="1638" height="172" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971989" />
     <state width="1638" height="172" key="GridCell.Tab.0.right/0.23.1680.963@0.23.1680.963" timestamp="1578261232038" />
     <state width="1638" height="219" key="GridCell.Tab.0.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348468" />
     <state width="3318" height="345" key="GridCell.Tab.0.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552714" />
     <state width="3798" height="466" key="GridCell.Tab.0.right/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.1.bottom" timestamp="1578261704966">
+    <state width="1638" height="172" key="GridCell.Tab.1.bottom" timestamp="1578261971992">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704966" />
+    <state width="1638" height="172" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971992" />
     <state width="1638" height="172" key="GridCell.Tab.1.bottom/0.23.1680.963@0.23.1680.963" timestamp="1578261231836" />
     <state width="1638" height="219" key="GridCell.Tab.1.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348362" />
     <state width="3318" height="345" key="GridCell.Tab.1.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552718" />
     <state width="3798" height="466" key="GridCell.Tab.1.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.1.center" timestamp="1578261704965">
+    <state width="1638" height="172" key="GridCell.Tab.1.center" timestamp="1578261971991">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704965" />
+    <state width="1638" height="172" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971991" />
     <state width="1638" height="172" key="GridCell.Tab.1.center/0.23.1680.963@0.23.1680.963" timestamp="1578261231834" />
     <state width="1638" height="219" key="GridCell.Tab.1.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348361" />
     <state width="3318" height="345" key="GridCell.Tab.1.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552717" />
     <state width="3798" height="466" key="GridCell.Tab.1.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.1.left" timestamp="1578261704965">
+    <state width="1638" height="172" key="GridCell.Tab.1.left" timestamp="1578261971991">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704965" />
+    <state width="1638" height="172" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971991" />
     <state width="1638" height="172" key="GridCell.Tab.1.left/0.23.1680.963@0.23.1680.963" timestamp="1578261231834" />
     <state width="1638" height="219" key="GridCell.Tab.1.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348360" />
     <state width="3318" height="345" key="GridCell.Tab.1.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552716" />
     <state width="3798" height="466" key="GridCell.Tab.1.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.1.right" timestamp="1578261704966">
+    <state width="1638" height="172" key="GridCell.Tab.1.right" timestamp="1578261971992">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704966" />
+    <state width="1638" height="172" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971992" />
     <state width="1638" height="172" key="GridCell.Tab.1.right/0.23.1680.963@0.23.1680.963" timestamp="1578261231835" />
     <state width="1638" height="219" key="GridCell.Tab.1.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348361" />
     <state width="3318" height="345" key="GridCell.Tab.1.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552717" />
     <state width="3798" height="466" key="GridCell.Tab.1.right/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.2.bottom" timestamp="1578261704968">
+    <state width="1638" height="172" key="GridCell.Tab.2.bottom" timestamp="1578261971994">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.2.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704968" />
+    <state width="1638" height="172" key="GridCell.Tab.2.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971994" />
     <state width="1638" height="172" key="GridCell.Tab.2.bottom/0.23.1680.963@0.23.1680.963" timestamp="1578261231838" />
     <state width="1638" height="219" key="GridCell.Tab.2.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348364" />
     <state width="3318" height="345" key="GridCell.Tab.2.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552721" />
     <state width="3798" height="466" key="GridCell.Tab.2.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.2.center" timestamp="1578261704967">
+    <state width="1638" height="172" key="GridCell.Tab.2.center" timestamp="1578261971993">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.2.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704967" />
+    <state width="1638" height="172" key="GridCell.Tab.2.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971993" />
     <state width="1638" height="172" key="GridCell.Tab.2.center/0.23.1680.963@0.23.1680.963" timestamp="1578261231837" />
     <state width="1638" height="219" key="GridCell.Tab.2.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348363" />
     <state width="3318" height="345" key="GridCell.Tab.2.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552720" />
     <state width="3798" height="466" key="GridCell.Tab.2.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.2.left" timestamp="1578261704967">
+    <state width="1638" height="172" key="GridCell.Tab.2.left" timestamp="1578261971992">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.2.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704967" />
+    <state width="1638" height="172" key="GridCell.Tab.2.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971992" />
     <state width="1638" height="172" key="GridCell.Tab.2.left/0.23.1680.963@0.23.1680.963" timestamp="1578261231836" />
     <state width="1638" height="219" key="GridCell.Tab.2.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348363" />
     <state width="3318" height="345" key="GridCell.Tab.2.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552719" />
     <state width="3798" height="466" key="GridCell.Tab.2.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.2.right" timestamp="1578261704967">
+    <state width="1638" height="172" key="GridCell.Tab.2.right" timestamp="1578261971993">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.2.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704967" />
+    <state width="1638" height="172" key="GridCell.Tab.2.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971993" />
     <state width="1638" height="172" key="GridCell.Tab.2.right/0.23.1680.963@0.23.1680.963" timestamp="1578261231838" />
     <state width="1638" height="219" key="GridCell.Tab.2.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348364" />
     <state width="3318" height="345" key="GridCell.Tab.2.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552721" />
     <state width="3798" height="466" key="GridCell.Tab.2.right/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.3.bottom" timestamp="1578261704969">
+    <state width="1638" height="172" key="GridCell.Tab.3.bottom" timestamp="1578261971996">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.3.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704969" />
+    <state width="1638" height="172" key="GridCell.Tab.3.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971996" />
     <state width="1638" height="172" key="GridCell.Tab.3.bottom/0.23.1680.963@0.23.1680.963" timestamp="1578261231841" />
     <state width="1638" height="219" key="GridCell.Tab.3.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348367" />
     <state width="3318" height="345" key="GridCell.Tab.3.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552726" />
     <state width="3798" height="466" key="GridCell.Tab.3.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.3.center" timestamp="1578261704968">
+    <state width="1638" height="172" key="GridCell.Tab.3.center" timestamp="1578261971995">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.3.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704968" />
+    <state width="1638" height="172" key="GridCell.Tab.3.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971995" />
     <state width="1638" height="172" key="GridCell.Tab.3.center/0.23.1680.963@0.23.1680.963" timestamp="1578261231840" />
     <state width="1638" height="219" key="GridCell.Tab.3.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348365" />
     <state width="3318" height="345" key="GridCell.Tab.3.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552725" />
     <state width="3798" height="466" key="GridCell.Tab.3.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.3.left" timestamp="1578261704968">
+    <state width="1638" height="172" key="GridCell.Tab.3.left" timestamp="1578261971994">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.3.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704968" />
+    <state width="1638" height="172" key="GridCell.Tab.3.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971994" />
     <state width="1638" height="172" key="GridCell.Tab.3.left/0.23.1680.963@0.23.1680.963" timestamp="1578261231839" />
     <state width="1638" height="219" key="GridCell.Tab.3.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348365" />
     <state width="3318" height="345" key="GridCell.Tab.3.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552723" />
     <state width="3798" height="466" key="GridCell.Tab.3.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.3.right" timestamp="1578261704969">
+    <state width="1638" height="172" key="GridCell.Tab.3.right" timestamp="1578261971995">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.3.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704969" />
+    <state width="1638" height="172" key="GridCell.Tab.3.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971995" />
     <state width="1638" height="172" key="GridCell.Tab.3.right/0.23.1680.963@0.23.1680.963" timestamp="1578261231840" />
     <state width="1638" height="219" key="GridCell.Tab.3.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348366" />
     <state width="3318" height="345" key="GridCell.Tab.3.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552725" />
     <state width="3798" height="466" key="GridCell.Tab.3.right/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.4.bottom" timestamp="1578261704970">
+    <state width="1638" height="172" key="GridCell.Tab.4.bottom" timestamp="1578261971997">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.4.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704970" />
+    <state width="1638" height="172" key="GridCell.Tab.4.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971997" />
     <state width="1638" height="172" key="GridCell.Tab.4.bottom/0.23.1680.963@0.23.1680.963" timestamp="1578261231844" />
     <state width="1638" height="219" key="GridCell.Tab.4.bottom/0.23.1680.965@0.23.1680.965" timestamp="1576623348369" />
     <state width="3318" height="345" key="GridCell.Tab.4.bottom/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552730" />
     <state width="3798" height="466" key="GridCell.Tab.4.bottom/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.4.center" timestamp="1578261704970">
+    <state width="1638" height="172" key="GridCell.Tab.4.center" timestamp="1578261971996">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.4.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704970" />
+    <state width="1638" height="172" key="GridCell.Tab.4.center/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971996" />
     <state width="1638" height="172" key="GridCell.Tab.4.center/0.23.1680.963@0.23.1680.963" timestamp="1578261231843" />
     <state width="1638" height="219" key="GridCell.Tab.4.center/0.23.1680.965@0.23.1680.965" timestamp="1576623348368" />
     <state width="3318" height="345" key="GridCell.Tab.4.center/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552729" />
     <state width="3798" height="466" key="GridCell.Tab.4.center/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.4.left" timestamp="1578261704969">
+    <state width="1638" height="172" key="GridCell.Tab.4.left" timestamp="1578261971996">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.4.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704969" />
+    <state width="1638" height="172" key="GridCell.Tab.4.left/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971996" />
     <state width="1638" height="172" key="GridCell.Tab.4.left/0.23.1680.963@0.23.1680.963" timestamp="1578261231842" />
     <state width="1638" height="219" key="GridCell.Tab.4.left/0.23.1680.965@0.23.1680.965" timestamp="1576623348367" />
     <state width="3318" height="345" key="GridCell.Tab.4.left/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552728" />
     <state width="3798" height="466" key="GridCell.Tab.4.left/3840.2160/3360.2100" timestamp="1576620685861" />
-    <state width="1638" height="172" key="GridCell.Tab.4.right" timestamp="1578261704970">
+    <state width="1638" height="172" key="GridCell.Tab.4.right" timestamp="1578261971997">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="172" key="GridCell.Tab.4.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261704970" />
+    <state width="1638" height="172" key="GridCell.Tab.4.right/0.0.1680.1050@0.0.1680.1050" timestamp="1578261971997" />
     <state width="1638" height="172" key="GridCell.Tab.4.right/0.23.1680.963@0.23.1680.963" timestamp="1578261231843" />
     <state width="1638" height="219" key="GridCell.Tab.4.right/0.23.1680.965@0.23.1680.965" timestamp="1576623348369" />
     <state width="3318" height="345" key="GridCell.Tab.4.right/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1578024552730" />
@@ -1434,10 +1380,10 @@
     </state>
     <state x="700" y="230" key="RiderGenerateDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1576624310901" />
     <state x="3080" y="414" key="RiderGenerateDialog/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576976648749" />
-    <state x="440" y="253" key="Vcs.Push.Dialog.v2" timestamp="1577837217097">
+    <state x="440" y="253" key="Vcs.Push.Dialog.v2" timestamp="1578261947642">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="440" y="253" key="Vcs.Push.Dialog.v2/0.0.1680.1050@0.0.1680.1050" timestamp="1577837217097" />
+    <state x="440" y="253" key="Vcs.Push.Dialog.v2/0.0.1680.1050@0.0.1680.1050" timestamp="1578261947642" />
     <state width="840" height="525" key="XDebugger.FullValuePopup" timestamp="1577489524908">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
@@ -1579,19 +1525,6 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="1451" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs</url>
-          <line>158</line>
-          <properties documentPath="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" initialLine="158">
-            <startOffsets>
-              <option value="5463" />
-            </startOffsets>
-            <endOffsets>
-              <option value="5500" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="1456" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
