@@ -89,6 +89,51 @@ namespace dexih.functions
 
             return true;
         }
+        
+        public static bool SequenceStartsWith<T>(this IEnumerable<T> list1, IEnumerable<T> list2) {
+            using (var e1 = list1.GetEnumerator())
+            using (var e2 = list2.GetEnumerator())
+            {
+                while (e1.MoveNext())
+                {
+                    if (!e2.MoveNext())
+                    {
+                        return true;
+                    }
+
+                    if (!Equals(e1.Current, e2.Current))
+                    {
+                        return false;
+                    }
+                }
+
+                return !e2.MoveNext();
+            }
+        }
+        
+        public static bool SequenceStartsWith<T, U>(this IEnumerable<T> list1, IEnumerable<T> list2, Func<T, U> property)
+        {
+            using (var e1 = list1.GetEnumerator())
+            using (var e2 = list2.GetEnumerator())
+            {
+                while (e1.MoveNext())
+                {
+                    if (!e2.MoveNext())
+                    {
+                        return true;
+                    }
+
+                    var val1 = property.Invoke(e1.Current);
+                    var val2 = property.Invoke(e2.Current);
+                    if (!Equals(val1, val2))
+                    {
+                        return false;
+                    }
+                }
+
+                return !e2.MoveNext();
+            }
+        }
 
         /// <summary>
         /// Adds an item to the collection if it doesn't already exist.

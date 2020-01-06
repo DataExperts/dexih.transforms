@@ -383,7 +383,7 @@ namespace dexih.transforms
             if (requiredSort == null || actualSort == null)
                 return false;
 
-            if (requiredSort.Count < actualSort.Count)
+            if (requiredSort.Count > actualSort.Count)
                 return false;
 
             var match = true;

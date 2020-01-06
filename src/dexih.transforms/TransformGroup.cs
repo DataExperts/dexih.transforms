@@ -119,7 +119,7 @@ namespace dexih.transforms
                         if (filter.Column1 != null)
                         {
                             var col = newSelectQuery.Columns.SingleOrDefault(c =>
-                                c.OutputColumn.Name == filter.Column1.Name);
+                                c.OutputColumn?.Name == filter.Column1.Name || c.Column.Name == filter.Column1.Name);
                             if (col == null)
                             {
                                 continue;
@@ -130,7 +130,7 @@ namespace dexih.transforms
                         if (filter.Column2 != null)
                         {
                             var col = newSelectQuery.Columns.SingleOrDefault(c =>
-                                c.OutputColumn.Name == filter.Column2.Name);
+                                c.OutputColumn?.Name == filter.Column2.Name || c.Column.Name == filter.Column2.Name);
                             if (col == null)
                             {
                                 continue;

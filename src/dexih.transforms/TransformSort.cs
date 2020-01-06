@@ -78,22 +78,35 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
-            requestQuery = requestQuery?.CloneProperties() ?? new SelectQuery();
+            SelectQuery newSelectQuery;
 
-            requestQuery.Sorts = RequiredSortFields();
+            var requiredSorts = RequiredSortFields();
 
-            SetRequestQuery(requestQuery, true);
+            if (requestQuery.Sorts.SequenceStartsWith(requiredSorts))
+            {
+                newSelectQuery = requestQuery?.CloneProperties() ?? new SelectQuery();    
+            }
+            else
+            {
+                newSelectQuery = new SelectQuery()
+                {
+                    Sorts = requiredSorts,
+                    Filters = requestQuery.Filters
+                };
+            }
+            
+            SetRequestQuery(newSelectQuery, true);
 
-            var returnValue = await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
+            var returnValue = await PrimaryTransform.Open(auditKey, newSelectQuery, cancellationToken);
 
             CacheTable = PrimaryTransform.CacheTable.Copy();
             CacheTable.OutputSortFields = _sortFields;
 
-            GeneratedQuery = GetGeneratedQuery(requestQuery);
-            
             //check if the transform has already sorted the data, using sql or a presort.
             _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);
 
+            GeneratedQuery = _alreadySorted ? PrimaryTransform.GeneratedQuery : GetGeneratedQuery(newSelectQuery);
+            
             return returnValue;
         }
 
