@@ -463,7 +463,15 @@ namespace dexih.transforms
             if (IsReader && ReferenceConnection != null)
             {
                 var canGroup = true;
-                var columns = new SelectColumns(requestQuery.Columns);
+                SelectColumns columns;
+                if(requestQuery.Columns.Count == 0)
+                {
+                    columns = new SelectColumns(CacheTable.Columns.Select(c => new SelectColumn(c)));
+                } 
+                else
+                {
+                    columns = new SelectColumns(requestQuery.Columns);
+                }
 
                 if (ReferenceConnection.CanFilter)
                 {

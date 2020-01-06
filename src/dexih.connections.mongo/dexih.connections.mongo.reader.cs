@@ -22,6 +22,7 @@ namespace dexih.connections.mongo
 
         public ReaderMongo(Connection connection, Table table)
         {
+            ReferenceConnection = connection;
             _connection = (ConnectionMongo)connection;
             CacheTable = table;
         }
