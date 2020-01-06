@@ -82,16 +82,16 @@ namespace dexih.transforms
 
             var requiredSorts = RequiredSortFields();
 
-            if (requestQuery.Sorts.SequenceStartsWith(requiredSorts))
+            if (requestQuery != null && requestQuery.Sorts.SequenceStartsWith(requiredSorts))
             {
-                newSelectQuery = requestQuery?.CloneProperties() ?? new SelectQuery();    
+                newSelectQuery = requestQuery.CloneProperties();
             }
             else
             {
                 newSelectQuery = new SelectQuery()
                 {
                     Sorts = requiredSorts,
-                    Filters = requestQuery.Filters
+                    Filters = requestQuery?.Filters?? new Filters()
                 };
             }
             
