@@ -69,8 +69,31 @@ namespace dexih.connections.azure
         public string LockGuidName => "LockGuid";
 
         public string AzurePartitionKeyDefaultValue => "default";
-        
 
+        public override bool IsFilterSupported(Filter filter)
+        {
+            switch (filter.Operator)
+            {
+                case ECompare.Like:
+                case ECompare.IsNull:
+                case ECompare.IsNotNull:
+                    return false;
+            }
+
+            switch (filter.CompareDataType)
+            {
+                case ETypeCode.Byte:
+                case ETypeCode.Char:
+                case ETypeCode.SByte:
+                case ETypeCode.Enum:
+                case ETypeCode.CharArray:
+                case ETypeCode.Object:
+                case ETypeCode.Geometry:
+                    return false;
+            }
+
+            return true;
+        }
 
         public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
         {
@@ -613,7 +636,6 @@ namespace dexih.connections.azure
             }
         }
 
-
         public string ConvertOperator(ECompare Operator)
         {
             switch (Operator)
@@ -631,10 +653,10 @@ namespace dexih.connections.azure
                 case ECompare.NotEqual:
                     return "ne";
                 default:
-                    throw new Exception("ConvertOperator failed");
+                    throw new Exception($"The operator {Operator} is not supported by Azure storage tables.");
             }
         }
-
+        
         public string BuildFilterString(Filters filters)
         {
             if (filters == null || filters.Count == 0)
@@ -654,8 +676,8 @@ namespace dexih.connections.azure
                         {
                             try
                             {
-                                var valueparse = Operations.Parse(filter.CompareDataType, value);
-                                array.Add(valueparse);
+                                var valueParsed = Operations.Parse(filter.CompareDataType, value);
+                                array.Add(valueParsed);
                             }
                             catch (Exception ex)
                             {
@@ -692,6 +714,13 @@ namespace dexih.connections.azure
         {
             string filterString;
 
+            var operation = ConvertOperator(filterOperator);
+
+            if (operation == null)
+            {
+                return null;
+            }
+
             switch (compareDataType)
             {
                 case ETypeCode.String:
@@ -701,30 +730,34 @@ namespace dexih.connections.azure
 				case ETypeCode.Xml:
                 case ETypeCode.Guid:
                 case ETypeCode.Unknown:
-                    filterString = TableQuery.GenerateFilterCondition(column, ConvertOperator(filterOperator), (string)value);
+                    filterString = TableQuery.GenerateFilterCondition(column, operation, (string)value);
                     break;
                 case ETypeCode.Boolean:
-                    filterString = TableQuery.GenerateFilterConditionForBool(column, ConvertOperator(filterOperator), (bool)value);
+                    filterString = TableQuery.GenerateFilterConditionForBool(column, operation, (bool)value);
                     break;
                 case ETypeCode.Int16:
                 case ETypeCode.Int32:
                 case ETypeCode.UInt16:
                 case ETypeCode.UInt32:
-                    filterString = TableQuery.GenerateFilterConditionForInt(column, ConvertOperator(filterOperator), (int)value);
+                    filterString = TableQuery.GenerateFilterConditionForInt(column, operation, (int)value);
                     break;
                 case ETypeCode.UInt64:
                 case ETypeCode.Int64:
-                    filterString = TableQuery.GenerateFilterConditionForLong(column, ConvertOperator(filterOperator), (long)value);
+                    filterString = TableQuery.GenerateFilterConditionForLong(column, operation, (long)value);
                     break;
                 case ETypeCode.DateTime:
-                    filterString = TableQuery.GenerateFilterConditionForDate(column, ConvertOperator(filterOperator), (DateTime)value);
+                    filterString = TableQuery.GenerateFilterConditionForDate(column, operation, (DateTime)value);
                     break;
                 case ETypeCode.Time:
-                    filterString = TableQuery.GenerateFilterCondition(column, ConvertOperator(filterOperator), value.ToString());
+                    filterString = TableQuery.GenerateFilterCondition(column, operation, value.ToString());
                     break;
                 case ETypeCode.Double:
                 case ETypeCode.Decimal:
-                    filterString = TableQuery.GenerateFilterConditionForDouble(column, ConvertOperator(filterOperator), (double)value);
+                case ETypeCode.Single:
+                    filterString = TableQuery.GenerateFilterConditionForDouble(column, operation, (double)value);
+                    break;
+                case ETypeCode.Binary:
+                    filterString = TableQuery.GenerateFilterConditionForBinary(column, operation, (byte[])value);
                     break;
                 default:
                     throw new Exception("The data type: " + compareDataType.ToString() + " is not supported by Azure table storage.");

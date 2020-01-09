@@ -482,6 +482,8 @@ namespace dexih.transforms
 
         #endregion
 
+        public virtual bool IsFilterSupported(Filter filter) => true;
+        
         public virtual bool IsValidDatabaseName(string name)
         {
             return true;

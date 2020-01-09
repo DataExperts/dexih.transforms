@@ -467,7 +467,25 @@ namespace dexih.transforms
 
                 if (ReferenceConnection.CanFilter)
                 {
-                    generatedQuery.Filters = new Filters(requestQuery.Filters);
+                    generatedQuery.Filters = new Filters();
+                    foreach (var filter in requestQuery.Filters)
+                    {
+                        if (ReferenceConnection.IsFilterSupported(filter))
+                        {
+                            generatedQuery.Filters.Add(filter);
+                        }
+                        else
+                        {
+                            if (filter.Column1 != null)
+                            {
+                                columns.AddIfNotExists(new SelectColumn(filter.Column1));
+                            }
+                            if (filter.Column2 != null)
+                            {
+                                columns.AddIfNotExists(new SelectColumn(filter.Column2));
+                            }
+                        }
+                    }
                 }
                 else
                 {

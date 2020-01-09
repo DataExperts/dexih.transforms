@@ -856,6 +856,11 @@ namespace dexih.connections.mongo
                     return Builders<BsonDocument>.Filter.Ne(column, BsonNull.Value);
                 case ECompare.Like:
                     return Builders<BsonDocument>.Filter.Regex(column, new BsonRegularExpression((string) value));
+                case ECompare.IsIn:
+                    var array = (from object value2 in (Array) value select 
+                        Builders<BsonDocument>.Filter.Eq(column, value2));
+                    return Builders<BsonDocument>.Filter.Or(array);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(filterOperator), filterOperator, null);
             }

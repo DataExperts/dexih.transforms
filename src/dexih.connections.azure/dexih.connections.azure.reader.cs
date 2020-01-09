@@ -55,15 +55,24 @@ namespace dexih.connections.azure
             _tableQuery = new TableQuery<DynamicTableEntity>().Take(1000);
 
             if (GeneratedQuery?.Columns?.Count > 0)
+            {
                 _tableQuery.SelectColumns = GeneratedQuery.Columns.Select(c => c.Column.Name).ToArray();
+            }
             else
-                _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField).Select(c => c.Name).ToArray();
+            {
+                _tableQuery.SelectColumns = CacheTable.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField)
+                    .Select(c => c.Name).ToArray();
+            }
 
             if (GeneratedQuery?.Filters != null)
+            {
                 _tableQuery.FilterString = _connection.BuildFilterString(GeneratedQuery.Filters);
+            }
 
-            if(GeneratedQuery?.Rows > 0 && GeneratedQuery?.Rows < 1000)
+            if (GeneratedQuery?.Rows > 0 && GeneratedQuery?.Rows < 1000)
+            {
                 _tableQuery.TakeCount = GeneratedQuery.Rows;
+            }
 
             try
             {
@@ -79,8 +88,7 @@ namespace dexih.connections.azure
 
             return true;
         }
-
-
+        
         public override bool ResetTransform()
         {
             if (IsOpen)
