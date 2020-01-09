@@ -131,7 +131,7 @@ namespace dexih.connections.test
             var reader = connection.GetTransformReader(table);
             var sortQuery = new SelectQuery()
             {
-                Sorts = new Sorts() {new Sort("SurrogateKey")},
+                Sorts = new Sorts() { new Sort("SurrogateKey") },
                 TableName = table.Name
             };
             

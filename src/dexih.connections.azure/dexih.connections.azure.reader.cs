@@ -27,6 +27,7 @@ namespace dexih.connections.azure
 
         public ReaderAzure(Connection connection, Table table)
         {
+            ReferenceConnection = connection;
             _connection = (ConnectionAzureTable)connection;
             CacheTable = table;
         }
