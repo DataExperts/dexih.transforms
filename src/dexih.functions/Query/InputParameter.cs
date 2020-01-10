@@ -1,14 +1,15 @@
-using MessagePack;
+using System.Runtime.Serialization;
+
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class InputParameter
     {
-        [Key(0)]
+        [DataMember(Order = 0)]
         public string Name { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public string Value { get; set; }
    
     }

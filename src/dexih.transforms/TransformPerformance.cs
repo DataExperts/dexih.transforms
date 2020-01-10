@@ -1,9 +1,10 @@
-using MessagePack;
+
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace dexih.transforms
 {
-    [MessagePackObject]
+    [DataContract]
     public class TransformPerformance
     {
         public TransformPerformance()
@@ -17,19 +18,19 @@ namespace dexih.transforms
             Seconds = seconds;
         }
         
-        [Key(0)]
+        [DataMember(Order = 0)]
         public string TransformName { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public string Action { get; set; }
 
-        [Key(2)]
+        [DataMember(Order = 2)]
         public long Rows { get; set; }
 
-        [Key(3)]
+        [DataMember(Order = 3)]
         public double Seconds { get; set; }
 
-        [Key(4)]
+        [DataMember(Order = 4)]
         public List<TransformPerformance> Children { get; set; } = new List<TransformPerformance>();
     }
 }

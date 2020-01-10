@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using dexih.functions;
 using dexih.functions.Query;
-using MessagePack;
+
 
 namespace dexih.transforms
 {
-    [MessagePackObject]
+    [DataContract]
     public class TransformWriterOptions
     {
         public enum ETargetAction

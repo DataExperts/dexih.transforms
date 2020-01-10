@@ -1,6 +1,6 @@
 // using System.Text.Json.Serialization;
 // using Dexih.Utils.CopyProperties;
-// using MessagePack;
+// 
 //
 // namespace dexih.functions.Query
 // {
@@ -24,20 +24,20 @@
 //             Alias = alias;
 //         }
 //
-//         [Key(0)]
+//         [DataMember(Order = 0)]
 //         public EJoinType JoinType { get; set; }
 //         
-//         [Key(1)]
+//         [DataMember(Order = 1)]
 //         public string JoinTable { get; set; }
 //         
-//         [Key(2)]
+//         [DataMember(Order = 2)]
 //         public JoinFilters JoinFilters { get; set; }
 //         
-//         [Key(3)]
+//         [DataMember(Order = 3)]
 //         public string Alias { get; set; }
 //
 //         private Table _table;
-//         [JsonIgnore, CopyIgnore, MessagePack.IgnoreMember]
+//         [JsonIgnore, CopyIgnore, MessagePack.IgnoreDataMember]
 //         
 //         public Table Table
 //         {

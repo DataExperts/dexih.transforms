@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.DataType;
-using MessagePack;
+
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class Filter : IEquatable<Filter>
     {
         public Filter() { }
@@ -95,25 +96,25 @@ namespace dexih.functions.Query
             CompareDataType = dataType;
         }
         
-        [Key(0)]
+        [DataMember(Order = 0)]
         public TableColumn Column1 { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public object Value1 { get; set; }
 
-        [Key(2)]
+        [DataMember(Order = 2)]
         public ETypeCode CompareDataType { get; set; }
 
-        [Key(3)]
+        [DataMember(Order = 3)]
         public TableColumn Column2 { get; set; }
 
-        [Key(4)]
+        [DataMember(Order = 4)]
         public object Value2 { get; set; }
 
-        [Key(5)]
+        [DataMember(Order = 5)]
         public ECompare Operator { get; set; } = ECompare.IsEqual;
 
-        [Key(6)] 
+        [DataMember(Order = 6)] 
         public EAndOr AndOr { get; set; } = EAndOr.And;
 
         public ETypeCode BestDataType()

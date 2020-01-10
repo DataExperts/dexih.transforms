@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
-
-using MessagePack;
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class SelectColumn: IEquatable<SelectColumn>
     {
         public SelectColumn() { }
@@ -27,13 +26,13 @@ namespace dexih.functions.Query
             }
         }
         
-        [Key(0)]
+        [DataMember(Order = 0)]
         public TableColumn Column { get; set; }
 
-        [Key(1)] 
+        [DataMember(Order = 1)] 
         public EAggregate Aggregate { get; set; } = EAggregate.None;
 
-        [Key(2)] 
+        [DataMember(Order = 2)] 
         public TableColumn OutputColumn { get; set; }
         
         public string GetOutputName()

@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using Dexih.Utils.DataType;
 
-using MessagePack;
+
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class SelectQuery: IEquatable<SelectQuery>
     {
         public SelectQuery()
@@ -22,40 +23,40 @@ namespace dexih.functions.Query
             // Joins = new List<Join>();
         }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public SelectColumns Columns { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public string TableName { get; set; }
 
-        [Key(2)]
+        [DataMember(Order = 2)]
         public Filters Filters { get; set; }
 
-        [Key(3)]
+        [DataMember(Order = 3)]
         public Sorts Sorts { get; set; }
 
-        [Key(4)]
+        [DataMember(Order = 4)]
         public List<TableColumn> Groups { get; set; }
         
-        [Key(5)]
+        [DataMember(Order = 5)]
         public Filters GroupFilters { get; set; }
         
-        // [Key(6)]
+        // [DataMember(Order = 6)]
         // public List<Join> Joins { get; set; }
 
-        [Key(6)] 
+        [DataMember(Order = 6)] 
         public int Rows { get; set; }
 
-        [Key(7)]
+        [DataMember(Order = 7)]
         public List<TableColumn> InputColumns { get; set; }
 
         /// <summary>
         /// Used for flat files to specify only a specific filename
         /// </summary>
-        [Key(8)]
+        [DataMember(Order = 8)]
         public string FileName { get; set; }
 
-        [Key(9)] 
+        [DataMember(Order = 9)] 
         public EFlatFilePath Path { get; set; } = EFlatFilePath.None;
         
         /// <summary>

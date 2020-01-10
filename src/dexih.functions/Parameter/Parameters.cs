@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using dexih.functions.Exceptions;
-using MessagePack;
+
 
 namespace dexih.functions.Parameter
 {
-    [MessagePackObject]
+    [DataContract]
     public class Parameters
     {
         public IList<Parameter> ReturnParameters { get; set; } = new List<Parameter>();

@@ -1,9 +1,10 @@
-﻿using MessagePack;
+﻿
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class UpdateQuery
     {
         public UpdateQuery(IEnumerable<QueryColumn> updateColumns, IEnumerable<Filter> filters)
@@ -28,10 +29,10 @@ namespace dexih.functions.Query
             }
         }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public QueryColumns UpdateColumns { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public Filters Filters { get; set; }
     }
 }

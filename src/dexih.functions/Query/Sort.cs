@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
-
-using MessagePack;
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class Sort : IEquatable<Sort>
     {
         // [JsonConverter(typeof(StringEnumConverter))]
@@ -27,10 +26,10 @@ namespace dexih.functions.Query
             Direction = direction;
         }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public TableColumn Column { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public ESortDirection Direction { get; set; }
 
         public bool Equals(Sort other)

@@ -1,9 +1,10 @@
-﻿using MessagePack;
+﻿
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class InsertQuery
     {
         public InsertQuery()
@@ -16,7 +17,7 @@ namespace dexih.functions.Query
             InsertColumns = insertColumns;
         }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public List<QueryColumn> InsertColumns { get; set; }
     }
 }

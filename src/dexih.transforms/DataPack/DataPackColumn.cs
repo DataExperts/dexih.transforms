@@ -1,11 +1,12 @@
 using System.Linq;
+using System.Runtime.Serialization;
 using dexih.functions;
 using Dexih.Utils.DataType;
-using MessagePack;
+
 
 namespace dexih.transforms
 {
-    [MessagePackObject]
+    [DataContract]
     public class DataPackColumn
     {
         public DataPackColumn()
@@ -21,16 +22,16 @@ namespace dexih.transforms
             ChildColumns = column.ChildColumns?.Select(c => new DataPackColumn(c)).ToArray();
         }
 
-        [Key("name")]
+        [DataMember(Order = 1)]
         public string Name { get; set; }
 
-        [Key("logicalName")]
+        [DataMember(Order = 2)]
         public string LogicalName { get; set; }
 
-        [Key("dataType")]
+        [DataMember(Order = 3)]
         public ETypeCode DataType { get; set; }
 
-        [Key("childColumns")]
+        [DataMember(Order = 4)]
         public DataPackColumn[] ChildColumns;
     }
 }

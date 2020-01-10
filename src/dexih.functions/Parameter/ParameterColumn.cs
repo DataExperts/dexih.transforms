@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
-using MessagePack;
+
 
 namespace dexih.functions.Parameter
 {
-    [MessagePackObject]
+    [DataContract]
     public class ParameterColumn : Parameter
     {
         public ParameterColumn()
@@ -50,7 +51,7 @@ namespace dexih.functions.Parameter
             Column = new TableColumn(columnName, dataType);
         }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public TableColumn Column;
 
         /// <summary>

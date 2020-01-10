@@ -1,9 +1,10 @@
-﻿using Dexih.Utils.DataType;
-using MessagePack;
+﻿using System.Runtime.Serialization;
+using Dexih.Utils.DataType;
+
 
 namespace dexih.functions.Parameter
 {
-    [MessagePackObject]
+    [DataContract]
     public class ParameterOutputColumn : Parameter
     {
         public ParameterOutputColumn()
@@ -46,7 +47,7 @@ namespace dexih.functions.Parameter
             Column = new TableColumn(columName, dataType);
         }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public TableColumn Column;
 
         /// <summary>

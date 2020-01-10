@@ -7,7 +7,6 @@ using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
-using MessagePack.Formatters;
 
 namespace dexih.transforms
 {

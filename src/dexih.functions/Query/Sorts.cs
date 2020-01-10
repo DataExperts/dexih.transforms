@@ -1,9 +1,10 @@
-using MessagePack;
+
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class Sorts : List<Sort>
     {
         public Sorts() {}

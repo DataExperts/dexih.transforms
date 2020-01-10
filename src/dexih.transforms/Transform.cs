@@ -464,7 +464,7 @@ namespace dexih.transforms
             {
                 var canGroup = true;
                 SelectColumns columns;
-                if(requestQuery.Columns.Count == 0)
+                if(requestQuery.Columns == null || requestQuery.Columns.Count == 0)
                 {
                     columns = new SelectColumns(CacheTable.Columns.Select(c => new SelectColumn(c)));
                 } 

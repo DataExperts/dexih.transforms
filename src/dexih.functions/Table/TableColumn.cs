@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json.Serialization;
 using static Dexih.Utils.DataType.DataType;
 using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
-using MessagePack;
+
 
 namespace dexih.functions
 {
-    [MessagePackObject]
+    [DataContract]
     public class TableColumn : IEquatable<TableColumn>
 
     {
@@ -48,19 +49,19 @@ namespace dexih.functions
         private int? _baseMaxLength;
 
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public string ReferenceTable { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public string Name { get; set; }
 
-        [Key(2)]
+        [DataMember(Order = 2)]
         public string LogicalName { get; set; }
 
-        [Key(3)]
+        [DataMember(Order = 3)]
         public string Description { get; set; }
 
-        [Key(4)]
+        [DataMember(Order = 4)]
         public ETypeCode DataType
         {
             get
@@ -73,7 +74,7 @@ namespace dexih.functions
             set => _baseDataType = value;
         }
 
-        [Key(5)]
+        [DataMember(Order = 5)]
         public int? MaxLength
         {
             get
@@ -89,59 +90,59 @@ namespace dexih.functions
         /// <summary>
         /// A string that can be used to group columns.  This is also used to structure json/xml data.  Uses syntax group1.subgroup2.subsubgroup3 etc.
         /// </summary>
-        [Key(6)]
+        [DataMember(Order = 6)]
         public string ColumnGroup { get; set; }
 
-        [Key(7)]
+        [DataMember(Order = 7)]
         public int Rank { get; set; }
 
 
 
-        [Key(8)]
+        [DataMember(Order = 8)]
         public int? Precision { get; set; }
 
-        [Key(9)]
+        [DataMember(Order = 9)]
         public int? Scale { get; set; }
 
-        [Key(10)]
+        [DataMember(Order = 10)]
         public bool AllowDbNull { get; set; }
 
-        [Key(11)]
+        [DataMember(Order = 11)]
         public EDeltaType DeltaType { get; set; }
 
-        [Key(12)]
+        [DataMember(Order = 12)]
         public bool? IsUnicode { get; set; }
 
-        [Key(13)]
+        [DataMember(Order = 13)]
         public object DefaultValue { get; set; }
 
-        [Key(14)]
+        [DataMember(Order = 14)]
         public bool IsUnique { get; set; }
 
-        [Key(15)]
+        [DataMember(Order = 15)]
         public bool IsMandatory { get; set; }
 
-        [Key(16)]
+        [DataMember(Order = 16)]
         public ESecurityFlag SecurityFlag { get; set; } = ESecurityFlag.None;
 
-        [Key(17)]
+        [DataMember(Order = 17)]
         public bool IsInput { get; set; }
 
-        [Key(18)]
+        [DataMember(Order = 18)]
         public bool IsIncrementalUpdate { get; set; }
 
         // used by the passthrough to indicate if the column is a part of the parent node, or part of current node.
-        [Key(19)]
+        [DataMember(Order = 19)]
         public bool IsParent { get; set; }
 
-        [Key(20)]
+        [DataMember(Order = 20)]
         public TableColumns ChildColumns { get; set; }
 
         public bool IsArray() => Rank > 0;
 
         public bool IsAutoIncrement() => DeltaType == EDeltaType.DbAutoIncrement || DeltaType == EDeltaType.AutoIncrement;
         
-        [JsonIgnore, CopyIgnore, IgnoreMember]
+        [JsonIgnore, CopyIgnore, IgnoreDataMember]
         public Type ColumnGetType
         {
             get => Dexih.Utils.DataType.DataType.GetType(DataType);

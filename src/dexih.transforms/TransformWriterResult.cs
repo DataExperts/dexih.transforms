@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Poco;
 using Dexih.Utils.DataType;
-using MessagePack;
+
 
 namespace dexih.transforms
 {
@@ -18,7 +19,7 @@ namespace dexih.transforms
     /// Stores auditing information captured when using the TransformWriter.
     /// </summary>
     [PocoTable(Name = "DexihResults")]
-    [MessagePackObject]
+    [DataContract]
     public class TransformWriterResult: IDisposable
     {
         #region Events
@@ -84,160 +85,160 @@ namespace dexih.transforms
         }
         
         [PocoColumn(Skip = true)]
-        [IgnoreMember]
+        [IgnoreDataMember]
         public TransformWriterOptions TransformWriterOptions { get; set; }
 
 
         [PocoColumn(DeltaType = EDeltaType.DbAutoIncrement, IsKey = true)]
-        [Key(1)]
+        [DataMember(Order = 1)]
         public long AuditKey { get; set; }
 
         [PocoColumn(MaxLength = 30)]
-        [Key(2)]
+        [DataMember(Order = 2)]
         public string AuditType { get; set; }
 
-        [Key(3)]
+        [DataMember(Order = 3)]
         public long ReferenceKey { get; set; }
 
-        [Key(4)]
+        [DataMember(Order = 4)]
         public long ParentAuditKey { get; set; }
 
         [PocoColumn(MaxLength = 1024)]
-        [Key(5)]
+        [DataMember(Order = 5)]
         public string ReferenceName { get; set; }
 
-        [Key(6)]
+        [DataMember(Order = 6)]
         public long SourceTableKey { get; set; }
 
         [PocoColumn(MaxLength = 1024)]
-        [Key(7)]
+        [DataMember(Order = 7)]
         public string SourceTableName { get; set; }
 
-        [Key(8)]
+        [DataMember(Order = 8)]
         public long TargetTableKey { get; set; }
 
         [PocoColumn(MaxLength = 1024)]
-        [Key(9)]
+        [DataMember(Order = 9)]
         public string TargetTableName { get; set; }
 
-        [Key(10)]
+        [DataMember(Order = 10)]
         public long HubKey { get; set; }
         
         /// <summary>
         /// The reference to the connection use for auditing (such as profile data).
         /// </summary>
         [PocoColumn(Skip = true)]
-        [Key(11)]
+        [DataMember(Order = 11)]
         public long AuditConnectionKey { get; set; }
 
         [PocoColumn(Skip = true)]
-        [Key(12)]
+        [DataMember(Order = 12)]
         public long LastRowTotal { get; set; }
 
         [PocoColumn(Skip = true)]
-        [Key(13)]
+        [DataMember(Order = 13)]
         public object LastMaxIncrementalValue { get; set; }
 
         [PocoColumn(Skip = true)]
-        [Key(14)]
+        [DataMember(Order = 14)]
         public int RowsPerProgressEvent { get; set; } = 1000;
 
-        [Key(15)]
+        [DataMember(Order = 15)]
         public long RowsTotal { get; set; }
 
-        [Key(16)]
+        [DataMember(Order = 16)]
         public long RowsCreated { get; set; }
 
-        [Key(17)]
+        [DataMember(Order = 17)]
         public long RowsUpdated { get; set; }
 
-        [Key(18)]
+        [DataMember(Order = 18)]
         public long RowsDeleted { get; set; }
 
-        [Key(19)]
+        [DataMember(Order = 19)]
         public long RowsPreserved { get; set; }
 
-        [Key(20)]
+        [DataMember(Order = 20)]
         public long RowsIgnored { get; set; }
 
-        [Key(21)]
+        [DataMember(Order = 21)]
         public long RowsRejected { get; set; }
 
-        [Key(22)]
+        [DataMember(Order = 22)]
         public long RowsFiltered { get; set; }
 
-        [Key(23)]
+        [DataMember(Order = 23)]
         public long RowsSorted { get; set; }
 
-        [Key(24)]
+        [DataMember(Order = 24)]
         public long RowsReadPrimary { get; set; }
 
-        [Key(25)]
+        [DataMember(Order = 25)]
         public long RowsReadReference { get; set; }
 
-        [Key(26)]
+        [DataMember(Order = 26)]
         public long Passed { get; set; }
 
-        [Key(27)]
+        [DataMember(Order = 27)]
         public long Failed { get; set; }
 
-        [Key(28)]
+        [DataMember(Order = 28)]
         public long ReadTicks { get; set; }
 
-        [Key(29)]
+        [DataMember(Order = 29)]
         public long WriteTicks { get; set; }
 
-        [Key(30)]
+        [DataMember(Order = 30)]
         public long ProcessingTicks { get; set; }
 
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 255, AllowDbNull = true)]
-        [Key(32)]
+        [DataMember(Order = 32)]
         public object MaxIncrementalValue { get; set; }
 
-        [Key(33)]
+        [DataMember(Order = 33)]
         public long MaxSurrogateKey { get; set; }
 
         [PocoColumn(MaxLength = 4000, AllowDbNull = true)]
-        [Key(34)]
+        [DataMember(Order = 34)]
         public string Message { get; set; }
 
         [PocoColumn(MaxLength = 255, DataType = ETypeCode.Text, AllowDbNull = true)]
-        [Key(35)]
+        [DataMember(Order = 35)]
         public string ExceptionDetails { get; set; }
 
-        [Key(36)]
+        [DataMember(Order = 36)]
         public DateTime InitializeTime { get; set; }
 
-        [Key(37)]
+        [DataMember(Order = 37)]
         public DateTime? ScheduledTime { get; set; }
 
-        [Key(38)]
+        [DataMember(Order = 38)]
         public DateTime? StartTime { get; set; }
 
-        [Key(39)]
+        [DataMember(Order = 39)]
         public DateTime? EndTime { get; set; }
 
-        [Key(40)]
+        [DataMember(Order = 40)]
         public DateTime? LastUpdateTime { get; set; }
 
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
-        [Key(41)]
+        [DataMember(Order = 41)]
         public ETriggerMethod TriggerMethod { get; set; } = ETriggerMethod.Manual;
 
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
-        [Key(42)]
+        [DataMember(Order = 42)]
         public string TriggerInfo { get; set; }
 
         [PocoColumn(DataType = ETypeCode.Text, AllowDbNull = true)]
-        [Key(43)]
+        [DataMember(Order = 43)]
         public List<TransformPerformance> PerformanceSummary { get; set; }
 
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
-        [Key(44)]
+        [DataMember(Order = 44)]
         public string ProfileTableName { get; set; }
 
         [PocoColumn(MaxLength = 1024, AllowDbNull = true)]
-        [Key(45)]
+        [DataMember(Order = 45)]
         public string RejectTableName { get; set; }
 
         //        [PocoColumn(Skip = true)]
@@ -250,42 +251,42 @@ namespace dexih.transforms
         //        public object ResetIncrementalValue { get; set; }
 
         /// these are used when reading the from table, if record is the current version, previous version, or the previous version that was successful.
-        [Key(46)]
+        [DataMember(Order = 46)]
         public bool IsCurrent { get; set; }
 
-        [Key(47)]
+        [DataMember(Order = 47)]
         public bool IsPrevious { get; set; }
 
-        [Key(48)]
+        [DataMember(Order = 48)]
         public bool IsPreviousSuccess { get; set; }
 
         [PocoColumn(Skip = true)]
-        [IgnoreMember, JsonIgnore]
+        [IgnoreDataMember, JsonIgnore]
         public Connection AuditConnection { get; set; }
 
         [PocoColumn(Skip = true)]
-        [Key(50)]
+        [DataMember(Order = 50)]
         public List<TransformWriterResult> ChildResults { get; set; } = new List<TransformWriterResult>();
 
         // [JsonConverter(typeof(StringEnumConverter))]
         [PocoColumn(DataType = ETypeCode.String, MaxLength = 20)]
-        [Key(51)]
+        [DataMember(Order = 51)]
         public ERunStatus RunStatus { get; set; } = ERunStatus.NotRunning;
 
         [PocoColumn(Skip = true)]
-        [Key(52)]
+        [DataMember(Order = 52)]
         public bool IsRunning => RunStatus == ERunStatus.Running || RunStatus == ERunStatus.RunningErrors || RunStatus == ERunStatus.Initialised || RunStatus == ERunStatus.Started;
 
         [PocoColumn(Skip = true)]
-        [Key(53)]
+        [DataMember(Order = 53)]
         public bool IsFinished => RunStatus == ERunStatus.Abended || RunStatus == ERunStatus.Cancelled || RunStatus == ERunStatus.Finished || RunStatus == ERunStatus.FinishedErrors || RunStatus == ERunStatus.Passed || RunStatus == ERunStatus.Failed;
 
         [PocoColumn(Skip = true)]
-        [Key(54)]
+        [DataMember(Order = 54)]
         public bool IsScheduled => RunStatus == ERunStatus.Scheduled;
 
         [PocoColumn(Skip = true)]
-        [Key(55)]
+        [DataMember(Order = 55)]
         public int PercentageComplete
         {
             get

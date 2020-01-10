@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using dexih.functions.Parameter;
 using Dexih.Utils.DataType;
 
 
-using MessagePack;
+
 
 namespace dexih.functions
 {
@@ -12,73 +13,73 @@ namespace dexih.functions
     /// <summary>
     /// Function reference contains details of a standard function
     /// </summary>
-    [MessagePackObject]
+    [DataContract]
     public class FunctionReference
     {
-        [Key(0)]
+        [DataMember(Order = 0)]
         public EFunctionType FunctionType { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public string Category { get; set; }
 
-        [Key(2)]
+        [DataMember(Order = 2)]
         public string Name { get; set; }
 
-        [Key(3)]
+        [DataMember(Order = 3)]
         public string Description { get; set;}
 
-        [Key(4)]
+        [DataMember(Order = 4)]
         public string FunctionAssemblyName { get; set; }
 
-        [Key(5)]
+        [DataMember(Order = 5)]
         public string FunctionClassName { get; set; }
 
-        [Key(6)]
+        [DataMember(Order = 6)]
         public string FunctionMethodName { get; set; }
 
-        [Key(7)]
+        [DataMember(Order = 7)]
         public string ResultMethodName { get; set; }
 
-        [Key(8)]
+        [DataMember(Order = 8)]
         public string ResetMethodName { get; set; }
 
-        [Key(9)]
+        [DataMember(Order = 9)]
         public string ImportMethodName { get; set; }
 
         /// <summary>
         /// Indicates the function contains a generic tyep definition
         /// </summary>
-        [Key(10)]
+        [DataMember(Order = 10)]
         public EGenericType GenericType { get; set; }
 
-        [Key(11)]
+        [DataMember(Order = 11)]
         public ETypeCode GenericTypeDefault { get; set; }
 
         /// <summary>
         /// Used to map a filter equivalent operator
         /// </summary>
-        [Key(12)]
+        [DataMember(Order = 12)]
         public ECompare? Compare { get; set; } = ECompare.IsEqual;
 
-        [Key(13)]
+        [DataMember(Order = 13)]
         public bool IsStandardFunction { get; set; }
 
-        [Key(14)]
+        [DataMember(Order = 14)]
         public FunctionParameter[] ReturnParameters { get; set; }
 
-        [Key(15)]
+        [DataMember(Order = 15)]
         public FunctionParameter[] InputParameters { get; set; }
 
-        [Key(16)]
+        [DataMember(Order = 16)]
         public FunctionParameter[] OutputParameters { get; set; }
 
-        [Key(17)]
+        [DataMember(Order = 17)]
         public FunctionParameter[] ResultReturnParameters { get; set; }
 
-        [Key(18)]
+        [DataMember(Order = 18)]
         public FunctionParameter[] ResultInputParameters { get; set; }
 
-        [Key(19)]
+        [DataMember(Order = 19)]
         public FunctionParameter[] ResultOutputParameters { get; set; }
 
         public TransformFunction GetTransformFunction(Type genericType, Parameters parameters = null, GlobalSettings globalSettings = null)

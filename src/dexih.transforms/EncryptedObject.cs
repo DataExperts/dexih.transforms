@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using MessagePack;
+
 
 
 namespace dexih.transforms
@@ -11,7 +12,7 @@ namespace dexih.transforms
     /// </summary>
     public class EncryptedObject: IEquatable<string>, IEquatable<EncryptedObject>
     {
-        [JsonIgnore, IgnoreMember]
+        [JsonIgnore, IgnoreDataMember]
         public object OriginalValue {get;set;}
         
         public string EncryptedValue {get;set;}

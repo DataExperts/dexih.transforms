@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
-using MessagePack;
+
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class InputParameters: List<InputParameter>
     {
         public void Add(string name, string value)

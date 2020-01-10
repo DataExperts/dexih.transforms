@@ -3,15 +3,16 @@ using Dexih.Utils.DataType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
-using MessagePack;
+
 
 namespace dexih.functions
 {
     
-    [MessagePackObject]
-    [Union(0, typeof(FlatFile))]
-    [Union(1, typeof(WebService))]
+    [DataContract]
+    // [Union(0, typeof(FlatFile))]
+    // [Union(1, typeof(WebService))]
     public class Table
     {
 
@@ -115,76 +116,76 @@ namespace dexih.functions
         /// <summary>
         /// Reference to the physical table name.
         /// </summary>
-        [Key(0)]
+        [DataMember(Order = 0)]
         public string Name { get; set; }
 
         /// <summary>
         /// The table schema or owner.
         /// </summary>
         /// <value>The table schema.</value>
-        [Key(1)]
+        [DataMember(Order = 1)]
         public string Schema { get; set; }
 
         /// <summary>
         /// The name of the source connection when pointing to an another hub
         /// </summary>
         /// <value>The table connection.</value>
-        [Key(2)]
+        [DataMember(Order = 2)]
         public string SourceConnectionName { get; set; }
 
         /// <summary>
         /// A logical name for the table.
         /// </summary>
-        [Key(3)]
+        [DataMember(Order = 3)]
         public string LogicalName { get; set; }
 
         /// <summary>
         /// Table description.
         /// </summary>
-        [Key(4)]
+        [DataMember(Order = 4)]
         public string Description { get; set; }
 
         /// <summary>
         /// Is the original base table name.
         /// </summary>
-        [Key(5)]
+        [DataMember(Order = 5)]
         public string BaseTableName { get; set; }
 
         /// <summary>
         /// Indicates the type of table (i.e. table, view etc.)
         /// </summary>
-        [Key(6)]
+        [DataMember(Order = 6)]
         public ETableType TableType { get; set; } = ETableType.Table;
 
         /// <summary>
         /// Indicates if the table contains versions (history) of data change, such as sql temporal tables.
         /// </summary>
-        [Key(7)]
+        [DataMember(Order = 7)]
         public bool IsVersioned { get; set; }
 
         /// <summary>
         /// Indicates if this is a sql (or other) type query.
         /// </summary>
-        [Key(8)]
+        [DataMember(Order = 8)]
         public bool UseQuery { get; set; }
 
         /// <summary>
         /// Sql Query string (or query string for other db types)
         /// </summary>
-        [Key(9)]
+        [DataMember(Order = 9)]
         public string QueryString { get; set; }
 
         /// <summary>
         /// Indicates the output sort fields for the table.
         /// </summary>
         /// <returns></returns>
-        [Key(10)]
+        [DataMember(Order = 10)]
         public Sorts OutputSortFields { get; set; }
         
-        [IgnoreMember]
+        [IgnoreDataMember]
         public TableCache Data { get; set; }
 
-        [Key(12)]
+        [DataMember(Order = 12)]
         public TableColumns Columns { get; set; }
 
         // public Dictionary<string, string> ExtendedProperties { get; set; }
@@ -196,7 +197,7 @@ namespace dexih.functions
         /// <summary>
         /// Maximum levels to recurse through structured data when importing columns.
         /// </summary>
-        [Key(15)]
+        [DataMember(Order = 15)]
         public int MaxImportLevels { get; set; } = 10;
 
 

@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using dexih.functions.Exceptions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 
-using MessagePack;
+
 
 namespace dexih.functions.Parameter
 {
-    [MessagePackObject]
-    [Union(0, typeof(ParameterArray))]
-    [Union(1, typeof(ParameterColumn))]
-    [Union(2, typeof(ParameterJoinColumn))]
-    [Union(3, typeof(ParameterOutputColumn))]
-    [Union(4, typeof(ParameterValue))]
+    [DataContract]
+    // [Union(0, typeof(ParameterArray))]
+    // [Union(1, typeof(ParameterColumn))]
+    // [Union(2, typeof(ParameterJoinColumn))]
+    // [Union(3, typeof(ParameterOutputColumn))]
+    // [Union(4, typeof(ParameterValue))]
     public abstract class Parameter
     {
         public abstract void InitializeOrdinal(Table table, Table joinTable = null);
@@ -61,20 +62,20 @@ namespace dexih.functions.Parameter
         /// <summary>
         /// Name for the parameter.  This name must be used when referencing parameters in custom functions.
         /// </summary>
-        [Key(0)]
+        [DataMember(Order = 0)]
         public string Name { get; set; }
 
         /// <summary>
         /// Parameter datatype
         /// </summary>
-        [Key(1)]
+        [DataMember(Order = 1)]
         // [JsonConverter(typeof(StringEnumConverter))]
         public ETypeCode DataType { get; set; }
 
-        [Key(2)]
+        [DataMember(Order = 2)]
         public int Rank { get; set; }
 
-        [Key(3)]
+        [DataMember(Order = 3)]
         public virtual object Value { get; set; }
 
         /// <summary>

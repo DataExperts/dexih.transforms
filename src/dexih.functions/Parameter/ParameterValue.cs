@@ -1,9 +1,10 @@
-﻿using Dexih.Utils.DataType;
-using MessagePack;
+﻿using System.Runtime.Serialization;
+using Dexih.Utils.DataType;
+
 
 namespace dexih.functions.Parameter
 {
-    [MessagePackObject]
+    [DataContract]
     public class ParameterValue : Parameter
     {
          public ParameterValue()

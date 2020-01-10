@@ -1,9 +1,10 @@
-﻿using MessagePack;
+﻿
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class DeleteQuery
     {
         public DeleteQuery(string table, Filters filters)
@@ -16,10 +17,10 @@ namespace dexih.functions.Query
             Filters = new Filters();
         }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public string Table { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public Filters Filters { get; set; }
     }
 }

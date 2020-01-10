@@ -1,11 +1,12 @@
-﻿using MessagePack;
+﻿
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace dexih.functions
 {
-    [MessagePackObject]
+    [DataContract]
     public class TableColumns : IList<TableColumn>
     {
         private readonly List<TableColumn> _tableColumns;

@@ -1,9 +1,10 @@
-﻿using MessagePack;
+﻿
 using System;
+using System.Runtime.Serialization;
 
 namespace dexih.functions.Query
 {
-    [MessagePackObject]
+    [DataContract]
     public class QueryColumn: IEquatable<QueryColumn>
     {
         public QueryColumn() { }
@@ -20,10 +21,10 @@ namespace dexih.functions.Query
             Value = value;
         }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public TableColumn Column { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public object Value { get; set; }
 
         public bool Equals(QueryColumn other)

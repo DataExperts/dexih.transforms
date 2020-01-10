@@ -1,24 +1,25 @@
 using System.Collections.Generic;
-using MessagePack;
+using System.Runtime.Serialization;
+
 
 namespace dexih.transforms
 {
     /// <summary>
     /// Used to transmit data previews
     /// </summary>
-    [MessagePackObject]
+    [DataContract]
     public class DataPack
     {
-        [Key("name")]
+        [DataMember(Order = 0)]
         public string Name { get; set; }
 
-        [Key("columns")]
+        [DataMember(Order = 1)]
         public DataPackColumn[] Columns { get; set; }
 
-        [Key("data")]
+        [DataMember(Order = 2)]
         public List<object[]> Data { get; set; } = new List<object[]>();
         
-        [Key("transformProperties")]
+        [DataMember(Order = 3)]
         public TransformProperties TransformProperties { get; set; }
     }
 }

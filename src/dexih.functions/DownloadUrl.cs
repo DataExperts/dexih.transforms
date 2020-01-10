@@ -1,17 +1,17 @@
-using MessagePack;
+using System.Runtime.Serialization;
 
 namespace dexih.functions
 {
-    [MessagePackObject]
+    [DataContract]
     public class DownloadUrl
     {
-        [Key(0)]
+        [DataMember(Order = 0)]
         public string Url { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public EDownloadUrlType DownloadUrlType { get; set; }
 
-        [Key(2)]
+        [DataMember(Order = 2)]
         public bool IsEncrypted { get; set; }
     }
 }

@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
-using MessagePack;
+using System.Runtime.Serialization;
+
 
 namespace dexih.functions
 {
- [MessagePackObject]
+ [DataContract]
     public class NamingStandards : Dictionary<string, string>
     {
         public void LoadDefault()

@@ -1,13 +1,14 @@
-﻿using MessagePack;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.Parameter
 {
-    [MessagePackObject]
+    [DataContract]
     public class ParameterArray : Parameter
     {
         public ParameterArray()
@@ -31,7 +32,7 @@ namespace dexih.functions.Parameter
 		    Parameters = parameters;
 	    }
         
-        [Key(0)]
+        [DataMember(Order = 0)]
 	    public List<Parameter> Parameters;
 
 	    public override object Value

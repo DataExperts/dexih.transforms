@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace dexih.functions
 {
-    // [MessagePackObject]
+    // [DataContract]
     public class TableCache : IList<object[]>
     {
         private readonly int _maxRows;

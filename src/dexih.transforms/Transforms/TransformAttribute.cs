@@ -1,22 +1,23 @@
 ﻿using System;
-using MessagePack;
+using System.Runtime.Serialization;
+
 
 namespace dexih.transforms.Transforms
 {
-    [MessagePackObject]
-    [Union(0, typeof(TransformReference))]
+    [DataContract]
+    // [Union(0, typeof(TransformReference))]
     public class TransformAttribute: Attribute
     {
-        [IgnoreMember]
+        [IgnoreDataMember]
         public override object TypeId { get; }
 
-        [Key(0)]
+        [DataMember(Order = 0)]
         public ETransformType TransformType { get; set; }
 
-        [Key(1)]
+        [DataMember(Order = 1)]
         public string Name { get; set; }
 
-        [Key(2)]
+        [DataMember(Order = 2)]
         public string Description { get; set; }
         
     }

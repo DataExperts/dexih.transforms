@@ -1,16 +1,17 @@
-﻿using MessagePack;
+﻿
 using System;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace dexih.transforms.Transforms
 {
-    [MessagePackObject]
+    [DataContract]
     public class TransformReference: TransformAttribute
     {
-        [Key(3)]
+        [DataMember(Order = 3)]
         public string TransformClassName { get; set; }
 
-        [Key(4)]
+        [DataMember(Order = 4)]
         public string TransformAssemblyName { get; set; }
         
         public Type GetTransformType()

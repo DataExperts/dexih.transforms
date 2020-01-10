@@ -1,17 +1,18 @@
-﻿using MessagePack;
+﻿
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace dexih.transforms
 {
-    [MessagePackObject()]
+    [DataContract]
     public class ConnectionReference : ConnectionAttribute
     {
-        [Key(15)]
+        [DataMember(Order = 15)]
         public string ConnectionAssemblyName { get; set; }
 
-        [Key(16)]
+        [DataMember(Order = 16)]
         public string ConnectionClassName { get; set; }
         
         public Type GetConnectionType()
