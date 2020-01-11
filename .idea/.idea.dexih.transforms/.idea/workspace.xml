@@ -372,7 +372,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/Mappings.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Functions/TransformFunction.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ReaderJson.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformDelta.cs" />
@@ -423,6 +422,7 @@
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformFilter.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformGroup.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/TransformSort.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/StreamMessagePackTests.cs" />
       </list>
     </option>
   </component>
@@ -763,6 +763,7 @@
       <workItem from="1578025359717" duration="177000" />
       <workItem from="1578259652452" duration="1663000" />
       <workItem from="1578348448806" duration="393000" />
+      <workItem from="1578634007248" duration="275000" />
     </task>
     <task id="LOCAL-00024" summary="fix sftp">
       <created>1518064408387</created>

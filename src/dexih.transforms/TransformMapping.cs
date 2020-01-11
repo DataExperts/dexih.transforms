@@ -138,10 +138,10 @@ namespace dexih.transforms
 	            }
             }
             
-            // if the primary transform is fil, pass the sorts through based on the stored transalations
+            // if the primary transform is fil, pass the sorts through based on the stored translations
             if (PrimaryTransform.Filters?.Count > 0)
             {
-	            var filters = PrimaryTransform.Filters.Select(c => mappedFilters[c]).Where(c => c != null);
+	            var filters = PrimaryTransform.Filters.Where(c => mappedFilters.ContainsKey(c)).Select(c => mappedFilters[c]);
 		        GeneratedQuery.Filters = new Filters(filters);
             }
             
