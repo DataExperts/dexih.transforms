@@ -189,9 +189,14 @@ namespace dexih.functions.BuiltIn
             _cacheList.Add(value);
         }
         
-        public T[] CreateArrayResult()
+        public T[] CreateArrayResult(bool sortResult = true)
         {
-            return _cacheList.ToArray();
+            var array = _cacheList.ToArray();
+            if (sortResult)
+            {
+                Array.Sort(array);
+            }
+            return array;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Median", Description = "The median value in a series", ResultMethod = nameof(MedianResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]

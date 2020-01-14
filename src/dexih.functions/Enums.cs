@@ -35,7 +35,8 @@ namespace dexih.functions
         ResponseStatus, // status code from a webservice/function call
         ResponseSegment, // segment of data (such as xpath result) from a response data.
         Error, // error message 
-        Url // the full url called for the web service.
+        Url, // the full url called for the web service.
+        UpdateReason, // delta transform will write columns which caused an update
     }
 
     // [JsonConverter(typeof(StringEnumConverter))]

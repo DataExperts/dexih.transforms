@@ -24,10 +24,10 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>-->
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="12.3.1" />
+    <PackageReference Include="CsvHelper" Version="12.3.2" />
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="1.0.97" />
     <PackageReference Include="Dexih.Utils.Crypto" Version="1.0.33" />
-    <PackageReference Include="Dexih.Utils.DataType" Version="1.0.129" />
+    <PackageReference Include="Dexih.Utils.DataType" Version="1.0.131" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0">
     </PackageReference>

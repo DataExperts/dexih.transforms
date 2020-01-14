@@ -520,7 +520,7 @@ namespace dexih.transforms
                     switch (JoinDuplicateStrategy)
                     {
                         case EDuplicateStrategy.Abend:
-                            throw new DuplicateJoinKeyException("The join transform failed as the selected columns on the join table " + ReferenceTableAlias + " are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                            throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the join table {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
                         case EDuplicateStrategy.First:
                             joinRow = groupData[0];
                             break;
@@ -533,7 +533,7 @@ namespace dexih.transforms
                             _writeGroupPosition = 1;
                             break;
                         default:
-                            throw new TransformException("The join transform failed due to an unknown join strategy "+ JoinDuplicateStrategy);
+                            throw new TransformException($"The join transform {Name}  failed due to an unknown join strategy {JoinDuplicateStrategy}");
                     }
                 }
                 else

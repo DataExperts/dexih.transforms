@@ -20,13 +20,14 @@ namespace dexih.transforms
     )]
     public sealed class TransformDelta : Transform
     {
-        public TransformDelta(Transform inReader, Transform referenceTransform, EUpdateStrategy deltaType, long autoIncrementValue, bool addDefaultRow, DeltaValues parentDelta = default)
+        public TransformDelta(Transform inReader, Transform referenceTransform, EUpdateStrategy deltaType, long autoIncrementValue, bool addDefaultRow, bool addUpdateReason = false, DeltaValues parentDelta = default)
         {
             DeltaType = deltaType;
             _autoIncrementValue = autoIncrementValue;
             _parentDelta = parentDelta;
 
             AddDefaultRow = addDefaultRow;
+            AddUpdateReason = addUpdateReason;
 
             DoUpdate = false;
             DoDelete = false;
@@ -54,7 +55,8 @@ namespace dexih.transforms
             }
         }
 
-
+        // will add a updatereason column to the output
+        public bool AddUpdateReason { get; set; } = false;
 
         private readonly DateTime _defaultValidFromDate = new DateTime(1900, 01, 01);
         private readonly DateTime _defaultValidToDate = new DateTime(2099, 12, 31, 23, 59, 59);
@@ -81,6 +83,7 @@ namespace dexih.transforms
         private int _validToOrdinal;
         private int _isCurrentOrdinal;
         private int _versionOrdinal;
+        private int _updateReasonOrdinal;
 
         private int _sourceValidFromOrdinal;
         private int _sourceValidToOrdinal;
@@ -139,6 +142,14 @@ namespace dexih.transforms
                 table.Columns.Insert(0, new TableColumn("Operation", ETypeCode.Char)
                 {
                     DeltaType = EDeltaType.DatabaseOperation
+                });
+            }
+            
+            if (AddUpdateReason && table.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.UpdateReason) == null)
+            {
+                table.Columns.Add( new TableColumn("update_reason", ETypeCode.String)
+                {
+                    DeltaType = EDeltaType.UpdateReason
                 });
             }
             
@@ -264,6 +275,7 @@ namespace dexih.transforms
             _validToOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidToDate);
             _isCurrentOrdinal = CacheTable.GetOrdinal(EDeltaType.IsCurrentField);
             _versionOrdinal = CacheTable.GetOrdinal(EDeltaType.Version);
+            _updateReasonOrdinal = CacheTable.GetOrdinal(EDeltaType.UpdateReason);
 
             _sourceSurrogateKeyOrdinal = PrimaryTransform.CacheTable.GetOrdinal(EDeltaType.SourceSurrogateKey);
             _sourceValidFromOrdinal = GetSourceColumnOrdinal(EDeltaType.ValidFromDate);
@@ -445,6 +457,12 @@ namespace dexih.transforms
                         if (!result)
                         {
                             isMatch = false;
+
+                            if (_updateReasonOrdinal >= 0)
+                            {
+                                newRow[_updateReasonOrdinal] =
+                                    $"Column {CacheTable[ordinal.ordinal]} source {Operations.Parse<string>(newRow[ordinal.ordinal])} != target {Operations.Parse<string>(ReferenceTransform[ordinal.referenceOrdinal])}.";
+                            }
                             break;
                         }
                     }
@@ -653,8 +671,9 @@ namespace dexih.transforms
                         }
                     }
                     
-                    //the final possibility, is the natrual key is a match, then check for a changed tracking column
+                    //the final possibility, is the natural key is a match, then check for a changed tracking column
                     var isMatch = true;
+                    string updateReason = null;
                     foreach (var ordinal in _trackingOrdinals)
                     {
                         try
@@ -663,6 +682,13 @@ namespace dexih.transforms
                             if (!compareResult2)
                             {
                                 isMatch = false;
+                                
+                                if (_updateReasonOrdinal >= 0)
+                                {
+                                    updateReason =
+                                        $"Column {CacheTable[ordinal.ordinal].Name} source {Operations.Parse<string>(PrimaryTransform[ordinal.primaryOrdinal])} != target {Operations.Parse<string>(ReferenceTransform[ordinal.referenceOrdinal])}.";
+                                }
+                                
                                 break;
                             }
                         }
@@ -731,6 +757,11 @@ namespace dexih.transforms
                         {
                             newRow[CacheTable.GetOrdinal(_colCreateDate.Name)] = ReferenceTransform[_referenceCreateDateOrdinal];
                         }
+                    }
+
+                    if (updateReason != null)
+                    {
+                        newRow[_updateReasonOrdinal] = updateReason;
                     }
 
                     //move primary and target readers to the next record.

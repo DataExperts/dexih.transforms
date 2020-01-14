@@ -400,6 +400,17 @@ namespace dexih.connections.sql
                     throw new ArgumentOutOfRangeException(nameof(joinType), joinType, null);
             }
         }
+        
+        public override bool IsFilterSupported(Filter filter)
+        {
+            //TODO add support for array columns
+            if ((filter.Column1?.IsArray() ?? false) || (filter.Column2?.IsArray() ?? false))
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
         {
@@ -479,6 +490,11 @@ namespace dexih.connections.sql
             var index = 0;
             foreach (var filter in filters)
             {
+                if (!IsFilterSupported(filter))
+                {
+                    continue;
+                }
+                
                 index++;
                 
                 if (filter.Value1 == null && filter.Column1 == null)

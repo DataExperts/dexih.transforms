@@ -86,6 +86,10 @@ namespace dexih.transforms.Mapping
             if (InputOrdinal == -1 )
             {
                 returnValue = InputValue;
+                if (returnValue == null)
+                {
+                    return null;
+                }
                 return Operations.Parse(OutputColumn.DataType, OutputColumn.Rank, returnValue);
             }
             else

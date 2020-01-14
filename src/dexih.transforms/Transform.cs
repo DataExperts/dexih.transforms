@@ -486,11 +486,11 @@ namespace dexih.transforms
                         {
                             if (filter.Column1 != null)
                             {
-                                columns.AddIfNotExists(new SelectColumn(filter.Column1));
+                                columns.AddIfNotExists(new SelectColumn(filter.Column1), c => c.Column.Name);
                             }
                             if (filter.Column2 != null)
                             {
-                                columns.AddIfNotExists(new SelectColumn(filter.Column2));
+                                columns.AddIfNotExists(new SelectColumn(filter.Column2), c => c.Column.Name);
                             }
                         }
                     }
@@ -509,8 +509,8 @@ namespace dexih.transforms
                             filters.Where(c => c.Column2 != null)
                                 .Select(c => new SelectColumn(c.Column2));
 
-                        columns.AddIfNotExists(selectColumns1);
-                        columns.AddIfNotExists(selectColumns2);
+                        columns.AddIfNotExists(selectColumns1, c => c.Column.Name);
+                        columns.AddIfNotExists(selectColumns2, c => c.Column.Name);
                     }
 
                     AddFilters(requestQuery.Filters);
@@ -528,7 +528,7 @@ namespace dexih.transforms
                     var sortColumns =
                         requestQuery.Sorts.Where(c => c.Column != null)
                             .Select(c => new SelectColumn(c.Column));
-                    columns.AddIfNotExists(sortColumns);
+                    columns.AddIfNotExists(sortColumns, c => c.Column.Name);
                 }
 
                 if (ReferenceConnection.CanGroup && canGroup)

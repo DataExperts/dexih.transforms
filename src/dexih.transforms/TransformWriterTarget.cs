@@ -328,7 +328,7 @@ namespace dexih.transforms
                             var autoIncrementKey = await GetIncrementalKey(cancellationToken);
                             transform = new TransformDelta(transform, targetReader, updateStrategy.Value,
                                 autoIncrementKey,
-                                WriterOptions.AddDefaultRow, new DeltaValues('C'));
+                                WriterOptions.AddDefaultRow, false, new DeltaValues('C'));
                             transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
                                 WriterOptions?.GlobalSettings?.EncryptionKey);
 
@@ -443,7 +443,7 @@ namespace dexih.transforms
                 {
                     var autoIncrementKey = await GetIncrementalKey(cancellationToken);
                     transform = new TransformDelta(transform, target, childUpdateStrategy.Value, autoIncrementKey,
-                        WriterOptions.AddDefaultRow, deltaValues);
+                        WriterOptions.AddDefaultRow, false, deltaValues);
                     transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
                         WriterOptions?.GlobalSettings?.EncryptionKey);
 

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using dexih.functions;
 using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
@@ -61,16 +62,32 @@ namespace dexih.transforms
 
                 foreach (var filterPair in Mappings.OfType<MapFilter>())
                 {
-                    if (filterPair.Column2 == null)
+                    if (filterPair.Column1 == null && filterPair.Column2 == null)
                     {
-                        var filter = new Filter(filterPair.Column1, filterPair.Operator, filterPair.Value2);
-                        requestQuery.Filters.Add(filter);
+                        throw new TransformException($"The filter {Name} failed as a filter must contain at least one column.");
                     }
-                    else
+
+                    var filter = new Filter()
                     {
-                        var filter = new Filter(filterPair.Column1, filterPair.Operator, filterPair.Column2);
-                        requestQuery.Filters.Add(filter);
-                    }
+                        Column1 = filterPair.Column1,
+                        Value1 = filterPair.Column1 == null ? filterPair.Value1 : null,
+                        Column2 = filterPair.Column2,
+                        Value2 = filterPair.Column2 == null ? filterPair.Value2 : null,
+                        Operator = filterPair.Operator,
+                        CompareDataType = filterPair.Column1?.DataType ?? filterPair.Column2.DataType
+                    };
+                    requestQuery.Filters.Add(filter);
+                    
+                    // if (filterPair.Column2 == null)
+                    // {
+                    //     var filter = new Filter(filterPair.Column1, filterPair.Operator, filterPair.Value2);
+                    //     requestQuery.Filters.Add(filter);
+                    // }
+                    // else
+                    // {
+                    //     var filter = new Filter(filterPair.Column1, filterPair.Operator, filterPair.Column2);
+                    //     requestQuery.Filters.Add(filter);
+                    // }
                 }
             }
 

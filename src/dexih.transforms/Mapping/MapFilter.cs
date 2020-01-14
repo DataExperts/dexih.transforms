@@ -74,8 +74,9 @@ namespace dexih.transforms.Mapping
         {
             var value1 = _column1Ordinal == -1 ? Value1 : row[_column1Ordinal];
             var value2 = _column2Ordinal == -1 ? Value2 : row[_column2Ordinal];
+            var dataType = Column1?.DataType ?? Column2.DataType;
 
-            var returnValue = Operations.Evaluate(Operator, Column1.DataType, value1, value2);
+            var returnValue = Operations.Evaluate(Operator, dataType, value1, value2);
             return Task.FromResult(returnValue);
         }
 
