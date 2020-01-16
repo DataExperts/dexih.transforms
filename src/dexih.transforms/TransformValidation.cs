@@ -54,12 +54,12 @@ namespace dexih.transforms
         protected override Table InitializeCacheTable(bool mapAllReferenceColumns)
         {
             var table = new Table("Validate");
+            
             var mappingTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
-
             var sourceTable = PrimaryTransform?.CacheTable;
             
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
-            if (sourceTable?.Columns.SingleOrDefault(c =>  c.DeltaType == EDeltaType.DatabaseOperation) == null)
+            if (sourceTable.Columns.SingleOrDefault(c =>  c.DeltaType == EDeltaType.DatabaseOperation) == null)
             {
                 table.Columns.Add(new TableColumn("Operation")
                 {
@@ -68,12 +68,12 @@ namespace dexih.transforms
                 });
             } 
 
-            foreach (var column in mappingTable.Columns)
+            foreach (var column in sourceTable.Columns)
             {
                 table.Columns.Add(column);
             }
 
-            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.RejectedReason) == null)
+            if (sourceTable.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.RejectedReason) == null)
             {
                 table.Columns.Add(new TableColumn("RejectReason")
                 {
@@ -82,7 +82,7 @@ namespace dexih.transforms
                 });
             } 
 
-            if (sourceTable?.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.ValidationStatus) == null)
+            if (sourceTable.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.ValidationStatus) == null)
             {
                 table.Columns.Add(new TableColumn("ValidationStatus")
                 {

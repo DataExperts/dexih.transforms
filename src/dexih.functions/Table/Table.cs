@@ -163,29 +163,29 @@ namespace dexih.functions
         [DataMember(Order = 7)]
         public bool IsVersioned { get; set; }
 
-        /// <summary>
-        /// Indicates if this is a sql (or other) type query.
-        /// </summary>
-        [DataMember(Order = 8)]
-        public bool UseQuery { get; set; }
+        // /// <summary>
+        // /// Indicates if this is a sql (or other) type query.
+        // /// </summary>
+        // [DataMember(Order = 8)]
+        // public bool UseQuery { get; set; }
 
         /// <summary>
         /// Sql Query string (or query string for other db types)
         /// </summary>
-        [DataMember(Order = 9)]
+        [DataMember(Order = 8)]
         public string QueryString { get; set; }
 
         /// <summary>
         /// Indicates the output sort fields for the table.
         /// </summary>
         /// <returns></returns>
-        [DataMember(Order = 10)]
+        [DataMember(Order = 9)]
         public Sorts OutputSortFields { get; set; }
         
         [IgnoreDataMember]
         public TableCache Data { get; set; }
 
-        [DataMember(Order = 12)]
+        [DataMember(Order = 10)]
         public TableColumns Columns { get; set; }
 
         // public Dictionary<string, string> ExtendedProperties { get; set; }
@@ -197,7 +197,7 @@ namespace dexih.functions
         /// <summary>
         /// Maximum levels to recurse through structured data when importing columns.
         /// </summary>
-        [DataMember(Order = 15)]
+        [DataMember(Order = 11)]
         public int MaxImportLevels { get; set; } = 10;
 
 
@@ -482,19 +482,29 @@ namespace dexih.functions
         {
             if (string.IsNullOrEmpty(rejectedTableName)) return null;
 
-            var table = Copy();
+            var table = new Table(rejectedTableName)
+            {
+                Description = "Rejected table for: " + Description
+            };
 
             // reset delta types on reject table to ensure the reject table contains no keys.
-            foreach(var column in table.Columns)
+            foreach(var column in Columns)
             {
-                column.DeltaType = EDeltaType.TrackingField;
+                var newColumn = column.Copy();
+                newColumn.DeltaType = EDeltaType.TrackingField;
+                table.Columns.Add(newColumn);
+            }
+            
+            if (GetColumn(EDeltaType.RejectedReason) == null)
+            {
+                table.Columns.Add(new TableColumn("RejectedReason", ETypeCode.String, EDeltaType.RejectedReason));
             }
 
-            table.Name = rejectedTableName;
-            table.Description = "Rejected table for: " + Description;
+            if (GetColumn(EDeltaType.CreateAuditKey) == null)
+            {
+                table.Columns.Add(new TableColumn("AuditKey", ETypeCode.Int64, EDeltaType.CreateAuditKey));
+            }
 
-            if(GetColumn(EDeltaType.RejectedReason) == null)
-                table.Columns.Add(new TableColumn("RejectedReason", ETypeCode.String, EDeltaType.RejectedReason));
 
             return table;
         }
@@ -530,7 +540,7 @@ namespace dexih.functions
             {
                 Description = Description,
                 LogicalName = LogicalName,
-                UseQuery = UseQuery,
+                TableType = TableType,
                 QueryString = QueryString
             };
 

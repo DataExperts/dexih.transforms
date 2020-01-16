@@ -1089,7 +1089,7 @@ namespace dexih.connections.sql
             try
             {
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = table.UseQuery ? table.QueryString : BuildSelectQuery(table, query, cmd);
+                cmd.CommandText = table.TableType == Table.ETableType.Query ? table.QueryString : BuildSelectQuery(table, query, cmd);
                 DbDataReader reader;
 
                 try
@@ -1121,7 +1121,7 @@ namespace dexih.connections.sql
 
         public override string GetDatabaseQuery(Table table, SelectQuery query)
         {
-            return table.UseQuery ? table.QueryString : BuildSelectQuery(table, query, null);
+            return table.TableType == Table.ETableType.Query ? table.QueryString : BuildSelectQuery(table, query, null);
         }
 
         public override Transform GetTransformReader(Table table, bool previewMode = false)

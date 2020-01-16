@@ -535,7 +535,7 @@ namespace dexih.connections.mysql
 
         public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
         {
-            if (originalTable.UseQuery)
+            if (originalTable.TableType == Table.ETableType.Query)
             {
                 return await GetQueryTable(originalTable, cancellationToken);
             }

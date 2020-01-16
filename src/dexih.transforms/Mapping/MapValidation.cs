@@ -25,7 +25,7 @@ namespace dexih.transforms.Mapping
                 else
                 {
                     //TODO Need to improve reason string.
-                    var parameters = string.Join(",", Parameters.Inputs.OfType<ParameterColumn>().Select(c => $"{c.Column?.Name??c.Value}"));
+                    var parameters = string.Join(",", Parameters.Inputs.OfType<ParameterColumn>().Select(c => $"{c.Column?.Name??c.Value}={c.Value}"));
                     reason = $"Function: {Function.FunctionName} ({parameters})";
                     return false;
                 }
