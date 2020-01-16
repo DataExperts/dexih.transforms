@@ -63,7 +63,7 @@ namespace dexih.connections.test
                 // create a simple table with a sql query.
                 sqlTable = new Table("SqlTest")
                 {
-                    UseQuery = true,
+                    TableType = Table.ETableType.Query,
                     QueryString = $"select * from {sqlConnection.SqlTableName(table)}"
                 };
             }
