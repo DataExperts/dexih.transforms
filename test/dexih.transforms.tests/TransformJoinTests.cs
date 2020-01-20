@@ -447,7 +447,7 @@ namespace dexih.transforms.tests
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
+            Assert.Equal(TransformJoin.EJoinAlgorithm.Hash, transformJoin.JoinAlgorithm);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -498,7 +498,7 @@ namespace dexih.transforms.tests
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
+            Assert.Equal(TransformJoin.EJoinAlgorithm.Hash, transformJoin.JoinAlgorithm);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())

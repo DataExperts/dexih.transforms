@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.transforms.Mapping;
@@ -144,8 +145,8 @@ namespace dexih.transforms.tests
 
             Assert.Single(reader.SelectQuery.Groups);
             Assert.Equal(table[0].Name, reader.SelectQuery.Groups[0].Name);
-            Assert.Single(reader.SelectQuery.Columns);
-            Assert.Equal(table.Columns[1].Name, reader.SelectQuery.Columns[0].Column.Name);
+            Assert.Equal(2, reader.SelectQuery.Columns.Count());
+            Assert.Equal(table.Columns[1].Name, reader.SelectQuery.Columns[1].Column.Name);
             
         }
         
@@ -182,8 +183,8 @@ namespace dexih.transforms.tests
 
             Assert.Single(reader.SelectQuery.Groups);
             Assert.Equal(table[0].Name, reader.SelectQuery.Groups[0].Name);
-            Assert.Single(reader.SelectQuery.Columns);
-            Assert.Equal(table.Columns[1].Name, reader.SelectQuery.Columns[0].Column.Name);
+            Assert.Equal(2, reader.SelectQuery.Columns.Count());
+            Assert.Equal(table.Columns[1].Name, reader.SelectQuery.Columns[1].Column.Name);
             Assert.Single(reader.SelectQuery.Filters);
             Assert.Equal(table.Columns[2].Name, reader.SelectQuery.Filters[0].Column1.Name);
             Assert.Single(reader.SelectQuery.GroupFilters);

@@ -296,9 +296,26 @@ namespace dexih.transforms
             {
                 return false;
             }
+
+            var canUseSorted = true;
+            // if one of the functions joins the two tables then we will need to default to HashJoin.
+            foreach (var mapping in Mappings)
+            {
+                if (mapping is MapFunction mapFunction)
+                {
+                    if (mapFunction.Parameters.Inputs.OfType<ParameterColumn>().Any() &&
+                        mapFunction.Parameters.Inputs.OfType<ParameterJoinColumn>().Any())
+                    {
+                        canUseSorted = false;
+                        break;
+                    }
+                }
+            }
             
             //check if the primary and reference transform are sorted in the join
-            if (SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) && SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))
+            if ( canUseSorted &&
+                SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) && 
+                SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))
             {
                 JoinAlgorithm = EJoinAlgorithm.Sorted;
             }

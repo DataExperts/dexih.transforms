@@ -40,9 +40,12 @@ namespace dexih.transforms
         private int _operationOrdinal;
         private int _validationStatusOrdinal;
 
-        private List<int> _mapFieldOrdinals;
+        private List<(int, int)> _mapFieldOrdinals;
+        
         private int _primaryFieldCount;
         private int _columnCount;
+
+        private Table _mappingTable;
 
         public override string TransformName { get; } = "Validation";
 
@@ -55,7 +58,7 @@ namespace dexih.transforms
         {
             var table = new Table("Validate");
             
-            var mappingTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
+            _mappingTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
             var sourceTable = PrimaryTransform?.CacheTable;
             
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
@@ -120,11 +123,11 @@ namespace dexih.transforms
 
             _primaryFieldCount = PrimaryTransform?.FieldCount ?? 0;
             _columnCount = CacheTable.Columns.Count;
-            _mapFieldOrdinals = new List<int>();
+            _mapFieldOrdinals = new List<(int, int)>();
 
             for (var i = 0; i < _primaryFieldCount; i++)
             {
-                _mapFieldOrdinals.Add(GetOrdinal(PrimaryTransform.GetName(i)));
+                _mapFieldOrdinals.Add((GetOrdinal(PrimaryTransform.GetName(i)), _mappingTable.GetOrdinal(PrimaryTransform.GetName(i))));
             }
 
             return result;
@@ -162,7 +165,7 @@ namespace dexih.transforms
                 var passRow = new object[_columnCount];
                 for (var i = 0; i < _primaryFieldCount; i++)
                 {
-                    passRow[_mapFieldOrdinals[i]] = PrimaryTransform[i];
+                    passRow[_mapFieldOrdinals[i].Item1] = PrimaryTransform[i];
                 }
 
                 if (passRow[_operationOrdinal] == null)
@@ -238,7 +241,7 @@ namespace dexih.transforms
                     //copy row data.
                     for (var i = 0; i < _primaryFieldCount; i++)
                     {
-                        passRow[_mapFieldOrdinals[i]] = cleanRow[_mapFieldOrdinals[i]-1];
+                        passRow[_mapFieldOrdinals[i].Item1] = cleanRow[_mapFieldOrdinals[i].Item2];
                     }
 
                     if (passRow[_operationOrdinal] == null)
