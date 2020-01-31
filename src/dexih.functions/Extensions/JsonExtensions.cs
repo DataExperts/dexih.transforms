@@ -1,20 +1,23 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using CsvHelper.Configuration;
 
 namespace dexih.functions
 {
     public static class JsonExtensions
     {
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+        public static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonObjectConverter(), new JsonTimeSpanConverter(), new JsonDoubleConverter(), new JsonFloatConverter()}
+            Converters = { new JsonObjectConverter(), new JsonTimeSpanConverter(), new JsonDateTimeConverter(), new JsonDoubleConverter(), new JsonFloatConverter()}
 //            IgnoreNullValues = true
         };
-        
+
         public static T ToObject<T>(this JsonElement element)
         {
             var json = element.GetRawText();

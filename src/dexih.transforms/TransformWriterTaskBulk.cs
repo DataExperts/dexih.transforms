@@ -58,7 +58,6 @@ namespace dexih.transforms
                     {
                         await DoCreates(cancellationToken);
                     }
-
                     break;
                 case 'U':
                     _updateRows.Add(row);
@@ -66,7 +65,6 @@ namespace dexih.transforms
                     {
                         await DoUpdates(cancellationToken);
                     }
-
                     break;
                 case 'D':
                     _deleteRows.Add(row);
@@ -88,15 +86,13 @@ namespace dexih.transforms
                         await TargetConnection.TruncateTable(TargetTable, cancellationToken);
                         TruncateComplete = true;
                     }
-
                     break;
             }
 
             if (AutoIncrementOrdinal >= 0)
             {
                 var value = row[AutoIncrementOrdinal];
-                if (value == null) return 0;
-                return Operations.Parse<long>(value);
+                return value == null ? 0 : Operations.Parse<long>(value);
             }
 
             return 0;

@@ -370,7 +370,11 @@ namespace dexih.connections.dexih
             return Task.FromResult(true);
         }
 
-
+        public override void Dispose()
+        {
+            _httpClient?.Dispose();
+            base.Dispose();
+        }
     }
 
     
