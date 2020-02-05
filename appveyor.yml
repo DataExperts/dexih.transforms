@@ -66,6 +66,7 @@ deploy:
    server: https://www.nuget.org/api/v2/package
    api_key:
      secure: D2Fu0l/iyBVmVqt/yUztGOFPy3FhYdt9DdnYTgr5KvYYSvb+mRstFwoLeEpmZTUN
+  artifact: /.*\.nupkg/
    skip_symbols: false
    symbol_server: https://www.nuget.org/api/v2/package
    on: 
@@ -112,12 +113,12 @@ for:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
   
-  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r osx-x64 -o ${APPVEYOR_BUILD_FOLDER}/osx/dexih.functions.ml
-  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r win-x64 -o ${APPVEYOR_BUILD_FOLDER}/win/dexih.functions.ml
-  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r linux-x64 -o ${APPVEYOR_BUILD_FOLDER}/linux/dexih.functions.ml
-  - 7z a dexih.functions.ml_${APPVEYOR_BUILD_VERSION}_osx.zip ${APPVEYOR_BUILD_FOLDER}/osx/dexih.functions.ml
-  - 7z a dexih.functions.ml_${APPVEYOR_BUILD_VERSION}_windows.zip ${APPVEYOR_BUILD_FOLDER}/win/dexih.functions.ml
-  - 7z a dexih.functions.ml_${APPVEYOR_BUILD_VERSION}_linux.zip ${APPVEYOR_BUILD_FOLDER}/linux/dexih.functions.ml
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r osx-x64 -o %APPVEYOR_BUILD_FOLDER%/osx/dexih.functions.ml
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r win-x64 -o %APPVEYOR_BUILD_FOLDER%/win/dexih.functions.ml
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r linux-x64 -o %APPVEYOR_BUILD_FOLDER%/linux/dexih.functions.ml
+  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_osx.zip %APPVEYOR_BUILD_FOLDER%/osx/dexih.functions.ml
+  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_windows.zip %APPVEYOR_BUILD_FOLDER%/win/dexih.functions.ml
+  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_linux.zip %APPVEYOR_BUILD_FOLDER%/linux/dexih.functions.ml
 
   deploy:
     - provider: GitHub
