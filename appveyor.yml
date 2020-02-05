@@ -113,12 +113,12 @@ for:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
   
-  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r osx-x64 -o %APPVEYOR_BUILD_FOLDER%/osx/dexih.functions.ml
-  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r win-x64 -o %APPVEYOR_BUILD_FOLDER%/win/dexih.functions.ml
-  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r linux-x64 -o %APPVEYOR_BUILD_FOLDER%/linux/dexih.functions.ml
-  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_osx.zip %APPVEYOR_BUILD_FOLDER%/osx/dexih.functions.ml
-  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_windows.zip %APPVEYOR_BUILD_FOLDER%/win/dexih.functions.ml
-  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_linux.zip %APPVEYOR_BUILD_FOLDER%/linux/dexih.functions.ml
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r osx-x64 -o %APPVEYOR_BUILD_FOLDER%/dexih.functions.ml-osx
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r win-x64 -o %APPVEYOR_BUILD_FOLDER%/dexih.functions.ml-win
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r linux-x64 -o %APPVEYOR_BUILD_FOLDER%/dexih.functions.ml-linux
+  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_osx.zip %APPVEYOR_BUILD_FOLDER%/dexih.functions.ml-osx/*
+  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_windows.zip %APPVEYOR_BUILD_FOLDER%/dexih.functions.ml-win/*
+  - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_linux.zip %APPVEYOR_BUILD_FOLDER%/dexih.functions.ml-linux/*
 
   deploy:
     - provider: GitHub
