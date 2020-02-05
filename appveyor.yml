@@ -75,7 +75,7 @@ deploy:
      - test
      - release
 
-  - provider: GitHub
+ - provider: GitHub
     release: dexih-transforms-v${APPVEYOR_BUILD_VERSION}
     description: 'Dexih Transforms - ${CONFIGURATION} release, version - ${APPVEYOR_BUILD_VERSION}'
     auth_token:
