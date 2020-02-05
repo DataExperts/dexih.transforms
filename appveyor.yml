@@ -122,6 +122,48 @@ for:
   - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_windows.zip %APPVEYOR_BUILD_FOLDER%/dexih.functions.ml-win/*
   - 7z a ./artifacts/dexih.functions.ml_%APPVEYOR_BUILD_VERSION%_linux.zip %APPVEYOR_BUILD_FOLDER%/dexih.functions.ml-linux/*
 
+  - dotnet publish ./src/dexih.functions.financial -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.functions.financial
+  - 7z a ./artifacts/dexih.functions.financial%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.functions.financial/*
+
+  - dotnet publish ./src/dexih.functions.maths -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.functions.maths
+  - 7z a ./artifacts/dexih.functions.maths%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.functions.maths/*
+
+  - dotnet publish ./src/dexih.functions.external -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.functions.external
+  - 7z a ./artifacts/dexih.functions.external%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.functions.external/*
+
+  - dotnet publish ./src/dexih.connections.azure -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.azure
+  - 7z a ./artifacts/dexih.connections.azure%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.azure/*
+
+  - dotnet publish ./src/dexih.connections.db2 -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.db2
+  - 7z a ./artifacts/dexih.connections.db2%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.db2/*
+
+  - dotnet publish ./src/dexih.connections.excel -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.excel
+  - 7z a ./artifacts/dexih.connections.excel%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.excel/*
+
+  - dotnet publish ./src/dexih.connections.mongo -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.mongo
+  - 7z a ./artifacts/dexih.connections.mongo%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.mongo/*
+
+  - dotnet publish ./src/dexih.connections.mysql -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.mysql
+  - 7z a ./artifacts/dexih.connections.mysql%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.mysql/*
+
+  - dotnet publish ./src/dexih.connections.oracle -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.oracle
+  - 7z a ./artifacts/dexih.connections.oracle%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.oracle/*
+
+  - dotnet publish ./src/dexih.connections.postgressql -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.postgressql
+  - 7z a ./artifacts/dexih.connections.postgressql%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.postgressql/*
+
+  - dotnet publish ./src/dexih.connections.sftp -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.sftp
+  - 7z a ./artifacts/dexih.connections.sftp%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.sftp/*
+
+  - dotnet publish ./src/dexih.connections.ftp -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.ftp
+  - 7z a ./artifacts/dexih.connections.ftp%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.ftp/*
+
+  - dotnet publish ./src/dexih.connections.sqlite -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.sqlite
+  - 7z a ./artifacts/dexih.connections.sqlite%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.sqlite/*
+
+  - dotnet publish ./src/dexih.connections.sqlserver -c %CONFIGURATION%  -o %APPVEYOR_BUILD_FOLDER%/dexih.connections.sqlserver
+  - 7z a ./artifacts/dexih.connections.sqlserver%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%/dexih.connections.sqlserver/*
+
   - provider: GitHub
     release: dexih-transforms-v${APPVEYOR_BUILD_VERSION}
     description: 'Dexih Transforms - ${CONFIGURATION} release, version - ${APPVEYOR_BUILD_VERSION}'
