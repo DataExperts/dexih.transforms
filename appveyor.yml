@@ -75,15 +75,15 @@ deploy:
      - test
      - release
 
-  # deploy:
-  # - provider: GitHub
-  #   release: dexih-transforms-v%APPVEYOR_BUILD_VERSION%
-  #   description: 'Dexih Transform Libraries - ${CONFIGURATION} release, version - ${APPVEYOR_BUILD_VERSION}'
-  #   auth_token:
-  #     secure: lEaZ/om1UTRS6Xa947/5WxZVbBW6A+ZHmPu7aXRRDqkjX1+LYTfh9xL1CueonyuC
-  #   artifact: /.*\.zip/
-  #   prerelease: false,
-  #   tag: %APPVEYOR_BUILD_VERSION%
+  deploy:
+  - provider: GitHub
+    release: dexih-transforms-v%APPVEYOR_BUILD_VERSION%
+    description: 'Dexih Transform Libraries - ${CONFIGURATION} release, version - ${APPVEYOR_BUILD_VERSION}'
+    auth_token:
+      secure: lEaZ/om1UTRS6Xa947/5WxZVbBW6A+ZHmPu7aXRRDqkjX1+LYTfh9xL1CueonyuC
+    artifact: /.*\.zip/
+    prerelease: false,
+    tag: %APPVEYOR_BUILD_VERSION%
     
 
     for:
