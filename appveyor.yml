@@ -75,17 +75,17 @@ deploy:
      - test
      - release
 
-  - provider: GitHub
-    release: dexih-transforms-v%APPVEYOR_BUILD_VERSION%
+ - provider: GitHub
+    release: dexih-transforms-v${APPVEYOR_BUILD_VERSION}
     description: 'Dexih Transform Libraries - ${CONFIGURATION} release, version - ${APPVEYOR_BUILD_VERSION}'
     auth_token:
       secure: lEaZ/om1UTRS6Xa947/5WxZVbBW6A+ZHmPu7aXRRDqkjX1+LYTfh9xL1CueonyuC
     artifact: /.*\.zip/
     prerelease: false,
-    tag: %APPVEYOR_BUILD_VERSION%
+    tag: ${APPVEYOR_BUILD_VERSION}
     
 
-    for:
+for:
 
 # The release branch publishes without the version suffix, making an official release.
 -
