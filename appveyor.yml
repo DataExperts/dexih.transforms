@@ -86,7 +86,6 @@ for:
   build_script:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
-  # - dotnet pack -c %CONFIGURATION% --no-build -o ../../artifacts
   - dotnet pack -c %CONFIGURATION% --no-build /p:Version=%APPVEYOR_BUILD_VERSION% -o ./artifacts
   
 # test branch produces a nuget package with the version suffix added.
@@ -101,7 +100,23 @@ for:
   - dotnet build -c %CONFIGURATION%
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ./artifacts
   
-# master and dev branchs runs test only, no publishing packages
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r osx-x64 -o ${APPVEYOR_BUILD_FOLDER}/osx/dexih.functions.ml
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r win-x64 -o ${APPVEYOR_BUILD_FOLDER}/win/dexih.functions.ml
+  - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r linux-x64 -o ${APPVEYOR_BUILD_FOLDER}/linux/dexih.functions.ml
+  - 7z a dexih.functions.ml_${APPVEYOR_BUILD_VERSION}_osx.zip ${APPVEYOR_BUILD_FOLDER}/osx/dexih.functions.ml
+  - 7z a dexih.functions.ml_${APPVEYOR_BUILD_VERSION}_windows.zip ${APPVEYOR_BUILD_FOLDER}/win/dexih.functions.ml
+  - 7z a dexih.functions.ml_${APPVEYOR_BUILD_VERSION}_linux.zip ${APPVEYOR_BUILD_FOLDER}/linux/dexih.functions.ml
+
+  deploy:
+    - provider: GitHub
+      release: dexih-transforms-v${APPVEYOR_BUILD_VERSION}
+      description: 'Dexih Transform Libraries - ${CONFIGURATION} release, version - ${APPVEYOR_BUILD_VERSION}'
+      auth_token:
+        secure: lEaZ/om1UTRS6Xa947/5WxZVbBW6A+ZHmPu7aXRRDqkjX1+LYTfh9xL1CueonyuC
+      artifact: /.*\.zip/
+      prerelease: false,
+      tag: ${APPVEYOR_BUILD_VERSION}
+# master and dev branches runs test only, no publishing packages
 -
   branches:
     only:

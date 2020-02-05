@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -183,7 +184,7 @@ namespace dexih.transforms.File
             }
             else 
             {
-                _csvReader = new CsvReader(streamReader);
+                _csvReader = new CsvReader(streamReader, CultureInfo.CurrentCulture);
             }
             
             _csvOrdinalMappings = new Dictionary<int,CsvField>();

@@ -10,9 +10,9 @@ namespace dexih.functions.File
     /// reflects options used by the csvHelper = https://joshclose.github.io/CsvHelper/
     /// </summary>
     [DataContract]
-    public class FileConfiguration : CsvHelper.Configuration.Configuration
+    public class FileConfiguration : CsvHelper.Configuration.CsvConfiguration
     {
-        public FileConfiguration()
+        public FileConfiguration(): base(CultureInfo.CurrentCulture)
         {
         }
 
@@ -33,7 +33,7 @@ namespace dexih.functions.File
 
         [JsonIgnore, IgnoreDataMember]
         public override CultureInfo CultureInfo { get => base.CultureInfo; set => base.CultureInfo = value; }
-
+        
     }
 
 }

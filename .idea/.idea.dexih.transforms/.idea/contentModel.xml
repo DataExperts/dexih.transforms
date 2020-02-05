@@ -470,6 +470,7 @@
             <e p="CollectionExtensions.cs" t="Include" />
             <e p="DictionaryExtensions.cs" t="Include" />
             <e p="Extensions.cs" t="Include" />
+            <e p="JsonDateTimeConverter.cs" t="Include" />
             <e p="JsonDoubleConverter.cs" t="Include" />
             <e p="JsonExtensions.cs" t="Include" />
             <e p="JsonFloatConverter.cs" t="Include" />

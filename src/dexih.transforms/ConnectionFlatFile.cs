@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.IO;
 using dexih.functions;
 using System.Data.Common;
+using System.Globalization;
 using System.Threading;
 using System.IO.Compression;
 using System.Linq;
@@ -208,8 +209,7 @@ namespace dexih.transforms
                 _fileStream = writerResult ?? throw new ConnectionException($"Flat file write failed, could not get a write stream for {flatFile.Name}.");
                 
                 _fileWriter = new StreamWriter(_fileStream);
-                _csvWriter = new CsvWriter(_fileWriter);
-
+                _csvWriter = new CsvWriter(_fileWriter, CultureInfo.CurrentCulture);
 
                 if (flatFile.FileConfiguration.HasHeaderRecord)
                 {

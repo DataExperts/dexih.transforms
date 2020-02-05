@@ -860,7 +860,6 @@ namespace dexih.connections.mongo
                     var array = (from object value2 in (Array) value select 
                         Builders<BsonDocument>.Filter.Eq(column, value2));
                     return Builders<BsonDocument>.Filter.Or(array);
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(filterOperator), filterOperator, null);
             }
