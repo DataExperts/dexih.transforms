@@ -99,6 +99,18 @@ for:
   - appveyor-retry dotnet restore -v Minimal
   - dotnet build -c %CONFIGURATION%
   - dotnet pack -c %CONFIGURATION% --no-build --version-suffix %LABEL% -o ./artifacts
+        
+# master and dev branches runs test only, no publishing packages
+-
+  branches:
+    only:
+      - master
+      - /dev-.*/
+
+  configuration: Debug
+  build_script:
+  - appveyor-retry dotnet restore -v Minimal
+  - dotnet build -c %CONFIGURATION%
   
   - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r osx-x64 -o ${APPVEYOR_BUILD_FOLDER}/osx/dexih.functions.ml
   - dotnet publish ./src/dexih.functions.ml -c %CONFIGURATION%  -r win-x64 -o ${APPVEYOR_BUILD_FOLDER}/win/dexih.functions.ml
@@ -116,17 +128,6 @@ for:
       artifact: /.*\.zip/
       prerelease: false,
       tag: ${APPVEYOR_BUILD_VERSION}
-# master and dev branches runs test only, no publishing packages
--
-  branches:
-    only:
-      - master
-      - /dev-.*/
 
-  configuration: Debug
-  build_script:
-  - appveyor-retry dotnet restore -v Minimal
-  - dotnet build -c %CONFIGURATION%
-  
   
   
