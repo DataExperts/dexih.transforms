@@ -20,8 +20,8 @@ namespace dexih.functions
         {
             return new[]
             {
-                (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "dexih.functions*.dll"),
-                (Path.Combine(Directory.GetCurrentDirectory(), "plugins", "standard"), "dexih.functions*.dll"),
+                (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "dexih.functions.*.dll"),
+                (Path.Combine(Directory.GetCurrentDirectory(), "plugins", "standard"), "dexih.functions.*.dll"),
                 (Path.Combine(Directory.GetCurrentDirectory(), "plugins", "functions"), "*.dll")
             };
         }
