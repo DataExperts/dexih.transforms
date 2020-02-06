@@ -127,7 +127,7 @@ namespace dexih.connections.oracle
                     
                     connectionString = "Data Source=" + Server + "; User Id=" + Username + "; Password=" + Password;
 
-                    var userName = Username.ToLower();
+                    var userName = Username?.ToLower();
                     if (userName == "sys")
                     {
                         connectionString = connectionString + "; DBA Privilege=SYSDBA";

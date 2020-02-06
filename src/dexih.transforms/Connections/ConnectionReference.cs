@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -24,15 +25,30 @@ namespace dexih.transforms
             }
             else
             {
-                var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                if (string.IsNullOrEmpty(location))
+                string pathName = null;
+                foreach (var path in Connections.SearchPaths())
                 {
-                    throw new ConnectionNotFoundException($"The assembly {ConnectionAssemblyName} was not found.");
+                    var filePath = Path.Combine(path.path, ConnectionAssemblyName);
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        pathName = filePath;
+                    }
                 }
 
-                var pathName = Path.Combine(location, ConnectionAssemblyName);
+                if (pathName == null)
+                {
+                    throw new ConnectionException($"The assembly {ConnectionAssemblyName} could not be found.");
+                }
+                
+                // var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                // if (string.IsNullOrEmpty(location))
+                // {
+                //     throw new ConnectionNotFoundException($"The assembly {ConnectionAssemblyName} was not found.");
+                // }
+                //
+                // var pathName = Path.Combine(location, ConnectionAssemblyName);
                 var assembly = Assembly.LoadFile(pathName);
-
                 type = assembly.GetType(ConnectionClassName);
             }
 

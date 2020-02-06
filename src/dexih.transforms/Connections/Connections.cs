@@ -15,6 +15,7 @@ namespace dexih.transforms
             return new[]
             {
                 (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "dexih.connections.*.dll"),
+                (Path.Combine(Directory.GetCurrentDirectory(), "plugins", "standard"), "dexih.connections*.dll"),
                 (Path.Combine(Directory.GetCurrentDirectory(), "plugins", "connections"), "*.dll")
             };
         }
