@@ -1,8 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Data transformation and anaytics library - DB2 Connection and reader.</Description>
+        <AssemblyTitle>Data Experts Group - DB2 Connection</AssemblyTitle>
+        <VersionPrefix>1.0.1</VersionPrefix>
+        <Authors>Gary Holland</Authors>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>dexih.connections.db2</AssemblyName>
+        <PackageId>dexih.connections.db2</PackageId>
+        <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle;mongo;mongodb;db2</PackageTags>
+        <PackageReleaseNotes>Refer to the project url (https://github.com/dataexperts/dexih.transforms) for documentation and raising issues</PackageReleaseNotes>
+        <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
         <LangVersion>latest</LangVersion>
+        <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup>

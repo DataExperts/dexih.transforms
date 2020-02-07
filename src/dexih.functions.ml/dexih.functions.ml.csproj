@@ -14,7 +14,8 @@
         <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
         <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
         <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-        <LangVersion>latest</LangVersion>    
+        <LangVersion>latest</LangVersion>
+        <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup>

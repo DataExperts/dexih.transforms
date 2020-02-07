@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Data transformation and anaytics library - Oracle Connection and reader.</Description>
-    <AssemblyTitle>Data Experts Group - OIracle Connection</AssemblyTitle>
+    <AssemblyTitle>Data Experts Group - Oracle Connection</AssemblyTitle>
     <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -15,6 +15,7 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <LangVersion>latest</LangVersion>
+    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>

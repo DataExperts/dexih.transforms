@@ -1,8 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Data transformation and anaytics library - MongoDB Connection and reader.</Description>
+        <AssemblyTitle>Data Experts Group - MongoDB Connection</AssemblyTitle>
+        <VersionPrefix>1.0.1</VersionPrefix>
+        <Authors>Gary Holland</Authors>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>8</LangVersion>
+        <AssemblyName>dexih.connections.mongo</AssemblyName>
+        <PackageId>dexih.connections.mongo</PackageId>
+        <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle;mongo;mongodb;db2</PackageTags>
+        <PackageReleaseNotes>Refer to the project url (https://github.com/dataexperts/dexih.transforms) for documentation and raising issues</PackageReleaseNotes>
+        <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+        <LangVersion>latest</LangVersion>
+        <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup>
