@@ -14,10 +14,10 @@ namespace dexih.connections.dexih
 {
     [Connection(
         ConnectionCategory = EConnectionCategory.Hub,
-        Name = "Information Hub", 
+        Name = "Integration Hub", 
         Description = "A link to shared data in another hub",
         DatabaseDescription = "Hub Name",
-        ServerDescription = "Information Hub Url",
+        ServerDescription = "Integration Hub Url",
         AllowsConnectionString = false,
         AllowsSql = false,
         AllowsFlatFiles = false,

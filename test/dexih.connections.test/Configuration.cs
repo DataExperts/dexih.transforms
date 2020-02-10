@@ -44,8 +44,8 @@ namespace dexih.connections.test
 
         public static string TestExportsPath()
         {
-            //return "C:\\Users\\Gary\\OneDrive\\Information Hub\\tests";
-            //return "Z:\\OneDrive\\Information Hub\\tests";
+            //return "C:\\Users\\Gary\\OneDrive\\Integration Hub\\tests";
+            //return "Z:\\OneDrive\\Integration Hub\\tests";
 
             return Directory.GetCurrentDirectory() + "\\testfiles";
         }

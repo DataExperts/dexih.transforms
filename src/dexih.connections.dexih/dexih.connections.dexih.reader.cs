@@ -31,7 +31,7 @@ namespace dexih.connections.dexih
             CacheTable = table;
         }
 
-        public override string TransformName { get; } = "Information Hub Reader";
+        public override string TransformName { get; } = "Integration Hub Reader";
         public override Dictionary<string, object> TransformProperties()
         {
             return null;
@@ -45,7 +45,7 @@ namespace dexih.connections.dexih
             {
                 if (IsOpen)
                 {
-                    throw new ConnectionException("The information hub connection is already open.");
+                    throw new ConnectionException("The integration hub connection is already open.");
                 }
 
                 IsOpen = true;
@@ -101,7 +101,7 @@ namespace dexih.connections.dexih
             }
             catch (Exception ex)
             {
-                throw new ConnectionException($"Opening connection to information hub failed.  {ex.Message}", ex);
+                throw new ConnectionException($"Opening connection to integration hub failed.  {ex.Message}", ex);
             }
         }
 
