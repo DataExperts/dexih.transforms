@@ -35,7 +35,7 @@ namespace dexih.transforms
         /// <summary>
         /// Adds a default row to the target table based on default values of each table column.
         /// </summary>
-        public bool AddDefaultRow { get; set; } = false;
+        // public bool AddDefaultRow { get; set; } = false;
 
         public GlobalSettings GlobalSettings { get; set; } = null;
 

@@ -15,6 +15,7 @@ namespace dexih.transforms
 
         private IList<object[]> _data;
         private int _currentRow;
+        private Connection _convertConnection;
         
         // flag used to indicate if the cache has loaded, so no more records will be loaded 
         // after resets and row positions.
@@ -22,7 +23,13 @@ namespace dexih.transforms
 
         #region Constructors
 
-        public ReaderMemory(Table dataTable, Sorts sortFields = null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dataTable"></param>
+        /// <param name="sortFields"></param>
+        /// <param name="convertConnection">Connection to use to convert the data to, if null no conversion occurs.</param>
+        public ReaderMemory(Table dataTable, Sorts sortFields = null, Connection convertConnection = null)
         {
             CacheTable = new Table(dataTable.Name, dataTable.Columns, new TableCache())
             {
@@ -31,6 +38,7 @@ namespace dexih.transforms
             
             DataTable = dataTable;
             _data = dataTable.Data;
+            _convertConnection = convertConnection;
             
             Reset();
 
@@ -93,6 +101,19 @@ namespace dexih.transforms
                 {
                     _currentRow++;
                     continue;
+                }
+
+                if(_convertConnection != null)
+                {
+                    for (var i = 0; i < CacheTable.Columns.Count; i++)
+                    {
+                        if (CacheTable.Columns[i].DeltaType == EDeltaType.DatabaseOperation)
+                        {
+                            continue;
+                        }
+
+                        row[i] = _convertConnection.ConvertForWrite(CacheTable.Columns[i], row[i]).value;
+                    }
                 }
                 return Task.FromResult(row);
             }

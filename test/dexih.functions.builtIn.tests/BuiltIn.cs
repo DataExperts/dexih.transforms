@@ -167,6 +167,54 @@ namespace dexih.functions.builtIn.tests
             }
         }
 
+        [Fact]
+        public void FiscalDateTest()
+        {
+            var dateFunctions = new DateFunctions();
+
+            var startDate = new DateTime(2018, 02, 04);
+
+            // first day of the fiscal year
+            var result1 = dateFunctions.FiscalDateComponents(new DateTime(2020, 02, 02), DateFunctions.eCalendarType.FourFiveFour, startDate);
+            Assert.Equal(1, result1.Day);
+            Assert.Equal(1, result1.DayOfWeek);
+            Assert.Equal(1, result1.WeekOfYear);
+            Assert.Equal(1, result1.WeekOfQuarter);
+            Assert.Equal(1, result1.Quarter);
+            Assert.Equal(1, result1.Month);
+            Assert.Equal(2020, result1.Year);
+
+            // last day of the second month
+            result1 = dateFunctions.FiscalDateComponents(new DateTime(2020, 04, 04), DateFunctions.eCalendarType.FourFiveFour, startDate);
+            Assert.Equal(35, result1.Day);
+            Assert.Equal(7, result1.DayOfWeek);
+            Assert.Equal(9, result1.WeekOfYear);
+            Assert.Equal(9, result1.WeekOfQuarter);
+            Assert.Equal(1, result1.Quarter);
+            Assert.Equal(2, result1.Month);
+            Assert.Equal(2020, result1.Year);
+
+            // last day of the third month
+            result1 = dateFunctions.FiscalDateComponents(new DateTime(2020, 05, 02), DateFunctions.eCalendarType.FourFiveFour, startDate);
+            Assert.Equal(28, result1.Day);
+            Assert.Equal(7, result1.DayOfWeek);
+            Assert.Equal(13, result1.WeekOfYear);
+            Assert.Equal(13, result1.WeekOfQuarter);
+            Assert.Equal(1, result1.Quarter);
+            Assert.Equal(3, result1.Month);
+            Assert.Equal(2020, result1.Year);
+
+            // last day of the year
+            result1 = dateFunctions.FiscalDateComponents(new DateTime(2021, 01, 30), DateFunctions.eCalendarType.FourFiveFour, startDate);
+            Assert.Equal(28, result1.Day);
+            Assert.Equal(7, result1.DayOfWeek);
+            Assert.Equal(52, result1.WeekOfYear);
+            Assert.Equal(13, result1.WeekOfQuarter);
+            Assert.Equal(4, result1.Quarter);
+            Assert.Equal(12, result1.Month);
+            Assert.Equal(2020, result1.Year);
+        }
+
         [Theory]
         [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.Sum), 55)]
         [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.Average), 5.5)]

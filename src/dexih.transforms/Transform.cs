@@ -1039,8 +1039,7 @@ namespace dexih.transforms
                     returnValue = returnValue && ReferenceTransform.Reset(resetCache, resetIsOpen);
                 }
 
-                if(resetIsOpen) IsOpen = true;
-//                IsReaderFinished = false;
+                if(resetIsOpen) IsOpen = false;
 
                 _isResetting = false;
                 return returnValue;

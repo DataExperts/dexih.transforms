@@ -735,7 +735,7 @@ namespace dexih.transforms
                 case ETypeCode.Geometry:
                         var geometry = Operations.Parse<Geometry>(value);
                         var binary = ConvertFromGeometry(geometry);
-                        if (CanUseBinary) return (ETypeCode.Binary, Operations.Parse<byte[]>(binary));
+                        if (CanUseBinary) return (ETypeCode.Binary, binary);
                         return (ETypeCode.String, Operations.Parse<string>(binary));
                 case ETypeCode.Boolean:
                     if (!CanUseBoolean)

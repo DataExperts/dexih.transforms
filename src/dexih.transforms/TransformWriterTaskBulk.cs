@@ -177,7 +177,7 @@ namespace dexih.transforms
             }
 
             var createTable = new Table(TargetTable.Name, TargetTable.Columns, _createRows);
-            var createReader = new ReaderMemory(createTable);
+            var createReader = new ReaderMemory(createTable, convertConnection: TargetConnection);
 
 			_createRecordsTask = TaskTimer.StartAsync(() => TargetConnection.ExecuteInsertBulk(TargetTable, createReader, cancellationToken));  //this has no await to ensure processing continues.
 
@@ -291,7 +291,7 @@ namespace dexih.transforms
 
             var rejectTable = new Table(RejectTable.Name, RejectTable.Columns, _rejectRows);
 
-            var rejectReader = new ReaderMemory(rejectTable);
+            var rejectReader = new ReaderMemory(rejectTable, convertConnection: RejectConnection);
 
 			_rejectRecordsTask = TaskTimer.StartAsync(() => TargetConnection.ExecuteInsertBulk(rejectTable, rejectReader, cancellationToken));  //this has no await to ensure processing continues.
 			

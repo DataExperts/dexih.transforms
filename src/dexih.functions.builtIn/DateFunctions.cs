@@ -125,7 +125,7 @@ namespace dexih.functions.builtIn
             Description = "The name of the day of the week (e.g. Monday).")]
         public string DayOfWeekName(DateTime dateValue)
         {
-            return dateValue.DayOfWeek.ToString();
+            return CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(dateValue.DayOfWeek);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Day of the Week Number",
@@ -316,6 +316,131 @@ namespace dexih.functions.builtIn
         public DateTime UnixTimeStampToDate(long unixTimeStamp)
         {
             return unixTimeStamp.UnixTimeStampToDate();
+        }
+
+        public class DateComponentsClass
+        {
+            public int DayOfWeek { get; set; }
+            public string DayOfWeekName { get; set; }
+            public int Day { get; set; }
+            public int Month { get; set; }
+            public string ShortMonthName { get; set; }
+            public string MonthName { get; set; }
+            public int WeekOfYear { get; set; }
+            public int Quarter { get; set; }
+            public int WeekOfQuarter { get; set; }
+            public int Year { get; set; }
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Components",
+            Description = "Splits a date into it's components such as day, month, year etc.")]
+        public DateComponentsClass DateComponents(DateTime dateValue)
+        {
+            var month = Month(dateValue);
+            var quarter = month / 4;
+            var year = Year(dateValue);
+            var quarterStart = new DateTime(year, (quarter - 1) * 4 + 1, 1);
+            var quarterWeek = dateValue.Subtract(quarterStart).Days / 7;
+
+            return new DateComponentsClass()
+            {
+                DayOfWeek = DayOfWeekNumber(dateValue),
+                DayOfWeekName = DayOfWeekName(dateValue),
+                Day = DayOfMonth(dateValue),
+                Month = month,
+                ShortMonthName = ShortMonth(dateValue),
+                MonthName = LongMonth(dateValue),
+                WeekOfYear = WeekOfYear(dateValue),
+                Quarter = quarter,
+                WeekOfQuarter = quarterWeek,
+                Year = year
+            };
+        }
+
+        public enum eCalendarType
+        {
+            Calendar,
+            FourFiveFour,
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Components",
+            Description = "Splits a fiscal date into it's components such as day, month, year etc.")]
+        public DateComponentsClass FiscalDateComponents(DateTime dateValue, eCalendarType calendarType, DateTime calendarStart)
+        {
+            if (calendarType == eCalendarType.Calendar)
+            {
+                var fiscalDate = dateValue.AddMonths(-calendarStart.Month - 1);
+                return DateComponents(fiscalDate);
+            }
+
+            if (calendarStart > dateValue)
+            {
+                throw new Exception("The fiscal date can only be calculated when the calendarStart is less than the date.");
+            }
+
+
+            var currentQuarter = 1;
+            var currentDate = calendarStart;
+            var currentYear = calendarStart.Year;
+
+            while(true)
+            {
+                var nextQuarterDate = currentDate.AddDays(91);
+                var nextQuarter = currentQuarter + 1;
+                var nextYear = currentYear;
+
+                if(nextQuarter == 5)
+                {
+                    calendarStart = calendarStart.AddYears(1);
+                    nextQuarter = 1;
+                    nextYear++;
+                    
+
+                    // add an extra week at end of year when 52 weeks not enough.
+                    if (calendarStart.Subtract(currentDate).Days == 7)
+                    {
+                        nextQuarterDate = nextQuarterDate.AddDays(7);
+                    }
+                }
+
+                if (nextQuarterDate > dateValue) break;
+
+                currentDate = nextQuarterDate;
+                currentQuarter = nextQuarter;
+                currentYear = nextYear;
+            }
+
+            var quarterDays = dateValue.Subtract(currentDate).Days + 1;
+
+            var weekOfQuarter = Math.DivRem(quarterDays -1, 7, out var dayOfWeek) + 1;
+            int month = (currentQuarter-1) * 3 + 1;
+            var dayOfMonth = quarterDays;
+            if (weekOfQuarter > 5) 
+            { 
+                month++;
+                dayOfMonth -= 28;
+            }
+
+            if (weekOfQuarter > 9)
+            {
+                month++;
+                dayOfMonth -= 35;
+            }
+
+            return new DateComponentsClass()
+            {
+                DayOfWeek = dayOfWeek + 1,
+                DayOfWeekName = DayOfWeekName(dateValue),
+                Day = dayOfMonth,
+                Month = month,
+                ShortMonthName = ShortMonth(dateValue),
+                MonthName = LongMonth(dateValue),
+                WeekOfYear = (currentQuarter -1) * 13 + weekOfQuarter,
+                Quarter = currentQuarter,
+                WeekOfQuarter = weekOfQuarter,
+                Year = currentYear
+            };
+
         }
     }
 }

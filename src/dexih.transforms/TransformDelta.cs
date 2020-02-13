@@ -509,14 +509,15 @@ namespace dexih.transforms
 
                 var query = new SelectQuery() { Filters = filters };
 
-                if (DoUpdate || DoDelete || DoPreserve)
-                {
-                    ReferenceTransform.Close();
-                    await ReferenceTransform.Open(AuditKey, query, cancellationToken);
-                    _referenceOpen = await ReferenceRead(cancellationToken);
-                }
-                else
-                    _referenceOpen = false;
+                    if (DoUpdate || DoDelete || DoPreserve)
+                    {
+                        ReferenceTransform.Close();
+                        ReferenceTransform.Reset(resetIsOpen: true);
+                        await ReferenceTransform.Open(AuditKey, query, cancellationToken);
+                        _referenceOpen = await ReferenceRead(cancellationToken);
+                    }
+                    else
+                        _referenceOpen = false;
             }
 
             // if an operation is set on a parent node, then take appropriate action.

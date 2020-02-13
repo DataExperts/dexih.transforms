@@ -71,6 +71,8 @@ namespace dexih.transforms
         public TransformWriterOptions WriterOptions { get; set; }
         
         public string NodeName { get; set; }
+
+        public bool AddDefaultRow { get; set; } = false;
         
         [CopyReference]
         public Connection TargetConnection { get; set; }
@@ -328,7 +330,7 @@ namespace dexih.transforms
                             var autoIncrementKey = await GetIncrementalKey(cancellationToken);
                             transform = new TransformDelta(transform, targetReader, updateStrategy.Value,
                                 autoIncrementKey,
-                                WriterOptions.AddDefaultRow, false, new DeltaValues('C'));
+                                AddDefaultRow, false, new DeltaValues('C'));
                             transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
                                 WriterOptions?.GlobalSettings?.EncryptionKey);
 
@@ -443,7 +445,7 @@ namespace dexih.transforms
                 {
                     var autoIncrementKey = await GetIncrementalKey(cancellationToken);
                     transform = new TransformDelta(transform, target, childUpdateStrategy.Value, autoIncrementKey,
-                        WriterOptions.AddDefaultRow, false, deltaValues);
+                        AddDefaultRow, false, deltaValues);
                     transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
                         WriterOptions?.GlobalSettings?.EncryptionKey);
 
@@ -579,7 +581,7 @@ namespace dexih.transforms
                     {
                         if (table.Columns[i].DeltaType != EDeltaType.DbAutoIncrement)
                         {
-                            row[i] = TargetConnection.ConvertForWrite(table.Columns[i], transform[ordinal]).value;
+                            row[i] = transform[ordinal]; // TargetConnection.ConvertForWrite(table.Columns[i], transform[ordinal]).value;
                         }
                     }
                 }

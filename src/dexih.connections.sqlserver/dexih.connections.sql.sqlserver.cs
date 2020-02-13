@@ -52,7 +52,7 @@ namespace dexih.connections.sqlserver
             var sql = "";
 
             if (table.IsVersioned)
-                sql = "FOR system_time all";
+                sql = "FOR system_time all ";
 
             sql = sql + " WITH(NOLOCK) ";
 
