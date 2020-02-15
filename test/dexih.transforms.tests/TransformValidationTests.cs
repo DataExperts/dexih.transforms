@@ -85,7 +85,7 @@ namespace dexih.transforms.tests
             var function = Functions
                 .GetFunction(typeof(ValidationFunctions).FullName, nameof(ValidationFunctions.MaxLength), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(string));
-            function.InvalidAction = TransformFunction.EInvalidAction.Clean;
+            function.InvalidAction = EInvalidAction.Clean;
             var parameters = new Parameters
             {
                 Inputs = new List<Parameter>
@@ -147,7 +147,7 @@ namespace dexih.transforms.tests
             var function = Functions
                 .GetFunction(typeof(ValidationFunctions).FullName, nameof(ValidationFunctions.MaxValue), Helpers.BuiltInAssembly)
                 .GetTransformFunction(typeof(int));
-            function.InvalidAction = TransformFunction.EInvalidAction.RejectClean;
+            function.InvalidAction = EInvalidAction.RejectClean;
             var parameters = new Parameters
             {
                 Inputs = new List<Parameter>
