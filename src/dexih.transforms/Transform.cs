@@ -942,7 +942,16 @@ namespace dexih.transforms
 
             var timeSpan = TransformTimerTicks();
 
-            var item = new TransformPerformance(TransformName + "(" + Name + ")",
+            var details = TransformName;
+            if(ReferenceTransform != null)
+            {
+                details += " " + ReferenceTransform.Name;
+            }
+            if(string.IsNullOrEmpty(Name))
+            {
+                details += $"({Name}";
+            }
+            var item = new TransformPerformance(details,
                 TotalRowsReadPrimary, timeSpan.TotalSeconds);
 
             if (ReferenceTransform != null)
