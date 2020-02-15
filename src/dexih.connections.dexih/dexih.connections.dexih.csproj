@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>Data transformation and anaytics library - Connections to a Data Experts Information Hub</Description>
-    <AssemblyTitle>Data Experts Group - Information Hub Connection</AssemblyTitle>
+    <Description>Data transformation and anaytics library - Connections to a Data Experts Integration Hub</Description>
+    <AssemblyTitle>Data Experts Group - Integration Hub Connection</AssemblyTitle>
     <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
