@@ -337,9 +337,9 @@ namespace dexih.functions.builtIn
         public DateComponentsClass DateComponents(DateTime dateValue)
         {
             var month = Month(dateValue);
-            var quarter = month / 4;
+            var quarter = (month-1) / 3 + 1;
             var year = Year(dateValue);
-            var quarterStart = new DateTime(year, (quarter - 1) * 4 + 1, 1);
+            var quarterStart = new DateTime(year, (quarter - 1) * 3 + 1, 1);
             var quarterWeek = dateValue.Subtract(quarterStart).Days / 7;
 
             return new DateComponentsClass()
@@ -363,7 +363,7 @@ namespace dexih.functions.builtIn
             FourFiveFour,
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Components",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Fiscal Date Components",
             Description = "Splits a fiscal date into it's components such as day, month, year etc.")]
         public DateComponentsClass FiscalDateComponents(DateTime dateValue, eCalendarType calendarType, DateTime calendarStart)
         {
@@ -397,7 +397,7 @@ namespace dexih.functions.builtIn
                     
 
                     // add an extra week at end of year when 52 weeks not enough.
-                    if (calendarStart.Subtract(currentDate).Days == 7)
+                    if (calendarStart.Subtract(nextQuarterDate).Days == 6)
                     {
                         nextQuarterDate = nextQuarterDate.AddDays(7);
                     }
@@ -427,14 +427,17 @@ namespace dexih.functions.builtIn
                 dayOfMonth -= 35;
             }
 
+            var monthNum = month + calendarStart.Month - 1;
+            if (monthNum > 12) monthNum = monthNum - 12;
+
             return new DateComponentsClass()
             {
                 DayOfWeek = dayOfWeek + 1,
                 DayOfWeekName = DayOfWeekName(dateValue),
                 Day = dayOfMonth,
                 Month = month,
-                ShortMonthName = ShortMonth(dateValue),
-                MonthName = LongMonth(dateValue),
+                ShortMonthName = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(monthNum),
+                MonthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthNum),
                 WeekOfYear = (currentQuarter -1) * 13 + weekOfQuarter,
                 Quarter = currentQuarter,
                 WeekOfQuarter = weekOfQuarter,

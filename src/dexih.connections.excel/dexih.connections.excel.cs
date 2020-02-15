@@ -726,7 +726,7 @@ namespace dexih.connections.excel
 
                 lock (_spreadsheetLock)
                 {
-	                using (NewConnection()) ;
+					using (NewConnection()) { }
                 }
 
                 return Task.CompletedTask;

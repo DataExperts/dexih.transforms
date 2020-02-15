@@ -30,6 +30,17 @@ namespace dexih.functions
 	    Value
     }
 
+	// [JsonConverter(typeof(StringEnumConverter))]
+	public enum EInvalidAction
+	{
+		Pass = 1, //record passes with no action.
+		Clean = 2, //record pass with cleanup parameters applied.
+		RejectClean = 3, //2 records, one pass with cleanup, and one reject.
+		Reject = 4, //record reject.
+		Discard = 5, //record completely discarded.
+		Abend = 6 //job abended.
+	}
+
 	public class TransformParameter
 	{
 		public string Name { get; set; }
@@ -119,17 +130,6 @@ namespace dexih.functions
 		public bool GeneratesRows;
 
 		private object _returnValue;
-
-		// [JsonConverter(typeof(StringEnumConverter))]
-		public enum EInvalidAction
-		{
-			Pass = 1, //record passes with no action.
-			Clean = 2, //record pass with cleanup parameters applied.
-			RejectClean = 3, //2 records, one pass with cleanup, and one reject.
-			Reject = 4, //record reject.
-			Discard = 5, //record completely discarded.
-			Abend = 6 //job abended.
-		}
 
 		/// <summary>
 		/// A name that describes the function.

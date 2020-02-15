@@ -69,6 +69,7 @@ namespace dexih.transforms
         private bool _primaryOpen;
 
         private TableColumn _colValidFrom;
+        private TableColumn _colValidTo;
         private TableColumn _colCreateDate;
         private TableColumn _colAutoIncrement;
         private TableColumn _colIsCurrentField;
@@ -90,7 +91,7 @@ namespace dexih.transforms
         private int _sourceIsCurrentOrdinal;
 
         private int _referenceSurrogateKeyOrdinal;
-        private int _referenceIsValidOrdinal;
+        private int _referenceIsCurrentOrdinal;
         private int _referenceCreateAuditOrdinal;
         private int _referenceCreateDateOrdinal;
         private int _referenceValidToOrdinal;
@@ -208,10 +209,10 @@ namespace dexih.transforms
             _referenceOpen = true;
 
             //do some integrity checks
-            if (DoPreserve && (_colAutoIncrement == null || _colIsCurrentField == null))
+            if (DoPreserve && (_colAutoIncrement == null || (_colIsCurrentField == null && (_colValidTo == null || _colValidFrom == null))))
             {
                 throw new Exception(
-                    "The delta transform requires target table table to have a one \"Auto Increment\" column, and one \"Is Current\" column for row preservation.");
+                    "The delta transform requires target table table to have a one \"Auto Increment\" column, and one \"Is Current\" or a \"Valid From\"|\"Valid To\" combination columns for row preservation.");
             }
 
             if (DoUpdate && CacheTable.Columns.All(c => c.DeltaType != EDeltaType.NaturalKey))
@@ -253,6 +254,7 @@ namespace dexih.transforms
             //add the audit columns if they don't exist
             //get some of the key fields to save looking up for each row.
             _colValidFrom = CacheTable.GetColumn(EDeltaType.ValidFromDate);
+            _colValidTo = CacheTable.GetColumn(EDeltaType.ValidToDate);
             _colCreateDate = CacheTable.GetColumn(EDeltaType.CreateDate);
             _colAutoIncrement = CacheTable.GetAutoIncrementColumn();
             _colIsCurrentField = CacheTable.GetColumn(EDeltaType.IsCurrentField);
@@ -284,7 +286,7 @@ namespace dexih.transforms
 
             _columnCount = CacheTable.Columns.Count;
 
-            _referenceIsValidOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.IsCurrentField);
+            _referenceIsCurrentOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.IsCurrentField);
             _referenceSurrogateKeyOrdinal = ReferenceTransform.CacheTable.GetAutoIncrementOrdinal();
             _referenceCreateAuditOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.CreateAuditKey);
             _referenceCreateDateOrdinal = ReferenceTransform.CacheTable.GetOrdinal(EDeltaType.CreateDate);
@@ -496,7 +498,13 @@ namespace dexih.transforms
 
                 //first add a where IsCurrentField = true
                 if (_colIsCurrentField != null)
+                {
                     filters.Add(new Filter(_colIsCurrentField, ECompare.IsEqual, true));
+                } else if (_colValidFrom != null && _colValidTo != null)
+                {
+                    filters.Add(new Filter(_colValidFrom, ECompare.LessThanEqual, _currentDateTime));
+                    filters.Add(new Filter(_colValidTo, ECompare.GreaterThan, _currentDateTime));
+                }
 
                 //second add a where natural key is greater than the first record key.  (excluding where delete detection is on).
                 if (_primaryOpen && !DoDelete)
@@ -843,12 +851,20 @@ namespace dexih.transforms
                 //TODO: This routine skips records in the source with isCurrent = false, however this causes problem with source file that has invalid records.
                 if (_colIsCurrentField == null)
                 {
+                    if(_colValidFrom != null && _colValidTo != null)
+                    {
+                        var validFrom = Operations.Parse<DateTime>(ReferenceTransform[_referenceValidFromOrdinal]);
+                        var validTo = Operations.Parse<DateTime>(ReferenceTransform[_referenceValidToOrdinal]);
+
+                        return validFrom <= _currentDateTime && validTo > _currentDateTime;
+                    }
+                    
                     return true;
                 }
                 {
                     try
                     {
-                        var returnValue = Operations.Parse<bool>(ReferenceTransform[_referenceIsValidOrdinal]);
+                        var returnValue = Operations.Parse<bool>(ReferenceTransform[_referenceIsCurrentOrdinal]);
 
                         //IsCurrent = false, continue to next record.
                         if (!returnValue)
@@ -859,7 +875,7 @@ namespace dexih.transforms
                     }
                     catch(Exception ex)
                     {
-                        throw new TransformException($"The delta transform {Name} failed as the column {_colIsCurrentField.Name} is expected to have a boolean value.  {ex.Message}.", ex, ReferenceTransform[_referenceIsValidOrdinal]);
+                        throw new TransformException($"The delta transform {Name} failed as the column {_colIsCurrentField.Name} is expected to have a boolean value.  {ex.Message}.", ex, ReferenceTransform[_referenceIsCurrentOrdinal]);
                     }
                 }
             }

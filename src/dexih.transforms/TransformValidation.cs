@@ -159,7 +159,7 @@ namespace dexih.transforms
             while (await PrimaryTransform.ReadAsync(cancellationToken))
             {
                 var rejectReason = new StringBuilder();
-                var finalInvalidAction = TransformFunction.EInvalidAction.Pass;
+                var finalInvalidAction = EInvalidAction.Pass;
 
                 //copy row data.
                 var passRow = new object[_columnCount];
@@ -207,7 +207,7 @@ namespace dexih.transforms
                         {
                             rejectReason.AppendLine(reason);
 
-                            if (mapping.Function.InvalidAction == TransformFunction.EInvalidAction.Abend)
+                            if (mapping.Function.InvalidAction == EInvalidAction.Abend)
                             {
                                 var reason1 = $"The validation rule abended as the invalid action is set to abend.  " + rejectReason;
                                 throw new Exception(reason1);
@@ -216,7 +216,7 @@ namespace dexih.transforms
                             //set the final invalidation action based on priority order of other rejections.
                             finalInvalidAction = finalInvalidAction < mapping.Function.InvalidAction ? mapping.Function.InvalidAction : finalInvalidAction;
 
-                            if (mapping.Function.InvalidAction == TransformFunction.EInvalidAction.Reject || mapping.Function.InvalidAction == TransformFunction.EInvalidAction.RejectClean)
+                            if (mapping.Function.InvalidAction == EInvalidAction.Reject || mapping.Function.InvalidAction == EInvalidAction.RejectClean)
                             {
                                 //if the row is rejected, copy unmodified row to a reject row.
                                 if (rejectRow == null)
@@ -231,8 +231,8 @@ namespace dexih.transforms
                     }
                 }
 
-                if (finalInvalidAction == TransformFunction.EInvalidAction.RejectClean ||
-                    finalInvalidAction == TransformFunction.EInvalidAction.Clean)
+                if (finalInvalidAction == EInvalidAction.RejectClean ||
+                    finalInvalidAction == EInvalidAction.Clean)
                 {
                     // update the pass row with any outputs from clean functions.
                     var cleanRow = new object[_columnCount];
@@ -273,7 +273,7 @@ namespace dexih.transforms
                                         TransformRowsRejected++;
                                     }
                                     rejectReason.AppendLine("Column:" + col.Name + ": Tried to insert null into non-null column.");
-                                    finalInvalidAction = TransformFunction.EInvalidAction.Reject;
+                                    finalInvalidAction = EInvalidAction.Reject;
                                 }
                                 passRow[i] = DBNull.Value;
                             }
@@ -302,7 +302,7 @@ namespace dexih.transforms
                                         TransformRowsRejected++;
                                     }
                                     rejectReason.AppendLine(ex.Message);
-                                    finalInvalidAction = TransformFunction.EInvalidAction.Reject;
+                                    finalInvalidAction = EInvalidAction.Reject;
                                 }
                             }
                         }
@@ -311,19 +311,19 @@ namespace dexih.transforms
 
                 switch(finalInvalidAction)
                 {
-                    case TransformFunction.EInvalidAction.Pass:
+                    case EInvalidAction.Pass:
                         passRow[_validationStatusOrdinal] = "passed";
                         return passRow;
-                    case TransformFunction.EInvalidAction.Clean:
+                    case EInvalidAction.Clean:
                         passRow[_validationStatusOrdinal] = "cleaned";
                         return passRow;
-                    case TransformFunction.EInvalidAction.RejectClean:
+                    case EInvalidAction.RejectClean:
                         passRow[_validationStatusOrdinal] = "rejected-cleaned";
                         rejectRow[_validationStatusOrdinal] = "rejected-cleaned";
                         rejectRow[_rejectReasonOrdinal] = rejectReason.ToString();
                         _savedRejectRow = rejectRow;
                         return passRow;
-                    case TransformFunction.EInvalidAction.Reject:
+                    case EInvalidAction.Reject:
                         passRow[_validationStatusOrdinal] = "rejected";
                         rejectRow[_validationStatusOrdinal] = "rejected";
                         rejectRow[_rejectReasonOrdinal] = rejectReason.ToString();

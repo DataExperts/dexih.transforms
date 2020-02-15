@@ -207,6 +207,11 @@ namespace dexih.transforms
                 TargetTable.Columns.Where(c => c.IsAutoIncrement()).Select(c => new Filter(c, ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])).ToList()
                 );
 
+                if(updateQuery.Filters.Count == 0)
+                {
+                    updateQuery.Filters = new Filters(TargetTable.Columns.Where(c => c.DeltaType == EDeltaType.NaturalKey).Select(c => new Filter(c, ECompare.IsEqual, row[TargetTable.GetOrdinal(c.Name)])));
+                }
+
                 updateQueries.Add(updateQuery);
             }
 

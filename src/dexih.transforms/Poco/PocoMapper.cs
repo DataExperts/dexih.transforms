@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using System.Reflection;
+using System.Text.Json;
 using dexih.functions;
 using Dexih.Utils.DataType;
 
@@ -77,7 +78,8 @@ namespace dexih.transforms.Poco
                         }
                         else if (!DataType.IsSimple(mapping.PropertyInfo.PropertyType) && value is string s1 && column.DataType != ETypeCode.String)
                         {
-                            value = s1.Deserialize(mapping.PropertyInfo.PropertyType);
+                            value = JsonSerializer.Deserialize(s1, mapping.PropertyInfo.PropertyType);
+                            // value = s1.Deserialize(mapping.PropertyInfo.PropertyType);
                         }
                         else
                         {

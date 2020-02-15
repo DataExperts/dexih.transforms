@@ -318,6 +318,7 @@ namespace dexih.functions
                 case EDeltaType.ResponseSegment:
                 case EDeltaType.Error:
                 case EDeltaType.Url:
+                case EDeltaType.UpdateReason:
                     return ETypeCode.String;
                 case EDeltaType.DbAutoIncrement:
                     break;

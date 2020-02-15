@@ -25,7 +25,7 @@ namespace dexih.transforms.Mapping
                 else
                 {
                     //TODO Need to improve reason string.
-                    var parameters = string.Join(",", Parameters.Inputs.OfType<ParameterColumn>().Select(c => $"{c.Column?.Name??c.Value}={c.Value}"));
+                    var parameters = string.Join(",", Parameters.Inputs.OfType<ParameterColumn>().Select(c => $"{c.Column?.Name??c.Value}={c.Value.DisplayValue()}"));
                     reason = $"Function: {Function.FunctionName} ({parameters})";
                     return false;
                 }
@@ -37,15 +37,16 @@ namespace dexih.transforms.Mapping
         
         public override void MapOutputRow(object[] data)
         {
-            // only map the result when the validation is false.
-            if (ReturnValue is bool returnValue)
-            {
-                if (!returnValue)
-                {
-                    Parameters.SetFunctionResult(ReturnValue, Outputs, data);        
-                }
-            }
-            
+            //// only map the result when the validation is false.
+            //if (ReturnValue is bool returnValue)
+            //{
+            //    if (!returnValue)
+            //    {
+            //        Parameters.SetFunctionResult(ReturnValue, Outputs, data);        
+            //    }
+            //}
+
+            Parameters.SetFunctionResult(ReturnValue, Outputs, data);
         }
         
         public override bool MatchesSelectQuery(SelectQuery selectQuery)

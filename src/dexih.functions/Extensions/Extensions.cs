@@ -57,6 +57,31 @@ namespace dexih.functions
 
             return true;
         }
+
+        /// <summary>
+        /// Converts value to a string, when null insertes \<null\>
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string DisplayValue(this object value)
+        {
+            if(value is null)
+            {
+                return "<null>";
+            }
+
+            if(value is string valueString)
+            {
+                if(valueString == "")
+                {
+                    return "<blank>";
+                }
+
+                return valueString;
+            }
+
+            return value.ToString();
+        }
         
         public static string CreateSHA1(this string value)
         {
