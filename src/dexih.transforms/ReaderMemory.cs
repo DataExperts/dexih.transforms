@@ -107,9 +107,11 @@ namespace dexih.transforms
                 {
                     for (var i = 0; i < CacheTable.Columns.Count; i++)
                     {
-                        if (CacheTable.Columns[i].DeltaType == EDeltaType.DatabaseOperation)
+                        switch (CacheTable.Columns[i].DeltaType)
                         {
-                            continue;
+                            case EDeltaType.DatabaseOperation:
+                            case EDeltaType.DbAutoIncrement:
+                                continue;
                         }
 
                         row[i] = _convertConnection.ConvertForWrite(CacheTable.Columns[i], row[i]).value;
