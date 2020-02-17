@@ -27,7 +27,7 @@ namespace dexih.connections.test
             Transform reader = DataSets.CreateTestData();
             await connection.CreateTable(table, true, CancellationToken.None);
             
-            var writer = new transforms.TransformWriterTarget(connection, table, writerResult);
+            var writer = new TransformWriterTarget(connection, table, writerResult);
             await writer.WriteRecordsAsync(reader, CancellationToken.None);
             
             //check database can sort 

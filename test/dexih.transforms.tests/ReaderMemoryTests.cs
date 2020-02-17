@@ -73,6 +73,7 @@ namespace dexih.transforms.tests
             _output.WriteLine($"memory reader read rows: {iterations}, time taken: {time}, iterations/ms: {iterations/time.Milliseconds}");
 
             reader.Reset();
+            reader.Open();
             count = 0;
             
             time = TaskTimer.Start(() =>
@@ -91,6 +92,7 @@ namespace dexih.transforms.tests
             _output.WriteLine($"memory reader read with colunm names and check values rows: {iterations}, time taken: {time}, iterations/ms: {iterations/time.Milliseconds}");
             
             reader.Reset();
+            reader.Open();
             count = 0;
             
             time = TaskTimer.Start(() =>
@@ -109,6 +111,7 @@ namespace dexih.transforms.tests
             _output.WriteLine($"memory reader read with ordinals and check values rows: {iterations}, time taken: {time}, iterations/ms: {iterations/time.Milliseconds}");
             
             reader.Reset();
+            reader.Open();
             count = 0;
             
             time = TaskTimer.Start(() =>

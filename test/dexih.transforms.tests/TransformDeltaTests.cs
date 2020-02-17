@@ -40,6 +40,7 @@ namespace dexih.transforms.tests
             transformDelta = new TransformDelta(source, target, EUpdateStrategy.Append, 0, false);
             await transformDelta.Open(0, null, CancellationToken.None);
             transformDelta.Reset();
+            transformDelta.Open();
 
             count = 0;
             while (await transformDelta.ReadAsync())
@@ -120,6 +121,7 @@ namespace dexih.transforms.tests
             target.CacheTable.AddRow(row);
 
             transformDelta.Reset();
+            transformDelta.Open();
 
             count = 0;
             while (await transformDelta.ReadAsync())
@@ -135,6 +137,7 @@ namespace dexih.transforms.tests
             target.CacheTable.Data.RemoveAt(7);
 
             transformDelta.Reset();
+            transformDelta.Open();
 
             count = 0;
             var rowsCreated = 0;
@@ -155,6 +158,7 @@ namespace dexih.transforms.tests
             source.CacheTable.Data.RemoveAt(0); //this is the row that was updated, so update now = 2
 
             transformDelta.Reset();
+            transformDelta.Open();
 
             count = 0;
             rowsCreated = 0;
