@@ -1017,6 +1017,11 @@ namespace dexih.transforms
             {
                 _isResetting = true;
 
+                if (resetIsOpen)
+                {
+                    Close();
+                }
+
                 _isFirstRead = true;
                 IsCacheFull = false;
                 IsReaderFinished = false;
@@ -1047,8 +1052,6 @@ namespace dexih.transforms
                 {
                     returnValue = returnValue && ReferenceTransform.Reset(resetCache, resetIsOpen);
                 }
-
-                if(resetIsOpen) IsOpen = false;
 
                 _isResetting = false;
                 return returnValue;
