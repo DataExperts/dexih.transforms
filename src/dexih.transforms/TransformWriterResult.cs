@@ -38,6 +38,7 @@ namespace dexih.transforms
         private Timer _progressTimer;
         private long _previousRows;
         private long _progressCounter;
+        private bool _isInitialized = false;
 
 
         public TransformWriterResult()
@@ -373,6 +374,9 @@ namespace dexih.transforms
         /// <returns></returns>
         public async Task<bool> Initialize(CancellationToken cancellationToken = default)
         {
+            if (_isInitialized) return true;
+
+            _isInitialized = true;
             if (AuditConnection != null && AuditKey <= 0)
             {
                 LastUpdateTime = DateTime.Now;
@@ -520,6 +524,7 @@ namespace dexih.transforms
 
         public void Dispose()
         {
+            _isInitialized = false;
             _progressTimer?.Dispose();
             if (_task == null || _task.IsCompleted)
             {
