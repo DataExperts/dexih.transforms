@@ -250,6 +250,7 @@ namespace dexih.transforms.Poco
             var pocoTable = new PocoTable<T>(Table.Copy());
 
             var pocoReader = new PocoReader<T>(pocoTable, items);
+            pocoReader.Open(cancellationToken);
             return connection.ExecuteInsertBulk(Table, pocoReader, cancellationToken);
         }
     }

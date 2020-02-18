@@ -171,11 +171,12 @@ namespace dexih.connections.sql
                             {
                                 for (var i = 0; i < columns.Length; i++)
                                 {
-                                    var column = columns[i];
-                                    var converted = ConvertForWrite(column.Name, column.DataType, column.Rank, true, reader[ordinals[i]]);
-                                    parameters[i].Value = converted.value;
+                                    // conversion done by reader now!!!
+                                    //var column = columns[i];
+                                    // var converted = ConvertForWrite(column.Name, column.DataType, column.Rank, true, reader[ordinals[i]]);
+                                    // parameters[i].Value = converted.value;
 
-                                    // parameters[i].Value = reader[ordinals[i]];
+                                    parameters[i].Value = reader[ordinals[i]];
                                 }
 
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);

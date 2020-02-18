@@ -37,6 +37,7 @@ namespace dexih.transforms.tests
 
             var adapter = new ReaderMemory(table, new Sorts() { new Sort("StringColumn") } );
             adapter.Reset();
+            adapter.Open();
             return adapter;
         }
 
