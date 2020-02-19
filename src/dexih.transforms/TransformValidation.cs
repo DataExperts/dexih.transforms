@@ -287,7 +287,7 @@ namespace dexih.transforms
                                     {
                                         if(((string)passRow[i]).Length > col.MaxLength)
                                         {
-                                            throw new DataTypeParseException($"The column ${col.Name} value exceeded the maximum string length of {col.MaxLength}.");
+                                            throw new DataTypeParseException($"The column {col.Name} value exceeded the maximum string length of {col.MaxLength}.");
                                         }
                                     }
                                 }

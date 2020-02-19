@@ -94,7 +94,7 @@ namespace dexih.transforms.Poco
                     }
 
                     throw new PocoLoaderIndexOutOfBoundsException(
-                        $"The index ${index} exceeded the number of items (${_maxRow}) available.");
+                        $"The index ${index} exceeded the number of items ({_maxRow}) available.");
                 }
             }
         }

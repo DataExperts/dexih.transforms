@@ -625,7 +625,7 @@ namespace dexih.connections.excel
 				                if (!columnMappings.ContainsKey(column.Column.Name))
 				                {
 					                throw new ConnectionException(
-						                $"The column with the name ${column.Column.Name} could not be found.");
+						                $"The column with the name {column.Column.Name} could not be found.");
 				                }
 
 				                worksheet.SetValue(row, columnMappings[column.Column.Name],
@@ -679,7 +679,7 @@ namespace dexih.connections.excel
 
 					        if (!columnMappings.ContainsKey(column.Column.Name))
 					        {
-                                throw new ConnectionException($"The column with the name ${column.Column.Name} could not be found.");
+                                throw new ConnectionException($"The column with the name {column.Column.Name} could not be found.");
                             }
 
                             var value = worksheet.GetValue(row, columnMappings[column.Column.Name]);
@@ -690,7 +690,7 @@ namespace dexih.connections.excel
                             }
                             catch(Exception ex)
                             {
-                                throw new ConnectionException($"The value in column ${column.Column.Name} was incompatible with the type {column.Column.DataType}.  {ex.Message}.", ex, value);
+                                throw new ConnectionException($"The value in column {column.Column.Name} was incompatible with the type {column.Column.DataType}.  {ex.Message}.", ex, value);
                             }
                         }
 			        }
