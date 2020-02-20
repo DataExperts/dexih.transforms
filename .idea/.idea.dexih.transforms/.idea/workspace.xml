@@ -3,12 +3,24 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed more tests">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/ReaderMemoryTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/ReaderMemoryTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connectinos.db2.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connectinos.db2.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mongo.tests/dexih.connections.mongo.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mongo.tests/dexih.connections.mongo.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgressql.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgressql.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sftp.tests/dexih.connections.sftp.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sftp.tests/dexih.connections.sftp.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/dexih.connections.test.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/dexih.connections.test.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/dexih.connections.webservice.restful.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/dexih.connections.webservice.restful.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/dexih.functions.builtIn.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/dexih.functions.builtIn.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.functions.ml.tests/dexih.functions.ml.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.ml.tests/dexih.functions.ml.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/dexih.transforms.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/dexih.transforms.tests.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -197,7 +209,6 @@
     <setting file="file://$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.connections.oracle.tests/appsettings.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../dexih.utils.datatype/src/Dexih.Utils.DataType/Operations.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.transforms/ReaderDynamic.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Query/Sorts.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions.financial/FinancialFunctions.cs" root0="FORCE_HIGHLIGHTING" />
@@ -230,7 +241,6 @@
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Parameter/ParameterJoinColumn.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.connections.sqlserver/dexih.connections.sql.sqlserver.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.parameters.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/anomalyprediction.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/dexih.functions/Exceptions/FunctionException.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/dexih.functions.ml.tests/recommendation.cs" root0="FORCE_HIGHLIGHTING" />
@@ -381,7 +391,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgreSql.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.cs" />
         <option value="$PROJECT_DIR$/src/dexih.functions/Functions/FunctionReference.cs" />
@@ -432,6 +441,7 @@
         <option value="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" />
+        <option value="$PROJECT_DIR$/test/dexih.connections.test/dexih.connections.test.csproj" />
       </list>
     </option>
   </component>
@@ -777,6 +787,8 @@
       <workItem from="1579490731606" duration="4244000" />
       <workItem from="1580775238824" duration="1821000" />
       <workItem from="1581743909139" duration="2920000" />
+      <workItem from="1582171832903" duration="333000" />
+      <workItem from="1582172218652" duration="1021000" />
     </task>
     <task id="LOCAL-00027" summary="fixe postgres insert type conversion">
       <created>1526095369435</created>
