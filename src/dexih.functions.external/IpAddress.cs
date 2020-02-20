@@ -13,8 +13,9 @@ namespace dexih.functions.external
         private const string KeyDescription =
             "Sign up for key at [ipstack.com](https://ipstack.com/).";
 
-        private HttpClient _httpClient;
-
+        [GlobalSettings]
+        public GlobalSettings GlobalSettings { get; set; }
+        
         public class IpStack
         {
             public string ip { get; set; }
@@ -96,12 +97,9 @@ namespace dexih.functions.external
         {
             var url = GetIPStackUrl(ip, key);
 
-            if (_httpClient == null)
-            {
-                _httpClient = new HttpClient();
-            }
+            var httpClient = GlobalSettings.HttpClientFactory.CreateClient();
                 
-            var response = await _httpClient.GetAsync(url, cancellationToken);
+            var response = await httpClient.GetAsync(url, cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
@@ -135,7 +133,7 @@ namespace dexih.functions.external
         
         public void Dispose()
         {
-            _httpClient?.Dispose();
+            //_httpClient?.Dispose();
         }
     }
 }

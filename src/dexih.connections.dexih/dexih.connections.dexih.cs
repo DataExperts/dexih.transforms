@@ -1,11 +1,13 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using dexih.transforms;
 using dexih.functions;
 using System.Data.Common;
-using System.Net.Http;
-using System.Text.Json;
+ using System.Linq;
+ using System.Net.Http;
+ using System.Net.Http.Headers;
+ using System.Text.Json;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
@@ -46,12 +48,13 @@ namespace dexih.connections.dexih
 	    public override bool CanUseSql => false;
         public override bool DynamicTableCreation => false;
         
-        private readonly HttpClient _httpClient = new HttpClient();
         private bool _isAuthenticated;
         private DexihActiveAgent _activeAgent;
         private DownloadUrl _downloadUrl;
 
-        private string ServerUrl()
+        public KeyValuePair<string, IEnumerable<string>>[] _authenticationHeaders;
+        
+        public string ServerUrl()
         {
             var url = Server;
             if (url.Substring(url.Length - 1) != "/") url += "/";
@@ -74,8 +77,8 @@ namespace dexih.connections.dexih
 
             throw new ConnectionException($"Error {message}", new Exception(exception));   
         }
-
-		public async Task<JsonDocument> HttpPost(string function, HttpContent content, bool skipLogin = false)
+        
+        private async Task<HttpContent> HttpPostGetContent(string function, HttpContent content, bool skipLogin = false)
 		{
 		    try
 		    {
@@ -86,13 +89,27 @@ namespace dexih.connections.dexih
 
 		        try
 		        {
+                    var client = ClientFactory.CreateClient();
 		            var url = ServerUrl() + "Reader/" + function;
-		            var response = await _httpClient.PostAsync(url, content);
+                    var request = new HttpRequestMessage(HttpMethod.Post, url) {Content = content};
+                    foreach (var header in _authenticationHeaders)
+                    {
+                        request.Headers.Add(header.Key, header.Value);
+                    }
+                    
+                    var response = await client.SendAsync(request);
+
                     if (response.IsSuccessStatusCode)
+                    {
+                        return response.Content;
+                    }
+                    else
                     {
                         var responseString = await response.Content.ReadAsStringAsync();
                         var result = JsonDocument.Parse(responseString);
-                        return result;
+                        var message = result.RootElement.GetProperty("message").GetString();
+                        var exceptionDetails = result.RootElement.GetProperty("exceptionDetails").GetString();
+                        throw new ConnectionException(message, new Exception(exceptionDetails));
                     }
                     
                     throw new ConnectionException($"Could not connect to server {Server}\n. Response: {response.StatusCode.ToString()} - {response.ReasonPhrase}");
@@ -112,7 +129,22 @@ namespace dexih.connections.dexih
             }
         }
 
-		/// <summary>
+		public async Task<JsonDocument> HttpPost(string function, HttpContent content, bool skipLogin = false)
+        {
+            var responseContent = await HttpPostGetContent(function, content, skipLogin);
+            var responseString = await responseContent.ReadAsStringAsync();
+            var result = JsonDocument.Parse(responseString);
+            return result;
+        }
+
+        public async Task<string> HttpPostRaw(string function, HttpContent content, bool skipLogin = false)
+        {
+            var responseContent = await HttpPostGetContent(function, content, skipLogin);
+            var responseString = await responseContent.ReadAsStringAsync();
+            return responseString;
+        }
+
+        /// <summary>
 		/// Logs into the dexih instance and returns the cookiecontainer which can be used to authenticate future requests.
 		/// </summary>
 		/// <returns>The login.</returns>
@@ -120,6 +152,8 @@ namespace dexih.connections.dexih
 		{
             try
             {
+                var client = ClientFactory.CreateClient();
+                
                 //Login to the web server, which will allow future connections to be authenticated.
                 var content = new FormUrlEncodedContent(new[]
                 {
@@ -130,19 +164,36 @@ namespace dexih.connections.dexih
 
                 try
                 {
-                    var result = await HttpPost("Login", content, true);
-                    if (result.RootElement.GetProperty("success").GetBoolean())
+                    var uri = new Uri(ServerUrl() + "Reader/Login");
+                    var request = new HttpRequestMessage(HttpMethod.Post, uri) {Content = content};
+                    var response = await client.SendAsync(request);
+                    if (response.IsSuccessStatusCode)
                     {
-                        if (result.RootElement.TryGetProperty("value", out var agents))
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        var result = JsonDocument.Parse(responseString);
+                        
+                        if (result.RootElement.GetProperty("success").GetBoolean())
                         {
-                            _activeAgent = agents.ToObject<DexihActiveAgent>();
+                            if (result.RootElement.TryGetProperty("activeAgent", out var agents))
+                            {
+                                _activeAgent = agents.ToObject<DexihActiveAgent>();
+                            }
+                            
+                            _authenticationHeaders = response.Headers.Where(c => c.Key == "Set-Cookie").ToArray();
+                            _isAuthenticated = true;
                         }
-
-                        _isAuthenticated = true;
+                        else
+                        {
+                            ThrowError(result);
+                        }
                     }
                     else
                     {
-                        ThrowError(result);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        var result = JsonDocument.Parse(responseString);
+                        var message = result.RootElement.GetProperty("message").GetString();
+                        var exceptionDetails = result.RootElement.GetProperty("exceptionDetails").GetString();
+                        throw new ConnectionException(message, new Exception(exceptionDetails));
                     }
                 }
                 catch (HttpRequestException ex)
@@ -192,7 +243,8 @@ namespace dexih.connections.dexih
 
                 foreach (var downloadUrl in _activeAgent.DownloadUrls)
                 {
-                    var response = await _httpClient.GetAsync(downloadUrl.Url + "/ping");
+                    var client = ClientFactory.CreateClient();
+                    var response = await client.GetAsync(downloadUrl.Url + "/ping");
                     if (response.IsSuccessStatusCode)
                     {
                         _downloadUrl = downloadUrl;
@@ -216,16 +268,8 @@ namespace dexih.connections.dexih
             try
             {
                 var result = await HttpPost("GetHubs", null);
-                if (result.RootElement.GetProperty("success").GetBoolean())
-                {
-                    var hubList = result.RootElement.GetProperty("value").ToObject<List<string>>();
-                    return hubList;
-                }
-                else
-                {
-                    ThrowError(result);
-                    return null;
-                }
+                var hubList = result.ToObject<List<string>>();
+                return hubList;
             }
             catch(Exception ex)
             {
@@ -243,16 +287,8 @@ namespace dexih.connections.dexih
                 });
 
                 var result = await HttpPost("GetTables", content);
-                if (result.RootElement.GetProperty("success").GetBoolean())
-                {
-                    var tableList = result.RootElement.GetProperty("value").ToObject<List<Table>>();
-                    return tableList;
-                }
-                else
-                {
-                    ThrowError(result);
-                    return null;
-                }
+                var tableList = result.RootElement.ToObject<List<Table>>();
+                return tableList;
             }
             catch(Exception ex)
             {
@@ -280,16 +316,8 @@ namespace dexih.connections.dexih
 				});
 
 				var result = await HttpPost("GetTableInfo", content);
-                if (result.RootElement.GetProperty("success").GetBoolean())
-                {
-                    var table = result.RootElement.GetProperty("value").ToObject<Table>();
-                    return table;
-                }
-                else
-                {
-                    ThrowError(result);
-                    return null;
-                }
+                var table = result.RootElement.ToObject<Table>();
+                return table;
             }
             catch (Exception ex)
             {
@@ -372,7 +400,7 @@ namespace dexih.connections.dexih
 
         public override void Dispose()
         {
-            _httpClient?.Dispose();
+            // _httpClient?.Dispose();
             base.Dispose();
         }
     }

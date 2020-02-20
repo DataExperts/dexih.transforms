@@ -54,7 +54,7 @@ namespace dexih.connections.dexih
                 var downloadUrl = await _dexihConnection.GetDownloadUrl();
                 var instanceId = await _dexihConnection.GetRemoteAgentInstanceId();
 
-                // call the central web server to requet the query start.
+                // call the central web server to request the query start.
                 var message = new
                 {
                     HubName = ReferenceConnection.DefaultDatabase,
@@ -65,39 +65,28 @@ namespace dexih.connections.dexih
                     DownloadUrl = downloadUrl,
                     InstanceId = instanceId
                 }.Serialize();
-                
+
                 var content = new StringContent(message, Encoding.UTF8, "application/json");
-				var response = await _dexihConnection.HttpPost("OpenTableQuery", content);
+                _dataUrl = await _dexihConnection.HttpPostRaw("OpenTableQuery", content);
 
-                if (response.RootElement.GetProperty("success").GetBoolean())
+                var httpClient = _dexihConnection.ClientFactory.CreateClient();
+                var response2 = await httpClient.GetAsync(downloadUrl.Url + "/download/" +_dataUrl, HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken);
+
+                if (response2.StatusCode == HttpStatusCode.InternalServerError)
                 {
-                    _dataUrl = response.RootElement.GetProperty("value").GetString();
+                    var responseString = await response2.Content.ReadAsStringAsync();
+                    var returnValue = responseString.Deserialize<ReturnValue>();
+                    throw new ConnectionException("Dexih Reader Failed.  " + returnValue.Message,
+                        returnValue.Exception);
                 }
-                else
-                {
-                    throw new ConnectionException($"Error {response.RootElement.GetProperty("message").GetString()}", new Exception(response.RootElement.GetProperty("exceptionDetails").GetString()));
-                }
-                
-                // use the returned url, to start streaming the data.
-                using (var httpClient = new HttpClient())
-                {
-                    var response2 = await httpClient.GetAsync(_dataUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-                    if (response2.StatusCode == HttpStatusCode.InternalServerError)
-                    {
-                        var responseString = await response2.Content.ReadAsStringAsync();
-                        var returnValue = responseString.Deserialize<ReturnValue>();
-                        throw new ConnectionException("Dexih Reader Failed.  " + returnValue.Message,
-                            returnValue.Exception);
-                    }
+                var responseStream = await response2.Content.ReadAsStreamAsync();
+                var config = new FileConfiguration();
+                _fileHandler = new FileHandlerText(CacheTable, config);
+                await _fileHandler.SetStream(responseStream, null);
 
-                    var responseStream = await response2.Content.ReadAsStreamAsync();
-                    var config = new FileConfiguration();
-                    _fileHandler = new FileHandlerText(CacheTable, config);
-                    await _fileHandler.SetStream(responseStream, null);
-
-                    return true;
-                }
+                return true;
             }
             catch (Exception ex)
             {

@@ -14,6 +14,9 @@ namespace dexih.functions.external
 {
     public class Stocks
     {
+        [GlobalSettings]
+        public GlobalSettings GlobalSettings { get; set; }
+        
         private const string KeyDescription =
             "Sign up for key at [alphavantage.co](https://www.alphavantage.co/support/#api-key).";
         public struct StockEntity
@@ -37,17 +40,11 @@ namespace dexih.functions.external
             string url, CancellationToken cancellationToken)
         {
             var uri = new Uri(url);
-
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
-                client.DefaultRequestHeaders.Accept.Clear();
-
-                var response = await client.GetAsync(uri.PathAndQuery, cancellationToken);
-
-                return (uri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode,
-                    await response.Content.ReadAsStreamAsync());
-            }
+            var client = GlobalSettings.HttpClientFactory.CreateClient();
+            var response = await client.GetAsync(uri, cancellationToken);
+            
+            return (uri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode,
+                await response.Content.ReadAsStreamAsync());
         }
         
       private async Task<List<StockEntity>> GetStockResponse(string uri, int maxCount, CancellationToken cancellationToken)

@@ -297,8 +297,6 @@ namespace dexih.connections.webservice.restful
                 handler = new HttpClientHandler();
             }
             
-
-
 			Uri completeUri;
 
 			if (!Server.EndsWith("/") && !Server.Contains("?") && !uri.StartsWith("/"))
@@ -310,20 +308,18 @@ namespace dexih.connections.webservice.restful
 				completeUri = new Uri(Server + uri);
 			}
 
-            using (var client = new HttpClient(handler))
+			var client = ClientFactory.CreateClient();
+			var request = new HttpRequestMessage( HttpMethod.Get, completeUri);
+			request.Headers.Accept.Clear();
+			
+            if (string.Compare(Username, "bearer", StringComparison.OrdinalIgnoreCase) == 0)
             {
-				client.BaseAddress = new Uri(completeUri.GetLeftPart(UriPartial.Authority));
-                client.DefaultRequestHeaders.Accept.Clear();
-
-                if (string.Compare(Username, "bearer", StringComparison.OrdinalIgnoreCase) == 0)
-                {
-	                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Password);
-                }
-
-                var response = await client.GetAsync(completeUri.PathAndQuery, cancellationToken);
-
-				return (completeUri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
+	            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Password);
             }
+
+            var response = await client.SendAsync(request, cancellationToken);
+
+			return (completeUri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
         }
 
       /// <summary>

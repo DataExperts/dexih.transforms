@@ -18,7 +18,7 @@ namespace dexih.functions.external
             "Register for an API key at: [currencylayer.com](https://currencylayer.com/product).";
         public class CurrencyDetails
         {
-           
+
             public DateTime TimeStamp { get; set; }
             public DateTime Date { get; set; }
             public string Source { get; set; }
@@ -84,6 +84,9 @@ namespace dexih.functions.external
             public int CurrencyNumber { get; set; }
         }
 
+        [GlobalSettings]
+        public GlobalSettings GlobalSettings { get; set; }
+
         private CurrencyDetails _liveCurrency;
         private Dictionary<string, CurrencyDetails> _currencyHistory;
         
@@ -92,19 +95,25 @@ namespace dexih.functions.external
         
         private bool _isFirst = true;
         
-        private async Task<(string url, string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(string url, CancellationToken cancellationToken)
+        private async Task<(string statusCode, bool isSuccess, Stream response)> GetWebServiceResponse(string url, CancellationToken cancellationToken)
         {
-            var uri = new Uri(url);
+            var client = GlobalSettings.HttpClientFactory.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Accept.Clear();
+            var response = await client.SendAsync(request, cancellationToken);
+            return (response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
             
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
-                client.DefaultRequestHeaders.Accept.Clear();
-
-                var response = await client.GetAsync(uri.PathAndQuery, cancellationToken);
-
-                return (uri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
-            }
+            // var uri = new Uri(url);
+            //
+            // using (var client = new HttpClient())
+            // {
+            //     client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
+            //     client.DefaultRequestHeaders.Accept.Clear();
+            //
+            //     var response = await client.GetAsync(uri.PathAndQuery, cancellationToken);
+            //
+            //     return (uri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
+            // }
         }
 
         private async Task LoadLiveRates(string key, CancellationToken cancellationToken)
@@ -368,39 +377,33 @@ namespace dexih.functions.external
 
         private async Task<bool> LoadCurrencyCode(CancellationToken cancellationToken)
         {
-            var uri = new Uri("https://www.currency-iso.org/dam/downloads/lists/list_one.xml");
+            var url = "https://www.currency-iso.org/dam/downloads/lists/list_one.xml";
+            var client = GlobalSettings.HttpClientFactory.CreateClient();
+            var response = await client.GetAsync(url, cancellationToken);
             
-            using (var client = new HttpClient())
+            if (response.IsSuccessStatusCode)
             {
-                client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
-                client.DefaultRequestHeaders.Accept.Clear();
-
-                var response = await client.GetAsync(uri.PathAndQuery, cancellationToken);
-
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    try
-                    {
-                        var xPathDocument = new XPathDocument(await response.Content.ReadAsStreamAsync());
-                        var xPathNavigator = xPathDocument.CreateNavigator();
+                    var xPathDocument = new XPathDocument(await response.Content.ReadAsStreamAsync());
+                    var xPathNavigator = xPathDocument.CreateNavigator();
 
-                        if (xPathNavigator == null)
-                        {
-                            throw new FileHandlerException($"Failed to parse the response xml value.");
-                        }
-
-                        _cachedCurrencyCodes = xPathNavigator.Select("//CcyTbl/*");
-                        return true;
-                    }
-                    catch (Exception ex)
+                    if (xPathNavigator == null)
                     {
-                        throw new FileHandlerException($"Failed to parse the response xml value. {ex.Message}", ex);
+                        throw new FileHandlerException($"Failed to parse the response xml value.");
                     }
+
+                    _cachedCurrencyCodes = xPathNavigator.Select("//CcyTbl/*");
+                    return true;
                 }
-                else
+                catch (Exception ex)
                 {
-                    return false;
+                    throw new FileHandlerException($"Failed to parse the response xml value. {ex.Message}", ex);
                 }
+            }
+            else
+            {
+                return false;
             }
         }
 

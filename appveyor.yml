@@ -77,8 +77,8 @@ deploy:
      - release
 
  - provider: GitHub
-   release: dexih-remote-v${APPVEYOR_BUILD_VERSION}
-   description: 'Dexih Remote Agent - ${CONFIGURATION} release, version - ${APPVEYOR_BUILD_VERSION}'
+   release: dexih-transforms-v${APPVEYOR_BUILD_VERSION}
+   description: 'Dexih Transforms - ${CONFIGURATION} release, version - ${APPVEYOR_BUILD_VERSION}'
    auth_token:
       secure: lEaZ/om1UTRS6Xa947/5WxZVbBW6A+ZHmPu7aXRRDqkjX1+LYTfh9xL1CueonyuC
    artifact: /.*\.zip/

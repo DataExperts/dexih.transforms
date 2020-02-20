@@ -23,6 +23,9 @@ namespace dexih.functions.external
         private Stopwatch stopwatch;
         private int apiCallCount;
         
+        [GlobalSettings]
+        public GlobalSettings GlobalSettings { get; set; }
+        
         public enum TemperatureScale
         {
             Fahrenheit = 1, Celsius, Kelvin
@@ -85,21 +88,30 @@ namespace dexih.functions.external
         {
             var uri = new Uri(GetOpenWeatherUrl(key) + parameters);
 
-            if (_httpClient == null)
+            // if (_httpClient == null)
+            // {
+            //     _httpClient = new HttpClient()
+            //     {
+            //         BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority)),
+            //     };
+            //
+            //     _httpClient.DefaultRequestHeaders.Accept.Clear();
+            //     _httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue()
+            //     {
+            //         NoCache = true
+            //     };
+            // }
+            
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Accept.Clear();
+            request.Headers.CacheControl = new CacheControlHeaderValue()
             {
-                _httpClient = new HttpClient()
-                {
-                    BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority)),
-                };
+                NoCache = true
+            };
 
-                _httpClient.DefaultRequestHeaders.Accept.Clear();
-                _httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue()
-                {
-                    NoCache = true
-                };
-            }
+            var client = GlobalSettings.HttpClientFactory.CreateClient();
 
-            var response = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken);
+            var response = await client.SendAsync(request, cancellationToken);
 
             return (uri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode,
                 await response.Content.ReadAsStreamAsync());
@@ -326,28 +338,23 @@ namespace dexih.functions.external
             {
                 var uri = new Uri("http://bulk.openweathermap.org/sample/city.list.min.json.gz");
                 string jsonString;
-;
-                using (var client = new HttpClient())
+
+                var client = GlobalSettings.HttpClientFactory.CreateClient();
+                var response = await client.GetAsync(uri, cancellationToken);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    client.BaseAddress = new Uri(uri.GetLeftPart(UriPartial.Authority));
-                    client.DefaultRequestHeaders.Accept.Clear();
-
-                    var response = await client.GetAsync(uri.PathAndQuery, cancellationToken);
-
-                    if (response.IsSuccessStatusCode)
+                    using(var stream = await response.Content.ReadAsStreamAsync())
+                    using( var output = new MemoryStream())
+                    using (var sr = new GZipStream(stream, CompressionMode.Decompress))
                     {
-                        using(var stream = await response.Content.ReadAsStreamAsync())
-                        using( var output = new MemoryStream())
-                        using (var sr = new GZipStream(stream, CompressionMode.Decompress))
-                        {
-                            await sr.CopyToAsync(output, cancellationToken);
-                            jsonString = Encoding.UTF8.GetString(output.GetBuffer(), 0, (int) output.Length);
-                        }
+                        await sr.CopyToAsync(output, cancellationToken);
+                        jsonString = Encoding.UTF8.GetString(output.GetBuffer(), 0, (int) output.Length);
                     }
-                    else
-                    {
-                        return null;
-                    }
+                }
+                else
+                {
+                    return null;
                 }
                 
                 try

@@ -7,6 +7,7 @@ using dexih.functions;
 using System.Diagnostics;
 using System.Data.Common;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using dexih.functions.Query;
@@ -60,6 +61,8 @@ namespace dexih.transforms
 
         public bool UseConnectionString { get; set; }
         public string ConnectionString { get; set; }
+        
+        public IHttpClientFactory ClientFactory { get; set; }
 
         #endregion
 

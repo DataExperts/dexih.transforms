@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
 
 namespace dexih.functions
 {
@@ -19,6 +20,8 @@ namespace dexih.functions
             EncryptionKey = encryptionKey;
             _variables = new Dictionary<string, object>();
         }
+        
+        public IHttpClientFactory HttpClientFactory { get; set; }
 
         public GlobalSettings()
         {
