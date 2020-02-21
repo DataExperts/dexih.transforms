@@ -16,12 +16,13 @@ namespace dexih.transforms.Mapping
             JoinColumn = joinColumn;
         }
 
-        public MapJoin(object inputValue, TableColumn inputColumn, object joinValue, TableColumn joinColumn)
+        public MapJoin(object inputValue, TableColumn inputColumn, object joinValue, TableColumn joinColumn, ECompare compare = ECompare.IsEqual)
         {
             InputValue = inputValue;
             InputColumn = inputColumn;
             JoinValue = joinValue;
             JoinColumn = joinColumn;
+            Compare = compare;
         }
 
         public TableColumn InputColumn { get; set; }

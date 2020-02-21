@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using dexih.functions.Exceptions;
@@ -17,7 +18,6 @@ namespace dexih.functions.BuiltIn
             Description = "Less than or Equal", GenericType = EGenericType.All)]
         [TransformFunctionCompare(Compare = ECompare.LessThanEqual)]
         public bool LessThanOrEqual(T value, T compare) => Operations.LessThanOrEqual(value, compare);
-
 
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Greater Than",
             Description = "Greater than", GenericType = EGenericType.All)]
@@ -63,6 +63,19 @@ namespace dexih.functions.BuiltIn
             return DateTime.TryParse(value, out _);
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Is Date (using exact format)",
+    Description =
+        "Return boolean if the value is a valid date using the specified format.")]
+        public bool IsDateFormatExact(string value, string format)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+
+            return DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out _);
+        }
+
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Number",
             Description = "Value is a valid number")]
         public bool IsNumber(string value)
@@ -91,15 +104,14 @@ namespace dexih.functions.BuiltIn
             return string.IsNullOrWhiteSpace(value);
         }
 
-        
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Is Between",
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Is Between",
             Description = "Value is between the specified values but not equal to them.", GenericType = EGenericType.All)]
         public bool IsBetween(T value, T lowRange, T highRange)
         {
             return GreaterThan(value, lowRange) && LessThan(value, highRange);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition",
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition",
             Name = "Is Between Inclusive", Description = "Value is equal or between the specified values", GenericType = EGenericType.All)]
         public bool IsBetweenInclusive(T value, T lowRange, T highRange)
         {
@@ -256,19 +268,14 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "Is True",
-            Description = "Is the specified value equal to true.")]
-        public bool IsTrue(bool value) => value;
-
-
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Is the time now between dates",
-            Description = "The date now is between start/end date ")]
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date Condition", Name = "Current date between dates",
+            Description = "The current date/time is between start/end date ")]
         public bool IsDateBetweenNow(DateTime lowRange, DateTime highRange)
         {
             return DateTime.Now > lowRange && DateTime.Now < highRange;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Numeric Condition", Name = "Range Intersect",
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition", Name = "Range Intersect",
             Description = "The two ranges (lowRange1-highRange1 & lowRange2-highRange2) intersect.", GenericType = EGenericType.All)]
         public bool RangeIntersect(T lowRange1, T highRange1, T lowRange2, T highRange2)
         {

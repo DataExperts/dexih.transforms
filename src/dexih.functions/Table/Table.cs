@@ -541,7 +541,10 @@ namespace dexih.functions
                 Description = Description,
                 LogicalName = LogicalName,
                 TableType = TableType,
-                QueryString = QueryString
+                QueryString = QueryString,
+                IsVersioned = IsVersioned,
+                OutputSortFields = OutputSortFields,
+                BaseTableName = BaseTableName,
             };
 
 

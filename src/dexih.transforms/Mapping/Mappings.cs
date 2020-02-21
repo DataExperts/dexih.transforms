@@ -293,7 +293,10 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public object[] GetJoinPrimaryKey()
         {
-            var inputs = _primaryMappings.OfType<MapJoin>().Select(c=>c.GetOutputValue()).ToArray();
+            var inputs = _primaryMappings.OfType<MapJoin>()
+                .Where(c => c.Compare == Dexih.Utils.DataType.ECompare.IsEqual)
+                .Select(c=>c.GetOutputValue())
+                .ToArray();
             return inputs;
         }
 
@@ -304,7 +307,10 @@ namespace dexih.transforms.Mapping
         /// <returns></returns>
         public object[] GetJoinReferenceKey(object[] joinRow)
         {
-            var joins = _primaryMappings.OfType<MapJoin>().Select(c=>c.GetJoinValue(joinRow)).ToArray();
+            var joins = _primaryMappings.OfType<MapJoin>()
+                .Where(c => c.Compare == Dexih.Utils.DataType.ECompare.IsEqual )
+                .Select(c=>c.GetJoinValue(joinRow))
+                .ToArray();
             return joins;
         }
 
@@ -317,7 +323,7 @@ namespace dexih.transforms.Mapping
         {
             foreach (var mapping in _primaryMappings.OfType<MapJoin>())
             {
-                if (mapping.CompareResult != 0)
+                if (mapping.Compare == Dexih.Utils.DataType.ECompare.IsEqual && mapping.CompareResult != 0)
                     return mapping.CompareResult;
             }
 

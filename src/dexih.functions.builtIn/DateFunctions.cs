@@ -5,34 +5,39 @@ namespace dexih.functions.builtIn
 {
     public class DateFunctions
     {
-          [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date", Name = "To Date",
+          [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date",
             Description =
-                "Return boolean if the value is a valid date.  If the date is value the result parameter contains the converted date.")]
-        public bool ToDate(string value, out DateTime result)
+                "Converts the string value to a date/time")]
+        public DateTime ToDate(string value)
+        {
+            var canParse = DateTime.TryParse(value, out var result);
+            if(canParse)
+            {
+                return result;
+            }
+
+            throw new Exception($"The value {value} could not be converted to a date.");
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date (Format)",
+            Description =
+                "Converts a sting to a date/time based on a specific string format.  See [format strings](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings?view=netframework-4.7.2) for more information.")]
+        public DateTime? ToDateExact(string value, string[] format)
         {
             if (string.IsNullOrEmpty(value))
             {
-                result = DateTime.MinValue;
-                return false;
+                return null;
             }
 
-            return DateTime.TryParse(value, out result);
-        }
-        
-        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Date", Name = "To Date (Format)",
-            Description =
-                "Converts a sting to a date based on a specific string format.  See [format strings](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings?view=netframework-4.7.2) for more information.")]
-        public bool ToDateExact(string value, string[] format, out DateTime result)
-        {
-            if (string.IsNullOrEmpty(value))
+            var canParse = DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out var result);
+            if(canParse)
             {
-                result = DateTime.MinValue;
-                return false;
+                return result;
             }
 
-            return DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out result);
+            throw new Exception($"The value {value} could not be converted to a date using the format {format}.");
         }
-        
+
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Create Date",
             Description =

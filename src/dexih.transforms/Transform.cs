@@ -70,7 +70,8 @@ namespace dexih.transforms
 
         public TableColumn JoinSortField { get; set; }
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
-        
+        public EJoinNotFoundStrategy? JoinNotFoundStrategy { get; set; } = EJoinNotFoundStrategy.NullJoin;
+
         public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).

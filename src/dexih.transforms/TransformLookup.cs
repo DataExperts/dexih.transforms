@@ -6,6 +6,7 @@ using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Dexih.Utils.DataType;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -27,11 +28,12 @@ namespace dexih.transforms
 
         public TransformLookup() { }
 
-        public TransformLookup(Transform primaryTransform, Transform joinTransform, Mappings mappings, string referenceTableAlias)
+        public TransformLookup(Transform primaryTransform, Transform joinTransform, Mappings mappings, EDuplicateStrategy joinDuplicateResolution, EJoinNotFoundStrategy joinNotFoundStrategy, string referenceTableAlias)
         {
             Mappings = mappings;
-            //JoinPairs = joinPairs;
             ReferenceTableAlias = referenceTableAlias;
+            JoinDuplicateStrategy = joinDuplicateResolution;
+            JoinNotFoundStrategy = joinNotFoundStrategy;
 
             SetInTransform(primaryTransform, joinTransform);
         }
@@ -71,8 +73,6 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
-            object[] newRow = null;
-
             // if there is a previous lookup cache, then just populated that as the next row.
             while(_lookupCache != null && _lookupCache.MoveNext())
             {
@@ -91,7 +91,12 @@ namespace dexih.transforms
                     continue;
                 }
 
-                newRow = new object[FieldCount];
+                if(JoinDuplicateStrategy == EDuplicateStrategy.Abend)
+                {
+                    throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the lookup {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                }
+
+                var newRow = new object[FieldCount];
                 var pos1 = 0;
                 for (var i = 0; i < _primaryFieldCount; i++)
                 {
@@ -110,20 +115,30 @@ namespace dexih.transforms
 
             _lookupCache = null;
 
-            if (await PrimaryTransform.ReadAsync(cancellationToken) == false)
+            //read a new row from the primary table.
+            while (await PrimaryTransform.ReadAsync(cancellationToken))
             {
-                return null;
+                var newRow = await GetLookup(cancellationToken);
+                if (newRow != null)
+                {
+                    return newRow;
+                }
             }
 
+            return null;
+        }
+
+        public async Task<object[]> GetLookup(CancellationToken cancellationToken)
+        {
             //load in the primary table values
-            newRow = new object[FieldCount];
+            var newRow = new object[FieldCount];
             var pos = 0;
             for (var i = 0; i < _primaryFieldCount; i++)
             {
                 newRow[pos] = PrimaryTransform[i];
                 pos++;
             }
-            
+
             //set the values for the lookup
             var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
             if (ignore)
@@ -131,7 +146,7 @@ namespace dexih.transforms
                 TransformRowsIgnored += 1;
             }
 
-            
+
             // create a select query with filters set to the values of the current row
             var selectQuery = new SelectQuery
             {
@@ -139,25 +154,26 @@ namespace dexih.transforms
                 {
                     Column1 = c.JoinColumn,
                     CompareDataType = ETypeCode.String,
-                    Operator = ECompare.IsEqual,
+                    Operator = c.Compare,
                     Value2 = c.GetOutputValue()
                 }))
             };
 
-            var lookupResult = await ReferenceTransform.Lookup(selectQuery, JoinDuplicateStrategy?? EDuplicateStrategy.Abend, cancellationToken);
+            var lookupResult = await ReferenceTransform.Lookup(selectQuery, JoinDuplicateStrategy ?? EDuplicateStrategy.Abend, cancellationToken);
+            var lookupFound = false;
+
             if (lookupResult != null)
             {
                 _lookupCache = lookupResult.GetEnumerator();
 
-                var lookupFound = false;
                 while (_lookupCache.MoveNext())
                 {
                     var lookup = _lookupCache.Current;
 
                     //set the values for the lookup
                     var (validRow, ignoreRow) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, lookup, cancellationToken);
-                    
-                    if(!validRow)
+
+                    if (!validRow)
                     {
                         TransformRowsFiltered += 1;
                         continue;
@@ -176,14 +192,30 @@ namespace dexih.transforms
                         newRow[pos] = lookup[i];
                         pos++;
                     }
+
+                    if (JoinDuplicateStrategy == EDuplicateStrategy.First)
+                    {
+                        _lookupCache = null;
+                        break;
+                    }
+
+                    if (JoinDuplicateStrategy == EDuplicateStrategy.All)
+                    {
+                        break;
+                    }
                 }
-                if(!lookupFound)
-                {
-                    _lookupCache = null;
-                }
+
             }
-            else
+
+            if (!lookupFound)
             {
+                switch (JoinNotFoundStrategy)
+                {
+                    case EJoinNotFoundStrategy.Abend:
+                        throw new JoinNotFoundException($"The lookup transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To continue, set the join not found strategy to continue.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                    case EJoinNotFoundStrategy.Filter:
+                        return null;
+                }
                 _lookupCache = null;
             }
 

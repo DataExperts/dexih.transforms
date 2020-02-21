@@ -1,4 +1,6 @@
-﻿namespace dexih.transforms
+﻿using System.ComponentModel;
+
+namespace dexih.transforms
 {
     // [JsonConverter(typeof(StringEnumConverter))]
     public enum ETransformType
@@ -13,6 +15,18 @@
         First,
         Last,
         All
+    }
+
+    public enum EJoinNotFoundStrategy
+    {
+        [Description("Abend Datalink")]
+        Abend = 0,
+
+        [Description("Add Null Join")]
+        NullJoin,
+
+        [Description("Filter Row")]
+        Filter
     }
 
     public enum ECacheMethod
