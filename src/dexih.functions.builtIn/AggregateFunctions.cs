@@ -22,7 +22,7 @@ namespace dexih.functions.BuiltIn
         private object _cacheObject;
         private object[] _cacheArray;
         private SortedRowsDictionary<T> _sortedRowsDictionary;
-        private T _cacheNumber;
+        private T _cacheGeneric;
         private int _cacheCount;
         private HashSet<T> _hashSet;
 
@@ -41,7 +41,7 @@ namespace dexih.functions.BuiltIn
             _cacheObject = null;
             _cacheArray = null;
             _sortedRowsDictionary = null;
-            _cacheNumber = default(T);
+            _cacheGeneric = default(T);
             _cacheCount = 0;
             _doubleList = null;
             _hashSet = null;
@@ -50,62 +50,62 @@ namespace dexih.functions.BuiltIn
         
         public DateTime? DateResult() => _cacheDate;
         public object ObjectResult() => _cacheObject;
-        public T NumberResult() => _cacheNumber;
+        public T GenericResult() => _cacheGeneric;
         public int CountResult() => _cacheCount;
 
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public void Sum(T value) => _cacheNumber = Operations.Add(_cacheNumber, value);
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Sum", Description = "Sum of the values", ResultMethod = nameof(GenericResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        public void Sum(T value) => _cacheGeneric = Operations.Add(_cacheGeneric, value);
 
        
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Average", Description = "Average of the values", ResultMethod = nameof(AverageResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public void Average(T value)
         {
-            _cacheNumber = Operations.Add(_cacheNumber, value);
+            _cacheGeneric = Operations.Add(_cacheGeneric, value);
             _cacheCount = _cacheCount + 1;
         }
         public T AverageResult()
         {
-            return _cacheCount == 0 ? default(T) : Operations.DivideInt(_cacheNumber, _cacheCount);
+            return _cacheCount == 0 ? default(T) : Operations.DivideInt(_cacheGeneric, _cacheCount);
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Minimum", Description = "Minimum Value", ResultMethod = nameof(GenericResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
         public void Min(T value)
         {
             if (_isFirst)
             {
                 _isFirst = false;
-                _cacheNumber = value;
+                _cacheGeneric = value;
             }
-            else if (Operations.LessThan(value, _cacheNumber)) _cacheNumber = value;
+            else if (Operations.LessThan(value, _cacheGeneric)) _cacheGeneric = value;
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Maximum", Description = "Maximum Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Maximum", Description = "Maximum Value", ResultMethod = nameof(GenericResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
         public void Max(T value)
         {
             if (_isFirst)
             {
                 _isFirst = false;
-                _cacheNumber = value;
+                _cacheGeneric = value;
             }
-            else if (Operations.GreaterThan(value, _cacheNumber)) _cacheNumber = value;
+            else if (Operations.GreaterThan(value, _cacheGeneric)) _cacheGeneric = value;
         }
 
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First", Description = "First Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First", Description = "First Value", ResultMethod = nameof(GenericResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
         public void First(T value)
         {
             if (_isFirst)
             {
                 _isFirst = false;
-                _cacheNumber = value;
+                _cacheGeneric = value;
             }
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last", Description = "Last Value", ResultMethod = nameof(NumberResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last", Description = "Last Value", ResultMethod = nameof(GenericResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
         public void Last(T value)
         {
-            _cacheNumber = value;
+            _cacheGeneric = value;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Count", Description = "Number of records", ResultMethod = nameof(CountResult), ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
@@ -258,21 +258,21 @@ namespace dexih.functions.BuiltIn
         }
         
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First When", Description = "First resultValue when the condition = conditionValue", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
-        public void FirstWhen(object condition, object conditionValue, T resultValue)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First When", Description = "First resultValue when the condition = conditionValue", ResultMethod = nameof(GenericResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void FirstWhen(bool whenTrue, T resultValue)
         {
-            if (Equals(condition, conditionValue) && _cacheObject == null)
+            if (whenTrue && _cacheObject == null)
             {
-                _cacheObject = resultValue;
+                _cacheGeneric = resultValue;
             }
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last When", Description = "Last resultValue when the condition = conditionValue", ResultMethod = nameof(ObjectResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
-        public void LastWhen(object condition, object conditionValue, T resultValue)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Last When", Description = "Last resultValue when the condition = conditionValue", ResultMethod = nameof(GenericResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void LastWhen(bool whenTrue, T resultValue)
         {
-            if (Equals(condition, conditionValue))
+            if (whenTrue)
             {
-                _cacheObject = resultValue;
+                _cacheGeneric = resultValue;
             }
         }
 
@@ -313,19 +313,19 @@ namespace dexih.functions.BuiltIn
             if (_cacheList == null)
             {
                 _cacheList = new List<T>();
-                _cacheNumber = default(T);
+                _cacheGeneric = default(T);
                 _oneHundred = Operations.Parse<T>(100);
             }
-            _cacheNumber = Operations.Add(_cacheNumber, value);
+            _cacheGeneric = Operations.Add(_cacheGeneric, value);
             _cacheList.Add(value);        
         }
 
         public T PercentTotalResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, EPercentFormat percentFormat = EPercentFormat.AsPercent)
         {
-            if (_cacheList == null || Operations.Equal(_cacheNumber, default(T)))
+            if (_cacheList == null || Operations.Equal(_cacheGeneric, default(T)))
                 return default(T);
 
-            var percent = Operations.Divide(_cacheList[index], _cacheNumber);
+            var percent = Operations.Divide(_cacheList[index], _cacheGeneric);
             
             return percentFormat == EPercentFormat.AsDecimal ? percent : Operations.Multiply(percent, _oneHundred);
         }
@@ -396,16 +396,16 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public object RunningSum(T value)
         {
-            _cacheNumber = Operations.Add(_cacheNumber, value);
-            return _cacheNumber;
+            _cacheGeneric = Operations.Add(_cacheGeneric, value);
+            return _cacheGeneric;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public object RunningAverage(T value)
         {
-            _cacheNumber = Operations.Add(_cacheNumber, value);
+            _cacheGeneric = Operations.Add(_cacheGeneric, value);
             _cacheCount++;
-            return Operations.DivideInt(_cacheNumber, _cacheCount);
+            return Operations.DivideInt(_cacheGeneric, _cacheCount);
         }
         
 

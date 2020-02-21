@@ -124,7 +124,7 @@ namespace dexih.functions
                 {
                     var variable = p.GetCustomAttribute<TransformFunctionVariableAttribute>();
 
-                    return !p.IsOut && variable is null && !p.ParameterType.IsAssignableFrom(typeof(CancellationToken));
+                    return !p.IsOut && variable is null && p.ParameterType != typeof(CancellationToken);
                 }
 
                 bool IsIgnoreParameter(ParameterInfo p)

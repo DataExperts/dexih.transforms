@@ -3,24 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="27509d91-85ce-45b0-a4f5-8f403b63411e" name="Default" comment="fixed more tests">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.dexih.transforms/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connectinos.db2.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connectinos.db2.tests/dexih.connectinos.db2.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.azure.tests/dexih.connections.azure.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.excel.tests/dexih.connections.excel.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.flatfile.tests/dexih.connections.flatfile.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.ftp.tests/dexih.connections.ftp.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mongo.tests/dexih.connections.mongo.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mongo.tests/dexih.connections.mongo.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.mysql.tests/dexih.connections.mysql.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.oracle.tests/dexih.connections.oracle.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgressql.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.postgressql.tests/dexih.connections.postgressql.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sftp.tests/dexih.connections.sftp.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sftp.tests/dexih.connections.sftp.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlite.tests/dexih.connections.sqlite.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.sqlserver.tests/dexih.connections.sqlserver.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.test/dexih.connections.test.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.test/dexih.connections.test.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/dexih.connections.webservice.restful.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.connections.webservice.restful.tests/dexih.connections.webservice.restful.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/dexih.functions.builtIn.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.builtIn.tests/dexih.functions.builtIn.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.ml.tests/dexih.functions.ml.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.ml.tests/dexih.functions.ml.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.functions.tests/dexih.functions.tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/dexih.transforms.tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/dexih.transforms.tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -436,12 +419,12 @@
         <option value="$PROJECT_DIR$/test/dexih.transforms.tests/Helpers.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Poco/PocoTable.cs" />
         <option value="$PROJECT_DIR$/test/dexih.transforms.tests/ReaderMemoryTests.cs" />
-        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ConnectionSql.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/TransformTests.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/Connection.cs" />
         <option value="$PROJECT_DIR$/src/dexih.transforms/ReaderMemory.cs" />
         <option value="$PROJECT_DIR$/test/dexih.connections.test/dexih.connections.test.csproj" />
+        <option value="$PROJECT_DIR$/test/dexih.transforms.tests/TransformDeltaTests.cs" />
       </list>
     </option>
   </component>
@@ -788,14 +771,7 @@
       <workItem from="1580775238824" duration="1821000" />
       <workItem from="1581743909139" duration="2920000" />
       <workItem from="1582171832903" duration="333000" />
-      <workItem from="1582172218652" duration="1021000" />
-    </task>
-    <task id="LOCAL-00027" summary="fixe postgres insert type conversion">
-      <created>1526095369435</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1526095369435</updated>
+      <workItem from="1582172218652" duration="1342000" />
     </task>
     <task id="LOCAL-00028" summary="fix test">
       <created>1526095857431</created>
@@ -1133,7 +1109,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581894805153</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <task id="LOCAL-00076" summary="fixed more tests">
+      <created>1582174081477</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1582174081478</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1227,10 +1210,11 @@
     <option name="LAST_COMMIT_MESSAGE" value="fixed more tests" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="485" y="254" key="#samples\FunctionExamples" timestamp="1579212818213">
-      <screen x="0" y="0" width="1680" height="1050" />
+    <state x="2650" y="457" key="#samples\FunctionExamples" timestamp="1582240732499">
+      <screen x="1680" y="0" width="3360" height="1890" />
     </state>
     <state x="485" y="254" key="#samples\FunctionExamples/0.0.1680.1050@0.0.1680.1050" timestamp="1579212818213" />
+    <state x="2650" y="457" key="#samples\FunctionExamples/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1582240732499" />
     <state x="722" y="366" width="597" height="498" key="#xdebugger.evaluate" timestamp="1577832574881">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
@@ -1454,11 +1438,11 @@
     <state x="605" y="383" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1680.1050@0.0.1680.1050" timestamp="1577585212845" />
     <state x="605" y="383" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/1680.0.3360.1890/0.0.1680.1050@0.0.1680.1050" timestamp="1581893374203" />
     <state x="2889" y="689" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576977110889" />
-    <state x="18" y="58" width="1644" height="910" key="find.popup" timestamp="1577583285381">
-      <screen x="0" y="0" width="1680" height="1050" />
+    <state x="1714" y="104" width="3288" height="1638" key="find.popup" timestamp="1582240638750">
+      <screen x="1680" y="0" width="3360" height="1890" />
     </state>
     <state x="18" y="58" width="1644" height="910" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1577583285381" />
-    <state x="1714" y="104" width="3288" height="1638" key="find.popup/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1576974790203" />
+    <state x="1714" y="104" width="3288" height="1638" key="find.popup/1680.0.3360.1890/0.0.1680.1050@1680.0.3360.1890" timestamp="1582240638750" />
     <state x="3424" y="-286" width="1951" height="1679" key="find.popup/3840.2160/3360.2100" timestamp="1576620685861" />
   </component>
   <component name="XDebuggerManager">
