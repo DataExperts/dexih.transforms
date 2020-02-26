@@ -566,7 +566,7 @@ namespace dexih.connections.azure
                 else
                 {
                     entity = tableResult.Result as DynamicTableEntity;
-                    value = (T) entity.Properties[IncrementalValueName].PropertyAsObject;
+                    value = GetEntityProperty<T>(entity.Properties[IncrementalValueName]); 
                     entity.Properties[IncrementalValueName] = NewEntityProperty<T>(value);
                     entity.Properties[LockGuidName] = new EntityProperty(lockGuid);
                 }
@@ -629,6 +629,11 @@ namespace dexih.connections.azure
                 default:
                     throw new ConnectionException($"The datatype {value.GetType()} is not supported for incremental columns.  Use an integer type instead.");
             }
+        }
+
+        private T GetEntityProperty<T>(EntityProperty prop)
+        {
+            return (T)Convert.ChangeType(prop.PropertyAsObject, typeof(T));
         }
 
         public string ConvertOperator(ECompare Operator)
