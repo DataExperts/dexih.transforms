@@ -214,17 +214,14 @@ namespace dexih.connections.webservice.restful
 
                 if (newRestFunction.Columns.Count > 0)
                 {
-	                var response = await GetWebServiceResponse(newRestFunction, query?.Filters, cancellationToken);
+	                var (url, statusCode, isSuccess, dataStream) = await GetWebServiceResponse(newRestFunction, query?.Filters, cancellationToken);
 
-	                if (!response.isSuccess)
+	                if (!isSuccess)
 	                {
-		                throw new ConnectionException($"The web service called failed with response {response.statusCode}.  Url used: {response.url}");
+		                throw new ConnectionException($"The web service called failed with response {statusCode}.  Url used: {url}");
 	                }
 
-	                var dataStream = response.response;
-
-
-					ICollection<TableColumn> fileColumns = null;
+	                ICollection<TableColumn> fileColumns = null;
 
 					switch (newRestFunction.FormatType)
 					{
@@ -281,22 +278,6 @@ namespace dexih.connections.webservice.restful
                 }
             }
             
-            HttpClientHandler handler = null;
-            if (!string.IsNullOrEmpty(Username))
-            {
-                var credentials = new NetworkCredential(Username, Password);
-                var creds = new CredentialCache
-                    {
-                        { new Uri(Server), "basic", credentials },
-                        { new Uri(Server), "digest", credentials },
-                    };
-                handler = new HttpClientHandler { Credentials = creds };
-            }
-            else
-            {
-                handler = new HttpClientHandler();
-            }
-            
 			Uri completeUri;
 
 			if (!Server.EndsWith("/") && !Server.Contains("?") && !uri.StartsWith("/"))
@@ -307,16 +288,36 @@ namespace dexih.connections.webservice.restful
 			{
 				completeUri = new Uri(Server + uri);
 			}
+			
+			HttpClientHandler handler = null;
+			if (!string.IsNullOrEmpty(Username))
+			{
+				var credentials = new NetworkCredential(Username, Password);
+				var creds = new CredentialCache
+				{
+					{ new Uri(Server), "basic", credentials },
+					{ new Uri(Server), "digest", credentials },
+				};
+				handler = new HttpClientHandler { Credentials = creds };
+			}
+			else
+			{
+				handler = new HttpClientHandler();
+			}
 
-			var client = ClientFactory.CreateClient();
+			using var client = new HttpClient(handler);
 			var request = new HttpRequestMessage( HttpMethod.Get, completeUri);
-			request.Headers.Accept.Clear();
+
+			// commented as cannot workout how to do digest authentication
+			// var client = ClientFactory?.CreateClient() ?? new HttpClient();
+			// request.Headers.Accept.Clear();
+			// request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{Username}:{Password}")));
 			
             if (string.Compare(Username, "bearer", StringComparison.OrdinalIgnoreCase) == 0)
             {
 	            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Password);
             }
-
+            
             var response = await client.SendAsync(request, cancellationToken);
 
 			return (completeUri.ToString(), response.StatusCode.ToString(), response.IsSuccessStatusCode, await response.Content.ReadAsStreamAsync());
