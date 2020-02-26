@@ -239,7 +239,7 @@ namespace dexih.connections.mongo
 
                     if (table.Columns[i].DeltaType == EDeltaType.DbAutoIncrement)
                     {
-                        keyValue = await GetLastKey(table, sk, cancellationToken);
+                        keyValue = await GetMaxValue<long>(table, sk, cancellationToken);
                     }
                 }
 
@@ -301,7 +301,7 @@ namespace dexih.connections.mongo
 
                 if (keyValue > -1 && sk != null)
                 {
-                    await UpdateIncrementalKey(table, sk.Name, keyValue, cancellationToken);
+                    await UpdateMaxValue(table, sk.Name, keyValue, cancellationToken);
                 }
 
                 await Task.WhenAll(tasks);
@@ -415,7 +415,7 @@ namespace dexih.connections.mongo
                 var incremental = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (incremental != null)
                 {
-                    await UpdateIncrementalKey(table, incremental.TableColumnName(), 0, cancellationToken);
+                    await UpdateMaxValue(table, incremental.TableColumnName(), 0, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -658,10 +658,10 @@ namespace dexih.connections.mongo
         /// Note: Azure does not have a max function, so we used a key's table to store surrogate keys for each table.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="incrementalColumn"></param>
+        /// <param name="column"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<long> GetLastKey(Table table, TableColumn incrementalColumn, CancellationToken cancellationToken = default)
+        public override async Task<T> GetMaxValue<T>(Table table, TableColumn column, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -669,16 +669,16 @@ namespace dexih.connections.mongo
                 var collection = database.GetCollection<BsonDocument>(IncrementalKeyTable);
 
                 var filterBuilder = Builders<BsonDocument>.Filter;
-                var filter = filterBuilder.Eq("tableName", table.Name) & filterBuilder.Eq("columnName", incrementalColumn.Name);
+                var filter = filterBuilder.Eq("tableName", table.Name) & filterBuilder.Eq("columnName", column.Name);
                 var document = await (await collection.FindAsync(filter, cancellationToken: cancellationToken)).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
                 if (document == null)
                 {
-                    return 0;
+                    return default;
                 }
                 else
                 {
-                    var value = document["value"].ToInt64();
+                    var value = document["value"].ToObject<T>();
                     return value;
                 }
 
@@ -689,7 +689,7 @@ namespace dexih.connections.mongo
             }
         }
 
-        public override async Task UpdateIncrementalKey(Table table, string incrementalColumnName, object value, CancellationToken cancellationToken = default)
+        public override async Task UpdateMaxValue<T>(Table table, string incrementalColumnName, T value, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -898,7 +898,7 @@ namespace dexih.connections.mongo
                 var dbAutoIncrement = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (dbAutoIncrement != null)
                 {
-                    keyValue = await GetLastKey(table, dbAutoIncrement, cancellationToken);
+                    keyValue = await GetMaxValue<long>(table, dbAutoIncrement, cancellationToken);
                 }
 
                 long identityValue = 0;
@@ -933,7 +933,7 @@ namespace dexih.connections.mongo
                 
                 if (keyValue > -1 && dbAutoIncrement != null)
                 {
-                    await UpdateIncrementalKey(table, dbAutoIncrement.Name, keyValue, cancellationToken);
+                    await UpdateMaxValue(table, dbAutoIncrement.Name, keyValue, cancellationToken);
                 }
                 
                 await collection.InsertManyAsync(data, cancellationToken: cancellationToken);

@@ -100,103 +100,110 @@ using System.Threading.Tasks;
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (_first && _reader is Transform t && !t.IsOpen )
-            {
-                await t.Open(0, null, cancellationToken);
+            try {
+                if (_first && _reader is Transform t && !t.IsOpen)
+                {
+                    await t.Open(0, null, cancellationToken);
+                }
+
+                if (!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
+                {
+                    _reader.Close();
+                    return 0;
+                }
+
+                var readCount = _memoryStream.Read(buffer, offset, count);
+
+                // if the buffer already has enough content.
+                if (readCount < count && count > _memoryStream.Length - _memoryStream.Position)
+                {
+                    _memoryStream.SetLength(0);
+
+                    if (_first)
+                    {
+                        _hasRows = await _reader.ReadAsync(cancellationToken);
+
+                        if (_hasRows == false)
+                        {
+                            await _streamWriter.WriteAsync("]}");
+                        }
+
+                        _first = false;
+                    }
+
+                    // populate the stream with rows, up to the buffer size.
+                    while (_hasRows)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            _reader.Close();
+                            return 0;
+                        }
+
+                        _reader.GetValues(_valuesArray);
+
+                        for (var i = 0; i < _valuesArray.Length; i++)
+                        {
+                            if (_valuesArray[i] is byte[])
+                            {
+                                _valuesArray[i] = "binary data not viewable.";
+                            }
+
+                            if (_valuesArray[i] is Geometry geometry)
+                            {
+                                _valuesArray[i] = geometry.AsText();
+                            }
+
+                            if (_valuesArray[i] is string valueString && _maxFieldSize >= 0 &&
+                                valueString.Length > _maxFieldSize)
+                            {
+                                _valuesArray[i] = valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
+                            }
+                        }
+
+                        var row = _valuesArray.Serialize();
+
+                        await _streamWriter.WriteAsync(row);
+
+                        _rowCount++;
+                        _hasRows = await _reader.ReadAsync(cancellationToken);
+
+                        if (_hasRows && _rowCount < _maxRows)
+                        {
+                            await _streamWriter.WriteAsync(",");
+                        }
+                        else
+                        {
+                            await _streamWriter.WriteAsync("]");
+
+                            if (_reader is Transform transform)
+                            {
+                                var properties = transform.GetTransformProperties(true);
+                                var propertiesSerialized = properties.Serialize();
+                                await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
+                            }
+
+                            await _streamWriter.WriteAsync("}");
+
+                            _hasRows = false;
+                            break;
+                        }
+                    }
+
+                    _memoryStream.Position = 0;
+
+                    readCount += _memoryStream.Read(buffer, readCount, count - readCount);
+                }
+
+                _position += readCount;
+
+                return readCount;
             }
-            
-            if(!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
+            catch
             {
                 _reader.Close();
-                return 0;
+                throw;
             }
-
-            var readCount = _memoryStream.Read(buffer, offset, count);
-
-            // if the buffer already has enough content.
-            if (readCount < count && count > _memoryStream.Length - _memoryStream.Position)
-            {
-                _memoryStream.SetLength(0);
-
-                if (_first)
-                {
-                    _hasRows = await _reader.ReadAsync(cancellationToken);
-
-                    if (_hasRows == false)
-                    {
-                        await _streamWriter.WriteAsync("]}");
-                    }
-
-                    _first = false;
-                }
-
-                // populate the stream with rows, up to the buffer size.
-                while (_hasRows)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        _reader.Close();
-                        return 0;
-                    }
-
-                    _reader.GetValues(_valuesArray);
-
-                    for (var i = 0; i < _valuesArray.Length; i++)
-                    {
-                        if (_valuesArray[i] is byte[])
-                        {
-                            _valuesArray[i] = "binary data not viewable.";
-                        }
-
-                        if (_valuesArray[i] is Geometry geometry)
-                        {
-                            _valuesArray[i] = geometry.AsText();
-                        }
-
-                        if (_valuesArray[i] is string valueString && _maxFieldSize >= 0 &&
-                            valueString.Length > _maxFieldSize)
-                        {
-                            _valuesArray[i] = valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
-                        }
-                    }
-
-                    var row = _valuesArray.Serialize();
-
-                    await _streamWriter.WriteAsync(row);
-
-                    _rowCount++;
-                    _hasRows = await _reader.ReadAsync(cancellationToken);
-
-                    if (_hasRows && _rowCount < _maxRows)
-                    {
-                        await _streamWriter.WriteAsync(",");
-                    }
-                    else
-                    {
-                        await _streamWriter.WriteAsync("]");
-
-                        if (_reader is Transform transform)
-                        {
-                            var properties = transform.GetTransformProperties(true);
-                            var propertiesSerialized = properties.Serialize();
-                            await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
-                        }
-
-                        await _streamWriter.WriteAsync("}");
-
-                        _hasRows = false;
-                        break;
-                    }
-                }
-
-                _memoryStream.Position = 0;
-
-                readCount += _memoryStream.Read(buffer, readCount, count - readCount);
-            }
-
-            _position += readCount;
-
-            return readCount;
         }
 
         public override long Seek(long offset, SeekOrigin origin)

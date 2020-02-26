@@ -165,7 +165,7 @@ namespace dexih.transforms
         public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             var t = GetTable(table.Name);
-            var reader = new TransformQuery(new ReaderMemory(t), query);
+            using var reader = new TransformQuery(new ReaderMemory(t), query);
             await reader.Open(cancellationToken);
             var hasRow = await reader.ReadAsync(cancellationToken);
 
@@ -183,7 +183,6 @@ namespace dexih.transforms
                 value = reader[query.Columns[0].Column.Name];
             }
             reader.Close();
-            reader.Dispose();
 
             return value;
         }

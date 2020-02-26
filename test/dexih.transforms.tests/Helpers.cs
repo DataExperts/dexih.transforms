@@ -156,6 +156,44 @@ namespace dexih.transforms.tests
             return adapter;
         }
 
+        public static ReaderMemory CreateValidDatesSourceData()
+        {
+            var table = new Table("Source", 0);
+            table.AddColumn("IntColumn", ETypeCode.Int32);
+            table.AddColumn("StringColumn", ETypeCode.String);
+            table.AddColumn("ValidFrom", ETypeCode.DateTime, EDeltaType.ValidFromDate);
+            table.AddColumn("ValidTo", ETypeCode.DateTime, EDeltaType.ValidToDate);
+            table.AddColumn("IsValid", ETypeCode.Boolean, EDeltaType.IsCurrentField);
+
+            table.AddRow(1, "value01", new DateTime(2000, 01, 01), new DateTime(2000, 02, 01), false);
+            table.AddRow(1, "value01", new DateTime(2000, 02, 01), new DateTime(2000, 03, 01), true);
+
+            var adapter = new ReaderMemory(table);
+            adapter.Reset();
+            return adapter;
+        }
+
+        public static ReaderMemory CreateValidDatesJoinData()
+        {
+            var table = new Table("Join", 0);
+            table.AddColumn("StringColumn", ETypeCode.String);
+            table.AddColumn("IntColumn", ETypeCode.Int32);
+            table.AddColumn("LookupValue", ETypeCode.String);
+            table.AddColumn("ValidFrom", ETypeCode.DateTime, EDeltaType.ValidFromDate);
+            table.AddColumn("ValidTo", ETypeCode.DateTime, EDeltaType.ValidToDate);
+            table.AddColumn("IsValid", ETypeCode.Boolean, EDeltaType.IsCurrentField);
+
+            table.AddRow("value01", 1, "lookup1a", new DateTime(1999, 01, 01), new DateTime(1999, 06, 30), false); // won't join
+            table.AddRow("value01", 1, "lookup1b", new DateTime(1999, 07, 01), new DateTime(2000, 01, 10), false); // partial join
+            table.AddRow("value01", 1, "lookup1c", new DateTime(2000, 01, 10), new DateTime(2000, 02, 10), true); // join across ranges
+            table.AddRow("value01", 1, "lookup1d", new DateTime(2000, 02, 10), new DateTime(2000, 03, 10), true); // partial join
+
+            var adapter = new ReaderMemory(table);
+            adapter.Reset();
+            return adapter;
+        }
+
+
         public static ReaderMemory CreateValidationTestData()
         {
             var table = new Table("test", 0,

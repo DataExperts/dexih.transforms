@@ -118,6 +118,13 @@ namespace dexih.functions.BuiltIn
             return GreaterThanOrEqual(value, lowRange) && LessThanOrEqual(value, highRange);
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "General Condition",
+    Name = "Is Valid Date Range", Description = "Value is equal/greater than low range, and less than (but not equal) to the high range.", GenericType = EGenericType.All)]
+        public bool IsBetweenRange(T value, T lowRange, T highRange)
+        {
+            return GreaterThanOrEqual(value, lowRange) && LessThan(value, highRange);
+        }
+
         [TransformFunction(FunctionType = EFunctionType.Condition, Category = "String Condition",
             Name = "Is Regular Expression", Description = "Value matches the specified regular expression.")]
         public bool RegexMatch(string input, string pattern)

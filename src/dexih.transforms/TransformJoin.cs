@@ -53,6 +53,14 @@ namespace dexih.transforms
         private int _nodeColumnOrdinal = -1;
         private MapJoinNode _nodeMapping;
 
+        private int _primaryValidFromOrdinal = -1;
+        private int _primaryValidToOrdinal = -1;
+        private int _referenceValidFromOrdinal = -1;
+        private int _referenceValidToOrdinal = -1;
+
+        private int _validFromOrdinal = -1;
+        private int _validToOrdinal = -1;
+
         private bool _cacheLoaded = false;
 
 
@@ -78,6 +86,29 @@ namespace dexih.transforms
             };
         }
 
+        protected override Table InitializeCacheTable(bool mapAllReferenceColumns)
+        {
+            Table table;
+            if (Mappings == null)
+            {
+                table = PrimaryTransform.CacheTable.Copy();
+            } else
+            {
+                table = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
+            }
+
+            if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
+            {
+                var col = table.Columns.First(c => c.DeltaType == EDeltaType.ValidFromDate);
+                table.Columns.Remove(col);
+
+                col = table.Columns.First(c => c.DeltaType == EDeltaType.ValidToDate);
+                table.Columns.Remove(col);
+            }
+
+            return table;
+        }
+
         private Task<bool> InitializeOutputFields()
         {
             if (ReferenceTransform == null)
@@ -99,7 +130,6 @@ namespace dexih.transforms
                 if (mapping is MapFilter) continue;
 
                 _additionalJoins.Add(mapping);
-
             }
 
             // add a filter transform when for any mappings which involve primary table only
@@ -261,9 +291,26 @@ namespace dexih.transforms
                     _nodeColumnOrdinal = CacheTable.GetOrdinal(nodeColumn);
                 }
             }
-            
+
+            if(JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
+            {
+                _primaryValidFromOrdinal = PrimaryTransform.GetOrdinal(EDeltaType.ValidFromDate);
+                _primaryValidToOrdinal = PrimaryTransform.GetOrdinal(EDeltaType.ValidToDate);
+                _referenceValidFromOrdinal = ReferenceTransform.GetOrdinal(EDeltaType.ValidFromDate);
+                _referenceValidToOrdinal = ReferenceTransform.GetOrdinal(EDeltaType.ValidToDate);
+
+                if(_primaryValidFromOrdinal < 0 || _primaryValidToOrdinal < 0 || _referenceValidFromOrdinal < 0 || _referenceValidToOrdinal < 0)
+                {
+                    throw new Exception("The join transform has a duplicate strategy of Merge Valid/To/From dates, however the primary or join tables do not each contain a columns with delta types valid from and valid to.");
+                }
+
+                _validFromOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidFromDate);
+                _validToOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidToDate);
+            }
+
+
             //if the joinSortField has been, we need to ensure the reference dataset is sorted for duplication resolution.
-            if(JoinSortField != null)
+            if (JoinSortField != null)
             {
                 if(!SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))
                 {
@@ -369,31 +416,41 @@ namespace dexih.transforms
             //i.e. outer join.
             if (_writeGroup)
             {
-                var pos = 0;
-
                 //create a new row and write the primary fields out
                 var newRow = new object[FieldCount];
-                for (var i = 0; i < _primaryFieldCount; i++)
+                var pos = SetPrimaryRow(newRow);
+
+                object[] joinRow = null;
+                if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
                 {
-                    newRow[pos] = PrimaryTransform[i];
-                    pos++;
+                    joinRow = GetNextValidReference();
+                    //if (joinRow != null)
+                    //{
+                    //    newRow[_primaryValidFromOrdinal] = joinRow[_referenceValidFromOrdinal];
+                    //    newRow[_primaryValidToOrdinal] = joinRow[_referenceValidToOrdinal];
+                    //}
+                }
+                else
+                {
+                    joinRow = _groupData[_writeGroupPosition];
+                    _writeGroupPosition++;
                 }
 
-                var joinRow = _groupData[_writeGroupPosition];
-
-                for (var i = 0; i < _referenceFieldCount; i++)
+                if (joinRow != null)
                 {
-                    newRow[pos] = joinRow[i];
-                    pos++;
+                    for (var i = 0; i < _referenceFieldCount; i++)
+                    {
+                        newRow[pos] = joinRow[i];
+                        pos++;
+                    }
+
+
+                    //if last join record, then set the flag=false so the next read will read another primary row record.
+                    if (_writeGroupPosition >= _groupData.Count)
+                        _writeGroup = false;
+
+                    return newRow;
                 }
-
-                _writeGroupPosition++;
-
-                //if last join record, then set the flag=false so the next read will read another primary row record.
-                if (_writeGroupPosition >= _groupData.Count)
-                    _writeGroup = false;
-
-                return newRow;
             }
 
             //read a new row from the primary table.
@@ -412,7 +469,6 @@ namespace dexih.transforms
         private async Task<object[]> GetJoin(CancellationToken cancellationToken = default)
         {
             var newRow = new object[FieldCount];
-            var pos = 0;
             var joinMatchFound = false;
 
             //if input is sorted, then run a sorted join
@@ -520,16 +576,7 @@ namespace dexih.transforms
                 }
             }
 
-            //create a new row and write the primary fields out
-            for (var i = 0; i < _primaryFieldCount; i++)
-            {
-                if (pos == _nodeColumnOrdinal) pos++;
-
-                if (pos >= FieldCount) break;
-
-                newRow[pos] = PrimaryTransform[i];
-                pos++;
-            }
+            var pos = SetPrimaryRow(newRow);
 
             if (joinMatchFound)
             {
@@ -564,12 +611,21 @@ namespace dexih.transforms
 
                 object[] joinRow;
 
-                if (groupData.Count > 1)
+                if(groupData.Count == 0)
+                {
+                    joinRow = null;
+                }
+                else
                 {
                     switch (JoinDuplicateStrategy)
                     {
                         case EDuplicateStrategy.Abend:
-                            throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the join table {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                            if (groupData.Count > 1)
+                            {
+                                throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the join table {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                            }
+                            joinRow = groupData[0];
+                            break;
                         case EDuplicateStrategy.First:
                             joinRow = groupData[0];
                             break;
@@ -578,16 +634,18 @@ namespace dexih.transforms
                             break;
                         case EDuplicateStrategy.All:
                             joinRow = groupData[0];
-                            _writeGroup = true;
+                            _writeGroup = groupData.Count > 1;
                             _writeGroupPosition = 1;
+                            break;
+                        case EDuplicateStrategy.MergeValidDates:
+                            _groupData = _groupData.OrderBy(c => c[_referenceValidFromOrdinal]).ToList();
+                            _writeGroup = true;
+                            _writeGroupPosition = 0;
+                            joinRow = GetNextValidReference();
                             break;
                         default:
                             throw new TransformException($"The join transform {Name}  failed due to an unknown join strategy {JoinDuplicateStrategy}");
                     }
-                }
-                else
-                {
-                    joinRow = groupData.Count == 0 ? null : groupData[0];
                 }
 
                 if (joinRow == null)
@@ -621,6 +679,13 @@ namespace dexih.transforms
                             newRow[pos] = joinRow[i];
                             pos++;
                         }
+                    } else
+                    {
+                        if(JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
+                        {
+                            newRow[_validFromOrdinal] = PrimaryTransform[_primaryValidFromOrdinal];
+                            newRow[_validToOrdinal] = PrimaryTransform[_primaryValidToOrdinal];
+                        }
                     }
                 }
               
@@ -644,9 +709,41 @@ namespace dexih.transforms
                     await outTransform.Open(AuditKey, null, cancellationToken);
                     newRow[_nodeColumnOrdinal] = outTransform;
                 }
+
+                if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
+                {
+                    newRow[_validFromOrdinal] = PrimaryTransform[_primaryValidFromOrdinal];
+                    newRow[_validToOrdinal] = PrimaryTransform[_primaryValidToOrdinal];
+                }
             }
 
             return newRow;
+        }
+
+        private int SetPrimaryRow(object[] newRow)
+        {
+            var pos = 0;
+            //create a new row and write the primary fields out
+            for (var i = 0; i < _primaryFieldCount; i++)
+            {
+                if (pos == _nodeColumnOrdinal) pos++;
+
+                // skip source validfrom/validto as these are merged in joined row.
+                if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
+                {
+                    if (i == _primaryValidFromOrdinal || i == _primaryValidToOrdinal)
+                    {
+                        continue;
+                    }
+                }
+
+                if (pos >= FieldCount) break;
+
+                newRow[pos] = PrimaryTransform[i];
+                pos++;
+            }
+
+            return pos;
         }
 
         /// <summary>
@@ -712,6 +809,75 @@ namespace dexih.transforms
             return true;
         }
 
+        private object[] GetNextValidReference()
+        {
+            var validFrom = PrimaryTransform.GetDateTime(_primaryValidFromOrdinal);
+            var validTo = PrimaryTransform.GetDateTime(_primaryValidToOrdinal);
+
+            object[] joinRow = null;
+
+            while (_writeGroupPosition < _groupData.Count)
+            {
+                joinRow = _groupData[_writeGroupPosition];
+
+                var refValidFrom = (DateTime) joinRow[_referenceValidFromOrdinal];
+                var refValidTo = (DateTime)joinRow[_referenceValidToOrdinal];
+
+                // if the reference in past, move to next reference record
+                if(refValidTo <= validFrom)
+                {
+                    _writeGroupPosition++;
+                    continue;
+                }
+
+                // if the reference is in the future, then no match.
+                if(refValidFrom > validTo)
+                {
+                    _writeGroup = false;
+                    return null;
+                }
+
+                // if the reference range is outside the current range, then exit and use the primary range.
+                if(refValidFrom >= validFrom && refValidTo <= validTo)
+                {
+                    _writeGroupPosition++;
+                    break;
+                }
+
+                // copy the array, as we are changing elements.
+                joinRow = joinRow.ToArray();
+
+                if (refValidFrom < validFrom)
+                {
+                    joinRow[_referenceValidFromOrdinal] = validFrom;
+                }
+
+                if (refValidTo <= validTo)
+                {
+                    _writeGroupPosition++;
+                }
+                else
+                {
+                    // ignore where the validfrom/valid to are equal
+                    if((DateTime)joinRow[_referenceValidFromOrdinal] == validTo)
+                    {
+                        _writeGroup = false;
+                        return null;
+                    }
+
+                    joinRow[_referenceValidToOrdinal] = validTo;
+                    _writeGroup = false;
+                }
+
+                break;
+            }
+
+            if (_writeGroupPosition >= _groupData.Count)
+                _writeGroup = false;
+
+            return joinRow;
+        }
+
         private class JoinKeyComparer : IComparer<object[]>
         {
             public int Compare(object[] x, object[] y)
@@ -742,6 +908,18 @@ namespace dexih.transforms
             {
                 fields.Add(new Sort {Column = joinPair.InputColumn, Direction = ESortDirection.Ascending});
             }
+
+            if(JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
+            {
+                var column = CacheTable.GetColumn(EDeltaType.ValidFromDate);
+                if (fields.Count(c => c.Column.Name == column.Name) > 0)
+                {
+                    throw new TransformException("The update strategy is merge valid dates, and the validfrom field is part of the joins.  Remove the validfrom from the joins.");
+                }
+
+                fields.Add(new Sort { Column = column, Direction = ESortDirection.Ascending });
+            }
+            
             return fields;
         }
 

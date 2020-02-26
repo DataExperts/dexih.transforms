@@ -11,10 +11,20 @@ namespace dexih.transforms
     // [JsonConverter(typeof(StringEnumConverter))]
     public enum EDuplicateStrategy
     {
+        [Description("Abend Datalink")]
         Abend = 0,
+
+        [Description("First Row")]
         First,
+
+        [Description("Last Row")]
         Last,
-        All
+
+        [Description("All Rows")]
+        All,
+
+        [Description("Merge Valid To/From")]
+        MergeValidDates,
     }
 
     public enum EJoinNotFoundStrategy

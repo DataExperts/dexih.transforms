@@ -365,7 +365,7 @@ namespace dexih.functions.builtIn.tests
         [Theory]
         [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.FirstWhen), 1, 1)]
         [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.LastWhen), 1, 9)]
-        public  void AggregateWhenFunctionTest(Type type, string methodName, object test, object expectedResult)
+        public  void AggregateWhenFunctionTest(Type type, string methodName, int test, object expectedResult)
         {
             var function = Functions.GetFunction(type.FullName, methodName, BuiltInAssembly);
             var transformFunction = function.GetTransformFunction(typeof(int));
@@ -376,7 +376,7 @@ namespace dexih.functions.builtIn.tests
                 {
                     var value = i % 2;
 
-                    var functionResult = transformFunction.RunFunction(new[] { test, value, i }, CancellationToken.None);
+                    var functionResult = transformFunction.RunFunction(new object[] { test == value, i }, CancellationToken.None);
                 }
 
                 var aggregateResult = transformFunction.RunResult(null, out _, CancellationToken.None).returnValue;

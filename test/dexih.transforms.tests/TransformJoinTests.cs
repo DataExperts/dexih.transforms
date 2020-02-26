@@ -683,5 +683,41 @@ namespace dexih.transforms.tests
             Assert.False(await link.ReadAsync());
         }
 
+
+        /// <summary>
+        /// Checks the join transform correctly raises an exception when a duplicate join key exists.  The data is sorted to test the sortedjoin algorithm.
+        /// </summary>
+        [Fact]
+        public async Task JoinMergeValidDates()
+        {
+            var source = Helpers.CreateValidDatesSourceData();
+            var sortedJoinData = Helpers.CreateValidDatesJoinData();
+
+            var mappings = new Mappings { new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.MergeValidDates, EJoinNotFoundStrategy.NullJoin, null, "Join");
+
+            await transformJoin.Open(1, null, CancellationToken.None);
+
+            Assert.True(await transformJoin.ReadAsync());
+            Assert.Equal(new DateTime(2000, 01, 01), transformJoin["ValidFrom"]);
+            Assert.Equal(new DateTime(2000, 01, 10), transformJoin["ValidTo"]);
+            Assert.Equal("lookup1b", transformJoin["LookupValue"]);
+
+            Assert.True(await transformJoin.ReadAsync());
+            Assert.Equal(new DateTime(2000, 01, 10), transformJoin["ValidFrom"]);
+            Assert.Equal(new DateTime(2000, 02, 01), transformJoin["ValidTo"]);
+            Assert.Equal("lookup1c", transformJoin["LookupValue"]);
+
+            Assert.True(await transformJoin.ReadAsync());
+            Assert.Equal(new DateTime(2000, 02, 01), transformJoin["ValidFrom"]);
+            Assert.Equal(new DateTime(2000, 02, 10), transformJoin["ValidTo"]);
+            Assert.Equal("lookup1c", transformJoin["LookupValue"]);
+
+            Assert.True(await transformJoin.ReadAsync());
+            Assert.Equal(new DateTime(2000, 02, 10), transformJoin["ValidFrom"]);
+            Assert.Equal(new DateTime(2000, 03, 01), transformJoin["ValidTo"]);
+            Assert.Equal("lookup1d", transformJoin["LookupValue"]);
+
+        }
     }
 }

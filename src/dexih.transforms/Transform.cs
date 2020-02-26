@@ -25,7 +25,7 @@ namespace dexih.transforms
     /// <summary>
     /// Transform is the abstract class which all other transforms and connection should implement
     /// </summary>
-    public abstract class Transform : DbDataReader
+    public abstract class Transform : DbDataReader, IDisposable
     {
         #region Events
         
@@ -165,6 +165,8 @@ namespace dexih.transforms
         public virtual bool RequiresSort { get; } = false; //indicates the transform must have sorted input 
 
         public virtual long AutoIncrementValue => PrimaryTransform?.AutoIncrementValue ?? 0;
+
+        public virtual DateTime MaxValidTo => PrimaryTransform?.MaxValidTo ?? DateTime.MinValue;
 
         #endregion
 
@@ -1006,7 +1008,7 @@ namespace dexih.transforms
         public object[] CurrentRow { get; private set; } //stores data for the current row.
         
         private bool _currentRowCached;
-        protected int CurrentRowNumber = -1; //current row number
+        private protected int CurrentRowNumber = -1; //current row number
 
         /// <summary>
         /// Resets the transform and any source transforms.
@@ -1983,15 +1985,27 @@ namespace dexih.transforms
             return GetValue(i) is DBNull;
         }
 
+        public new void Dispose()
+        {
+            Close();
+            base.Dispose();
+        }
+
         public override void Close()
         {
-            if (!IsReaderFinished && IsOpen)
+            try
             {
-                PrimaryTransform?.Close();
-                ReferenceTransform?.Close();
-                CloseConnections();
-                IsReaderFinished = true;
-                IsOpen = false;
+                if (!IsReaderFinished && IsOpen)
+                {
+                    PrimaryTransform?.Close();
+                    ReferenceTransform?.Close();
+                    CloseConnections();
+                    IsReaderFinished = true;
+                    IsOpen = false;
+                }
+            } catch
+            {
+
             }
 
             // Reset();

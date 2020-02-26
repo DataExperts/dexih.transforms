@@ -14,6 +14,11 @@ namespace dexih.transforms.Exceptions
         public ConnectionException(string message) : base(message)
         {
         }
+
+        public ConnectionException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
         public ConnectionException(string message, Exception innerException, params object[] values) : base(message, innerException)
         {
 #if DEBUG
@@ -46,6 +51,8 @@ namespace dexih.transforms.Exceptions
 #endif
             }
         }
+
+ 
     }
 
 

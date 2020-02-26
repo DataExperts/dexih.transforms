@@ -96,90 +96,97 @@ using System.Threading.Tasks;
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if(!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
+            try
+            {
+                if (!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
+                {
+                    _reader.Close();
+                    return 0;
+                }
+
+                var readCount = _memoryStream.Read(buffer, offset, count);
+
+                // if the buffer already has enough content.
+                if (readCount < count && count > _memoryStream.Length - _memoryStream.Position)
+                {
+                    _memoryStream.SetLength(0);
+
+                    if (_first)
+                    {
+                        _hasRows = await _reader.ReadAsync(cancellationToken);
+
+                        if (_hasRows == false)
+                        {
+                            await _streamWriter.WriteAsync(_endWrite);
+                        }
+                        _first = false;
+                    }
+
+                    // populate the stream with rows, up to the buffer size.
+                    while (_hasRows)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            _reader.Close();
+                            return 0;
+                        }
+
+                        var jObject = new JObject();
+
+                        foreach (var i in _ordinals)
+                        {
+                            if (_reader[i] is byte[])
+                            {
+                                jObject[_reader.GetName(i)] = "binary data not viewable.";
+                                continue;
+                            }
+
+                            if (_reader[i] is Geometry geometry)
+                            {
+                                jObject[_reader.GetName(i)] = geometry.AsText();
+                                continue;
+                            }
+
+                            if (_reader[i] is null || _reader[i] is DBNull)
+                            {
+                                jObject[_reader.GetName(i)] = null;
+                                continue;
+                            }
+
+                            jObject[_reader.GetName(i)] = JToken.FromObject(_reader[i]);
+                        }
+
+                        var row = jObject.ToString();
+                        await _streamWriter.WriteAsync(row);
+
+                        _rowCount++;
+                        _hasRows = await _reader.ReadAsync(cancellationToken);
+
+                        if (_hasRows && _rowCount < _maxRows)
+                        {
+                            await _streamWriter.WriteAsync(",");
+                        }
+                        else
+                        {
+                            await _streamWriter.WriteAsync(_endWrite);
+                            _hasRows = false;
+                            break;
+                        }
+                    }
+
+                    _memoryStream.Position = 0;
+
+                    readCount += _memoryStream.Read(buffer, readCount, count - readCount);
+                }
+
+                _position += readCount;
+
+                return readCount;
+            } catch
             {
                 _reader.Close();
-                return 0;
+                throw;
             }
-
-            var readCount = _memoryStream.Read(buffer, offset, count);
-
-            // if the buffer already has enough content.
-            if (readCount < count && count > _memoryStream.Length - _memoryStream.Position)
-            {
-                _memoryStream.SetLength(0);
-
-                if (_first)
-                {
-                    _hasRows = await _reader.ReadAsync(cancellationToken);
-
-                    if (_hasRows == false)
-                    {
-                        await _streamWriter.WriteAsync(_endWrite);
-                    }
-                    _first = false;
-                }
-
-                // populate the stream with rows, up to the buffer size.
-                while (_hasRows)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        _reader.Close();
-                        return 0;
-                    }
-
-                    var jObject = new JObject();
-
-                    foreach (var i in _ordinals)
-                    {
-                        if (_reader[i] is byte[])
-                        {
-                            jObject[_reader.GetName(i)] = "binary data not viewable.";
-                            continue;
-                        }
-
-                        if (_reader[i] is Geometry geometry)
-                        {
-                            jObject[_reader.GetName(i)] = geometry.AsText();
-                            continue;
-                        }
-
-                        if (_reader[i] is null || _reader[i] is DBNull)
-                        {
-                            jObject[_reader.GetName(i)] = null;
-                            continue;
-                        }
-                        
-                        jObject[_reader.GetName(i)] = JToken.FromObject(_reader[i]);
-                    }
-
-                    var row = jObject.ToString();
-                    await _streamWriter.WriteAsync(row);
-
-                    _rowCount++;
-                    _hasRows = await _reader.ReadAsync(cancellationToken);
-
-                    if (_hasRows && _rowCount < _maxRows)
-                    {
-                        await _streamWriter.WriteAsync(",");
-                    }
-                    else
-                    {
-                        await _streamWriter.WriteAsync(_endWrite);
-                        _hasRows = false;
-                        break;
-                    }
-                }
-
-                _memoryStream.Position = 0;
-
-                readCount += _memoryStream.Read(buffer, readCount, count - readCount);
-            }
-
-            _position += readCount;
-
-            return readCount;
         }
 
         public override long Seek(long offset, SeekOrigin origin)

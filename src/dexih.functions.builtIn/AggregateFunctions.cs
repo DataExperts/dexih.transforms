@@ -261,9 +261,10 @@ namespace dexih.functions.BuiltIn
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "First When", Description = "First resultValue when the condition = conditionValue", ResultMethod = nameof(GenericResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
         public void FirstWhen(bool whenTrue, T resultValue)
         {
-            if (whenTrue && _cacheObject == null)
+            if (whenTrue && _isFirst)
             {
                 _cacheGeneric = resultValue;
+                _isFirst = false;
             }
         }
 

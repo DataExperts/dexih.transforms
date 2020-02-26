@@ -112,7 +112,7 @@ namespace dexih.transforms.Mapping
                     returnResult = CompareResult == 0;
                     break;
                 case ECompare.GreaterThanEqual:
-                    returnResult = CompareResult <= 0;
+                    returnResult = CompareResult > -1;
                     break;
                 case ECompare.LessThan:
                     returnResult = CompareResult < 0;

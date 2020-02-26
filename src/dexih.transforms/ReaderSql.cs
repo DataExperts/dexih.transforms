@@ -49,6 +49,7 @@ namespace dexih.connections.sql
             _sqlConnection?.Dispose();
         }
 
+
         public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             if (IsOpen)

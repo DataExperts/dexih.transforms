@@ -269,7 +269,7 @@ namespace dexih.transforms
         /// <returns></returns>
         public abstract Task<Table> InitializeTable(Table table, int position);
 
-        public Stopwatch WriteDataTimer = new Stopwatch();
+        private Stopwatch WriteDataTimer = new Stopwatch();
 
         #endregion
         
@@ -451,18 +451,16 @@ namespace dexih.transforms
             var sorts = new Sorts() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), ESortDirection.Descending) };
             var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
 
-            //add a sort transform to ensure sort order.
-            // reader = new TransformSort(reader, sorts);
-            reader = new TransformQuery(reader, query) {Name = "Internal Query"};
+            using var reader2 = new TransformQuery(reader, query) {Name = "Internal Query"};
 
-            var returnValue = await reader.Open(0, query, cancellationToken);
+            var returnValue = await reader2.Open(0, query, cancellationToken);
             if (!returnValue)
             {
                 throw new ConnectionException($"Failed to get the transform writer results on table {picoTable.Table} at {Name}.");
             }
 
             var pocoReader = new PocoLoader<TransformWriterResult>();
-            var writerResults = await pocoReader.ToListAsync(reader, rows, cancellationToken);
+            var writerResults = await pocoReader.ToListAsync(reader2, rows, cancellationToken);
 
             foreach(var result in writerResults)
             {
@@ -478,7 +476,6 @@ namespace dexih.transforms
             }
 
             watch.Stop();
-            reader.Dispose();
 
             return writerResults;
         }
@@ -538,44 +535,44 @@ namespace dexih.transforms
 
 
         /// <summary>
-        /// Gets the next surrogatekey.
+        /// Gets the maximum valid of the specified column
         /// </summary>
         /// <param name="table"></param>
         /// <param name="incrementalColumn"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async Task<long> GetLastKey(Table table, TableColumn incrementalColumn, CancellationToken cancellationToken = default)
+        public virtual async Task<T> GetMaxValue<T>(Table table, TableColumn column, CancellationToken cancellationToken = default)
         {
             if(DynamicTableCreation)
             {
-                return 0;
+                return default;
             }
 
             var query = new SelectQuery()
             {
-                Columns = new SelectColumns() { new SelectColumn(incrementalColumn, EAggregate.Max, incrementalColumn) },
+                Columns = new SelectColumns() { new SelectColumn(column, EAggregate.Max, column) },
                 TableName = table.Name
             };
 
-            long surrogateKeyValue;
+            T value;
             var executeResult = await ExecuteScalar(table, query, cancellationToken);
 
             if (executeResult == null || executeResult is DBNull)
-                surrogateKeyValue = 0;
+                value = default(T);
             else
             {
                 try
                 {
-                    var convertResult = Operations.Parse<long>(executeResult);
-                    surrogateKeyValue = convertResult;
+                    var convertResult = Operations.Parse<T>(executeResult);
+                    value = convertResult;
                 } 
                 catch(Exception ex)
                 {
-                    throw new ConnectionException($"Failed to get the surrogate key from {table.Name} on {Name} as the value is not a valid numeric.  {ex.Message}", ex);
+                    throw new ConnectionException($"Failed to get the value from {table.Name} on {Name} as the value is not a valid ${typeof(T).Name}.  {ex.Message}", ex);
                 }
             }
 
-            return surrogateKeyValue;
+            return value;
         }
 
         /// <summary>
@@ -587,7 +584,7 @@ namespace dexih.transforms
         /// <param name="value"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task UpdateIncrementalKey(Table table, string incrementalColumnName, object value, CancellationToken cancellationToken = default)
+        public virtual Task UpdateMaxValue<T>(Table table, string columnName, T value, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }

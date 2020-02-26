@@ -198,7 +198,7 @@ namespace dexih.connections.azure
 
                     if (table.Columns[i].DeltaType == EDeltaType.DbAutoIncrement)
                     {
-                        keyValue = await GetLastKey(table, sk, cancellationToken);
+                        keyValue = await GetMaxValue<long>(table, sk, cancellationToken);
                     }
                 }
 
@@ -269,7 +269,7 @@ namespace dexih.connections.azure
 
                 if (keyValue > -1 && sk != null)
                 {
-                    await UpdateIncrementalKey(table, sk.Name, keyValue, cancellationToken);
+                    await UpdateMaxValue(table, sk.Name, keyValue, cancellationToken);
                 }
 
                 await Task.WhenAll(tasks);
@@ -393,7 +393,7 @@ namespace dexih.connections.azure
                 var incremental = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (incremental != null)
                 {
-                    await UpdateIncrementalKey(table, incremental.TableColumnName(), 0, cancellationToken);
+                    await UpdateMaxValue(table, incremental.TableColumnName(), 0, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -535,17 +535,17 @@ namespace dexih.connections.azure
         /// Note: Azure does not have a max function, so we used a key's table to store surrogate keys for each table.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="incrementalColumn"></param>
+        /// <param name="column"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<long> GetLastKey(Table table, TableColumn incrementalColumn, CancellationToken cancellationToken = default)
+        public override async Task<T> GetMaxValue<T>(Table table, TableColumn column, CancellationToken cancellationToken = default)
         {
             try
             {
                 var connection = GetCloudTableClient();
                 var cTable = connection.GetTableReference(IncrementalKeyTable);
 
-                long incrementalKey;
+                T value;
                 var lockGuid = Guid.NewGuid();
 
                 if (!await cTable.ExistsAsync())
@@ -555,31 +555,26 @@ namespace dexih.connections.azure
 
                 DynamicTableEntity entity;
 
-//                do
-//                {
-                    //get the last key value if it exists.
-                    var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, incrementalColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
-                    if (tableResult.Result == null)
-                    {
-                        entity = new DynamicTableEntity(table.Name, incrementalColumn.Name);
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty((long)1));
-                        entity.Properties.Add(LockGuidName, new EntityProperty(lockGuid));
-                        incrementalKey = 0L;
-                    }
-                    else
-                    {
-                        entity = tableResult.Result as DynamicTableEntity;
-                        incrementalKey = Convert.ToInt64(entity.Properties[IncrementalValueName].PropertyAsObject);
-                        entity.Properties[IncrementalValueName] = new EntityProperty(incrementalKey);
-                        entity.Properties[LockGuidName] = new EntityProperty(lockGuid);
-                    }
-                    
-                    tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, incrementalColumn.Name, new List<string>() { IncrementalValueName, LockGuidName }));
+                var tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, column.Name, new List<string>() { IncrementalValueName, LockGuidName }));
+                if (tableResult.Result == null)
+                {
+                    entity = new DynamicTableEntity(table.Name, column.Name);
+                    entity.Properties.Add(IncrementalValueName, new EntityProperty((long)1));
+                    entity.Properties.Add(LockGuidName, new EntityProperty(lockGuid));
+                    value = default(T);
+                }
+                else
+                {
                     entity = tableResult.Result as DynamicTableEntity;
-//
-//                } while (entity.Properties[LockGuidName].GuidValue.Value != lockGuid);
+                    value = (T) entity.Properties[IncrementalValueName].PropertyAsObject;
+                    entity.Properties[IncrementalValueName] = NewEntityProperty<T>(value);
+                    entity.Properties[LockGuidName] = new EntityProperty(lockGuid);
+                }
+                    
+                tableResult = await cTable.ExecuteAsync(TableOperation.Retrieve(table.Name, column.Name, new List<string>() { IncrementalValueName, LockGuidName }));
+                entity = tableResult.Result as DynamicTableEntity;
 
-                return incrementalKey;
+                return value;
             }
             catch (Exception ex)
             {
@@ -587,7 +582,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task UpdateIncrementalKey(Table table, string incrementalColumnName, object value, CancellationToken cancellationToken = default)
+        public override async Task UpdateMaxValue<T>(Table table, string columnName, T value, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -600,31 +595,8 @@ namespace dexih.connections.azure
                 }
 
                 DynamicTableEntity entity = null;
-                entity = new DynamicTableEntity(table.Name, incrementalColumnName);
-                switch (value)
-                {
-                    case short shortValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(shortValue));
-                        break;
-                    case int intValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(intValue));
-                        break;
-                    case long longValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(longValue));
-                        break;
-                    case ushort ushortValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(ushortValue));
-                        break;
-                    case uint uintValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(uintValue));
-                        break;
-                    case ulong ulongValue:
-                        entity.Properties.Add(IncrementalValueName, new EntityProperty(ulongValue));
-                        break;
-                    default:
-                        throw new ConnectionException($"The datatype {value.GetType()} is not supported for incremental columns.  Use an integer type instead.");
-                }
-
+                entity = new DynamicTableEntity(table.Name, columnName);
+                entity.Properties.Add(IncrementalValueName, NewEntityProperty<T>(value));
                 entity.Properties.Add(LockGuidName, new EntityProperty(Guid.NewGuid()));
 
                 //update the record with the new incremental value and the guid.
@@ -633,6 +605,29 @@ namespace dexih.connections.azure
             catch (Exception ex)
             {
                 throw new ConnectionException($"Azure Error updating incremental key for table {table.Name} {ex.Message}", ex);
+            }
+        }
+
+        private EntityProperty NewEntityProperty<T>(T value)
+        {
+            switch (value)
+            {
+                case short shortValue:
+                    return new EntityProperty(shortValue);
+                case int intValue:
+                    return new EntityProperty(intValue);
+                case long longValue:
+                    return new EntityProperty(longValue);
+                case ushort ushortValue:
+                    return new EntityProperty(ushortValue);
+                case uint uintValue:
+                    return new EntityProperty(uintValue);
+                case ulong ulongValue:
+                    return new EntityProperty(ulongValue);
+                case DateTime dateTimeValue:
+                    return new EntityProperty(dateTimeValue);
+                default:
+                    throw new ConnectionException($"The datatype {value.GetType()} is not supported for incremental columns.  Use an integer type instead.");
             }
         }
 
@@ -971,7 +966,7 @@ namespace dexih.connections.azure
                 var dbAutoIncrement = table.GetColumn(EDeltaType.DbAutoIncrement);
                 if (dbAutoIncrement != null)
                 {
-                    keyValue = await GetLastKey(table, dbAutoIncrement, cancellationToken);
+                    keyValue = await GetMaxValue<long>(table, dbAutoIncrement, cancellationToken);
                 }
 
                 long identityValue = 0;
@@ -1058,7 +1053,7 @@ namespace dexih.connections.azure
                 
                 if (keyValue > -1 && dbAutoIncrement != null)
                 {
-                    await UpdateIncrementalKey(table, dbAutoIncrement.Name, keyValue, cancellationToken);
+                    await UpdateMaxValue(table, dbAutoIncrement.Name, keyValue, cancellationToken);
                 }
 
                 if (batchOperation.Count > 0)

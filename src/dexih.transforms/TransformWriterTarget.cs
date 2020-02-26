@@ -109,6 +109,7 @@ namespace dexih.transforms
         private bool _ordinalsInitialized = false;
         private TransformWriterTask _transformWriterTask;
         private long _autoIncrementKey = 0;
+        private DateTime _maxValidFromDate = DateTime.MinValue;
 
         #endregion
 
@@ -262,10 +263,27 @@ namespace dexih.transforms
             var autoIncrement = TargetTable.GetColumn(EDeltaType.AutoIncrement);
             if (autoIncrement != null)
             {
-                return await TargetConnection.GetLastKey(TargetTable, autoIncrement, cancellationToken);
+                return await TargetConnection.GetMaxValue<long>(TargetTable, autoIncrement, cancellationToken);
             }
 
             return -1;
+        }
+
+        private async Task<DateTime> GetMaxValidToDate(CancellationToken cancellationToken = default)
+        {
+            if (_maxValidFromDate > DateTime.MinValue)
+            {
+                return _maxValidFromDate;
+
+            }
+            // get the last surrogate key it there is one on the table.
+            var tableColumn = TargetTable.GetColumn(EDeltaType.ValidToDate);
+            if (tableColumn != null)
+            {
+                return await TargetConnection.GetMaxValue<DateTime>(TargetTable, tableColumn, cancellationToken);
+            }
+
+            return DateTime.MinValue;
         }
 
         public Task WriteRecordsAsync(Transform transform, CancellationToken cancellationToken = default)
@@ -328,8 +346,8 @@ namespace dexih.transforms
                         if (updateStrategy != null)
                         {
                             var autoIncrementKey = await GetIncrementalKey(cancellationToken);
-                            transform = new TransformDelta(transform, targetReader, updateStrategy.Value,
-                                autoIncrementKey,
+
+                            transform = new TransformDelta(transform, targetReader, updateStrategy.Value, autoIncrementKey,
                                 AddDefaultRow, false, new DeltaValues('C'));
                             transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
                                 WriterOptions?.GlobalSettings?.EncryptionKey);
@@ -384,7 +402,7 @@ namespace dexih.transforms
             {
                 SetRunStatus(TransformWriterResult.ERunStatus.Cancelled, "The transform writer was cancelled", null,
                     CancellationToken.None);
-                throw new TransformWriterException($"The datalink was cancelled.");
+                throw new TransformWriterException("The datalink was cancelled.");
 
             }
             catch (Exception ex)
@@ -396,6 +414,8 @@ namespace dexih.transforms
             }
             finally
             {
+                transform.Close();
+
                 // don't pass cancel token, as we want writer result updated when a cancel occurs.
                 await UpdateWriterResult(transform, CancellationToken.None);
                 await WriterTargetFinalize(transform, CancellationToken.None);
@@ -444,6 +464,7 @@ namespace dexih.transforms
                 if (updateStrategy != null)
                 {
                     var autoIncrementKey = await GetIncrementalKey(cancellationToken);
+
                     transform = new TransformDelta(transform, target, childUpdateStrategy.Value, autoIncrementKey,
                         AddDefaultRow, false, deltaValues);
                     transform.SetEncryptionMethod(EEncryptionMethod.EncryptDecryptSecureFields,
@@ -558,8 +579,7 @@ namespace dexih.transforms
                 if (table == null)
                 {
                     var rejectColumn = transform.CacheTable.GetOrdinal(EDeltaType.RejectedReason);
-                    var rejectReason = "";
-                    rejectReason = rejectColumn > 0 ? transform[rejectColumn].ToString() : "No reject reason found.";
+                    var rejectReason = rejectColumn > 0 ? transform[rejectColumn].ToString() : "No reject reason found.";
                     throw new TransformWriterException($"Transform write failed as a record was rejected, however there is no reject table set.  The reject reason was: {rejectReason}.");
                 }
             } 
@@ -749,8 +769,17 @@ namespace dexih.transforms
                 var surrogateKey = TargetTable.GetAutoIncrementColumn();
                 if (surrogateKey != null)
                 {
-                    await TargetConnection.UpdateIncrementalKey(TargetTable, surrogateKey.Name,
-                        inTransform.AutoIncrementValue, cancellationToken);
+                    await TargetConnection.UpdateMaxValue(TargetTable, surrogateKey.Name, autoIncrementValue, cancellationToken);
+                }
+            }
+
+            var maxValidFrom = inTransform.MaxValidTo;
+            if (maxValidFrom > DateTime.MinValue)
+            {
+                var validFrom = TargetTable.GetColumn(EDeltaType.ValidFromDate);
+                if (validFrom != null)
+                {
+                    await TargetConnection.UpdateMaxValue(TargetTable, validFrom.Name, maxValidFrom, cancellationToken);
                 }
             }
 

@@ -15,7 +15,7 @@ using dexih.transforms;
 
 namespace dexih.functions.external
 {
-    public class OpenWeatherMap: IDisposable
+    public class OpenWeatherMap
     {
         private const string apiKey = "API Key.  Sign up at [openweathermap.org](https://openweathermap.org/price).";
         private const string maxCalls = "Limit maximum api calls per minute (unlimited = 0)";
@@ -77,9 +77,6 @@ namespace dexih.functions.external
             public double Longitude { get; set; }
             public double Latitude { get; set; }
         }
-
-        // cache the httpClient.
-        private HttpClient _httpClient;
 
         private string GetOpenWeatherUrl(string key) => $"http://api.openweathermap.org/data/2.5/weather?APPID={key}";
 
@@ -387,11 +384,6 @@ namespace dexih.functions.external
             _cachedCities = null;
 
             return null;
-        }
-
-        public void Dispose()
-        {
-            _httpClient?.Dispose();
         }
     }
 }

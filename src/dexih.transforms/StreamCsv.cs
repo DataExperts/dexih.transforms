@@ -51,99 +51,107 @@ namespace dexih.transforms
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (_isFirst)
+            try
             {
-                _position = 0;
-
-                //write the file header.
-                // if this is a transform, then use the dataTypes from the cache table
-                if (_reader is Transform transform)
+                if (_isFirst)
                 {
-                    var convertedTransform = new ReaderConvertDataTypes(new ConnectionConvertString(), transform);
-                    _reader = convertedTransform;
+                    _position = 0;
 
-                    var s = new string[transform.CacheTable.Columns.Count];
-                    for (var j = 0; j < transform.CacheTable.Columns.Count; j++)
+                    //write the file header.
+                    // if this is a transform, then use the dataTypes from the cache table
+                    if (_reader is Transform transform)
                     {
-                        s[j] = transform.CacheTable.Columns[j].LogicalName;
-                        if (string.IsNullOrEmpty(s[j]))
+                        var convertedTransform = new ReaderConvertDataTypes(new ConnectionConvertString(), transform);
+                        _reader = convertedTransform;
+
+                        var s = new string[transform.CacheTable.Columns.Count];
+                        for (var j = 0; j < transform.CacheTable.Columns.Count; j++)
                         {
-                            s[j] = transform.CacheTable.Columns[j].Name;
+                            s[j] = transform.CacheTable.Columns[j].LogicalName;
+                            if (string.IsNullOrEmpty(s[j]))
+                            {
+                                s[j] = transform.CacheTable.Columns[j].Name;
+                            }
+
+                            if (s[j].Contains("\"")) //replace " with ""
+                                s[j] = s[j].Replace("\"", "\"\"");
+                            if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
+                                s[j] = "\"" + s[j] + "\"";
                         }
-                    
-                        if (s[j].Contains("\"")) //replace " with ""
-                            s[j] = s[j].Replace("\"", "\"\"");
-                        if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
-                            s[j] = "\"" + s[j] + "\"";
+                        await _streamWriter.WriteLineAsync(string.Join(",", s));
                     }
-                    await _streamWriter.WriteLineAsync(string.Join(",", s));
-                }
-                else
-                {
-                    var s = new string[_reader.FieldCount];
-                    for (var j = 0; j < _reader.FieldCount; j++)
+                    else
                     {
-                        s[j] = _reader.GetName(j);
-                        if (s[j].Contains("\"")) //replace " with ""
-                            s[j] = s[j].Replace("\"", "\"\"");
-                        if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
-                            s[j] = "\"" + s[j] + "\"";
+                        var s = new string[_reader.FieldCount];
+                        for (var j = 0; j < _reader.FieldCount; j++)
+                        {
+                            s[j] = _reader.GetName(j);
+                            if (s[j].Contains("\"")) //replace " with ""
+                                s[j] = s[j].Replace("\"", "\"\"");
+                            if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
+                                s[j] = "\"" + s[j] + "\"";
+                        }
+                        await _streamWriter.WriteLineAsync(string.Join(",", s));
                     }
-                    await _streamWriter.WriteLineAsync(string.Join(",", s));
+
+                    _memoryStream.Position = 0;
+
+                    _isFirst = false;
                 }
 
-                _memoryStream.Position = 0;
+                if (!_reader.HasRows && _memoryStream.Position >= _memoryStream.Length)
+                {
+                    _reader.Close();
+                    return 0;
+                }
 
-                _isFirst = false;
-            }
+                var readCount = _memoryStream.Read(buffer, offset, count);
 
-            if(!_reader.HasRows && _memoryStream.Position >= _memoryStream.Length)
+                // if the buffer already has enough content.
+                if (readCount < count && count > _memoryStream.Length - _memoryStream.Position)
+                {
+                    _memoryStream.SetLength(0);
+
+                    // populate the stream with rows, up to the buffer size.
+                    while (await _reader.ReadAsync(cancellationToken))
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            _reader.Close();
+                            return 0;
+                        }
+
+                        var s = new string[_reader.FieldCount];
+                        for (var j = 0; j < _reader.FieldCount; j++)
+                        {
+                            s[j] = _reader.GetString(j);
+                            if (s[j].Contains("\"")) //replace " with ""
+                                s[j] = s[j].Replace("\"", "\"\"");
+                            if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
+                                s[j] = "\"" + s[j] + "\"";
+                        }
+                        await _streamWriter.WriteLineAsync(string.Join(",", s));
+
+                        if (_memoryStream.Length > count && _memoryStream.Length > BufferSize) break;
+                    }
+
+                    _memoryStream.Position = 0;
+
+                    readCount += _memoryStream.Read(buffer, readCount, count - readCount);
+                }
+
+                _position += readCount;
+
+                return readCount;
+            } catch
             {
                 _reader.Close();
-                return 0;
+                throw;
             }
 
-            var readCount = _memoryStream.Read(buffer, offset, count);
+}
 
-            // if the buffer already has enough content.
-            if (readCount < count && count > _memoryStream.Length - _memoryStream.Position)
-            {
-                _memoryStream.SetLength(0);
-
-                // populate the stream with rows, up to the buffer size.
-                while (await _reader.ReadAsync(cancellationToken) )
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        _reader.Close();
-                        return 0;
-                    }
-
-                    var s = new string[_reader.FieldCount];
-                    for (var j = 0; j < _reader.FieldCount; j++)
-                    {
-                        s[j] = _reader.GetString(j);
-                        if (s[j].Contains("\"")) //replace " with ""
-                            s[j] = s[j].Replace("\"", "\"\"");
-                        if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
-                            s[j] = "\"" + s[j] + "\"";
-                    }
-                    await _streamWriter.WriteLineAsync(string.Join(",", s));
-
-                    if (_memoryStream.Length > count && _memoryStream.Length > BufferSize) break;
-                }
-
-                _memoryStream.Position = 0;
-
-                readCount += _memoryStream.Read(buffer, readCount, count - readCount);
-            }
-
-            _position += readCount;
-
-            return readCount;
-        }
-        
-        public override void Close()
+public override void Close()
         {
             _streamWriter?.Close();
             _memoryStream?.Close();
