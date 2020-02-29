@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CsvHelper;
 using dexih.functions;
-using dexih.functions.File;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
 

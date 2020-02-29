@@ -1,9 +1,9 @@
 ﻿using System.Runtime.Serialization;
-using dexih.functions.File;
+using dexih.functions;
 using Dexih.Utils.DataType;
 
 
-namespace dexih.functions
+namespace dexih.transforms.File
 {
 	[DataContract]
 	public class FlatFile : Table

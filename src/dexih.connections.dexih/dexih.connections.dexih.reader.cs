@@ -8,7 +8,6 @@ using System.Net.Http;
 
 using System.Threading;
 using System.Text;
-using dexih.functions.File;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.File;

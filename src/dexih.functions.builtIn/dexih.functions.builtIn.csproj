@@ -9,4 +9,9 @@
       <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Dexih.Utils.Crypto" Version="1.0.37" />
+      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+
 </Project>

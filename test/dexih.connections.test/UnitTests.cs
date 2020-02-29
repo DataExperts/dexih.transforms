@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using dexih.functions.Query;
+using dexih.transforms.File;
 using Dexih.Utils.DataType;
 using Xunit.Abstractions;
 using static Dexih.Utils.DataType.DataType;

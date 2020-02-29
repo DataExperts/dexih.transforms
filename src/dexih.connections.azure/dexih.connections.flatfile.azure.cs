@@ -10,6 +10,7 @@ using System.Data.Common;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
+using dexih.transforms.File;
 
 namespace dexih.connections.azure
 {

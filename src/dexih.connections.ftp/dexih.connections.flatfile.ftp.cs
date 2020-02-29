@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
 using dexih.transforms.Exceptions;
+using dexih.transforms.File;
 using FluentFTP;
 
 namespace dexih.connections.ftp

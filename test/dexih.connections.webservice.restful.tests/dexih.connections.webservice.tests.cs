@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.transforms.Exceptions;
+using dexih.transforms.File;
 using Xunit;
 using Xunit.Abstractions;
 

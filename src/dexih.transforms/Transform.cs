@@ -1315,7 +1315,6 @@ namespace dexih.transforms
                     "Failed to retrieve the requested data.  Message: " + ex.Message, ex);
                 return returnValue.Serialize();
             }
-
             
         }
         

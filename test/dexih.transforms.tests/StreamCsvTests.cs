@@ -1,5 +1,4 @@
-﻿using dexih.functions.File;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using dexih.transforms.File;
 using Xunit;

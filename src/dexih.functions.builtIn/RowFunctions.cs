@@ -103,7 +103,7 @@ namespace dexih.functions.BuiltIn
 
             if (_cacheInt > column.Length - 1)
             {
-                item = default(T);
+                item = default;
                 columnName = "";
                 return false;
             }
