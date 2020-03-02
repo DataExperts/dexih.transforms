@@ -198,7 +198,7 @@ namespace dexih.functions.BuiltIn
             if (fileName != null)
             {
                 var filePath = Path.Combine(path, fileName);
-                var data = await System.IO.File.ReadAllBytesAsync(filePath, cancellationToken);
+                var data = await File.ReadAllBytesAsync(filePath, cancellationToken);
                 return data;
             }
             else

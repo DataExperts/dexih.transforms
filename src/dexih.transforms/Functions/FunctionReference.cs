@@ -3,13 +3,8 @@ using System.Runtime.Serialization;
 using dexih.functions.Parameter;
 using Dexih.Utils.DataType;
 
-
-
-
 namespace dexih.functions
 {
-
-    
     /// <summary>
     /// Function reference contains details of a standard function
     /// </summary>

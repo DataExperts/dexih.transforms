@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using dexih.functions.Query;
 
 namespace dexih.functions.BuiltIn
 {

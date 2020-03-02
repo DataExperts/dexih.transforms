@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Xml;
 using dexih.functions.Exceptions;
-using dexih.functions.Parameter;
 using Newtonsoft.Json.Linq;
 
 
@@ -20,8 +19,8 @@ namespace dexih.functions.BuiltIn
         /// <summary>
         /// Used by row transform, contains the parameters used in the array.
         /// </summary>
-        [Parameters]
-        public Parameters Parameters { get; set; }
+        [ParameterNames]
+        public string[] ParameterNames { get; set; }
 
 
         public bool Reset()
@@ -101,30 +100,21 @@ namespace dexih.functions.BuiltIn
                 _cacheInt++;
             }
 
-            if (_cacheInt > column.Length - 1)
+            while (_cacheInt < column.Length)
             {
-                item = default;
-                columnName = "";
-                return false;
+                item = column[_cacheInt.Value];
+                columnName = ParameterNames[_cacheInt.Value];
+                if (columnName != null)
+                {
+                    return true;
+                }
+
+                _cacheInt++;
             }
 
-            item = column[_cacheInt.Value];
-
-            if (Parameters?.Inputs == null)
-            {
-                throw new FunctionException($"The parameters.inputs was not set in the column to rows function.");                
-            }
-            
-            if (Parameters.Inputs[0] is ParameterArray parameterArray && parameterArray.Parameters[_cacheInt.Value] is ParameterColumn parameterColumn)
-            {
-                columnName = parameterColumn.Column.Name;
-            }
-            else
-            {
-                throw new FunctionException($"The parameter {Parameters.Inputs[(int) _cacheInt].Name} is not using a column input.");                
-            }
-            
-            return true;
+            item = default;
+            columnName = "";
+            return false;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Rows, Category = "Rows", Name = "XPath Nodes To Rows",

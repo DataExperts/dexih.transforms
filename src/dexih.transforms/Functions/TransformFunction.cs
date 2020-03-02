@@ -256,9 +256,33 @@ namespace dexih.functions
 					property.SetValue(target, GlobalSettings);
 				}
 				
-				if (parameters != null && property.GetCustomAttribute(typeof(ParametersAttribute)) != null)
+				if (parameters != null && property.GetCustomAttribute(typeof(ParameterNamesAttribute)) != null)
 				{
-					property.SetValue(target, parameters);
+					if (parameters?.Inputs == null)
+					{
+						throw new FunctionException($"The parameters.inputs was not set, and the function requires column names.");                
+					}
+            
+					if (parameters.Inputs[0] is ParameterArray parameterArray)
+					{
+						var parameterNames = parameterArray.Parameters.Select(p =>
+						{
+							if (p is ParameterColumn parameterColumn)
+							{
+								return parameterColumn.Column?.Name;
+							}
+							else
+							{
+								return null;
+							}
+						}).ToArray();
+						
+						property.SetValue(target, parameterNames);
+					}
+					else
+					{
+						throw new FunctionException($"The parameter {parameters.Inputs[0].Name} is not a column array.");                
+					}
 				}
 			}
 			

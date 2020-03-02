@@ -1,5 +1,4 @@
 using System;
-using dexih.functions.Query;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions

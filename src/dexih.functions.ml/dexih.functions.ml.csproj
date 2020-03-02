@@ -5,7 +5,7 @@
         <AssemblyTitle>Data Experts Group - Dexih Machine Learning</AssemblyTitle>
         <VersionPrefix>1.0.1</VersionPrefix>
         <Authors>Gary Holland</Authors>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>dexih.functions.ml</AssemblyName>
         <PackageId>dexih.functions.ml</PackageId>
         <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
@@ -25,6 +25,7 @@
         <PackageReference Include="Microsoft.ML.LightGbm" Version="1.4.0" />
         <PackageReference Include="Microsoft.ML.Recommender" Version="0.16.0" />
         <PackageReference Include="Microsoft.ML.TimeSeries" Version="1.4.0" />
+        <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />

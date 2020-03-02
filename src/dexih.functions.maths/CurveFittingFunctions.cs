@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Linq;
-using dexih.functions.Query;
 using MathNet.Numerics;
 
 namespace dexih.functions.maths

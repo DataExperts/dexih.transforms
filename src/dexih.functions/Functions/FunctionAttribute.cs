@@ -129,7 +129,7 @@ namespace dexih.functions
     {
     }
 
-    public class ParametersAttribute : Attribute
+    public class ParameterNamesAttribute : Attribute
     {
     }
 }

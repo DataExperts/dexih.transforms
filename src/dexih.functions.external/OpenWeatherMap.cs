@@ -345,7 +345,7 @@ namespace dexih.functions.external
                     using( var output = new MemoryStream())
                     using (var sr = new GZipStream(stream, CompressionMode.Decompress))
                     {
-                        await sr.CopyToAsync(output, cancellationToken);
+                        await sr.CopyToAsync(output, 81920, cancellationToken);
                         jsonString = Encoding.UTF8.GetString(output.GetBuffer(), 0, (int) output.Length);
                     }
                 }

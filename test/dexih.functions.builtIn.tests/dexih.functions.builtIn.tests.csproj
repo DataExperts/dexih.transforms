@@ -15,6 +15,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\dexih.functions.builtIn\dexih.functions.builtIn.csproj" />
+      <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj" />
     </ItemGroup>
 
 </Project>

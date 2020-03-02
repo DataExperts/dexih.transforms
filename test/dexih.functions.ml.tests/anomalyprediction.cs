@@ -1,4 +1,3 @@
-using dexih.functions.Query;
 using Xunit;
 
 namespace dexih.functions.ml.tests
