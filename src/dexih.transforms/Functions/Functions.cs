@@ -16,6 +16,7 @@ namespace dexih.functions
     [Serializable]
     public class Functions
     {
+        
         public static (string path, string pattern)[] SearchPaths()
         {
             return new[]
@@ -41,9 +42,9 @@ namespace dexih.functions
                     if (Directory.Exists(path.path))
                     {
                         var fileName = Path.Combine(path.path, assemblyName);
-                        if (System.IO.File.Exists(fileName))
+                        if (File.Exists(fileName))
                         {
-                            var assembly = Assembly.LoadFile(fileName);
+                            var assembly = Assembly.LoadFrom(fileName);
                             type = assembly.GetType(className);
                             break;
                         }
