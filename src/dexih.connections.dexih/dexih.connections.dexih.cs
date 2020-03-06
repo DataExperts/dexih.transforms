@@ -16,8 +16,8 @@ namespace dexih.connections.dexih
 {
     [Connection(
         ConnectionCategory = EConnectionCategory.Hub,
-        Name = "Integration Hub", 
-        Description = "A link to shared data in another hub",
+        Name = "Data Experts Integration Hub", 
+        Description = "Connects to another hub in an instance of the Data Experts Information Hub.  Note, tables must be shared in the hub to be imported.",
         DatabaseDescription = "Hub Name",
         ServerDescription = "Integration Hub Url",
         AllowsConnectionString = false,
@@ -34,8 +34,8 @@ namespace dexih.connections.dexih
     public class ConnectionDexih : Connection
     {
         public override bool CanBulkLoad => false;
-        public override bool CanSort => false;
-        public override bool CanFilter => false;
+        public override bool CanSort => true;
+        public override bool CanFilter => true;
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
         public override bool CanGroup => false;
@@ -105,8 +105,7 @@ namespace dexih.connections.dexih
                     }
                     else
                     {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        var result = JsonDocument.Parse(responseString);
+                        var result = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                         var message = result.RootElement.GetProperty("message").GetString();
                         var exceptionDetails = result.RootElement.GetProperty("exceptionDetails").GetString();
                         throw new ConnectionException(message, new Exception(exceptionDetails));
@@ -129,11 +128,10 @@ namespace dexih.connections.dexih
             }
         }
 
-		public async Task<JsonDocument> HttpPost(string function, HttpContent content, bool skipLogin = false)
+		public async Task<JsonDocument> HttpPost(string function, HttpContent content, bool skipLogin = false, CancellationToken cancellationToken = default)
         {
             var responseContent = await HttpPostGetContent(function, content, skipLogin);
-            var responseString = await responseContent.ReadAsStringAsync();
-            var result = JsonDocument.Parse(responseString);
+            var result = await JsonDocument.ParseAsync(await responseContent.ReadAsStreamAsync(), cancellationToken: cancellationToken);
             return result;
         }
 
@@ -169,8 +167,7 @@ namespace dexih.connections.dexih
                     var response = await client.SendAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        var result = JsonDocument.Parse(responseString);
+                        var result = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                         
                         if (result.RootElement.GetProperty("success").GetBoolean())
                         {
@@ -189,10 +186,10 @@ namespace dexih.connections.dexih
                     }
                     else
                     {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        var result = JsonDocument.Parse(responseString);
+                        var result = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                         var message = result.RootElement.GetProperty("message").GetString();
-                        var exceptionDetails = result.RootElement.GetProperty("exceptionDetails").GetString();
+                        result.RootElement.TryGetProperty("exceptionDetails", out var exceptionDetailsElement);
+                        var exceptionDetails = exceptionDetailsElement.GetString();
                         throw new ConnectionException(message, new Exception(exceptionDetails));
                     }
                 }
@@ -267,7 +264,7 @@ namespace dexih.connections.dexih
         {
             try
             {
-                var result = await HttpPost("GetHubs", null);
+                var result = await HttpPost("GetHubs", null, cancellationToken: cancellationToken);
                 var hubList = result.ToObject<List<string>>();
                 return hubList;
             }
@@ -286,7 +283,7 @@ namespace dexih.connections.dexih
                     new KeyValuePair<string, string>("HubName", DefaultDatabase)
                 });
 
-                var result = await HttpPost("GetTables", content);
+                var result = await HttpPost("GetTables", content, cancellationToken: cancellationToken);
                 var tableList = result.RootElement.ToObject<List<Table>>();
                 return tableList;
             }
@@ -315,7 +312,7 @@ namespace dexih.connections.dexih
                     new KeyValuePair<string, string>("TableName", importTable.Name),
 				});
 
-				var result = await HttpPost("GetTableInfo", content);
+				var result = await HttpPost("GetTableInfo", content, cancellationToken: cancellationToken);
                 var table = result.RootElement.ToObject<Table>();
                 return table;
             }

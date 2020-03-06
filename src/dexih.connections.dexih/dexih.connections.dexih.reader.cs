@@ -8,6 +8,7 @@ using System.Net.Http;
 
 using System.Threading;
 using System.Text;
+using System.Text.Json;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.File;
@@ -49,6 +50,7 @@ namespace dexih.connections.dexih
 
                 IsOpen = true;
                 SelectQuery = requestQuery;
+                GeneratedQuery = SelectQuery;
 
                 var downloadUrl = await _dexihConnection.GetDownloadUrl();
                 var instanceId = await _dexihConnection.GetRemoteAgentInstanceId();
@@ -69,18 +71,34 @@ namespace dexih.connections.dexih
                 _dataUrl = await _dexihConnection.HttpPostRaw("OpenTableQuery", content);
 
                 var httpClient = _dexihConnection.ClientFactory.CreateClient();
-                var response2 = await httpClient.GetAsync(downloadUrl.Url + "/download/" +_dataUrl, HttpCompletionOption.ResponseHeadersRead,
+                httpClient.Timeout = TimeSpan.FromMinutes(2);
+                var response = await httpClient.GetAsync(downloadUrl.Url + "/download/" +_dataUrl, HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
 
-                if (response2.StatusCode == HttpStatusCode.InternalServerError)
+                if (response.StatusCode == HttpStatusCode.InternalServerError)
                 {
-                    var responseString = await response2.Content.ReadAsStringAsync();
-                    var returnValue = responseString.Deserialize<ReturnValue>();
-                    throw new ConnectionException("Dexih Reader Failed.  " + returnValue.Message,
-                        returnValue.Exception);
+                    var stream = await response.Content.ReadAsStreamAsync();
+                    var returnValue = await stream.DeserializeAsync<ReturnValue>(cancellationToken);
+                    throw new ConnectionException("Dexih Reader Failed.  " + returnValue.Message, returnValue.Exception);
                 }
 
-                var responseStream = await response2.Content.ReadAsStreamAsync();
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.Content.Headers.ContentType.MediaType == "application/json")
+                    {
+                        var stream = await response.Content.ReadAsStreamAsync();
+                        var returnValue = await stream.DeserializeAsync<ReturnValue>(cancellationToken);
+                        throw new ConnectionException("Dexih Reader Failed.  " + returnValue.Message,
+                            returnValue.Exception);
+                    }
+                    else
+                    {
+                        throw new ConnectionException(
+                            $"Dexih Reader Failed to connect.  Code: {response.StatusCode}, Reason: {response.ReasonPhrase}.  Review logs on the target hubs remote server for more information.");
+                    }
+                }
+
+                var responseStream = await response.Content.ReadAsStreamAsync();
                 var config = new FileConfiguration();
                 _fileHandler = new FileHandlerText(CacheTable, config);
                 await _fileHandler.SetStream(responseStream, null);

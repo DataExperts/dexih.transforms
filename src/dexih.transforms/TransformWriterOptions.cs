@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using dexih.functions;
 using dexih.functions.Query;
+using Microsoft.Extensions.Logging;
 
 
 namespace dexih.transforms
@@ -53,7 +54,7 @@ namespace dexih.transforms
         public string TriggerInfo { get; set; } = "";
 
         public int CommitSize = 1000;
-
+        
         public bool IsEmptyTarget()
         {
             return TargetAction == ETargetAction.Truncate || TargetAction == ETargetAction.DropCreate;

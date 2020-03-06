@@ -222,7 +222,6 @@ namespace dexih.transforms.File
                     }
                 }
             }
-
         }
 
         public override async Task<object[]> GetRow()
