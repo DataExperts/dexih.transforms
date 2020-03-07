@@ -3,6 +3,8 @@ using System.Data.Common;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 
 namespace dexih.transforms
 {
@@ -14,6 +16,7 @@ namespace dexih.transforms
     {
         private const int BufferSize = 50000;
         private DbDataReader _reader;
+        private SelectQuery _selectQuery;
         private readonly MemoryStream _memoryStream;
         private readonly StreamWriter _streamWriter;
         private long _position;
@@ -27,7 +30,14 @@ namespace dexih.transforms
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
             _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
-            
+        }
+
+        public StreamCsv(DbDataReader reader, SelectQuery selectQuery)
+        {
+            _reader = reader;
+            _selectQuery = selectQuery;
+            _memoryStream = new MemoryStream(BufferSize);
+            _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
         }
         
         public override bool CanRead => true;
@@ -61,6 +71,16 @@ namespace dexih.transforms
                     // if this is a transform, then use the dataTypes from the cache table
                     if (_reader is Transform transform)
                     {
+                        if (!transform.IsOpen)
+                        {
+                            var openReturn = await transform.Open(_selectQuery, cancellationToken);
+                            
+                            if (!openReturn) 
+                            {
+                                throw new TransformException("Failed to open the transform.");
+                            }
+                        }
+                        
                         var convertedTransform = new ReaderConvertDataTypes(new ConnectionConvertString(), transform);
                         _reader = convertedTransform;
 

@@ -5,6 +5,8 @@ using System.IO;
  using System.Linq;
  using System.Threading;
 using System.Threading.Tasks;
+ using dexih.functions.Query;
+ using dexih.transforms.Exceptions;
  using NetTopologySuite.Geometries;
  using Newtonsoft.Json.Linq;
 
@@ -27,9 +29,11 @@ using System.Threading.Tasks;
         private long _rowCount;
         private bool _hasRows;
         private bool _first;
+        private readonly string _topNode;
 
-        private readonly List<int> _ordinals;
-        private readonly string _endWrite;
+        private List<int> _ordinals;
+        private string _endWrite;
+        private readonly SelectQuery _selectQuery = null;
 
         public StreamJson(DbDataReader reader, long maxRows = -1, string topNode = null)
         {
@@ -37,42 +41,28 @@ using System.Threading.Tasks;
             _memoryStream = new MemoryStream(BufferSize);
             _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
             _position = 0;
+            _topNode = topNode;
 
             _maxRows = maxRows <= 0 ? long.MaxValue : maxRows;
             _rowCount = 0;
             _hasRows = true;
             _first = true;
+        }
+        
+        public StreamJson(DbDataReader reader, SelectQuery selectQuery, string topNode = null)
+        {
+            _reader = reader;
+            _memoryStream = new MemoryStream(BufferSize);
+            _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
+            _position = 0;
+            _topNode = topNode;
+            _selectQuery = selectQuery;
 
-            _ordinals = new List<int>();
-            
-            // if this is a transform, ignore any parent columns (this is when for writing nodes to json).
-            if (reader is Transform transform)
-            {
-                var columns = transform.CacheTable.Columns;
-                for (var i = 0; i < columns.Count; i++)
-                {
-                    if (!columns[i].IsParent)
-                    {
-                        _ordinals.Add(i);
-                    }
-                }
-            }
-            else
-            {
-                _ordinals = Enumerable.Range(0, reader.FieldCount).ToList();
-            }
-
-            if(string.IsNullOrEmpty(topNode))
-            {
-                _streamWriter.Write("[");
-                _endWrite = "]";
-            } else
-            {
-                _streamWriter.Write("{ \"" + topNode + "\": [");
-                _endWrite = "]}";
-            }
-
-            _memoryStream.Position = 0;
+            var maxRows = selectQuery?.Rows ?? -1;
+            _maxRows = maxRows <= 0 ? long.MaxValue : maxRows;
+            _rowCount = 0;
+            _hasRows = true;
+            _first = true;
         }
 
         public override bool CanRead => true;
@@ -98,12 +88,57 @@ using System.Threading.Tasks;
         {
             try
             {
+                
+                if (_first)
+                {
+                    _ordinals = new List<int>();
+            
+                    // if this is a transform, ignore any parent columns (this is when for writing nodes to json).
+                    if (_reader is Transform transform)
+                    {
+                        if (!transform.IsOpen)
+                        {
+                            var openReturn = await transform.Open(_selectQuery, cancellationToken);
+                            
+                            if (!openReturn) 
+                            {
+                                throw new TransformException("Failed to open the transform.");
+                            }
+                        }
+                        
+                        var columns = transform.CacheTable.Columns;
+                        for (var i = 0; i < columns.Count; i++)
+                        {
+                            if (!columns[i].IsParent)
+                            {
+                                _ordinals.Add(i);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _ordinals = Enumerable.Range(0, _reader.FieldCount).ToList();
+                    }
+
+                    if(string.IsNullOrEmpty(_topNode))
+                    {
+                        _streamWriter.Write("[");
+                        _endWrite = "]";
+                    } else
+                    {
+                        _streamWriter.Write("{ \"" + _topNode + "\": [");
+                        _endWrite = "]}";
+                    }
+
+                    _memoryStream.Position = 0;
+                }
+
                 if (!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
                 {
                     _reader.Close();
                     return 0;
                 }
-
+                
                 var readCount = _memoryStream.Read(buffer, offset, count);
 
                 // if the buffer already has enough content.

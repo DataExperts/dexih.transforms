@@ -19,6 +19,7 @@ namespace dexih.connections.dexih
     public class ReaderDexih : Transform
     {
 		private string _dataUrl;
+        private bool _isFirst = true;
         
         private FileHandlerBase _fileHandler;
 
@@ -52,6 +53,24 @@ namespace dexih.connections.dexih
                 SelectQuery = requestQuery;
                 GeneratedQuery = SelectQuery;
 
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Opening connection to integration hub failed.  {ex.Message}", ex);
+            }
+        }
+
+
+        public override bool ResetTransform()
+        {
+            return true;
+        }
+
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
+        {
+            if (_isFirst)
+            {
                 var downloadUrl = await _dexihConnection.GetDownloadUrl();
                 var instanceId = await _dexihConnection.GetRemoteAgentInstanceId();
 
@@ -62,7 +81,7 @@ namespace dexih.connections.dexih
                     CacheTable.SourceConnectionName,
                     TableName = CacheTable.Name,
                     TableSchema = CacheTable.Schema,
-                    Query = requestQuery,
+                    Query = SelectQuery,
                     DownloadUrl = downloadUrl,
                     InstanceId = instanceId
                 }.Serialize();
@@ -102,23 +121,9 @@ namespace dexih.connections.dexih
                 var config = new FileConfiguration();
                 _fileHandler = new FileHandlerText(CacheTable, config);
                 await _fileHandler.SetStream(responseStream, null);
-
-                return true;
+                _isFirst = false;
             }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Opening connection to integration hub failed.  {ex.Message}", ex);
-            }
-        }
-
-
-        public override bool ResetTransform()
-        {
-            return true;
-        }
-
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
-        {
+            
             while (true)
             {
                 object[] row;

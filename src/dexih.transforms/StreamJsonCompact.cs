@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
  using dexih.functions;
+ using dexih.functions.Query;
+ using dexih.transforms.Exceptions;
  using NetTopologySuite.Geometries;
 
 
@@ -28,55 +30,29 @@ using System.Threading.Tasks;
         private long _rowCount;
         private bool _hasRows;
         private bool _first;
-        private readonly object[] _valuesArray;
+        private object[] _valuesArray;
         private readonly int _maxFieldSize;
+        private readonly SelectQuery _selectQuery;
+        private readonly object _chartConfig;
+        private readonly string _name;
 
-        public StreamJsonCompact(string name, DbDataReader reader, int maxFieldSize = -1, long maxRows = -1, object chartConfig = null)
+        public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null, int maxFieldSize = -1, object chartConfig = null)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
             _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
             _position = 0;
+            _name = name;
+            _chartConfig = chartConfig;
+            _selectQuery = selectQuery;
 
+            var maxRows = selectQuery?.Rows ?? -1;
             _maxRows = maxRows <= 0 ? long.MaxValue : maxRows;
+
             _maxFieldSize = maxFieldSize;
             _rowCount = 0;
             _hasRows = true;
             _first = true;
-
-            _streamWriter.Write("{\"name\": \"" + System.Web.HttpUtility.JavaScriptStringEncode(name) + "\"");
-
-            if (chartConfig != null)
-            {
-                _streamWriter.Write(", \"chartConfig\":" + chartConfig.Serialize());
-            }
-
-            _streamWriter.Write(", \"columns\": ");
-
-            // if this is a transform, then use the dataTypes from the cache table
-            if (reader is Transform transform)
-            {
-                object ColumnObject(IEnumerable<TableColumn> columns)
-                {
-                    return columns?.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType, childColumns = ColumnObject(c.ChildColumns)});
-                }
-                
-                var columnSerializeObject = ColumnObject( transform.CacheTable.Columns).Serialize();
-                _streamWriter.Write(columnSerializeObject);
-            }
-            else
-            {
-                for (var j = 0; j < reader.FieldCount; j++)
-                {
-                    var colName = reader.GetName(j);
-                    _streamWriter.Write(new {name = colName, logicalName = colName, dataType = reader.GetDataTypeName(j)}.Serialize() + ",");
-                }
-            }
-            
-            _valuesArray = new object[reader.FieldCount];
-
-            _streamWriter.Write(", \"data\": [");
-            _memoryStream.Position = 0;
         }
 
         public override bool CanRead => true;
@@ -101,9 +77,51 @@ using System.Threading.Tasks;
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             try {
-                if (_first && _reader is Transform t && !t.IsOpen)
+                if (_first)
                 {
-                    await t.Open(0, null, cancellationToken);
+                    _streamWriter.Write("{\"name\": \"" + System.Web.HttpUtility.JavaScriptStringEncode(_name) + "\"");
+
+                    if (_chartConfig != null)
+                    {
+                        _streamWriter.Write(", \"chartConfig\":" + _chartConfig.Serialize());
+                    }
+
+                    _streamWriter.Write(", \"columns\": ");
+
+                    // if this is a transform, then use the dataTypes from the cache table
+                    if (_reader is Transform transform)
+                    {
+                        if (!transform.IsOpen)
+                        {
+                            var openReturn = await transform.Open(_selectQuery, cancellationToken);
+                            
+                            if (!openReturn) 
+                            {
+                                throw new TransformException("Failed to open the transform.");
+                            }
+                        }
+                        
+                        object ColumnObject(IEnumerable<TableColumn> columns)
+                        {
+                            return columns?.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType, childColumns = ColumnObject(c.ChildColumns)});
+                        }
+                
+                        var columnSerializeObject = ColumnObject( transform.CacheTable.Columns).Serialize();
+                        _streamWriter.Write(columnSerializeObject);
+                    }
+                    else
+                    {
+                        for (var j = 0; j < _reader.FieldCount; j++)
+                        {
+                            var colName = _reader.GetName(j);
+                            _streamWriter.Write(new {name = colName, logicalName = colName, dataType = _reader.GetDataTypeName(j)}.Serialize() + ",");
+                        }
+                    }
+            
+                    _valuesArray = new object[_reader.FieldCount];
+
+                    _streamWriter.Write(", \"data\": [");
+                    _memoryStream.Position = 0;
                 }
 
                 if (!(_hasRows || _rowCount > _maxRows) && _memoryStream.Position >= _memoryStream.Length)
