@@ -59,7 +59,8 @@ namespace dexih.transforms
             return AsyncHelper.RunSync(() => ReadAsync(buffer, offset, count, CancellationToken.None));
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -74,13 +75,13 @@ namespace dexih.transforms
                         if (!transform.IsOpen)
                         {
                             var openReturn = await transform.Open(_selectQuery, cancellationToken);
-                            
-                            if (!openReturn) 
+
+                            if (!openReturn)
                             {
                                 throw new TransformException("Failed to open the transform.");
                             }
                         }
-                        
+
                         var convertedTransform = new ReaderConvertDataTypes(new ConnectionConvertString(), transform);
                         _reader = convertedTransform;
 
@@ -98,7 +99,8 @@ namespace dexih.transforms
                             if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                                 s[j] = "\"" + s[j] + "\"";
                         }
-                        await _streamWriter.WriteLineAsync(string.Join(",", s));
+
+                        _streamWriter.WriteLine(string.Join(",", s));
                     }
                     else
                     {
@@ -111,7 +113,8 @@ namespace dexih.transforms
                             if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                                 s[j] = "\"" + s[j] + "\"";
                         }
-                        await _streamWriter.WriteLineAsync(string.Join(",", s));
+
+                        _streamWriter.WriteLine(string.Join(",", s));
                     }
 
                     _memoryStream.Position = 0;
@@ -150,7 +153,8 @@ namespace dexih.transforms
                             if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                                 s[j] = "\"" + s[j] + "\"";
                         }
-                        await _streamWriter.WriteLineAsync(string.Join(",", s));
+
+                        _streamWriter.WriteLine(string.Join(",", s));
 
                         if (_memoryStream.Length > count && _memoryStream.Length > BufferSize) break;
                     }
@@ -163,15 +167,16 @@ namespace dexih.transforms
                 _position += readCount;
 
                 return readCount;
-            } catch
+            }
+            catch
             {
                 _reader.Close();
                 throw;
             }
 
-}
+        }
 
-public override void Close()
+        public override void Close()
         {
             _streamWriter?.Close();
             _memoryStream?.Close();

@@ -926,7 +926,7 @@ namespace dexih.transforms
                         throw new ConnectionException($"The reader failed to open for table {table.Name} on {Name}");
                     }
 
-                    reader.SetCacheMethod(ECacheMethod.DemandCache);
+                    // reader.SetCacheMethod(ECacheMethod.DemandCache);
                     reader.SetEncryptionMethod(EEncryptionMethod.MaskSecureFields, "");
 
                     var count = 0;

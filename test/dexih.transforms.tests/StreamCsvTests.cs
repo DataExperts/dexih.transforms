@@ -1,6 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using dexih.functions;
 using dexih.transforms.File;
+using dexih.transforms.Mapping;
 using Xunit;
 
 namespace dexih.transforms.tests
@@ -66,5 +71,43 @@ namespace dexih.transforms.tests
 
         }
 
+        // written to check if streamcsv was causing memory issue (note: it isn't).
+        [Fact]
+        public async Task StreamCsv_LargeFile_Test()
+        {
+            var testData = new ReaderRowCreator();
+            testData.InitializeRowCreator(0, Int32.MaxValue, 1);
+            
+            var connection = new ConnectionMemory();
+            Transform transform = testData;
+            
+            transform = new TransformMapping(transform, new Mappings(true)
+            {
+                new MapColumn("Hi there", new TableColumn("hi"))
+            });
+            
+            transform = new ReaderConvertDataTypes(connection, transform);
+            
+            await transform.Open();
+            
+            var stream = new StreamCsv(transform);
+            var fileStream = System.IO.File.Create("test.txt");
+
+            var stopTask = false;
+        
+            var copyTask = stream.CopyToAsync(fileStream);
+            var memoryTask = Task.Run(async () =>
+            {
+                while (!stopTask)
+                {
+                    Debug.WriteLine("Memory usage: " + GC.GetTotalMemory(true));
+                    await Task.Delay(1000);
+                }
+            });
+
+            await copyTask;
+            stopTask = true;
+            await memoryTask;
+        }
     }
 }

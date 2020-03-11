@@ -679,8 +679,8 @@ namespace dexih.transforms
             }
             catch (Exception ex)
             {
-                WriterResult?.SetRunStatus(TransformWriterResult.ERunStatus.Failed,
-                    $"Failed to read record.  Message: {ex.Message}", ex);
+                WriterResult?.SetRunStatus(TransformWriterResult.ERunStatus.Abended,
+                    $"Failed to write records.  Message: {ex.Message}", ex);
                 throw;
             }
 

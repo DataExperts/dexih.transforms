@@ -170,7 +170,7 @@ namespace dexih.transforms.Mapping
                     {
                         if (mapping is MapColumn mapColumn)
                         {
-                            if (mapColumn.InputColumn.Compare(t.Column))
+                            if (mapColumn.InputColumn?.Compare(t.Column) ?? true)
                             {
                                 fields.Add(new Sort(mapColumn.OutputColumn, t.Direction));
                                 found = true;

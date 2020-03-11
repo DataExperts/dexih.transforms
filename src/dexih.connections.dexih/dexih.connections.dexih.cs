@@ -189,7 +189,7 @@ namespace dexih.connections.dexih
                         var result = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                         var message = result.RootElement.GetProperty("message").GetString();
                         result.RootElement.TryGetProperty("exceptionDetails", out var exceptionDetailsElement);
-                        var exceptionDetails = exceptionDetailsElement.GetString();
+                        var exceptionDetails = exceptionDetailsElement.ValueKind == JsonValueKind.Undefined ? "" : exceptionDetailsElement.GetString();
                         throw new ConnectionException(message, new Exception(exceptionDetails));
                     }
                 }

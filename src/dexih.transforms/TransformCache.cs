@@ -23,7 +23,7 @@ namespace dexih.transforms
         }
 
         public override bool IsClosed => _transform.IsClosed;
-        public override ECacheMethod CacheMethod { get; protected set; } = ECacheMethod.DemandCache;
+        public override ECacheMethod CacheMethod { get; protected set; } = ECacheMethod.NoCache;
 
         public override string TransformName { get; } = "Reader Cache";
 
