@@ -15,7 +15,7 @@ namespace dexih.transforms
 
         private IList<object[]> _data;
         private int _currentRow;
-        private Connection _convertConnection;
+        private readonly Connection _convertConnection;
         
         // flag used to indicate if the cache has loaded, so no more records will be loaded 
         // after resets and row positions.
