@@ -12,6 +12,9 @@ namespace dexih.functions
         None = 1, Numeric, All, String
     }
 
+    /// <summary>
+    /// Attribute used to indicate that the function is for using in the integration hub.
+    /// </summary>
     [Serializable]
     public class TransformFunctionAttribute : Attribute
     {
@@ -55,7 +58,6 @@ namespace dexih.functions
         public string Name { get; set; }
         public string Description { get; set; }
         public string[] ListOfValues { get; set; }
-
     }
 
     /// <summary>

@@ -48,6 +48,11 @@ namespace dexih.functions
         /// <returns></returns>
         public static MethodInfo GetMethodInfo(LambdaExpression expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentException("Invalid Expression.  Expression can not be null.");
+            }
+            
             MethodCallExpression outermostExpression = expression.Body as MethodCallExpression;
  
             if (outermostExpression == null)

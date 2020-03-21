@@ -107,8 +107,16 @@ namespace dexih.connections.dexih
                     {
                         var result = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                         var message = result.RootElement.GetProperty("message").GetString();
-                        var exceptionDetails = result.RootElement.GetProperty("exceptionDetails").GetString();
-                        throw new ConnectionException(message, new Exception(exceptionDetails));
+                        result.RootElement.TryGetProperty("exceptionDetails", out var exceptionDetails);
+                        if (exceptionDetails.ValueKind == JsonValueKind.String)
+                        {
+                            throw new ConnectionException(message, new Exception(exceptionDetails.GetString()));    
+                        }
+                        else
+                        {
+                            throw new ConnectionException(message);    
+                        }
+                        
                     }
                     
                     throw new ConnectionException($"Could not connect to server {Server}\n. Response: {response.StatusCode.ToString()} - {response.ReasonPhrase}");

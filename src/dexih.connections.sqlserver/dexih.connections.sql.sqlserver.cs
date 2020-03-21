@@ -408,10 +408,12 @@ namespace dexih.connections.sqlserver
                     connectionString = ConnectionString;
                 else
                 {
+                    connectionString =
+                        $"Data Source={Server}; Initial Catalog={DefaultDatabase}; Connect Timeout={ConnectionTimeout}; ";
                     if (UseWindowsAuth == false)
-                        connectionString = "Data Source=" + Server + "; User Id=" + Username + "; Password=" + Password + ";Initial Catalog=" + DefaultDatabase;
+                        connectionString += $"User Id={Username}; Password={Password}; ";
                     else
-                        connectionString = "Data Source=" + Server + "; Trusted_Connection=True;Initial Catalog=" + DefaultDatabase;
+                        connectionString += " Trusted_Connection=True;";
                 }
 
                 connection = new SqlConnection(connectionString);

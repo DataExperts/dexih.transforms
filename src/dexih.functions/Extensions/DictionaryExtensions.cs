@@ -11,7 +11,7 @@ namespace dexih.functions
                 return value;
             }
 
-            return default(U);
+            return default;
         }
     }
 }

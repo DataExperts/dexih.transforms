@@ -143,7 +143,7 @@ namespace dexih.transforms
             var table = ReferenceTransform.CacheTable.Copy();
 
             //add the operation type, which indicates whether record are C-create/U-update or D-Deletes
-            if (table.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.DatabaseOperation) == null)
+            if (table.Columns.All(c => c.DeltaType != EDeltaType.DatabaseOperation))
             {
                 table.Columns.Insert(0, new TableColumn("Operation", ETypeCode.Char)
                 {
@@ -151,7 +151,7 @@ namespace dexih.transforms
                 });
             }
             
-            if (AddUpdateReason && table.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.UpdateReason) == null)
+            if (AddUpdateReason && table.Columns.All(c => c.DeltaType != EDeltaType.UpdateReason))
             {
                 table.Columns.Add( new TableColumn("update_reason", ETypeCode.String)
                 {

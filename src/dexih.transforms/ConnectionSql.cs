@@ -96,6 +96,7 @@ namespace dexih.connections.sql
         {
             var cmd = connection.CreateCommand();
             cmd.CommandText = commandText;
+            cmd.CommandTimeout = CommandTimeout;
             cmd.Transaction = transaction;
 
             return cmd;

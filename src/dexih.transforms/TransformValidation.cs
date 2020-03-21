@@ -62,7 +62,7 @@ namespace dexih.transforms
             var sourceTable = PrimaryTransform?.CacheTable;
             
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete
-            if (sourceTable.Columns.SingleOrDefault(c =>  c.DeltaType == EDeltaType.DatabaseOperation) == null)
+            if (sourceTable.Columns.All(c =>  c.DeltaType != EDeltaType.DatabaseOperation))
             {
                 table.Columns.Add(new TableColumn("Operation")
                 {
@@ -76,7 +76,7 @@ namespace dexih.transforms
                 table.Columns.Add(column);
             }
 
-            if (sourceTable.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.RejectedReason) == null)
+            if (sourceTable.Columns.All(c => c.DeltaType != EDeltaType.RejectedReason))
             {
                 table.Columns.Add(new TableColumn("RejectReason")
                 {
@@ -85,7 +85,7 @@ namespace dexih.transforms
                 });
             } 
 
-            if (sourceTable.Columns.SingleOrDefault(c => c.DeltaType == EDeltaType.ValidationStatus) == null)
+            if (sourceTable.Columns.All(c => c.DeltaType != EDeltaType.ValidationStatus))
             {
                 table.Columns.Add(new TableColumn("ValidationStatus")
                 {

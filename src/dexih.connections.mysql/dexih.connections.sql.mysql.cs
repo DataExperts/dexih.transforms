@@ -419,14 +419,16 @@ namespace dexih.connections.mysql
                         port = ";port=" + hostport[1];
                     }
 
+                    connectionString =
+                        $"Server={hostport[0] + port}; Connection Timeout={ConnectionTimeout}; default command timeout={CommandTimeout}; ";
                     if (UseWindowsAuth == false)
-						connectionString = "Server=" + hostport[0] + port + "; uid=" + Username + "; pwd=" + Password + "; ";
+						connectionString += $"; uid={Username}; pwd={Password}; ";
 					else
-						connectionString = "Server=" + hostport[0] + port + "; IntegratedSecurity=yes; Uid=auth_windows;";
+						connectionString += "; IntegratedSecurity=yes; Uid=auth_windows; ";
 
 					if(!string.IsNullOrEmpty(DefaultDatabase)) 
 					{
-						connectionString += "Database = " + DefaultDatabase;
+						connectionString += $"Database = {DefaultDatabase}; ";
 					}
                 }
 

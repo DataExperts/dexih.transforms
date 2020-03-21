@@ -343,10 +343,12 @@ namespace dexih.connections.postgressql
                         port = hostport[1];
                     }
 
+                    connectionString = $"Host={host}; Port={port}; Timeout={ConnectionTimeout}; CommandTimeout={CommandTimeout}; ApplicationName=dexih; ";
+
                     if (UseWindowsAuth == false)
-                        connectionString = "Host=" + host + "; Port=" + port + "; User Id=" + Username + "; Password=" + Password + "; ApplicationName=dexih; ";
+                        connectionString += $"User Id={Username}; Password={Password}; ";
                     else
-                        connectionString = "Host=" + host + "; Port=" + port + "; Integrated Security=true; ApplicationName=dexih; ";
+                        connectionString += "Integrated Security=true; ";
 
                     if (!string.IsNullOrEmpty(DefaultDatabase))
                     {

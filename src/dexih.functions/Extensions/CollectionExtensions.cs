@@ -193,7 +193,7 @@ namespace dexih.functions
         /// Adds an item to the collection is another item with the property does not exist. 
         /// </summary>
         /// <param name="list"></param>
-        /// <param name="item"></param>
+        /// <param name="items"></param>
         /// <param name="property"></param>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="U"></typeparam>

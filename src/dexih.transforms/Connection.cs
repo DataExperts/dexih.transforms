@@ -56,6 +56,10 @@ namespace dexih.transforms
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
         public string DefaultDatabase { get; set; }
+
+        public int ConnectionTimeout { get; set; } = 30;
+
+        public int CommandTimeout { get; set; } = 60;
         public string Filename { get; set; }
         public EConnectionState State { get; set; }
 
@@ -268,8 +272,6 @@ namespace dexih.transforms
         /// <param name="position"></param>
         /// <returns></returns>
         public abstract Task<Table> InitializeTable(Table table, int position);
-
-        private Stopwatch WriteDataTimer = new Stopwatch();
 
         #endregion
         
@@ -538,7 +540,7 @@ namespace dexih.transforms
         /// Gets the maximum valid of the specified column
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="incrementalColumn"></param>
+        /// <param name="column"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual async Task<T> GetMaxValue<T>(Table table, TableColumn column, CancellationToken cancellationToken = default)
@@ -580,7 +582,7 @@ namespace dexih.transforms
         /// For sql databases, this does not thing as as select max(key) is called to get key, however nosql tables have no max() function.
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="incrementalColumnName"></param>
+        /// <param name="columnName"></param>
         /// <param name="value"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

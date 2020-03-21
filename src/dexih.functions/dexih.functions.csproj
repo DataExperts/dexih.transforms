@@ -17,6 +17,7 @@
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <LangVersion>latest</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
   <!--<ItemGroup>
     <Compile Include="**\*.cs" />
